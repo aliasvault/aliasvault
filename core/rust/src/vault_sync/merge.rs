@@ -5,10 +5,10 @@ use std::collections::{HashMap, HashSet};
 
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::SyncResult;
-use super::pull::{self, OpenedManifestSet, PulledVault};
-use super::push::{canonicalize_vault, CanonicalizedSet, ManifestRecord};
+use super::pull::{self, OpenedManifestSet, PulledVault, Snapshot};
+use super::push::{canonicalize_vault, CanonicalizedSet};
 use super::state::{self, Ctx};
-use super::types::EmailRoutingDto;
+use super::write_set::ManifestRecord;
 use super::legacy;
 use crate::vault_codec::{self, BlobEntry, CanonicalizedVault, DataBucket, Manifest};
 use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, MergeStats};
@@ -17,14 +17,9 @@ use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMerge
 pub(crate) enum PullAndMergeOutcome {
     /// LEGACY: the server's vault is still a sqlite blob at this revision; the caller pushes the local vault over it.
     LegacyServer { revision: i64 },
-    Merged {
-        pulled: PulledVault,
-        /// The merge counters summed over every manifest.
-        stats: MergeStats,
-        fallback_manifest_ids: Vec<String>,
-        dropped_local_manifest_ids: Vec<String>,
-        push_canonical: Option<CanonicalizedSet>,
-    },
+    /// The merged vault, with the canonical set the push right after it writes from (none when a manifest fell back
+    /// to the server's version, which the push then has to canonicalize again).
+    Merged { pulled: PulledVault, push_canonical: Option<CanonicalizedSet> },
     /// The merge failed, so the server's vault stands as pulled and the local changes are dropped.
     ServerOnly(PulledVault),
 }
@@ -32,23 +27,24 @@ pub(crate) enum PullAndMergeOutcome {
 /// Pull the latest snapshot and merge the local vault onto it at canonical level, one manifest at a time.
 pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutcome> {
     let vek = ctx.encryption_key()?;
-    ctx.log("[V2Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...").await;
-    let snapshot = pull::fetch_snapshot(ctx).await?;
-
-    // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
-    if legacy::is_legacy_sqlite_blob_snapshot(&snapshot) {
-        let legacy = legacy::open_legacy_snapshot(ctx, &snapshot).await?;
-        pull::commit_revisions(ctx, &legacy.manifest_revisions, &legacy.bucket_revisions).await?;
-        return Ok(PullAndMergeOutcome::LegacyServer { revision: legacy.revision });
-    }
-    let email_routing = pull::email_routing_of(&snapshot);
+    ctx.log("[Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...").await;
+    let snapshot = match pull::fetch_snapshot(ctx).await? {
+        // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
+        Snapshot::LegacySqliteBlob(snapshot) => {
+            let legacy = legacy::open_legacy_snapshot(ctx, &snapshot).await?;
+            pull::commit_revisions(ctx, &legacy).await?;
+            return Ok(PullAndMergeOutcome::LegacyServer { revision: legacy.personal_revision });
+        }
+        Snapshot::Manifest(snapshot) => snapshot,
+    };
+    let email_routing = snapshot.email_routing.clone().unwrap_or_default();
 
     let opened = pull::open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
     let local_side = canonicalize_vault(ctx, None).await?;
     let local_side = match ground_moved_under_canonicalize(&local_side.manifest_records, &opened) {
         None => local_side,
         Some(moved) => {
-            ctx.warn(format!("[V2Merge] This snapshot changed {}; canonicalizing the local vault again so its blob hashes match the server's.", moved)).await;
+            ctx.warn(format!("[Merge] This snapshot changed {}; canonicalizing the local vault again so its blob hashes match the server's.", moved)).await;
             canonicalize_vault(ctx, None).await?
         }
     };
@@ -57,7 +53,7 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         Ok(outcome) => Ok(outcome),
         Err(merge_error) => {
             // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
-            ctx.warn(format!("[V2Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
+            ctx.warn(format!("[Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
             let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
             Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing)))
         }
@@ -84,9 +80,9 @@ fn ground_moved_under_canonicalize(records: &[ManifestRecord], opened: &OpenedMa
 }
 
 /// Merge the local side against the opened manifests, validate per manifest, and materialize.
-async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, local_side: CanonicalizedSet, vek: &str, email_routing: EmailRoutingDto) -> SyncResult<PullAndMergeOutcome> {
+async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, local_side: CanonicalizedSet, vek: &str, email_routing: super::types::EmailRoutingDto) -> SyncResult<PullAndMergeOutcome> {
     let schema = ctx.schema().await?;
-    ctx.log(format!("[V2Merge] Merging {} local manifest(s) onto {} server manifest(s)...", local_side.canonicalized.manifests.len(), opened.resolved.len())).await;
+    ctx.log(format!("[Merge] Merging {} local manifest(s) onto {} server manifest(s)...", local_side.canonicalized.manifests.len(), opened.resolved.len())).await;
     let merge_output = merge_canonical(CanonicalMergeInput {
         server_manifests: opened.manifests(),
         server_buckets: opened.data_buckets.clone(),
@@ -105,28 +101,27 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
 
     let mut manifests: Vec<Manifest> = Vec::new();
     let mut data_buckets: Vec<DataBucket> = Vec::new();
-    let mut fallback_manifest_ids = Vec::new();
+    let mut fallbacks = 0usize;
     let mut stats = MergeStats::default();
     for entry in merge_output.manifests {
-        let failure = validate_merged_manifest(&entry);
-        if let Some(failure) = &failure {
+        if let Some(failure) = validate_merged_manifest(&entry) {
             if !contentless.contains(&id_key(&entry.manifest_id)) {
-                ctx.warn(format!("[V2Merge] Merged manifest {} failed validation ({}); the server's version stands and local changes to it are dropped.", entry.manifest_id, failure)).await;
-                fallback_manifest_ids.push(entry.manifest_id.clone());
+                ctx.warn(format!("[Merge] Merged manifest {} failed validation ({}); the server's version stands and local changes to it are dropped.", entry.manifest_id, failure)).await;
+                fallbacks += 1;
                 if let Some(server) = server_manifest_by_id.get(&id_key(&entry.manifest_id)) {
                     manifests.push((*server).clone());
                     data_buckets.extend(server_buckets_by_id.get(&id_key(&entry.manifest_id)).cloned().unwrap_or_default());
                 }
                 continue;
             }
-            ctx.warn(format!("[V2Merge] Pass-through manifest {} failed validation ({}); keeping its local rows.", entry.manifest_id, failure)).await;
+            ctx.warn(format!("[Merge] Pass-through manifest {} failed validation ({}); keeping its local rows.", entry.manifest_id, failure)).await;
         }
         manifests.push(entry.manifest);
         data_buckets.extend(entry.buckets);
         stats.add(&entry.stats);
     }
     for dropped in &merge_output.dropped_local_manifest_ids {
-        ctx.warn(format!("[V2Merge] Local manifest {} is no longer served; its rows are dropped from the merged vault.", dropped)).await;
+        ctx.warn(format!("[Merge] Local manifest {} is no longer served; its rows are dropped from the merged vault.", dropped)).await;
     }
 
     // Blob bytes for materialize: the server download plus everything the local canonicalize extracted.
@@ -144,17 +139,14 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
 
     let sqlite_bytes = pull::materialize_to_sqlite(ctx, &manifests, &data_buckets, &blob_map, &opened.manifest_names).await?;
     let encrypted_vault = state::encrypt_vault_blob(&sqlite_bytes, vek)?;
-    ctx.log(format!("[V2Merge] Canonical merge complete: {} conflict(s), {} offline row(s) kept, {} validation fallback(s), {} dropped local manifest(s).", stats.conflicts, stats.records_inserted, fallback_manifest_ids.len(), merge_output.dropped_local_manifest_ids.len())).await;
+    ctx.log(format!("[Merge] Canonical merge complete: {} local row(s) won, {} local-only row(s) kept, {} validation fallback(s), {} dropped local manifest(s).", stats.incoming_won, stats.incoming_only, fallbacks, merge_output.dropped_local_manifest_ids.len())).await;
 
-    let push_canonical = merge_output_for_push(&manifests, &data_buckets, merged_blobs, &local_side.manifest_records, !fallback_manifest_ids.is_empty());
-    Ok(PullAndMergeOutcome::Merged { pulled: opened.pulled_vault(encrypted_vault, email_routing), stats, fallback_manifest_ids, dropped_local_manifest_ids: merge_output.dropped_local_manifest_ids, push_canonical })
+    let push_canonical = if fallbacks == 0 { merge_output_for_push(&manifests, &data_buckets, merged_blobs, &local_side.manifest_records) } else { None };
+    Ok(PullAndMergeOutcome::Merged { pulled: opened.pulled_vault(encrypted_vault, email_routing), push_canonical })
 }
 
-/// The merged vault in the shape the push writes from.
-fn merge_output_for_push(manifests: &[Manifest], data_buckets: &[DataBucket], blobs_by_manifest: HashMap<String, HashMap<String, BlobEntry>>, manifest_records: &[ManifestRecord], had_fallbacks: bool) -> Option<CanonicalizedSet> {
-    if had_fallbacks {
-        return None;
-    }
+/// The merged vault in the shape the push writes from, when it covers exactly the manifests this session writes.
+fn merge_output_for_push(manifests: &[Manifest], data_buckets: &[DataBucket], blobs_by_manifest: HashMap<String, HashMap<String, BlobEntry>>, manifest_records: &[ManifestRecord]) -> Option<CanonicalizedSet> {
     let merged_ids: HashSet<String> = manifests.iter().map(|m| id_key(&m.manifest_id)).collect();
     let record_ids: Vec<String> = manifest_records.iter().map(|r| id_key(&r.manifest_id)).collect();
     if merged_ids.len() != record_ids.len() || record_ids.iter().any(|id| !merged_ids.contains(id)) {

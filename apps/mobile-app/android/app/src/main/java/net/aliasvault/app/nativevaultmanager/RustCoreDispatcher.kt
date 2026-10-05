@@ -25,7 +25,6 @@ import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.openAccountKeyChain
 import uniffi.aliasvault_core.parseEmailSource
-import uniffi.aliasvault_core.pruneVaultJson
 import uniffi.aliasvault_core.reencryptAccountKeyJson
 import uniffi.aliasvault_core.selectFaviconTarget
 import uniffi.aliasvault_core.srpDerivePrivateKey
@@ -101,7 +100,6 @@ object RustCoreDispatcher {
             "srpVerifySession" -> srpVerifySession(args.string(0), args.string(1), args.string(2), args.string(3)).toString()
 
             "getSyncableTableNames" -> json(getSyncableTableNames())
-            "pruneVaultJson" -> pruneVaultJson(args.string(0))
 
             "vaultCodecCanonicalizeFromSqlite" -> vaultCodecCanonicalizeFromSqlite(args.string(0))
             "vaultCodecGenerateManifestSalt" -> json(vaultCodecGenerateManifestSalt())

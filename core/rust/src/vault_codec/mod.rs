@@ -1,20 +1,17 @@
-//! Vault codec: logic for translating between the canonical manifest-v1 storage format (as persisted on the server)
-//! and local vault formats (e.g., SQLite, or others), including integrity envelope (canonical hash),
-//! gzip packing/unpacking, and structural validation.
-//!
-//! This module defines the *format* codec that maps between canonical artifacts (manifest, data buckets,
-//! content-addressed blobs) and platform-specific representations, without embedding knowledge of encryption
-//! or storage engine internals. Each platform interacts with its own storage and applies encryption/decryption
-//! outside of this codec.
+//! The manifest-v1 storage format: `canonicalize` maps the local SQLite tables to manifests, data buckets and
+//! content-addressed blobs, `materialize` maps them back. The codec knows the format rules (routing by manifest,
+//! `integrity`, `logos`, `normalize`), the payload envelope (`hash`, `compress`) and `validate`; encryption and
+//! storage stay with the caller.
 
 mod compress;
 mod canonicalize;
+pub(crate) mod integrity;
 pub(crate) mod normalize;
 mod hash;
+mod logos;
 mod manifest;
 mod materialize;
 pub(crate) mod row;
-mod scoped_assets;
 mod sharing;
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -33,9 +30,9 @@ pub use manifest::{
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
 };
 pub use materialize::materialize_as_sqlite;
-pub use scoped_assets::logo_id_for;
+pub use logos::logo_id_for;
 pub use sharing::extract_encryption_key_for_public_key;
-pub(crate) use types::ensure_readable_schema_version;
+pub(crate) use types::{blob_spec_for, ensure_readable_schema_version};
 pub use types::{bucket_categories, identity_part, is_bucketed_table, is_readable_schema_version, is_skip_table, manifest_scoped_tables, tables_for_category};
 pub use validate::{validate_data_bucket, validate_manifest, ValidationResult};
 

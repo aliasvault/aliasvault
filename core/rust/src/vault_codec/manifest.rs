@@ -110,19 +110,6 @@ pub struct CanonicalizedVault {
     pub data_buckets: Vec<DataBucket>,
 }
 
-#[cfg(test)]
-impl CanonicalizedVault {
-    /// The first manifest, which is the one the caller wrote this vault from. Canonicalize refuses empty input, so it always exists.
-    pub fn first(&self) -> &CanonicalizedManifest {
-        self.manifests.first().expect("canonicalize rejects input declaring no manifests")
-    }
-
-    /// Every manifest after the first, in spec order.
-    pub fn rest(&self) -> Vec<&CanonicalizedManifest> {
-        self.manifests.iter().skip(1).collect()
-    }
-}
-
 /// A single table's rows for reassembly.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CodecTableData {
@@ -130,12 +117,8 @@ pub struct CodecTableData {
     pub records: Vec<CodecRecord>,
 }
 
-/// Data a newer writer put in the manifest that this client's local SQLite schema cannot hold.
-///
-/// Materialize splits it off (so inserts don't crash on unknown tables/columns) and canonicalize
-/// re-merges it (so this client's next push never drops it). The platform persists this value
-/// opaquely between pull and push; it is rebuilt from scratch on every pull, so it tracks the same
-/// staleness/LWW semantics as the rest of the row data.
+/// Data a newer writer put in the manifest that the local schema cannot hold: split off by materialize, re-merged by
+/// canonicalize, so this client's next push never drops it.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodecOverflow {
@@ -146,7 +129,7 @@ pub struct CodecOverflow {
     /// category so both full pushes and bucket-only pushes re-emit them into the right bucket.
     #[serde(default)]
     pub bucket_tables: HashMap<String, HashMap<String, Vec<CodecRecord>>>,
-    /// Unknown columns split off rows of known tables: table > row primary-key value > {column: value}.
+    /// Unknown columns split off rows of known tables: table > row identity > {column: value}.
     #[serde(default)]
     pub columns: HashMap<String, HashMap<String, CodecRecord>>,
     /// Unknown top-level manifest keys: lowercased manifest id > {key: value}.
@@ -209,11 +192,8 @@ impl Manifest {
     }
 }
 
-/// Materialized tables the platform inserts into a fresh schema DB. Blob columns carry
-/// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. Any overflow (see
-/// [`CodecOverflow`]) is already included in `tables` as the `OVERFLOW_TABLE` row, the platform
-/// inserts it like any other table and needs no separate persistence. The `overflow` field is a
-/// diagnostics copy of the same data (for logging), not something the platform must store.
+/// Materialized tables the platform inserts into a fresh schema DB, the overflow included as the `OVERFLOW_TABLE` row.
+/// `overflow` is a diagnostics copy of that row, not something the platform must store.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {

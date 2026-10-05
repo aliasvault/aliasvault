@@ -107,6 +107,7 @@ mod tests {
             assert!(config.manifest_scoped, "{} must be manifest_scoped or it merges across manifests", config.name);
             assert_eq!(config.identity_columns().first(), Some(&MANIFEST_ID_COL), "{} must be addressed by its manifest first", config.name);
         }
+        assert!(!SYNCABLE_TABLE_NAMES.contains(&OVERFLOW_TABLE), "the overflow carrier rides inside the manifest, it is not synced as a table of its own");
     }
 
     #[test]

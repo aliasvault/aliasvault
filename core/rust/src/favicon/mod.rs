@@ -1,6 +1,6 @@
 //! Favicon handling and source selection.
 
-use crate::credential_matcher::domain::{is_web_scheme, split_url};
+use crate::credential_matcher::domain::{authority_host_port, is_web_scheme, split_url};
 use crate::credential_matcher::extract_domain_with_port;
 
 /// The URL to fetch a favicon from, paired with the `Logos.Source` key it is stored under.
@@ -60,18 +60,16 @@ pub fn select_favicon_target(urls: &[String]) -> Option<FaviconTarget> {
 /// The origin to fetch a favicon from: lowercased scheme and host (with port), https when scheme-less. Userinfo, path
 /// and query are dropped so the server never sees more of the item URL than the site it has to fetch from.
 fn canonical_fetch_url(url: &str) -> String {
-    let (scheme, authority, _) = split_url(url);
-    let scheme = match scheme {
-        Some(scheme) if is_web_scheme(scheme) => scheme.to_ascii_lowercase(),
-        _ => "https".to_string(),
-    };
-
-    let host = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
-    format!("{}://{}", scheme, host.to_ascii_lowercase())
+    let lowered = url.to_ascii_lowercase();
+    let (scheme, authority, _) = split_url(&lowered);
+    let scheme = scheme.filter(|scheme| is_web_scheme(scheme)).unwrap_or("https");
+    match authority_host_port(authority) {
+        (host, Some(port)) => format!("{scheme}://{host}:{port}"),
+        (host, None) => format!("{scheme}://{host}"),
+    }
 }
 
 /// Whether a scheme-less host is shaped like a public hostname, meaning its last label could be a TLD.
-/// TODO: look into replacing this with the full public suffix list here once that is available.
 fn looks_like_public_host(host: &str) -> bool {
     match host.rsplit_once('.') {
         Some((_, tld)) => tld.len() >= 2 && tld.chars().all(|c| c.is_ascii_alphabetic()),
@@ -97,7 +95,7 @@ mod tests {
     }
 
     #[test]
-    fn test_web_urls_key_on_host() {
+    fn web_urls_key_on_host() {
         assert_eq!(favicon_source_key("https://example.com"), "example.com");
         assert_eq!(favicon_source_key("http://example.com/login?a=1"), "example.com");
         assert_eq!(favicon_source_key("www.example.com"), "example.com");
@@ -108,8 +106,8 @@ mod tests {
     }
 
     #[test]
-    fn test_app_urls_have_no_favicon_source() {
-        // Illegitimate URLs are skipped.
+    fn app_urls_have_no_favicon_source() {
+        // App URLs have no favicon.
         assert_eq!(favicon_source_key("androidapp://com.example.android"), "");
         assert_eq!(favicon_source_key("androidapp://com.example.app"), "");
         assert_eq!(favicon_source_key("android://com.example.android.app"), "");
@@ -120,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn test_only_web_schemes_are_fetchable() {
+    fn only_web_schemes_are_fetchable() {
         // A scheme other than http(s) names something that is not a website.
         assert_eq!(favicon_source_key("ftp://files.example.com"), "");
         assert_eq!(favicon_source_key("file:///Users/me/index.html"), "");
@@ -136,7 +134,7 @@ mod tests {
     }
 
     #[test]
-    fn test_scheme_less_input_needs_a_plausible_tld() {
+    fn scheme_less_input_needs_a_plausible_tld() {
         // Dotted text a user typed into a URL field is not a host to fetch from.
         assert_eq!(favicon_source_key("backup.7z"), "");
         assert_eq!(favicon_source_key("v1.0"), "");
@@ -155,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn test_unusable_input_has_no_favicon_source() {
+    fn unusable_input_has_no_favicon_source() {
         assert_eq!(favicon_source_key(""), "");
         assert_eq!(favicon_source_key("   "), "");
         assert_eq!(favicon_source_key("not a url"), "");
@@ -164,7 +162,7 @@ mod tests {
     }
 
     #[test]
-    fn test_non_default_port_is_part_of_the_key() {
+    fn non_default_port_is_part_of_the_key() {
         assert_eq!(favicon_source_key("http://localhost:8080"), "localhost:8080");
         assert_eq!(favicon_source_key("http://localhost:9090"), "localhost:9090");
         assert_ne!(
@@ -176,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_default_port_collapses_onto_the_bare_host() {
+    fn default_port_collapses_onto_the_bare_host() {
         assert_eq!(favicon_source_key("http://localhost:80"), "localhost");
         assert_eq!(favicon_source_key("https://example.com:443"), "example.com");
         assert_eq!(favicon_source_key("example.com:443"), "example.com");
@@ -190,8 +188,8 @@ mod tests {
     }
 
     #[test]
-    fn test_select_skips_app_urls_and_keeps_item_order() {
-        // The reported item shape: an app URL listed first, the website second.
+    fn select_skips_app_urls_and_keeps_item_order() {
+        // An app URL listed before the website.
         let target = select_favicon_target(&urls(&[
             "androidapp://com.example.app",
             "https://example.com",
@@ -210,7 +208,7 @@ mod tests {
     }
 
     #[test]
-    fn test_select_prefers_the_first_usable_url() {
+    fn select_prefers_the_first_usable_url() {
         let target = select_favicon_target(&urls(&[
             "com.example.app",
             "https://first.example.com",
@@ -221,7 +219,7 @@ mod tests {
     }
 
     #[test]
-    fn test_select_returns_none_when_no_url_is_fetchable() {
+    fn select_returns_none_when_no_url_is_fetchable() {
         assert_eq!(select_favicon_target(&urls(&[])), None);
         assert_eq!(
             select_favicon_target(&urls(&[
@@ -235,7 +233,7 @@ mod tests {
     }
 
     #[test]
-    fn test_casing_is_ignored() {
+    fn casing_is_ignored() {
         let lower = select_favicon_target(&urls(&["example.com"])).unwrap();
         for variant in ["Example.com", "example.com", "https://example.com"] {
             let target = select_favicon_target(&urls(&[variant])).unwrap();
@@ -252,13 +250,13 @@ mod tests {
     }
 
     #[test]
-    fn test_fetch_url_is_the_origin_only() {
+    fn fetch_url_is_the_origin_only() {
         let target = select_favicon_target(&urls(&["https://user:secret@example.com:8443/account/reset?token=abc#top"])).unwrap();
         assert_eq!(target.url, "https://example.com:8443");
     }
 
     #[test]
-    fn test_select_adds_missing_scheme_to_fetch_url() {
+    fn select_adds_missing_scheme_to_fetch_url() {
         let target = select_favicon_target(&urls(&["www.example.com"])).unwrap();
         assert_eq!(target.url, "https://www.example.com");
         assert_eq!(target.source, "example.com");

@@ -142,8 +142,7 @@ pub fn open_account_private_key(encrypted_account_private_key: &str, account_key
 
 /// Decrypt the account signing private key (base64 seed) with the Account Key.
 pub fn open_account_signing_private_key(encrypted_signing_private_key: &str, account_key_base64: &str) -> VaultResult<Zeroizing<String>> {
-    let seed = Zeroizing::new(symmetric_decrypt_bytes_with_aad(&base64_decode(encrypted_signing_private_key)?, account_key_base64, aad::ACCOUNT_SIGNING_PRIVATE_KEY)?);
-    Ok(Zeroizing::new(base64_encode(&seed[..])))
+    unwrap_key(encrypted_signing_private_key, account_key_base64, aad::ACCOUNT_SIGNING_PRIVATE_KEY)
 }
 
 /// Why a key chain did not open.

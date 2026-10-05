@@ -1,9 +1,9 @@
 //! Email MIME parsing for source-only stored emails.
 use mail_parser::{GetHeader, Message, MessageParser, MessagePart, MimeHeaders};
 use serde::Serialize;
-use std::io::Read;
 
 use crate::common::error::{VaultError, VaultResult};
+use crate::common::gzip::{gunzip_capped, GZIP_MAGIC};
 
 /// Header the server stamps on an attachment whose body it detached from the source at ingest, carrying the
 /// index that body is stored and requested under. Reading the index from the message itself keeps it
@@ -13,6 +13,9 @@ const DETACHED_PART_INDEX_HEADER: &str = "X-AliasVault-Part";
 /// Header the server stamps on a detached attachment carrying its decoded size, so the size can be shown in
 /// the attachment list without downloading the body.
 const DETACHED_PART_LENGTH_HEADER: &str = "X-AliasVault-Detached-Length";
+
+/// Cap on a gunzipped email source or detached part, with headroom over the ~14 MB the SMTP service accepts.
+const MAX_DECOMPRESSED_EMAIL_BYTES: u64 = 64 * 1024 * 1024;
 
 /// A single attachment of a parsed email message. Metadata only: fetch the bytes with
 /// [`extract_email_attachment`] using this attachment's index in [`ParsedEmail::attachments`].
@@ -92,7 +95,7 @@ pub fn extract_email_attachment(source: &[u8], index: usize, detached_body: Opti
 
     // Resolve what the attachment needs before splicing: the parsed message borrows `raw`, so nothing that
     // borrows it may outlive this block.
-    let body_range = {
+    let (body_range, detached_body) = {
         let message = parse_message(&raw)?;
         let part = attachment_at(&message, index)?;
 
@@ -104,11 +107,11 @@ pub fn extract_email_attachment(source: &[u8], index: usize, detached_body: Opti
                     index
                 )))
             }
-            (true, Some(_)) => part.offset_body as usize..part.offset_end as usize,
+            (true, Some(body)) => (part.offset_body as usize..part.offset_end as usize, body),
         }
     };
 
-    let body = decode_detached_part(detached_body.unwrap_or_default())?;
+    let body = decode_detached_part(detached_body)?;
     let mut spliced = Vec::with_capacity(raw.len() + body.len());
     spliced.extend_from_slice(&raw[..body_range.start]);
     spliced.extend_from_slice(&body);
@@ -169,29 +172,15 @@ enum MaybeDecompressed {
 
 /// Gunzip the input when it starts with the gzip magic bytes (0x1f 0x8b), pass it through otherwise.
 fn decompress_if_gzip(source: &[u8]) -> VaultResult<MaybeDecompressed> {
-    if source.len() < 2 || source[0] != 0x1f || source[1] != 0x8b {
+    if !source.starts_with(&GZIP_MAGIC) {
         return Ok(MaybeDecompressed::AsIs(source.to_vec()));
     }
 
-    let mut decoder = flate2::read::GzDecoder::new(source);
-    let mut decompressed = Vec::new();
-    decoder
-        .read_to_end(&mut decompressed)
-        .map_err(|e| VaultError::General(format!("Failed to gunzip email source: {}", e)))?;
-    Ok(MaybeDecompressed::Decompressed(decompressed))
+    gunzip_capped(source, MAX_DECOMPRESSED_EMAIL_BYTES).map(MaybeDecompressed::Decompressed)
 }
 
-/// Undo the double UTF-8 encoding that legacy (pre source-only format) emails were stored with.
-///
-/// The server (pre-0.31.0) used to persist the raw source as a string via MimeKit's `MimeMessage.ToString()`, which
-/// decodes the message bytes as Latin-1 (one char per byte), and then encrypted that string as UTF-8.
-/// Every non-ASCII byte was therefore encoded twice on the way in: `é` (`C3 A9`) was stored as `C3 83 C2 A9`.
-/// That went unnoticed while clients rendered the separately stored (correctly decoded) html/plain columns,
-/// but shows up as incorrect now that the bodies are parsed out of the source itself. Mapping each decoded
-/// character back to a single byte reverses it exactly.
-///
-/// Only input that is valid UTF-8 consisting solely of characters <= U+00FF can be such a round trip, so
-/// anything else - including an already correct raw source - is returned unchanged.
+/// Undo the Latin-1 then UTF-8 double encoding of legacy (pre-0.31.0) stored sources, where `é` (`C3 A9`) became `C3 83 C2 A9`.
+/// A no-op for anything that is not valid UTF-8 made only of characters up to U+00FF, such as an already correct source.
 fn repair_legacy_double_encoding(raw: Vec<u8>) -> Vec<u8> {
     let text = match std::str::from_utf8(&raw) {
         Ok(text) => text,

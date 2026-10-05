@@ -52,7 +52,8 @@ pub fn grant(manifest_id: &str) -> Vec<u8> {
     format!("{}/grant/{}", PREFIX, normalize(manifest_id)).into_bytes()
 }
 
-fn normalize(id: &str) -> String {
+/// An id as it appears in a label: lowercased, as the server prints a GUID.
+pub(crate) fn normalize(id: &str) -> String {
     id.to_ascii_lowercase()
 }
 

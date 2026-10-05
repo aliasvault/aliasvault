@@ -19,15 +19,14 @@ content-addressed blobs, and materialize them back.
 ### vault_merge
 Last-Write-Wins (LWW) merge of a local vault onto the server's, one manifest at a time, rows out.
 
-### vault_sharing
-Which manifests a push writes and which the account can still open, for multi-manifest (shared) vaults.
-
 ### vault_pruner
 Permanently deletes items in trash older than retention period (default: 30 days).
 
 ### vault_sync
 The sync engine every client drives: a sans-IO command loop that asks the host for HTTP, state and
-SQLite access and runs the status check, pull, merge, push and the storage-format migration.
+SQLite access and runs the status check, pull, merge, push and the storage-format migration. Its tests
+run the whole engine against an in-process model of the v2 vault API (`tests/fake_server.rs`) with a
+real SQLite host per device (`tests/test_host.rs`).
 
 ### sqlite_host
 An in-memory SQLite database (`SqliteMemoryDatabase`) that hosts every client's vault, so no platform

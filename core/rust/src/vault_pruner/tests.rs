@@ -1,738 +1,135 @@
+//! The pruner: expired trash is tombstoned with everything hanging off it, orphan favicons and the bytes of
+//! tombstoned blob rows are reclaimed, and every statement names the manifest it addresses.
+
 use super::*;
-use crate::vault_codec::test_support::{days_ago_iso, now_iso};
+use crate::vault_codec::test_support::{days_ago_iso, now_iso, restamp, row, table, PERSONAL_MANIFEST_ID as M, SHARED_MANIFEST_ID};
 use crate::vault_model::names::{ATTACHMENTS_TABLE, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, ITEM_TAGS_TABLE};
+use serde_json::{json, Value};
 
-/// The counter of one table in a per-table stats map, 0 when the table was not touched.
-fn count(map: &HashMap<String, u32>, table: &str) -> u32 {
-    map.get(table).copied().unwrap_or(0)
+/// An item row in manifest `M`: live, trashed `days_ago` days, or already tombstoned.
+fn item(id: &str, trashed_days_ago: Option<i64>, deleted: bool, logo_id: Option<&str>) -> CodecRecord {
+    row(&[("ManifestId", json!(M)), ("Id", json!(id)), ("UpdatedAt", json!("2024-01-01T00:00:00Z")), ("IsDeleted", json!(deleted as i32)), ("DeletedAt", trashed_days_ago.map(days_ago_iso).map(Value::String).unwrap_or(Value::Null)), ("LogoId", logo_id.map(|l| json!(l)).unwrap_or(Value::Null))])
 }
 
-fn make_item_record(id: &str, deleted_at: Option<&str>, is_deleted: bool) -> CodecRecord {
-    let mut record = HashMap::new();
-    record.insert("Id".to_string(), serde_json::json!(id));
-    record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
-    record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
-    if let Some(dt) = deleted_at {
-        record.insert("DeletedAt".to_string(), serde_json::json!(dt));
-    } else {
-        record.insert("DeletedAt".to_string(), serde_json::Value::Null);
+/// A row hanging off `item_id` in manifest `M`, with a `Blob` cell when given.
+fn child(id: &str, item_id: &str, deleted: bool, blob: Option<Value>) -> CodecRecord {
+    let mut r = row(&[("ManifestId", json!(M)), ("Id", json!(id)), ("ItemId", json!(item_id)), ("IsDeleted", json!(deleted as i32))]);
+    if let Some(blob) = blob {
+        r.insert("Blob".to_string(), blob);
     }
-    record
+    r
 }
 
-fn make_field_value_record(id: &str, item_id: &str, is_deleted: bool) -> CodecRecord {
-    let mut record = HashMap::new();
-    record.insert("Id".to_string(), serde_json::json!(id));
-    record.insert("ItemId".to_string(), serde_json::json!(item_id));
-    record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
-    record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
-    record
+fn logo(id: &str, kind: &str, deleted: bool, file_data: Value) -> CodecRecord {
+    row(&[("ManifestId", json!(M)), ("Id", json!(id)), ("Kind", json!(kind)), ("Source", json!("example.com")), ("IsDeleted", json!(deleted as i32)), ("FileData", file_data)])
 }
 
-fn make_attachment_record(
-    id: &str,
-    item_id: &str,
-    is_deleted: bool,
-    blob: serde_json::Value,
-) -> CodecRecord {
-    let mut record = HashMap::new();
-    record.insert("Id".to_string(), serde_json::json!(id));
-    record.insert("ItemId".to_string(), serde_json::json!(item_id));
-    record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
-    record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
-    record.insert("Blob".to_string(), blob);
-    record
+fn prune(tables: Vec<CodecTableData>) -> PruneOutput {
+    prune_vault(PruneInput { tables, current_time: now_iso(), retention_days: 30 }).unwrap()
 }
 
-fn make_item_with_logo(
-    id: &str,
-    logo_id: Option<&str>,
-    deleted_at: Option<&str>,
-    is_deleted: bool,
-) -> CodecRecord {
-    let mut record = make_item_record(id, deleted_at, is_deleted);
-    match logo_id {
-        Some(lid) => record.insert("LogoId".to_string(), serde_json::json!(lid)),
-        None => record.insert("LogoId".to_string(), serde_json::Value::Null),
-    };
-    record
-}
-
-fn make_logo_record(id: &str, is_deleted: bool) -> CodecRecord {
-    let mut record = HashMap::new();
-    record.insert("Id".to_string(), serde_json::json!(id));
-    record.insert("Source".to_string(), serde_json::json!("example.com"));
-    record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
-    record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
-    record
-}
-
-fn make_logo_record_with_blob(id: &str, is_deleted: bool, blob: serde_json::Value) -> CodecRecord {
-    let mut record = make_logo_record(id, is_deleted);
-    record.insert("FileData".to_string(), blob);
-    record
+fn sql_of(output: &PruneOutput) -> Vec<&str> {
+    output.statements.iter().map(|s| s.sql.as_str()).collect()
 }
 
 #[test]
-fn test_prune_expired_items() {
-    let now_str = now_iso();
-    // Create an item deleted 60 days ago
-    let old_date = days_ago_iso(60);
-
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_record("item-1", Some(&old_date), false)],
-            },
-            CodecTableData {
-                name: "FieldValues".to_string(),
-                records: vec![make_field_value_record("fv-1", "item-1", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
+fn expired_trash_is_tombstoned_as_a_unit() {
+    let output = prune(vec![
+        table("Items", vec![item("expired", Some(60), false, None)]),
+        table("FieldValues", vec![child("fv-1", "expired", false, None), child("fv-dead", "expired", true, None)]),
+        table("FieldHistories", vec![child("fh-1", "expired", false, None)]),
+        table("ItemTags", vec![child("it-1", "expired", false, None)]),
+        table("Attachments", vec![child("att-1", "expired", false, Some(json!("aGVsbG8=")))]),
+    ]);
     assert_eq!(output.stats.items_pruned, 1);
-    assert_eq!(count(&output.stats.child_rows_pruned, FIELD_VALUES_TABLE), 1);
-    assert!(output.statements.len() >= 2); // At least item + field value updates
-}
-
-#[test]
-fn test_no_prune_recent_items() {
-    let now_str = now_iso();
-    // Create an item deleted 10 days ago (within retention)
-    let recent_date = days_ago_iso(10);
-
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_record("item-1", Some(&recent_date), false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.items_pruned, 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn test_no_prune_active_items() {
-    let now_str = now_iso();
-    // Create an item that's not in trash (DeletedAt is null)
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_record("item-1", None, false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.items_pruned, 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn test_no_prune_already_deleted() {
-    let now_str = now_iso();
-    // Create an item that's already permanently deleted
-    let old_date = days_ago_iso(60);
-
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_record("item-1", Some(&old_date), true)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.items_pruned, 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn test_prune_json_api() {
-    let now_str = now_iso();
-    let old_date = days_ago_iso(60);
-
-    let input_json = format!(r#"{{
-        "tables": [{{
-            "name": "Items",
-            "records": [{{
-                "Id": "item-1",
-                "UpdatedAt": "2024-01-01T00:00:00Z",
-                "IsDeleted": 0,
-                "DeletedAt": "{}"
-            }}]
-        }}],
-        "retentionDays": 30,
-        "currentTime": "{}"
-    }}"#, old_date, now_str);
-
-    let output_json = crate::common::error::json_call(&input_json, prune_vault).unwrap();
-    let output: PruneOutput = serde_json::from_str(&output_json).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.items_pruned, 1);
-}
-
-fn logo_update_count(output: &PruneOutput) -> usize {
-    output.statements.iter()
-        .filter(|s| s.sql.starts_with("UPDATE Logos"))
-        .count()
-}
-
-#[test]
-fn test_orphan_logo_with_no_referencing_items_is_pruned() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-orphan", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.logos_pruned, 1);
-    assert_eq!(logo_update_count(&output), 1);
-}
-
-#[test]
-fn test_logo_referenced_by_active_item_is_kept() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-1", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert!(output.success);
-    assert_eq!(output.stats.logos_pruned, 0);
-    assert_eq!(logo_update_count(&output), 0);
-}
-
-#[test]
-fn test_logo_referenced_only_by_tombstoned_item_is_pruned() {
-    let now_str = now_iso();
-    // The tombstoned item (IsDeleted=1) still has LogoId set; the logo
-    // should be considered orphan since no active item references it.
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_with_logo("item-1", Some("logo-1"), None, true)],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-1", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.logos_pruned, 1);
-}
-
-#[test]
-fn test_logo_referenced_only_by_item_being_purged_is_pruned() {
-    let now_str = now_iso();
-    // Item is in trash older than retention, so Pass 1 will tombstone it,
-    // Pass 2 should reclaim its logo in the same call.
-    let old_date = days_ago_iso(60);
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&old_date), false)],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-1", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.items_pruned, 1);
-    assert_eq!(output.stats.logos_pruned, 1);
-}
-
-#[test]
-fn test_logo_referenced_by_item_in_recent_trash_is_kept() {
-    let now_str = now_iso();
-    // Item is in trash but within retention, so it could still be restored,
-    // so its logo must be preserved.
-    let recent_date = days_ago_iso(10);
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&recent_date), false)],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-1", false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.items_pruned, 0);
-    assert_eq!(output.stats.logos_pruned, 0);
-}
-
-#[test]
-fn test_orphan_logo_pruning_emits_filedata_clear_in_same_statement() {
-    // Pass 2 must clear FileData when it tombstones a logo, otherwise the
-    // encrypted vault keeps the blob bytes even after the row is "deleted".
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record_with_blob("logo-orphan", false, serde_json::json!("aGVsbG8="))],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.logos_pruned, 1);
-    assert!(output.statements.iter().any(|s| s.sql.contains("FileData = NULL")));
-}
-
-#[test]
-fn test_tombstoned_logo_with_blob_bytes_is_swept() {
-    // Pass 3 must catch historical logos that are IsDeleted=1 but still carry FileData
-    // (e.g. tombstoned by an older client that did not drop FileData).
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record_with_blob("logo-tombstoned", true, serde_json::json!("aGVsbG8="))],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, LOGOS_TABLE), 1);
-    assert_eq!(output.stats.logos_pruned, 0);
-}
-
-#[test]
-fn test_tombstoned_logo_without_blob_is_not_touched() {
-    // Logos already cleared shouldn't generate redundant updates.
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record_with_blob("logo-tombstoned", true, serde_json::Value::Null)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, LOGOS_TABLE), 0);
-}
-
-#[test]
-fn test_already_soft_deleted_logo_is_not_re_pruned() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record("logo-1", true)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.logos_pruned, 0);
-}
-
-#[test]
-fn test_logo_pruning_skipped_when_logos_table_absent() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.logos_pruned, 0);
-    assert_eq!(logo_update_count(&output), 0);
-}
-
-#[test]
-fn test_trash_purge_clears_attachment_blobs() {
-    let now_str = now_iso();
-    let old_date = days_ago_iso(60);
-
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![make_item_record("item-1", Some(&old_date), false)],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![make_attachment_record(
-                    "att-1",
-                    "item-1",
-                    false,
-                    serde_json::json!("aGVsbG8="),
-                )],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.items_pruned, 1);
-    assert_eq!(count(&output.stats.child_rows_pruned, ATTACHMENTS_TABLE), 1);
-    // The trash-purge UPDATE for Attachments should now also clear the blob.
-    let attachment_update = output.statements.iter()
-        .find(|s| s.sql.starts_with("UPDATE Attachments"))
-        .expect("expected an UPDATE Attachments statement");
-    assert!(attachment_update.sql.contains("Blob = NULL"),
-        "attachment trash purge must drop the blob: {}", attachment_update.sql);
-    // The pass-3 sweeper should not also fire for the same row in this call.
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
-}
-
-#[test]
-fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![make_attachment_record(
-                    "att-old",
-                    "item-1",
-                    true,
-                    serde_json::json!("aGVsbG8="),
-                )],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 1);
-    let stmt = output.statements.iter()
-        .find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = NULL"))
-        .expect("expected the sweeper UPDATE");
-    // params: [updated_at, attachment_id, manifest_id]
-    assert_eq!(stmt.params.len(), 3);
-    assert_eq!(stmt.params[1], serde_json::json!("att-old"));
-}
-
-#[test]
-fn test_sweeper_skips_already_empty_blob() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![
-                    // Empty string (already cleared): should be skipped.
-                    make_attachment_record("att-empty-string", "item-1", true, serde_json::json!("")),
-                    // Empty array form: should also be skipped.
-                    make_attachment_record("att-empty-array", "item-1", true, serde_json::json!([])),
-                    // Null Blob: should also be skipped.
-                    make_attachment_record("att-null", "item-1", true, serde_json::Value::Null),
-                ],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn test_sweeper_skips_empty_uint8array_object_blob() {
-    // An already-cleared blob must not generate a clear statement on every prune.
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![make_attachment_record("att-empty-object", "item-1", true, serde_json::json!({}))],
-            },
-            CodecTableData {
-                name: "Logos".to_string(),
-                records: vec![make_logo_record_with_blob("logo-empty-object", true, serde_json::json!({}))],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
-    assert_eq!(count(&output.stats.blobs_cleared, LOGOS_TABLE), 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn test_sweeper_clears_nonempty_uint8array_object_blob() {
-    // Non-empty blobs are serialized as {"0":104,...}.
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![make_attachment_record("att-object", "item-1", true, serde_json::json!({"0": 104, "1": 105}))],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 1);
-}
-
-#[test]
-fn test_sweeper_skips_active_attachment_with_blob() {
-    let now_str = now_iso();
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![make_attachment_record(
-                    "att-active",
-                    "item-1",
-                    false,
-                    serde_json::json!("aGVsbG8="),
-                )],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
-    assert!(output.statements.is_empty());
-}
-
-#[test]
-fn prune_queries_cover_every_item_child_table() {
-    let names: Vec<String> = get_prune_table_queries().iter().map(|q| q.name.clone()).collect();
-    for child in crate::vault_model::SYNCABLE_TABLES.iter().filter(|t| t.item_child) {
-        assert!(names.contains(&child.name.to_string()), "pruner does not read item child table {}", child.name);
+    for (table, expected) in [(FIELD_VALUES_TABLE, 1), (FIELD_HISTORIES_TABLE, 1), (ITEM_TAGS_TABLE, 1), (ATTACHMENTS_TABLE, 1)] {
+        assert_eq!(output.stats.child_rows_pruned.get(table).copied().unwrap_or(0), expected, "{table}");
     }
-    assert!(names.contains(&ITEMS_TABLE.to_string()));
-    assert!(names.contains(&LOGOS_TABLE.to_string()));
+    let sql = sql_of(&output);
+    assert!(sql.iter().any(|s| s.starts_with("UPDATE Items SET IsDeleted = 1")));
+    assert!(sql.iter().any(|s| s.starts_with("UPDATE FieldHistories SET IsDeleted = 1")) && sql.iter().any(|s| s.starts_with("UPDATE ItemTags SET IsDeleted = 1")), "{sql:?}");
+    let attachment = sql.iter().find(|s| s.starts_with("UPDATE Attachments")).expect("the attachment is tombstoned");
+    assert!(attachment.contains("Blob = NULL"), "the blob bytes go in the same statement: {attachment}");
+    assert!(output.stats.blobs_cleared.is_empty(), "the sweeper does not fire again for a row this call tombstoned");
 }
 
 #[test]
-fn test_prune_cascades_to_field_histories_and_item_tags() {
-    let now_str = now_iso();
-    let old_date = days_ago_iso(60);
-
-    let mut history = HashMap::new();
-    history.insert("ItemId".to_string(), serde_json::json!("item-1"));
-    history.insert("IsDeleted".to_string(), serde_json::json!(0));
-    let mut item_tag = HashMap::new();
-    item_tag.insert("ItemId".to_string(), serde_json::json!("item-1"));
-    item_tag.insert("IsDeleted".to_string(), serde_json::json!(0));
-
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData { name: "Items".to_string(), records: vec![make_item_record("item-1", Some(&old_date), false)] },
-            CodecTableData { name: "FieldHistories".to_string(), records: vec![history] },
-            CodecTableData { name: "ItemTags".to_string(), records: vec![item_tag] },
-        ],
-        retention_days: 30,
-        current_time: now_str,
-    };
-
-    let output = prune_vault(input).unwrap();
-
-    assert_eq!(output.stats.items_pruned, 1);
-    assert_eq!(count(&output.stats.child_rows_pruned, FIELD_HISTORIES_TABLE), 1);
-    assert_eq!(count(&output.stats.child_rows_pruned, ITEM_TAGS_TABLE), 1);
-    let sql: Vec<&str> = output.statements.iter().map(|s| s.sql.as_str()).collect();
-    assert!(sql.iter().any(|s| s.starts_with("UPDATE FieldHistories SET IsDeleted = 1")), "field history rows must die with their item: {:?}", sql);
-    assert!(sql.iter().any(|s| s.starts_with("UPDATE ItemTags SET IsDeleted = 1")), "item tag rows must die with their item: {:?}", sql);
-}
-
-fn in_manifest(mut record: CodecRecord, manifest_id: &str) -> CodecRecord {
-    record.insert("ManifestId".to_string(), serde_json::json!(manifest_id));
-    record
+fn items_that_are_live_in_recent_trash_or_already_tombstoned_are_left_alone() {
+    for (what, row) in [("live", item("i", None, false, None)), ("recently trashed", item("i", Some(10), false, None)), ("already tombstoned", item("i", Some(60), true, None))] {
+        let output = prune(vec![table("Items", vec![row])]);
+        assert_eq!(output.stats.items_pruned, 0, "{what}");
+        assert!(output.statements.is_empty(), "{what}");
+    }
 }
 
 #[test]
-fn a_prune_never_reaches_a_same_id_row_in_another_manifest() {
-    let old_date = days_ago_iso(60);
-    let input = PruneInput {
-        tables: vec![
-            CodecTableData {
-                name: "Items".to_string(),
-                records: vec![
-                    in_manifest(make_item_record("item-1", Some(&old_date), false), "m-personal"),
-                    in_manifest(make_item_record("item-1", None, false), "m-shared"),
-                ],
-            },
-            CodecTableData {
-                name: "FieldValues".to_string(),
-                records: vec![
-                    in_manifest(make_field_value_record("fv-1", "item-1", false), "m-personal"),
-                    in_manifest(make_field_value_record("fv-1", "item-1", false), "m-shared"),
-                ],
-            },
-            CodecTableData {
-                name: "Attachments".to_string(),
-                records: vec![
-                    in_manifest(make_attachment_record("att-1", "item-2", true, serde_json::json!("aGVsbG8=")), "m-personal"),
-                    in_manifest(make_attachment_record("att-1", "item-2", false, serde_json::json!("aGVsbG8=")), "m-shared"),
-                ],
-            },
-        ],
-        retention_days: 30,
-        current_time: now_iso(),
-    };
+fn favicons_no_live_item_references_are_swept_with_their_bytes() {
+    // A favicon can be fetched again, so an unreferenced one goes, in the same call that purges the item referencing
+    // it. A built-in or uploaded logo is the user's choice and stays. A logo an item in recent trash uses stays too.
+    let cases: [(&str, Vec<CodecRecord>, u32); 6] = [
+        ("unreferenced", vec![], 1),
+        ("referenced only by a tombstoned item", vec![item("i", None, true, Some("logo"))], 1),
+        ("referenced only by an item being purged", vec![item("i", Some(60), false, Some("logo"))], 1),
+        ("referenced by a live item", vec![item("i", None, false, Some("logo"))], 0),
+        ("referenced by an item in recent trash", vec![item("i", Some(10), false, Some("logo"))], 0),
+        ("already tombstoned", vec![], 0),
+    ];
+    for (what, items, expected) in cases {
+        let deleted = what == "already tombstoned";
+        let output = prune(vec![table("Items", items), table("Logos", vec![logo("logo", "favicon", deleted, json!("aGVsbG8="))])]);
+        assert_eq!(output.stats.logos_pruned, expected, "{what}");
+        if expected == 1 {
+            assert!(sql_of(&output).iter().any(|s| s.starts_with("UPDATE Logos") && s.contains("FileData = NULL")), "{what}: the bytes go with the tombstone");
+        }
+    }
+    let kept = prune(vec![table("Items", vec![]), table("Logos", vec![logo("custom", "custom", false, json!("aGVsbG8=")), logo("builtin", "builtin", false, Value::Null)])]);
+    assert_eq!(kept.stats.logos_pruned, 0, "only favicons are swept");
+    assert_eq!(prune(vec![table("Items", vec![item("i", None, false, Some("logo"))])]).stats.logos_pruned, 0, "no Logos table, nothing to sweep");
+}
 
-    let output = prune_vault(input).unwrap();
+#[test]
+fn tombstoned_rows_that_still_carry_blob_bytes_are_emptied_once() {
+    // Older clients tombstoned attachments and logos without clearing their bytes; a cleared row is not touched again.
+    let swept = prune(vec![
+        table("Items", vec![]),
+        table("Attachments", vec![child("att-text", "i", true, Some(json!("aGVsbG8="))), child("att-object", "i", true, Some(json!({ "0": 104, "1": 105 }))), child("att-live", "i", false, Some(json!("aGVsbG8=")))]),
+        table("Logos", vec![logo("logo", "favicon", true, json!("aGVsbG8="))]),
+    ]);
+    assert_eq!(swept.stats.blobs_cleared.get(ATTACHMENTS_TABLE), Some(&2));
+    assert_eq!(swept.stats.blobs_cleared.get(LOGOS_TABLE), Some(&1));
+    assert_eq!(swept.stats.logos_pruned, 0, "a tombstoned logo is not pruned again");
+    let statement = swept.statements.iter().find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = NULL")).unwrap();
+    assert_eq!(statement.params[1], json!("att-text"));
 
-    assert_eq!(output.stats.items_pruned, 1);
-    assert_eq!(count(&output.stats.child_rows_pruned, FIELD_VALUES_TABLE), 1);
-    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 1);
+    let empty_forms = [json!(""), json!([]), json!({}), Value::Null];
+    let untouched = prune(vec![table("Items", vec![]), table("Attachments", empty_forms.iter().enumerate().map(|(i, blob)| child(&format!("att-{i}"), "i", true, Some(blob.clone()))).collect()), table("Logos", vec![logo("logo", "favicon", true, json!({}))])]);
+    assert!(untouched.statements.is_empty(), "already-cleared blobs in any spelling generate no statement");
+}
+
+#[test]
+fn a_prune_addresses_rows_by_manifest_and_never_reaches_another_manifests_twin() {
+    let output = prune(vec![
+        table("Items", vec![item("item-1", Some(60), false, None), restamp(item("item-1", None, false, None), SHARED_MANIFEST_ID)]),
+        table("FieldValues", vec![child("fv-1", "item-1", false, None), restamp(child("fv-1", "item-1", false, None), SHARED_MANIFEST_ID)]),
+        table("Attachments", vec![child("att-1", "item-2", true, Some(json!("aGVsbG8="))), restamp(child("att-1", "item-2", false, Some(json!("aGVsbG8="))), SHARED_MANIFEST_ID)]),
+    ]);
+    assert_eq!((output.stats.items_pruned, output.stats.child_rows_pruned[FIELD_VALUES_TABLE], output.stats.blobs_cleared[ATTACHMENTS_TABLE]), (1, 1, 1));
     assert_eq!(output.statements.len(), 3);
-    for stmt in &output.statements {
-        assert!(stmt.sql.ends_with("AND ManifestId = ?") || stmt.sql.contains("AND ManifestId = ? AND"), "statement must name its manifest: {}", stmt.sql);
-        assert!(stmt.params.contains(&serde_json::json!("m-personal")), "statement must target the personal manifest: {:?}", stmt.params);
-        assert!(!stmt.params.contains(&serde_json::json!("m-shared")), "statement must not reach the shared manifest: {:?}", stmt.params);
+    for statement in &output.statements {
+        assert!(statement.sql.contains("AND ManifestId = ?"), "statement must name its manifest: {}", statement.sql);
+        assert!(statement.params.contains(&json!(M)) && !statement.params.contains(&json!(SHARED_MANIFEST_ID)), "{:?}", statement.params);
     }
 }
 
 #[test]
-fn every_prune_query_reads_the_manifest_id() {
-    for table_query in get_prune_table_queries() {
-        assert!(table_query.query.starts_with("SELECT ManifestId, "), "{} must be read with its manifest: {}", table_query.name, table_query.query);
+fn the_prune_queries_read_every_item_child_table_with_its_manifest() {
+    let queries = get_prune_table_queries();
+    let names: Vec<&str> = queries.iter().map(|q| q.name.as_str()).collect();
+    for child in crate::vault_model::SYNCABLE_TABLES.iter().filter(|t| t.item_child) {
+        assert!(names.contains(&child.name), "pruner does not read item child table {}", child.name);
+    }
+    assert!(names.contains(&ITEMS_TABLE) && names.contains(&LOGOS_TABLE));
+    for query in &queries {
+        assert!(query.query.starts_with("SELECT ManifestId, "), "{} must be read with its manifest: {}", query.name, query.query);
     }
 }

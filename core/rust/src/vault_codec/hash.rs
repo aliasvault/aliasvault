@@ -1,16 +1,9 @@
-//! Hashing + canonical JSON for the vault_codec format.
+//! Hashing and canonical JSON for the vault_codec format.
 //!
-//! ## Why canonical JSON lives here
-//!
-//! Each encrypted blob embeds an integrity envelope `{ schemaVersion, contentHash, payload }` where
-//! `contentHash = sha256(canonical(payload))`. JSON serialization is NOT canonical across languages
-//! (key order, number formatting, whitespace, unicode escaping all differ), so a manifest written by
-//! one platform and re-hashed by another would fail integrity even when byte-identical. This module is
-//! the single canonical-serialization contract every binding reproduces.
-//!
-//! [`canonical_json`] is that contract: object keys sorted ascending, recursively; arrays kept in
-//! order; primitives as serde_json renders them, which matches `JSON.stringify` for the escaping and
-//! integer cases that occur in vault data, so a hash computed here agrees with one a client computed.
+//! Each encrypted payload embeds an integrity envelope `{ schemaVersion, contentHash, payload }` where
+//! `contentHash = sha256(canonical(payload))`. [`canonical_json`] is the canonical form: object keys sorted
+//! ascending, recursively; arrays kept in order; primitives as serde_json renders them. Every client hashes through
+//! this crate, so the form only has to stay stable against itself, and stored vaults depend on it staying so.
 
 use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
@@ -108,7 +101,8 @@ mod tests {
     #[test]
     fn derived_uuid_is_stable_and_well_formed() {
         let id = derived_uuid("aliasvault:test");
-        assert_eq!(id, derived_uuid("aliasvault:test"));
+        // Known-answer vector: derived row ids must match on every platform, so this value must never change.
+        assert_eq!(id, "eadc54c6-fb5f-89b0-93f0-18a3af670e1e");
         assert_eq!(id.len(), 36);
         assert_eq!(&id[14..15], "8");
         assert!(matches!(&id[19..20], "8" | "9" | "a" | "b"));

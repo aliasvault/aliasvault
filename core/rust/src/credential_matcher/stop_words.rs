@@ -1,6 +1,5 @@
 //! Stop words for filtering page titles during credential matching.
 //!
-//! These words are filtered out to prevent generic terms from causing false positives.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -23,27 +22,24 @@ static STOP_WORDS: &[&str] = &[
     "overview", "index", "main", "start", "landing",
 
     // Marketing/Promotional
-    "free", "create", "new", "your", "special", "offer",
+    "free", "create", "your", "special", "offer",
     "deal", "discount", "promotion", "newsletter",
 
     // Common website sections
-    "help", "support", "contact", "about", "faq", "terms",
+    "help", "support", "contact", "about", "terms",
     "privacy", "cookie", "service", "services", "products",
     "shop", "store", "cart", "checkout",
 
     // Generic descriptors
-    "online", "web", "digital", "mobile", "my", "personal",
+    "online", "digital", "mobile", "personal",
     "private", "general", "default", "standard", "website",
 
     // System/Technical
     "system", "admin", "administrator", "platform",
-    "gateway", "api", "interface", "console",
+    "gateway", "interface", "console",
 
     // Time-related
-    "today", "now", "current", "latest", "newest", "recent",
-
-    // General
-    "the", "and", "or", "but", "to", "up",
+    "today", "current", "latest", "newest", "recent",
 
     // Dutch stop words
 
@@ -54,7 +50,7 @@ static STOP_WORDS: &[&str] = &[
 
     // Navigation/Site sections
     "portaal", "overzicht", "startpagina", "welkom", "pagina",
-    "beveiligd", "lid", "gebruiker", "profiel", "instellingen",
+    "beveiligd", "gebruiker", "profiel", "instellingen",
     "begin", "hoofdpagina",
 
     // Marketing/Promotional
@@ -77,5 +73,5 @@ static STOP_WORDS: &[&str] = &[
     "vandaag", "huidig", "nieuwste",
 
     // General
-    "je", "in", "op", "de", "van", "ons", "allemaal",
+    "allemaal",
 ];

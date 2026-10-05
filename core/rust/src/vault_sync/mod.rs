@@ -9,12 +9,14 @@ mod http;
 mod keys;
 mod legacy;
 mod merge;
+mod migration;
 mod pull;
 mod push;
 mod session;
 mod sharing;
 pub(crate) mod state;
 pub(crate) mod types;
+mod write_set;
 
 #[cfg(test)]
 mod tests;

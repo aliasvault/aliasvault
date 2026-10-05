@@ -43,7 +43,7 @@ fn is_api_error_code(value: &str) -> bool {
 }
 
 fn parse<T: DeserializeOwned>(body: &str) -> SyncResult<T> {
-    serde_json::from_str(body).map_err(|e| SyncError::Other(format!("Unexpected API response: {}", e)))
+    Ok(serde_json::from_str(body)?)
 }
 
 /// Authenticated GET of a v2 endpoint.
@@ -116,17 +116,15 @@ pub(crate) fn with_outdated_server_guard<T>(result: SyncResult<T>) -> SyncResult
 /// The server version a status call reports when the server cannot be reached.
 pub(crate) const SERVER_UNREACHABLE_VERSION: &str = "0.0.0";
 
-/// `GET v2/Status`. Anything but an auth failure or a client-version refusal reads as "server unreachable",
-/// reported as server version [`SERVER_UNREACHABLE_VERSION`] so the caller can go offline.
+/// `GET v2/Status`. A transport failure or a 5xx reads as "server unreachable", reported as server version
+/// [`SERVER_UNREACHABLE_VERSION`] so the caller can go offline; every other failure is returned.
 pub(crate) async fn get_status(host: &Host) -> SyncResult<StatusResponse> {
-    match get::<StatusResponse>(host, "Status", false).await {
-        Ok(status) => Ok(status),
-        Err(SyncError::Auth) => Err(SyncError::Auth),
-        Err(SyncError::ClientUpgradeRequired) => Err(SyncError::ClientUpgradeRequired),
-        Err(error) => {
-            host.log(LogLevel::Warn, format!("[VaultSync] Status call failed, treating the server as unreachable: {}", error)).await;
+    match with_outdated_server_guard(get::<StatusResponse>(host, "Status", false).await) {
+        Err(error @ (SyncError::Network(_) | SyncError::Timeout(_) | SyncError::Http { status: 500..=599, .. })) => {
+            host.log(LogLevel::Warn, format!("[Sync] Status call failed, treating the server as unreachable: {}", error)).await;
             Ok(StatusResponse { client_version_supported: true, server_version: SERVER_UNREACHABLE_VERSION.to_string(), ..Default::default() })
         }
+        other => other,
     }
 }
 

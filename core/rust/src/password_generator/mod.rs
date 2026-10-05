@@ -1,9 +1,8 @@
 //! Cross-platform password and passphrase (Diceware) generation.
 //!
-//! This module is the single source of truth for password generation across AliasVault.
-//! It accepts a JSON-serialized [`PasswordSettings`] object and returns the generated
-//! password/passphrase as a string, matching the JSON-in/string-out convention used by
-//! the other core modules.
+//! This module is the single source of truth for password generation across AliasVault. It accepts a JSON-serialized
+//! [`PasswordSettings`] object and returns the generated password/passphrase as a string, matching the JSON-in/string-out
+//! convention used by the other core modules.
 //!
 //! Two generators are supported, selected by the `Type` field:
 //! - **Basic** (`basic`): a configurable character-set password.
@@ -84,9 +83,8 @@ pub enum Salt {
 
 /// Settings controlling password/passphrase generation.
 ///
-/// Field names use PascalCase to match the JSON blob persisted by the apps under the
-/// `PasswordGenerationSettings` settings key. Every field has a serde default so that
-/// older blobs (which lack the Diceware fields) deserialize cleanly.
+/// Field names use PascalCase to match the JSON blob persisted by the apps under the `PasswordGenerationSettings` settings key.
+/// Every field has a serde default so that older blobs (which lack the Diceware fields) deserialize cleanly.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct PasswordSettings {
@@ -94,7 +92,6 @@ pub(crate) struct PasswordSettings {
     #[serde(rename = "Type", default)]
     pub generator_type: GeneratorType,
 
-    // --- Basic generator ---
     /// Length of the generated password.
     #[serde(default = "default_length")]
     pub length: u32,
@@ -114,12 +111,11 @@ pub(crate) struct PasswordSettings {
     #[serde(default)]
     pub use_non_ambiguous_chars: bool,
 
-    // --- Diceware generator ---
     /// Number of words in the passphrase.
     #[serde(default = "default_word_count")]
     pub word_count: u32,
-    /// Wordlist language code (free text, case-insensitive). Unknown codes fall back to
-    /// English, so the TypeScript model and apps never need updating to add a language.
+    /// Wordlist language code (free text, case-insensitive). Unknown codes fall back to English, so the TypeScript model and
+    /// apps never need updating to add a language.
     #[serde(default = "default_language")]
     pub language: String,
     /// Capitalization applied to each word.
@@ -132,12 +128,7 @@ pub(crate) struct PasswordSettings {
     #[serde(default)]
     pub salt: Salt,
 
-    /// Optional 32-byte RNG seed as a 64-character hex string.
-    ///
-    /// When supplied, generation is deterministic: the same seed yields the same output,
-    /// so the UI can re-apply formatting options (separator, capitalization, salt, word
-    /// count) to the *same* underlying words for easy comparison. When absent, a fresh
-    /// random seed is drawn from the OS CSPRNG, so output is non-deterministic by default.
+    /// Optional 32-byte RNG seed as 64 hex characters; the same seed gives the same output, absent means a fresh OS random seed.
     #[serde(default)]
     pub seed: Option<String>,
 }
@@ -150,8 +141,9 @@ fn default_word_count() -> u32 {
     defaults::DEFAULT_WORD_COUNT
 }
 
-/// Minimum values for the password and passphrase length.
+/// Minimum password length.
 const HARD_MIN_PASSWORD_LENGTH: u32 = 1;
+/// Minimum passphrase word count.
 const HARD_MIN_WORD_COUNT: u32 = 1;
 
 fn default_true() -> bool {
@@ -164,10 +156,7 @@ fn default_language() -> String {
 
 /// List the language codes of all bundled Diceware wordlists (first is the default, English).
 pub fn available_languages() -> Vec<String> {
-    wordlists::available_codes()
-        .into_iter()
-        .map(|c| c.to_string())
-        .collect()
+    wordlists::available_codes().into_iter().map(|c| c.to_string()).collect()
 }
 
 /// Generate a password or passphrase from a JSON-serialized [`PasswordSettings`].
@@ -182,14 +171,10 @@ pub fn generate_password(settings_json: &str) -> Result<String, VaultError> {
 fn generate_from_settings(settings: &PasswordSettings) -> String {
     let mut rng = make_rng(settings.seed.as_deref());
 
-    // Limit the maximum values for the password and passphrase length.
+    // Clamp length and word count.
     let mut settings = settings.clone();
-    settings.length = settings
-        .length
-        .clamp(HARD_MIN_PASSWORD_LENGTH, defaults::MAX_PASSWORD_LENGTH);
-    settings.word_count = settings
-        .word_count
-        .clamp(HARD_MIN_WORD_COUNT, defaults::MAX_WORD_COUNT);
+    settings.length = settings.length.clamp(HARD_MIN_PASSWORD_LENGTH, defaults::MAX_PASSWORD_LENGTH);
+    settings.word_count = settings.word_count.clamp(HARD_MIN_WORD_COUNT, defaults::MAX_WORD_COUNT);
 
     match settings.generator_type {
         GeneratorType::Basic => basic::generate(&settings, &mut rng),

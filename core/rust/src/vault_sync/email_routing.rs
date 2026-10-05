@@ -21,7 +21,7 @@ pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains:
     for manifest in manifests {
         let live_item_ids: HashSet<String> = rows_of(&manifest.tables, ITEMS_TABLE)
             .iter()
-            .filter(|row| !is_deleted(row) && row.get(DELETED_AT_COL).map_or(true, Value::is_null))
+            .filter(|row| !is_deleted(row) && row.get(DELETED_AT_COL).is_none_or(Value::is_null))
             .filter_map(|row| row.get(ID_COL).map(value_string))
             .collect();
 

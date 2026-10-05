@@ -230,3 +230,10 @@ fn json_output_uses_camel_case_fields() {
     assert!(json.contains("\"mimeType\""));
     assert!(!json.contains("\"contentBase64\""), "attachment bytes must not ride along in the parse result");
 }
+
+#[test]
+fn gunzip_rejects_output_over_the_limit() {
+    let compressed = gzip(&[b'a'; 1025]);
+    assert!(gunzip_capped(&compressed, 1024).is_err());
+    assert_eq!(gunzip_capped(&compressed, 1025).unwrap().len(), 1025);
+}

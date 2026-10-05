@@ -1,17 +1,18 @@
-//! Normalization of row shapes for converting from materialized SQLite to the manifest format to save on filesize.
+//! The wire shape of rows: ids lowercased, derived ids stripped (FieldValues, FieldHistories, ItemTags) and
+//! multi-value fields renumbered, so every writer produces the same manifest for the same data.
 
 use std::collections::{HashMap, HashSet};
 
 use serde_json::json;
 
 use super::manifest::CodecRecord;
-use super::row::{is_deleted, str_col, truthy};
+use super::row::{str_col, truthy};
 use super::types::{is_guid, is_id_column};
 use crate::common::timestamp::updated_at;
-use crate::vault_model::{id_key, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS, SINGLE_VALUE_FIELD_KEYS, SYNCABLE_TABLES};
+use crate::vault_model::{id_key, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS, SINGLE_VALUE_FIELD_KEYS};
 use crate::vault_model::names::{
     CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
-    FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
+    FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
 };
 
 /// Domain-separation prefix for derived field value ids.
@@ -26,10 +27,8 @@ pub fn field_value_id_for(manifest_id: &str, item_id: &str, field_key: &str, fie
     derived_field_id(FIELD_VALUE_ID_NAMESPACE, manifest_id, item_id, field_key, field_definition_id, &value_index.to_string())
 }
 
-/// The `FieldHistories.Id` of the history row `(manifest, item, field, changed at)`: every row derives
-/// it, since `ChangedAt` (millisecond precision) is the natural discriminator: two devices changing the
-/// same field concurrently snapshot at different times and union. Two snapshots of one field in the very
-/// same millisecond collapse to one, which history can afford. `changed_at` is used as-is.
+/// The `FieldHistories.Id` of the history row `(manifest, item, field, changed at)`; two snapshots of one field in the
+/// same millisecond collapse to one.
 pub fn field_history_id_for(manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, changed_at: &str) -> String {
     derived_field_id(FIELD_HISTORY_ID_NAMESPACE, manifest_id, item_id, field_key, field_definition_id, changed_at)
 }
@@ -64,11 +63,9 @@ pub(crate) fn normalize_row_id_spelling(row: &mut CodecRecord) {
     }
 }
 
-/// Normalize the shape of rows for converting from materialized SQLite to the manifest format to save on filesize.
+/// Normalize the rows of the tables whose wire shape differs from their SQLite shape. The caller repairs
+/// referential integrity first (see [`integrity`](super::integrity)); this only reshapes rows.
 pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>>) {
-    super::sharing::prune_dangling_references(tables);
-    // Drop rows of deleted items first (any leftover state after a potential delete/update scenario in LWW merge).
-    drop_children_of_deleted_items(tables);
     let multi_value_defs = multi_value_definition_ids(tables);
     if let Some(rows) = tables.get_mut(FIELD_VALUES_TABLE) {
         normalize_field_values(rows, &multi_value_defs);
@@ -78,26 +75,6 @@ pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>
     }
     if let Some(rows) = tables.get_mut(ITEM_TAGS_TABLE) {
         normalize_item_tags(rows);
-    }
-}
-
-/*
- * Check for deleted items and remove their child rows in case they are still present after a LWW merge (leftover state).
- */
-fn drop_children_of_deleted_items(tables: &mut HashMap<String, Vec<CodecRecord>>) {
-    let deleted: HashSet<(String, String)> = tables
-        .get(ITEMS_TABLE)
-        .map(|items| items.iter().filter(|item| is_deleted(item)).filter_map(|item| Some((lower_str(item, MANIFEST_ID_COL)?, lower_str(item, ID_COL)?))).collect())
-        .unwrap_or_default();
-    if deleted.is_empty() {
-        return;
-    }
-    for child in SYNCABLE_TABLES.iter().filter(|table| table.item_child) {
-        let Some(rows) = tables.get_mut(child.name) else { continue };
-        rows.retain(|row| match (lower_str(row, MANIFEST_ID_COL), lower_str(row, child.item_ref_column())) {
-            (Some(manifest), Some(item)) => !deleted.contains(&(manifest, item)),
-            _ => true,
-        });
     }
 }
 
@@ -132,9 +109,8 @@ fn multi_value_definition_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> Has
 enum FieldShape {
     MultiValue,
     SingleValue,
-    /*
-     * A system field this build's registry does not list, so it is unknown to this build.
-     */
+    /// Nothing says: a system field this build's registry does not list, or a custom field whose definition is gone.
+    /// Its rows keep the ids they carry, so none of their values is lost.
     Unknown,
 }
 
@@ -144,8 +120,11 @@ fn field_shape(row: &CodecRecord, manifest: &str, multi_value_defs: &HashSet<(St
         Some(key) if MULTI_VALUE_FIELD_KEYS.contains(&key.as_str()) => FieldShape::MultiValue,
         Some(key) if SINGLE_VALUE_FIELD_KEYS.contains(&key.as_str()) => FieldShape::SingleValue,
         Some(_) => FieldShape::Unknown,
-        None if lower_str(row, FIELD_DEFINITION_ID_COL).is_some_and(|def| multi_value_defs.contains(&(manifest.to_string(), def))) => FieldShape::MultiValue,
-        None => FieldShape::SingleValue,
+        None => match lower_str(row, FIELD_DEFINITION_ID_COL) {
+            Some(def) if multi_value_defs.contains(&(manifest.to_string(), def.clone())) => FieldShape::MultiValue,
+            Some(_) => FieldShape::SingleValue,
+            None => FieldShape::Unknown,
+        },
     }
 }
 
@@ -206,12 +185,8 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
     }
 
     if !removed.is_empty() {
-        let mut position = 0;
-        rows.retain(|_| {
-            let keep = !removed.contains(&position);
-            position += 1;
-            keep
-        });
+        let keep: HashSet<usize> = (0..rows.len()).filter(|position| !removed.contains(position)).collect();
+        retain_positions(rows, &keep);
     }
 }
 
@@ -323,7 +298,8 @@ mod tests {
     #[test]
     fn derivation_is_stable_and_well_formed() {
         let id = field_value_id_for("m-1", "item-1", "login.username", "", 0);
-        assert_eq!(id, field_value_id_for("m-1", "item-1", "login.username", "", 0));
+        // Known-answer vector: every platform must derive the same row id, so this value must never change.
+        assert_eq!(id, "f36327d9-f225-86ab-a061-1ba3a668d89a");
         assert_eq!(id.len(), 36);
         assert_eq!(id.as_bytes()[14], b'8', "UUIDv8 version nibble");
     }
@@ -378,7 +354,7 @@ mod tests {
             field_value(Some("b"), "login.future_multi", "two", "2024-01-02T00:00:00Z"),
         ]);
         assert_eq!(rows.len(), 2);
-        assert!(rows.iter().all(|row| has_id(row)), "and the rows keep the ids they own");
+        assert!(rows.iter().all(has_id), "and the rows keep the ids they own");
     }
 
     #[test]
@@ -406,28 +382,10 @@ mod tests {
     }
 
     #[test]
-    fn a_tombstoned_item_keeps_no_rows() {
-        let item = |id: &str, deleted: i64| -> CodecRecord {
-            [(MANIFEST_ID_COL.to_string(), json!("m-1")), (ID_COL.to_string(), json!(id)), ("IsDeleted".to_string(), json!(deleted))].into_iter().collect()
-        };
-        let child = |item_id: &str| -> CodecRecord {
-            [(MANIFEST_ID_COL.to_string(), json!("m-1")), (ID_COL.to_string(), json!(format!("totp-{}", item_id))), (ITEM_ID_COL.to_string(), json!(item_id))].into_iter().collect()
-        };
-        let mut tables: HashMap<String, Vec<CodecRecord>> = [
-            (ITEMS_TABLE.to_string(), vec![item("gone", 1), item("kept", 0)]),
-            ("TotpCodes".to_string(), vec![child("gone"), child("kept")]),
-        ]
-        .into_iter()
-        .collect();
-        normalize_row_shapes(&mut tables);
-        let left: Vec<&str> = tables["TotpCodes"].iter().map(|row| row[ITEM_ID_COL].as_str().unwrap()).collect();
-        assert_eq!(left, vec!["kept"], "a pruned or permanently deleted item's secrets do not travel on");
-    }
-
-    #[test]
     fn history_derivation_is_stable_and_disjoint_from_field_values() {
         let id = field_history_id_for("m-1", "item-1", "login.password", "", "2026-01-01 10:00:00.000");
-        assert_eq!(id, field_history_id_for("m-1", "item-1", "login.password", "", "2026-01-01 10:00:00.000"));
+        // Known-answer vector: every platform must derive the same row id, so this value must never change.
+        assert_eq!(id, "7431819b-eefd-834b-b4de-9e1f16df1a22");
         assert_eq!(id.len(), 36);
         // A different millisecond is a different row; the two namespaces never collide.
         assert_ne!(id, field_history_id_for("m-1", "item-1", "login.password", "", "2026-01-01 10:00:00.001"));

@@ -1,4 +1,4 @@
-//! WASM bindings for web apps
+//! WASM bindings for the web app and the browser extension.
 
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
@@ -23,9 +23,7 @@ fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
     value.serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true)).map_err(js_err)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault Sync WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Vault sync.
 
 /// Get the list of table names that take part in a vault sync.
 #[wasm_bindgen(js_name = getSyncableTableNames)]
@@ -33,9 +31,7 @@ pub fn get_syncable_table_names_js() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault Codec WASM Bindings (manifest-v1 storage format)
-// ═══════════════════════════════════════════════════════════════════════════════
+// Vault codec (manifest-v1 storage format).
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what `vaultCodecLogoIdFor` then derives the row id from.
@@ -44,7 +40,7 @@ pub fn vault_codec_logo_content_hash_js(bytes: Vec<u8>) -> String {
     vault_codec::logo_content_hash(&bytes)
 }
 
-/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`
+/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
 /// `kind` is 'favicon' (source = domain), 'builtin' (source = catalog key) or 'custom' (source = image content hash).
 #[wasm_bindgen(js_name = vaultCodecLogoIdFor)]
 pub fn vault_codec_logo_id_for_js(manifest_id: String, kind: String, source: String) -> String {
@@ -66,7 +62,7 @@ pub fn vault_codec_generate_manifest_salt_js() -> String {
     vault_codec::generate_manifest_salt()
 }
 
-/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). Encryption is done by platform.
+/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
 #[wasm_bindgen(js_name = vaultCodecPackPayload)]
 pub fn vault_codec_pack_payload_js(payload_json: &str) -> Result<Vec<u8>, JsValue> {
     vault_codec::pack_payload(payload_json).map_err(js_err)
@@ -78,9 +74,7 @@ pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsVal
     vault_codec::unpack_payload(plain_bytes).map_err(js_err)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Credential Matcher WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Credential matcher.
 
 /// Filter credentials for autofill. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.
 #[wasm_bindgen(js_name = filterCredentials)]
@@ -89,7 +83,7 @@ pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
 
     let output: CredentialMatcherOutput = filter_credentials(input);
 
-    serde_wasm_bindgen::to_value(&output).map_err(js_err)
+    to_js(&output)
 }
 
 /// The domain of a URL or partial domain: no protocol, `www.` prefix, path, query or fragment.
@@ -116,22 +110,18 @@ pub fn is_related_origin_allowed_js(caller_origin: &str, origins: Vec<String>) -
     crate::credential_matcher::is_related_origin_allowed(caller_origin, &origins)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Favicon WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Favicon.
 
 /// The favicon target for an item's URLs (in item order): the URL to fetch and the `Logos.Source` key, or null.
 #[wasm_bindgen(js_name = selectFaviconTarget)]
 pub fn select_favicon_target_js(urls: Vec<String>) -> Result<JsValue, JsValue> {
     match crate::favicon::select_favicon_target(&urls) {
-        Some(target) => serde_wasm_bindgen::to_value(&target).map_err(js_err),
+        Some(target) => to_js(&target),
         None => Ok(JsValue::NULL),
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Password Generator WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Password generator.
 
 /// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware".
 #[wasm_bindgen(js_name = generatePassword)]
@@ -145,9 +135,7 @@ pub fn get_diceware_languages_js() -> Vec<String> {
     available_languages()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Identity Generator WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Identity generator.
 
 /// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
 /// returns `Identity` JSON.
@@ -182,9 +170,13 @@ pub fn get_identity_languages_js() -> Vec<String> {
     crate::identity_generator::available_languages()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Email Parser WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+/// Get the list of age range option values ("random" plus 5-year ranges).
+#[wasm_bindgen(js_name = getIdentityAgeRanges)]
+pub fn get_identity_age_ranges_js() -> Vec<String> {
+    crate::identity_generator::available_age_ranges()
+}
+
+// Email parser.
 
 /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
 /// Input that starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the
@@ -208,18 +200,9 @@ pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: O
     crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref()).map_err(js_err)
 }
 
-/// Get the list of age range option values ("random" plus 5-year ranges).
-#[wasm_bindgen(js_name = getIdentityAgeRanges)]
-pub fn get_identity_age_ranges_js() -> Vec<String> {
-    crate::identity_generator::available_age_ranges()
-}
+// Argon2id key derivation and the account key chain.
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Argon2id Key Derivation WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings`
-/// JSON, or the defaults for an empty string.
+/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[wasm_bindgen(js_name = argon2DeriveKey)]
 pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &str) -> Result<Vec<u8>, JsValue> {
     crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
@@ -279,9 +262,7 @@ pub fn open_account_key_chain_js(stored_key: &str, encrypted_account_key: &str, 
     to_js(&result)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SRP (Secure Remote Password) WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// SRP (Secure Remote Password).
 
 /// A random 32-byte SRP salt as an uppercase hex string.
 #[wasm_bindgen(js_name = srpGenerateSalt)]
@@ -305,14 +286,14 @@ pub fn srp_derive_verifier_js(private_key: &str) -> Result<String, JsValue> {
 #[wasm_bindgen(js_name = srpGenerateEphemeral)]
 pub fn srp_generate_ephemeral_js() -> Result<JsValue, JsValue> {
     let ephemeral = crate::crypto::srp::srp_generate_ephemeral();
-    serde_wasm_bindgen::to_value(&ephemeral).map_err(js_err)
+    to_js(&ephemeral)
 }
 
 /// The client session as `{ proof, key }` (uppercase hex) from the server's public ephemeral; hex inputs.
 #[wasm_bindgen(js_name = srpDeriveSession)]
 pub fn srp_derive_session_js(client_secret: &str, server_public: &str, salt: &str, identity: &str, private_key: &str) -> Result<JsValue, JsValue> {
     let session = crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key).map_err(js_err)?;
-    serde_wasm_bindgen::to_value(&session).map_err(js_err)
+    to_js(&session)
 }
 
 /// Whether the server's proof (M2) matches, which confirms it derived the same session key; hex inputs.
@@ -321,9 +302,7 @@ pub fn srp_verify_session_js(client_public: &str, client_proof: &str, session_ke
     crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof).map_err(js_err)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault sync engine WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
+// Vault sync engine and SQLite host.
 
 /// One engine operation. The host loops on `nextCommand` / `resume` until the command is `done`; see the
 /// `vault_sync` module docs for the command and response shapes.
@@ -352,10 +331,7 @@ impl VaultSyncSessionJs {
     }
 }
 
-// ============================================================================
-// SQLite host WASM Bindings
-// ============================================================================
-
+/// SQLite host bindings: an in-memory database the JS hosts read and write through.
 mod sqlite_js {
     use js_sys::{Array, Object, Reflect, Uint8Array};
     use wasm_bindgen::prelude::*;
@@ -363,7 +339,10 @@ mod sqlite_js {
     use super::js_err;
     use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 
-    /// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
+    /// JavaScript's `Number.MAX_SAFE_INTEGER` (2^53 - 1).
+    const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
+
+    /// An in-memory SQLite database that can be used by host applications to have uniform access to the database.
     #[wasm_bindgen(js_name = SqliteMemoryDatabase)]
     pub struct SqliteMemoryDatabaseJs {
         inner: Option<MemoryDatabase>,
@@ -428,7 +407,7 @@ mod sqlite_js {
             Ok(SqlValue::Integer(flag as i64))
         } else if let Some(number) = value.as_f64() {
             // Whole numbers within the safe integer range bind as INTEGER.
-            if number.fract() == 0.0 && number.abs() <= 9_007_199_254_740_992.0 { Ok(SqlValue::Integer(number as i64)) } else { Ok(SqlValue::Real(number)) }
+            if number.fract() == 0.0 && number.abs() <= MAX_SAFE_INTEGER { Ok(SqlValue::Integer(number as i64)) } else { Ok(SqlValue::Real(number)) }
         } else if value.is_instance_of::<Uint8Array>() {
             Ok(SqlValue::Blob(Uint8Array::new(value).to_vec()))
         } else {

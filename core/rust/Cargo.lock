@@ -52,7 +52,6 @@ dependencies = [
  "base64",
  "chrono",
  "console_error_panic_hook",
- "digest",
  "ed25519-dalek",
  "flate2",
  "getrandom 0.2.17",

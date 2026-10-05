@@ -13,7 +13,7 @@ use crate::sqlite_host::SqlStatement;
 use crate::common::timestamp::{now_iso_utc, now_vault_datetime};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
 use crate::vault_codec::{is_skip_table, manifest_scoped_tables, CodecRecord, CodecTableData, MaterializedTables};
-use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL, UNSTAMPED_SCOPE_SENTINEL};
+use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL, UNSTAMPED_MANIFEST_ID};
 
 pub(crate) type Row = Map<String, Value>;
 
@@ -57,12 +57,12 @@ pub(crate) fn value_string(value: &Value) -> String {
 }
 
 /// A row's cell as text, empty when absent.
-pub(crate) fn cell_string(row: &Row, column: &str) -> String {
+fn cell_string(row: &Row, column: &str) -> String {
     row.get(column).map(value_string).unwrap_or_default()
 }
 
 /// The names of every user table.
-pub(crate) async fn list_user_tables(host: &Host, db: Db) -> SyncResult<Vec<String>> {
+async fn list_user_tables(host: &Host, db: Db) -> SyncResult<Vec<String>> {
     let rows = query(host, db, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name", vec![]).await?;
     Ok(rows.iter().filter_map(|row| row.get("name").and_then(Value::as_str).map(str::to_string)).collect())
 }
@@ -138,15 +138,12 @@ pub(crate) async fn schema_state(host: &Host, current_migration_id: &str) -> Syn
     Ok(if !current_migration_id.is_empty() && local.as_str() < current_migration_id { SchemaState::Stale } else { SchemaState::Current })
 }
 
-pub(crate) async fn has_column(host: &Host, db: Db, table: &str, column: &str) -> SyncResult<bool> {
+/// Whether a table has a column.
+async fn has_column(host: &Host, db: Db, table: &str, column: &str) -> SyncResult<bool> {
     Ok(!query(host, db, "SELECT name FROM pragma_table_info(?) WHERE name = ?", vec![json!(table), json!(column)]).await?.is_empty())
 }
 
-/*
- * Every manifest id the rows of this vault name. This reads what the vault holds and nothing else: which
- * manifests may be written is decided by the grants the server served and the keys that opened, and the
- * two are compared so rows naming a manifest outside that set stop the push instead of being left out of it.
- */
+/// Every manifest id the rows of this vault name; the caller compares them with the writable set.
 pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec<String>> {
     // Table names come from the registry, never from the database; a vault on an older schema lacks some.
     let columns = schema_columns(host, db).await?;
@@ -162,7 +159,7 @@ pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec
     let rows = query(host, db, &format!("{} ORDER BY 1", selects.join(" UNION ")), vec![]).await?;
     let mut ids: Vec<String> = Vec::new();
     for id in rows.iter().filter_map(|row| row.get(MANIFEST_ID_COL).and_then(Value::as_str)) {
-        if !id.is_empty() && !ids_equal(id, UNSTAMPED_SCOPE_SENTINEL) && !ids.iter().any(|known| known == id) {
+        if !id.is_empty() && !ids_equal(id, UNSTAMPED_MANIFEST_ID) && !ids.iter().any(|known| known == id) {
             ids.push(id.to_string());
         }
     }
@@ -177,7 +174,7 @@ pub(crate) async fn insert_materialized(host: &Host, materialized: &Materialized
             continue;
         }
         if !schema_columns.contains_key(&table.name) {
-            host.log(LogLevel::Warn, format!("[VaultCodec] Skipping table \"{}\" ({} rows), not present in the schema.", table.name, table.records.len())).await;
+            host.log(LogLevel::Warn, format!("[Pull] Skipping table \"{}\" ({} rows), not present in the schema.", table.name, table.records.len())).await;
             continue;
         }
 
@@ -212,9 +209,7 @@ fn rows_rejected(table: &str, error: SyncError) -> SyncError {
     }
 }
 
-/// A materialized cell as a bind parameter: blob markers become bytes (NULL while the bytes are not loaded; the row's
-/// hash column says which blob it is),
-/// inline `{ __b64 }` payloads bind as bytes, everything else binds as is.
+/// A materialized cell as a bind parameter: blob markers bind as their bytes (NULL when not loaded), anything else as-is.
 fn bind_value(value: &Value, blobs: &HashMap<String, Vec<u8>>) -> Value {
     if let Some((reference, _)) = blob_ref_of(value) {
         return blobs.get(reference).map(|bytes| inline_bytes(bytes)).unwrap_or(Value::Null);
@@ -256,9 +251,7 @@ pub(crate) async fn set_active_key_for_manifest(host: &Host, manifest_id: &str, 
     .await
 }
 
-/*
- * What each manifest is called, keyed by lower-cased id.
- */
+/// What each manifest is called, keyed by lower-cased id.
 pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<String, String>> {
     // A vault whose schema predates the table names none.
     if !has_column(host, Db::Local, "Manifests", "Name").await? {
@@ -273,18 +266,13 @@ pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<St
 
 /// Name a manifest in the local vault.
 pub(crate) async fn set_manifest_name(host: &Host, manifest_id: &str, name: &str) -> SyncResult<()> {
-    exec(host, Db::Local, vec![set_manifest_name_statement(manifest_id, name)]).await
+    exec(host, Db::Local, vec![SqlStatement { sql: UPSERT_MANIFEST_NAME.to_string(), params: vec![json!(id_key(manifest_id)), json!(name)] }]).await
 }
 
 /// Name the manifests a database already holds; a manifest it does not hold stays out of it.
 pub(crate) async fn apply_manifest_names(host: &Host, db: Db, names: &HashMap<String, String>) -> SyncResult<()> {
     let statements: Vec<SqlStatement> = names.iter().map(|(manifest_id, name)| SqlStatement { sql: UPDATE_MANIFEST_NAME.to_string(), params: vec![json!(name), json!(id_key(manifest_id))] }).collect();
     exec(host, db, statements).await
-}
-
-/// The statement that names a manifest.
-pub(crate) fn set_manifest_name_statement(manifest_id: &str, name: &str) -> SqlStatement {
-    SqlStatement { sql: UPSERT_MANIFEST_NAME.to_string(), params: vec![json!(id_key(manifest_id)), json!(name)] }
 }
 
 /// Prune expired trash items in place. Returns the number of statements executed.

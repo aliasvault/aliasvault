@@ -1,18 +1,8 @@
-//! Materialize the canonical persisted representation as a concrete SQLite projection.
+//! Materialize the canonical representation as SQLite tables; the inverse of `canonicalize`.
 //!
-//! `materialize_as_sqlite` is the SQLite adapter of the materialize direction. SQLite is one possible
-//! projection of the canonical dataset, not an authoritative destination. Future targets would add
-//! sibling `materialize_as_*` entry points. The inverse direction lives in `canonicalize`.
-//!
-//! Forward compatibility: the caller supplies its local schema (`schema_columns`), and anything a
-//! newer writer put in the manifest that this schema cannot hold (whole unknown tables or unknown
-//! columns on known tables) is split into [`CodecOverflow`] instead of being emitted (which would
-//! crash the platform insert). The overflow is emitted as a regular table row (`OVERFLOW_TABLE`),
-//! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
-//! ordinary table read, this client's next push never drops the data, and no platform has to wire
-//! (or remember) a separate persistence channel. Unknown top-level keys of a manifest or bucket ride in
-//! the same overflow. A manifest or bucket written at a newer major format version is refused and requires
-//! updating the app to read it.
+//! Whatever the caller's schema (`schema_columns`) cannot hold is split into [`CodecOverflow`] and emitted as the
+//! `OVERFLOW_TABLE` row, so it lives in the vault DB and `canonicalize_from_sqlite` re-merges it on the next push.
+//! A manifest or bucket written at a newer major format version is refused.
 
 use std::collections::{HashMap, HashSet};
 
@@ -25,13 +15,11 @@ use crate::common::error::{VaultError, VaultResult};
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::{id_key, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
-/// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
-/// in one list, each carrying its own data buckets; they are combined into a single table set with
-/// per-manifest logo scoping and key-scope filtering.
+/// Materialize the vault's manifests into the table set the platform inserts: every manifest's rows combined into
+/// one table set, each row stamped with the manifest it arrived in, plus the data buckets folded back in.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
-    let MaterializeInput { mut manifests, data_buckets, schema_columns } = input;
+    let MaterializeInput { manifests, data_buckets, schema_columns } = input;
 
-    // Check for a non-empty schema.
     if schema_columns.is_empty() {
         return Err(VaultError::General("materialize input carries an empty schema_columns map".to_string()));
     }
@@ -56,19 +44,12 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     }
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
-
-    // The first manifest is the caller's own (see `MaterializeInput::manifests`).
-    let base = manifests.remove(0);
-    let others: Vec<Manifest> = manifests;
-
-    let base_manifest_id = base.manifest_id.clone();
-    let mut combined = super::sharing::combine_manifest_tables(base.tables, &base_manifest_id, others);
+    let mut combined = super::sharing::combine_manifest_tables(manifests);
 
     // The wire omits derived row ids (single-value FieldValues, FieldHistories); derive them back so the
     // SQLite projection has the primary keys it expects back, identical on every device.
     super::normalize::derive_missing_ids(&mut combined);
 
-    // Normalize all id columns.
     super::normalize::normalize_id_spelling(&mut combined);
 
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
@@ -160,8 +141,7 @@ enum SplitResult {
     UnknownTable(Vec<CodecRecord>),
 }
 
-/// Fit `records` to the caller's schema. Unknown columns are stashed in `column_overflow` keyed by
-/// the row's primary-key value.
+/// Fit `records` to the caller's schema. Unknown columns are stashed in `column_overflow` keyed by row identity.
 fn split_for_schema(
     table_name: &str,
     records: Vec<CodecRecord>,

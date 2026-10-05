@@ -1,7 +1,6 @@
 //! UniFFI API module for Swift and Kotlin bindings.
 //!
 //! This module exposes the core vault operations via UniFFI for mobile platforms.
-//! All functions use JSON strings for input/output to simplify cross-language marshalling.
 
 use crate::crypto::argon2::Argon2Error;
 use crate::crypto::{KeyChainError, SrpInputError};
@@ -10,18 +9,15 @@ use crate::common::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 use crate::vault_codec::{self, CanonicalizeInput};
 
+// Vault sync.
+
 /// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
 pub fn get_syncable_table_names() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
 
-/// Prune expired items from trash (items with DeletedAt older than retention_days, default 30).
-/// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
-#[uniffi::export]
-pub fn prune_vault_json(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, crate::vault_pruner::prune_vault)
-}
+// Credential matcher.
 
 /// Filter credentials for autofill by the current URL/app and page title.
 /// Input: `CredentialMatcherInput` JSON. Output: `CredentialMatcherOutput` JSON.
@@ -30,16 +26,13 @@ pub fn filter_credentials_json(input_json: String) -> Result<String, VaultError>
     crate::credential_matcher::filter_credentials_json(&input_json)
 }
 
-/// Extract domain from a URL.
-/// Strips the www. prefix if present.
-/// Example: "https://www.example.com/path" -> "example.com"
+/// The domain of a URL or partial domain: no protocol, `www.` prefix, path, query or fragment.
 #[uniffi::export]
 pub fn extract_domain(url: String) -> String {
     crate::credential_matcher::extract_domain(&url)
 }
 
-/// Extract root domain from a domain.
-/// Example: "www.example.com" -> "example.com"
+/// The root domain of a domain: `sub.example.co.uk` gives `example.co.uk`.
 #[uniffi::export]
 pub fn extract_root_domain(domain: String) -> String {
     crate::credential_matcher::extract_root_domain(&domain)
@@ -57,9 +50,7 @@ pub fn is_related_origin_allowed(caller_origin: String, origins: Vec<String>) ->
     crate::credential_matcher::is_related_origin_allowed(&caller_origin, &origins)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Favicon Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+// Favicon.
 
 /// Pick the favicon target for an item from its URLs, in the order the item lists them.
 ///
@@ -77,9 +68,7 @@ pub fn favicon_source_key(url: String) -> String {
     crate::favicon::favicon_source_key(&url)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Password Generator Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+// Password generator.
 
 /// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware" and an
 /// optional 64-character hex `Seed` makes the output deterministic for UI previews.
@@ -94,9 +83,7 @@ pub fn get_diceware_languages() -> Vec<String> {
     crate::password_generator::available_languages()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Identity Generator Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+// Identity generator.
 
 /// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
 /// returns `Identity` JSON with camelCase fields.
@@ -131,6 +118,14 @@ pub fn get_identity_languages() -> Vec<String> {
     crate::identity_generator::available_languages()
 }
 
+/// Get the list of age range option values ("random" plus 5-year ranges).
+#[uniffi::export]
+pub fn get_identity_age_ranges() -> Vec<String> {
+    crate::identity_generator::available_age_ranges()
+}
+
+// Email parser.
+
 /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata, returned as
 /// a JSON string (`{htmlBody, textBody, attachments: [{filename, mimeType, size, detached, partIndex}]}`). Input that
 /// starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the decrypted
@@ -152,15 +147,7 @@ pub fn extract_email_attachment(source: Vec<u8>, index: u32, detached_body: Opti
     crate::email_parser::extract_email_attachment(&source, index as usize, detached_body.as_deref())
 }
 
-/// Get the list of age range option values ("random" plus 5-year ranges).
-#[uniffi::export]
-pub fn get_identity_age_ranges() -> Vec<String> {
-    crate::identity_generator::available_age_ranges()
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault Codec Functions (manifest-v1 storage format), JSON-string in/out.
-// ═══════════════════════════════════════════════════════════════════════════════
+// Vault codec (manifest-v1 storage format).
 
 /// Canonicalize normalized tables into manifest + metadata + blob map.
 /// Input: `CanonicalizeInput` JSON. Output: `CanonicalizedVault` JSON.
@@ -201,12 +188,9 @@ pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultE
     crate::vault_codec::unpack_payload(&plain_bytes)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Argon2id Key Derivation Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+// Argon2id key derivation and the account key chain.
 
-/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings`
-/// JSON, or the defaults for an empty string.
+/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[uniffi::export]
 pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
     crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
@@ -272,9 +256,7 @@ pub fn open_account_key_chain(stored_key: Vec<u8>, encrypted_account_key: String
     })
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SRP (Secure Remote Password) Functions
-// ═══════════════════════════════════════════════════════════════════════════════
+// SRP (Secure Remote Password).
 
 /// A random 32-byte SRP salt as an uppercase hex string.
 #[uniffi::export]
@@ -312,9 +294,7 @@ pub fn srp_verify_session(client_public: String, client_proof: String, session_k
     crate::crypto::srp::srp_verify_session(&client_public, &client_proof, &session_key, &server_proof)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Crypto
-// ═══════════════════════════════════════════════════════════════════════════════
+// RSA-OAEP.
 
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[uniffi::export]
@@ -328,9 +308,7 @@ pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: St
     crate::crypto::encrypt_with_public_key_and_label(&account_key, &public_key_jwk, crate::crypto::aad::MOBILE_LOGIN_ACCOUNT_KEY)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault sync engine
-// ═══════════════════════════════════════════════════════════════════════════════
+// Vault sync engine and SQLite host.
 
 /// One engine operation. The host loops on `next_command` / `resume` until the command is `done`; see the
 /// `vault_sync` module docs for the command and response shapes.
@@ -358,7 +336,7 @@ impl VaultSyncSession {
     }
 }
 
-/// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
+/// An in-memory SQLite database that can be used by host applications to have uniform access to the database.
 #[derive(uniffi::Object)]
 pub struct SqliteMemoryDatabase {
     inner: MemoryDatabase,
@@ -411,48 +389,3 @@ impl SqliteMemoryDatabase {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_syncable_table_names() {
-        let names = get_syncable_table_names();
-        assert!(names.contains(&"Items".to_string()));
-        assert!(names.contains(&"FieldValues".to_string()));
-        assert!(names.contains(&"Settings".to_string()));
-        assert!(names.contains(&"ItemStats".to_string()));
-        assert!(names.contains(&"EncryptionKeys".to_string()));
-        assert!(!names.contains(&crate::vault_model::OVERFLOW_TABLE.to_string()), "the overflow carrier is not synced as a table of its own; it rides inside the manifest");
-        assert_eq!(names.len(), 14);
-    }
-
-    #[test]
-    fn test_prune_vault_json() {
-        let input = r#"{
-            "tables": [{"name": "Items", "records": []}],
-            "retentionDays": 30,
-            "currentTime": "2024-01-15T10:30:00.000Z"
-        }"#;
-
-        let result = prune_vault_json(input.to_string());
-        assert!(result.is_ok());
-
-        let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
-        assert_eq!(output["success"], true);
-    }
-
-    #[test]
-    fn test_extract_domain() {
-        // extract_domain strips www. prefix from domains
-        assert_eq!(extract_domain("https://www.example.com/path".to_string()), "example.com");
-        assert_eq!(extract_domain("http://github.com".to_string()), "github.com");
-        assert_eq!(extract_domain("https://subdomain.example.com".to_string()), "subdomain.example.com");
-    }
-
-    #[test]
-    fn test_extract_root_domain() {
-        assert_eq!(extract_root_domain("www.example.com".to_string()), "example.com");
-        assert_eq!(extract_root_domain("github.com".to_string()), "github.com");
-    }
-}

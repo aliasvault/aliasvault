@@ -1,6 +1,6 @@
-//! An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
+//! An in-memory SQLite database that host applications use for uniform access to the database.
 //!
-//! The database lives in SQLite's own memory and are never persisted to the filesystem.
+//! The database lives in SQLite's own memory and is never persisted to the filesystem.
 
 use std::sync::Mutex;
 
@@ -97,7 +97,7 @@ impl MemoryDatabase {
         Ok(SqlResult { columns, rows: out })
     }
 
-    /// Run one statement with typed parameters and return the rows it changed.
+    /// Run one DML statement with typed parameters and return the rows it changed (stale for a SELECT, which changes nothing).
     pub fn execute(&self, sql: &str, params: &[SqlValue]) -> VaultResult<u64> {
         let conn = self.lock();
         let mut statement = conn.prepare_cached(sql).map_err(sql_error_at(sql))?;
@@ -162,7 +162,7 @@ fn to_sql(value: &Value) -> VaultResult<RsValue> {
     Ok(match value {
         Value::Null => RsValue::Null,
         Value::Bool(b) => RsValue::Integer(*b as i64),
-        Value::Number(n) => n.as_i64().map(RsValue::Integer).unwrap_or_else(|| RsValue::Real(n.as_f64().unwrap_or(0.0))),
+        Value::Number(n) => n.as_i64().map_or_else(|| n.as_f64().map_or(RsValue::Null, RsValue::Real), RsValue::Integer),
         Value::String(s) => RsValue::Text(s.clone()),
         other => match inline_b64(other) {
             Some(b64) => RsValue::Blob(base64_decode(b64).map_err(|_| VaultError::General("A BLOB parameter is not valid base64".to_string()))?),

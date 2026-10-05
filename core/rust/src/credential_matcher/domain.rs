@@ -18,9 +18,8 @@ static COMMON_TLDS: &[&str] = &[
     "au", "nz", "jp", "cn", "in", "kr", "tw", "hk", "sg", "my", "th", "id", "ph", "vn",
     "za", "eg", "ng", "ke", "ug", "tz", "ma",
     "ru", "ua", "by", "kz", "il", "tr", "sa", "ae", "qa", "kw",
-    // New gTLDs (common ones)
-    "app", "dev", "io", "ai", "tech", "shop", "store", "online", "site", "website",
-    "blog", "news", "media", "tv", "video", "music", "pro", "info", "biz", "name",
+    // New gTLDs that lead real package names; words like "app" or "shop" are left out, they lead hostnames far more often.
+    "dev", "io", "ai", "tv",
 ];
 
 /// [`COMMON_TLDS`] as a set for constant-time lookup.
@@ -108,12 +107,7 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
         return DomainWithPort::default();
     }
 
-    // The host is what follows any userinfo: "https://user@example.com" opens example.com.
-    let host_and_port = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
-    let (host, port) = split_host_port(host_and_port);
-
-    // A fully qualified name ("bank.com.") is the same host as without its trailing dot.
-    let host = host.strip_suffix('.').unwrap_or(host);
+    let (host, port) = authority_host_port(authority);
     let domain = host.strip_prefix("www.").unwrap_or(host);
 
     if is_ip_literal(domain) {
@@ -134,6 +128,14 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
     DomainWithPort { domain: domain.to_string(), port }
 }
 
+/// The host and numeric port of a URL authority, without userinfo and without the trailing dot of a fully qualified name.
+pub(crate) fn authority_host_port(authority: &str) -> (&str, Option<String>) {
+    // The host is what follows any userinfo: "https://user@example.com" opens example.com.
+    let host_and_port = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
+    let (host, port) = split_host_port(host_and_port);
+    (host.strip_suffix('.').unwrap_or(host), port)
+}
+
 /// Split an authority without userinfo into its host and numeric port; a bracketed IPv6 host keeps its brackets.
 fn split_host_port(authority: &str) -> (&str, Option<String>) {
     let (host, port) = match authority.strip_prefix('[').and_then(|rest| rest.find(']')) {
@@ -152,7 +154,7 @@ fn split_host_port(authority: &str) -> (&str, Option<String>) {
 
 /// Extract domain from URL, handling both full URLs and partial domains.
 /// Returns empty string if not a valid URL/domain.
-/// Note: This strips port numbers. Use extract_domain_with_port() to preserve port info.
+/// This strips port numbers; use extract_domain_with_port() to preserve port info.
 pub fn extract_domain(url: &str) -> String {
     extract_domain_with_port(url).domain
 }
@@ -165,12 +167,7 @@ fn is_ip_literal(host: &str) -> bool {
     bare.parse::<std::net::IpAddr>().is_ok()
 }
 
-/// Extract the root (registrable) domain from a domain string, per the Public Suffix List.
-/// E.g., "sub.example.com" -> "example.com"
-/// E.g., "sub.example.co.uk" -> "example.co.uk"
-/// E.g., "preview.myproject.vercel.app" -> "myproject.vercel.app"
-/// A domain that is a public suffix itself ("github.io", "localhost") and IP address literals are returned
-/// unchanged: "192.168.1.5" must not become "1.5".
+/// The registrable domain of a domain per the Public Suffix List, or the input itself for a public suffix or IP literal.
 pub fn extract_root_domain(domain: &str) -> String {
     if is_ip_literal(domain) {
         return domain.to_string();
@@ -179,12 +176,7 @@ pub fn extract_root_domain(domain: &str) -> String {
     public_suffix::registrable_domain(domain).unwrap_or(domain).to_string()
 }
 
-/// Check if two domains match: the same domain, or the same root domain (so subdomains match their parent).
-/// Note: Both parameters should be pre-extracted domains (without protocol, www, path, etc.)
-///
-/// Two hosts under a shared public suffix ("victim.vercel.app" and "attacker.vercel.app") have different root
-/// domains and never match, and neither do a public suffix and a host under it ("vercel.app" and
-/// "victim.vercel.app"): the suffix has no registrable domain to share.
+/// Whether two extracted domains are the same domain or share a registrable domain.
 pub fn domains_match(domain1: &str, domain2: &str) -> bool {
     if domain1.is_empty() || domain2.is_empty() {
         return false;
@@ -200,6 +192,10 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
         return true;
     }
 
+    /*
+     * Anti-phishing: only a shared registrable domain matches. Two hosts under a public suffix ("victim.vercel.app",
+     * "attacker.vercel.app") never match, and neither do a suffix and a host under it (it has no registrable domain).
+     */
     match (public_suffix::registrable_domain(domain1), public_suffix::registrable_domain(domain2)) {
         (Some(root1), Some(root2)) => root1 == root2,
         _ => false,
@@ -254,14 +250,12 @@ pub fn is_related_origin_allowed(caller_origin: &str, origins: &[String]) -> boo
 
 /// The host of a serialized web origin ("https://login.example.com:8443" gives "login.example.com").
 fn origin_host(origin: &str) -> Option<&str> {
-    let (scheme, authority) = origin.split_once("://")?;
-    if !is_web_scheme(scheme) || authority.is_empty() || authority.contains(['/', '?', '#', '@']) {
+    let (scheme, authority, rest) = split_url(origin);
+    let scheme = scheme.filter(|scheme| is_web_scheme(scheme))?;
+    if !origin[scheme.len() + 1..].starts_with("//") || !rest.is_empty() || authority.contains('@') {
         return None;
     }
-    let host = match authority.rsplit_once(':') {
-        Some((host, port)) if !host.ends_with(':') && port.chars().all(|c| c.is_ascii_digit()) => host,
-        _ => authority,
-    };
+    let (host, _) = split_host_port(authority);
     (!host.is_empty()).then_some(host)
 }
 
@@ -280,7 +274,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_is_app_package_name() {
+    fn detects_app_package_names() {
         assert!(is_app_package_name("com.coolblue.app"));
         assert!(is_app_package_name("nl.marktplaats.android"));
         assert!(is_app_package_name("org.example.app"));
@@ -289,10 +283,12 @@ mod tests {
         assert!(!is_app_package_name("example.com"));
         assert!(!is_app_package_name("coolblue.nl"));
         assert!(!is_app_package_name("nodot"));
+        assert!(is_app_package_name("tv.twitch.android.app"));
+        assert!(!is_app_package_name("app.example.com"), "a scheme-less hostname under a common subdomain word");
     }
 
     #[test]
-    fn test_extract_domain() {
+    fn extracts_domain() {
         assert_eq!(extract_domain("https://www.example.com/path"), "example.com");
         assert_eq!(extract_domain("http://example.com"), "example.com");
         assert_eq!(extract_domain("example.com"), "example.com");
@@ -327,7 +323,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_domain_single_word_hostname_with_port() {
+    fn extract_domain_single_word_hostname_with_port() {
         // Single-word hostnames with port (common for self-hosted services)
         assert_eq!(extract_domain("http://localhost:8080"), "localhost");
         assert_eq!(extract_domain("http://localhost:81"), "localhost");
@@ -365,7 +361,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_domain_with_port() {
+    fn extract_domain_strips_port() {
         // Port numbers should be stripped from extract_domain
         assert_eq!(extract_domain("https://example.com:8080"), "example.com");
         assert_eq!(extract_domain("https://example.com:8080/path"), "example.com");
@@ -376,7 +372,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_domain_with_port_struct() {
+    fn extract_domain_with_port_struct() {
         // Test the DomainWithPort struct
         let result = extract_domain_with_port("https://example.com:8080/path");
         assert_eq!(result.domain, "example.com");
@@ -403,7 +399,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_domain_normalizes_host() {
+    fn extract_domain_normalizes_host() {
         // Userinfo is dropped: the host is what follows the last "@".
         assert_eq!(extract_domain("https://paypal.com@evil.com/"), "evil.com");
         assert_eq!(extract_domain("https://user:pass@www.example.com:8443/"), "example.com");
@@ -431,7 +427,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_root_domain() {
+    fn extracts_root_domain() {
         assert_eq!(extract_root_domain("sub.example.com"), "example.com");
         assert_eq!(extract_root_domain("example.com"), "example.com");
         assert_eq!(extract_root_domain("sub.example.co.uk"), "example.co.uk");
@@ -457,7 +453,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_root_domain_ip_literals_unchanged() {
+    fn extract_root_domain_keeps_ip_literals() {
         assert_eq!(extract_root_domain("192.168.1.5"), "192.168.1.5");
         assert_eq!(extract_root_domain("10.0.0.1"), "10.0.0.1");
         assert_eq!(extract_root_domain("::1"), "::1");
@@ -466,7 +462,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_related_origin_allowed() {
+    fn related_origins_allowlist() {
         let origins = |list: &[&str]| list.iter().map(|o| o.to_string()).collect::<Vec<_>>();
 
         let x = origins(&["https://twitter.com", "https://x.com", "https://mobile.twitter.com:8443"]);
@@ -495,7 +491,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_rp_id_allowed_for_host() {
+    fn rp_id_allowed_for_host_or_parent() {
         // The host itself and parent domains below the public suffix.
         assert!(is_rp_id_allowed_for_host("example.com", "login.example.com"));
         assert!(is_rp_id_allowed_for_host("Example.COM.", "login.example.com"));
@@ -516,12 +512,11 @@ mod tests {
     }
 
     #[test]
-    fn test_ip_literals_require_exact_match() {
+    fn ip_literals_require_exact_match() {
         // Same IP matches
         assert!(domains_match("192.168.1.5", "192.168.1.5"));
 
         // Distinct IPs sharing trailing octets must not match
-        // (previously both reduced to root "1.5" and matched)
         assert!(!domains_match("192.168.1.5", "10.0.1.5"));
 
         // An IP must not be treated as a "subdomain" of a suffix of itself
@@ -539,7 +534,7 @@ mod tests {
     }
 
     #[test]
-    fn test_domains_match() {
+    fn matches_domains() {
         // Exact match
         assert!(domains_match("example.com", "example.com"));
 
@@ -563,7 +558,7 @@ mod tests {
     }
 
     #[test]
-    fn test_domains_match_shared_hosting_tenants() {
+    fn domains_match_shared_hosting_tenants() {
         // Sibling tenants on a shared suffix never match; the same tenant matches across its own subdomains.
         assert!(!domains_match("myproject.vercel.app", "evil-phish.vercel.app"));
         assert!(domains_match("preview.myproject.vercel.app", "myproject.vercel.app"));

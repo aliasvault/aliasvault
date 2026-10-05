@@ -27,7 +27,7 @@ fn hex_encode(bytes: &[u8], alphabet: &[u8; 16]) -> String {
 /// Decode a hex string of either case. `None` on odd length or a non-hex character.
 pub(crate) fn hex_decode(hex: &str) -> Option<Vec<u8>> {
     let bytes = hex.as_bytes();
-    if bytes.len() % 2 != 0 {
+    if !bytes.len().is_multiple_of(2) {
         return None;
     }
     bytes.chunks_exact(2).map(|pair| Some((nibble(pair[0])? << 4) | nibble(pair[1])?)).collect()

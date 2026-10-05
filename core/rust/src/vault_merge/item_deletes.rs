@@ -14,7 +14,7 @@ use chrono::{DateTime, Utc};
 
 use super::get_key;
 use crate::common::timestamp::updated_at;
-use crate::vault_codec::row::is_deleted;
+use crate::vault_codec::row::{is_deleted, rows_of};
 use crate::vault_codec::{is_bucketed_table, CodecRecord};
 use crate::vault_model::names::{ID_COL, ITEMS_TABLE};
 use crate::vault_model::{MANIFEST_ID_COL, SYNCABLE_TABLES};
@@ -34,8 +34,7 @@ pub(super) fn resolve_item_deletes(base: &mut Tables, incoming: &mut Tables) {
 /// The items `deleting` tombstoned that `other` still holds live and touched late enough for `outlives` to hold.
 fn lost_deletes(deleting: &Tables, other: &Tables, outlives: impl Fn(Option<DateTime<Utc>>, Option<DateTime<Utc>>) -> bool) -> HashSet<String> {
     let items = |tables: &Tables, deleted: bool| -> HashMap<String, Option<DateTime<Utc>>> {
-        let rows = tables.get(ITEMS_TABLE).map(Vec::as_slice).unwrap_or(&[]);
-        rows.iter().filter(|row| is_deleted(row) == deleted).map(|row| (item_key(row, ID_COL), updated_at(row))).collect()
+        rows_of(tables, ITEMS_TABLE).iter().filter(|row| is_deleted(row) == deleted).map(|row| (item_key(row, ID_COL), updated_at(row))).collect()
     };
     let tombstones = items(deleting, true);
     let mut live = items(other, false);
@@ -47,7 +46,7 @@ fn lost_deletes(deleting: &Tables, other: &Tables, outlives: impl Fn(Option<Date
     // What the surviving side last did to the item: its own row, or any row hanging off it. Bucketed
     // tables stay out, since a usage counter ticking is not an edit.
     for child in SYNCABLE_TABLES.iter().filter(|table| table.item_child && !is_bucketed_table(table.name)) {
-        for row in other.get(child.name).map(Vec::as_slice).unwrap_or(&[]) {
+        for row in rows_of(other, child.name) {
             if let Some(activity) = live.get_mut(&item_key(row, child.item_ref_column())) {
                 *activity = (*activity).max(updated_at(row));
             }

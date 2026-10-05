@@ -1,7 +1,6 @@
 //! Every JSON shape the engine exchanges.
 
 use std::collections::HashMap;
-use std::fmt;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -70,25 +69,9 @@ pub struct SyncRequest {
     pub force_pull: bool,
     #[serde(default)]
     pub min_server_version: Option<String>,
-    #[serde(default)]
-    pub is_offline_mode: bool,
     /// The target of a sharing operation; absent for every other operation.
     #[serde(default)]
     pub sharing: Option<SharingParams>,
-}
-
-/// What every operation reports on top of its own outcome.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionOutcome {
-    /// Whether the stored vault changed; hosts reload what reads it (autofill stores, open UI).
-    #[serde(default)]
-    pub vault_changed: bool,
-}
-
-/// The result of one operation; the engine fills in the session outcome once the run is over.
-pub(crate) trait OperationResult: Serialize {
-    fn session_mut(&mut self) -> &mut SessionOutcome;
 }
 
 /// How a failed operation reports itself: a coded error the host translates, or a forced logout.
@@ -123,6 +106,11 @@ impl From<&SyncError> for FailureFields {
     }
 }
 
+/*
+ * Operation results. The engine adds `vaultChanged` (whether the stored vault changed, so hosts reload what reads it)
+ * to every result when the run is over.
+ */
+
 /// Outcome of a full sync.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -143,22 +131,13 @@ pub struct FullSyncResult {
     pub pulled_revision: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email_routing: Option<EmailRoutingDto>,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for FullSyncResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /// The pending local migration, as the upgrade gate classifies it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum MigrationKind {
-    /// Nothing to migrate, or nothing that may be migrated yet: a vault still on the frozen sqlite-blob chain
-    /// classifies as `None` because that chain has to bring it to 2.0.0 before either kind below can apply.
+    /// Nothing to migrate, or nothing yet (a vault still on the frozen sqlite-blob chain).
     None,
     /// The local schema predates the current full schema; rebuilt locally, no server involved.
     SchemaRebuild,
@@ -171,14 +150,6 @@ pub enum MigrationKind {
 #[serde(rename_all = "camelCase")]
 pub struct MigrationStatusResult {
     pub kind: MigrationKind,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for MigrationStatusResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /// Outcome of the manifest migration.
@@ -190,14 +161,6 @@ pub struct MigrateManifestResult {
     pub pushed: bool,
     #[serde(flatten)]
     pub failure: FailureFields,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for MigrateManifestResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /// Outcome of the login-time key resolution: the vault key the host stores as its session key (the VEK behind
@@ -212,14 +175,6 @@ pub struct ResolveVaultKeyResult {
     pub encryption_key: Option<String>,
     #[serde(flatten)]
     pub failure: FailureFields,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for ResolveVaultKeyResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /// Outcome of a sharing operation.
@@ -236,14 +191,6 @@ pub struct SharingOperationResult {
     /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
     #[serde(flatten)]
     pub failure: FailureFields,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for SharingOperationResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /// Outcome of the lightweight status check.
@@ -260,14 +207,6 @@ pub struct StatusCheckResult {
     pub server_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capabilities: Option<HashMap<String, String>>,
-    #[serde(flatten)]
-    pub session: SessionOutcome,
-}
-
-impl OperationResult for StatusCheckResult {
-    fn session_mut(&mut self) -> &mut SessionOutcome {
-        &mut self.session
-    }
 }
 
 /*
@@ -356,60 +295,23 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn kind(&self) -> CommandKind {
+    /// The command's wire tag (`dbExec`), as error reports name it.
+    pub fn name(&self) -> &'static str {
         match self {
-            Command::Http { .. } => CommandKind::Http,
-            Command::StateGet { .. } => CommandKind::StateGet,
-            Command::StateSet { .. } => CommandKind::StateSet,
-            Command::StateRemove { .. } => CommandKind::StateRemove,
-            Command::DbOpen { .. } => CommandKind::DbOpen,
-            Command::DbQuery { .. } => CommandKind::DbQuery,
-            Command::DbExec { .. } => CommandKind::DbExec,
-            Command::DbExport { .. } => CommandKind::DbExport,
-            Command::VaultStore { .. } => CommandKind::VaultStore,
-            Command::VaultLoad => CommandKind::VaultLoad,
-            Command::MarkClean { .. } => CommandKind::MarkClean,
-            Command::Log { .. } => CommandKind::Log,
-            Command::Done { .. } => CommandKind::Done,
+            Command::Http { .. } => "http",
+            Command::StateGet { .. } => "stateGet",
+            Command::StateSet { .. } => "stateSet",
+            Command::StateRemove { .. } => "stateRemove",
+            Command::DbOpen { .. } => "dbOpen",
+            Command::DbQuery { .. } => "dbQuery",
+            Command::DbExec { .. } => "dbExec",
+            Command::DbExport { .. } => "dbExport",
+            Command::VaultStore { .. } => "vaultStore",
+            Command::VaultLoad => "vaultLoad",
+            Command::MarkClean { .. } => "markClean",
+            Command::Log { .. } => "log",
+            Command::Done { .. } => "done",
         }
-    }
-}
-
-/// The kind of a command, for error reports.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CommandKind {
-    Http,
-    StateGet,
-    StateSet,
-    StateRemove,
-    DbOpen,
-    DbQuery,
-    DbExec,
-    DbExport,
-    VaultStore,
-    VaultLoad,
-    MarkClean,
-    Log,
-    Done,
-}
-
-impl fmt::Display for CommandKind {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            CommandKind::Http => "http",
-            CommandKind::StateGet => "stateGet",
-            CommandKind::StateSet => "stateSet",
-            CommandKind::StateRemove => "stateRemove",
-            CommandKind::DbOpen => "dbOpen",
-            CommandKind::DbQuery => "dbQuery",
-            CommandKind::DbExec => "dbExec",
-            CommandKind::DbExport => "dbExport",
-            CommandKind::VaultStore => "vaultStore",
-            CommandKind::VaultLoad => "vaultLoad",
-            CommandKind::MarkClean => "markClean",
-            CommandKind::Log => "log",
-            CommandKind::Done => "done",
-        })
     }
 }
 
@@ -495,8 +397,6 @@ pub struct StatusResponse {
     #[serde(default)]
     pub bucket_revisions: Vec<BucketRevision>,
     #[serde(default)]
-    pub personal_manifest_id: Option<String>,
-    #[serde(default)]
     pub srp_salt: Option<String>,
     #[serde(default)]
     pub capabilities: Option<HashMap<String, String>>,
@@ -529,8 +429,6 @@ pub struct PendingAction {
     pub action_type: String,
     #[serde(default)]
     pub manifest_id: Option<String>,
-    #[serde(default)]
-    pub payload: Option<String>,
 }
 
 /// `GET v2/Vault`.
@@ -584,6 +482,13 @@ pub struct ManifestDto {
     pub grant_signer_public_key: Option<String>,
     #[serde(default)]
     pub key_version: i64,
+}
+
+impl ManifestDto {
+    /// Whether the server served this manifest with content.
+    pub fn has_content(&self) -> bool {
+        self.blob.as_deref().is_some_and(|blob| !blob.is_empty())
+    }
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -772,8 +677,6 @@ pub struct VaultKeyGetResponse {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultKeyResponse {
-    #[serde(default, rename = "type")]
-    pub key_type: String,
     #[serde(default)]
     pub encrypted_account_key: String,
     #[serde(default)]
@@ -788,12 +691,6 @@ pub struct VaultKeyResponse {
     pub encrypted_signing_private_key: Option<String>,
     #[serde(default)]
     pub encrypted_vek: Option<String>,
-    #[serde(default)]
-    pub salt: String,
-    #[serde(default)]
-    pub encryption_type: String,
-    #[serde(default)]
-    pub encryption_settings: String,
 }
 
 /// A shared manifest as this account holds it: the grant on its key plus what the last pull learned about it.
@@ -818,18 +715,18 @@ pub struct SharedManifestDto {
 mod tests {
     use super::*;
 
-    /// The failure fields flatten into every result exactly where the four loose fields used to sit.
+    /// The failure fields flatten into the top level of every result.
     #[test]
     fn failure_fields_flatten_into_the_result_wire_shape() {
         let coded = FailureFields::from(&SyncError::VaultLocked);
         let full = serde_json::to_string(&FullSyncResult { failure: coded, ..Default::default() }).unwrap();
-        assert_eq!(full, r#"{"success":false,"hasNewVault":false,"wasOffline":false,"sqliteBlobUpgradeRequired":false,"manifestMigrationRequired":false,"error":"No encryption key available","errorCode":"E-202","requiresLogout":false,"isOfflineMode":false,"vaultChanged":false}"#);
+        assert_eq!(full, r#"{"success":false,"hasNewVault":false,"wasOffline":false,"sqliteBlobUpgradeRequired":false,"manifestMigrationRequired":false,"error":"No encryption key available","errorCode":"E-202","requiresLogout":false,"isOfflineMode":false}"#);
         let round_trip: FullSyncResult = serde_json::from_str(&full).unwrap();
         assert_eq!(serde_json::to_string(&round_trip).unwrap(), full);
 
         let logout = FailureFields::logout(LogoutReason::SessionExpired);
         let migrate = serde_json::to_string(&MigrateManifestResult { failure: logout.clone(), ..Default::default() }).unwrap();
-        assert_eq!(migrate, r#"{"success":false,"pushed":false,"logoutReason":"sessionExpired","requiresLogout":true,"vaultChanged":false}"#);
+        assert_eq!(migrate, r#"{"success":false,"pushed":false,"logoutReason":"sessionExpired","requiresLogout":true}"#);
         let round_trip: MigrateManifestResult = serde_json::from_str(&migrate).unwrap();
         assert_eq!(round_trip.failure, logout);
 

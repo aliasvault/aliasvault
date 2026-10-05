@@ -1,7 +1,7 @@
 //! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
-//! ([`upgrade_account_to_manifest_v1`]). Remove this module once every account has upgraded, together with its callers:
-//! `pull::pull` (the legacy snapshot branch), `merge::pull_and_merge` (the legacy server branch),
-//! `db::schema_state` (the frozen chain check) and `engine::migrate_manifest` (the branch without a vault key).
+//! ([`upgrade_account_to_manifest_v1`]). Remove this module once every account has upgraded, together with the
+//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check and the
+//! branch without a vault key in `migration::migrate_manifest`.
 
 use std::collections::HashMap;
 
@@ -9,22 +9,18 @@ use serde_json::Value;
 
 use super::db::{self, SchemaState};
 use super::errors::{SyncError, SyncResult};
-use super::pull::{self, email_routing_of, PulledVault};
-use super::push::resolve_personal_manifest_id;
+use super::migration;
+use super::pull::{self, PulledVault};
+use super::push::{resolve_personal_manifest_id, WriteKind};
 use super::state::{self, Ctx};
 use super::types::{Db, GetResponse};
-use super::{engine, keys};
+use super::keys;
 use crate::common::encoding::base64_decode;
 use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::inline_bytes;
 
 /// The `storageFormat` of a legacy sqlite-blob snapshot; an absent value means the same.
 pub(crate) const STORAGE_FORMAT_SQLITE_BLOB: &str = "sqlite-blob";
-
-/// Whether a snapshot is still on the legacy sqlite-blob format.
-pub(crate) fn is_legacy_sqlite_blob_snapshot(snapshot: &GetResponse) -> bool {
-    matches!(snapshot.storage_format.as_deref(), None | Some(STORAGE_FORMAT_SQLITE_BLOB))
-}
 
 /// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 fingerprints
 /// are reset, and the personal manifest id is recorded for the migration push.
@@ -36,8 +32,8 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
         state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, personal).await?;
         manifest_revisions.insert(personal.clone(), revision);
     }
-    ctx.log("[V2Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
-    Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), revision, email_routing: email_routing_of(snapshot), manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
+    ctx.log("[Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
+    Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), personal_revision: revision, email_routing: snapshot.email_routing.clone().unwrap_or_default(), manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
 }
 
 /*
@@ -51,51 +47,46 @@ const BLOB_TYPED_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnNa
 /// rows stamped with the personal manifest, and the push that carries it creates the account key hierarchy. Returns
 /// whether that push reached the server.
 pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<bool> {
-    if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
+    if migration::schema_state(ctx).await? == SchemaState::LegacyChain {
         return Err(SyncError::LegacyUpgradePending);
     }
     // Another device may have created the hierarchy since this one logged in. Accepting it swaps the session key to the VEK, which the baseline pull below needs.
-    if !keys::accept_hierarchy_created_elsewhere(ctx).await? {
-        return Err(SyncError::KeyOutOfSync);
-    }
+    keys::ensure_key_chain_accepted(ctx).await?;
     record_server_baseline_if_missing(ctx).await?;
-    if keys::has_local_vault_key(&ctx.host).await? {
+    if keys::has_cached_key_chain(&ctx.host).await? {
         // The account turned out to be upgraded already (accepted above, or pulled with the baseline); a schema rebuild is all that can remain.
-        return engine::migrate_schema(ctx).await;
+        return migration::migrate_schema(ctx).await;
     }
-    if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
+    if migration::schema_state(ctx).await? == SchemaState::LegacyChain {
         // The baseline pull stored a server vault that is still on the chain.
         return Err(SyncError::LegacyUpgradePending);
     }
     let personal = resolve_personal_manifest_id(ctx).await?;
     decode_base64_text_in_blob_columns(ctx).await?;
-    engine::rebuild_local_schema(ctx, Some(personal)).await?;
-    engine::push_migrated_vault(ctx, true).await
+    migration::rebuild_local_schema(ctx, Some(personal)).await?;
+    migration::push_migrated_vault(ctx, WriteKind::AccountKeyMigration).await
 }
 
-/// A session that logged in through a client predating the manifest storage format never pulled through this engine,
-/// so it holds neither the personal manifest id nor the revision baseline, and the upgrade push needs both (the
-/// server refuses a write whose revision it does not know). Calling this method before the push fixes this.
+/// Pull the personal manifest id and revision baseline the upgrade push needs, when a pre-manifest session lacks them.
 async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_some() {
         return Ok(());
     }
-    ctx.log("[ManifestMigration] The session predates the manifest storage format and never pulled; fetching the server vault for the personal manifest id and the revision baseline.").await;
+    ctx.log("[Migration] The session predates the manifest storage format and never pulled; fetching the server vault for the personal manifest id and the revision baseline.").await;
     let pulled = pull::pull(ctx).await?;
     if ctx.is_dirty && ctx.has_local_vault().await? {
-        ctx.warn("[ManifestMigration] The local vault has pending changes; keeping it and recording only the server's revisions so the migration push carries them.").await;
-        return pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await;
+        ctx.warn("[Migration] The local vault has pending changes; keeping it and recording only the server's revisions so the migration push carries them.").await;
+        return pull::commit_revisions(ctx, &pulled).await;
     }
-    if !ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?.success {
+    if !ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.personal_revision)).await?.success {
         return Err(SyncError::Other("a mutation raced the baseline pull; run the migration again".to_string()));
     }
     ctx.vault_changed = true;
-    pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await
+    pull::commit_revisions(ctx, &pulled).await
 }
 
-/// Decode base64 TEXT in BLOB columns back to bytes, in place. The 0.30.x merges (Android, iOS, Blazor) bound every
-/// value as text, so the BLOB cells of each row the server copy won were stored as base64 TEXT. The upgrade push then
-/// carries real bytes to every device. Text that is not base64 is left as-is.
+/// Decode base64 TEXT in BLOB columns back to bytes, in place; text that is not base64 is left as-is.
+/// The 0.30.x merges (Android, iOS, Blazor) bound every value as text, storing BLOB cells as base64 TEXT.
 async fn decode_base64_text_in_blob_columns(ctx: &Ctx) -> SyncResult<()> {
     let mut decoded = 0usize;
     for column in db::query(&ctx.host, Db::Local, BLOB_TYPED_COLUMNS, vec![]).await? {
@@ -112,7 +103,7 @@ async fn decode_base64_text_in_blob_columns(ctx: &Ctx) -> SyncResult<()> {
         db::exec(&ctx.host, Db::Local, statements).await?;
     }
     if decoded > 0 {
-        ctx.warn(format!("[ManifestMigration] Decoded {} base64 TEXT cells in BLOB columns back to bytes (written by a 0.30.x merge).", decoded)).await;
+        ctx.warn(format!("[Migration] Decoded {} base64 TEXT cells in BLOB columns back to bytes (written by a 0.30.x merge).", decoded)).await;
     }
     Ok(())
 }
@@ -137,7 +128,7 @@ const LEGACY_VAULT_VERSIONS: &[(u32, &str)] = &[
 
 /// The revision of the last entry in the legacy chain.
 fn latest_legacy_revision() -> u32 {
-    LEGACY_VAULT_VERSIONS.last().map(|(revision, _)| *revision).unwrap_or(0)
+    LEGACY_VAULT_VERSIONS[LEGACY_VAULT_VERSIONS.len() - 1].0
 }
 
 /// The data version embedded in an EF migration id (`20250101000000_2.0.0-Name`).
@@ -174,20 +165,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn migration_ids_yield_their_version() {
+    fn migration_stamps_map_onto_the_frozen_chain() {
         assert_eq!(extract_version_from_migration_id("20250101000000_2.0.0-Squashed").as_deref(), Some("2.0.0"));
         assert_eq!(extract_version_from_migration_id("20250101000000_Initial"), None);
         assert_eq!(legacy_revision_for("1.7.0"), Ok(12));
-        assert_eq!(legacy_revision_for("2.0.0"), Ok(13));
-        assert_eq!(legacy_revision_for("2.1.0"), Ok(13));
+        assert_eq!(legacy_revision_for("2.1.0"), Ok(13), "an unknown but well-formed version reads as the latest");
         assert!(legacy_revision_for("nope").is_err());
-    }
 
-    #[test]
-    fn stamps_before_2_0_0_are_on_the_chain() {
-        assert_eq!(stamp_predates_manifest_schema("20250101000000_1.7.0-Old").unwrap(), true);
-        assert_eq!(stamp_predates_manifest_schema("20250101000000_2.0.0-Squashed").unwrap(), false);
-        assert_eq!(stamp_predates_manifest_schema("20260101000000_2.1.0-Later").unwrap(), false);
+        assert!(stamp_predates_manifest_schema("20250101000000_1.7.0-Old").unwrap());
+        assert!(!stamp_predates_manifest_schema("20250101000000_2.0.0-Squashed").unwrap());
+        assert!(!stamp_predates_manifest_schema("20260101000000_2.1.0-Later").unwrap());
         assert!(matches!(stamp_predates_manifest_schema("20250101000000_Initial"), Err(SyncError::Other(_))));
     }
 }

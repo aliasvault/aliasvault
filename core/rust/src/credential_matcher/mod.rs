@@ -3,12 +3,14 @@
 //! This implementation follows the unified filtering algorithm specification
 //! for cross-platform consistency with browser extensions, iOS, and Android.
 //!
-//! Algorithm structure (priority order with early returns):
-//! 1. Priority 1: app package name exact match (for mobile apps)
-//! 2. Priority 2: URL domain matching (exact, subdomain, root domain)
-//! 3. Priority 3b: root domain word matching against item names (only credentials without URLs)
-//! 4. Priority 3: page title fallback (only credentials without URLs, anti-phishing)
-//! 5. Priority 4: text matching of the search string against item names (only credentials without URLs)
+//! Stages in execution order with early returns, each with the `matched_priority` it reports:
+//! 1. App package name exact match, for mobile apps (priority 1)
+//! 2. URL domain matching: exact, subdomain, root domain (priority 2)
+//! 3. Root domain words against item names, web pages in Default mode only (priority 3)
+//! 4. Page title words against item names, for input that is not a web page (priority 3)
+//! 5. Search string words against item names (priority 4)
+//!
+//! Stages 3 to 5 only consider credentials without URLs.
 //!
 //! Anti-phishing: a name match never returns a credential that has a URL, and a URL (any input with a
 //! scheme) whose host cannot be extracted matches nothing instead of falling through to the name stages.
@@ -78,7 +80,7 @@ pub struct CredentialMatcherInput {
 pub struct CredentialMatcherOutput {
     /// IDs of matched credentials, in priority order, capped at `input.max_results` (10 by default).
     pub matched_ids: Vec<String>,
-    /// Which priority level matched (1-4, or 0 if no match)
+    /// Which priority level matched (1-4, or 0 if no match).
     pub matched_priority: u8,
 }
 
@@ -101,7 +103,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
     }
 
     if is_app_package_name(&current_url) {
-        // Priority 1: app package name exact match (e.g. com.coolblue.app).
+        // Stage 1: app package name exact match (e.g. com.coolblue.app).
         let ids = match_package_name(&credentials, &current_url, max_results);
         if !ids.is_empty() {
             return CredentialMatcherOutput::matched(1, ids);
@@ -110,17 +112,18 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
     } else {
         let current = extract_domain_with_port(&current_url);
         if !current.domain.is_empty() {
-            // Priority 2: URL domain matching (exact domain+port, exact domain, then subdomain/root domain).
+            // Stage 2: URL domain matching (exact domain+port, exact domain, then subdomain/root domain).
             let allow_subdomain = matches!(matching_mode, AutofillMatchingMode::Default | AutofillMatchingMode::UrlSubdomain);
             let ids = match_domains(&credentials, &current, allow_subdomain, ignore_port, max_results);
             if !ids.is_empty() {
                 return CredentialMatcherOutput::matched(2, ids);
             }
 
-            // Priority 3b: words from only the root domain (no subdomains, no path/query) against item
-            // names, e.g. outlook.office.com contributes "office" but not "outlook". Same anti-phishing
-            // rule as Priority 3: only credentials with no URLs are eligible. This wildcard is what the
-            // Default mode adds on top of URL matching, so the URL-only modes must not fall back to it.
+            /*
+             * Stage 3: words from only the root domain against item names, e.g. outlook.office.com contributes "office" but not
+             * "outlook". Only credentials with no URLs are eligible. This is what Default mode adds on top of URL matching, so the
+             * URL-only modes must not fall back to it.
+             */
             if matching_mode == AutofillMatchingMode::Default {
                 let domain_words = extract_words(&extract_root_domain(&current.domain));
                 let ids = match_item_names(&credentials, &domain_words, max_results);
@@ -139,7 +142,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
         }
     }
 
-    // Priority 3: page title against item names for input that is neither a URL nor a linked app package.
+    // Stage 4: page title against item names for input that is neither a URL nor a linked app package.
     // Anti-phishing: only credentials with no URLs are eligible.
     let title_words = extract_words(&page_title);
     let ids = match_item_names(&credentials, &title_words, max_results);
@@ -147,7 +150,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
         return CredentialMatcherOutput::matched(3, ids);
     }
 
-    // Priority 4: the search string itself against item names. Anti-phishing: only credentials with no URLs
+    // Stage 5: the search string itself against item names. Anti-phishing: only credentials with no URLs
     // are eligible, so an app package like "com.paypal.rewards" never gets the PayPal website credential.
     let search_words = extract_words(&current_url);
     let ids = match_item_names(&credentials, &search_words, max_results);
@@ -238,6 +241,9 @@ fn match_item_names(credentials: &[Credential], words: &[String], max_results: u
         .collect()
 }
 
+/// Title words of this many characters or fewer are too generic to match on.
+const MAX_IGNORED_WORD_CHARS: usize = 3;
+
 /// Extract meaningful words from text, removing punctuation and filtering stop words.
 fn extract_words(text: &str) -> Vec<String> {
     if text.is_empty() {
@@ -249,7 +255,7 @@ fn extract_words(text: &str) -> Vec<String> {
         .map(|c| if c.is_alphanumeric() { c } else { ' ' })
         .collect::<String>()
         .split_whitespace()
-        .filter(|word| word.len() > 3 && !STOP_WORD_SET.contains(*word))
+        .filter(|word| word.chars().count() > MAX_IGNORED_WORD_CHARS && !STOP_WORD_SET.contains(*word))
         .map(String::from)
         .collect()
 }

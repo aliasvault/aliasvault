@@ -5,7 +5,7 @@
 //! core/models/src/vault/VaultTableRegistry.ts; this module adds the codec-owned accessors on top.
 
 use crate::vault_model::names::ID_COL;
-use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
+use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_MANIFEST_ID};
 
 /// Manifest / data bucket format version; bump only for a change older clients cannot carry without the built-in overflow.
 pub const SCHEMA_VERSION: u32 = 1;
@@ -47,10 +47,6 @@ pub(crate) fn is_guid(text: &str) -> bool {
         })
 }
 
-// ---------------------------------------------------------------------------
-// Accessor methods
-// ---------------------------------------------------------------------------
-
 /// The blob column of a table, if it owns one.
 pub fn blob_spec_for(table_name: &str) -> Option<&'static BlobColumn> {
     BLOB_COLUMNS.iter().find(|spec| spec.table == table_name)
@@ -89,10 +85,10 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
 }
 
 /// True when a `ManifestId` value names no manifest.
-pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
-    match scope {
+pub fn is_unstamped_manifest_id(manifest_id: Option<&str>) -> bool {
+    match manifest_id {
         None => true,
-        Some(value) => value.is_empty() || ids_equal(value, UNSTAMPED_SCOPE_SENTINEL),
+        Some(value) => value.is_empty() || ids_equal(value, UNSTAMPED_MANIFEST_ID),
     }
 }
 

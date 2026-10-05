@@ -3,9 +3,8 @@
 //! Cross-platform core functionality for AliasVault, including:
 //! - **vault_model**: the client vault datamodel registry, generated from `core/models`
 //! - **vault_codec**: the manifest-v1 storage format, mapped to and from the local SQLite vault
-//! - **vault_merge**: Vault merge using Last-Write-Wins (LWW) strategy
-//! - **vault_sharing**: Sharing write logic for multi-manifest vaults
-//! - **vault_pruner**: Prunes expired items from trash (30-day retention)
+//! - **vault_merge**: the last-write-wins merge of a local vault onto the server's, one manifest at a time
+//! - **vault_pruner**: tombstones expired trash (30-day retention) and reclaims orphan favicons and blob bytes
 //! - **vault_sync**: the vault sync engine that every client uses for syncing with the server
 //! - **sqlite_host**: an in-memory SQLite database for hosts that cannot open one from bytes
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
@@ -21,7 +20,6 @@ pub mod common;
 pub mod vault_model;
 pub mod vault_merge;
 pub mod vault_codec;
-pub mod vault_sharing;
 pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod email_parser;

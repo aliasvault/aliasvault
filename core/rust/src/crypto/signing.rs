@@ -11,6 +11,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 use crate::common::encoding::{base64_decode, base64_encode};
 use crate::common::error::{VaultError, VaultResult};
 use crate::common::rng::fill_random;
+use crate::crypto::aad::normalize;
 
 /// The label of a user's signature over their own account encryption public key (the RSA JWK).
 pub const ACCOUNT_PUBLIC_KEY_LABEL: &str = "aliasvault/v1/sig/account-public-key";
@@ -64,19 +65,19 @@ pub fn account_public_key_message(account_public_key: &str) -> Vec<u8> {
 /// The signed message of a grant: version `key_version` of the manifest's VEK, encrypted for `recipient_public_key` (JWK,
 /// as the server stores it) and handed out by `signer_user_id`.
 pub fn grant_message(manifest_id: &str, key_version: i64, signer_user_id: &str, recipient_public_key: &str, algorithm: &str, encrypted_vek: &str) -> Vec<u8> {
-    let manifest_id = manifest_id.to_ascii_lowercase();
+    let manifest_id = normalize(manifest_id);
     let key_version = key_version.to_string();
     signed_message(GRANT_LABEL, &[manifest_id.as_bytes(), key_version.as_bytes(), signer_user_id.as_bytes(), recipient_public_key.as_bytes(), algorithm.as_bytes(), encrypted_vek.as_bytes()])
 }
 
 /// The signed message of the vault name an invitation carries, encrypted for `recipient_public_key`.
 pub fn invitation_name_message(manifest_id: &str, signer_user_id: &str, recipient_public_key: &str, encrypted_name: &str) -> Vec<u8> {
-    signed_message(INVITATION_NAME_LABEL, &[manifest_id.to_ascii_lowercase().as_bytes(), signer_user_id.as_bytes(), recipient_public_key.as_bytes(), encrypted_name.as_bytes()])
+    signed_message(INVITATION_NAME_LABEL, &[normalize(manifest_id).as_bytes(), signer_user_id.as_bytes(), recipient_public_key.as_bytes(), encrypted_name.as_bytes()])
 }
 
 /// The signed message of a delivery key publish, bound to the revision the write is based on so it cannot be replayed.
 pub fn delivery_key_message(manifest_id: &str, public_key: &str, current_revision: i64) -> Vec<u8> {
-    signed_message(DELIVERY_KEY_LABEL, &[manifest_id.to_ascii_lowercase().as_bytes(), public_key.as_bytes(), current_revision.to_string().as_bytes()])
+    signed_message(DELIVERY_KEY_LABEL, &[normalize(manifest_id).as_bytes(), public_key.as_bytes(), current_revision.to_string().as_bytes()])
 }
 
 /// Sign a message with a base64 private seed. Returns the base64 signature.

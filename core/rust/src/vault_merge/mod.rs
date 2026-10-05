@@ -1,8 +1,7 @@
 //! Vault merge: Last-Write-Wins over manifest JSON + data buckets, rows in, rows out.
 //!
-//! This is the merge for the manifest-v1 storage format (used since 0.31.0+). It runs one layer above any concrete
-//! materialization (SQLite or otherwise): both sides arrive in canonical form and the output is
-//! the merged canonical form, which the platform then materializes once.
+//! Both sides arrive in canonical form and the output is the merged canonical form, which the platform then
+//! materializes once.
 //!
 //! Each manifest is merged independently (the server manifest set is the universe), so a broken
 //! manifest can never affect another manifest's rows, and blob columns carry `__blobRef` markers
@@ -21,28 +20,27 @@ mod item_deletes;
 #[cfg(test)]
 mod tests;
 
-/// Statistics about what was merged.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+/// How the rows of a merge were decided. The base is the server's side, the incoming side the local vault.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct MergeStats {
-    pub tables_processed: u32,
-    pub records_from_local: u32,
-    pub records_from_server: u32,
-    pub records_created_locally: u32,
-    pub conflicts: u32,
-    pub records_inserted: u32,
+    /// Rows both sides hold where the base row stood (older or same-aged incoming row).
+    pub base_kept: u32,
+    /// Rows both sides hold where the newer incoming row replaced the base row.
+    pub incoming_won: u32,
+    /// Rows only the base holds.
+    pub base_only: u32,
+    /// Rows only the incoming side holds (made offline).
+    pub incoming_only: u32,
 }
 
 impl MergeStats {
     /// Add another manifest's counters to these, for a whole-vault total.
     pub fn add(&mut self, other: &MergeStats) {
-        self.tables_processed += other.tables_processed;
-        self.records_from_local += other.records_from_local;
-        self.records_from_server += other.records_from_server;
-        self.records_created_locally += other.records_created_locally;
-        self.conflicts += other.conflicts;
-        self.records_inserted += other.records_inserted;
+        self.base_kept += other.base_kept;
+        self.incoming_won += other.incoming_won;
+        self.base_only += other.base_only;
+        self.incoming_only += other.incoming_only;
     }
 }
 
@@ -161,10 +159,7 @@ fn merge_manifest_pair(
         let base_rows = base_entry.unwrap_or_default();
         let incoming_rows = incoming_tables.remove(&name).unwrap_or_default();
         let merged_rows = match SYNCABLE_TABLES.iter().find(|t| t.name == name) {
-            Some(config) => {
-                stats.tables_processed += 1;
-                merge_rows(config, base_rows, incoming_rows, schema_columns, &mut stats)
-            }
+            Some(config) => merge_rows(config, base_rows, incoming_rows, schema_columns, &mut stats),
             // Not a syncable table (a skip table, or one from a newer writer): the base wins as-is.
             None => base_rows,
         };
@@ -177,12 +172,15 @@ fn merge_manifest_pair(
         }
     }
 
-    // A union of concurrently added multi-value rows can leave two rows at the same ValueIndex, and a
-    // delete that won can leave the other side's children under a tombstoned item; re-normalizing the
-    // output renumbers the first and drops the second, so a merged manifest is normalized like any other.
+    // A delete that won can leave the other side's children under a tombstoned item, and a union of concurrently
+    // added multi-value rows can leave two rows at the same ValueIndex: repair and normalize the output like any
+    // canonicalized manifest.
+    crate::vault_codec::integrity::repair(&mut merged);
     crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
 
-    let mut buckets = unknown_server_buckets;
+    // One bucket per category: the merged rows of the tables this build buckets, plus the server's tables of that
+    // category it does not know. A merged bucket keeps the server's extra top-level keys.
+    let mut buckets: Vec<DataBucket> = Vec::new();
     for category in bucket_categories() {
         let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
         for table in tables_for_category(category) {
@@ -190,12 +188,15 @@ fn merge_manifest_pair(
                 bucket_tables.insert(table.to_string(), rows);
             }
         }
+        for unknown in unknown_server_buckets.iter().filter(|bucket| bucket.category == category) {
+            bucket_tables.extend(unknown.tables.clone());
+        }
         if !bucket_tables.is_empty() {
-            // A merged bucket keeps the server's extra top-level keys.
             let extra = server_bucket_extras.get(category).cloned().unwrap_or_default();
             buckets.push(DataBucket { extra, ..DataBucket::new(manifest_id.clone(), category.to_string(), bucket_tables) });
         }
     }
+    buckets.extend(unknown_server_buckets.into_iter().filter(|bucket| !bucket_categories().contains(&bucket.category.as_str())));
 
     let manifest = Manifest { tables: merged, ..server };
     CanonicalManifestMerge { manifest_id, manifest, buckets, stats }
@@ -225,11 +226,10 @@ fn split_known_buckets(buckets: Vec<DataBucket>) -> (HashMap<String, Vec<CodecRe
 /// A contentless server manifest's local counterpart passes through whole: every row is an
 /// offline-kept row.
 fn pass_through(local: Manifest, local_buckets: Vec<DataBucket>) -> CanonicalManifestMerge {
-    let mut stats = MergeStats::default();
     let row_count = |tables: &HashMap<String, Vec<CodecRecord>>| tables.values().map(|rows| rows.len() as u32).sum::<u32>();
-    stats.records_inserted = row_count(&local.tables) + local_buckets.iter().map(|b| row_count(&b.tables)).sum::<u32>();
+    let stats = MergeStats { incoming_only: row_count(&local.tables) + local_buckets.iter().map(|b| row_count(&b.tables)).sum::<u32>(), ..MergeStats::default() };
 
-    CanonicalManifestMerge { manifest_id: local.manifest_id.clone(), manifest: local.clone(), buckets: local_buckets, stats }
+    CanonicalManifestMerge { manifest_id: local.manifest_id.clone(), manifest: local, buckets: local_buckets, stats }
 }
 
 /// LWW one table, rows out: base rows in order (replaced where the incoming row is strictly
@@ -267,18 +267,17 @@ fn merge_rows(
                 let (incoming_ts, base_ts) = (updated_at(incoming), updated_at(&base_record));
                 match (incoming_ts, base_ts) {
                     (Some(i_ts), Some(b_ts)) if i_ts > b_ts => {
-                        stats.conflicts += 1;
-                        stats.records_from_server += 1;
+                        stats.incoming_won += 1;
                         merged.push(overlay_winner(incoming.clone(), &base_record, &identity_columns, known_columns.as_ref()));
                     }
                     _ => {
-                        stats.records_from_local += 1;
+                        stats.base_kept += 1;
                         merged.push(base_record);
                     }
                 }
             }
             None => {
-                stats.records_created_locally += 1;
+                stats.base_only += 1;
                 merged.push(base_record);
             }
         }
@@ -286,7 +285,7 @@ fn merge_rows(
 
     for record in &incoming_rows {
         if let Some(winner) = incoming_map.remove(&get_key(record, match_columns)) {
-            stats.records_inserted += 1;
+            stats.incoming_only += 1;
             merged.push(winner.clone());
         }
     }
@@ -294,7 +293,7 @@ fn merge_rows(
     merged
 }
 
-/// A winning incoming row.
+/// The winning incoming row, with the base's identity columns and the columns this build's schema does not know.
 fn overlay_winner(mut winner: CodecRecord, base: &CodecRecord, identity_columns: &[&str], known_columns: Option<&HashSet<&str>>) -> CodecRecord {
     for (column, value) in base {
         let base_wins = identity_columns.contains(&column.as_str()) || known_columns.is_some_and(|known| !known.contains(column.as_str()));
@@ -311,5 +310,5 @@ fn overlay_winner(mut winner: CodecRecord, base: &CodecRecord, identity_columns:
 /// case-insensitively (see [`identity_part`]), everything else exactly as spelled.
 fn get_key(record: &CodecRecord, columns: &[&str]) -> String {
     let parts: Vec<String> = columns.iter().map(|column| record.get(*column).filter(|v| !v.is_null()).map(identity_part).unwrap_or_default()).collect();
-    parts.join(":")
+    parts.join("\u{1f}")
 }

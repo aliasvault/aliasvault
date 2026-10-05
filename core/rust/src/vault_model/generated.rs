@@ -92,7 +92,7 @@ pub static SINGLE_VALUE_FIELD_KEYS: &[&str] = &["login.email", "login.username",
 /// stamped with that manifest's id (`ManifestId`).
 pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
 
-/// The scope column every stamped table carries: the id of the manifest that owns the row.
+/// The column every stamped table carries: the id of the manifest that owns the row.
 pub const MANIFEST_ID_COL: &str = "ManifestId";
 
 /// Local bookkeeping table materialize writes into the vault DB: one row per manifest this
@@ -109,7 +109,7 @@ pub const OVERFLOW_TABLE: &str = "CodecOverflows";
 pub const OVERFLOW_ROW_ID: &str = "00000000-0000-0000-0000-00000000c0de";
 
 /// All zero GUID used for default values which indicate unstamped rows.
-pub const UNSTAMPED_SCOPE_SENTINEL: &str = "00000000-0000-0000-0000-000000000000";
+pub const UNSTAMPED_MANIFEST_ID: &str = "00000000-0000-0000-0000-000000000000";
 
 /// Rows referenced from inside manifest content: `(target_table, [(referencing_table, column)])`.
 /// On a manifest split the referenced rows are reference-copied into the destination manifest.

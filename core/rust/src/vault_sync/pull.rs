@@ -46,14 +46,14 @@ impl OpenedManifestSet {
 
     /// The opened set as a vault ready to become the local one.
     pub fn pulled_vault(&self, encrypted_vault: String, email_routing: EmailRoutingDto) -> PulledVault {
-        PulledVault { encrypted_vault, revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
+        PulledVault { encrypted_vault, personal_revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
     }
 }
 
 /// A pulled vault, encrypted for local storage, with the revisions that become the local truth once it is stored.
 pub(crate) struct PulledVault {
     pub encrypted_vault: String,
-    pub revision: i64,
+    pub personal_revision: i64,
     pub email_routing: EmailRoutingDto,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,
@@ -61,26 +61,24 @@ pub(crate) struct PulledVault {
     pub needs_first_write: bool,
 }
 
-/// `GET v2/Vault`.
-pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<GetResponse> {
-    let snapshot = http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, http::VAULT_ENDPOINT, true).await)?;
-    ensure_known_storage_format(&snapshot)?;
-    Ok(snapshot)
-}
-
 /// The `storageFormat` a manifest-v1 snapshot declares.
 const STORAGE_FORMAT_MANIFEST: &str = "manifest";
 
-/// Refuse a snapshot in a storage format newer than this build knows, instead of reading it as legacy.
-fn ensure_known_storage_format(snapshot: &GetResponse) -> SyncResult<()> {
-    match snapshot.storage_format.as_deref() {
-        None | Some(legacy::STORAGE_FORMAT_SQLITE_BLOB) | Some(STORAGE_FORMAT_MANIFEST) => Ok(()),
-        Some(format) => Err(SyncError::VaultVersionIncompatible(format!("vault has storage format {}, this app reads up to {}; update the app", format, STORAGE_FORMAT_MANIFEST))),
-    }
+/// A server snapshot by storage format.
+pub(crate) enum Snapshot {
+    Manifest(GetResponse),
+    /// LEGACY: the account's vault is still one sqlite blob.
+    LegacySqliteBlob(GetResponse),
 }
 
-pub(crate) fn email_routing_of(snapshot: &GetResponse) -> EmailRoutingDto {
-    snapshot.email_routing.clone().unwrap_or_default()
+/// `GET v2/Vault`. A snapshot in a storage format newer than this build knows is refused, never read as legacy.
+pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<Snapshot> {
+    let snapshot = http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, http::VAULT_ENDPOINT, true).await)?;
+    match snapshot.storage_format.as_deref() {
+        None | Some(legacy::STORAGE_FORMAT_SQLITE_BLOB) => Ok(Snapshot::LegacySqliteBlob(snapshot)),
+        Some(STORAGE_FORMAT_MANIFEST) => Ok(Snapshot::Manifest(snapshot)),
+        Some(format) => Err(SyncError::VaultVersionIncompatible(format!("vault has storage format {}, this app reads up to {}; update the app", format, STORAGE_FORMAT_MANIFEST))),
+    }
 }
 
 fn base64_chars(size_bytes: i64) -> usize {
@@ -132,17 +130,17 @@ fn select_personal_manifest(snapshot: &GetResponse) -> Option<&ManifestDto> {
 /// Pull the latest vault: fetch, open, materialize and re-encrypt for local storage.
 pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
     let vek = ctx.encryption_key()?;
-    ctx.log("[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...").await;
-    let snapshot = fetch_snapshot(ctx).await?;
-    if legacy::is_legacy_sqlite_blob_snapshot(&snapshot) {
-        return legacy::open_legacy_snapshot(ctx, &snapshot).await;
-    }
+    ctx.log("[Pull] Fetching vault snapshot (GET /v2/Vault)...").await;
+    let snapshot = match fetch_snapshot(ctx).await? {
+        Snapshot::LegacySqliteBlob(snapshot) => return legacy::open_legacy_snapshot(ctx, &snapshot).await,
+        Snapshot::Manifest(snapshot) => snapshot,
+    };
 
-    ctx.log("[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...").await;
+    ctx.log("[Pull] Decrypting the manifests and reassembling the local SQLite...").await;
     let opened = open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
     let sqlite_bytes = materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
-    ctx.log(format!("[V2Pull] Step 3/4: materialized SQLite ({} bytes); re-encrypting for local storage...", sqlite_bytes.len())).await;
-    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing_of(&snapshot)))
+    ctx.log(format!("[Pull] Materialized SQLite ({} bytes); re-encrypting for local storage...", sqlite_bytes.len())).await;
+    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, snapshot.email_routing.clone().unwrap_or_default()))
 }
 
 /// Open every manifest a snapshot carries, personal first, and record the snapshot as this device's sync state.
@@ -150,7 +148,7 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
 pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot: &GetResponse, vek: &str) -> SyncResult<OpenedManifestSet> {
     let personal_dto = select_personal_manifest(snapshot).ok_or_else(|| SyncError::Snapshot("server returned no personal manifest, refusing to assemble".to_string()))?;
     // Registration creates the personal manifest without content at revision 0; any later revision without content is damage.
-    let personal_needs_first_write = personal_dto.blob.as_deref().unwrap_or("").is_empty();
+    let personal_needs_first_write = !personal_dto.has_content();
     if personal_needs_first_write && personal_dto.revision != 0 {
         return Err(SyncError::Snapshot(format!("server returned no manifest blob at revision {}, nothing to assemble", personal_dto.revision)));
     }
@@ -166,15 +164,19 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     for dto in ordered {
         let is_personal = dto.manifest_id == personal_dto.manifest_id;
         let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal).await?;
-        if is_personal && personal_needs_first_write {
-            ctx.log("[V2Pull] Personal manifest has no content yet (new account); starting from an empty vault.").await;
-            let entry = empty_personal_manifest(ctx, dto, &manifest_key).await?;
+        if is_personal {
+            let entry = if personal_needs_first_write {
+                ctx.log("[Pull] Personal manifest has no content yet (new account); starting from an empty vault.").await;
+                empty_personal_manifest(ctx, dto, &manifest_key).await?
+            } else {
+                open_logged_manifest(ctx, dto, &manifest_key, true).await?
+            };
             state::set(&ctx.host, state::VAULT_MANIFEST_SALT, &entry.manifest.manifest_salt).await?;
             state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, &entry.manifest_id).await?;
             resolved.push(entry);
             continue;
         }
-        if dto.blob.as_deref().unwrap_or("").is_empty() {
+        if !dto.has_content() {
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
             let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
             let encrypted_name = served_encrypted_name(ctx, &previous_records, &dto.manifest_id);
@@ -183,30 +185,19 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
             continue;
         }
 
-        ctx.log(format!("[V2Pull] Verifying ciphertext hash; decrypting + opening {}...", if is_personal { "personal manifest".to_string() } else { format!("shared manifest {}", dto.manifest_id) })).await;
-        let entry = open_manifest(dto, &manifest_key, is_personal)?;
-        let table_summary: Vec<String> = entry.manifest.tables.iter().map(|(t, rows)| format!("{}={}", t, rows.len())).collect();
-        ctx.log(format!("[V2Pull] Manifest {} opened (content hash verified): tables: {}", entry.manifest_id, table_summary.join(", "))).await;
-
-        if is_personal {
-            state::set(&ctx.host, state::VAULT_MANIFEST_SALT, &entry.manifest.manifest_salt).await?;
-            state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, &entry.manifest_id).await?;
-            resolved.push(entry);
-            continue;
-        }
-
+        let entry = open_logged_manifest(ctx, dto, &manifest_key, false).await?;
         let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant this account can re-open, refusing to assemble", entry.manifest_id)))?;
         let encrypted_name = served_encrypted_name(ctx, &previous_records, &entry.manifest_id);
         if let Some(ciphertext) = &encrypted_name {
             match open_manifest_name(ciphertext, &entry.manifest_id, &manifest_key) {
                 Some(name) => drop(manifest_names.insert(id_key(&entry.manifest_id), name)),
-                None => ctx.warn(format!("[V2Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
+                None => ctx.warn(format!("[Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
             }
         }
         shared_records.insert(entry.manifest_id.clone(), SharedManifestDto { manifest_id: entry.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: entry.manifest.manifest_salt.clone(), encrypted_name, can_administer: dto.can_administer });
         resolved.push(entry);
     }
-    keys::set_shared_manifest_records(&ctx.host, &shared_records, vek).await?;
+    keys::set_shared_manifest_records(ctx, &shared_records, vek).await?;
 
     let personal_revision = resolved[0].revision;
 
@@ -216,14 +207,14 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     let mut manifest_revisions: HashMap<String, i64> = resolved.iter().map(|m| (m.manifest_id.clone(), m.revision)).collect();
     manifest_revisions.extend(contentless_revisions.iter().map(|(id, rev)| (id.clone(), *rev)));
 
-    let blob_map = download_referenced_blobs(ctx, &resolved, vek).await?;
+    let blob_map = download_referenced_blobs(ctx, &resolved).await?;
 
     // An empty personal manifest has no server content to compare a push against, so it gets no baseline.
     for entry in resolved.iter().filter(|m| !(m.is_personal && personal_needs_first_write)) {
         pulled_fingerprints.insert(state::fingerprint_manifest_key(&entry.manifest_id), entry.content_fingerprint.clone());
     }
     state::set(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS, &pulled_fingerprints).await?;
-    ctx.log(format!("[V2Pull] Stored {} content fingerprint baseline(s) for push-side change detection.", pulled_fingerprints.len())).await;
+    ctx.log(format!("[Pull] Stored {} content fingerprint baseline(s) for push-side change detection.", pulled_fingerprints.len())).await;
 
     Ok(OpenedManifestSet {
         resolved,
@@ -238,7 +229,16 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     })
 }
 
-/// The encrypted name of a manifest.
+/// Open one manifest with content, logging what it holds.
+async fn open_logged_manifest(ctx: &Ctx, dto: &ManifestDto, manifest_key: &str, is_personal: bool) -> SyncResult<ResolvedManifest> {
+    ctx.log(format!("[Pull] Verifying ciphertext hash; decrypting + opening {}...", if is_personal { "personal manifest".to_string() } else { format!("shared manifest {}", dto.manifest_id) })).await;
+    let entry = open_manifest(dto, manifest_key, is_personal)?;
+    let table_summary: Vec<String> = entry.manifest.tables.iter().map(|(t, rows)| format!("{}={}", t, rows.len())).collect();
+    ctx.log(format!("[Pull] Manifest {} opened: tables: {}", entry.manifest_id, table_summary.join(", "))).await;
+    Ok(entry)
+}
+
+/// A manifest's encrypted name: the one the status served, else the one last recorded.
 fn served_encrypted_name(ctx: &Ctx, previous: &HashMap<String, SharedManifestDto>, manifest_id: &str) -> Option<String> {
     ctx.served_manifest_names
         .get(&id_key(manifest_id))
@@ -256,11 +256,11 @@ pub(crate) fn encrypt_manifest_name(name: &str, manifest_id: &str, manifest_key:
     Ok(crypto::symmetric_encrypt_with_aad(name, manifest_key, &crypto::aad::manifest_name(manifest_id))?)
 }
 
-/// Commit a snapshot's revision maps as the local believed-current revisions, manifests and buckets together.
-pub(crate) async fn commit_revisions(ctx: &Ctx, manifest_revisions: &HashMap<String, i64>, bucket_revisions: &HashMap<String, i64>) -> SyncResult<()> {
-    state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, manifest_revisions).await?;
-    state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, bucket_revisions).await?;
-    ctx.log(format!("[V2Pull] Stored local manifest revisions from snapshot: {:?}; bucket revisions: {:?}.", manifest_revisions, bucket_revisions)).await;
+/// Commit a pulled vault's revisions as the local believed-current revisions, manifests and buckets together.
+pub(crate) async fn commit_revisions(ctx: &Ctx, pulled: &PulledVault) -> SyncResult<()> {
+    state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &pulled.manifest_revisions).await?;
+    state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, &pulled.bucket_revisions).await?;
+    ctx.log(format!("[Pull] Stored local manifest revisions from snapshot: {:?}; bucket revisions: {:?}.", pulled.manifest_revisions, pulled.bucket_revisions)).await;
     Ok(())
 }
 
@@ -281,7 +281,7 @@ async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[Resolv
             return Err(SyncError::Snapshot(format!("{} declares a different address (manifest {}, category \"{}\") inside its encrypted payload, refusing to assemble", label, bucket.manifest_id, bucket.category)));
         }
         let rows: usize = bucket.tables.values().map(Vec::len).sum();
-        ctx.log(format!("[V2Pull] Data bucket {} opened: {} rows (revision {:?}).", label, rows, dto.revision)).await;
+        ctx.log(format!("[Pull] Data bucket {} opened: {} rows (revision {:?}).", label, rows, dto.revision)).await;
         fingerprints.insert(state::fingerprint_bucket_key(&dto.manifest_id, &dto.category), vault_codec::compute_content_fingerprint(&bucket_json));
         if let Some(revision) = dto.revision {
             revisions.insert(state::bucket_revision_key(&dto.manifest_id, &dto.category), revision);
@@ -292,7 +292,7 @@ async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[Resolv
 }
 
 /// Fetch every referenced blob not cached locally, decrypt it, and prune the cache to the referenced set.
-async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fallback_vek: &str) -> SyncResult<HashMap<String, Vec<u8>>> {
+async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> SyncResult<HashMap<String, Vec<u8>>> {
     let mut owners: HashMap<String, &ResolvedManifest> = HashMap::new();
     let mut refs: Vec<StoredBlobRef> = Vec::new();
     for entry in resolved {
@@ -307,7 +307,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
 
     let mut cache: HashMap<String, EncryptedBlob> = state::get(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE).await?.unwrap_or_default();
     let missing: Vec<StoredBlobRef> = refs.iter().filter(|r| !cache.contains_key(&r.hash)).cloned().collect();
-    ctx.log(format!("[V2Pull] Blob refs: {} referenced, {} cached locally, {} to download.", refs.len(), refs.len() - missing.len(), missing.len())).await;
+    ctx.log(format!("[Pull] Blob refs: {} referenced, {} cached locally, {} to download.", refs.len(), refs.len() - missing.len(), missing.len())).await;
 
     // The server stores blobs per manifest, so each batch names the manifest that owns its hashes.
     let mut batches: Vec<(String, Vec<StoredBlobRef>)> = Vec::new();
@@ -318,7 +318,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     let batch_count = batches.len();
     for (index, (manifest_id, chunk)) in batches.into_iter().enumerate() {
         let blobs = http::post::<_, BlobDownloadResponse>(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?.blobs;
-        ctx.log(format!("[V2Pull] Downloaded blob batch {}/{}: requested {}, received {}.", index + 1, batch_count, chunk.len(), blobs.len())).await;
+        ctx.log(format!("[Pull] Downloaded blob batch {}/{}: requested {}, received {}.", index + 1, batch_count, chunk.len(), blobs.len())).await;
         for dto in blobs {
             cache.insert(dto.hash, EncryptedBlob { encrypted_data_base64: dto.encrypted_data_base64, encrypted_blob_key: dto.encrypted_blob_key });
         }
@@ -328,16 +328,16 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     let mut blob_map = HashMap::new();
     for reference in &refs {
         let Some(encrypted) = cache.get(&reference.hash) else {
-            ctx.warn(format!("[V2Sync] Referenced {} blob {} was not served; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await;
+            ctx.warn(format!("[Pull] Referenced {} blob {} was not served; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await;
             continue;
         };
-        let (key, manifest_id) = owners.get(&reference.hash).map(|o| (o.vek.as_str(), o.manifest_id.as_str())).unwrap_or((fallback_vek, ""));
-        match blob_keys::decrypt_blob(encrypted, key, manifest_id, &reference.hash) {
+        let owner = owners[&reference.hash];
+        match blob_keys::decrypt_blob(encrypted, &owner.vek, &owner.manifest_id, &reference.hash) {
             Ok(bytes) => {
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), encrypted.clone());
             }
-            Err(_) => ctx.warn(format!("[V2Sync] Referenced {} blob {} did not decrypt with the manifest key; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await,
+            Err(_) => ctx.warn(format!("[Pull] Referenced {} blob {} did not decrypt with the manifest key; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await,
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &pruned_cache).await?;
@@ -347,13 +347,13 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
 
 /// Materialize manifests and buckets into a fresh database and return its bytes.
 pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest], data_buckets: &[DataBucket], blob_map: &HashMap<String, Vec<u8>>, opened_names: &HashMap<String, String>) -> SyncResult<Vec<u8>> {
-    ctx.log(format!("[V2Pull] {} blobs decrypted; running codec reassembly into a fresh SQLite ({} manifest(s) combined)...", blob_map.len(), manifests.len())).await;
+    ctx.log(format!("[Pull] {} blobs decrypted; running codec reassembly into a fresh SQLite ({} manifest(s) combined)...", blob_map.len(), manifests.len())).await;
     let schema = ctx.schema().await?;
     let materialized = vault_codec::materialize_as_sqlite(MaterializeInput { manifests: manifests.to_vec(), data_buckets: data_buckets.to_vec(), schema_columns: schema.columns.clone() })?;
 
     let overflow_tables = materialized.overflow.tables.len() + materialized.overflow.bucket_tables.values().map(HashMap::len).sum::<usize>();
     if overflow_tables > 0 || !materialized.overflow.columns.is_empty() {
-        ctx.warn(format!("[V2Pull] Newer-schema data preserved as overflow: {} unknown table(s), unknown columns on [{}].", overflow_tables, materialized.overflow.columns.keys().cloned().collect::<Vec<_>>().join(", "))).await;
+        ctx.warn(format!("[Pull] Newer-schema data preserved as overflow: {} unknown table(s), unknown columns on [{}].", overflow_tables, materialized.overflow.columns.keys().cloned().collect::<Vec<_>>().join(", "))).await;
     }
 
     // Use a fresh staging database for every materialize.
@@ -365,7 +365,7 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
     names.extend(opened_names.clone());
     db::apply_manifest_names(&ctx.host, Db::Staging, &names).await?;
     let bytes = db::export(&ctx.host, Db::Staging).await?;
-    ctx.log(format!("[V2Pull] Codec reassembly complete: {} bytes.", bytes.len())).await;
+    ctx.log(format!("[Pull] Codec reassembly complete: {} bytes.", bytes.len())).await;
     Ok(bytes)
 }
 

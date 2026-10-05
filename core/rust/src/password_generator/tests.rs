@@ -74,27 +74,13 @@ fn basic_short_password_keeps_every_class() {
 }
 
 #[test]
-fn basic_length_clamped_to_max() {
-    // Out-of-range lengths are clamped to the supported maximum (256) rather than honoured.
-    let json = r#"{"Type":"basic","Length":100000}"#;
-    let pw = generate_password(json).unwrap();
-    assert_eq!(pw.chars().count(), 256);
-}
-
-#[test]
-fn basic_zero_length_clamped_to_min() {
-    // Length 0 must not yield an empty password; it is clamped up to the minimum of 1.
-    let json = r#"{"Type":"basic","Length":0}"#;
-    let pw = generate_password(json).unwrap();
-    assert_eq!(pw.chars().count(), 1);
-}
-
-#[test]
-fn diceware_word_count_clamped_to_max() {
-    // More than the supported 10 words is clamped down to 10.
-    let json = r#"{"Type":"diceware","WordCount":50,"Separator":"Dash","Salt":"None"}"#;
-    let pw = generate_password(json).unwrap();
-    assert_eq!(pw.split('-').count(), 10);
+fn out_of_range_sizes_are_clamped() {
+    // Basic length to 1..=256 (0 must not yield an empty password), diceware to at most 10 words.
+    for (json, expected) in [(r#"{"Type":"basic","Length":100000}"#, 256), (r#"{"Type":"basic","Length":0}"#, 1)] {
+        assert_eq!(generate_password(json).unwrap().chars().count(), expected, "{json}");
+    }
+    let words = generate_password(r#"{"Type":"diceware","WordCount":50,"Separator":"Dash","Salt":"None"}"#).unwrap();
+    assert_eq!(words.split('-').count(), 10);
 }
 
 #[test]

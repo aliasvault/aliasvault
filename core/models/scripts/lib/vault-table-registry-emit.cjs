@@ -168,7 +168,7 @@ pub static SINGLE_VALUE_FIELD_KEYS: &[&str] = ${rustStrSlice(registry.SINGLE_VAL
 /// stamped with that manifest's id (\`ManifestId\`).
 pub const ENCRYPTION_KEYS_TABLE: &str = "${registry.ENCRYPTION_KEYS_TABLE}";
 
-/// The scope column every stamped table carries: the id of the manifest that owns the row.
+/// The column every stamped table carries: the id of the manifest that owns the row.
 pub const MANIFEST_ID_COL: &str = "${registry.VAULT_MANIFEST_ID_COLUMN}";
 
 /// Local bookkeeping table materialize writes into the vault DB: one row per manifest this
@@ -185,7 +185,7 @@ pub const OVERFLOW_TABLE: &str = "${registry.CODEC_OVERFLOW_TABLE}";
 pub const OVERFLOW_ROW_ID: &str = "${registry.CODEC_OVERFLOW_ROW_ID}";
 
 /// All zero GUID used for default values which indicate unstamped rows.
-pub const UNSTAMPED_SCOPE_SENTINEL: &str = "${registry.UNSTAMPED_SCOPE_SENTINEL}";
+pub const UNSTAMPED_MANIFEST_ID: &str = "${registry.UNSTAMPED_SCOPE_SENTINEL}";
 
 /// Rows referenced from inside manifest content: \`(target_table, [(referencing_table, column)])\`.
 /// On a manifest split the referenced rows are reference-copied into the destination manifest.

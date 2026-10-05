@@ -2,7 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::types::CommandKind;
 use crate::common::error::VaultError;
 
 /// Client error codes, shared with the client apps (`AppErrorCodes` in the client core).
@@ -157,9 +156,9 @@ pub enum SyncError {
     /// LEGACY: the manifest migration cannot run before the sqlite-blob upgrade chain.
     #[error("The vault has to walk the legacy upgrade chain first")]
     LegacyUpgradePending,
-    /// The host reported a failure for a command.
+    /// The host reported a failure for a command (named by its wire tag, `dbExec`).
     #[error("Host command {command} failed: {message}")]
-    Host { command: CommandKind, message: String },
+    Host { command: &'static str, message: String },
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
     /// A codec, merge or crypto failure from the core library.
@@ -211,7 +210,7 @@ impl SyncError {
             SyncError::ResyncLimitReached => Failure::Coded(ErrorCode::MergeConflict),
             SyncError::UploadRejected(_) | SyncError::MissingBlobs(_) => Failure::Coded(ErrorCode::UploadFailed),
             SyncError::LegacyUpgradePending => Failure::Coded(ErrorCode::MigrationCheckFailed),
-            SyncError::Host { command, .. } => Failure::Coded(command.storage_error_code()),
+            SyncError::Host { command, .. } => Failure::Coded(storage_error_code(command)),
             SyncError::Json(_) => Failure::Coded(ErrorCode::SyncResponseInvalid),
             SyncError::Core(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
             SyncError::Other(_) => Failure::Coded(ErrorCode::SyncEngineFailed),
@@ -219,15 +218,13 @@ impl SyncError {
     }
 }
 
-impl CommandKind {
-    /// The client error code a host failure of this command maps to.
-    pub fn storage_error_code(self) -> ErrorCode {
-        match self {
-            CommandKind::DbOpen => ErrorCode::DatabaseInitFailed,
-            CommandKind::StateGet | CommandKind::DbQuery | CommandKind::DbExport | CommandKind::VaultLoad => ErrorCode::StorageReadFailed,
-            CommandKind::StateSet | CommandKind::StateRemove | CommandKind::DbExec | CommandKind::VaultStore | CommandKind::MarkClean => ErrorCode::StorageWriteFailed,
-            CommandKind::Http | CommandKind::Log | CommandKind::Done => ErrorCode::UnknownError,
-        }
+/// The client error code a host failure of the named command maps to.
+fn storage_error_code(command: &str) -> ErrorCode {
+    match command {
+        "dbOpen" => ErrorCode::DatabaseInitFailed,
+        "stateGet" | "dbQuery" | "dbExport" | "vaultLoad" => ErrorCode::StorageReadFailed,
+        "stateSet" | "stateRemove" | "dbExec" | "vaultStore" | "markClean" => ErrorCode::StorageWriteFailed,
+        _ => ErrorCode::UnknownError,
     }
 }
 
@@ -247,8 +244,8 @@ mod tests {
         assert_eq!(SyncError::KeyOutOfSync.failure(), Failure::Coded(ErrorCode::KeyOutOfSync));
         assert_eq!(serde_json::to_string(&LogoutReason::PasswordChanged).unwrap(), "\"passwordChanged\"");
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
-        assert_eq!(SyncError::Host { command: CommandKind::DbOpen, message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
-        assert_eq!(SyncError::Host { command: CommandKind::DbExec, message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
+        assert_eq!(SyncError::Host { command: "dbOpen", message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
+        assert_eq!(SyncError::Host { command: "dbExec", message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
     }
 
     #[test]

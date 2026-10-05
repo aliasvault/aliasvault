@@ -4,10 +4,10 @@
 //! where the format must stay compatible with the `SecureRemotePassword` .NET package
 //! used by the API server and the `secure-remote-password` library used in the JS test suite.
 
-use digest::Digest;
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
-use sha2::Sha256;
+use sha2::{Digest, Sha256};
+use std::fmt;
 use srp::client::SrpClient;
 use srp::groups::G_2048;
 use srp::server::SrpServer;
@@ -22,7 +22,7 @@ use crate::common::rng::fill_random;
 const N_BYTES: usize = 256;
 
 /// SRP ephemeral key pair (public and secret values).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct SrpEphemeral {
     pub public: String,
@@ -30,11 +30,23 @@ pub struct SrpEphemeral {
 }
 
 /// SRP session containing proof and shared key.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct SrpSession {
     pub proof: String,
     pub key: String,
+}
+
+impl fmt::Debug for SrpEphemeral {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SrpEphemeral").field("public", &self.public).field("secret", &"<redacted>").finish()
+    }
+}
+
+impl fmt::Debug for SrpSession {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SrpSession").field("proof", &self.proof).field("key", &"<redacted>").finish()
+    }
 }
 
 /// SRP-related errors.
@@ -49,10 +61,6 @@ pub enum SrpError {
     #[error("Authentication failed: {0}")]
     AuthenticationFailed(String),
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Hex / Byte Helpers
-// ═══════════════════════════════════════════════════════════════════════════════
 
 /// Decode a hex parameter (either case, optional 0x prefix).
 fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SrpError> {
@@ -87,10 +95,6 @@ fn to_padded_bytes(value: &BigUint) -> Vec<u8> {
     pad_to_length(value.to_bytes_be(), N_BYTES)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Client Operations
-// ═══════════════════════════════════════════════════════════════════════════════
-
 /// A random 32-byte SRP salt as an uppercase hex string.
 pub fn srp_generate_salt() -> String {
     bytes_to_hex(&generate_random_bytes(32))
@@ -98,20 +102,15 @@ pub fn srp_generate_salt() -> String {
 
 /// The SRP private key `x = H(salt | H(identity | ":" | password_hash))` as uppercase hex, from hex inputs.
 /// The full 32-byte digest is returned (not via BigUint, which would strip leading zero bytes).
-pub fn srp_derive_private_key(
-    salt: &str,
-    identity: &str,
-    password_hash: &str,
-) -> Result<String, SrpError> {
+pub fn srp_derive_private_key(salt: &str, identity: &str, password_hash: &str) -> Result<String, SrpError> {
     let identity = identity.to_lowercase();
     let salt_bytes = hex_to_bytes(salt)?;
 
-    let identity_hash =
-        SrpClient::<Sha256>::compute_identity_hash(identity.as_bytes(), password_hash.as_bytes());
+    let identity_hash = SrpClient::<Sha256>::compute_identity_hash(identity.as_bytes(), password_hash.as_bytes());
 
     let mut x_hasher = Sha256::new();
     x_hasher.update(&salt_bytes);
-    x_hasher.update(&identity_hash);
+    x_hasher.update(identity_hash);
 
     Ok(bytes_to_hex(&x_hasher.finalize()))
 }
@@ -133,20 +132,11 @@ pub fn srp_generate_ephemeral() -> SrpEphemeral {
     let a = generate_random_bytes(64);
     let a_pub = client.compute_public_ephemeral(&a);
 
-    SrpEphemeral {
-        public: bytes_to_hex(&pad_to_length(a_pub, N_BYTES)),
-        secret: bytes_to_hex(&a),
-    }
+    SrpEphemeral { public: bytes_to_hex(&pad_to_length(a_pub, N_BYTES)), secret: bytes_to_hex(&a) }
 }
 
 /// The client session (key `K` and proof `M1`) from the server's public ephemeral `B`; hex in, hex out.
-pub fn srp_derive_session(
-    client_secret: &str,
-    server_public: &str,
-    salt: &str,
-    identity: &str,
-    private_key: &str,
-) -> Result<SrpSession, SrpError> {
+pub fn srp_derive_session(client_secret: &str, server_public: &str, salt: &str, identity: &str, private_key: &str) -> Result<SrpSession, SrpError> {
     let identity = identity.to_lowercase();
     let a = BigUint::from_bytes_be(&hex_to_bytes(client_secret)?);
     let b_pub = BigUint::from_bytes_be(&hex_to_bytes(server_public)?);
@@ -155,9 +145,7 @@ pub fn srp_derive_session(
 
     // Safeguard against malicious B (B mod N must not be 0)
     if &b_pub % &G_2048.n == BigUint::default() {
-        return Err(SrpError::InvalidParameter(
-            "server public ephemeral is invalid".to_string(),
-        ));
+        return Err(SrpError::InvalidParameter("server public ephemeral is invalid".to_string()));
     }
 
     let client = SrpClient::<Sha256>::new(&G_2048);
@@ -167,6 +155,9 @@ pub fn srp_derive_session(
     let b_pub_bytes = to_padded_bytes(&b_pub);
 
     let u = compute_u::<Sha256>(&a_pub_bytes, &b_pub_bytes);
+    if u == BigUint::default() {
+        return Err(SrpError::InvalidParameter("scrambling parameter u is zero".to_string()));
+    }
     let k = compute_k::<Sha256>(&G_2048);
 
     // S = (B - k*g^x)^(a + u*x) mod N
@@ -175,19 +166,11 @@ pub fn srp_derive_session(
     let key = derive_session_key(&s);
     let m1 = compute_m1(&a_pub_bytes, &b_pub_bytes, &salt_bytes, &identity, &key);
 
-    Ok(SrpSession {
-        proof: bytes_to_hex(&m1),
-        key: bytes_to_hex(&key),
-    })
+    Ok(SrpSession { proof: bytes_to_hex(&m1), key: bytes_to_hex(&key) })
 }
 
 /// Whether the server's proof `M2` matches, which confirms it derived the same session key.
-pub fn srp_verify_session(
-    client_public: &str,
-    client_proof: &str,
-    session_key: &str,
-    server_proof: &str,
-) -> Result<bool, SrpError> {
+pub fn srp_verify_session(client_public: &str, client_proof: &str, session_key: &str, server_proof: &str) -> Result<bool, SrpError> {
     let a_pub_bytes = hex_to_bytes(client_public)?;
     let m1_bytes = hex_to_bytes(client_proof)?;
     let key_bytes = hex_to_bytes(session_key)?;
@@ -198,9 +181,7 @@ pub fn srp_verify_session(
     Ok(expected_m2.ct_eq(&server_m2_bytes).unwrap_u8() == 1)
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Server Operations
-// ═══════════════════════════════════════════════════════════════════════════════
+// Server side of the handshake.
 
 /// A server ephemeral pair: `B = k*v + g^b mod N` for a random 64-byte secret `b`, from the hex verifier.
 pub fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, SrpError> {
@@ -211,10 +192,7 @@ pub fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, Srp
     let b = generate_random_bytes(64);
     let b_pub = server.compute_public_ephemeral(&b, &v_bytes);
 
-    Ok(SrpEphemeral {
-        public: bytes_to_hex(&pad_to_length(b_pub, N_BYTES)),
-        secret: bytes_to_hex(&b),
-    })
+    Ok(SrpEphemeral { public: bytes_to_hex(&pad_to_length(b_pub, N_BYTES)), secret: bytes_to_hex(&b) })
 }
 
 /// The server session (key `K` and proof `M2`) once the client's proof `M1` verifies; `None` when it does not.
@@ -235,9 +213,7 @@ pub fn srp_derive_session_server(
 
     // Safeguard against malicious A (A mod N must not be 0)
     if &a_pub % &G_2048.n == BigUint::default() {
-        return Err(SrpError::InvalidParameter(
-            "client public ephemeral is invalid".to_string(),
-        ));
+        return Err(SrpError::InvalidParameter("client public ephemeral is invalid".to_string()));
     }
 
     let server = SrpServer::<Sha256>::new(&G_2048);
@@ -250,6 +226,9 @@ pub fn srp_derive_session_server(
     let b_pub_bytes = to_padded_bytes(&b_pub);
 
     let u = compute_u::<Sha256>(&a_pub_bytes, &b_pub_bytes);
+    if u == BigUint::default() {
+        return Err(SrpError::InvalidParameter("scrambling parameter u is zero".to_string()));
+    }
 
     // S = (A * v^u)^b mod N
     let s = server.compute_premaster_secret(&a_pub, &v, &u, &b);
@@ -263,38 +242,32 @@ pub fn srp_derive_session_server(
 
     let m2 = compute_m2(&a_pub_bytes, &expected_m1, &key);
 
-    Ok(Some(SrpSession {
-        proof: bytes_to_hex(&m2),
-        key: bytes_to_hex(&key),
-    }))
+    Ok(Some(SrpSession { proof: bytes_to_hex(&m2), key: bytes_to_hex(&key) }))
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Wire-Format-Specific Primitives
-//
-// These deviate from the `srp` crate and must not be replaced with its versions:
-// the SecureRemotePassword (.NET/JS) format hashes the padded premaster secret
-// into K and uses the RFC 2945 M1, while the crate uses raw S and M1 = H(A|B|S).
-// ═══════════════════════════════════════════════════════════════════════════════
+/*
+ * Wire format primitives that deviate from the `srp` crate on purpose: the SecureRemotePassword (.NET/JS) format hashes
+ * the padded premaster secret into K and uses the RFC 2945 M1, while the crate uses raw S and M1 = H(A|B|S).
+ */
 
 /// Derive the session key K = H(PAD(S)) from the premaster secret.
 fn derive_session_key(s: &BigUint) -> Vec<u8> {
-    Sha256::digest(&to_padded_bytes(s)).to_vec()
+    Sha256::digest(to_padded_bytes(s)).to_vec()
 }
 
 /// Compute M1 = H(H(N) XOR H(g) | H(I) | s | A | B | K)
 ///
 /// Note: H(g) uses g without padding, unlike k = H(N, PAD(g))
 fn compute_m1(a_pub: &[u8], b_pub: &[u8], salt: &[u8], identity: &str, key: &[u8]) -> Vec<u8> {
-    let h_n = Sha256::digest(&G_2048.n.to_bytes_be());
-    let h_g = Sha256::digest(&G_2048.g.to_bytes_be());
+    let h_n = Sha256::digest(G_2048.n.to_bytes_be());
+    let h_g = Sha256::digest(G_2048.g.to_bytes_be());
     let h_n_xor_h_g: Vec<u8> = h_n.iter().zip(h_g.iter()).map(|(a, b)| a ^ b).collect();
 
     let h_i = Sha256::digest(identity.as_bytes());
 
     let mut hasher = Sha256::new();
     hasher.update(&h_n_xor_h_g);
-    hasher.update(&h_i);
+    hasher.update(h_i);
     hasher.update(salt);
     hasher.update(a_pub);
     hasher.update(b_pub);
@@ -311,90 +284,13 @@ fn compute_m2(a_pub: &[u8], m1: &[u8], key: &[u8]) -> Vec<u8> {
     hasher.finalize().to_vec()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Tests
-// ═══════════════════════════════════════════════════════════════════════════════
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_generate_salt() {
-        let salt = srp_generate_salt();
-        assert_eq!(salt.len(), 64); // 32 bytes = 64 hex chars
-        assert!(hex_to_bytes(&salt).is_ok());
-    }
-
-    #[test]
-    fn test_derive_private_key() {
-        let salt = "0A0B0C0D0E0F10111213141516171819";
-        let identity = "testuser";
-        let password_hash = "AABBCCDD";
-
-        let private_key = srp_derive_private_key(salt, identity, password_hash).unwrap();
-
-        let expected = "ACD81DF26882B20336CF2A8CDE3CABA35BA359805FDFC4567EA7BD74E8302473";
-
-        // Should be 32 bytes = 64 hex chars
-        assert_eq!(private_key.len(), 64);
-        assert!(hex_to_bytes(&private_key).is_ok());
-
-        // Same inputs should produce same output
-        let private_key2 = srp_derive_private_key(salt, identity, password_hash).unwrap();
-        assert_eq!(private_key, private_key2);
-
-        assert_eq!(private_key.to_uppercase(), expected);
-    }
-
-    #[test]
-    fn test_derive_verifier() {
-        let salt = "0A0B0C0D0E0F10111213141516171819";
-        let identity = "testuser";
-        let password_hash = "AABBCCDD";
-
-        let private_key = srp_derive_private_key(salt, identity, password_hash).unwrap();
-        let verifier = srp_derive_verifier(&private_key).unwrap();
-
-        let expected = "378FAC69B16F469FB21294F7C74429CD288F47E331E8BA02FFD7C36F2914472A9F2A8C69FFEA434C9F78FCA7E7E41CBBF591FFA589460F023EF3A6F7F6B84366458893C52F8A3304E2247C50BDAE13F4463281B8CDCC519DD563A926C93D9A33E08C1DE2EFB6102BD4BFFE97D9DA9A20354393FA041C8C0459D9D11907E11B75DE4F74990CD0364BA3884C697CF548E31707162D033576B96756A9C8B622332AC9631F62D170445CF33A5EF7E1BE82EC949A5F1FD4AAF1767EE861C729E348FD4209F552BEA5A2F059C64985F4DD2495896AE33315F54329192715AB27EA32B0AF56AC8991C9F708260EF3B5D263FA55B6380CDD294F272FFD1DD86116F0C06C";
-
-        // Should be 256 bytes = 512 hex chars (padded to 2048-bit group size)
-        assert_eq!(verifier.len(), 512);
-        assert!(hex_to_bytes(&verifier).is_ok());
-
-        assert_eq!(verifier.to_uppercase(), expected);
-    }
-
-    #[test]
-    fn test_generate_ephemeral() {
-        let ephemeral = srp_generate_ephemeral();
-
-        // Public should be 256 bytes = 512 hex chars
-        assert_eq!(ephemeral.public.len(), 512);
-        // Secret should be 64 bytes = 128 hex chars
-        assert_eq!(ephemeral.secret.len(), 128);
-
-        assert!(hex_to_bytes(&ephemeral.public).is_ok());
-        assert!(hex_to_bytes(&ephemeral.secret).is_ok());
-    }
-
-    #[test]
-    fn test_generate_ephemeral_server() {
-        let salt = srp_generate_salt();
-        let private_key = srp_derive_private_key(&salt, "testuser", "PASSWORDHASH").unwrap();
-        let verifier = srp_derive_verifier(&private_key).unwrap();
-
-        let ephemeral = srp_generate_ephemeral_server(&verifier).unwrap();
-
-        // Public should be 256 bytes = 512 hex chars
-        assert_eq!(ephemeral.public.len(), 512);
-        // Secret should be 64 bytes = 128 hex chars
-        assert_eq!(ephemeral.secret.len(), 128);
-    }
-
     /// Test with fixed values for deterministic verification.
     #[test]
-    fn test_fixed_values() {
+    fn fixed_values() {
         let salt = "0A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F";
         let identity = "testuser";
         let password_hash = "AABBCCDDEEFF00112233445566778899AABBCCDDEEFF00112233445566778899";
@@ -411,7 +307,7 @@ mod tests {
 
     /// Test session derivation with fixed ephemeral values.
     #[test]
-    fn test_session_fixed_values() {
+    fn session_fixed_values() {
         let salt = "0A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F";
         let identity = "testuser";
         let password_hash = "AABBCCDDEEFF00112233445566778899AABBCCDDEEFF00112233445566778899";
@@ -424,8 +320,7 @@ mod tests {
         let expected_session_key = "AD713F5D8F520B7B9413CDD9EF6D9B5FE37F23A9B62C5E2B90D2291F8C3A9E6F";
         let expected_session_proof = "698D0DA7137A0FC4A55B49525C1312ADCD07788E8CD5FFF5BD195B3C17B6B3DF";
 
-        let session =
-            srp_derive_session(client_secret, server_public, salt, identity, &private_key).unwrap();
+        let session = srp_derive_session(client_secret, server_public, salt, identity, &private_key).unwrap();
 
         assert_eq!(session.key.to_uppercase(), expected_session_key);
         assert_eq!(session.proof.to_uppercase(), expected_session_proof);
@@ -433,7 +328,7 @@ mod tests {
 
     /// Test with realistic 32-byte salt.
     #[test]
-    fn test_realistic_salt() {
+    fn realistic_salt() {
         let salt = "7c9d6615bfeb06c552c7fbcbfbe7030035a09f058ed7cf7755ca6d3bfa56393c";
         let username = "testuser";
         let password_hash = "ABCD1234567890ABCD1234567890ABCD1234567890ABCD1234567890ABCD1234";
@@ -453,15 +348,14 @@ mod tests {
         let expected_session_key = "7564C550D5BF148D17B33C251B71EA2E0CD96D70E207B58622D9FF78BEE609A4";
         let expected_session_proof = "87BF2829F780EF88C1BFB63F39547DAA3CC787B40978C27CDC50FDEBFD324470";
 
-        let session =
-            srp_derive_session(client_secret, server_public, salt, username, &private_key).unwrap();
+        let session = srp_derive_session(client_secret, server_public, salt, username, &private_key).unwrap();
 
         assert_eq!(session.key.to_uppercase(), expected_session_key);
         assert_eq!(session.proof.to_uppercase(), expected_session_proof);
     }
 
     #[test]
-    fn test_full_srp_flow() {
+    fn full_srp_flow() {
         // 1. Registration: Generate salt and verifier
         let salt = srp_generate_salt();
         let identity = "testuser@example.com";
@@ -476,15 +370,11 @@ mod tests {
         // 3. Server generates ephemeral and sends to client
         let server_ephemeral = srp_generate_ephemeral_server(&verifier).unwrap();
 
+        // Salts are 32 bytes, public values are padded to the 2048-bit group as the server expects.
+        assert_eq!((salt.len(), client_ephemeral.public.len(), server_ephemeral.public.len(), verifier.len()), (64, 512, 512, 512));
+
         // 4. Client derives session
-        let client_session = srp_derive_session(
-            &client_ephemeral.secret,
-            &server_ephemeral.public,
-            &salt,
-            identity,
-            &private_key,
-        )
-        .unwrap();
+        let client_session = srp_derive_session(&client_ephemeral.secret, &server_ephemeral.public, &salt, identity, &private_key).unwrap();
 
         // 5. Server verifies client proof and derives session
         let server_session = srp_derive_session_server(
@@ -497,40 +387,26 @@ mod tests {
         )
         .unwrap();
 
-        // Server should successfully verify and return a session
         let server_session = server_session.expect("server should accept valid client proof");
 
-        // Both should have the same session key
         assert_eq!(client_session.key, server_session.key);
 
         // 6. Client verifies server proof (M2)
-        let verified = srp_verify_session(
-            &client_ephemeral.public,
-            &client_session.proof,
-            &client_session.key,
-            &server_session.proof,
-        )
-        .unwrap();
+        let verified = srp_verify_session(&client_ephemeral.public, &client_session.proof, &client_session.key, &server_session.proof).unwrap();
         assert!(verified);
 
         // A tampered server proof should fail client-side verification
         let mut tampered = server_session.proof.clone();
         let flipped = if tampered.starts_with('0') { "1" } else { "0" };
         tampered.replace_range(0..1, flipped);
-        let verified_tampered = srp_verify_session(
-            &client_ephemeral.public,
-            &client_session.proof,
-            &client_session.key,
-            &tampered,
-        )
-        .unwrap();
+        let verified_tampered = srp_verify_session(&client_ephemeral.public, &client_session.proof, &client_session.key, &tampered).unwrap();
         assert!(!verified_tampered);
     }
 
     /// Mixed-case identity must produce the same values as lowercase, matching
     /// the C# implementation's ToLowerInvariant() normalization.
     #[test]
-    fn test_identity_lowercased() {
+    fn identity_lowercased() {
         let salt = "0A0B0C0D0E0F10111213141516171819";
         let password_hash = "AABBCCDD";
 
@@ -546,14 +422,7 @@ mod tests {
         let client_ephemeral = srp_generate_ephemeral();
         let server_ephemeral = srp_generate_ephemeral_server(&verifier).unwrap();
 
-        let client_session = srp_derive_session(
-            &client_ephemeral.secret,
-            &server_ephemeral.public,
-            &salt,
-            "TESTUSER",
-            &private_key,
-        )
-        .unwrap();
+        let client_session = srp_derive_session(&client_ephemeral.secret, &server_ephemeral.public, &salt, "TESTUSER", &private_key).unwrap();
 
         let server_session = srp_derive_session_server(
             &server_ephemeral.secret,
@@ -570,15 +439,14 @@ mod tests {
     }
 
     #[test]
-    fn test_wrong_password_fails() {
+    fn wrong_password_fails() {
         // Setup with correct credentials
         let salt = srp_generate_salt();
         let identity = "testuser";
         let correct_password_hash = "CORRECT_PASSWORD_HASH_0123456789";
         let wrong_password_hash = "WRONG_PASSWORD_HASH_0123456789AB";
 
-        let correct_private_key =
-            srp_derive_private_key(&salt, identity, correct_password_hash).unwrap();
+        let correct_private_key = srp_derive_private_key(&salt, identity, correct_password_hash).unwrap();
         let verifier = srp_derive_verifier(&correct_private_key).unwrap();
 
         // Client uses wrong password
@@ -588,14 +456,7 @@ mod tests {
         let server_ephemeral = srp_generate_ephemeral_server(&verifier).unwrap();
 
         // Client derives session with wrong password
-        let client_session = srp_derive_session(
-            &client_ephemeral.secret,
-            &server_ephemeral.public,
-            &salt,
-            identity,
-            &wrong_private_key,
-        )
-        .unwrap();
+        let client_session = srp_derive_session(&client_ephemeral.secret, &server_ephemeral.public, &salt, identity, &wrong_private_key).unwrap();
 
         // Server should reject the client proof
         let server_session = srp_derive_session_server(
@@ -608,12 +469,11 @@ mod tests {
         )
         .unwrap();
 
-        // Server should return None (authentication failed)
         assert!(server_session.is_none());
     }
 
     #[test]
-    fn test_malicious_server_public_rejected() {
+    fn malicious_server_public_rejected() {
         let salt = srp_generate_salt();
         let identity = "testuser";
         let private_key = srp_derive_private_key(&salt, identity, "AABBCCDD").unwrap();
@@ -622,19 +482,13 @@ mod tests {
         // B = 0 and B = N are both ≡ 0 mod N and must be rejected
         let n_hex = bytes_to_hex(&G_2048.n.to_bytes_be());
         for bad_b in ["00", n_hex.as_str()] {
-            let result = srp_derive_session(
-                &client_ephemeral.secret,
-                bad_b,
-                &salt,
-                identity,
-                &private_key,
-            );
+            let result = srp_derive_session(&client_ephemeral.secret, bad_b, &salt, identity, &private_key);
             assert!(matches!(result, Err(SrpError::InvalidParameter(_))));
         }
     }
 
     #[test]
-    fn test_malicious_client_public_rejected() {
+    fn malicious_client_public_rejected() {
         let salt = srp_generate_salt();
         let identity = "testuser";
         let private_key = srp_derive_private_key(&salt, identity, "AABBCCDD").unwrap();
@@ -643,40 +497,17 @@ mod tests {
 
         let n_hex = bytes_to_hex(&G_2048.n.to_bytes_be());
         for bad_a in ["00", n_hex.as_str()] {
-            let result = srp_derive_session_server(
-                &server_ephemeral.secret,
-                bad_a,
-                &salt,
-                identity,
-                &verifier,
-                "AABBCCDD",
-            );
+            let result = srp_derive_session_server(&server_ephemeral.secret, bad_a, &salt, identity, &verifier, "AABBCCDD");
             assert!(matches!(result, Err(SrpError::InvalidParameter(_))));
         }
     }
 
+    /// Decoding itself is `common::encoding`'s; SRP adds the `0x` prefix, trimming and a typed error for empty input.
     #[test]
-    fn test_hex_conversion() {
-        // Test round-trip
-        let original = vec![0x00, 0x01, 0x0A, 0xFF, 0x10];
-        let hex = bytes_to_hex(&original);
-        assert_eq!(hex, "00010AFF10");
-
-        let decoded = hex_to_bytes(&hex).unwrap();
-        assert_eq!(decoded, original);
-
-        // Lowercase and 0x-prefixed input
-        assert_eq!(hex_to_bytes("00010aff10").unwrap(), original);
-        assert_eq!(hex_to_bytes("0x00010AFF10").unwrap(), original);
-    }
-
-    #[test]
-    fn test_hex_invalid_input() {
-        assert!(matches!(hex_to_bytes(""), Err(SrpError::InvalidHex(_))));
-        assert!(matches!(hex_to_bytes("ABC"), Err(SrpError::InvalidHex(_))));
-        assert!(matches!(hex_to_bytes("GG"), Err(SrpError::InvalidHex(_))));
-        // Multi-byte UTF-8 must return an error, not panic on a byte-slice boundary
-        assert!(matches!(hex_to_bytes("0é9"), Err(SrpError::InvalidHex(_))));
-        assert!(matches!(hex_to_bytes("éé"), Err(SrpError::InvalidHex(_))));
+    fn hex_input_accepts_a_prefix_and_refuses_empty_or_malformed_text() {
+        assert_eq!(hex_to_bytes(" 0x00010aFF10 ").unwrap(), vec![0x00, 0x01, 0x0A, 0xFF, 0x10]);
+        for bad in ["", "0x", "ABC", "GG", "0é9"] {
+            assert!(matches!(hex_to_bytes(bad), Err(SrpError::InvalidHex(_))), "{bad:?}");
+        }
     }
 }

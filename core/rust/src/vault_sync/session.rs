@@ -40,7 +40,7 @@ impl Host {
 
     /// Like [`Host::call`], also returning the raw bytes the host attached to its response, if any.
     pub async fn call_with_bytes<R: DeserializeOwned>(&self, command: Command) -> SyncResult<(R, Option<Vec<u8>>)> {
-        let kind = command.kind();
+        let kind = command.name();
         let (response, bytes) = CommandFuture { slot: self.slot.clone(), command: Some(command), sent: false }.await;
         if let Some(error) = response.get("error").and_then(Value::as_str) {
             return Err(SyncError::Host { command: kind, message: error.to_string() });

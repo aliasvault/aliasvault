@@ -2,18 +2,18 @@
 //! changed under the key of the manifest that owns it, upload the blobs the server lacks, and `POST v2/Vault`.
 
 use std::collections::{HashMap, HashSet};
-use std::ops::Deref;
 
-use crate::vault_model::{id_key, ids_equal, OVERFLOW_TABLE, TRASH_RETENTION_DEFAULT_DAYS};
+use crate::vault_model::names::ITEMS_TABLE;
+use crate::vault_model::{id_key, OVERFLOW_TABLE, TRASH_RETENTION_DEFAULT_DAYS};
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
 use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
 use super::blob_keys::{self, EncryptedBlob};
+use super::write_set::{self, ManifestRecord, SkipReason};
 use super::{db, http, keys};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
-use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteRecord, ManifestWriteSetRequest, SharedManifestRecord};
 
 const BLOBS_ENDPOINT: &str = "Vault/blobs";
 const BLOBS_MISSING_ENDPOINT: &str = "Vault/blobs/missing";
@@ -21,20 +21,23 @@ const BLOBS_MISSING_ENDPOINT: &str = "Vault/blobs/missing";
 /// The mutation scope that requires a full manifest push.
 const MANIFEST_SCOPE: &str = "Main";
 
-/// One manifest this vault can write, resolved from local state before canonicalizing: the write record the
-/// sharing logic produced plus the key it encrypts under. Derefs to the record so its fields read directly.
-#[derive(Debug, Clone)]
-pub(crate) struct ManifestRecord {
-    pub record: ManifestWriteRecord,
-    /// The key this manifest encrypts with; None for the personal manifest, whose content key the push supplies.
-    pub vek: Option<String>,
+/// What a push writes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum WriteKind {
+    /// What changed against the last known server state. With `buckets_only`, a host that recorded only
+    /// bucket-scoped mutations gets away with writing those buckets, never canonicalizing the manifests.
+    Changes { buckets_only: bool },
+    /// Every manifest and bucket, whatever the fingerprints say: the server never saw this vault.
+    Everything,
+    /// The one-time account upgrade: creates the key hierarchy and encrypts every personal blob again under the
+    /// new key, so the whole vault is written.
+    AccountKeyMigration,
 }
 
-impl Deref for ManifestRecord {
-    type Target = ManifestWriteRecord;
-
-    fn deref(&self) -> &ManifestWriteRecord {
-        &self.record
+impl WriteKind {
+    /// Whether elements whose fingerprint matches the server baseline are written anyway.
+    fn writes_unchanged(self) -> bool {
+        !matches!(self, WriteKind::Changes { .. })
     }
 }
 
@@ -57,7 +60,7 @@ pub(crate) enum PushStatus {
 pub(crate) struct UploadOutcome {
     pub status: PushStatus,
     pub mutation_seq_at_start: u64,
-    /// Whether the stored vault changed under the upload (pruned or re-keyed).
+    /// Whether the stored vault was rewritten under the upload (pruned or keypair added).
     pub vault_changed: bool,
 }
 
@@ -74,9 +77,9 @@ pub(crate) async fn canonicalize_vault(ctx: &Ctx, stamp_unstamped_into: Option<S
     Ok(CanonicalizedSet { canonicalized, manifest_records })
 }
 
-/// Every manifest this vault can write, personal manifest first. The core decides which.
+/// Every manifest this vault can write, personal manifest first.
 async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> {
-    let manifest_salt = match state::get::<String>(&ctx.host, state::VAULT_MANIFEST_SALT).await? {
+    let personal_salt = match state::get::<String>(&ctx.host, state::VAULT_MANIFEST_SALT).await? {
         Some(salt) => salt,
         None => {
             let salt = vault_codec::generate_manifest_salt();
@@ -84,31 +87,17 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
             salt
         }
     };
-    let shared_veks = keys::open_shared_manifest_veks(ctx).await?;
+    let personal_id = resolve_personal_manifest_id(ctx).await?;
+    let stamped = db::manifest_ids_in_vault(&ctx.host, Db::Local).await?;
+    let opened = keys::open_shared_manifest_veks(ctx).await?;
     let held = keys::shared_manifest_records(ctx).await?;
-    let write_set = vault_sharing::resolve_manifest_write_set(ManifestWriteSetRequest {
-        personal_manifest_id: resolve_personal_manifest_id(ctx).await?,
-        personal_manifest_salt: manifest_salt,
-        stamped_manifest_ids: db::manifest_ids_in_vault(&ctx.host, Db::Local).await?,
-        opened_manifest_ids: shared_veks.keys().cloned().collect(),
-        held_records: held.values().map(|r| SharedManifestRecord { manifest_id: r.manifest_id.clone(), salt: r.salt.clone(), can_administer: r.can_administer }).collect(),
-    });
-    for skipped in &write_set.skipped {
-        let why = match skipped.reason {
-            vault_sharing::WriteSkipReason::NoRowsInVault => "has no rows in this vault; leaving it out of the write rather than emptying it server-side",
-            vault_sharing::WriteSkipReason::KeyDidNotOpen => "did not open; leaving it out of the write",
+    let (records, skipped) = write_set::resolve_write_set(&personal_id, &personal_salt, &stamped, &opened, &held);
+    for (manifest_id, reason) in skipped {
+        let why = match reason {
+            SkipReason::NoRowsInVault => "has no rows in this vault; leaving it out of the write rather than emptying it server-side",
+            SkipReason::KeyDidNotOpen => "did not open; leaving it out of the write",
         };
-        ctx.log(format!("[V2Push] Shared manifest {} {}.", skipped.manifest_id, why)).await;
-    }
-
-    let vek_by_id: HashMap<String, String> = shared_veks.iter().map(|(id, vek)| (id_key(id), vek.clone())).collect();
-    let mut records = Vec::new();
-    for record in write_set.records {
-        let vek = if record.is_personal { None } else { vek_by_id.get(&id_key(&record.manifest_id)).cloned() };
-        if !record.is_personal && vek.is_none() {
-            return Err(SyncError::Other(format!("manifest {} is in the write set without a key, refusing to write it", record.manifest_id)));
-        }
-        records.push(ManifestRecord { record, vek });
+        ctx.log(format!("[Push] Shared manifest {} {}.", manifest_id, why)).await;
     }
     Ok(records)
 }
@@ -116,6 +105,13 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
 /// The personal manifest id as the last pull recorded it. Pushing without one is impossible.
 pub(crate) async fn resolve_personal_manifest_id(ctx: &Ctx) -> SyncResult<String> {
     state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.ok_or_else(|| SyncError::Other("no personal manifest id available (no snapshot baseline recorded); pull once before pushing".to_string()))
+}
+
+/// The key each writable manifest encrypts with, the personal one under the session key.
+async fn resolve_write_keys(ctx: &Ctx) -> SyncResult<HashMap<String, String>> {
+    let mut keys_by_manifest = keys::open_shared_manifest_veks(ctx).await?;
+    keys_by_manifest.insert(resolve_personal_manifest_id(ctx).await?, ctx.encryption_key()?);
+    Ok(keys_by_manifest)
 }
 
 /// Whether the local vault is canonically identical to the last-known server state. Returns the canonicalize
@@ -140,13 +136,10 @@ pub(crate) async fn detect_no_op_mutation(ctx: &Ctx) -> SyncResult<(bool, Canoni
 }
 
 /// The manifests the local vault holds rows for that this session cannot write.
-pub(crate) async fn find_unwritable_manifests(ctx: &Ctx) -> SyncResult<Vec<String>> {
-    let mut writable: Vec<String> = keys::open_shared_manifest_veks(ctx).await?.keys().cloned().collect();
-    if let Some(personal) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? {
-        writable.push(personal);
-    }
-    let partition = vault_sharing::partition_manifest_access(ManifestAccessRequest { manifest_ids_in_vault: db::manifest_ids_in_vault(&ctx.host, Db::Local).await?, writable_manifest_ids: writable, granted_manifest_ids: Vec::new() });
-    Ok(partition.unwritable)
+async fn find_unwritable_manifests(ctx: &Ctx) -> SyncResult<Vec<String>> {
+    let mut writable: Vec<String> = keys::open_shared_manifest_veks(ctx).await?.into_keys().collect();
+    writable.extend(state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?);
+    Ok(write_set::unwritable_manifests(&db::manifest_ids_in_vault(&ctx.host, Db::Local).await?, &writable))
 }
 
 /// Whether the vault holds rows this session cannot write, logging why; a failed check reads as "no".
@@ -154,117 +147,125 @@ pub(crate) async fn vault_holds_unwritable_manifests(ctx: &Ctx) -> bool {
     match find_unwritable_manifests(ctx).await {
         Ok(unwritable) if unwritable.is_empty() => false,
         Ok(unwritable) => {
-            ctx.warn(format!("[VaultSync] Vault holds rows for manifest(s) this session cannot write ({}); pulling before the push.", unwritable.join(", "))).await;
+            ctx.warn(format!("[Push] Vault holds rows for manifest(s) this session cannot write ({}); pulling before the push.", unwritable.join(", "))).await;
             true
         }
         Err(error) => {
-            ctx.warn(format!("[VaultSync] Could not check which manifests this session can write; leaving the pull decision to the revisions. {}", error)).await;
+            ctx.warn(format!("[Push] Could not check which manifests this session can write; leaving the pull decision to the revisions. {}", error)).await;
             false
         }
     }
-}
-
-/// The key each manifest's data buckets are encrypted with.
-async fn resolve_bucket_write_keys(ctx: &Ctx, personal_vek: &str) -> SyncResult<HashMap<String, String>> {
-    let mut keys_by_manifest = HashMap::new();
-    keys_by_manifest.insert(resolve_personal_manifest_id(ctx).await?, personal_vek.to_string());
-    keys_by_manifest.extend(keys::open_shared_manifest_veks(ctx).await?);
-    Ok(keys_by_manifest)
 }
 
 /*
  * The upload as the flow drives it.
  */
 
-/// Upload the stored vault: bucket-only when every pending mutation is bucket-scoped, full otherwise. Fails
-/// with `KeyOutOfSync` when the session key does not open a hierarchy another device created meanwhile.
-pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, force_full_write: bool, create_vault_key: bool) -> SyncResult<UploadOutcome> {
+/// Upload the stored vault. Fails with `KeyOutOfSync` when the session key does not open a hierarchy another
+/// device created meanwhile; an account without a hierarchy gets the migration write whatever `kind` asked for.
+pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, kind: WriteKind) -> SyncResult<UploadOutcome> {
     let mutation_seq_at_start = ctx.mutation_sequence;
-    if !keys::has_local_vault_key(&ctx.host).await? && !keys::accept_hierarchy_created_elsewhere(ctx).await? {
-        return Err(SyncError::KeyOutOfSync);
+    let kind = if keys::ensure_key_chain_accepted(ctx).await? { kind } else { WriteKind::AccountKeyMigration };
+
+    if kind == (WriteKind::Changes { buckets_only: true }) {
+        if let Some(categories) = bucket_only_categories(ctx).await? {
+            let status = write_dirty_buckets(ctx, &categories).await?;
+            return Ok(UploadOutcome { status, mutation_seq_at_start, vault_changed: false });
+        }
     }
-
-    let create_vault_key = create_vault_key || !keys::has_local_vault_key(&ctx.host).await?;
-    let scopes = ctx.request.dirty_scopes.clone();
-    // A missing delivery keypair is created on the full path only, as publishing it takes a manifest write.
-    let bucket_only = !force_full_write && !create_vault_key && !scopes.is_empty() && !scopes.iter().any(|s| s == MANIFEST_SCOPE) && !personal_delivery_key_missing(ctx).await?;
-
-    let (status, vault_changed) = if bucket_only {
-        (upload_dirty_buckets_only(ctx, &scopes).await?, false)
-    } else {
-        let cached = cache.filter(|(seq, _)| *seq == ctx.mutation_sequence).map(|(_, set)| set);
-        upload_new_vault_to_server(ctx, cached, force_full_write, create_vault_key).await?
-    };
+    let cached = cache.filter(|(seq, _)| *seq == ctx.mutation_sequence).map(|(_, set)| set);
+    let (status, vault_changed) = write_whole_vault(ctx, cached, kind).await?;
     Ok(UploadOutcome { status, mutation_seq_at_start, vault_changed })
 }
 
-/// Push only the data buckets named by the dirty scopes, no manifest upload.
-async fn upload_dirty_buckets_only(ctx: &mut Ctx, scopes: &[String]) -> SyncResult<PushStatus> {
-    let key = ctx.encryption_key()?;
-    if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_none() {
-        ctx.warn("[V2Push] No manifest to address the bucket write to, falling back to a full vault upload.").await;
-        return Ok(upload_new_vault_to_server(ctx, None, false, false).await?.0);
+/// The bucket categories a bucket-only write covers, or `None` when the write has to go through the manifests: no
+/// scopes recorded, a manifest scope among them, an unknown scope, or a personal delivery key still to be published.
+async fn bucket_only_categories(ctx: &Ctx) -> SyncResult<Option<Vec<String>>> {
+    let scopes = &ctx.request.dirty_scopes;
+    if scopes.is_empty() || scopes.iter().any(|s| s == MANIFEST_SCOPE) {
+        return Ok(None);
     }
+    let layout = vault_codec::bucket_layout();
+    let mut categories: Vec<String> = Vec::new();
+    for scope in scopes {
+        if !layout.iter().any(|entry| &entry.category == scope) {
+            ctx.warn(format!("[Push] Unknown bucket scope \"{}\", writing the whole vault instead.", scope)).await;
+            return Ok(None);
+        }
+        if !categories.contains(scope) {
+            categories.push(scope.clone());
+        }
+    }
+    // A missing delivery keypair is created on the full path only, as publishing it takes a manifest write.
+    Ok(if personal_delivery_key_missing(ctx).await? { None } else { Some(categories) })
+}
+
+/// Write the data buckets of `categories` and nothing else: no manifest is canonicalized.
+async fn write_dirty_buckets(ctx: &Ctx, categories: &[String]) -> SyncResult<PushStatus> {
     if vault_holds_unwritable_manifests(ctx).await {
         return Ok(PushStatus::Outdated);
     }
-
-    let layout = vault_codec::bucket_layout();
-    let write_keys = resolve_bucket_write_keys(ctx, &key).await?;
-    let mut seen = HashSet::new();
-    for category in scopes.iter().filter(|s| seen.insert((*s).clone())) {
-        let Some(spec) = layout.iter().find(|entry| &entry.category == category) else {
-            ctx.warn(format!("[V2Push] Unknown bucket scope \"{}\", falling back to full vault upload.", category)).await;
-            return Ok(upload_new_vault_to_server(ctx, None, false, false).await?.0);
-        };
-        let tables = read_bucket_tables(ctx, &spec.tables).await?;
-        let buckets = vault_codec::extract_buckets(category.clone(), write_keys.keys().cloned().collect(), tables)?;
-        for bucket in buckets {
-            let Some(vek) = write_keys.get(&bucket.manifest_id) else { continue };
-            let (status, revision) = push_data_bucket_only(ctx, &bucket, vek).await?;
-            if status != PushStatus::Ok {
-                return Ok(PushStatus::Outdated);
-            }
-            ctx.log(format!("[V2Push] Bucket-only push for \"{}\" of manifest {} done (bucket revision {}).", category, bucket.manifest_id, revision)).await;
-        }
+    let write_keys = resolve_write_keys(ctx).await?;
+    let mut buckets: Vec<DataBucket> = Vec::new();
+    for category in categories {
+        let mut names: Vec<String> = vault_codec::tables_for_category(category).into_iter().map(str::to_string).collect();
+        names.push(OVERFLOW_TABLE.to_string());
+        let tables = db::read_named_tables(&ctx.host, Db::Local, &names).await?;
+        buckets.extend(vault_codec::extract_buckets(category.clone(), write_keys.keys().cloned().collect(), tables)?);
     }
+
+    let baselines = PushBaselines::load(ctx).await?;
+    let mut written = WrittenFingerprints::default();
+    let writes = encrypt_changed_buckets(ctx, &buckets, &write_keys, &baselines, WriteKind::Changes { buckets_only: true }, &mut written).await?;
+    if writes.is_empty() {
+        ctx.log("[Push] No bucket changed versus the server baselines; skipping upload.").await;
+        return Ok(PushStatus::Ok);
+    }
+    let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: Vec::new(), buckets: writes, email_routing: None, migration: None };
+    let response: VaultWriteResponse = http::with_outdated_server_guard(http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await)?;
+    if response.status != VaultWriteStatus::Ok {
+        ctx.warn("[Push] Bucket-only write outdated; pulling and merging before the next attempt.").await;
+        return Ok(PushStatus::Outdated);
+    }
+    commit_push_baselines(ctx, baselines, &response.manifest_revisions, &response.bucket_revisions, written).await?;
+    ctx.log(format!("[Push] Bucket-only write of {} bucket(s) done.", response.bucket_revisions.len())).await;
     Ok(PushStatus::Ok)
 }
 
-/// Upload a new version of the vault, pruning expired trash items and creating a missing personal delivery keypair
-/// first. Returns the status and whether the stored vault changed (pruned, keypair added or re-keyed).
-async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, force_full_write: bool, create_vault_key: bool) -> SyncResult<(PushStatus, bool)> {
+/// Write the whole vault: prune expired trash and create a missing personal delivery keypair first, then the gated
+/// write. Returns the status and whether the stored vault was rewritten (pruned or keypair added).
+async fn write_whole_vault(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, bool)> {
     let key_before = ctx.encryption_key()?;
     let mut cached = cached;
     let mut vault_rewritten = false;
     match db::prune_in_place(&ctx.host, TRASH_RETENTION_DEFAULT_DAYS).await {
         Ok(0) => {}
         Ok(count) => {
-            ctx.log(format!("[VaultMerge] Pruned expired items from trash ({} SQL statements executed)", count)).await;
+            ctx.log(format!("[Push] Pruned expired items from trash ({} SQL statements executed).", count)).await;
             vault_rewritten = true;
             cached = None;
         }
-        Err(error) => ctx.warn(format!("[VaultSync] Failed to prune vault, continuing with upload: {}", error)).await,
+        Err(error) => ctx.warn(format!("[Push] Failed to prune vault, continuing with upload: {}", error)).await,
     }
     if personal_delivery_key_missing(ctx).await? {
-        create_personal_delivery_key(ctx).await?;
+        let personal_manifest_id = resolve_personal_manifest_id(ctx).await?;
+        let pair = crypto::generate_rsa_key_pair()?;
+        db::set_active_key_for_manifest(&ctx.host, &personal_manifest_id, &pair.public_key, &pair.private_key).await?;
+        ctx.log(format!("[Push] Personal manifest {} had no mail delivery keypair; created one.", personal_manifest_id)).await;
         vault_rewritten = true;
         cached = None;
     }
 
-    let (status, new_key) = push(ctx, cached, create_vault_key, force_full_write).await?;
+    let (status, new_key) = http::with_outdated_server_guard(write_manifests_and_buckets(ctx, cached, kind).await)?;
     if let Some(new_key) = new_key {
         // Migration succeeded: from now on the session key is the VEK, not the password-derived key.
         keys::re_encrypt_shared_manifest_records(ctx, &new_key).await?;
         ctx.set_encryption_key(new_key);
     }
 
-    // Re-encrypt and persist locally only when the stored blob went stale or the encryption key changed.
-    let key_after = ctx.encryption_key()?;
-    if vault_rewritten || key_after != key_before {
-        let bytes = db::export(&ctx.host, Db::Local).await?;
-        ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key_after)?, false, None, None).await?;
-        ctx.vault_changed = true;
+    // Store the vault again only when it changed or its key did.
+    if vault_rewritten || ctx.encryption_key()? != key_before {
+        ctx.persist_local_vault(false).await?;
     }
     Ok((status, vault_rewritten))
 }
@@ -278,24 +279,8 @@ async fn personal_delivery_key_missing(ctx: &Ctx) -> SyncResult<bool> {
     Ok(db::active_public_key_for_manifest(&ctx.host, &personal_manifest_id).await?.is_none())
 }
 
-/// Create the personal manifest's mail delivery keypair in the local vault; the manifest write publishes its public half.
-async fn create_personal_delivery_key(ctx: &Ctx) -> SyncResult<()> {
-    let personal_manifest_id = resolve_personal_manifest_id(ctx).await?;
-    let pair = crypto::generate_rsa_key_pair()?;
-    db::set_active_key_for_manifest(&ctx.host, &personal_manifest_id, &pair.public_key, &pair.private_key).await?;
-    ctx.log(format!("[V2Push] Personal manifest {} had no mail delivery keypair; created one.", personal_manifest_id)).await;
-    Ok(())
-}
-
-/// The tables of one bucket category read from the local vault, as extract_buckets takes them.
-async fn read_bucket_tables(ctx: &Ctx, category_tables: &[String]) -> SyncResult<HashMap<String, Vec<vault_codec::CodecRecord>>> {
-    let mut names: Vec<String> = category_tables.to_vec();
-    names.push(OVERFLOW_TABLE.to_string());
-    db::read_named_tables(&ctx.host, Db::Local, &names).await
-}
-
 /*
- * The full write.
+ * The gated write.
  */
 
 /// The local baselines a write gates against and, on success, advances.
@@ -324,15 +309,6 @@ impl PushBaselines {
     fn bucket_revision(&self, bucket: &DataBucket) -> i64 {
         self.bucket_revisions.get(&state::bucket_revision_key(&bucket.manifest_id, &bucket.category)).copied().unwrap_or(0)
     }
-}
-
-/// What decides whether an unchanged element still goes into the write.
-#[derive(Clone, Copy)]
-struct WriteGate {
-    /// Write every manifest and bucket whatever its fingerprint.
-    force_full_write: bool,
-    /// Upload every personal blob again, replacing the server copy (e.g. a KEK/VEK migration push changed its key).
-    overwrite_personal_blobs: bool,
 }
 
 /// One manifest of the write: its record, canonical content and the key it encrypts under.
@@ -429,68 +405,62 @@ struct EncryptedPayload {
 async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
     let ciphertext = crypto::symmetric_encrypt_bytes_with_aad(&packed, key, aad)?;
-    ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
+    ctx.log(format!("[Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
     let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
     Ok(EncryptedPayload { ciphertext, hash })
 }
 
-/// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a KEK/VEK
+/// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a
 /// migration push, the new content key the session switches to.
-pub(crate) async fn push(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_vault_key: bool, force_full_write: bool) -> SyncResult<(PushStatus, Option<String>)> {
-    http::with_outdated_server_guard(push_internal(ctx, cached, create_vault_key, force_full_write).await)
-}
-
-async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_vault_key: bool, force_full_write: bool) -> SyncResult<(PushStatus, Option<String>)> {
+async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, Option<String>)> {
     let vek = ctx.encryption_key()?;
 
     let unwritable = find_unwritable_manifests(ctx).await?;
     if !unwritable.is_empty() {
-        ctx.warn(format!("[V2Push] Vault holds rows for manifest(s) this session cannot write ({}); refusing the write until a pull restores them.", unwritable.join(", "))).await;
+        ctx.warn(format!("[Push] Vault holds rows for manifest(s) this session cannot write ({}); refusing the write until a pull restores them.", unwritable.join(", "))).await;
         return Ok((PushStatus::Outdated, None));
     }
 
-    let migration = start_account_key_migration(ctx, &vek, create_vault_key).await?;
+    let migration = start_account_key_migration(ctx, &vek, kind).await?;
     let content_key = migration.as_ref().map(|m| m.content_key.clone()).unwrap_or_else(|| vek.clone());
-    let gate = WriteGate { force_full_write, overwrite_personal_blobs: migration.is_some() };
 
     let set = match cached {
         Some(set) => {
-            ctx.log("[V2Push] Reusing the canonicalize result already produced for this vault.").await;
+            ctx.log("[Push] Reusing the canonicalize result already produced for this vault.").await;
             set
         }
         None => canonicalize_vault(ctx, None).await?,
     };
     let CanonicalizedSet { canonicalized, manifest_records } = set;
-    if manifest_records.is_empty() {
-        return Err(SyncError::Other("no manifest records to push".to_string()));
-    }
-    ctx.log(format!("[V2Push] Canonicalize produced {} manifest(s) + {} data bucket(s).", canonicalized.manifests.len(), canonicalized.data_buckets.len())).await;
+    ctx.log(format!("[Push] Canonicalize produced {} manifest(s) + {} data bucket(s).", canonicalized.manifests.len(), canonicalized.data_buckets.len())).await;
 
     let baselines = PushBaselines::load(ctx).await?;
     let candidates = collect_candidates(&canonicalized, &manifest_records, &content_key, &baselines);
     let blobs = collect_upload_blobs(&candidates)?;
-    if gate.overwrite_personal_blobs {
+    if migration.is_some() {
         refuse_overwrite_without_bytes(&candidates, &blobs)?;
     }
+    let keys_by_manifest: HashMap<String, String> = candidates.iter().map(|c| (c.record.manifest_id.clone(), c.vek.clone())).collect();
     let mut written = WrittenFingerprints::default();
-    let bucket_writes = encrypt_changed_buckets(ctx, &canonicalized.data_buckets, &candidates, &baselines, gate, &mut written).await?;
+    let bucket_writes = encrypt_changed_buckets(ctx, &canonicalized.data_buckets, &keys_by_manifest, &baselines, kind, &mut written).await?;
     // An upgrade push signs with the signing key it creates, which the server stores in the same write.
     let signing_key = match &migration {
         Some(migration) => Some(migration.signing_private_key.clone()),
         None => keys::signing_private_key(ctx).await?,
     };
-    let manifest_writes = encrypt_changed_manifests(ctx, &candidates, &baselines, gate, signing_key.as_deref(), &mut written).await?;
+    let manifest_writes = encrypt_changed_manifests(ctx, &candidates, &baselines, kind, signing_key.as_deref(), &mut written).await?;
 
     if manifest_writes.is_empty() && bucket_writes.is_empty() {
-        ctx.log("[V2Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.").await;
+        ctx.log("[Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.").await;
         return Ok((PushStatus::Ok, None));
     }
 
-    let mut uploaded = upload_missing_blobs(ctx, &blobs, &baselines, gate).await?;
+    let overwrite_personal_blobs = migration.is_some();
+    let mut uploaded = upload_missing_blobs(ctx, &blobs, &baselines, overwrite_personal_blobs).await?;
     let routed_manifests: Vec<_> = canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
     let email_routing = build_email_routing(&routed_manifests, &ctx.request.private_email_domains, &baselines.manifest_revisions);
     let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
-    let response = write_vault(ctx, &payload, &blobs, gate, &mut uploaded).await?;
+    let response = write_vault(ctx, &payload, &blobs, overwrite_personal_blobs, &mut uploaded).await?;
 
     if response.status != VaultWriteStatus::Ok {
         // All-or-nothing: a single stale manifest or bucket rejected the whole write; the caller pulls, merges and retries.
@@ -501,19 +471,19 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
     commit_blob_baselines(ctx, &blobs, &uploaded).await?;
     if let Some(migration) = &migration {
         complete_account_key_migration(ctx, migration).await?;
-        ctx.log("[V2Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.").await;
+        ctx.log("[Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.").await;
     }
     Ok((PushStatus::Ok, migration.map(|m| m.content_key.clone())))
 }
 
-/// Generate the account key hierarchy for a migration push, when one is due. The session key of a legacy account is
-/// its unlock key, which the hierarchy derives its KEK from.
-async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, create_vault_key: bool) -> SyncResult<Option<LegacyAccountKeyMigration>> {
-    if !create_vault_key {
+/// Generate the account key hierarchy for a migration push. The session key of a legacy account is its unlock key,
+/// which the hierarchy derives its KEK from.
+async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKind) -> SyncResult<Option<LegacyAccountKeyMigration>> {
+    if kind != WriteKind::AccountKeyMigration {
         return Ok(None);
     }
     let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
-    ctx.log("[V2Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
+    ctx.log("[Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
     Ok(Some(LegacyAccountKeyMigration {
         content_key: hierarchy.vault_encryption_key.clone(),
         account_keys: hierarchy.account_keys.clone(),
@@ -550,37 +520,29 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
     Ok(blobs)
 }
 
-/// An overwriting push uploads every personal blob again. A blob whose bytes are not loaded on this device would keep
-/// its old server copy (on a migration: under the old key, never being able to open again) while its manifest moves on: refuse this on client instead.
-/// TODO: when implementing full lazy-load of blobs on client, review this logic as well.
+/// A migration push uploads every personal blob again under the new key. A blob whose bytes are not loaded on this
+/// device would keep its old server copy under the old key, never to open again, while its manifest moves on: refuse.
 fn refuse_overwrite_without_bytes(candidates: &[Candidate], blobs: &UploadBlobs) -> SyncResult<()> {
-    let not_loaded: Vec<String> = candidates
-        .iter()
-        .filter(|candidate| candidate.record.is_personal)
-        .flat_map(|candidate| candidate.manifest.referenced_blobs())
-        .map(|(hash, _)| hash)
-        .filter(|hash| !blobs.entries.contains_key(hash))
-        .collect();
-    if not_loaded.is_empty() {
+    let not_loaded = candidates.iter().filter(|c| c.record.is_personal).flat_map(|c| c.manifest.referenced_blobs()).filter(|(hash, _)| !blobs.entries.contains_key(hash)).count();
+    if not_loaded == 0 {
         return Ok(());
     }
-    Err(SyncError::UploadRejected(vec![format!("{} blob(s) of the personal manifest are not loaded on this device, so they cannot be uploaded again; sync again when they load", not_loaded.len())]))
+    Err(SyncError::UploadRejected(vec![format!("{} blob(s) of the personal manifest are not loaded on this device, so they cannot be uploaded again; sync again when they load", not_loaded)]))
 }
 
 /// Gate, validate, pack and encrypt each changed bucket under the key of the manifest that owns it.
-async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: &[Candidate<'_>], baselines: &PushBaselines, gate: WriteGate, written: &mut WrittenFingerprints) -> SyncResult<Vec<BucketWrite>> {
-    let key_by_manifest: HashMap<&str, &str> = candidates.iter().map(|c| (c.record.manifest_id.as_str(), c.vek.as_str())).collect();
+async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], keys_by_manifest: &HashMap<String, String>, baselines: &PushBaselines, kind: WriteKind, written: &mut WrittenFingerprints) -> SyncResult<Vec<BucketWrite>> {
     let mut writes = Vec::new();
     for bucket in buckets {
         let label = format!("Data bucket \"{}\" of manifest {}", bucket.category, bucket.manifest_id);
         let fingerprint_key = state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category);
         let (plaintext, fingerprint) = fingerprinted(bucket)?;
-        if !gate.force_full_write && !gate.overwrite_personal_blobs && baselines.unchanged(&fingerprint_key, &fingerprint) {
-            ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
+        if !kind.writes_unchanged() && baselines.unchanged(&fingerprint_key, &fingerprint) {
+            ctx.log(format!("[Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
         }
-        let Some(bucket_key) = key_by_manifest.get(bucket.manifest_id.as_str()) else {
-            ctx.warn(format!("[V2Push] {} names a manifest this vault cannot write; leaving it out of this write.", label)).await;
+        let Some(bucket_key) = keys_by_manifest.get(&bucket.manifest_id) else {
+            ctx.warn(format!("[Push] {} names a manifest this vault cannot write; leaving it out of this write.", label)).await;
             continue;
         };
         let validation = vault_codec::validate_data_bucket(bucket);
@@ -595,15 +557,14 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
 }
 
 /// Gate, validate, pack and encrypt every changed candidate into the write batch, each with its own key.
-async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], baselines: &PushBaselines, gate: WriteGate, signing_key: Option<&str>, written: &mut WrittenFingerprints) -> SyncResult<Vec<ManifestWrite>> {
+async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], baselines: &PushBaselines, kind: WriteKind, signing_key: Option<&str>, written: &mut WrittenFingerprints) -> SyncResult<Vec<ManifestWrite>> {
     let mut writes = Vec::new();
     for candidate in candidates {
         let label = candidate.label();
         let fingerprint_key = state::fingerprint_manifest_key(&candidate.record.manifest_id);
         let (plaintext, fingerprint) = fingerprinted(candidate.manifest)?;
-        let rekeyed = gate.overwrite_personal_blobs && candidate.record.is_personal;
-        if !gate.force_full_write && !rekeyed && baselines.unchanged(&fingerprint_key, &fingerprint) {
-            ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
+        if !kind.writes_unchanged() && baselines.unchanged(&fingerprint_key, &fingerprint) {
+            ctx.log(format!("[Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
         }
         let validation = vault_codec::validate_manifest(candidate.manifest);
@@ -611,7 +572,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             if candidate.record.is_personal {
                 return Err(SyncError::UploadRejected(vec![format!("Manifest validation failed: {}. {}", validation.failed_rules.join(", "), validation.message).trim().to_string()]));
             }
-            ctx.warn(format!("[V2Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
+            ctx.warn(format!("[Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
             continue;
         }
         let encrypted = encrypt_payload(ctx, &label, &plaintext, &candidate.vek, &crypto::aad::manifest(&candidate.record.manifest_id)).await?;
@@ -620,14 +581,14 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
         let manifest_key = if may_publish { db::active_public_key_for_manifest(&ctx.host, &candidate.record.manifest_id).await? } else { None };
         if may_publish && manifest_key.is_none() && !candidate.record.is_personal {
-            ctx.warn(format!("[V2Push] {} is missing its email keypair; its aliases stay personal until sharing is re-enabled.", label)).await;
+            ctx.warn(format!("[Push] {} is missing its email keypair; its aliases stay personal until sharing is re-enabled.", label)).await;
         }
 
         // The server only accepts a new delivery key signed by the caller; a key that is already published needs none.
         let manifest_key_signature = match (&manifest_key, signing_key) {
             (Some(public_key), Some(signing_key)) => Some(crypto::signing::sign(signing_key, &crypto::signing::delivery_key_message(&candidate.record.manifest_id, public_key, candidate.current_revision))?),
             (Some(_), None) => {
-                ctx.warn(format!("[V2Push] {} publishes its email key without a signing key; the server refuses it if the key is new.", label)).await;
+                ctx.warn(format!("[Push] {} publishes its email key without a signing key; the server refuses it if the key is new.", label)).await;
                 None
             }
             _ => None,
@@ -639,7 +600,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             manifest_blob: encrypted.ciphertext,
             manifest_ciphertext_hash: encrypted.hash,
             current_revision: candidate.current_revision,
-            credentials_count: candidate.manifest.tables.get("Items").map(Vec::len).unwrap_or(0),
+            credentials_count: candidate.manifest.tables.get(ITEMS_TABLE).map(Vec::len).unwrap_or(0),
             blob_references: blob_refs,
             delivery_public_key_algorithm: manifest_key.as_ref().map(|_| ALGORITHM_RSA_OAEP_SHA256.to_string()),
             delivery_public_key: manifest_key,
@@ -652,36 +613,39 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
 
 /// Encrypt and upload only the blobs the server does not already have. On a migration push every personal
 /// blob is re-encrypted under the new key and overwritten. Returns hash to ciphertext for the local cache.
-async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBaselines, gate: WriteGate) -> SyncResult<HashMap<String, EncryptedBlob>> {
+async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBaselines, overwrite_personal_blobs: bool) -> SyncResult<HashMap<String, EncryptedBlob>> {
     let personal_hashes = blobs.hashes(true);
     let shared_hashes = blobs.hashes(false);
     let unknown_to_server = |hashes: &[String]| -> Vec<String> { hashes.iter().filter(|h| !baselines.known_server_hashes.contains(*h)).cloned().collect() };
 
-    let (personal_to_upload, shared_to_upload) = if gate.overwrite_personal_blobs {
+    let (personal_to_upload, shared_to_upload) = if overwrite_personal_blobs {
         (personal_hashes.clone(), missing_on_server(ctx, blobs, &unknown_to_server(&shared_hashes)).await?)
     } else {
         let missing: HashSet<String> = missing_on_server(ctx, blobs, &unknown_to_server(&blobs.order)).await?.into_iter().collect();
         (personal_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect(), shared_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect())
     };
-    ctx.log(format!("[V2Push] Blob diff: {} blobs, uploading {} personal + {} shared{}.", blobs.order.len(), personal_to_upload.len(), shared_to_upload.len(), if gate.overwrite_personal_blobs { " (every personal blob overwritten)" } else { "" })).await;
+    ctx.log(format!("[Push] Blob diff: {} blobs, uploading {} personal + {} shared{}.", blobs.order.len(), personal_to_upload.len(), shared_to_upload.len(), if overwrite_personal_blobs { " (every personal blob overwritten)" } else { "" })).await;
 
-    let mut uploaded = upload_blobs(ctx, blobs, &personal_to_upload, gate.overwrite_personal_blobs).await?;
+    let mut uploaded = upload_blobs(ctx, blobs, &personal_to_upload, overwrite_personal_blobs).await?;
     uploaded.extend(upload_blobs(ctx, blobs, &shared_to_upload, false).await?);
     Ok(uploaded)
 }
 
-/// Ask the server which of the given hashes it lacks, one request per manifest that owns them.
+/// Ask the server which of the given hashes it lacks, per manifest that owns them and within the server's per-request cap.
 async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) -> SyncResult<Vec<String>> {
     let mut missing = Vec::new();
     for (manifest_id, hashes) in blobs.by_manifest(hashes) {
-        missing.extend(http::post::<_, MissingBlobsResponse>(&ctx.host, BLOBS_MISSING_ENDPOINT, &BlobHashesRequest { manifest_id, hashes }, false).await?.missing);
+        for chunk in hashes.chunks(http::BLOB_HASH_REQUEST_MAX_COUNT) {
+            let request = BlobHashesRequest { manifest_id: manifest_id.clone(), hashes: chunk.to_vec() };
+            missing.extend(http::post::<_, MissingBlobsResponse>(&ctx.host, BLOBS_MISSING_ENDPOINT, &request, false).await?.missing);
+        }
     }
     Ok(missing)
 }
 
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
 /// them and retry the identical write once; blobs this client cannot supply fail the push.
-async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, gate: WriteGate, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
+async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, overwrite_personal_blobs: bool, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if response.missing_blob_hashes.is_empty() {
         return Ok(response);
@@ -690,9 +654,9 @@ async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs
     if !unsatisfiable.is_empty() {
         return Err(SyncError::MissingBlobs(unsatisfiable));
     }
-    ctx.warn(format!("[V2Sync] Server reported {} missing blob(s); uploading and retrying once.", response.missing_blob_hashes.len())).await;
+    ctx.warn(format!("[Push] Server reported {} missing blob(s); uploading and retrying once.", response.missing_blob_hashes.len())).await;
     let (missing_personal, missing_shared): (Vec<String>, Vec<String>) = response.missing_blob_hashes.iter().cloned().partition(|h| blobs.entries[h].from_personal);
-    uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, gate.overwrite_personal_blobs).await?);
+    uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, overwrite_personal_blobs).await?);
     uploaded.extend(upload_blobs(ctx, blobs, &missing_shared, false).await?);
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if !response.missing_blob_hashes.is_empty() {
@@ -733,7 +697,7 @@ async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMa
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &new_cache).await
 }
 
-/// Store the hierarchy a migration push just committed: cache the encrypted chain and stage the private key.
+/// Store the hierarchy a migration push just committed: cache the encrypted chain and stage the private keys.
 async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccountKeyMigration) -> SyncResult<()> {
     let blobs = &migration.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
@@ -762,52 +726,9 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
         }
         for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
             let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
-            ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
+            ctx.log(format!("[Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
             http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
         }
     }
     Ok(encrypted_blobs)
-}
-
-/*
- * The bucket-only write.
- */
-
-/*
- * Single-data-bucket upload through the unified write. A stale revision reports `Outdated` returns early.
- */
-async fn push_data_bucket_only(ctx: &Ctx, bucket: &DataBucket, vek: &str) -> SyncResult<(PushStatus, i64)> {
-    http::with_outdated_server_guard(push_data_bucket_only_internal(ctx, bucket, vek).await)
-}
-
-async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &str) -> SyncResult<(PushStatus, i64)> {
-    let label = format!("Bucket \"{}\" of manifest {} (bucket-only)", bucket.category, bucket.manifest_id);
-    let fingerprint_key = state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category);
-    let baselines = PushBaselines::load(ctx).await?;
-    let (plaintext, fingerprint) = fingerprinted(bucket)?;
-    if baselines.unchanged(&fingerprint_key, &fingerprint) {
-        ctx.log(format!("[V2Push] {} unchanged versus server baseline, skipping upload.", label)).await;
-        return Ok((PushStatus::Ok, baselines.bucket_revision(bucket)));
-    }
-    let encrypted = encrypt_payload(ctx, &label, &plaintext, vek, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
-
-    let current_revision = baselines.bucket_revision(bucket);
-    let payload = VaultWriteRequest {
-        username: ctx.request.username.clone(),
-        manifests: Vec::new(),
-        buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision }],
-        email_routing: None,
-        migration: None,
-    };
-    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await?;
-    let reported = response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);
-    if response.status != VaultWriteStatus::Ok {
-        ctx.warn(format!("[V2Push] {} outdated (server at revision {}, we assumed {}); pulling and merging before the next attempt.", label, reported.unwrap_or(current_revision), current_revision)).await;
-        return Ok((PushStatus::Outdated, reported.unwrap_or(current_revision)));
-    }
-
-    let new_revision = reported.unwrap_or(current_revision + 1);
-    let advanced = BucketRevision { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), revision: new_revision };
-    commit_push_baselines(ctx, baselines, &[], &[advanced], HashMap::from([(fingerprint_key, fingerprint)])).await?;
-    Ok((PushStatus::Ok, new_revision))
 }

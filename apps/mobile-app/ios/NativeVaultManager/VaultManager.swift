@@ -1619,7 +1619,6 @@ private enum RustCoreDispatcher {
             return try json(try RustCoreFramework.srpVerifySession(clientPublic: try args.string(0), clientProof: try args.string(1), sessionKey: try args.string(2), serverProof: try args.string(3)))
 
         case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
-        case "pruneVaultJson": return try RustCoreFramework.pruneVaultJson(inputJson: try args.string(0))
 
         case "vaultCodecCanonicalizeFromSqlite": return try RustCoreFramework.vaultCodecCanonicalizeFromSqlite(inputJson: try args.string(0))
         case "vaultCodecGenerateManifestSalt": return try json(RustCoreFramework.vaultCodecGenerateManifestSalt())

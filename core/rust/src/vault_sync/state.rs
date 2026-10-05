@@ -1,6 +1,7 @@
-//! Engine state: the run context.
+//! Engine state: the run context and the values the engine persists through the host.
 
 use std::collections::HashMap;
+use std::sync::Mutex;
 
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -30,6 +31,8 @@ pub(crate) struct Ctx {
     pub vault_key_probed: bool,
     pub served_manifest_names: HashMap<String, String>,
     has_local_vault: bool,
+    /// The VEK of every shared manifest this account holds a grant on, unwrapped once per run.
+    shared_veks: Mutex<Option<HashMap<String, String>>>,
 }
 
 /// What a fresh staging database tells about the current client schema.
@@ -55,6 +58,7 @@ impl Ctx {
             vault_key_probed: false,
             served_manifest_names: HashMap::new(),
             has_local_vault: false,
+            shared_veks: Mutex::new(None),
             host,
             request,
         }
@@ -84,6 +88,20 @@ impl Ctx {
         store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.new_encryption_key.clone()).await
     }
 
+    /// Write the local database as the at-rest vault under the session key. `dirty` records it as a pending change
+    /// the next push carries; a clean store only refreshes what the host shows.
+    pub async fn persist_local_vault(&mut self, dirty: bool) -> SyncResult<()> {
+        let key = self.encryption_key()?;
+        let bytes = db::export(&self.host, Db::Local).await?;
+        let stored = self.store_vault(&encrypt_vault_blob(&bytes, &key)?, dirty, None, None).await?;
+        if dirty {
+            self.is_dirty = true;
+            self.mutation_sequence = stored.mutation_sequence;
+        }
+        self.vault_changed = true;
+        Ok(())
+    }
+
     /// The current schema.
     pub async fn schema(&mut self) -> SyncResult<SchemaInfo> {
         if let Some(schema) = &self.schema {
@@ -93,6 +111,16 @@ impl Ctx {
         let schema = SchemaInfo { columns: db::schema_columns(&self.host, Db::Staging).await?, migration_id: db::latest_migration_id(&self.host, Db::Staging).await? };
         self.schema = Some(schema.clone());
         Ok(schema)
+    }
+
+    /// The shared-manifest keys unwrapped earlier in this run, if any.
+    pub fn cached_shared_veks(&self) -> Option<HashMap<String, String>> {
+        self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).clone()
+    }
+
+    /// Remember the unwrapped shared-manifest keys; `None` forgets them (the records changed).
+    pub fn cache_shared_veks(&self, veks: Option<HashMap<String, String>>) {
+        *self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = veks;
     }
 
     pub async fn log(&self, message: impl Into<String>) {
@@ -145,7 +173,7 @@ pub(crate) async fn remove(host: &Host, key: &str) -> SyncResult<()> {
     Ok(())
 }
 
-/// The record key of one data bucket's revision and fingerprint.
+/// The record key of one data bucket's revision.
 pub(crate) fn bucket_revision_key(manifest_id: &str, category: &str) -> String {
     format!("{}:{}", manifest_id, category)
 }

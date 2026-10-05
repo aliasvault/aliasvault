@@ -1,69 +1,47 @@
-//! Vault pruner for automatically removing expired trash items.
-//!
-//! This module handles the automatic cleanup of items that have been in the trash
-//! (DeletedAt set) for longer than the retention period (default 30 days).
-//! It generates SQL statements to permanently delete (IsDeleted = true) these items
-//! along with their related entities.
+//! Vault pruner: SQL statements that permanently delete (IsDeleted = true) items that have been in the trash longer
+//! than the retention period, along with their related entities.
 
 use chrono::{DateTime, Duration, Utc};
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 use crate::common::error::{VaultError, VaultResult};
 use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::{has_bytes, is_deleted, logo_kind, str_col};
+use crate::vault_codec::blob_spec_for;
 use crate::vault_codec::{CodecRecord, CodecTableData};
 use crate::vault_model::names::{
-    DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, KIND_COL, LOGOS_TABLE,
+    DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE,
     LOGO_ID_COL, LOGO_KIND_FAVICON, UPDATED_AT_COL,
 };
-use crate::vault_model::{BLOB_COLUMNS, MANIFEST_ID_COL, SYNCABLE_TABLES, TRASH_RETENTION_DEFAULT_DAYS};
+use crate::vault_model::{BLOB_COLUMNS, MANIFEST_ID_COL, SYNCABLE_TABLES};
 
 /// Input for the prune operation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone)]
 pub struct PruneInput {
     /// Tables from the local database (at minimum, Items table is required)
     pub tables: Vec<CodecTableData>,
     /// Current time in ISO 8601 UTC format: `YYYY-MM-DDTHH:MM:SS.sssZ`.
-    /*
-     * Callers: the Rust sync engine (`now_iso_utc()`), Swift `ISO8601DateFormatter().string(from: Date())`,
-     * Kotlin `Instant.now().toString()`.
-     */
     pub current_time: String,
-    /// Retention period in days (default: 30)
-    #[serde(default = "default_retention_days")]
+    /// Retention period in days.
     pub retention_days: u32,
 }
 
-fn default_retention_days() -> u32 {
-    TRASH_RETENTION_DEFAULT_DAYS
-}
-
 /// Statistics about what was pruned.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default)]
 pub struct PruneStats {
     /// Number of items permanently deleted
     pub items_pruned: u32,
     /// Rows tombstoned per item-child table, keyed by table name.
-    #[serde(default)]
     pub child_rows_pruned: HashMap<String, u32>,
     /// Number of orphan logos soft-deleted (no remaining active item references them)
-    #[serde(default)]
     pub logos_pruned: u32,
     /// Tombstoned rows whose blob bytes were cleared, keyed by table name.
-    #[serde(default)]
     pub blobs_cleared: HashMap<String, u32>,
 }
 
 /// Output of the prune operation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone)]
 pub struct PruneOutput {
-    /// Whether the prune was successful
-    pub success: bool,
     /// SQL statements to execute on the local database (in order)
     pub statements: Vec<SqlStatement>,
     /// Statistics about what was pruned
@@ -71,8 +49,7 @@ pub struct PruneOutput {
 }
 
 /// A per-table SELECT query for building `PruneInput`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone)]
 pub struct PruneTableQuery {
     /// Table name
     pub name: String,
@@ -94,7 +71,7 @@ pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
     // registry is read by the pruner automatically.
     for child in item_child_tables() {
         let query = match blob_column_for(child.name) {
-            Some(blob_col) => format!("SELECT {}, {}, {}, {}, substr({}, 1, 1) AS {} FROM {}", MANIFEST_ID_COL, ID_COL, ITEM_ID_COL, IS_DELETED_COL, blob_col, blob_col, child.name),
+            Some(blob_col) => format!("SELECT {}, {}, {}, {}, substr({}, 1, 1) AS {} FROM {}", MANIFEST_ID_COL, ID_COL, child.item_ref_column(), IS_DELETED_COL, blob_col, blob_col, child.name),
             None => format!("SELECT {}, {}, {} FROM {}", MANIFEST_ID_COL, child.item_ref_column(), IS_DELETED_COL, child.name),
         };
         queries.push(PruneTableQuery { name: child.name.to_string(), query });
@@ -111,9 +88,9 @@ fn item_child_tables() -> impl Iterator<Item = &'static crate::vault_model::Tabl
     SYNCABLE_TABLES.iter().filter(|t| t.item_child)
 }
 
-/// The extracted blob column of a table, if it has one (see `vault_model::BLOB_COLUMNS`).
+/// The extracted blob column of a table, if it has one.
 fn blob_column_for(table_name: &str) -> Option<&'static str> {
-    BLOB_COLUMNS.iter().find(|spec| spec.table == table_name).map(|spec| spec.column)
+    blob_spec_for(table_name).map(|spec| spec.column)
 }
 
 /// The `, <blob> = NULL` SET fragment that drops a table's blob bytes, empty for a table without one.
@@ -126,10 +103,7 @@ fn records_of<'a>(tables: &'a [CodecTableData], name: &str) -> Option<&'a [Codec
     tables.iter().find(|t| t.name == name).map(|t| t.records.as_slice())
 }
 
-/*
- * The manifest a row lives in. The same id can appear in multiple manifests, so every statement
- * addresses its rows by `(ManifestId, Id)`.
- */
+/// The manifest a row lives in; the same id can appear in several manifests, so statements address `(ManifestId, Id)`.
 fn manifest_of(record: &CodecRecord) -> &str {
     str_col(record, MANIFEST_ID_COL).unwrap_or("")
 }
@@ -150,7 +124,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
 
     // Items table is required for both the trash purge and the logo orphan check.
     let Some(items) = records_of(&input.tables, ITEMS_TABLE) else {
-        return Ok(PruneOutput { success: true, statements, stats });
+        return Ok(PruneOutput { statements, stats });
     };
 
     let expired = expired_item_ids(items, cutoff_date);
@@ -166,7 +140,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     sweep_orphan_favicons(&input.tables, items, &expired, &now_str, &mut statements, &mut stats);
     clear_tombstoned_blobs(&input.tables, &now_str, &mut statements, &mut stats);
 
-    Ok(PruneOutput { success: true, statements, stats })
+    Ok(PruneOutput { statements, stats })
 }
 
 /// Pass 1: the `(ManifestId, Id)` of live items whose trash date (`DeletedAt`) lies before the cutoff.
@@ -184,12 +158,7 @@ fn expired_item_ids(items: &[CodecRecord], cutoff_date: DateTime<Utc>) -> Vec<(S
     expired
 }
 
-/*
- * Pass 1 cascade: tombstone the rows of every registered item-child table (TableConfig::item_child)
- * for one purged item, so a table added to the registry is swept automatically. A child with an
- * extracted blob column has its bytes dropped in the same statement, leaving the column non-null
- * while reclaiming the storage on the next save.
- */
+/// Pass 1 cascade: tombstone one purged item's rows in every item-child table, dropping blob bytes in the same statement.
 fn tombstone_item_children(tables: &[CodecTableData], manifest_id: &str, item_id: &str, now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
     for child in item_child_tables() {
         let Some(records) = records_of(tables, child.name) else { continue };
@@ -210,17 +179,7 @@ fn tombstone_item_children(tables: &[CodecTableData], manifest_id: &str, item_id
     }
 }
 
-/*
- * Pass 2: orphan logo cleanup. A Logo is orphan when no Item with IsDeleted=0 references it. Items
- * being purged in Pass 1 are treated as effectively deleted so logos they referenced can be
- * reclaimed in the same call.
- *
- * Only `Kind = 'favicon'` rows are swept (a row without a `Kind` predates the column and is a favicon
- * by definition): a favicon is a per-domain cache the client can always refetch, while a built-in or
- * uploaded logo is a choice the user made and expects to find again in their logo library even after
- * the item that first used it is gone. Those are removed only when the user deletes them, and Pass 3
- * then reclaims the bytes.
- */
+/// Pass 2: tombstone favicons no live (and not just purged) item references; built-in and uploaded logos are the user's choice and stay.
 fn sweep_orphan_favicons(
     tables: &[CodecTableData],
     items: &[CodecRecord],
@@ -255,13 +214,7 @@ fn sweep_orphan_favicons(
     }
 }
 
-/*
- * Pass 3: sweep tombstoned rows of every blob table (BLOB_COLUMNS) that still carry bytes and empty
- * them in place. Older clients could tombstone an attachment or favicon without clearing its blob,
- * which inflates the encrypted vault for no reason; for an uploaded logo it is the normal path, a
- * user deleting one from their logo library tombstones the row and this pass reclaims the bytes.
- * Rows tombstoned by Pass 1 or Pass 2 in this same call are already cleared there.
- */
+/// Pass 3: clear the blob bytes of tombstoned rows that still carry them.
 fn clear_tombstoned_blobs(tables: &[CodecTableData], now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
     for spec in BLOB_COLUMNS {
         let (table, blob_col) = (spec.table, spec.column);
