@@ -8,7 +8,10 @@
 //! 2. Priority 2: URL domain matching (exact, subdomain, root domain)
 //! 3. Priority 3b: root domain word matching against item names (only credentials without URLs)
 //! 4. Priority 3: page title fallback (only credentials without URLs, anti-phishing)
-//! 5. Priority 4: text matching of the search string against item names
+//! 5. Priority 4: text matching of the search string against item names (only credentials without URLs)
+//!
+//! Anti-phishing: a name match never returns a credential that has a URL, and a URL (any input with a
+//! scheme) whose host cannot be extracted matches nothing instead of falling through to the name stages.
 
 pub(crate) mod domain;
 mod public_suffix;
@@ -17,7 +20,7 @@ mod stop_words;
 use serde::{Deserialize, Serialize};
 
 pub use domain::{extract_domain, extract_domain_with_port, extract_root_domain, is_related_origin_allowed, is_rp_id_allowed_for_host, DomainWithPort};
-use domain::{domains_match, is_app_package_name};
+use domain::{domains_match, is_app_package_name, split_url};
 use stop_words::STOP_WORD_SET;
 
 /// Default per-priority cap on returned matches when the caller does not supply `max_results`.
@@ -120,7 +123,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
             // Default mode adds on top of URL matching, so the URL-only modes must not fall back to it.
             if matching_mode == AutofillMatchingMode::Default {
                 let domain_words = extract_words(&extract_root_domain(&current.domain));
-                let ids = match_item_names(&credentials, &domain_words, true, max_results);
+                let ids = match_item_names(&credentials, &domain_words, max_results);
                 if !ids.is_empty() {
                     return CredentialMatcherOutput::matched(3, ids);
                 }
@@ -129,19 +132,25 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
             // A web page never falls through to the text stages.
             return CredentialMatcherOutput::default();
         }
+
+        // Input with a scheme is a URL whose host could not be extracted: it never falls through either.
+        if split_url(&current_url.trim().to_lowercase()).0.is_some() {
+            return CredentialMatcherOutput::default();
+        }
     }
 
-    // Priority 3: page title against item names when domain extraction failed (desktop apps, malformed
-    // URLs). Anti-phishing: only credentials with no URLs are eligible.
+    // Priority 3: page title against item names for input that is neither a URL nor a linked app package.
+    // Anti-phishing: only credentials with no URLs are eligible.
     let title_words = extract_words(&page_title);
-    let ids = match_item_names(&credentials, &title_words, true, max_results);
+    let ids = match_item_names(&credentials, &title_words, max_results);
     if !ids.is_empty() {
         return CredentialMatcherOutput::matched(3, ids);
     }
 
-    // Priority 4: the search string itself against item names.
+    // Priority 4: the search string itself against item names. Anti-phishing: only credentials with no URLs
+    // are eligible, so an app package like "com.paypal.rewards" never gets the PayPal website credential.
     let search_words = extract_words(&current_url);
-    let ids = match_item_names(&credentials, &search_words, false, max_results);
+    let ids = match_item_names(&credentials, &search_words, max_results);
     if !ids.is_empty() {
         return CredentialMatcherOutput::matched(4, ids);
     }
@@ -207,18 +216,17 @@ fn domain_match_rank(cred: &Credential, current: &DomainWithPort, allow_subdomai
     best
 }
 
-/// Ids of credentials whose item name shares a complete word with `words`.
+/// Ids of credentials without URLs whose item name shares a complete word with `words`.
 ///
-/// With `require_no_urls`, credentials that have any URL are skipped: a name match must never
-/// surface a credential bound to another site (anti-phishing).
-fn match_item_names(credentials: &[Credential], words: &[String], require_no_urls: bool, max_results: usize) -> Vec<String> {
+/// Credentials that have any URL are skipped: a name match must never surface a credential bound to another site (anti-phishing).
+fn match_item_names(credentials: &[Credential], words: &[String], max_results: usize) -> Vec<String> {
     if words.is_empty() {
         return vec![];
     }
 
     credentials
         .iter()
-        .filter(|cred| !require_no_urls || !cred.item_urls.iter().any(|url| !url.trim().is_empty()))
+        .filter(|cred| cred.item_urls.iter().all(|url| url.trim().is_empty()))
         .filter(|cred| {
             cred.item_name.as_deref().is_some_and(|name| {
                 let name_words = extract_words(name);

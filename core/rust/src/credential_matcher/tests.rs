@@ -1084,3 +1084,87 @@ fn test_stored_urls_are_trimmed() {
     assert_eq!(filter(credentials.clone(), "https://amazon.it", "").len(), 1, "Trailing whitespace should be ignored");
     assert_eq!(filter(credentials, "com.amazon.app", "").len(), 1, "Package name should match when padded");
 }
+
+/// Runs the matcher in every matching mode and returns the matched ids per mode.
+fn filter_all_modes(credentials: &[Credential], current_url: &str) -> Vec<(AutofillMatchingMode, CredentialMatcherOutput)> {
+    [AutofillMatchingMode::Default, AutofillMatchingMode::UrlSubdomain, AutofillMatchingMode::UrlExact]
+        .into_iter()
+        .map(|mode| {
+            let input = CredentialMatcherInput {
+                credentials: credentials.to_vec(),
+                current_url: current_url.to_string(),
+                page_title: String::new(),
+                matching_mode: mode,
+                ignore_port: false,
+                max_results: None,
+            };
+            (mode, filter_credentials(input))
+        })
+        .collect()
+}
+
+/// [#45] - A URL whose host fails validation must not fall through to name matching (phishing autofill)
+#[test]
+fn test_unusual_hosts_never_fall_through_to_name_matching() {
+    let credentials = vec![
+        create_test_credential("PayPal", "https://paypal.com", "victim@example.com"),
+        create_test_credential("PayPal Notes", "", ""),
+    ];
+
+    for phishing_url in [
+        "https://www_paypal.evil.com/",
+        "https://paypal.evil.com./",
+        "https://paypal.com@evil.com/",
+        "https://[::1]:8080/paypal",
+        "blob:https://paypal.evil.com/0b2c3d4e-0000-4000-8000-000000000000",
+        "filesystem:https://paypal.evil.com/temporary/paypal",
+        "data:text/html,paypal",
+    ] {
+        for (mode, output) in filter_all_modes(&credentials, phishing_url) {
+            assert!(output.matched_ids.is_empty(), "{phishing_url} in {mode:?} mode must not match: {output:?}");
+        }
+    }
+}
+
+/// [#46] - An app package without a linked credential never gets a website credential through its name
+#[test]
+fn test_unlinked_app_package_only_matches_credentials_without_urls() {
+    let paypal_web = create_test_credential("PayPal", "https://paypal.com", "victim@example.com");
+    let paypal_note = create_test_credential("PayPal Notes", "", "");
+    let credentials = vec![paypal_web.clone(), paypal_note.clone()];
+
+    for package in ["com.fake.paypal", "com.paypal.rewards", "net.paypal.cashback"] {
+        let output = filter_all_modes(&credentials, package);
+        for (mode, output) in output {
+            assert_eq!(output.matched_ids, vec![paypal_note.id.clone()], "{package} in {mode:?} mode");
+            assert_eq!(output.matched_priority, 4);
+        }
+    }
+
+    // Without a credential lacking URLs there is nothing left to offer.
+    let matches = filter(vec![paypal_web], "com.paypal.rewards", "PayPal Rewards");
+    assert!(matches.is_empty());
+}
+
+/// [#47] - Hosts are normalized before matching, so legitimate pages in those shapes still match their own credential
+#[test]
+fn test_unusual_hosts_match_their_own_credential() {
+    let credentials = vec![
+        create_test_credential("PayPal", "https://paypal.com", "victim@example.com"),
+        create_test_credential("Intranet", "https://my_host.corp.example", "victim@example.com"),
+        create_test_credential("Local IPv6", "http://[::1]:8080", "admin"),
+        create_test_credential("Evil", "https://evil.com", "attacker"),
+    ];
+    let name_of = |url: &str| filter(credentials.clone(), url, "").into_iter().map(|c| c.item_name.unwrap_or_default()).collect::<Vec<_>>();
+
+    assert_eq!(name_of("https://paypal.com./login"), vec!["PayPal"]);
+    assert_eq!(name_of("https://www.paypal.com./"), vec!["PayPal"]);
+    assert_eq!(name_of("blob:https://www.paypal.com/0b2c3d4e-0000-4000-8000-000000000000"), vec!["PayPal"]);
+    assert_eq!(name_of("https://my_host.corp.example/login"), vec!["Intranet"]);
+    assert_eq!(name_of("http://[::1]:8080/login"), vec!["Local IPv6"]);
+    assert!(name_of("http://[::2]:8080/login").is_empty());
+
+    // The host is what follows the userinfo: the page is evil.com, not paypal.com.
+    assert_eq!(name_of("https://paypal.com@evil.com/"), vec!["Evil"]);
+    assert_eq!(name_of("https://paypal.com:pw@evil.com/"), vec!["Evil"]);
+}
