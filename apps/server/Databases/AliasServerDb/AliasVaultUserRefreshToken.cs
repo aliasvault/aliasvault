@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
-/// Refresh tokens for users.
+/// Refresh tokens for users. Only a hash of the token is stored; the token itself lives on the client.
 /// </summary>
 public class AliasVaultUserRefreshToken
 {
@@ -44,18 +44,16 @@ public class AliasVaultUserRefreshToken
     public string? IpAddress { get; set; }
 
     /// <summary>
-    /// Gets or sets the token value.
+    /// Gets or sets the SHA-256 hash (lowercase hex) of the token value the client holds.
     /// </summary>
-    [StringLength(255)]
-    public string Value { get; set; } = null!;
+    [StringLength(64)]
+    public string TokenHash { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the previous token value that was replaced by the current one (optional).
-    /// This is used to allow a short reuse window where if multiple refresh requests are
-    /// made in quick succession they all get the same new refresh token.
+    /// Gets or sets the hash of the token this one replaced on rotation, if any.
     /// </summary>
-    [StringLength(255)]
-    public string? PreviousTokenValue { get; set; }
+    [StringLength(64)]
+    public string? PreviousTokenHash { get; set; }
 
     /// <summary>
     /// Gets or sets the expiration date.
