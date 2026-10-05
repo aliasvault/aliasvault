@@ -126,14 +126,18 @@ export function isValidPin(pin: string): boolean {
 }
 
 /**
- * Get failed attempts count
+ * Get failed attempts count.
  */
 export async function getFailedAttempts(): Promise<number> {
   try {
-    const result = await storage.getItem(StorageKeys.PIN_FAILED_ATTEMPTS) as number | null;
-    return result || 0;
+    const result = await storage.getItem(StorageKeys.PIN_FAILED_ATTEMPTS);
+    if (result === null || result === undefined) {
+      return 0;
+    }
+    return Number.isInteger(result) && (result as number) >= 0 ? result as number : MAX_PIN_ATTEMPTS;
   } catch {
-    return 0;
+    // Failure to retrieve the counter counts as the maximum for safety reasons.
+    return MAX_PIN_ATTEMPTS;
   }
 }
 
