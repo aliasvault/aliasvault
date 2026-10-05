@@ -461,7 +461,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
 
-        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier))
+        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier) || !IsValidSrpIdentity(model.SrpIdentity))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
         }
@@ -469,7 +469,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = new AliasVaultUser
         {
             UserName = UsernameHelper.NormalizeUsername(model.Username),
-            SrpIdentity = AuthHelper.ResolveSrpIdentity(model.SrpIdentity, model.Username),
+            SrpIdentity = model.SrpIdentity,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
             PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime,
@@ -496,7 +496,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await context.SaveChangesAsync();
         }
 
-        var result = await userManager.CreateAsync(user);
+        IdentityResult result;
+        try
+        {
+            result = await userManager.CreateAsync(user);
+        }
+        catch (DbUpdateException)
+        {
+            result = IdentityResult.Failed(userManager.ErrorDescriber.DuplicateUserName(user.UserName!));
+        }
 
         if (result.Succeeded)
         {
@@ -1176,6 +1184,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         return !string.IsNullOrEmpty(salt) && salt.Length <= MaxSaltLength && !string.IsNullOrEmpty(verifier) && verifier.Length <= MaxVerifierLength;
     }
+
+    /// <summary>
+    /// Whether a client-chosen SRP identity is a GUID, which is what every client creates at registration.
+    /// </summary>
+    /// <param name="srpIdentity">The SRP identity.</param>
+    /// <returns>True when the identity may be stored.</returns>
+    private static bool IsValidSrpIdentity(string? srpIdentity) => Guid.TryParseExact(srpIdentity, "D", out _);
 
     /// <summary>
     /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the accepted minimum.

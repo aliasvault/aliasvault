@@ -327,6 +327,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasIndex(e => e.PersonalGroupId).IsUnique().HasDatabaseName("UX_AliasVaultUsers_PersonalGroupId");
+
+            builder.HasIndex(e => e.NormalizedUserName).IsUnique().HasDatabaseName("UX_AliasVaultUsers_NormalizedUserName");
+            builder.HasIndex(e => e.SrpIdentity).IsUnique().HasDatabaseName("UX_AliasVaultUsers_SrpIdentity");
         });
 
         modelBuilder.Entity<Group>(builder =>
