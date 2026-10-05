@@ -18,7 +18,7 @@ namespace AliasServerDb.Migrations
             CreateUserMigrationMap(migrationBuilder);
             IntroduceGroups(migrationBuilder);
             ConvertVaultsToManifests(migrationBuilder);
-            LinkEmailClaimsToManifests(migrationBuilder);
+            MoveEmailClaimsToManifests(migrationBuilder);
             ScopeDeliveryKeysToManifests(migrationBuilder);
             ScopeRateLimitsToGroups(migrationBuilder);
             AddAlgorithmToMobileLoginRequests(migrationBuilder);
@@ -27,15 +27,17 @@ namespace AliasServerDb.Migrations
             AddManifestV1Tables(migrationBuilder);
             SkipToastCompressionOnCiphertextColumns(migrationBuilder);
             AddForeignKeys(migrationBuilder);
+            AddOrphanedEmailClaimTrigger(migrationBuilder);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            DropOrphanedEmailClaimTrigger(migrationBuilder);
             RemoveAnonymizedSenderCounts(migrationBuilder);
             DropDetachedMessageParts(migrationBuilder);
             RestoreMessageSourceText(migrationBuilder);
-            RestoreSingleManifestLinks(migrationBuilder);
+            RestoreDisabledEmailClaims(migrationBuilder);
             DropManifestV1Tables(migrationBuilder);
             RestoreRateLimitsToUsers(migrationBuilder);
             RemoveAlgorithmFromPublicKeys(migrationBuilder);
@@ -244,7 +246,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.CreateIndex(name: "IX_VaultManifestsHistory_UpdatedByUserId", table: "VaultManifestsHistory", column: "UpdatedByUserId");
         }
 
-        private static void LinkEmailClaimsToManifests(MigrationBuilder migrationBuilder)
+        private static void MoveEmailClaimsToManifests(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "EmailClaims",
@@ -254,39 +256,29 @@ namespace AliasServerDb.Migrations
                     Address = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     AddressLocal = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     AddressDomain = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    State = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     AnonymizedSenderCounted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 });
 
-            migrationBuilder.CreateTable(
-                name: "EmailClaimLinks",
-                columns: table => new
-                {
-                    EmailClaimId = table.Column<Guid>(type: "uuid", nullable: false),
-                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false),
-                    State = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
-                });
-
+            // A claim of a user without a vault has no manifest to belong to and becomes a tombstone.
             migrationBuilder.Sql("""
-                INSERT INTO "EmailClaims" ("Id", "Address", "AddressLocal", "AddressDomain", "CreatedAt", "UpdatedAt")
-                SELECT "Id", "Address", "AddressLocal", "AddressDomain", "CreatedAt", "UpdatedAt"
-                FROM "UserEmailClaims";
-
-                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
-                SELECT c."Id", m."ManifestId", CASE WHEN c."Disabled" THEN 'Removed' ELSE 'Active' END
+                INSERT INTO "EmailClaims" ("Id", "Address", "AddressLocal", "AddressDomain", "VaultManifestId", "State", "CreatedAt", "UpdatedAt")
+                SELECT c."Id", c."Address", c."AddressLocal", c."AddressDomain", m."ManifestId",
+                       CASE WHEN c."Disabled" OR m."ManifestId" IS NULL THEN 'Removed' ELSE 'Active' END,
+                       c."CreatedAt", c."UpdatedAt"
                 FROM "UserEmailClaims" c
-                JOIN "UserMigrationMap" m ON m."UserId" = c."UserId"
-                WHERE m."ManifestId" IS NOT NULL;
+                LEFT JOIN "UserMigrationMap" m ON m."UserId" = c."UserId";
                 """);
 
             migrationBuilder.DropTable(name: "UserEmailClaims");
 
             migrationBuilder.AddPrimaryKey(name: "PK_EmailClaims", table: "EmailClaims", column: "Id");
-            migrationBuilder.AddPrimaryKey(name: "PK_EmailClaimLinks", table: "EmailClaimLinks", columns: new[] { "EmailClaimId", "VaultManifestId" });
             migrationBuilder.CreateIndex(name: "IX_EmailClaims_Address", table: "EmailClaims", column: "Address", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_EmailClaimLinks_VaultManifestId_EmailClaimId", table: "EmailClaimLinks", columns: new[] { "VaultManifestId", "EmailClaimId" });
-            migrationBuilder.Sql("""CREATE INDEX "IX_EmailClaimLinks_EmailClaimId_Live" ON "EmailClaimLinks" ("EmailClaimId") WHERE "State" <> 'Removed';""");
+            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_CreatedAt", table: "EmailClaims", columns: new[] { "VaultManifestId", "CreatedAt" });
+            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_State", table: "EmailClaims", columns: new[] { "VaultManifestId", "State" });
         }
 
         private static void ScopeDeliveryKeysToManifests(MigrationBuilder migrationBuilder)
@@ -445,7 +437,8 @@ namespace AliasServerDb.Migrations
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     PublicKey = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
-                    EncryptedPrivateKey = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    PublicKeySignature = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    EncryptedPrivateKey = table.Column<string>(type: "character varying(8000)", maxLength: 8000, nullable: false),
                     AccountKeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     IsPrimary = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -456,6 +449,31 @@ namespace AliasServerDb.Migrations
                     table.PrimaryKey("PK_UserGrantKeys", x => x.Id);
                     table.ForeignKey(
                         name: "FK_UserGrantKeys_AliasVaultUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AliasVaultUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSigningKeys",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    PublicKey = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EncryptedPrivateKey = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    AccountKeyVersion = table.Column<int>(type: "integer", nullable: false),
+                    IsPrimary = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSigningKeys", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSigningKeys_AliasVaultUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AliasVaultUsers",
                         principalColumn: "Id",
@@ -531,6 +549,9 @@ namespace AliasServerDb.Migrations
                     KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     UserGrantKeyId = table.Column<Guid>(type: "uuid", nullable: true),
                     AccountKeyVersion = table.Column<int>(type: "integer", nullable: true),
+                    GrantSignature = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    GrantSignerUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    GrantSignerPublicKey = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Metadata = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -645,6 +666,7 @@ namespace AliasServerDb.Migrations
                 });
 
             migrationBuilder.CreateIndex(name: "UX_UserGrantKeys_User_Primary", table: "UserGrantKeys", column: "UserId", unique: true, filter: "\"IsPrimary\"");
+            migrationBuilder.CreateIndex(name: "UX_UserSigningKeys_User_Primary", table: "UserSigningKeys", column: "UserId", unique: true, filter: "\"IsPrimary\"");
             migrationBuilder.CreateIndex(name: "UX_UserUnlockKeys_UserId_Type_Label", table: "UserUnlockKeys", columns: new[] { "UserId", "Type", "Label" }, unique: true);
             migrationBuilder.CreateIndex(name: "IX_UserUnlockKeysHistory_ArchivedAt", table: "UserUnlockKeysHistory", column: "ArchivedAt");
             migrationBuilder.CreateIndex(name: "IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt", table: "UserUnlockKeysHistory", columns: new[] { "UserId", "Type", "ArchivedAt" });
@@ -675,12 +697,40 @@ namespace AliasServerDb.Migrations
             migrationBuilder.AddForeignKey(name: "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId", table: "VaultManifests", column: "UpdatedByUserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
             migrationBuilder.AddForeignKey(name: "FK_VaultManifestsHistory_VaultManifests_ManifestId", table: "VaultManifestsHistory", column: "ManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
             migrationBuilder.AddForeignKey(name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId", table: "VaultManifestsHistory", column: "UpdatedByUserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
-            migrationBuilder.AddForeignKey(name: "FK_EmailClaimLinks_EmailClaims_EmailClaimId", table: "EmailClaimLinks", column: "EmailClaimId", principalTable: "EmailClaims", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
-            migrationBuilder.AddForeignKey(name: "FK_EmailClaimLinks_VaultManifests_VaultManifestId", table: "EmailClaimLinks", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.SetNull);
             migrationBuilder.AddForeignKey(name: "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId", table: "VaultManifestDeliveryKeys", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
             migrationBuilder.AddForeignKey(name: "FK_EmailDecryptionKeys_Emails_EmailId", table: "EmailDecryptionKeys", column: "EmailId", principalTable: "Emails", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
             migrationBuilder.AddForeignKey(name: "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId", table: "EmailDecryptionKeys", column: "VaultManifestDeliveryKeyId", principalTable: "VaultManifestDeliveryKeys", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
             migrationBuilder.AddForeignKey(name: "FK_RateLimits_Groups_GroupId", table: "RateLimits", column: "GroupId", principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+        }
+
+        private static void AddOrphanedEmailClaimTrigger(MigrationBuilder migrationBuilder)
+        {
+            /*
+             * A claim loses its owner through ON DELETE SET NULL, which runs inside Postgres for every way a manifest
+             * goes (account, group or manifest delete, admin tools, raw SQL).
+             */
+            migrationBuilder.Sql("""
+                CREATE FUNCTION "EmailClaims_RemoveOrphaned"() RETURNS trigger AS $$
+                BEGIN
+                    NEW."State" := 'Removed';
+                    RETURN NEW;
+                END;
+                $$ LANGUAGE plpgsql;
+
+                CREATE TRIGGER "TR_EmailClaims_RemoveOrphaned"
+                    BEFORE INSERT OR UPDATE OF "VaultManifestId", "State" ON "EmailClaims"
+                    FOR EACH ROW WHEN (NEW."VaultManifestId" IS NULL AND NEW."State" <> 'Removed')
+                    EXECUTE FUNCTION "EmailClaims_RemoveOrphaned"();
+                """);
+        }
+
+        private static void DropOrphanedEmailClaimTrigger(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""
+                DROP TRIGGER "TR_EmailClaims_RemoveOrphaned" ON "EmailClaims";
+                DROP FUNCTION "EmailClaims_RemoveOrphaned"();
+                """);
         }
 
         private static void RemoveAnonymizedSenderCounts(MigrationBuilder migrationBuilder)
@@ -702,20 +752,15 @@ namespace AliasServerDb.Migrations
             migrationBuilder.AlterColumn<string>(name: "MessageSource", table: "Emails", type: "text", nullable: false, defaultValue: "", oldClrType: typeof(string), oldType: "text", oldNullable: true);
         }
 
-        private static void RestoreSingleManifestLinks(MigrationBuilder migrationBuilder)
+        private static void RestoreDisabledEmailClaims(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""DROP INDEX IF EXISTS "IX_EmailClaimLinks_EmailClaimId_Live";""");
-
+            migrationBuilder.DropIndex(name: "IX_EmailClaims_VaultManifestId_State", table: "EmailClaims");
             migrationBuilder.AddColumn<bool>(name: "Disabled", table: "EmailClaims", type: "boolean", nullable: false, defaultValue: false);
-
-            migrationBuilder.Sql("""
-                UPDATE "EmailClaims" c
-                SET "Disabled" = NOT EXISTS (SELECT 1 FROM "EmailClaimLinks" l WHERE l."EmailClaimId" = c."Id" AND l."State" <> 'Removed');
-                """);
+            migrationBuilder.Sql("""UPDATE "EmailClaims" SET "Disabled" = "State" = 'Removed';""");
+            migrationBuilder.DropColumn(name: "State", table: "EmailClaims");
 
             migrationBuilder.AddColumn<string>(name: "EncryptedSymmetricKey", table: "Emails", type: "text", nullable: true);
             migrationBuilder.AddColumn<Guid>(name: "EncryptionKeyId", table: "Emails", type: "uuid", maxLength: 255, nullable: true);
-            migrationBuilder.AddColumn<Guid>(name: "VaultManifestId", table: "EmailClaims", type: "uuid", nullable: true);
 
             // One key per row. Emails left with none are deleted.
             migrationBuilder.Sql("""
@@ -725,24 +770,16 @@ namespace AliasServerDb.Migrations
                 WHERE d."EmailId" = e."Id";
 
                 DELETE FROM "Emails" WHERE "EncryptionKeyId" IS NULL;
-
-                UPDATE "EmailClaims" c
-                SET "VaultManifestId" = l."VaultManifestId"
-                FROM (SELECT DISTINCT ON ("EmailClaimId") "EmailClaimId", "VaultManifestId" FROM "EmailClaimLinks" ORDER BY "EmailClaimId", "VaultManifestId") l
-                WHERE l."EmailClaimId" = c."Id";
                 """);
 
             migrationBuilder.AlterColumn<string>(name: "EncryptedSymmetricKey", table: "Emails", type: "text", nullable: false, oldClrType: typeof(string), oldType: "text", oldNullable: true);
             migrationBuilder.AlterColumn<Guid>(name: "EncryptionKeyId", table: "Emails", type: "uuid", maxLength: 255, nullable: false, oldClrType: typeof(Guid), oldType: "uuid", oldMaxLength: 255, oldNullable: true);
 
-            migrationBuilder.DropTable(name: "EmailClaimLinks");
             migrationBuilder.DropTable(name: "EmailDecryptionKeys");
 
             migrationBuilder.CreateIndex(name: "IX_Emails_EncryptionKeyId", table: "Emails", column: "EncryptionKeyId");
-            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_CreatedAt", table: "EmailClaims", columns: new[] { "VaultManifestId", "CreatedAt" });
             migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_Disabled", table: "EmailClaims", columns: new[] { "VaultManifestId", "Disabled" });
 
-            migrationBuilder.AddForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.SetNull);
             migrationBuilder.AddForeignKey(name: "FK_Emails_VaultManifestDeliveryKeys_EncryptionKeyId", table: "Emails", column: "EncryptionKeyId", principalTable: "VaultManifestDeliveryKeys", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
         }
 
@@ -755,6 +792,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropTable(name: "VaultManifestAccessKeys");
             migrationBuilder.DropTable(name: "UserUnlockKeysHistory");
             migrationBuilder.DropTable(name: "UserUnlockKeys");
+            migrationBuilder.DropTable(name: "UserSigningKeys");
             migrationBuilder.DropTable(name: "UserGrantKeys");
         }
 

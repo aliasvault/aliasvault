@@ -1138,8 +1138,8 @@ namespace AliasServerDb.Migrations
 
                     b.Property<string>("EncryptedPrivateKey")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");

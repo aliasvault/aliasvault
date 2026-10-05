@@ -476,39 +476,27 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("VaultManifestId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Address")
                         .IsUnique();
 
+                    b.HasIndex("VaultManifestId", "CreatedAt");
+
+                    b.HasIndex("VaultManifestId", "State");
+
                     b.ToTable("EmailClaims");
-                });
-
-            modelBuilder.Entity("AliasServerDb.EmailClaimLink", b =>
-                {
-                    b.Property<Guid>("EmailClaimId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("VaultManifestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("EmailClaimId", "VaultManifestId");
-
-                    b.HasIndex("EmailClaimId")
-                        .HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live")
-                        .HasFilter("\"State\" <> 'Removed'");
-
-                    b.HasIndex("VaultManifestId", "EmailClaimId");
-
-                    b.ToTable("EmailClaimLinks");
                 });
 
             modelBuilder.Entity("AliasServerDb.EmailDecryptionKey", b =>
@@ -881,8 +869,8 @@ namespace AliasServerDb.Migrations
 
                     b.Property<string>("EncryptedPrivateKey")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");
@@ -891,6 +879,11 @@ namespace AliasServerDb.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("PublicKeySignature")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -908,6 +901,54 @@ namespace AliasServerDb.Migrations
                         .HasFilter("\"IsPrimary\"");
 
                     b.ToTable("UserGrantKeys");
+                });
+
+            modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccountKeyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptedPrivateKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PublicKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_UserSigningKeys_User_Primary")
+                        .HasFilter("\"IsPrimary\"");
+
+                    b.ToTable("UserSigningKeys");
                 });
 
             modelBuilder.Entity("AliasServerDb.UserUnlockKey", b =>
@@ -1250,6 +1291,18 @@ namespace AliasServerDb.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("GrantSignature")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("GrantSignerPublicKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("GrantSignerUserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
 
@@ -1525,21 +1578,12 @@ namespace AliasServerDb.Migrations
                     b.Navigation("Email");
                 });
 
-            modelBuilder.Entity("AliasServerDb.EmailClaimLink", b =>
+            modelBuilder.Entity("AliasServerDb.EmailClaim", b =>
                 {
-                    b.HasOne("AliasServerDb.EmailClaim", "EmailClaim")
-                        .WithMany("Links")
-                        .HasForeignKey("EmailClaimId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("AliasServerDb.VaultManifest", "VaultManifest")
                         .WithMany()
                         .HasForeignKey("VaultManifestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EmailClaim");
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("VaultManifest");
                 });
@@ -1615,6 +1659,17 @@ namespace AliasServerDb.Migrations
                 });
 
             modelBuilder.Entity("AliasServerDb.UserGrantKey", b =>
+                {
+                    b.HasOne("AliasServerDb.AliasVaultUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
                 {
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany()
@@ -1768,11 +1823,6 @@ namespace AliasServerDb.Migrations
                     b.Navigation("DecryptionKeys");
 
                     b.Navigation("Parts");
-                });
-
-            modelBuilder.Entity("AliasServerDb.EmailClaim", b =>
-                {
-                    b.Navigation("Links");
                 });
 
             modelBuilder.Entity("AliasServerDb.Group", b =>
