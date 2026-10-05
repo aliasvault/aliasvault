@@ -41,6 +41,13 @@ namespace AliasServerDb.Migrations
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
+                name: "EncryptedNameSignature",
+                table: "GroupInvitations",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
                 name: "GrantSignature",
                 table: "GroupInvitations",
                 type: "character varying(255)",
@@ -108,6 +115,10 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropColumn(
                 name: "PublicKeySignature",
                 table: "UserGrantKeys");
+
+            migrationBuilder.DropColumn(
+                name: "EncryptedNameSignature",
+                table: "GroupInvitations");
 
             migrationBuilder.DropColumn(
                 name: "GrantSignature",

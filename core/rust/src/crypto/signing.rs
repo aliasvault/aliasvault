@@ -21,6 +21,9 @@ pub const GRANT_LABEL: &str = "aliasvault/v1/sig/grant";
 /// The label of a manifest's mail delivery public key, signed by whoever published it.
 pub const DELIVERY_KEY_LABEL: &str = "aliasvault/v1/sig/delivery-key";
 
+/// The label of the vault name an invitation carries, signed by the inviter.
+pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
+
 /// A new signing keypair, both halves base64: the 32-byte public key and the 32-byte private seed.
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 #[serde(rename_all = "camelCase")]
@@ -64,6 +67,11 @@ pub fn grant_message(manifest_id: &str, key_version: i64, signer_user_id: &str, 
     let manifest_id = manifest_id.to_ascii_lowercase();
     let key_version = key_version.to_string();
     signed_message(GRANT_LABEL, &[manifest_id.as_bytes(), key_version.as_bytes(), signer_user_id.as_bytes(), recipient_public_key.as_bytes(), algorithm.as_bytes(), encrypted_vek.as_bytes()])
+}
+
+/// The signed message of the vault name an invitation carries, encrypted for `recipient_public_key`.
+pub fn invitation_name_message(manifest_id: &str, signer_user_id: &str, recipient_public_key: &str, encrypted_name: &str) -> Vec<u8> {
+    signed_message(INVITATION_NAME_LABEL, &[manifest_id.to_ascii_lowercase().as_bytes(), signer_user_id.as_bytes(), recipient_public_key.as_bytes(), encrypted_name.as_bytes()])
 }
 
 /// The signed message of a delivery key publish, bound to the revision the write is based on so it cannot be replayed.
@@ -110,8 +118,8 @@ mod tests {
         base64_encode(&(0u8..32).collect::<Vec<u8>>())
     }
 
-    /// Known-answer vector for the message encoding. The server builds the same bytes and checks this exact
-    /// signature (`SigningTests` in the server unit tests); a changed output means stored signatures no longer verify. Never regenerate it.
+    /// Known-answer vector for the message encoding, which the server's `Signing.cs` builds byte for byte. A changed output
+    /// means stored signatures no longer verify. Never regenerate it.
     #[test]
     fn signed_message_known_answer() {
         let message = signed_message(ACCOUNT_PUBLIC_KEY_LABEL, &[b"{\"kty\":\"RSA\"}"]);
@@ -124,14 +132,17 @@ mod tests {
     const PUBLIC_KEY_VECTOR: &str = "A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=";
     const SIGNATURE_VECTOR: &str = "twY5wx2bX5kesFEjJa+ZUYOpw4Hs3hqFUpbWC4KbVRVgragIilho+vCl9Haik3F/a2vLcAoCtJssesL4wAaxDg==";
 
-    /// Known-answer vectors for the grant and delivery key messages, which the server builds too (`SigningTests`). The
+    /// Known-answer vectors for the grant, delivery key and invitation name messages, which `Signing.cs` builds too. The
     /// manifest id is lowercased, as the server prints a GUID. Never regenerate them.
     #[test]
     fn grant_and_delivery_key_messages_known_answer() {
         let manifest_id = "0A1B2C3D-0000-0000-0000-000000000001";
         assert_eq!(crate::common::encoding::hex_encode_lower(&grant_message(manifest_id, 3, "user-1", "{\"kty\":\"RSA\"}", "rsa-oaep-sha256", "dmVr")), GRANT_MESSAGE_VECTOR);
         assert_eq!(crate::common::encoding::hex_encode_lower(&delivery_key_message(manifest_id, "{\"kty\":\"RSA\"}", 42)), DELIVERY_KEY_MESSAGE_VECTOR);
+        assert_eq!(crate::common::encoding::hex_encode_lower(&invitation_name_message(manifest_id, "user-1", "{\"kty\":\"RSA\"}", "bmFtZQ==")), INVITATION_NAME_MESSAGE_VECTOR);
     }
+
+    const INVITATION_NAME_MESSAGE_VECTOR: &str = "00000021616c6961737661756c742f76312f7369672f696e7669746174696f6e2d6e616d650000002430613162326333642d303030302d303030302d303030302d30303030303030303030303100000006757365722d310000000d7b226b7479223a22525341227d00000008626d46745a513d3d";
 
     const GRANT_MESSAGE_VECTOR: &str = "00000017616c6961737661756c742f76312f7369672f6772616e740000002430613162326333642d303030302d303030302d303030302d303030303030303030303031000000013300000006757365722d310000000d7b226b7479223a22525341227d0000000f7273612d6f6165702d73686132353600000004646d5672";
     const DELIVERY_KEY_MESSAGE_VECTOR: &str = "0000001e616c6961737661756c742f76312f7369672f64656c69766572792d6b65790000002430613162326333642d303030302d303030302d303030302d3030303030303030303030310000000d7b226b7479223a22525341227d000000023432";

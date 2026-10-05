@@ -288,7 +288,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
-        if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(manifestId, manifestKeyVersion.Value, me.Id, recipientPublicKey, model.Algorithm, model.Grant.EncryptedVek), model.Grant.Signature))
+        var nameIsSigned = model.Grant.EncryptedName is null || Signing.Verify(signerPublicKey, Signing.InvitationNameMessage(manifestId, me.Id, recipientPublicKey, model.Grant.EncryptedName), model.Grant.EncryptedNameSignature);
+        if (!nameIsSigned || !Signing.Verify(signerPublicKey, Signing.GrantMessage(manifestId, manifestKeyVersion.Value, me.Id, recipientPublicKey, model.Algorithm, model.Grant.EncryptedVek), model.Grant.Signature))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
         }
@@ -316,6 +317,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             VaultManifestId = manifestId,
             EncryptedVek = model.Grant.EncryptedVek,
             EncryptedName = model.Grant.EncryptedName,
+            EncryptedNameSignature = model.Grant.EncryptedName is null ? null : model.Grant.EncryptedNameSignature,
             UserGrantKeyId = model.Grant.RecipientPublicKeyId,
             GrantSignature = model.Grant.Signature,
             GrantSignerPublicKey = signerPublicKey,
@@ -622,6 +624,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         // The encrypted copy has become the grant, so it stops being a second copy of the key lying around.
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
+        invitation.EncryptedNameSignature = null;
         invitation.UserGrantKeyId = null;
         invitation.GrantSignature = null;
         invitation.GrantSignerPublicKey = null;
@@ -721,8 +724,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 i.GroupId,
                 ManifestId = i.VaultManifestId!.Value,
                 InviterUsername = i.Inviter.UserName ?? string.Empty,
+                i.InviterUserId,
                 i.CreatedAt,
                 i.EncryptedName,
+                i.EncryptedNameSignature,
+                i.GrantSignerPublicKey,
                 RecipientPublicKey = i.UserGrantKey != null ? i.UserGrantKey.PublicKey : null,
             })
             .ToListAsync();
@@ -745,8 +751,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             GroupId = i.GroupId,
             ManifestId = i.ManifestId,
             InviterUsername = i.InviterUsername,
+            InviterUserId = i.InviterUserId,
             CreatedAt = i.CreatedAt,
             EncryptedName = i.EncryptedName,
+            EncryptedNameSignature = i.EncryptedNameSignature,
+            SignerPublicKey = i.GrantSignerPublicKey,
             RecipientPublicKey = i.RecipientPublicKey,
         })];
     }
@@ -761,6 +770,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.State = state;
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
+        invitation.EncryptedNameSignature = null;
         invitation.UserGrantKeyId = null;
         invitation.GrantSignature = null;
         invitation.GrantSignerPublicKey = null;

@@ -182,16 +182,16 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<string>("PreviousTokenValue")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                    b.Property<string>("PreviousTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -716,6 +716,10 @@ namespace AliasServerDb.Migrations
 
                     b.Property<string>("EncryptedName")
                         .HasColumnType("text");
+
+                    b.Property<string>("EncryptedNameSignature")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("EncryptedVek")
                         .HasColumnType("text");
