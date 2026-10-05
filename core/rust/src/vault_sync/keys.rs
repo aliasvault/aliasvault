@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::state::{self, Ctx};
-use super::types::{SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
+use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
 use super::http;
 use crate::crypto;
 
@@ -35,6 +35,16 @@ pub(crate) async fn cache_vault_key_blobs(host: &Host, vault_key: &VaultKeyRespo
         _ => {
             state::remove(host, state::ACCOUNT_PUBLIC_KEY).await?;
             state::remove(host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY).await?;
+        }
+    }
+    match (&vault_key.signing_public_key, &vault_key.encrypted_signing_private_key) {
+        (Some(public), Some(private)) => {
+            state::set(host, state::SIGNING_PUBLIC_KEY, public).await?;
+            state::set(host, state::ENCRYPTED_SIGNING_PRIVATE_KEY, private).await?;
+        }
+        _ => {
+            state::remove(host, state::SIGNING_PUBLIC_KEY).await?;
+            state::remove(host, state::ENCRYPTED_SIGNING_PRIVATE_KEY).await?;
         }
     }
     Ok(())
@@ -132,7 +142,7 @@ fn is_server_unreachable(error: &SyncError) -> bool {
 
 /// Clear the cached key chain: the account has none (legacy), so the unlock key is the vault key.
 async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
-    for key in [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY] {
+    for key in [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, state::SIGNING_PUBLIC_KEY, state::ENCRYPTED_SIGNING_PRIVATE_KEY] {
         state::remove(host, key).await?;
     }
     Ok(())
@@ -143,6 +153,7 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
 async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<()> {
     let opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None)?;
     ctx.set_encryption_key(opened.vault_encryption_key.to_string());
+    ctx.account_key = Some(opened.account_key.to_string());
     stage_account_private_key(ctx, &opened.account_key, encrypted_private_key).await;
     Ok(())
 }
@@ -206,6 +217,7 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
         let opened = crypto::open_account_key_chain(&session_key, &vault_key.encrypted_account_key, &encrypted_vek, None)?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
         switch_to_vek(ctx, &session_key, &opened.vault_encryption_key).await?;
+        ctx.account_key = Some(opened.account_key.to_string());
         stage_account_private_key(ctx, &opened.account_key, vault_key.encrypted_account_private_key.as_deref()).await;
         Ok(())
     }
@@ -245,4 +257,25 @@ async fn stage_account_private_key(ctx: &mut Ctx, account_key: &str, encrypted_p
         Ok(private_key) => ctx.account_private_key = Some(private_key),
         Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants stay closed. {}", error)).await,
     }
+}
+
+/// The account signing private key, opened on first use from the cached encrypted copy with the session's Account Key
+/// (the key the host's chain open returned). None when that key or the cached copy is missing or does not open it.
+pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<String>> {
+    if ctx.signing_private_key.is_some() {
+        return Ok(ctx.signing_private_key.clone());
+    }
+    let (Some(account_key), Some(encrypted)) = (ctx.account_key.clone(), state::get::<String>(&ctx.host, state::ENCRYPTED_SIGNING_PRIVATE_KEY).await?) else { return Ok(None) };
+    match crypto::open_account_signing_private_key(&encrypted, &account_key) {
+        Ok(private_key) => ctx.signing_private_key = Some(private_key.to_string()),
+        Err(error) => ctx.warn(format!("[VaultSync] The cached signing private key did not open; nothing can be signed this run. {}", error)).await,
+    }
+    Ok(ctx.signing_private_key.clone())
+}
+
+/// Whether the grant a manifest was served with carries a valid signature by its signer.
+pub(crate) fn grant_signature_verifies(dto: &ManifestDto, recipient_public_key: &str, algorithm: &str, encrypted_vek: &str) -> bool {
+    let (Some(signer_user_id), Some(signer_public_key), Some(signature)) = (dto.grant_signer_user_id.as_deref(), dto.grant_signer_public_key.as_deref(), dto.grant_signature.as_deref()) else { return false };
+    let message = crypto::signing::grant_message(&dto.manifest_id, dto.key_version, signer_user_id, recipient_public_key, algorithm, encrypted_vek);
+    crypto::signing::verify(signer_public_key, &message, signature)
 }

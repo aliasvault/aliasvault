@@ -12,6 +12,9 @@ pub const PERSONAL_VEK: &[u8] = b"aliasvault/v1/vek";
 /// The account RSA private key under the Account Key.
 pub const ACCOUNT_PRIVATE_KEY: &[u8] = b"aliasvault/v1/account-private-key";
 
+/// The account Ed25519 signing private key under the Account Key.
+pub const ACCOUNT_SIGNING_PRIVATE_KEY: &[u8] = b"aliasvault/v1/account-signing-private-key";
+
 /// A manifest payload under its manifest's VEK.
 pub fn manifest(manifest_id: &str) -> Vec<u8> {
     format!("{}/manifest/{}", PREFIX, normalize(manifest_id)).into_bytes()

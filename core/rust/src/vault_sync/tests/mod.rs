@@ -2,6 +2,7 @@
 
 mod item_move;
 mod merge_edge_cases;
+mod signatures;
 mod test_host;
 mod unloaded_blobs;
 mod unsupported_grant;
@@ -674,8 +675,12 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key, crypto::aad::ACCOUNT_KEY).is_err(), "the legacy vault key does not wrap the Account Key directly");
     let opened = crypto::open_account_key_chain(&unlock_key, body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), None).unwrap();
     assert_eq!(*opened.vault_encryption_key, new_key);
+    let account_keys = &body["migration"]["accountKeys"];
+    let signed = crypto::signing::account_public_key_message(account_keys["accountPublicKey"].as_str().unwrap());
+    assert!(crypto::signing::verify(account_keys["signingPublicKey"].as_str().unwrap(), &signed, account_keys["accountPublicKeySignature"].as_str().unwrap()), "the upgrade push carries a signing key that signed the account public key");
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_PRIVATE_KEY));
+    assert_eq!(host.state[state::ENCRYPTED_SIGNING_PRIVATE_KEY], account_keys["encryptedSigningPrivateKey"]);
     assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
 }
 
@@ -850,7 +855,7 @@ fn status_check_reports_newer_server_state_without_touching_the_vault() {
 /// The `GET v2/VaultKey/Password` answer for a hierarchy the server holds.
 fn vault_key_body(hierarchy: &crypto::AccountKeyHierarchy) -> Value {
     let blobs = &hierarchy.account_keys;
-    json!({ "vaultKey": { "type": "password", "encryptedAccountKey": blobs.encrypted_account_key, "encryptedVek": blobs.encrypted_vek, "accountPublicKey": blobs.account_public_key, "encryptedAccountPrivateKey": blobs.encrypted_account_private_key, "salt": "salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" } })
+    json!({ "vaultKey": { "type": "password", "encryptedAccountKey": blobs.encrypted_account_key, "encryptedVek": blobs.encrypted_vek, "accountPublicKey": blobs.account_public_key, "encryptedAccountPrivateKey": blobs.encrypted_account_private_key, "signingPublicKey": blobs.signing_public_key, "encryptedSigningPrivateKey": blobs.encrypted_signing_private_key, "salt": "salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" } })
 }
 
 /// The cross-device race: this device logged in while the account was legacy (no cached chain, unlock key session), and
@@ -897,6 +902,8 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     assert_eq!(result["encryptionKey"], hierarchy.vault_encryption_key);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_PRIVATE_KEY], hierarchy.account_keys.encrypted_account_private_key);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);
+    assert_eq!(host.state[state::SIGNING_PUBLIC_KEY], hierarchy.account_keys.signing_public_key);
+    assert_eq!(host.state[state::ENCRYPTED_SIGNING_PRIVATE_KEY], hierarchy.account_keys.encrypted_signing_private_key);
     assert!(host.store_calls.is_empty(), "resolving a key never touches the stored vault");
 }
 

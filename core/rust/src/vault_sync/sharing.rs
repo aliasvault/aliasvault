@@ -40,6 +40,8 @@ struct GroupInfo {
 #[serde(rename_all = "camelCase")]
 struct GroupManifestInfo {
     manifest_id: String,
+    #[serde(default)]
+    key_version: i64,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -47,9 +49,15 @@ struct GroupManifestInfo {
 struct GroupMemberInfo {
     user_id: String,
     #[serde(default)]
+    username: String,
+    #[serde(default)]
     public_key_id: Option<String>,
     #[serde(default)]
     public_key: Option<String>,
+    #[serde(default)]
+    public_key_signature: Option<String>,
+    #[serde(default)]
+    signing_public_key: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -59,6 +67,7 @@ struct CreateSharedManifestRequest<'a> {
     self_encrypted_vek: &'a str,
     self_public_key: &'a str,
     algorithm: &'a str,
+    self_grant_signature: &'a str,
     encrypted_name: &'a str,
 }
 
@@ -83,6 +92,7 @@ struct ManifestGrant {
     recipient_public_key_id: String,
     encrypted_vek: String,
     encrypted_name: Option<String>,
+    signature: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -166,6 +176,11 @@ async fn administered_group(ctx: &Ctx, group_id: &str) -> SyncResult<GroupInfo> 
         .ok_or_else(|| SyncError::Other(format!("Group {} is not one this account administers", group_id)))
 }
 
+/// This account's user id in a group, which the grants it signs name.
+fn own_user_id(ctx: &Ctx, group: &GroupInfo) -> SyncResult<String> {
+    group.members.iter().find(|member| member.username.eq_ignore_ascii_case(&ctx.request.username)).map(|member| member.user_id.clone()).ok_or_else(|| SyncError::Other("This account is not a member of the group".to_string()))
+}
+
 /// This account's public key, which a new shared manifest's key is encrypted for.
 async fn own_public_key(ctx: &Ctx) -> SyncResult<Option<String>> {
     match &ctx.account_public_key {
@@ -183,6 +198,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     // The new manifest's VEK is encrypted only for this account's own public key upon creation, other users are invited separately.
     let Some(self_public_key) = own_public_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
+    let Some(signing_key) = keys::signing_private_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_none() {
         return Ok(Err(Refusal::VaultUpgradeRequired));
     }
@@ -193,11 +209,13 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = crypto::generate_key_base64();
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
+    // A new manifest starts at key version 0.
+    let self_grant_signature = crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&requested_id, 0, &own_user_id(ctx, &group)?, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
     let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
         &format!("Groups/{}/manifests", group.group_id),
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, encrypted_name: &encrypted_name },
+        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: &encrypted_name },
         false,
     )
     .await?;
@@ -283,9 +301,15 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let group = administered_group(ctx, &target.group_id).await?;
     let manifest = group.manifests.iter().find(|candidate| ids_equal(&candidate.manifest_id, &manifest_id)).ok_or_else(|| SyncError::Other("The shared manifest does not belong to the group".to_string()))?;
     let member = group.members.iter().find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is not a member of the group".to_string()))?;
-    let (Some(recipient_public_key), Some(recipient_public_key_id)) = (member.public_key.clone(), member.public_key_id.clone()) else {
+    let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (member.public_key.clone(), member.public_key_id.clone(), member.public_key_signature.as_deref(), member.signing_public_key.as_deref()) else {
         return Ok(Err(Refusal::Api(INVITE_RECIPIENT_NOT_READY.to_string())));
     };
+
+    // Only encrypt the key for a public key its owner signed with their signing key.
+    if !crypto::signing::verify(signing_public_key, &crypto::signing::account_public_key_message(&recipient_public_key), signature) {
+        return Err(SyncError::Other(format!("The public key of {} carries no valid signature by their signing key", member.user_id)));
+    }
+    let Some(signing_key) = keys::signing_private_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
 
     // Find this account's own grant on the manifest.
     let mut record = held_record(ctx, &manifest.manifest_id).await?;
@@ -300,10 +324,12 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     // The name travels encrypted in the invitation, so the recipient sees what they are invited to.
     let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty());
+    let encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?;
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
         recipient_public_key_id,
-        encrypted_vek: keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?,
+        signature: crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id(ctx, &group)?, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
+        encrypted_vek,
         encrypted_name: name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?,
     };
 
