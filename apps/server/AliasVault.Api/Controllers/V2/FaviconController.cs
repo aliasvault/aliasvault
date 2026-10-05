@@ -35,13 +35,14 @@ public class FaviconController(
     public const int MaxBatchSize = 10;
 
     /// <summary>
-    /// Extracts the favicon from a single URL.
+    /// Extracts the favicon from a single URL. A POST, so the URL stays out of the access logs.
     /// </summary>
-    /// <param name="url">URL to extract the favicon from.</param>
+    /// <param name="request">The request payload.</param>
     /// <returns>Favicon image bytes, or null if extraction failed.</returns>
-    [HttpGet("Extract")]
-    public async Task<IActionResult> Extract(string url)
+    [HttpPost("Extract")]
+    public async Task<IActionResult> Extract([FromBody] FaviconExtractRequest request)
     {
+        var url = request.Url;
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
