@@ -15,7 +15,6 @@ export function parseAvuxManifest(root: unknown): AvuxManifest {
   return {
     version: readString(obj, 'version') ?? '1.0.0',
     exportedAt: readString(obj, 'exportedAt') ?? '',
-    exportedBy: readString(obj, 'exportedBy') ?? '',
     items: readObjectArray(obj, 'items', parseAvuxItem) ?? [],
     folders: readObjectArray(obj, 'folders', parseAvuxFolder) ?? [],
     tags: readObjectArray(obj, 'tags', parseAvuxTag) ?? [],

@@ -117,5 +117,5 @@ export function addAttachment(item: ItemEntity, filename: string, content: strin
  * @returns The .avux bytes
  */
 export function exportItems(items: ItemEntity[], fieldDefinitions: FieldDefinitionEntity[] = []): Uint8Array {
-  return AvuxExportService.exportToAvux(items, [], [], [], fieldDefinitions, 'test@example.com');
+  return AvuxExportService.exportToAvux(items, [], [], [], fieldDefinitions);
 }

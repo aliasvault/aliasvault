@@ -28,7 +28,6 @@ export type AvexEncryptionParams = {
  */
 export type AvexMetadata = {
   exportedAt: string;
-  exportedBy: string;
   /** The AliasVault application version that created this export. */
   appVersion?: string | null;
 };
