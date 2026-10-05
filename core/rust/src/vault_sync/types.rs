@@ -57,6 +57,8 @@ pub struct SyncRequest {
     #[serde(default)]
     pub account_private_key: Option<String>,
     #[serde(default)]
+    pub account_key: Option<String>,
+    #[serde(default)]
     pub is_dirty: bool,
     #[serde(default)]
     pub mutation_sequence: u64,
@@ -573,6 +575,14 @@ pub struct ManifestDto {
     pub algorithm: Option<String>,
     #[serde(default)]
     pub encryption_public_key: Option<String>,
+    #[serde(default)]
+    pub grant_signature: Option<String>,
+    #[serde(default)]
+    pub grant_signer_user_id: Option<String>,
+    #[serde(default)]
+    pub grant_signer_public_key: Option<String>,
+    #[serde(default)]
+    pub key_version: i64,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -626,6 +636,8 @@ pub struct ManifestWrite {
     pub blob_references: Vec<BlobRef>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub encryption_public_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encryption_public_key_signature: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -745,6 +757,10 @@ pub struct VaultKeyResponse {
     pub encrypted_account_private_key: Option<String>,
     #[serde(default)]
     pub account_public_key: Option<String>,
+    #[serde(default)]
+    pub signing_public_key: Option<String>,
+    #[serde(default)]
+    pub encrypted_signing_private_key: Option<String>,
     #[serde(default)]
     pub encrypted_vek: Option<String>,
     #[serde(default)]

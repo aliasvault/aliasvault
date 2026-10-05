@@ -1,4 +1,5 @@
-//! The account key hierarchy: the KEK encrypts the Account Key, which encrypts the Vault Encryption Key and account private key.
+//! The account key hierarchy: the KEK encrypts the Account Key, which encrypts the Vault Encryption Key, the account
+//! private key and the account signing private key.
 //! The KEK and SRP password hash are each HKDF-derived from the unlock key using separate labels.
 
 use hkdf::Hkdf;
@@ -11,6 +12,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 use super::aad;
 use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt_bytes_with_aad, symmetric_encrypt_with_aad};
 use super::rsa_oaep::{generate_rsa_key_pair, validate_rsa_key_pair, RsaKeyPair};
+use super::signing::{self, generate_signing_key_pair};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
 use crate::common::error::VaultResult;
 
@@ -22,6 +24,11 @@ pub struct AccountKeyBlobs {
     pub encrypted_vek: String,
     pub account_public_key: String,
     pub encrypted_account_private_key: String,
+    pub signing_public_key: String,
+    pub encrypted_signing_private_key: String,
+
+    /// The signing key's signature over `account_public_key` (see [`signing::ACCOUNT_PUBLIC_KEY_LABEL`]).
+    pub account_public_key_signature: String,
 }
 
 /// A newly created account key hierarchy: the wrapped blobs plus the plaintext halves the client keeps.
@@ -30,6 +37,7 @@ pub struct AccountKeyBlobs {
 pub struct AccountKeyHierarchy {
     pub vault_encryption_key: String,
     pub account_private_key: String,
+    pub signing_private_key: String,
 
     #[zeroize(skip)]
     pub account_keys: AccountKeyBlobs,
@@ -40,6 +48,7 @@ impl fmt::Debug for AccountKeyHierarchy {
         f.debug_struct("AccountKeyHierarchy")
             .field("vault_encryption_key", &"<redacted>")
             .field("account_private_key", &"<redacted>")
+            .field("signing_private_key", &"<redacted>")
             .field("account_keys", &self.account_keys)
             .finish()
     }
@@ -121,6 +130,12 @@ pub fn open_account_private_key(encrypted_account_private_key: &str, account_key
     symmetric_decrypt_with_aad(encrypted_account_private_key, account_key_base64, aad::ACCOUNT_PRIVATE_KEY)
 }
 
+/// Decrypt the account signing private key (base64 seed) with the Account Key.
+pub fn open_account_signing_private_key(encrypted_signing_private_key: &str, account_key_base64: &str) -> VaultResult<Zeroizing<String>> {
+    let seed = Zeroizing::new(symmetric_decrypt_bytes_with_aad(&base64_decode(encrypted_signing_private_key)?, account_key_base64, aad::ACCOUNT_SIGNING_PRIVATE_KEY)?);
+    Ok(Zeroizing::new(base64_encode(&seed[..])))
+}
+
 /// Why a key chain did not open.
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
@@ -170,15 +185,20 @@ pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_p
     validate_rsa_key_pair(key_pair)?;
     let vault_encryption_key = generate_key_base64();
     let account_key = Zeroizing::new(generate_key_base64());
+    let signing_key_pair = generate_signing_key_pair();
+    let account_public_key_message = signing::account_public_key_message(&key_pair.public_key);
 
     let account_keys = AccountKeyBlobs {
         encrypted_account_key: wrap_account_key(&account_key, unlock_key_base64)?,
         encrypted_vek: wrap_key(&vault_encryption_key, &account_key, aad::PERSONAL_VEK)?,
         account_public_key: key_pair.public_key.clone(),
         encrypted_account_private_key: symmetric_encrypt_with_aad(&key_pair.private_key, &account_key, aad::ACCOUNT_PRIVATE_KEY)?,
+        signing_public_key: signing_key_pair.public_key.clone(),
+        encrypted_signing_private_key: wrap_key(&signing_key_pair.private_key, &account_key, aad::ACCOUNT_SIGNING_PRIVATE_KEY)?,
+        account_public_key_signature: signing::sign(&signing_key_pair.private_key, &account_public_key_message)?,
     };
 
-    Ok(AccountKeyHierarchy { vault_encryption_key, account_private_key: key_pair.private_key.clone(), account_keys })
+    Ok(AccountKeyHierarchy { vault_encryption_key, account_private_key: key_pair.private_key.clone(), signing_private_key: signing_key_pair.private_key.clone(), account_keys })
 }
 
 /// The Account Key re-encrypted for a new password.
@@ -289,6 +309,22 @@ mod tests {
 
         let mismatched = RsaKeyPair { public_key: generate_rsa_key_pair().unwrap().public_key.clone(), private_key: key_pair.private_key.clone() };
         assert!(create_account_key_hierarchy_with_key_pair(&unlock_key, &mismatched).is_err());
+    }
+
+    #[test]
+    fn hierarchy_carries_a_signing_key_that_signed_the_account_public_key() {
+        let unlock_key = generate_key_base64();
+        let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
+        let blobs = &hierarchy.account_keys;
+        let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+
+        let signing_private_key = open_account_signing_private_key(&blobs.encrypted_signing_private_key, &account_key).unwrap();
+        assert_eq!(*signing_private_key, hierarchy.signing_private_key);
+        assert_eq!(signing::signing_public_key_of(&signing_private_key).unwrap(), blobs.signing_public_key);
+
+        let message = signing::account_public_key_message(&blobs.account_public_key);
+        assert!(signing::verify(&blobs.signing_public_key, &message, &blobs.account_public_key_signature));
+        assert!(open_account_private_key(&blobs.encrypted_signing_private_key, &account_key).is_err(), "the signing key does not open in the account private key slot");
     }
 
     #[test]

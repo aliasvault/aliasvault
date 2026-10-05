@@ -84,6 +84,7 @@ mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
 # SQLite client which can be used by all host apps for uniform access
 rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
+ed25519-dalek = { version = "2", default-features = false, features = ["std", "zeroize"] }
 
 # rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
 [target.'cfg(target_arch = "wasm32")'.dependencies]

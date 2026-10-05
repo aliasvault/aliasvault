@@ -19,6 +19,8 @@ pub(crate) struct Ctx {
     pub encryption_key: Option<String>,
     pub account_public_key: Option<String>,
     pub account_private_key: Option<String>,
+    pub account_key: Option<String>,
+    pub signing_private_key: Option<String>,
     pub is_dirty: bool,
     pub mutation_sequence: u64,
     /// The session key this run switched to; the next vault store hands it to the host.
@@ -43,6 +45,8 @@ impl Ctx {
             encryption_key: request.encryption_key.clone(),
             account_public_key: request.account_public_key.clone(),
             account_private_key: request.account_private_key.clone(),
+            account_key: request.account_key.clone(),
+            signing_private_key: None,
             is_dirty: request.is_dirty,
             mutation_sequence: request.mutation_sequence,
             new_encryption_key: None,
@@ -116,6 +120,8 @@ pub(crate) const ENCRYPTED_VEK: &str = "encryptedVek";
 pub(crate) const ENCRYPTED_ACCOUNT_KEY: &str = "encryptedAccountKey";
 pub(crate) const ACCOUNT_PUBLIC_KEY: &str = "accountPublicKey";
 pub(crate) const ENCRYPTED_ACCOUNT_PRIVATE_KEY: &str = "encryptedAccountPrivateKey";
+pub(crate) const SIGNING_PUBLIC_KEY: &str = "signingPublicKey";
+pub(crate) const ENCRYPTED_SIGNING_PRIVATE_KEY: &str = "encryptedSigningPrivateKey";
 pub(crate) const UNLOCK_KEY_DERIVATION_PARAMS: &str = "encryptionKeyDerivationParams";
 
 /// Read a value, `None` when absent or null.
