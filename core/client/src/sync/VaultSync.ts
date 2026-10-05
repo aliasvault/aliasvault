@@ -31,6 +31,8 @@ export type SyncErrorDetail = {
   logoutReason?: LogoutReason;
   errorCode?: string;
   error?: string;
+  /** The API error code the server refused a request with, when it named one. */
+  apiErrorCode?: string;
 };
 
 /**
@@ -81,7 +83,7 @@ type PersistableSyncResult = VaultSyncEngineResultBase & {
 };
 
 /** The engine's failure fields. */
-type EngineFailure = Pick<VaultSyncEngineResult, 'error' | 'errorCode' | 'logoutReason'>;
+type EngineFailure = Pick<VaultSyncEngineResult, 'error' | 'errorCode' | 'apiErrorCode' | 'logoutReason'>;
 
 /**
  * The translation key of each logout reason.
@@ -321,12 +323,13 @@ export class VaultSync {
       return {};
     }
 
-    devWarn(`[VaultSync] Engine failure (${result.errorCode ?? 'no code'}): ${result.error ?? 'no detail'}`);
+    devWarn(`[VaultSync] Engine failure (${result.errorCode ?? 'no code'}${result.apiErrorCode ? `, server ${result.apiErrorCode}` : ''}): ${result.error ?? 'no detail'}`);
 
     if (result.logoutReason) {
       return { logoutReason: result.logoutReason };
     }
 
-    return { errorCode: result.errorCode && isErrorCode(result.errorCode) ? result.errorCode : AppErrorCode.UNKNOWN_ERROR, error: result.error };
+    const errorCode = result.errorCode && isErrorCode(result.errorCode) ? result.errorCode : AppErrorCode.UNKNOWN_ERROR;
+    return result.apiErrorCode ? { errorCode, error: result.error, apiErrorCode: result.apiErrorCode } : { errorCode, error: result.error };
   }
 }

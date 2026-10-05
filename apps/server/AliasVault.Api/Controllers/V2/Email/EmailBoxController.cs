@@ -51,7 +51,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Shadow-block: when active, only emails received before the block took effect are visible.
@@ -63,25 +63,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         {
             if (emailClaim is not null && await EmailAccessHelper.IsOwnedWithinSharedGroupAsync(context, emailClaim, user.Id))
             {
-                return BadRequest(new ApiErrorResponse
-                {
-                    Message = "This email alias is owned by another vault.",
-                    Code = nameof(ApiErrorCode.CLAIM_OWNED_BY_OTHER_VAULT),
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Timestamp = DateTime.UtcNow,
-                });
+                return ApiError.Result(ApiErrorCode.CLAIM_OWNED_BY_OTHER_VAULT, 400);
             }
 
             // Over the lookup limit a taken address falls back to the generic error, which slows down enumeration.
             if (emailClaim is not null && takenAliasLookupRateLimit.TryRecord(user.Id, RegistrationCheckRateLimit.GetClientKey(HttpContext), sanitizedEmail))
             {
-                return BadRequest(new ApiErrorResponse
-                {
-                    Message = "This email address is already in use by another account.",
-                    Code = nameof(ApiErrorCode.CLAIM_TAKEN),
-                    StatusCode = StatusCodes.Status400BadRequest,
-                    Timestamp = DateTime.UtcNow,
-                });
+                return ApiError.Result(ApiErrorCode.CLAIM_TAKEN, 400);
             }
 
             /*
@@ -91,17 +79,10 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             var remaining = await rateLimitService.GetRemainingAliasAllowancesAsync(context, [user.PersonalGroupId]);
             if (remaining.TryGetValue(user.PersonalGroupId, out var left) && left <= 0)
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALIAS_LIMIT_REACHED, 400));
+                return ApiError.Result(ApiErrorCode.ALIAS_LIMIT_REACHED, 400);
             }
 
-            return BadRequest(new ApiErrorResponse
-            {
-                Message = "No claim exists for this email address.",
-                Code = "CLAIM_DOES_NOT_EXIST",
-                Details = new { ProvidedEmail = sanitizedEmail },
-                StatusCode = StatusCodes.Status400BadRequest,
-                Timestamp = DateTime.UtcNow,
-            });
+            return ApiError.Result(ApiErrorCode.CLAIM_DOES_NOT_EXIST, 400);
         }
 
         // Retrieve emails from database, restricted to emails carrying a decryption key the caller can open.
@@ -132,9 +113,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                     FromLocal = x.FromLocal,
                     ToDomain = x.ToDomain,
                     ToLocal = x.ToLocal,
-                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                    Date = x.Date.ToUniversalTime(),
+                    DateSystem = x.DateSystem.ToUniversalTime(),
+                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem.ToUniversalTime()).TotalSeconds,
                     MessagePreview = x.MessagePreview ?? string.Empty,
                     HasAttachments = x.AttachmentCount > 0,
                 },
@@ -178,7 +159,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Shadow-block: when active, only emails received before the block took effect are visible.
@@ -215,7 +196,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         if (shadowCutoff is not null)
         {
-            parameters.Add(new NpgsqlParameter("cutoff", NpgsqlDbType.TimestampTz) { Value = DateTime.SpecifyKind(shadowCutoff.Value, DateTimeKind.Utc) });
+            parameters.Add(new NpgsqlParameter("cutoff", NpgsqlDbType.TimestampTz) { Value = shadowCutoff.Value.ToUniversalTime() });
         }
 
         // Merge the per-address results, order them globally and take the requested page.
@@ -236,9 +217,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                     FromLocal = x.FromLocal,
                     ToDomain = x.ToDomain,
                     ToLocal = x.ToLocal,
-                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                    Date = x.Date.ToUniversalTime(),
+                    DateSystem = x.DateSystem.ToUniversalTime(),
+                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem.ToUniversalTime()).TotalSeconds,
                     MessagePreview = x.MessagePreview ?? string.Empty,
                     HasAttachments = x.AttachmentCount > 0,
                 },

@@ -13,6 +13,7 @@ using System.Threading.RateLimiting;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
+using AliasVault.Shared.Models.WebApi.V2;
 using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
@@ -44,7 +45,12 @@ public static class RegistrationCheckRateLimit
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         options.OnRejected = async (context, cancellationToken) =>
-            await context.HttpContext.Response.WriteAsJsonAsync(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, StatusCodes.Status429TooManyRequests), cancellationToken);
+        {
+            object body = ApiError.IsV2Request(context.HttpContext)
+                ? ErrorResponse.Create(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, StatusCodes.Status429TooManyRequests)
+                : ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, StatusCodes.Status429TooManyRequests);
+            await context.HttpContext.Response.WriteAsJsonAsync(body, cancellationToken);
+        };
 
         options.AddPolicy(PolicyName, httpContext =>
         {

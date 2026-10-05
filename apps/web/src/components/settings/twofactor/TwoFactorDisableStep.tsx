@@ -12,6 +12,8 @@ import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 
+import type { TwoFactorCodeRequest, TwoFactorStatusResponse } from '@aliasvault/models/webapi';
+
 /**
  * Disable step of the two-factor page: confirm with an authenticator or recovery code.
  */
@@ -36,7 +38,7 @@ const TwoFactorDisableStep: React.FC = () => {
      */
     const check = async (): Promise<void> => {
       try {
-        const status = await webApi.get<{ twoFactorEnabled: boolean }>('TwoFactorAuth/status');
+        const status = await webApi.get<TwoFactorStatusResponse>('TwoFactorAuth/status');
         if (!status.twoFactorEnabled) {
           notifications.addErrorMessage(t('settings.securitySettings.disable2fa.twoFactorNotEnabled'));
           navigate('/settings/two-factor');
@@ -56,7 +58,7 @@ const TwoFactorDisableStep: React.FC = () => {
   const disableTwoFactor = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
-      await webApi.post<string, unknown>('TwoFactorAuth/disable', code.trim(), false);
+      await webApi.post<TwoFactorCodeRequest, unknown>('TwoFactorAuth/disable', { code: code.trim() }, false);
       notifications.addSuccessMessage(t('settings.securitySettings.disable2fa.twoFactorDisabledSuccess'));
       void refreshReminders();
       navigate('/settings/two-factor');

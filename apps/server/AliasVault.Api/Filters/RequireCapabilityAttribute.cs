@@ -9,9 +9,9 @@ namespace AliasVault.Api.Filters;
 
 using System.Security.Claims;
 using AliasVault.Api.Headers;
+using AliasVault.Api.Helpers;
 using AliasVault.Api.Services;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Server.Capabilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -29,7 +29,7 @@ public sealed class RequireCapabilityAttribute(string capabilityKey) : Attribute
         var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
         {
-            context.Result = new UnauthorizedResult();
+            context.Result = ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, StatusCodes.Status401Unauthorized);
             return;
         }
 
@@ -40,6 +40,6 @@ public sealed class RequireCapabilityAttribute(string capabilityKey) : Attribute
             return;
         }
 
-        context.Result = new ObjectResult(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.CAPABILITY_NOT_AVAILABLE, StatusCodes.Status403Forbidden)) { StatusCode = StatusCodes.Status403Forbidden };
+        context.Result = ApiError.Result(ApiErrorCode.CAPABILITY_NOT_AVAILABLE, StatusCodes.Status403Forbidden);
     }
 }

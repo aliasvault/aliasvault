@@ -42,12 +42,12 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
         var user = await GetUserManager().GetUserAsync(User);
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (user.Blocked)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 401);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();

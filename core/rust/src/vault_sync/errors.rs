@@ -118,9 +118,9 @@ pub enum SyncError {
     /// The local vault's data version cannot be read by this client.
     #[error("{0}")]
     VaultVersionIncompatible(String),
-    /// Any other HTTP failure.
+    /// Any other HTTP failure, with the API error code its body names.
     #[error("HTTP {status}: {body}")]
-    Http { status: u16, body: String },
+    Http { status: u16, code: Option<String>, body: String },
     /// The session holds no encryption key.
     #[error("No encryption key available")]
     VaultLocked,
@@ -180,6 +180,14 @@ impl From<crate::crypto::KeyChainError> for SyncError {
 }
 
 impl SyncError {
+    /// The API error code the server refused the request with, when it named one.
+    pub fn api_error_code(&self) -> Option<String> {
+        match self {
+            SyncError::Http { code, .. } => code.clone(),
+            _ => None,
+        }
+    }
+
     /// How the host reports this failure.
     pub fn failure(&self) -> Failure {
         match self {

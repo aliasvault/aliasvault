@@ -9,7 +9,9 @@ namespace AliasVault.Api.Controllers.V2;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Helpers;
 using AliasVault.Api.Services;
+using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V2.Favicon;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -43,12 +45,12 @@ public class FaviconController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!rateLimitService.TryConsume(user.Id, 1))
         {
-            return StatusCode(StatusCodes.Status429TooManyRequests);
+            return ApiError.Result(ApiErrorCode.RATE_LIMIT_EXCEEDED, 429);
         }
 
         try
@@ -77,7 +79,7 @@ public class FaviconController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (request.Urls.Count == 0)
@@ -87,16 +89,12 @@ public class FaviconController(
 
         if (request.Urls.Count > MaxBatchSize)
         {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Too many URLs",
-                Detail = $"Batch size is capped at {MaxBatchSize} URLs per request.",
-            });
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         if (!rateLimitService.TryConsume(user.Id, request.Urls.Count))
         {
-            return StatusCode(StatusCodes.Status429TooManyRequests);
+            return ApiError.Result(ApiErrorCode.RATE_LIMIT_EXCEEDED, 429);
         }
 
         var images = await FaviconExtractor.FaviconExtractor.GetFaviconsAsync(request.Urls);

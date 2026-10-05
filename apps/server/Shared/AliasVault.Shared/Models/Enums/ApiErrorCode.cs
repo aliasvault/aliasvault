@@ -9,8 +9,7 @@ namespace AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Enumeration of error codes returned by the API.
-/// These codes are used by clients for localization and proper error handling.
-/// Using explicit string keys ensures backward compatibility when adding new error codes.
+/// The member name is the code on the wire, so a member is never renamed or removed; ApiErrorCodeTests pins the list.
 /// </summary>
 public enum ApiErrorCode
 {
@@ -135,7 +134,7 @@ public enum ApiErrorCode
     VAULT_NOT_UP_TO_DATE,
 
     /// <summary>
-    /// Mobile login request not found or expired.
+    /// Mobile login request not found.
     /// </summary>
     MOBILE_LOGIN_REQUEST_NOT_FOUND,
 
@@ -297,4 +296,59 @@ public enum ApiErrorCode
     /// A required signature is missing or does not verify under the caller's signing key.
     /// </summary>
     SIGNATURE_INVALID,
+
+    /// <summary>
+    /// The request is malformed or fails validation; retrying it unchanged cannot succeed.
+    /// </summary>
+    INVALID_REQUEST,
+
+    /// <summary>
+    /// The request carries no valid session, or the account behind it no longer exists.
+    /// </summary>
+    NOT_AUTHENTICATED,
+
+    /// <summary>
+    /// Too many requests of this kind were made in a short period.
+    /// </summary>
+    RATE_LIMIT_EXCEEDED,
+
+    /// <summary>
+    /// The mobile login request existed but can no longer be approved or retrieved.
+    /// </summary>
+    MOBILE_LOGIN_REQUEST_EXPIRED,
+
+    /// <summary>
+    /// The mobile login request was declined on the mobile device.
+    /// </summary>
+    MOBILE_LOGIN_REQUEST_DECLINED,
+
+    /// <summary>
+    /// The email alias moved to another manifest while the request was being handled.
+    /// </summary>
+    EMAIL_CLAIM_MOVED,
+
+    /// <summary>
+    /// No claim exists for the requested email address.
+    /// </summary>
+    CLAIM_DOES_NOT_EXIST,
+
+    /// <summary>
+    /// The email does not exist or is not readable by the caller.
+    /// </summary>
+    EMAIL_NOT_FOUND,
+
+    /// <summary>
+    /// The session does not exist or does not belong to the caller.
+    /// </summary>
+    SESSION_NOT_FOUND,
+
+    /// <summary>
+    /// Two-factor authentication is already enabled for this account.
+    /// </summary>
+    TWO_FACTOR_ALREADY_ENABLED,
+
+    /// <summary>
+    /// Two-factor authentication is not enabled for this account.
+    /// </summary>
+    TWO_FACTOR_NOT_ENABLED,
 }

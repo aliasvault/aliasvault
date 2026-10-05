@@ -85,9 +85,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 FromLocal = x.FromLocal,
                 ToDomain = x.ToDomain,
                 ToLocal = x.ToLocal,
-                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                Date = x.Date.ToUniversalTime(),
+                DateSystem = x.DateSystem.ToUniversalTime(),
+                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem.ToUniversalTime()).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
                 EncryptedSymmetricKey = x.DecryptionKeys.Where(d => personalKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).Select(d => d.EncryptedSymmetricKey).First(),
                 EncryptionKey = x.DecryptionKeys.Where(d => personalKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).Select(d => d.VaultManifestDeliveryKey.PublicKey).First(),
@@ -165,7 +165,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         if (shadowCutoff is not null)
         {
-            parameters.Add(new NpgsqlParameter("cutoff", NpgsqlDbType.TimestampTz) { Value = DateTime.SpecifyKind(shadowCutoff.Value, DateTimeKind.Utc) });
+            parameters.Add(new NpgsqlParameter("cutoff", NpgsqlDbType.TimestampTz) { Value = shadowCutoff.Value.ToUniversalTime() });
         }
 
         // Merge the per-address results, order them globally and take the requested page.
@@ -184,9 +184,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 FromLocal = x.FromLocal,
                 ToDomain = x.ToDomain,
                 ToLocal = x.ToLocal,
-                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                Date = x.Date.ToUniversalTime(),
+                DateSystem = x.DateSystem.ToUniversalTime(),
+                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem.ToUniversalTime()).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
                 EncryptedSymmetricKey = x.DecryptionKeys.Where(d => personalKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).Select(d => d.EncryptedSymmetricKey).First(),
                 EncryptionKey = x.DecryptionKeys.Where(d => personalKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).Select(d => d.VaultManifestDeliveryKey.PublicKey).First(),

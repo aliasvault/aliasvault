@@ -163,7 +163,7 @@ export async function enableTwoFactor(apiBaseUrl: string, token: string): Promis
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(code),
+    body: JSON.stringify({ code }),
   });
 
   if (!verifyResponse.ok) {

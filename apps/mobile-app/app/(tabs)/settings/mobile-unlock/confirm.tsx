@@ -118,7 +118,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
         setRequest({ details, verificationCode, codeChoices: buildCodeChoices(verificationCode) });
       } catch (error) {
         console.error('Mobile login request validation error:', error);
-        const isExpired = error instanceof ApiRequestError && error.statusCode === 404;
+        const isExpired = error instanceof ApiRequestError && (error.statusCode === 404 || error.statusCode === 410);
         showAlert(t('common.error'), isExpired ? t('settings.qrScanner.mobileLogin.requestExpired') : t('common.errors.unknownErrorTryAgain'), () => router.replace('/(tabs)/settings'));
       }
     };

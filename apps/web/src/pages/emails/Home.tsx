@@ -1,3 +1,4 @@
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import { getPlatform } from '@aliasvault/client/platform';
 import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
@@ -29,7 +30,7 @@ import { itemRoute } from '@/utils/ItemRoute';
 import { StorageKeys } from '@/utils/StorageKeys';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { ApiErrorResponse, MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /** Emails per page. */
 const PAGE_SIZE = 50;
@@ -151,8 +152,7 @@ const EmailsHome: React.FC = () => {
     } catch (error) {
       // Claim does not exist errors from the email API are expected while local changes are still being synced.
       if (!dbContext.isSyncing && !await hasUnsyncedUserChanges()) {
-        const apiError = error as { apiError?: ApiErrorResponse };
-        if (apiError.apiError?.code === 'CLAIM_DOES_NOT_EXIST') {
+        if (apiErrorCodeOf(error) === 'CLAIM_DOES_NOT_EXIST') {
           notifications.addErrorMessage(t('emails.home.claimDoesNotExistError'), true);
         } else {
           notifications.addErrorMessage(error instanceof Error ? error.message : t('common.errors.unknownError'), true);

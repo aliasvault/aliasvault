@@ -102,6 +102,9 @@ pub struct FailureFields {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logout_reason: Option<LogoutReason>,
     pub requires_logout: bool,
+    /// The API error code the server refused the request with, when it named one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub api_error_code: Option<String>,
 }
 
 impl FailureFields {
@@ -115,7 +118,7 @@ impl From<&SyncError> for FailureFields {
     fn from(error: &SyncError) -> Self {
         match error.failure() {
             Failure::Logout(reason) => Self::logout(reason),
-            Failure::Coded(code) => Self { error: Some(error.to_string()), error_code: Some(code), ..Default::default() },
+            Failure::Coded(code) => Self { error: Some(error.to_string()), error_code: Some(code), api_error_code: error.api_error_code(), ..Default::default() },
         }
     }
 }
@@ -227,12 +230,10 @@ pub struct SharingOperationResult {
     /// The manifest the operation created or invited to.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_id: Option<String>,
-    /// The API error code the server refused with (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
-    /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub api_error_code: Option<String>,
     /// The vault (or the account's key hierarchy) has to finish upgrading before it can be shared.
     pub vault_upgrade_required: bool,
+    /// A refusal carries only `failure.api_error_code` (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
+    /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
     #[serde(flatten)]
     pub failure: FailureFields,
     #[serde(flatten)]
@@ -748,6 +749,13 @@ pub struct BlobHashesRequest {
 pub struct MissingBlobsResponse {
     #[serde(default)]
     pub missing: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlobDownloadResponse {
+    #[serde(default)]
+    pub blobs: Vec<BlobDto>,
 }
 
 /// `GET v2/VaultKey/Password`.

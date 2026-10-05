@@ -42,3 +42,13 @@ export type AuthLogModel = {
    */
   isSuccess: boolean;
 }
+
+/**
+ * Response of GET /v2/Security/authlogs.
+ */
+export type AuthLogsResponse = {
+  /**
+   * The most recent auth log entries, newest first.
+   */
+  authLogs: AuthLogModel[];
+}

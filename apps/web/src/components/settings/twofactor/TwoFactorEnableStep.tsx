@@ -14,6 +14,8 @@ import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 
+import type { TwoFactorCodeRequest, TwoFactorEnableResponse, TwoFactorVerifyResponse } from '@aliasvault/models/webapi';
+
 /**
  * The recovery codes, shown once right after two-factor authentication was enabled.
  */
@@ -69,7 +71,7 @@ const TwoFactorEnableStep: React.FC = () => {
      */
     const setup = async (): Promise<void> => {
       try {
-        const result = await webApi.post<null, { secret: string; qrCodeUrl: string }>('TwoFactorAuth/enable', null);
+        const result = await webApi.post<null, TwoFactorEnableResponse>('TwoFactorAuth/enable', null);
         // Spaces every four characters make the secret easier to type over.
         setSecret((result.secret.match(/.{1,4}/g) ?? []).join(' ').toLowerCase());
         setQrCodeDataUrl(await QRCode.toDataURL(result.qrCodeUrl, { width: 256, margin: 2 }));
@@ -89,7 +91,7 @@ const TwoFactorEnableStep: React.FC = () => {
   const verifySetup = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
-      const result = await webApi.post<string, { recoveryCodes: string[] }>('TwoFactorAuth/verify', code);
+      const result = await webApi.post<TwoFactorCodeRequest, TwoFactorVerifyResponse>('TwoFactorAuth/verify', { code });
       notifications.addSuccessMessage(t('settings.securitySettings.enable2fa.twoFactorEnabledSuccess'), true);
       setRecoveryCodes(result.recoveryCodes);
       void refreshReminders();

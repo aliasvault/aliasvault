@@ -11,6 +11,8 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Services;
+using AliasVault.Shared.Models.Enums;
+using AliasVault.Shared.Models.WebApi.V2.Identity;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +38,12 @@ public class IdentityController(UserManager<AliasVaultUser> userManager, IAliasS
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Over the lookup limit a taken address reads as free; a later claim of it is still refused, this only slows down enumeration.
         bool isTaken = await EmailClaimExistsAsync(email) && takenAliasLookupRateLimit.TryRecord(user.Id, RegistrationCheckRateLimit.GetClientKey(HttpContext), EmailHelper.SanitizeEmail(email));
-        return Ok(new { isTaken });
+        return Ok(new CheckEmailResponse { IsTaken = isTaken });
     }
 
     /// <summary>

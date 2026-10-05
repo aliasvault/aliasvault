@@ -17,6 +17,8 @@ export * from './EmailAttachment';
 export * from './EmailDecryptionKey';
 export * from './AuthLog';
 export * from './RefreshToken';
+export * from './TwoFactor';
+export * from './Identity';
 export * from './FaviconExtractModel';
 export * from './DeleteAccountInitiate';
 export * from './DeleteAccountRequest';

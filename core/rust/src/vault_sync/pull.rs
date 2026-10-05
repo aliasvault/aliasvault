@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{self, BlobDto, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
+use super::types::{self, BlobDownloadResponse, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
 use crate::crypto;
@@ -317,7 +317,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     }
     let batch_count = batches.len();
     for (index, (manifest_id, chunk)) in batches.into_iter().enumerate() {
-        let blobs: Vec<BlobDto> = http::post(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?;
+        let blobs = http::post::<_, BlobDownloadResponse>(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?.blobs;
         ctx.log(format!("[V2Pull] Downloaded blob batch {}/{}: requested {}, received {}.", index + 1, batch_count, chunk.len(), blobs.len())).await;
         for dto in blobs {
             cache.insert(dto.hash, EncryptedBlob { encrypted_data_base64: dto.encrypted_data_base64, encrypted_blob_key: dto.encrypted_blob_key });

@@ -1,29 +1,19 @@
 /**
- * Represents the error response returned by the API.
+ * The body of every V2 API error response.
  */
 export type ApiErrorResponse = {
   /**
-   * The main error message.
-   */
-  message: string;
-
-  /**
-   * The error code associated with this error.
+   * The error code, e.g. "GROUP_NOT_FOUND". Clients branch on and translate this.
    */
   code: string;
 
   /**
-   * Additional details about the error.
-   */
-  details: Record<string, unknown>;
-
-  /**
-   * The HTTP status code associated with this error.
+   * The HTTP status code of the response.
    */
   statusCode: number;
 
   /**
-   * The timestamp when the error occurred.
+   * Optional structured context, absent when there is none.
    */
-  timestamp: string; // Using string for ISO date format
+  details?: Record<string, unknown>;
 };
