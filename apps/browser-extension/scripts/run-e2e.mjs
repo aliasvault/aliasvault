@@ -78,6 +78,7 @@ console.log(`[e2e] Using API URL: ${apiUrl}`);
 const childEnv = {
   ...env,
   ALIASVAULT_API_URL: apiUrl,
+  WXT_E2E_BUILD: "true",
 };
 
 // Test numbers become one title filter (--grep), so selections combine as "or". Any other argument goes to Playwright as-is.

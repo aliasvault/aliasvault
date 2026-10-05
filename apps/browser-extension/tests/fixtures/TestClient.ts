@@ -397,35 +397,6 @@ export class TestClient {
   }
 
   /**
-   * Enable E2E test mode which sets the shadow DOM to 'open' mode for testability.
-   * This must be called before navigating to pages where you want to inspect the autofill popup.
-   */
-  async enableE2ETestMode(): Promise<this> {
-    await this.popup.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        chrome.storage.local.set({ e2eTestMode: true }, () => {
-          resolve();
-        });
-      });
-    });
-    return this;
-  }
-
-  /**
-   * Disable E2E test mode.
-   */
-  async disableE2ETestMode(): Promise<this> {
-    await this.popup.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        chrome.storage.local.remove('e2eTestMode', () => {
-          resolve();
-        });
-      });
-    });
-    return this;
-  }
-
-  /**
    * Enable offline mode by setting an invalid API URL.
    */
   async enableOfflineMode(): Promise<this> {

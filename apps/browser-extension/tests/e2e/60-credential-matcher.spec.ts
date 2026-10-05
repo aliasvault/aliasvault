@@ -82,9 +82,6 @@ test.describe.serial('60. Credential Matcher Integration', () => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
 
-    // Enable E2E test mode for open shadow DOM
-    await client.enableE2ETestMode();
-
     // Create credentials with specific URLs for testing
     // Credential 1: For example.com domain
     await client
