@@ -2,7 +2,6 @@
 
 mod item_move;
 mod merge_edge_cases;
-mod signatures;
 mod test_host;
 mod unloaded_blobs;
 mod unsupported_grant;

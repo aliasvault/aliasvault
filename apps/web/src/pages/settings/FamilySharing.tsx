@@ -1,7 +1,7 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
-import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
+import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -367,6 +367,7 @@ const FamilySharing: React.FC = () => {
         onClose={() => setPendingVaultRename(null)}
         onSave={renameSharedVault}
         initialName={pendingVaultRename ? vaultLabel(pendingVaultRename.manifest) : ''}
+        maxLength={MAX_SHARED_VAULT_NAME_LENGTH}
         mode="edit"
       />
 
@@ -564,6 +565,7 @@ const FamilySharing: React.FC = () => {
                                 value={newVaultNames[group.groupId] ?? ''}
                                 onValueChange={value => setNewVaultNames(previous => ({ ...previous, [group.groupId]: value }))}
                                 placeholder={familySharingText.vaultNamePlaceholder}
+                                maxLength={MAX_SHARED_VAULT_NAME_LENGTH}
                               />
                             </div>
                             <Button type="submit" isDisabled={busy}>{familySharingText.create}</Button>

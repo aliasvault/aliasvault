@@ -10,12 +10,13 @@ type FolderModalProps = {
   initialName?: string;
   onClose: () => void;
   onSave: (name: string) => Promise<void>;
+  maxLength?: number;
 };
 
 /**
  * Modal for creating or renaming a folder.
  */
-const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '', onClose, onSave }) => {
+const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '', onClose, onSave, maxLength }) => {
   const { t } = useTranslation();
   const [folderName, setFolderName] = useState(initialName);
   const [errorMessage, setErrorMessage] = useState('');
@@ -73,6 +74,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
         value={folderName}
         onChange={(e) => setFolderName(e.target.value)}
         placeholder={t('items.folders.modal.folderNamePlaceholder')}
+        maxLength={maxLength}
         autoFocus
         className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500 dark:focus:ring-primary-500" />
       {errorMessage && (

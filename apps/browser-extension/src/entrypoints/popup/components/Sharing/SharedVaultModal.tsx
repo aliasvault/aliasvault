@@ -1,5 +1,5 @@
 import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { familySharingText, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/FamilySharingView';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -91,6 +91,7 @@ const SharedVaultModal: React.FC<SharedVaultModalProps> = ({ isOpen, onClose, on
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={familySharingText.vaultNamePlaceholder}
+          maxLength={MAX_SHARED_VAULT_NAME_LENGTH}
           autoFocus
           className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
         />
