@@ -20,7 +20,7 @@ public class AccountKeysUpload
     public const int MaxPublicKeyLength = 2000;
 
     /// <summary>Maximum accepted length of <see cref="EncryptedAccountPrivateKey"/>.</summary>
-    public const int MaxEncryptedPrivateKeyLength = 4000;
+    public const int MaxEncryptedPrivateKeyLength = 8000;
 
     /// <summary>Maximum accepted length of <see cref="SigningPublicKey"/>.</summary>
     public const int MaxSigningPublicKeyLength = 100;
