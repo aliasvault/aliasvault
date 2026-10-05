@@ -90,7 +90,10 @@ impl DomainWithPort {
 /// Returns DomainWithPort with empty domain if not a valid URL/domain.
 pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
     let lowered = url.trim().to_lowercase();
-    let (scheme, authority, _) = split_url(&lowered);
+
+    // A blob URL ("blob:https://example.com/<uuid>") belongs to the origin it wraps.
+    let lowered = lowered.strip_prefix("blob:").unwrap_or(&lowered);
+    let (scheme, authority, _) = split_url(lowered);
 
     // A web scheme is what allows single-word hostnames like "http://plex" or "https://nas",
     // common in self-hosted setups. Any other scheme names something that is not a website.
@@ -105,25 +108,46 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
         return DomainWithPort::default();
     }
 
-    let host = authority.strip_prefix("www.").unwrap_or(authority);
-    let (domain, port) = match host.split_once(':') {
-        Some((domain, port)) if !port.is_empty() && port.chars().all(|c| c.is_ascii_digit()) => (domain, Some(port.to_string())),
-        Some((domain, _)) => (domain, None),
-        None => (host, None),
-    };
+    // The host is what follows any userinfo: "https://user@example.com" opens example.com.
+    let host_and_port = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
+    let (host, port) = split_host_port(host_and_port);
+
+    // A fully qualified name ("bank.com.") is the same host as without its trailing dot.
+    let host = host.strip_suffix('.').unwrap_or(host);
+    let domain = host.strip_prefix("www.").unwrap_or(host);
+
+    if is_ip_literal(domain) {
+        return DomainWithPort { domain: domain.to_string(), port };
+    }
 
     // Without a scheme, require at least one dot to distinguish a hostname from random text.
     if domain.is_empty() || (!domain.contains('.') && !has_protocol) {
         return DomainWithPort::default();
     }
 
-    let valid_chars = domain.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-');
+    let valid_chars = domain.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'));
     let valid_structure = !domain.starts_with('.') && !domain.ends_with('.') && !domain.contains("..");
     if !valid_chars || !valid_structure {
         return DomainWithPort::default();
     }
 
     DomainWithPort { domain: domain.to_string(), port }
+}
+
+/// Split an authority without userinfo into its host and numeric port; a bracketed IPv6 host keeps its brackets.
+fn split_host_port(authority: &str) -> (&str, Option<String>) {
+    let (host, port) = match authority.strip_prefix('[').and_then(|rest| rest.find(']')) {
+        Some(end) => {
+            let (host, rest) = authority.split_at(end + 2);
+            (host, rest.strip_prefix(':'))
+        }
+        None => match authority.split_once(':') {
+            Some((host, port)) => (host, Some(port)),
+            None => (authority, None),
+        },
+    };
+    let port = port.filter(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_digit())).map(String::from);
+    (host, port)
 }
 
 /// Extract domain from URL, handling both full URLs and partial domains.
@@ -376,6 +400,34 @@ mod tests {
         let result = extract_domain_with_port("https://example.com:abc/path");
         assert_eq!(result.domain, "example.com");
         assert_eq!(result.port, None); // Invalid port should be None
+    }
+
+    #[test]
+    fn test_extract_domain_normalizes_host() {
+        // Userinfo is dropped: the host is what follows the last "@".
+        assert_eq!(extract_domain("https://paypal.com@evil.com/"), "evil.com");
+        assert_eq!(extract_domain("https://user:pass@www.example.com:8443/"), "example.com");
+
+        // One trailing dot is dropped, before the "www." prefix.
+        assert_eq!(extract_domain("https://paypal.com./"), "paypal.com");
+        assert_eq!(extract_domain("https://www.paypal.com./"), "paypal.com");
+        assert_eq!(extract_domain("https://paypal.com../"), "");
+
+        // Underscores are accepted in host labels.
+        assert_eq!(extract_domain("https://www_paypal.evil.com/"), "www_paypal.evil.com");
+
+        // Bracketed IPv6 keeps its brackets and splits off the port after the bracket.
+        let ipv6 = extract_domain_with_port("http://[::1]:8080/paypal");
+        assert_eq!(ipv6.domain, "[::1]");
+        assert_eq!(ipv6.port, Some("8080".to_string()));
+        assert_eq!(extract_domain("http://[2001:db8::1]/"), "[2001:db8::1]");
+        assert_eq!(extract_domain("http://[::1/"), "");
+
+        // A blob URL resolves to the origin it wraps; other non-web schemes give no domain.
+        assert_eq!(extract_domain("blob:https://paypal.evil.com/0b2c3d4e"), "paypal.evil.com");
+        assert_eq!(extract_domain("blob:null/0b2c3d4e"), "");
+        assert_eq!(extract_domain("filesystem:https://paypal.com/temporary/x"), "");
+        assert_eq!(extract_domain("data:text/html,paypal.com"), "");
     }
 
     #[test]
