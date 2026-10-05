@@ -87,7 +87,6 @@ export const familySharingText = {
     vaultLimitReached: 'Max amount of shared vaults reached.',
     deleteVaultFailed: 'The shared vault could not be deleted. Please try again.',
     aliasOwnedByOtherFolder: 'This email alias receives its emails in a shared folder you cannot open, or in the personal vault of another family member. Ask them to move it here.',
-    aliasLimitReached: 'The maximum number of email aliases has been reached.',
   },
 };
 

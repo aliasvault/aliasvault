@@ -1357,37 +1357,10 @@ public class VaultController(
     /// <param name="caller">The pushing user; their personal group is always a subject via their personal aliases.</param>
     /// <param name="sharedGroupIds">The owning group of each shared manifest in this push.</param>
     /// <returns>Remaining alias amount per quota group, for the groups that have limits at all.</returns>
-    private async Task<Dictionary<Guid, int>> GetRemainingAliasAllowancesAsync(AliasServerDbContext context, AliasVaultUser caller, IEnumerable<Guid> sharedGroupIds)
+    private Task<Dictionary<Guid, int>> GetRemainingAliasAllowancesAsync(AliasServerDbContext context, AliasVaultUser caller, IEnumerable<Guid> sharedGroupIds)
     {
         // The caller's personal group is always in play; the shared manifests add their owning groups on top.
-        var subjectIds = sharedGroupIds.Append(caller.PersonalGroupId).Distinct().ToList();
-        var subjects = await context.Groups.Where(g => subjectIds.Contains(g.Id)).ToListAsync();
-
-        var remaining = new Dictionary<Guid, int>();
-        foreach (var group in subjects)
-        {
-            var groupId = group.Id;
-            foreach (var limit in await rateLimitService.GetLimitsAsync(group, RateLimitType.AliasCreation))
-            {
-                int currentCount;
-                if (limit.WindowSeconds == 0)
-                {
-                    // Global absolute cap: every claim owned by one of this group's manifests, removed ones included.
-                    currentCount = await context.EmailClaims.CountAsync(c => c.VaultManifest!.OwnerGroupId == groupId);
-                }
-                else
-                {
-                    // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
-                    var windowStart = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-limit.WindowSeconds);
-                    currentCount = await context.EmailClaims.CountAsync(c => c.CreatedAt >= windowStart && c.VaultManifest!.OwnerGroupId == groupId);
-                }
-
-                var allowed = limit.MaxCount - currentCount;
-                remaining[groupId] = remaining.TryGetValue(groupId, out var existing) ? Math.Min(existing, allowed) : allowed;
-            }
-        }
-
-        return remaining;
+        return rateLimitService.GetRemainingAliasAllowancesAsync(context, sharedGroupIds.Append(caller.PersonalGroupId));
     }
 
     /// <summary>

@@ -29,8 +29,9 @@ using NpgsqlTypes;
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="ipBlockListService">IpBlockListService used to shadow-block email retrieval from blocked IPs.</param>
 /// <param name="takenAliasLookupRateLimit">Limits how many taken addresses a caller may learn about.</param>
+/// <param name="rateLimitService">RateLimitService used to tell an alias skipped by the alias limit apart from a missing one.</param>
 [ApiVersion("2")]
-public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService, TakenAliasLookupRateLimitService takenAliasLookupRateLimit) : AuthenticatedRequestController(userManager)
+public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService, TakenAliasLookupRateLimitService takenAliasLookupRateLimit, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Highest page the bulk mailbox serves; each address scans up to page * pageSize rows.
@@ -81,6 +82,16 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                     StatusCode = StatusCodes.Status400BadRequest,
                     Timestamp = DateTime.UtcNow,
                 });
+            }
+
+            // A vault push skips new aliases over the alias limit, so an unclaimed address usually means the limit was hit.
+            if (emailClaim is null)
+            {
+                var remaining = await rateLimitService.GetRemainingAliasAllowancesAsync(context, [user.PersonalGroupId]);
+                if (remaining.TryGetValue(user.PersonalGroupId, out var left) && left <= 0)
+                {
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALIAS_LIMIT_REACHED, 400));
+                }
             }
 
             return BadRequest(new ApiErrorResponse
