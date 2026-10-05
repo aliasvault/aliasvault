@@ -166,6 +166,9 @@ async function isDomainBlocked(domain: string): Promise<boolean> {
   }
 }
 
+/** Shadow root mode for inline UIs: open only in E2E builds (WXT_E2E_BUILD) so the test harness can inspect them. */
+const SHADOW_ROOT_MODE = import.meta.env.WXT_E2E_BUILD === 'true' ? 'open' : 'closed';
+
 /**
  * Check if the login already exists in the vault.
  * @param domain - The domain of the login.
@@ -239,7 +242,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       name: 'aliasvault-save-prompt',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
+      mode: SHADOW_ROOT_MODE,
       /**
        * Mount handler for early save prompt restore.
        */
@@ -488,7 +491,7 @@ export default defineContentScript({
       name: 'aliasvault-ui',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
+      mode: SHADOW_ROOT_MODE,
       /**
        * Handle mount.
        */

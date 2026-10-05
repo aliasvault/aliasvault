@@ -42,8 +42,6 @@ export const StorageKeys = {
   THEME: 'local:theme',
   /** Selected UI language. */
   LANGUAGE: 'local:language',
-  /** True when the extension runs under the E2E test harness (opens shadow roots). */
-  E2E_TEST_MODE: 'local:e2eTestMode',
 
   /*
    * -- Local preferences (cleared as a group by LocalPreferencesService.clearAll) --

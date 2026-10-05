@@ -240,9 +240,6 @@ test.describe.serial('61. Save Login Prompt', () => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
 
-    // Enable E2E test mode for open shadow DOM
-    await client.enableE2ETestMode();
-
     // Enable the login save feature
     await enableLoginSaveFeature(client);
 
