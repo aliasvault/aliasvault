@@ -118,6 +118,40 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     assert_eq!(host.vault_key, vek, "the session key stays the VEK");
 }
 
+/// Two legacy sessions of one account: the first upgrades the account, the second still holds its sqlite-blob vault
+/// with a row that names no manifest, which the schema rebuild refuses.
+fn session_of_an_account_upgraded_elsewhere() -> TestHost {
+    let unlock_key = crypto::generate_key_base64();
+    let server = FakeServer::new();
+    server.borrow_mut().publish_contentless_personal(3);
+    let mut upgraded = legacy_device(&unlock_key, &server, |db| insert_item(db, ITEM_A, "Upgraded item"));
+    assert_eq!(upgraded.run("migrateManifest")["pushed"], true);
+    legacy_device(&unlock_key, &server, |db| {
+        insert_item(db, ITEM_B, "Stale item");
+        db.execute("INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES ('dddddddd-0000-4000-8000-000000000002', '', 'public', 'private', 1, ?, ?, 0)", rusqlite::params![super::now(), super::now()]).unwrap();
+    })
+}
+
+#[test]
+fn migration_status_of_an_account_upgraded_elsewhere_takes_the_server_vault() {
+    let mut host = session_of_an_account_upgraded_elsewhere();
+
+    assert_eq!(host.run("migrationStatus")["kind"], "none", "{:?}", host.logs);
+    assert_eq!(host.item_names(), vec!["Upgraded item"]);
+    assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
+}
+
+#[test]
+fn manifest_migration_of_an_account_upgraded_elsewhere_takes_the_server_vault() {
+    let mut host = session_of_an_account_upgraded_elsewhere();
+
+    let result = host.run("migrateManifest");
+
+    assert_eq!(result["success"], true, "{} {:?}", result, host.logs);
+    assert_eq!(host.item_names(), vec!["Upgraded item"], "the local sqlite-blob vault is replaced, not rebuilt");
+    assert!(host.vault_writes().is_empty(), "nothing is pushed over the upgrade the other device made");
+}
+
 /// A device as a client predating the manifest storage format leaves it: a sqlite blob under the unlock key, no personal
 /// manifest id and no revision baseline, against a server that still holds the account as a legacy vault.
 fn pre_format_session(unlock_key: &str, dirty: bool) -> TestHost {

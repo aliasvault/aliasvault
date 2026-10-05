@@ -50,18 +50,14 @@ pub(crate) async fn pending_migration_result(ctx: &mut Ctx) -> SyncResult<Option
 /// Classify the pending migration so the upgrade gate knows whether it may run on its own.
 pub(crate) async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
     let classified: SyncResult<MigrationKind> = async {
-        let schema = schema_state(ctx).await?;
-        if schema == SchemaState::LegacyChain {
+        if schema_state(ctx).await? == SchemaState::LegacyChain {
             return Ok(MigrationKind::None);
         }
-        if !keys::has_cached_key_chain(&ctx.host).await? {
-            // A hierarchy another device created since this device logged in classifies as no migration at all.
-            keys::accept_hierarchy_created_elsewhere(ctx).await?;
-        }
-        if !keys::has_cached_key_chain(&ctx.host).await? {
+        if !keys::has_cached_key_chain(&ctx.host).await? && !legacy::accept_upgrade_done_elsewhere(ctx).await? {
             return Ok(MigrationKind::StorageFormatUpgrade);
         }
-        Ok(if schema == SchemaState::Stale { MigrationKind::SchemaRebuild } else { MigrationKind::None })
+        // Read again: accepting an upgrade done elsewhere replaced the local vault with the server's.
+        Ok(if schema_state(ctx).await? == SchemaState::Stale { MigrationKind::SchemaRebuild } else { MigrationKind::None })
     }
     .await;
     let kind = match classified {

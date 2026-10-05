@@ -1,7 +1,7 @@
 //! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
 //! ([`upgrade_account_to_manifest_v1`]). Remove this module once every account has upgraded, together with the
-//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check and the
-//! branch without a vault key in `migration::migrate_manifest`.
+//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check, the
+//! branch without a vault key in `migration::migrate_manifest` and the upgrade-elsewhere check in `migration::migration_status`.
 
 use std::collections::HashMap;
 
@@ -47,14 +47,15 @@ const BLOB_TYPED_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnNa
 /// rows stamped with the personal manifest, and the push that carries it creates the account key hierarchy. Returns
 /// whether that push reached the server.
 pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<bool> {
+    if accept_upgrade_done_elsewhere(ctx).await? {
+        return migration::migrate_schema(ctx).await;
+    }
     if migration::schema_state(ctx).await? == SchemaState::LegacyChain {
         return Err(SyncError::LegacyUpgradePending);
     }
-    // Another device may have created the hierarchy since this one logged in. Accepting it swaps the session key to the VEK, which the baseline pull below needs.
-    keys::ensure_key_chain_accepted(ctx).await?;
     record_server_baseline_if_missing(ctx).await?;
     if keys::has_cached_key_chain(&ctx.host).await? {
-        // The account turned out to be upgraded already (accepted above, or pulled with the baseline); a schema rebuild is all that can remain.
+        // The baseline pull turned up an account that is upgraded already; a schema rebuild is all that can remain.
         return migration::migrate_schema(ctx).await;
     }
     if migration::schema_state(ctx).await? == SchemaState::LegacyChain {
@@ -65,6 +66,24 @@ pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<
     decode_base64_text_in_blob_columns(ctx).await?;
     migration::rebuild_local_schema(ctx, Some(personal)).await?;
     migration::push_migrated_vault(ctx, WriteKind::AccountKeyMigration).await
+}
+
+/// Accept a key hierarchy another device created since this session logged in, and replace the local sqlite-blob vault
+/// with the server's: that device already upgraded the account, and the local rows that name no manifest cannot be
+/// canonicalized. Returns whether that happened. Call only while no key chain is cached.
+pub(crate) async fn accept_upgrade_done_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
+    // Accepting swaps the session key to the VEK, which the pull below needs.
+    if !keys::ensure_key_chain_accepted(ctx).await? {
+        return Ok(false);
+    }
+    ctx.warn("[Migration] Another device already upgraded this account; replacing the local sqlite-blob vault with the server's.").await;
+    let pulled = pull::pull(ctx).await?;
+    if !ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.personal_revision)).await?.success {
+        return Err(SyncError::Other("a mutation raced the pull of the upgraded vault; run the migration again".to_string()));
+    }
+    ctx.vault_changed = true;
+    pull::commit_revisions(ctx, &pulled).await?;
+    Ok(true)
 }
 
 /// Pull the personal manifest id and revision baseline the upgrade push needs, when a pre-manifest session lacks them.
