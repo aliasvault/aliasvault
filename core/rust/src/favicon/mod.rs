@@ -57,20 +57,17 @@ pub fn select_favicon_target(urls: &[String]) -> Option<FaviconTarget> {
     })
 }
 
-/// Canonicalize the URL for fetching a favicon from: lowercased scheme and host, https when scheme-less.
+/// The origin to fetch a favicon from: lowercased scheme and host (with port), https when scheme-less. Userinfo, path
+/// and query are dropped so the server never sees more of the item URL than the site it has to fetch from.
 fn canonical_fetch_url(url: &str) -> String {
-    let (scheme, authority, path) = split_url(url);
+    let (scheme, authority, _) = split_url(url);
     let scheme = match scheme {
         Some(scheme) if is_web_scheme(scheme) => scheme.to_ascii_lowercase(),
         _ => "https".to_string(),
     };
 
-    let (userinfo, host) = match authority.rfind('@') {
-        Some(index) => authority.split_at(index + 1),
-        None => ("", authority),
-    };
-
-    format!("{}://{}{}{}", scheme, userinfo, host.to_ascii_lowercase(), path)
+    let host = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
+    format!("{}://{}", scheme, host.to_ascii_lowercase())
 }
 
 /// Whether a scheme-less host is shaped like a public hostname, meaning its last label could be a TLD.
@@ -251,7 +248,13 @@ mod tests {
         assert_eq!(target.url, "https://www.example.com");
 
         let target = select_favicon_target(&urls(&["HTTPS://Example.COM/Login?Token=AbC"])).unwrap();
-        assert_eq!(target.url, "https://example.com/Login?Token=AbC");
+        assert_eq!(target.url, "https://example.com");
+    }
+
+    #[test]
+    fn test_fetch_url_is_the_origin_only() {
+        let target = select_favicon_target(&urls(&["https://user:secret@example.com:8443/account/reset?token=abc#top"])).unwrap();
+        assert_eq!(target.url, "https://example.com:8443");
     }
 
     #[test]
