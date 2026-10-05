@@ -18,6 +18,9 @@ const ROLE_MEMBER: &str = "Member";
 /// The API error code for a recipient whose account has no keypair yet (legacy non-migrated user account).
 const INVITE_RECIPIENT_NOT_READY: &str = "INVITE_RECIPIENT_NOT_READY";
 
+/// The longest name an invitation can carry: RSA-2048 OAEP-SHA256 fits 190 bytes. The UI caps names well below this.
+const MAX_SHARED_MANIFEST_NAME_BYTES: usize = 190;
+
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GroupOverview {
@@ -181,6 +184,14 @@ fn own_user_id(ctx: &Ctx, group: &GroupInfo) -> SyncResult<String> {
     group.members.iter().find(|member| member.username.eq_ignore_ascii_case(&ctx.request.username)).map(|member| member.user_id.clone()).ok_or_else(|| SyncError::Other("This account is not a member of the group".to_string()))
 }
 
+/// Refuse a name too long for an invitation to carry.
+fn check_name_length(name: &str) -> SyncResult<()> {
+    if name.len() > MAX_SHARED_MANIFEST_NAME_BYTES {
+        return Err(SyncError::Other(format!("A shared manifest name may be at most {} bytes", MAX_SHARED_MANIFEST_NAME_BYTES)));
+    }
+    Ok(())
+}
+
 /// This account's public key, which a new shared manifest's key is encrypted for.
 async fn own_public_key(ctx: &Ctx) -> SyncResult<Option<String>> {
     match &ctx.account_public_key {
@@ -193,6 +204,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let key = ctx.encryption_key()?;
     let target = params(ctx)?;
     let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).ok_or_else(|| SyncError::Other("A shared manifest needs a name".to_string()))?.to_string();
+    check_name_length(&name)?;
 
     let group = administered_group(ctx, &target.group_id).await?;
 
@@ -266,6 +278,7 @@ async fn update_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let target = params(ctx)?;
     let manifest_id = target.manifest_id.clone().ok_or_else(|| SyncError::Other("The update names no shared manifest".to_string()))?;
     let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).ok_or_else(|| SyncError::Other("The update changes nothing".to_string()))?.to_string();
+    check_name_length(&name)?;
 
     let mut records = keys::shared_manifest_records(ctx).await?;
     let record = records.values().find(|record| ids_equal(&record.manifest_id, &manifest_id)).cloned().ok_or_else(|| SyncError::Other("This account holds no key for the shared manifest".to_string()))?;
@@ -322,8 +335,8 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let record = record.ok_or_else(|| SyncError::Other("This account holds no key for the shared manifest".to_string()))?;
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
-    // The name travels encrypted in the invitation, so the recipient sees what they are invited to.
-    let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty());
+    // The name travels encrypted in the invitation, so the recipient sees what they are invited to; one too long to fit is left out.
+    let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
     let encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?;
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),

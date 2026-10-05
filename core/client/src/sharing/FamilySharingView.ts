@@ -5,6 +5,12 @@ import type { GroupInfo, GroupMemberInfo, SentManifestInvitation, SharedManifest
  */
 
 /**
+ * Maximum length of a shared vault name in UTF-16 code units. Invitations carry the name RSA-OAEP encrypted, which fits at
+ * most 190 UTF-8 bytes; one code unit takes at most 3 bytes, so 60 fits in any script.
+ */
+export const MAX_SHARED_VAULT_NAME_LENGTH = 60;
+
+/**
  * The family sharing screen's text strings, in English only on purpose (temporary) as the UI is pending changes
  * so we don't let the translation platform see this yet until its finalized. TODO: move these strings to locale files.
  */

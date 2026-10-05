@@ -1,4 +1,4 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { familySharingText, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/FamilySharingView';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -136,6 +136,7 @@ export const SharedVaultModal: React.FC<ISharedVaultModalProps> = ({ isOpen, onC
         onChangeText={setName}
         placeholder={familySharingText.vaultNamePlaceholder}
         placeholderTextColor={colors.textMuted}
+        maxLength={MAX_SHARED_VAULT_NAME_LENGTH}
         autoFocus
         autoCapitalize="sentences"
         returnKeyType="done"
