@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test';
+import { test as base, type BrowserContext } from '@playwright/test';
 
 import { resolveApiUrl } from '../helpers/api-url';
 import { createTestUser, generateTestUsername, TEST_DISABLE_PUBLIC_REGISTRATION_HEADER, TEST_PASSWORD, type TestUser } from '../helpers/test-api';
@@ -20,6 +20,7 @@ type TestFixtures = {
   apiUrl: string;
   publicRegistrationEnabled: boolean;
   app: WebApp;
+  newApp: () => Promise<WebApp>;
   credentials: TestCredentials;
   testUser: TestUser;
 };
@@ -43,21 +44,7 @@ export const test = base.extend<TestFixtures>({
    * The default context, with appsettings.json answered by the test configuration.
    */
   context: async ({ context, apiUrl, publicRegistrationEnabled }, use) => {
-    await context.route(/\/appsettings(\.Development)?\.json(\?.*)?$/, (route) => route.fulfill({
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ApiUrl: apiUrl,
-        PrivateEmailDomains: ['example.tld', 'example2.tld'],
-        HiddenPrivateEmailDomains: [],
-        SupportEmail: 'support@example.tld',
-        PublicRegistrationEnabled: String(publicRegistrationEnabled),
-        DeploymentMode: 'e2e',
-        TermsUrl: 'https://example.tld/terms',
-      }),
-    }));
-    if (!publicRegistrationEnabled) {
-      await context.setExtraHTTPHeaders({ [TEST_DISABLE_PUBLIC_REGISTRATION_HEADER]: 'true' });
-    }
+    await prepareContext(context, apiUrl, publicRegistrationEnabled);
     await use(context);
   },
 
@@ -66,6 +53,20 @@ export const test = base.extend<TestFixtures>({
    */
   app: async ({ page }, use) => {
     await use(new WebApp(page));
+  },
+
+  /**
+   * Open the web app in another browser context, as a second client next to `app`.
+   */
+  newApp: async ({ browser, baseURL, locale, apiUrl, publicRegistrationEnabled }, use) => {
+    const contexts: BrowserContext[] = [];
+    await use(async () => {
+      const context = await browser.newContext({ baseURL, locale });
+      contexts.push(context);
+      await prepareContext(context, apiUrl, publicRegistrationEnabled);
+      return new WebApp(await context.newPage());
+    });
+    await Promise.all(contexts.map((context) => context.close()));
   },
 
   /**
@@ -85,3 +86,24 @@ export const test = base.extend<TestFixtures>({
 });
 
 export const expect = test.expect;
+
+/**
+ * Answer the app's appsettings.json request with the test configuration.
+ */
+async function prepareContext(context: BrowserContext, apiUrl: string, publicRegistrationEnabled: boolean): Promise<void> {
+  await context.route(/\/appsettings(\.Development)?\.json(\?.*)?$/, (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      ApiUrl: apiUrl,
+      PrivateEmailDomains: ['example.tld', 'example2.tld'],
+      HiddenPrivateEmailDomains: [],
+      SupportEmail: 'support@example.tld',
+      PublicRegistrationEnabled: String(publicRegistrationEnabled),
+      DeploymentMode: 'e2e',
+      TermsUrl: 'https://example.tld/terms',
+    }),
+  }));
+  if (!publicRegistrationEnabled) {
+    await context.setExtraHTTPHeaders({ [TEST_DISABLE_PUBLIC_REGISTRATION_HEADER]: 'true' });
+  }
+}

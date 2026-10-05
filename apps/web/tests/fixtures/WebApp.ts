@@ -111,6 +111,15 @@ export class WebApp {
   }
 
   /**
+   * Open the Family Sharing page via the account popover.
+   */
+  public async openFamilySharing(): Promise<void> {
+    await this.page.locator('#userMenuButton').click();
+    await this.page.locator('#userMenu').getByRole('link', { name: 'Family Sharing' }).click();
+    await expect(this.page).toHaveURL(/\/settings\/family-sharing$/);
+  }
+
+  /**
    * Wait until the view page of the item with the given name shows.
    */
   public async expectItemView(name: string): Promise<void> {

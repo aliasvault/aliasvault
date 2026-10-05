@@ -12,7 +12,8 @@
  * Test files are numbered by area, in the same ranges as the browser extension suite, so a range selects one area:
  *   0x app shell (extension only)    1x account and authentication    2x items
  *   3x sync and merge (extension)    4x email                         5x settings
- *   6x browser integration (ext.)    8x vault errors                  9x vault upgrades
+ *   6x browser integration (ext.)    7x sharing                       8x vault errors
+ *   9x vault upgrades
  *
  * Numbers become one title filter (--grep), so selections combine as "or". Any other argument goes to Playwright as-is.
  */

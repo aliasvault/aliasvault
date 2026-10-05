@@ -17,6 +17,8 @@ namespace AliasVault.Api.Controllers.V2.Tests;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Controllers.Tests;
+using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -35,13 +37,15 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="dbContextFactory">DbContext factory instance.</param>
 /// <param name="serverSettingsService">ServerSettingsService instance.</param>
 /// <param name="registrationInviteService">RegistrationInviteService instance.</param>
+/// <param name="capabilityService">CapabilityService instance.</param>
 [ApiVersion("2")]
 public class TestController(
     UserManager<AliasVaultUser> userManager,
     IWebHostEnvironment environment,
     IAliasServerDbContextFactory dbContextFactory,
     ServerSettingsService serverSettingsService,
-    RegistrationInviteService registrationInviteService) : AuthenticatedRequestController(userManager)
+    RegistrationInviteService registrationInviteService,
+    CapabilityService capabilityService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Authenticated test request. Used to verify authentication is working.
@@ -483,6 +487,105 @@ public class TestController(
 
         var code = await registrationInviteService.CreateAsync("E2E test", maxUses, null, "e2e");
         return Ok(new { code });
+    }
+
+    /// <summary>
+    /// Create a shared group with an owner and members.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="request">The group name and the usernames of its owner and members.</param>
+    /// <returns>OK with the group id.</returns>
+    [AllowAnonymous]
+    [HttpPost("shared-groups")]
+    public async Task<IActionResult> CreateSharedGroup([FromBody] CreateSharedGroupRequest request)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var usernames = request.MemberUsernames.Prepend(request.OwnerUsername).Select(u => u.ToUpperInvariant()).ToList();
+        var users = await context.AliasVaultUsers.Where(u => usernames.Contains(u.NormalizedUserName!)).ToDictionaryAsync(u => u.NormalizedUserName!, u => u.Id);
+        var missing = usernames.Where(u => !users.ContainsKey(u)).ToList();
+        if (missing.Count > 0)
+        {
+            return NotFound($"Users not found: {string.Join(", ", missing)}");
+        }
+
+        var now = DateTime.UtcNow;
+        var group = new Group { Id = Guid.NewGuid(), Name = request.Name, Type = GroupType.Shared, CreatedAt = now, UpdatedAt = now };
+        context.Groups.Add(group);
+        context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(group, users[usernames[0]], now));
+        foreach (var username in usernames.Skip(1))
+        {
+            context.GroupMembers.Add(new GroupMember { Id = Guid.NewGuid(), GroupId = group.Id, UserId = users[username], Role = GroupRole.Member, CreatedAt = now, UpdatedAt = now });
+        }
+
+        await context.SaveChangesAsync();
+
+        return Ok(new { groupId = group.Id });
+    }
+
+    /// <summary>
+    /// Set a capability for one account with a per-account rule, and drop the rule cache so it applies right away.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="username">The username of the account.</param>
+    /// <param name="request">The capability key and value.</param>
+    /// <returns>OK with the key and value.</returns>
+    [AllowAnonymous]
+    [HttpPost("capabilities/by-username/{username}")]
+    public async Task<IActionResult> SetCapabilityByUsername(string username, [FromBody] SetCapabilityRequest request)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var user = await context.AliasVaultUsers.FirstOrDefaultAsync(u => u.NormalizedUserName == username.ToUpperInvariant());
+        if (user == null)
+        {
+            return NotFound($"User '{username}' not found");
+        }
+
+        var now = DateTime.UtcNow;
+        context.CapabilityRules.Add(new CapabilityRule
+        {
+            Id = Guid.NewGuid(),
+            CapabilityKey = request.Key,
+            UserId = user.Id,
+            Value = request.Value,
+            Notes = "E2E test",
+            CreatedBy = "e2e",
+            CreatedAt = now,
+            UpdatedAt = now,
+        });
+        await context.SaveChangesAsync();
+        capabilityService.ClearCache();
+
+        return Ok(new { key = request.Key, value = request.Value });
+    }
+
+    /// <summary>
+    /// Drop the cached capability rules, so rules changed in the database apply on the next request.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <returns>OK.</returns>
+    [AllowAnonymous]
+    [HttpPost("capabilities/reset-cache")]
+    public IActionResult ResetCapabilityCache()
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        capabilityService.ClearCache();
+        return Ok();
     }
 
     /// <summary>

@@ -11,6 +11,16 @@ import { requireSmtp, sendMail } from '../helpers/smtp';
 import { readLegacyVaultFixture, restoreLegacyVault, type LegacyVaultFixture, type LegacyVaultItem, type TestUser } from '../helpers/test-api';
 
 /**
+ * Log in from the start page to an account whose vault still needs an upgrade, ending on the sync page.
+ */
+async function loginToUpgradeScreen(app: WebApp, username: string, password: string): Promise<void> {
+  await app.openStart();
+  await app.page.getByRole('link', { name: 'Log in with existing account' }).click();
+  await app.submitLogin(username, password);
+  await expect(app.page).toHaveURL(/\/sync$/);
+}
+
+/**
  * Put a legacy vault on the account, log in and run the upgrade steps it needs, ending on the items page.
  */
 async function upgradeLegacyVault(app: WebApp, apiUrl: string, testUser: TestUser, version = '0.1.0'): Promise<LegacyVaultFixture> {
@@ -20,10 +30,7 @@ async function upgradeLegacyVault(app: WebApp, apiUrl: string, testUser: TestUse
   const startUpgrade = page.getByRole('button', { name: 'Start upgrade process' });
 
   await test.step(`log in to the account with the ${version} vault`, async () => {
-    await app.openStart();
-    await page.getByRole('link', { name: 'Log in with existing account' }).click();
-    await app.submitLogin(testUser.username, fixture.password);
-    await expect(page).toHaveURL(/\/sync$/);
+    await loginToUpgradeScreen(app, testUser.username, fixture.password);
   });
 
   // Only a vault from before database version 2.0.0 has to run the legacy database upgrade first.
@@ -319,4 +326,64 @@ test.describe('90. Vault upgrades', () => {
       await expectLegacyVaultContent(app, fixture);
     });
   });
+
+  for (const [number, version] of [['90.5', '0.1.0'], ['90.6', '0.30.7']]) {
+    test(`${number} should open a ${version} vault that another session upgraded while this one waited on the upgrade screen`, async ({ app, newApp, apiUrl, testUser }) => {
+      const fixture = readLegacyVaultFixture(version);
+      await restoreLegacyVault(apiUrl, testUser.username, fixture);
+      // A separate browser context: a standalone client that shares nothing with the first.
+      const other = await newApp();
+      const runsLegacyDatabaseUpgrade = Number(String(fixture.vault.version).split('.')[0]) < 2;
+      const firstScreenText = runsLegacyDatabaseUpgrade ? 'New available version:' : 'your other AliasVault apps need version';
+
+      await test.step('both sessions log in and wait on the upgrade screen', async () => {
+        // One after the other: the server keys the login handshake on the account's SRP identity.
+        for (const session of [app, other]) {
+          await loginToUpgradeScreen(session, testUser.username, fixture.password);
+          await expect(session.page.getByText(firstScreenText)).toBeVisible();
+        }
+      });
+
+      await test.step('the first session upgrades the vault', async () => {
+        await app.pause();
+        if (runsLegacyDatabaseUpgrade) {
+          await app.page.getByRole('button', { name: 'Start upgrade process' }).click();
+          await expect(app.page.getByText('your other AliasVault apps need version')).toBeVisible();
+        }
+        await app.page.getByRole('button', { name: 'Start upgrade process' }).click();
+        await expect(app.page.getByText('Vault upgrade successful.')).toBeVisible();
+        await app.page.locator('#upgrade-continue-button').click();
+        await app.expectVaultOpen(testUser.username);
+      });
+
+      await test.step('the second session starts the upgrade too and takes the upgraded vault', async () => {
+        await other.pause();
+        await other.page.getByRole('button', { name: 'Start upgrade process' }).click();
+        if (!runsLegacyDatabaseUpgrade) {
+          // The storage format step ran here as well, so this session confirms it like the first one did.
+          await expect(other.page.getByText('Vault upgrade successful.')).toBeVisible();
+          await other.page.locator('#upgrade-continue-button').click();
+        }
+        await other.expectVaultOpen(testUser.username);
+      });
+
+      await test.step('both sessions show the vault', async () => {
+        for (const session of [app, other]) {
+          await session.openVault();
+          for (const name of fixture.expectedItemNames) {
+            await expect(session.page.getByText(name, { exact: true }).first()).toBeVisible();
+          }
+        }
+      });
+
+      await test.step('the second session can save to the upgraded vault', async () => {
+        await other.createItem('Saved by the second session');
+        await app.page.reload();
+        await app.page.locator('#password').fill(fixture.password);
+        await app.page.locator('#unlock-button').click();
+        await app.openVault();
+        await expect(app.page.getByText('Saved by the second session', { exact: true })).toBeVisible();
+      });
+    });
+  }
 });

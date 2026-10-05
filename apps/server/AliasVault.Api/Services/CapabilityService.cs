@@ -60,6 +60,14 @@ public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IM
     }
 
     /// <summary>
+    /// Drops the cached rules, so the next call reads them from the database.
+    /// </summary>
+    public void ClearCache()
+    {
+        cache.Remove(EnabledRulesCacheKey);
+    }
+
+    /// <summary>
     /// Gathers what the caller can be targeted by.
     /// </summary>
     private async Task<CapabilitySubject> BuildSubjectAsync(string userId, string? clientHeader, List<CapabilityRule> rules)
