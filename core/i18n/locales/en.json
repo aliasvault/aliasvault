@@ -3,6 +3,7 @@
     "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
     "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
     "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Internal server error.",

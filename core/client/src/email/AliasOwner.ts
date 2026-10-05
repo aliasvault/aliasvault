@@ -71,7 +71,6 @@ export function aliasOwnerNotice(
 export function aliasOwnerErrorText(code: string | null | undefined): string | null {
   switch (code) {
     case 'CLAIM_OWNED_BY_OTHER_VAULT': return familySharingText.errors.aliasOwnedByOtherFolder;
-    case 'ALIAS_LIMIT_REACHED': return familySharingText.errors.aliasLimitReached;
     default: return null;
   }
 }

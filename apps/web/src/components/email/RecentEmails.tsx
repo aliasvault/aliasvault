@@ -201,7 +201,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
       await moveAliasHere(webApi, emailAddress, manifestId);
       await manualRefresh();
     } catch (err) {
-      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('common.errors.unknownErrorTryAgain'));
+      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('apiErrors.' + apiErrorCodeOf(err), { defaultValue: t('common.errors.unknownErrorTryAgain') }));
     }
   };
 

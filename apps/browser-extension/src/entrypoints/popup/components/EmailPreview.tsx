@@ -261,7 +261,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
       setOwnerNotice(null);
       setLoading(true);
     } catch (err) {
-      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('common.errors.unknownErrorTryAgain'));
+      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('apiErrors.' + apiErrorCodeOf(err), { defaultValue: t('common.errors.unknownErrorTryAgain') }));
     }
   };
 
