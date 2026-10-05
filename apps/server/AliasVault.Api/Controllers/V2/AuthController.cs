@@ -168,6 +168,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Ok(new ValidateLoginResponse(true, string.Empty, null));
         }
 
+        // Spend the login exchange so its proof cannot be replayed.
+        if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+        }
+
         // Reset failed login attempts.
         await userManager.ResetAccessFailedCountAsync(user);
         await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Login);
@@ -207,6 +213,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.TwoFactorAuthentication, AuthFailureReason.InvalidTwoFactorCode);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_AUTHENTICATOR_CODE, 400));
+        }
+
+        // Spend the login exchange so its proof cannot be replayed.
+        if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
         }
 
         // Validation of 2-FA token is successful, user is authenticated.
@@ -253,6 +265,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.TwoFactorAuthentication, AuthFailureReason.InvalidRecoveryCode);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_RECOVERY_CODE, 400));
+        }
+
+        // Spend the login exchange so its proof cannot be replayed.
+        if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
         }
 
         // Recovery code is valid, user is authenticated.

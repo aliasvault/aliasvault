@@ -124,6 +124,32 @@ public class RsaEncryptionTests
     }
 
     /// <summary>
+    /// Tests that a labelled key decrypts only under the same label.
+    /// </summary>
+    [Test]
+    public void EncryptSymmetricKeyWithLabel_DecryptsOnlyUnderSameLabel()
+    {
+        var symmetricKey = Encryption.GenerateRandomSymmetricKey();
+        var encryptedKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, PublicKey, Encryption.MobileLoginPayloadKeyLabel);
+
+        Assert.That(Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, Encryption.MobileLoginPayloadKeyLabel), Is.EqualTo(symmetricKey));
+        Assert.That(() => Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, "aliasvault/v1/other"), Throws.Exception);
+        Assert.That(() => Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Throws.Exception);
+    }
+
+    /// <summary>
+    /// Tests that the labelled path uses the same OAEP parameters (SHA-256, MGF1-SHA-256) as the built-in one.
+    /// </summary>
+    [Test]
+    public void EncryptSymmetricKeyWithEmptyLabel_MatchesBuiltInOaepSha256()
+    {
+        var symmetricKey = Encryption.GenerateRandomSymmetricKey();
+        var encryptedKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, PublicKey, string.Empty);
+
+        Assert.That(Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Is.EqualTo(symmetricKey));
+    }
+
+    /// <summary>
     /// Tests if EncryptSymmetricKey method throws an exception when given an invalid public key.
     /// </summary>
     [Test]
