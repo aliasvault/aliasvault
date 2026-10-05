@@ -17,7 +17,7 @@ export type TotpSecret = {
   Period: number;
 };
 
-import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+import type { TwoFactorPrompt } from '@/entrypoints/background/TwoFactorStateHandler';
 
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
@@ -88,7 +88,7 @@ export interface IExtensionMessageProtocol {
   GET_SEARCH_ITEMS(data: { searchTerm: string }): ItemsResponse;
   GET_SYNC_STATE(): VaultSyncState;
   GET_TOTP_SECRETS(data: { items: ItemRef[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
-  GET_TWO_FACTOR_STATE(): TwoFactorState | null;
+  GET_TWO_FACTOR_STATE(): TwoFactorPrompt | null;
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };

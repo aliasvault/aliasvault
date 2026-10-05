@@ -11,7 +11,7 @@ import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
-import { handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+import { handleGetTwoFactorPrompt, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -329,7 +329,7 @@ export default defineBackground({
     onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
-    onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
+    onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorPrompt());
     onExtensionPageMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 
     // Clipboard management messages
