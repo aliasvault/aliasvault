@@ -397,7 +397,7 @@ public class VaultController(
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
             }
 
-            if (!accountKeys.FitsStorageLimits || !Signing.VerifyAccountPublicKey(accountKeys.SigningPublicKey, accountKeys.AccountPublicKey, accountKeys.AccountPublicKeySignature))
+            if (!accountKeys.FitsStorageLimits || !RsaPublicKeyValidator.IsValid(accountKeys.AccountPublicKey) || !Signing.VerifyAccountPublicKey(accountKeys.SigningPublicKey, accountKeys.AccountPublicKey, accountKeys.AccountPublicKeySignature))
             {
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
             }
@@ -440,6 +440,12 @@ public class VaultController(
                     .ToList(),
                 BucketRevisions = model.Buckets.Select(b => new BucketRevision { ManifestId = b.ManifestId, Category = b.Category, Revision = bucketCurrentRevisions[(b.ManifestId, b.Category)] }).ToList(),
             });
+        }
+
+        // The SMTP service encrypts every incoming mail with the primary delivery key, so a malformed one would lose that mail.
+        if (resolved.Any(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey) && !RsaPublicKeyValidator.IsValid(r.Write.EncryptionPublicKey)))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
 
         // A new delivery key must be signed by the caller, so a stolen access token alone cannot redirect incoming mail.

@@ -36,7 +36,6 @@ public static class Encryption
         using (var rsa = RSA.Create())
         {
             ImportPublicKey(rsa, publicKey);
-            rsa.KeySize = 2048;
             var rsaParams = RSAEncryptionPadding.OaepSHA256;
 
             byte[] encryptedKey = rsa.Encrypt(symmetricKey, rsaParams);
@@ -55,7 +54,6 @@ public static class Encryption
         using var rsa = RSA.Create();
 
         ImportPrivateKey(rsa, privateKey);
-        rsa.KeySize = 2048;
         var rsaParams = RSAEncryptionPadding.OaepSHA256;
 
         byte[] cipherBytes = Convert.FromBase64String(ciphertext);

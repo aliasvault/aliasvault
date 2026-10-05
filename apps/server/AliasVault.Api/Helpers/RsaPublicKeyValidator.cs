@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------
-// <copyright file="MobileLoginPublicKeyValidator.cs" company="aliasvault">
+﻿//-----------------------------------------------------------------------
+// <copyright file="RsaPublicKeyValidator.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -11,11 +11,9 @@ using System.Buffers.Text;
 using System.Text.Json;
 
 /// <summary>
-/// Validates the client public key supplied when initiating a mobile login request. Clients send the
-/// RSA-OAEP public key as a JSON serialized JWK, so anything that is not a well-formed RSA public JWK
-/// of an accepted key size is rejected before it is persisted.
+/// Validates an RSA-OAEP public key (JSON serialized JWK) supplied by a client before it is persisted.
 /// </summary>
-public static class MobileLoginPublicKeyValidator
+public static class RsaPublicKeyValidator
 {
     /// <summary>
     /// Maximum accepted length for the serialized JWK. Current clients generate RSA-2048 keys, which are +/- 500 characters long.
@@ -55,7 +53,6 @@ public static class MobileLoginPublicKeyValidator
                 return false;
             }
 
-            // The mobile login handshake only uses RSA keys.
             if (!TryGetNonEmptyString(root, "kty", out var keyType) || keyType != "RSA")
             {
                 return false;
