@@ -50,8 +50,8 @@ const RecentAuthLogsSection = forwardRef<SectionHandle>((_, ref) => {
               </tr>
             </thead>
             <tbody>
-              {logs.map(log => (
-                <tr key={log.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              {logs.map((log, index) => (
+                <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                   <td className="px-6 py-4">{formatDateTime(log.timestamp)}</td>
                   <td className="px-6 py-4">{authEventTypeName(log.eventType)}</td>
                   <td className="px-6 py-4">{log.client}</td>

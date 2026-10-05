@@ -3,6 +3,7 @@
  */
 export type MobileLoginInitiateRequest = {
     clientPublicKey: string;
+    algorithm: string;
 }
 
 /**
@@ -61,6 +62,7 @@ export type MobileLoginRequestReference = {
  */
 export type MobileLoginDetailsResponse = {
     clientPublicKey: string;
+    algorithm: string;
     ipAddress: string | null;
     location: string | null;
     clientName: string | null;
@@ -75,4 +77,5 @@ export type MobileLoginDetailsResponse = {
 export type MobileLoginSubmitRequest = {
     requestId: string;
     encryptedAccountKey: string;
+    algorithm: string;
 }

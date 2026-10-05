@@ -133,7 +133,7 @@ public class VaultController(
             .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category, SizeBytes = x.SizeBytes }).ToList());
 
         var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
-        var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
+        var accountPublicKeys = await GetAccountPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
         var administeredGroupIds = await GroupHelper.GetAdministeredGroupIdsAsync(context, user.Id);
 
         var manifests = latestManifests.Select(m =>
@@ -153,7 +153,7 @@ public class VaultController(
                 KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null,
                 EncryptedVek = grant?.EncryptedVek,
                 Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
-                EncryptionPublicKey = grant?.UserGrantKeyId != null ? encryptionPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
+                AccountPublicKey = grant?.UserGrantKeyId != null ? accountPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
                 GrantSignature = grant?.GrantSignature,
                 GrantSignerUserId = grant?.GrantSignerUserId,
                 GrantSignerPublicKey = grant?.GrantSignerPublicKey,
@@ -225,7 +225,7 @@ public class VaultController(
             manifest.KeyVersion = accessKey.KeyVersion;
             if (accessKey.UserGrantKeyId != null)
             {
-                manifest.EncryptionPublicKey = await context.UserGrantKeys.Where(k => k.Id == accessKey.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
+                manifest.AccountPublicKey = await context.UserGrantKeys.Where(k => k.Id == accessKey.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
             }
         }
 
@@ -399,6 +399,11 @@ public class VaultController(
             {
                 return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
+
+            if (!VaultKeyAlgorithms.TryParse(accountKeys.EncryptedAccountKeyAlgorithm, out var unlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(unlockKeyAlgorithm))
+            {
+                return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+            }
         }
         else if (personalWrite != null && !hasExistingUnlockKey)
         {
@@ -441,7 +446,12 @@ public class VaultController(
         }
 
         // The SMTP service encrypts every incoming mail with the primary delivery key, so a malformed one would lose that mail.
-        if (resolved.Any(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey) && !RsaPublicKeyValidator.IsValid(r.Write.EncryptionPublicKey)))
+        if (resolved.Any(r => !string.IsNullOrEmpty(r.Write.DeliveryPublicKey) && (!VaultKeyAlgorithms.TryParse(r.Write.DeliveryPublicKeyAlgorithm, out var algorithm) || !VaultKeyAlgorithms.IsAsymmetric(algorithm))))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
+        if (resolved.Any(r => !string.IsNullOrEmpty(r.Write.DeliveryPublicKey) && !RsaPublicKeyValidator.IsValid(r.Write.DeliveryPublicKey)))
         {
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
@@ -532,7 +542,7 @@ public class VaultController(
                             Id = Guid.NewGuid(),
                             UserId = user.Id,
                             Type = UnlockMethodType.Password,
-                            Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+                            Algorithm = VaultKeyAlgorithms.Parse(accountKeys.EncryptedAccountKeyAlgorithm),
                             EncryptedAccountKey = accountKeys.EncryptedAccountKey!,
                             Metadata = new VaultKeyMetadata
                             {
@@ -636,7 +646,7 @@ public class VaultController(
              * 6) Delivery keys. A manifest's keypair lives inside the manifest content, so its public half should only
              * change in a write that changes that content.
              */
-            var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey)).ToList();
+            var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.DeliveryPublicKey)).ToList();
             if (publishing.Count > 0)
             {
                 // Only admins are allowed to publish a new shared manifest's key.
@@ -644,7 +654,7 @@ public class VaultController(
                 var publishable = await GetAdminAccessSharedManifestIdsAsync(context, user.Id, sharedIds);
                 foreach (var (mw, row) in publishing.Where(r => r.Row.OwnerGroupId == user.PersonalGroupId || publishable.Contains(r.Row.ManifestId)))
                 {
-                    await PublishManifestPublicKeyAsync(context, row.ManifestId, mw.EncryptionPublicKey!);
+                    await PublishManifestPublicKeyAsync(context, row.ManifestId, mw.DeliveryPublicKey!, VaultKeyAlgorithms.Parse(mw.DeliveryPublicKeyAlgorithm));
                 }
 
                 // Claim resolution below reads these rows back, so they must be visible to the query.
@@ -914,7 +924,7 @@ public class VaultController(
     /// <summary>
     /// Gets the account public key each grant's VEK was encrypted with (see <see cref="UserGrantKey"/>).
     /// </summary>
-    private static async Task<Dictionary<Guid, string>> GetEncryptionPublicKeysAsync(AliasServerDbContext context, IEnumerable<Guid> publicKeyIds)
+    private static async Task<Dictionary<Guid, string>> GetAccountPublicKeysAsync(AliasServerDbContext context, IEnumerable<Guid> publicKeyIds)
     {
         var ids = publicKeyIds.Distinct().ToList();
         if (ids.Count == 0)
@@ -962,7 +972,7 @@ public class VaultController(
     /// <returns>True when every change is signed.</returns>
     private static async Task<bool> DeliveryKeyChangesAreSignedAsync(AliasServerDbContext context, string userId, List<(ManifestWrite Write, VaultManifest Row)> resolved, AccountKeysUpload? accountKeys)
     {
-        var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey)).ToList();
+        var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.DeliveryPublicKey)).ToList();
         if (publishing.Count == 0)
         {
             return true;
@@ -973,8 +983,8 @@ public class VaultController(
 
         // The upgrade push carries the signing key it signs with; it is stored in the same write.
         var signingKey = accountKeys?.SigningPublicKey ?? await GrantHelper.GetPrimarySigningKeyAsync(context, userId);
-        return publishing.All(r => primaryKeys.GetValueOrDefault(r.Row.ManifestId) == r.Write.EncryptionPublicKey
-            || Signing.Verify(signingKey, Signing.DeliveryKeyMessage(r.Row.ManifestId, r.Write.EncryptionPublicKey!, r.Write.CurrentRevision), r.Write.EncryptionPublicKeySignature));
+        return publishing.All(r => primaryKeys.GetValueOrDefault(r.Row.ManifestId) == r.Write.DeliveryPublicKey
+            || Signing.Verify(signingKey, Signing.DeliveryKeyMessage(r.Row.ManifestId, r.Write.DeliveryPublicKey!, r.Write.CurrentRevision), r.Write.DeliveryPublicKeySignature));
     }
 
     /// <summary>
@@ -1373,7 +1383,8 @@ public class VaultController(
     /// admin republishing must land on the same scope rather than a per-user copy.
     /// </param>
     /// <param name="newPublicKey">The public key to publish.</param>
-    private async Task PublishManifestPublicKeyAsync(AliasServerDbContext context, Guid vaultManifestId, string newPublicKey)
+    /// <param name="algorithm">The algorithm of the public key.</param>
+    private async Task PublishManifestPublicKeyAsync(AliasServerDbContext context, Guid vaultManifestId, string newPublicKey, VaultKeyAlgorithm algorithm)
     {
         var scope = context.VaultManifestDeliveryKeys.Where(x => x.VaultManifestId == vaultManifestId);
 
@@ -1401,7 +1412,7 @@ public class VaultController(
         context.VaultManifestDeliveryKeys.Add(new VaultManifestDeliveryKey
         {
             VaultManifestId = vaultManifestId,
-            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
+            Algorithm = algorithm,
             PublicKey = newPublicKey,
             IsPrimary = true,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,

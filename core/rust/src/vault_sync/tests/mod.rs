@@ -430,7 +430,8 @@ fn push_creates_and_publishes_a_missing_personal_delivery_key() {
     assert_eq!(result["success"], true, "{}", result);
     let keys = active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID);
     assert_eq!(keys.len(), 1, "the push created exactly one keypair");
-    assert_eq!(write["manifests"][0]["encryptionPublicKey"], json!(keys[0]), "the write publishes the new public key");
+    assert_eq!(write["manifests"][0]["deliveryPublicKey"], json!(keys[0]), "the write publishes the new public key");
+    assert_eq!(write["manifests"][0]["deliveryPublicKeyAlgorithm"], json!("rsa-oaep-sha256"), "the write states the key's algorithm");
 
     // The keypair travels inside the manifest, so the other devices get the private half.
     let blob = write["manifests"][0]["manifestBlob"].as_str().unwrap();
@@ -446,7 +447,7 @@ fn push_creates_and_publishes_a_missing_personal_delivery_key() {
     let (again, second_write) = push_local_edit(&mut host, &vek, "Renamed again", &["Main"]);
     assert_eq!(again["success"], true, "{}", again);
     assert_eq!(active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID), keys);
-    assert_eq!(second_write["manifests"][0]["encryptionPublicKey"], json!(keys[0]));
+    assert_eq!(second_write["manifests"][0]["deliveryPublicKey"], json!(keys[0]));
 }
 
 #[test]
@@ -460,7 +461,7 @@ fn bucket_only_push_writes_the_manifest_while_the_personal_delivery_key_is_missi
     assert_eq!(result["success"], true, "{}", result);
     let keys = active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID);
     assert_eq!(keys.len(), 1);
-    assert_eq!(write["manifests"][0]["encryptionPublicKey"], json!(keys[0]), "the full write publishes the key a bucket-only write could not");
+    assert_eq!(write["manifests"][0]["deliveryPublicKey"], json!(keys[0]), "the full write publishes the key a bucket-only write could not");
 }
 
 #[test]
@@ -851,7 +852,7 @@ fn status_check_reports_newer_server_state_without_touching_the_vault() {
 /// The `GET v2/VaultKey/Password` answer for a hierarchy the server holds.
 fn vault_key_body(hierarchy: &crypto::AccountKeyHierarchy) -> Value {
     let blobs = &hierarchy.account_keys;
-    json!({ "vaultKey": { "type": "password", "encryptedAccountKey": blobs.encrypted_account_key, "encryptedVek": blobs.encrypted_vek, "accountPublicKey": blobs.account_public_key, "encryptedAccountPrivateKey": blobs.encrypted_account_private_key, "signingPublicKey": blobs.signing_public_key, "encryptedSigningPrivateKey": blobs.encrypted_signing_private_key, "salt": "salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" } })
+    json!({ "vaultKey": { "type": "password", "encryptedAccountKey": blobs.encrypted_account_key, "algorithm": "aes256-gcm", "encryptedVek": blobs.encrypted_vek, "accountPublicKey": blobs.account_public_key, "encryptedAccountPrivateKey": blobs.encrypted_account_private_key, "signingPublicKey": blobs.signing_public_key, "encryptedSigningPrivateKey": blobs.encrypted_signing_private_key, "salt": "salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" } })
 }
 
 /// The cross-device race: this device logged in while the account was legacy (no cached chain, unlock key session), and
@@ -880,6 +881,23 @@ fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);
     assert_eq!(host.state[state::ACCOUNT_PUBLIC_KEY], hierarchy.account_keys.account_public_key);
     assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
+}
+
+/// An Account Key encrypted with an algorithm this build does not know asks for an app update instead of a wrong password.
+#[test]
+fn resolve_vault_key_with_an_unknown_unlock_algorithm_asks_for_an_app_update() {
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
+    let mut host = TestHost::new(&unlock_key);
+    let mut body = vault_key_body(&hierarchy);
+    body["vaultKey"]["algorithm"] = json!("future-x");
+    host.respond("GET", "VaultKey/Password", body);
+
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &unlock_key, false, 0)).unwrap());
+
+    assert_eq!(result["success"], false, "{}", result);
+    assert_eq!(result["logoutReason"], "vaultVersionIncompatible", "{}", result);
+    assert!(!host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY), "nothing is cached from a chain this build cannot open");
 }
 
 /// Login: the host hands the password-derived key to `resolveVaultKey`; the server's chain opens with it, is

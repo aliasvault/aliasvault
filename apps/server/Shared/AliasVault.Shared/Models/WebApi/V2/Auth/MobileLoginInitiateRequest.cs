@@ -19,4 +19,10 @@ public class MobileLoginInitiateRequest
     /// </summary>
     [Required]
     public required string ClientPublicKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the algorithm the Account Key is to be encrypted with, as a VaultKeyAlgorithm token.
+    /// </summary>
+    [Required]
+    public required string Algorithm { get; set; }
 }

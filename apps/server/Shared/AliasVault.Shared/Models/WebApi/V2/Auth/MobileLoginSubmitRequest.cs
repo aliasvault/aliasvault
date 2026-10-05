@@ -27,4 +27,10 @@ public class MobileLoginSubmitRequest
     [Required]
     [StringLength(1024)]
     public required string EncryptedAccountKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the algorithm of <see cref="EncryptedAccountKey"/>, as a VaultKeyAlgorithm token.
+    /// </summary>
+    [Required]
+    public required string Algorithm { get; set; }
 }

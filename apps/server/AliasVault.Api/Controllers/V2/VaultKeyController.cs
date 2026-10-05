@@ -76,6 +76,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             {
                 Type = UnlockMethodTypes.ToToken(unlockKey.Type),
                 EncryptedAccountKey = unlockKey.EncryptedAccountKey,
+                Algorithm = VaultKeyAlgorithms.ToToken(unlockKey.Algorithm),
                 EncryptedVek = encryptedVek,
                 AccountPublicKey = accountKeypair?.PublicKey,
                 EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,

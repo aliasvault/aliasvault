@@ -479,6 +479,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
+        if (!VaultKeyAlgorithms.TryParse(model.EncryptedAccountKeyAlgorithm, out var unlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(unlockKeyAlgorithm))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
         if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier) || !IsValidSrpIdentity(model.SrpIdentity))
         {
             return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
@@ -553,7 +558,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     Id = Guid.NewGuid(),
                     UserId = user.Id,
                     Type = UnlockMethodType.Password,
-                    Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+                    Algorithm = unlockKeyAlgorithm,
                     EncryptedAccountKey = model.EncryptedAccountKey!,
                     Metadata = new VaultKeyMetadata
                     {
@@ -686,6 +691,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
         }
 
+        if (!VaultKeyAlgorithms.TryParse(model.NewEncryptedAccountKeyAlgorithm, out var newUnlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(newUnlockKeyAlgorithm))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
         // Validate the SRP session (actual current password check).
         var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, userManager, user, SrpPurpose.PasswordChange, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (srpResult.Session is null)
@@ -718,6 +728,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await writeContext.UserUnlockKeys.Where(x => x.Id == unlockKey.Id).ExecuteUpdateAsync(s => s
                 .SetProperty(x => x.Metadata, newMetadataJson)
                 .SetProperty(x => x.EncryptedAccountKey, model.NewEncryptedAccountKey)
+                .SetProperty(x => x.Algorithm, newUnlockKeyAlgorithm)
                 .SetProperty(x => x.UpdatedAt, now));
 
             // Update the password last changed at timestamp for user.
@@ -854,6 +865,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400);
         }
 
+        if (!VaultKeyAlgorithms.TryParse(model.Algorithm, out var algorithm) || !VaultKeyAlgorithms.IsAsymmetric(algorithm))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
         // Check the IP blocklist.
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
         {
@@ -880,6 +896,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             Id = requestId,
             ClientPublicKey = model.ClientPublicKey,
+            Algorithm = algorithm,
             PollSecretHash = MobileLoginRequestHelper.HashPollSecret(pollSecret),
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             ClientIpAddress = ipAddress,
@@ -1021,6 +1038,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         return Ok(new MobileLoginDetailsResponse
         {
             ClientPublicKey = loginRequest.ClientPublicKey,
+            Algorithm = VaultKeyAlgorithms.ToToken(loginRequest.Algorithm),
             IpAddress = loginRequest.ClientIpAddress,
             Location = RequestClientInfo.DetermineCountry(),
             ClientName = loginRequest.ClientName,
@@ -1052,6 +1070,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return MobileLoginNotAwaitingApproval(loginRequest);
+        }
+
+        // The Account Key must be encrypted with the algorithm the initiating client asked for.
+        if (model.Algorithm != VaultKeyAlgorithms.ToToken(loginRequest.Algorithm))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
         }
 
         // Store the answer in one transaction.

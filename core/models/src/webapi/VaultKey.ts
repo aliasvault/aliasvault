@@ -4,6 +4,7 @@
 export type VaultKeyResponse = {
   type: string;
   encryptedAccountKey: string;
+  algorithm: string;
   encryptedAccountPrivateKey: string | null;
   accountPublicKey: string | null;
   signingPublicKey: string | null;

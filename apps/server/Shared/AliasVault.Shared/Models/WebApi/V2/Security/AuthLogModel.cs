@@ -16,11 +16,6 @@ using AliasVault.Shared.Models.Enums;
 public class AuthLogModel
 {
     /// <summary>
-    /// Gets or sets the primary key for the auth log entry.
-    /// </summary>
-    public int Id { get; set; }
-
-    /// <summary>
     /// Gets or sets the timestamp of the auth log entry.
     /// </summary>
     public DateTime Timestamp { get; set; }

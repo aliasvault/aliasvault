@@ -54,11 +54,11 @@ struct GroupMemberInfo {
     #[serde(default)]
     username: String,
     #[serde(default)]
-    public_key_id: Option<String>,
+    account_public_key_id: Option<String>,
     #[serde(default)]
-    public_key: Option<String>,
+    account_public_key: Option<String>,
     #[serde(default)]
-    public_key_signature: Option<String>,
+    account_public_key_signature: Option<String>,
     #[serde(default)]
     signing_public_key: Option<String>,
 }
@@ -68,7 +68,7 @@ struct GroupMemberInfo {
 struct CreateSharedManifestRequest<'a> {
     manifest_id: &'a str,
     self_encrypted_vek: &'a str,
-    self_public_key: &'a str,
+    self_account_public_key: &'a str,
     algorithm: &'a str,
     self_grant_signature: &'a str,
     encrypted_name: &'a str,
@@ -92,7 +92,7 @@ struct CreateSharedManifestResponse {
 #[serde(rename_all = "camelCase")]
 struct ManifestGrant {
     recipient_user_id: String,
-    recipient_public_key_id: String,
+    recipient_account_public_key_id: String,
     encrypted_vek: String,
     encrypted_name: Option<String>,
     encrypted_name_signature: Option<String>,
@@ -221,7 +221,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
         &format!("Groups/{}/manifests", group.group_id),
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: &encrypted_name },
+        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: &encrypted_name },
         false,
     )
     .await?;
@@ -236,7 +236,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
         SharedManifestDto {
             manifest_id: manifest_id.clone(),
             encrypted_vek: self_encrypted_vek,
-            encryption_public_key: self_public_key,
+            account_public_key: self_public_key,
             algorithm: ALGORITHM_RSA_OAEP_SHA256.to_string(),
             salt: vault_codec::generate_manifest_salt(),
             encrypted_name: Some(encrypted_name),
@@ -308,7 +308,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let group = administered_group(ctx, &target.group_id).await?;
     let manifest = group.manifests.iter().find(|candidate| ids_equal(&candidate.manifest_id, &manifest_id)).ok_or_else(|| SyncError::Other("The shared manifest does not belong to the group".to_string()))?;
     let member = group.members.iter().find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is not a member of the group".to_string()))?;
-    let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (member.public_key.clone(), member.public_key_id.clone(), member.public_key_signature.as_deref(), member.signing_public_key.as_deref()) else {
+    let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (member.account_public_key.clone(), member.account_public_key_id.clone(), member.account_public_key_signature.as_deref(), member.signing_public_key.as_deref()) else {
         return Ok(Err(Refusal::Api(INVITE_RECIPIENT_NOT_READY.to_string())));
     };
 
@@ -336,7 +336,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let encrypted_name = name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?;
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
-        recipient_public_key_id,
+        recipient_account_public_key_id: recipient_public_key_id,
         signature: crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
         encrypted_name_signature: encrypted_name.as_deref().map(|name| crypto::signing::sign(&signing_key, &crypto::signing::invitation_name_message(&manifest.manifest_id, &own_user_id, &recipient_public_key, name))).transpose()?,
         encrypted_vek,

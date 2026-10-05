@@ -23,7 +23,7 @@ public class CreateSharedManifestRequest
     /// <summary>
     /// Gets or sets the user's own account public key (JWK) the <see cref="SelfEncryptedVek"/> was encrypted with.
     /// </summary>
-    public required string SelfPublicKey { get; set; }
+    public required string SelfAccountPublicKey { get; set; }
 
     /// <summary>Gets or sets the asymmetric algorithm the caller's own grant was encrypted with.</summary>
     public required string Algorithm { get; set; }

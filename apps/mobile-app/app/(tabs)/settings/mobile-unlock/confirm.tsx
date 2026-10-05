@@ -1,5 +1,6 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
+import { VaultKeyAlgorithm, type MobileLoginDetailsResponse, type MobileLoginRequestReference, type MobileLoginSubmitRequest } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
@@ -21,8 +22,6 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
-
-import type { MobileLoginDetailsResponse, MobileLoginRequestReference, MobileLoginSubmitRequest } from '@aliasvault/models/webapi';
 
 /**
  * A mobile login request whose public key was checked against the scanned QR code.
@@ -114,6 +113,12 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
           return;
         }
 
+        if (details.algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
+          console.error(`Mobile login asks for an unsupported algorithm '${details.algorithm}'`);
+          showAlert(t('common.error'), t('common.errors.clientNotSupported'), () => router.replace('/(tabs)/settings'));
+          return;
+        }
+
         const verificationCode = await MobileLoginProtocol.computeVerificationCode(details.clientPublicKey);
         setRequest({ details, verificationCode, codeChoices: buildCodeChoices(verificationCode) });
       } catch (error) {
@@ -183,7 +188,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
 
       // Encrypt with the public key that was verified against the QR code.
       const encryptedAccountKey = await NativeVaultManager.encryptAccountKeyForMobileLogin(request.details.clientPublicKey);
-      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedAccountKey };
+      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedAccountKey, algorithm: request.details.algorithm };
       await webApi.post<MobileLoginSubmitRequest, void>('auth/mobile-login/submit', submitRequest, false);
 
       showResult(true);

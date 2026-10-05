@@ -8,6 +8,7 @@
 namespace AliasVault.Cryptography;
 
 using AliasServerDb;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Helper class for encrypting and decrypting email contents.
@@ -71,7 +72,12 @@ public static class EmailEncryption
         // Encrypt the same symmetric key once per recipient manifest's delivery key.
         foreach (var deliveryKey in deliveryKeys)
         {
-            email.DecryptionKeys.Add(new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, deliveryKey.PublicKey) });
+            var encryptedSymmetricKey = deliveryKey.Algorithm switch
+            {
+                VaultKeyAlgorithm.RsaOaepSha256 => Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, deliveryKey.PublicKey),
+                _ => throw new NotSupportedException($"Delivery key algorithm {deliveryKey.Algorithm} is not supported."),
+            };
+            email.DecryptionKeys.Add(new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = encryptedSymmetricKey });
         }
 
         return email;

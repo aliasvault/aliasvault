@@ -51,9 +51,9 @@ public class Manifest
     public string? Algorithm { get; set; }
 
     /// <summary>
-    /// Gets or sets the public key <see cref="EncryptedVek"/> was encrypted with.
+    /// Gets or sets the caller's account public key <see cref="EncryptedVek"/> was encrypted with.
     /// </summary>
-    public string? EncryptionPublicKey { get; set; }
+    public string? AccountPublicKey { get; set; }
 
     /// <summary>Gets or sets the granter's signature over the grant in <see cref="EncryptedVek"/>.</summary>
     public string? GrantSignature { get; set; }

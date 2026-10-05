@@ -16,9 +16,9 @@ export type GroupMemberInfo = {
   userId: string;
   username: string;
   role: GroupRole;
-  publicKeyId: string | null;
-  publicKey: string | null;
-  publicKeySignature: string | null;
+  accountPublicKeyId: string | null;
+  accountPublicKey: string | null;
+  accountPublicKeySignature: string | null;
   signingPublicKey: string | null;
 }
 
@@ -45,7 +45,8 @@ export type ReceivedManifestInvitation = {
   encryptedName: string | null;
   encryptedNameSignature: string | null;
   signerPublicKey: string | null;
-  recipientPublicKey: string | null;
+  recipientAccountPublicKey: string | null;
+  algorithm: string;
 }
 
 /**

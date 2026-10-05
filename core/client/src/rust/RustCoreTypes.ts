@@ -94,6 +94,7 @@ export type KeyChainOpenResult =
  */
 export type AccountKeyBlobs = {
   encryptedAccountKey: string;
+  encryptedAccountKeyAlgorithm: string;
   encryptedVek: string;
   accountPublicKey: string;
   encryptedAccountPrivateKey: string;

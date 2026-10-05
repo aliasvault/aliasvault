@@ -120,9 +120,9 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                     UserId = m.UserId,
                     Username = usernames.GetValueOrDefault(m.UserId, string.Empty),
                     Role = KebabCaseEnumConverter.ToToken(m.Role),
-                    PublicKeyId = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeyId : null,
-                    PublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKey : null,
-                    PublicKeySignature = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeySignature : null,
+                    AccountPublicKeyId = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeyId : null,
+                    AccountPublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKey : null,
+                    AccountPublicKeySignature = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeySignature : null,
                     SigningPublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.SigningPublicKey : null,
                 })],
             });
@@ -166,7 +166,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // The public key the user's own grant is encrypted for must be one of theirs.
         var selfPublicKeyId = await context.UserGrantKeys
-            .Where(x => x.UserId == me.Id && x.PublicKey == model.SelfPublicKey)
+            .Where(x => x.UserId == me.Id && x.PublicKey == model.SelfAccountPublicKey)
             .Select(x => (Guid?)x.Id)
             .FirstOrDefaultAsync();
 
@@ -177,7 +177,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // The caller signs their own grant like any other, so a reader can tell it was not made up by somebody else.
         var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
-        if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(model.ManifestId, 0, me.Id, model.SelfPublicKey, model.Algorithm, model.SelfEncryptedVek), model.SelfGrantSignature))
+        if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(model.ManifestId, 0, me.Id, model.SelfAccountPublicKey, model.Algorithm, model.SelfEncryptedVek), model.SelfGrantSignature))
         {
             return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }
@@ -282,7 +282,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         // The key it was encrypted for must really be theirs.
-        var recipientPublicKey = await context.UserGrantKeys.Where(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId).Select(k => k.PublicKey).FirstOrDefaultAsync();
+        var recipientPublicKey = await context.UserGrantKeys.Where(k => k.Id == model.Grant.RecipientAccountPublicKeyId && k.UserId == model.UserId).Select(k => k.PublicKey).FirstOrDefaultAsync();
         if (recipientPublicKey is null)
         {
             return ApiError.Result(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404);
@@ -319,7 +319,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             EncryptedVek = model.Grant.EncryptedVek,
             EncryptedName = model.Grant.EncryptedName,
             EncryptedNameSignature = model.Grant.EncryptedName is null ? null : model.Grant.EncryptedNameSignature,
-            UserGrantKeyId = model.Grant.RecipientPublicKeyId,
+            UserGrantKeyId = model.Grant.RecipientAccountPublicKeyId,
             GrantSignature = model.Grant.Signature,
             GrantSignerPublicKey = signerPublicKey,
             VaultKeyVersion = manifestKeyVersion.Value,
@@ -730,7 +730,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 i.EncryptedName,
                 i.EncryptedNameSignature,
                 i.GrantSignerPublicKey,
-                RecipientPublicKey = i.UserGrantKey != null ? i.UserGrantKey.PublicKey : null,
+                i.Algorithm,
+                RecipientAccountPublicKey = i.UserGrantKey != null ? i.UserGrantKey.PublicKey : null,
             })
             .ToListAsync();
 
@@ -757,7 +758,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             EncryptedName = i.EncryptedName,
             EncryptedNameSignature = i.EncryptedNameSignature,
             SignerPublicKey = i.GrantSignerPublicKey,
-            RecipientPublicKey = i.RecipientPublicKey,
+            RecipientAccountPublicKey = i.RecipientAccountPublicKey,
+            Algorithm = VaultKeyAlgorithms.ToToken(i.Algorithm),
         })];
     }
 

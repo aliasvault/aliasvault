@@ -107,7 +107,6 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
             .Take(50)
             .Select(x => new AuthLogModel
             {
-                Id = x.Id,
                 Timestamp = x.Timestamp,
                 EventType = x.EventType,
                 Username = x.Username,

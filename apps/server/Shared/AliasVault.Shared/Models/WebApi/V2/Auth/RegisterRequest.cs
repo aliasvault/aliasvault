@@ -113,6 +113,11 @@ public class RegisterRequest
     public string? AccountPublicKeySignature { get; }
 
     /// <summary>
+    /// Gets the algorithm of <see cref="EncryptedAccountKey"/>, as a VaultKeyAlgorithm token.
+    /// </summary>
+    public string? EncryptedAccountKeyAlgorithm { get; init; }
+
+    /// <summary>
     /// Gets the registration invite code, required when public registration is disabled.
     /// </summary>
     public string? InviteCode { get; init; }
@@ -120,7 +125,7 @@ public class RegisterRequest
     /// <summary>
     /// Gets a value indicating whether the client sent the complete account key hierarchy. A partial one is not usable.
     /// </summary>
-    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
+    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedAccountKeyAlgorithm) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
         && !string.IsNullOrEmpty(SigningPublicKey) && !string.IsNullOrEmpty(EncryptedSigningPrivateKey) && !string.IsNullOrEmpty(AccountPublicKeySignature);
 
     /// <summary>

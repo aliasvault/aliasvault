@@ -31,6 +31,9 @@ public class AccountKeysUpload
     /// <summary>Gets or sets the Account Key encrypted with the KEK derived from the unlock method.</summary>
     public string? EncryptedAccountKey { get; set; }
 
+    /// <summary>Gets or sets the algorithm of <see cref="EncryptedAccountKey"/>, as a VaultKeyAlgorithm token.</summary>
+    public string? EncryptedAccountKeyAlgorithm { get; set; }
+
     /// <summary>Gets or sets the vault encryption key encrypted with the Account Key, as base64(IV | ciphertext | authTag).</summary>
     public string? EncryptedVek { get; set; }
 
@@ -52,7 +55,7 @@ public class AccountKeysUpload
     /// <summary>
     /// Gets a value indicating whether every field is present. A partial upload is not usable.
     /// </summary>
-    public bool IsComplete => !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
+    public bool IsComplete => !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedAccountKeyAlgorithm) && !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
         && !string.IsNullOrEmpty(SigningPublicKey) && !string.IsNullOrEmpty(EncryptedSigningPrivateKey) && !string.IsNullOrEmpty(AccountPublicKeySignature);
 
     /// <summary>

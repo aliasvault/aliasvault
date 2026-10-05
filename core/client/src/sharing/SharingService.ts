@@ -1,4 +1,4 @@
-import { type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GroupOverviewResponse, type ReceivedManifestInvitation } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GroupOverviewResponse, type ReceivedManifestInvitation } from '@aliasvault/models/webapi';
 
 import { VaultKeyService } from '../auth/VaultKeyService';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
@@ -49,12 +49,17 @@ export class SharingService {
     const names: Record<string, string> = {};
 
     for (const invitation of invitations) {
-      if (!invitation.encryptedName || !invitation.recipientPublicKey) {
+      if (!invitation.encryptedName || !invitation.recipientAccountPublicKey) {
+        continue;
+      }
+
+      if (invitation.algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
+        devWarn(`[Sharing] Invitation ${invitation.id} is encrypted with an unsupported algorithm '${invitation.algorithm}'.`);
         continue;
       }
 
       try {
-        const name = await decryptName(invitation.encryptedName, invitation.recipientPublicKey);
+        const name = await decryptName(invitation.encryptedName, invitation.recipientAccountPublicKey);
         if (name === null) {
           devWarn(`[Sharing] This session holds no account private key that decrypts the name encrypted into invitation ${invitation.id}.`);
           continue;
