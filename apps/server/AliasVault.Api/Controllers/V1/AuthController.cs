@@ -109,6 +109,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var clientSupported = false;
         var clientInfo = ClientHeaderInfo.Parse(ClientHeaderInfo.GetRawValue(Request));
         if (!string.IsNullOrEmpty(clientInfo.ClientVersion)
+            && Version.TryParse(clientInfo.ClientVersion, out _)
             && AppInfo.MinimumClientVersions.TryGetValue(clientInfo.ClientName, out var minimumVersion))
         {
             var meetsMinimum = VersionHelper.IsVersionEqualOrNewer(clientInfo.ClientVersion, minimumVersion);

@@ -61,6 +61,26 @@ public static class VersionHelper
     }
 
     /// <summary>
+    /// Whether a client meets the minimum version for its name (the default minimum for unlisted names) and is not blocked.
+    /// </summary>
+    /// <param name="clientName">The client name from the client header.</param>
+    /// <param name="clientVersion">The client version from the client header; missing or unparseable means unsupported.</param>
+    /// <param name="minimumVersions">Per-client minimum version overrides.</param>
+    /// <param name="defaultMinimumVersion">Minimum version for clients without an override.</param>
+    /// <param name="blockedVersions">Dictionary of platform to blocked versions. Use "*" for global blocks.</param>
+    /// <returns>True if the client version is supported, false otherwise.</returns>
+    public static bool IsClientVersionSupported(string clientName, string? clientVersion, IReadOnlyDictionary<string, string> minimumVersions, string defaultMinimumVersion, IReadOnlyDictionary<string, HashSet<string>> blockedVersions)
+    {
+        if (!Version.TryParse(clientVersion, out var version))
+        {
+            return false;
+        }
+
+        var minimumVersion = Version.Parse(minimumVersions.GetValueOrDefault(clientName, defaultMinimumVersion));
+        return version >= minimumVersion && !IsVersionBlocked(clientName, clientVersion, blockedVersions);
+    }
+
+    /// <summary>
     /// Checks if a version is blocked for a specific platform.
     /// Checks both platform-specific blocks and global blocks (using "*" key).
     /// </summary>
