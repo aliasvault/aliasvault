@@ -396,18 +396,18 @@ public class WebApiService {
      * Returns the favicon image data as base64-decoded bytes, or nil if extraction failed
      */
     public func extractFavicon(url: String) async throws -> Data? {
-        // URL encode the service URL parameter
-        guard let encodedUrl = url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            print("WebApiService: Failed to encode URL for favicon extraction")
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: ["url": url]),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            print("WebApiService: Failed to encode the favicon request")
             return nil
         }
 
         do {
             let response = try await executeRequest(
-                method: "GET",
-                endpoint: "Favicon/Extract?url=\(encodedUrl)",
-                body: nil,
-                headers: [:],
+                method: "POST",
+                endpoint: "Favicon/Extract",
+                body: jsonString,
+                headers: ["Content-Type": "application/json"],
                 requiresAuth: true
             )
 

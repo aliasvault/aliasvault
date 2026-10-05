@@ -451,11 +451,14 @@ class WebApiService(private val context: Context) {
      */
     suspend fun extractFavicon(url: String): ByteArray? = withContext(Dispatchers.IO) {
         try {
+            val requestBody = JSONObject()
+            requestBody.put("url", url)
+
             val response = executeRequest(
-                method = "GET",
-                endpoint = "Favicon/Extract?url=$url",
-                body = null,
-                headers = emptyMap(),
+                method = "POST",
+                endpoint = "Favicon/Extract",
+                body = requestBody.toString(),
+                headers = mapOf("Content-Type" to "application/json"),
                 requiresAuth = true,
             )
 

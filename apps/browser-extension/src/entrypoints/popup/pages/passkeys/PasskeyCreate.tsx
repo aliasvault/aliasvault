@@ -266,7 +266,7 @@ const PasskeyCreate: React.FC = () => {
             setTimeout(() => reject(new Error('Favicon extraction timed out')), 5000)
           );
 
-          const faviconPromise = webApi.get<{ image: string }>('Favicon/Extract?url=' + request.origin);
+          const faviconPromise = webApi.post<{ url: string }, { image: string }>('Favicon/Extract', { url: request.origin });
           const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]) as { image: string };
 
           if (faviconResponse?.image) {

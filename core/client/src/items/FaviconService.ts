@@ -22,7 +22,7 @@ export type FaviconStore = {
  * Favicon API calls.
  */
 export type FaviconApi = {
-  get<T>(endpoint: string): Promise<T>;
+  post<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse>;
 };
 
 /**
@@ -100,7 +100,7 @@ export class FaviconService {
         timer = setTimeout(() => reject(new Error('Favicon extraction timed out')), timeoutMs);
       });
 
-      const faviconPromise = webApi.get<{ image: string }>(`Favicon/Extract?url=${encodeURIComponent(target.url)}`);
+      const faviconPromise = webApi.post<{ url: string }, { image: string }>('Favicon/Extract', { url: target.url });
       const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]);
 
       if (faviconResponse?.image) {
