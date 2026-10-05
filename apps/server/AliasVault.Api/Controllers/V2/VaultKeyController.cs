@@ -37,7 +37,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Check if the unlock method type is valid.

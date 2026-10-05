@@ -37,7 +37,7 @@ public class ClientActionsController(IAliasServerDbContextFactory dbContextFacto
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var action = await context.ClientActions.FirstOrDefaultAsync(a => a.Id == id);
@@ -48,7 +48,7 @@ public class ClientActionsController(IAliasServerDbContextFactory dbContextFacto
 
         if (!await ClientActionHelper.CanCompleteAsync(context, action, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.CLIENT_ACTION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.CLIENT_ACTION_NOT_FOUND, 404);
         }
 
         context.ClientActions.Remove(action);

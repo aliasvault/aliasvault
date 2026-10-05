@@ -89,7 +89,7 @@ fn host_with_unloaded_blobs(vek: &str, serve_undecryptable: bool) -> (TestHost, 
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
     let served: Vec<Value> = if serve_undecryptable { blobs.iter().map(ServerBlob::served).collect() } else { Vec::new() };
-    host.respond("POST", "Vault/blobs/download", json!(served));
+    host.respond("POST", "Vault/blobs/download", json!({ "blobs": served }));
 
     let pulled = host.drive(&SyncSession::new(&request("fullSync", vek, false, 0)).unwrap());
     assert_eq!(pulled["success"], true, "a blob that does not load must not fail the pull: {}", pulled);
@@ -141,7 +141,7 @@ fn pull_attachment_bytes(vek: &str, serve: impl Fn(&[ServerBlob]) -> Vec<Value>)
     let (status, vault, blobs) = snapshot(&server_db(&host), vek, vek, &vault_codec::generate_manifest_salt(), 7);
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
-    host.respond("POST", "Vault/blobs/download", json!(serve(&blobs)));
+    host.respond("POST", "Vault/blobs/download", json!({ "blobs": serve(&blobs) }));
 
     let pulled = host.drive(&SyncSession::new(&request("fullSync", vek, false, 0)).unwrap());
     assert_eq!(pulled["success"], true, "{}", pulled);
@@ -181,7 +181,7 @@ fn a_merge_keeps_the_reference_to_a_blob_that_is_not_loaded() {
     host.responders.clear();
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
-    host.respond("POST", "Vault/blobs/download", json!([]));
+    host.respond("POST", "Vault/blobs/download", json!({ "blobs": [] }));
 
     let merged = sync_dirty(&mut host, &vek);
 
@@ -251,7 +251,7 @@ fn an_attachment_row_that_references_no_blob_does_not_fail_the_pull() {
     let (status, vault, _) = snapshot(&server, &vek, &vek, &vault_codec::generate_manifest_salt(), 7);
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
-    host.respond("POST", "Vault/blobs/download", json!([]));
+    host.respond("POST", "Vault/blobs/download", json!({ "blobs": [] }));
 
     let pulled = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 

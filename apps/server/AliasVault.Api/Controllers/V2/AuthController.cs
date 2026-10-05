@@ -107,7 +107,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.IpBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
         }
 
         var user = await userManager.FindByNameAsync(model.Username);
@@ -124,14 +124,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (await userManager.IsLockedOutAsync(user))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.TwoFactorAuthentication, AuthFailureReason.AccountLocked);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_LOCKED, 400);
         }
 
         // Check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.AccountBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
@@ -171,7 +171,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Spend the login exchange so its proof cannot be replayed.
         if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Reset failed login attempts.
@@ -201,7 +201,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (user == null || serverSession == null)
         {
             // Expected variables are not set, return generic error.
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Verify 2-factor code.
@@ -212,13 +212,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await userManager.AccessFailedAsync(user);
 
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.TwoFactorAuthentication, AuthFailureReason.InvalidTwoFactorCode);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_AUTHENTICATOR_CODE, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_AUTHENTICATOR_CODE, 400);
         }
 
         // Spend the login exchange so its proof cannot be replayed.
         if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Validation of 2-FA token is successful, user is authenticated.
@@ -249,7 +249,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (user == null || serverSession == null)
         {
             // Expected variables are not set, return generic error.
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Sanitize recovery code.
@@ -264,13 +264,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await userManager.AccessFailedAsync(user);
 
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.TwoFactorAuthentication, AuthFailureReason.InvalidRecoveryCode);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_RECOVERY_CODE, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_RECOVERY_CODE, 400);
         }
 
         // Spend the login exchange so its proof cannot be replayed.
         if (!AuthHelper.ConsumeSrpSession(cache, user, model.LoginSessionId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Recovery code is valid, user is authenticated.
@@ -296,7 +296,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // If the token is not provided, return bad request.
         if (string.IsNullOrWhiteSpace(tokenModel.RefreshToken))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
+            return ApiError.Result(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400);
         }
 
         ClaimsPrincipal principal;
@@ -308,32 +308,32 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             // If token validation fails (expired, malformed, or invalid signature),
             // return unauthorized as we cannot identify the user from the access token.
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVALID_REFRESH_TOKEN, 401));
+            return ApiError.Result(ApiErrorCode.INVALID_REFRESH_TOKEN, 401);
         }
 
         if (principal.FindFirst(ClaimTypes.NameIdentifier)?.Value == null)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
+            return ApiError.Result(ApiErrorCode.INVALID_REFRESH_TOKEN, 401);
         }
 
         var user = await userManager.FindByIdAsync(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
         if (user == null)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
+            return ApiError.Result(ApiErrorCode.INVALID_REFRESH_TOKEN, 401);
         }
 
         // Check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.AccountBlocked);
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 401);
         }
 
         // Check the IP blocklist.
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.IpBlocked);
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 401);
         }
 
         // Generate new tokens for the user.
@@ -341,7 +341,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (token == null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.InvalidRefreshToken);
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVALID_REFRESH_TOKEN, 401));
+            return ApiError.Result(ApiErrorCode.INVALID_REFRESH_TOKEN, 401);
         }
 
         await context.SaveChangesAsync();
@@ -363,7 +363,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // If the refresh token is not provided, return bad request.
         if (string.IsNullOrWhiteSpace(model.RefreshToken))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
+            return ApiError.Result(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400);
         }
 
         // Look up the refresh token directly - we don't need to validate the access token
@@ -406,7 +406,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // If the refresh token is not provided, return bad request.
         if (string.IsNullOrWhiteSpace(model.RefreshToken))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
+            return ApiError.Result(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400);
         }
 
         // Look up the refresh token directly.
@@ -440,7 +440,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var requiresInvite = !config.PublicRegistrationEnabled;
         if (requiresInvite && string.IsNullOrWhiteSpace(model.InviteCode))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
+            return ApiError.Result(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400);
         }
 
         // Check the IP blocklist using the raw IP address.
@@ -448,7 +448,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (await ipBlockListService.IsBlockedForRegistrationAsync(rawIpAddress))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.IpBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.REGISTRATION_FAILED, 400));
+            return ApiError.Result(ApiErrorCode.REGISTRATION_FAILED, 400);
         }
 
         // Check IP-based registration rate limit
@@ -457,31 +457,31 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (await registrationRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxRegistrationsPerIpPer24Hours))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.RegistrationRateLimitExceeded);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, 429));
+            return ApiError.Result(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, 429);
         }
 
         // Validate the username.
         var (isValid, apiErrorCode) = await ValidateUsername(model.Username);
         if (!isValid)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(apiErrorCode, 400));
+            return ApiError.Result(apiErrorCode, 400);
         }
 
         // Every new account is created on the account-key model, so the client must generate the whole hierarchy up front.
         // Reject an incomplete or oversized one before any row is written, so a rejected attempt leaves no account behind.
         if (!model.HasCompleteAccountKeys)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         if (!model.AccountKeysFitStorageLimits || !RsaPublicKeyValidator.IsValid(model.AccountPublicKey) || !Signing.VerifyAccountPublicKey(model.SigningPublicKey, model.AccountPublicKey, model.AccountPublicKeySignature))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier) || !IsValidSrpIdentity(model.SrpIdentity))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
         }
 
         var user = new AliasVaultUser
@@ -500,7 +500,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             if (inviteId is null)
             {
                 await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.InvalidInviteCode);
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+                return ApiError.Result(ApiErrorCode.INVITE_CODE_INVALID, 400);
             }
         }
 
@@ -625,8 +625,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await registrationInviteService.ReleaseAsync(inviteId.Value);
         }
 
-        var errors = result.Errors.Select(e => e.Description).ToArray();
-        return BadRequest(ServerValidationErrorResponse.Create(errors, 400));
+        // A concurrent registration can take the username between the availability check and the insert.
+        var usernameTaken = result.Errors.Any(e => e.Code == nameof(IdentityErrorDescriber.DuplicateUserName));
+        return ApiError.Result(usernameTaken ? ApiErrorCode.USERNAME_ALREADY_IN_USE : ApiErrorCode.REGISTRATION_FAILED, 400);
     }
 
     /// <summary>
@@ -640,7 +641,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
@@ -667,7 +668,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -675,14 +676,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (unlockKey == null)
         {
             // Legacy users that have not migrated to v2 yet need to use the v1 flow (or migrate first).
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400);
         }
 
         // Validate the new KDF parameters and the size of the new credentials.
         var accountKeyFits = !string.IsNullOrEmpty(model.NewEncryptedAccountKey) && model.NewEncryptedAccountKey.Length <= AccountKeysUpload.MaxWrappedKeyLength;
         if (!IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings) || !WithinSrpCredentialLimits(model.NewPasswordSalt, model.NewPasswordVerifier) || !accountKeyFits)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
         }
 
         // Validate the SRP session (actual current password check).
@@ -690,7 +691,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return ApiError.Result(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400);
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -749,18 +750,18 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             if (string.IsNullOrWhiteSpace(model.InviteCode))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
+                return ApiError.Result(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400);
             }
 
             if (!await registrationInviteService.IsValidAsync(model.InviteCode))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+                return ApiError.Result(ApiErrorCode.INVITE_CODE_INVALID, 400);
             }
         }
 
         if (string.IsNullOrWhiteSpace(model.Username))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_REQUIRED, 400));
+            return ApiError.Result(ApiErrorCode.USERNAME_REQUIRED, 400);
         }
 
         var normalizedUsername = UsernameHelper.NormalizeUsername(model.Username);
@@ -768,7 +769,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (existingUser != null)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_ALREADY_IN_USE, 400));
+            return ApiError.Result(ApiErrorCode.USERNAME_ALREADY_IN_USE, 400);
         }
 
         // Validate the username
@@ -776,10 +777,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (!isValid)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(apiErrorCode, 400));
+            return ApiError.Result(apiErrorCode, 400);
         }
 
-        return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_AVAILABLE, 200));
+        return Ok();
     }
 
     /// <summary>
@@ -794,7 +795,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         if (!await registrationInviteService.IsValidAsync(model.InviteCode))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+            return ApiError.Result(ApiErrorCode.INVITE_CODE_INVALID, 400);
         }
 
         return Ok();
@@ -812,13 +813,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Verify the username matches the current user.
         if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
+            return ApiError.Result(ApiErrorCode.USERNAME_MISMATCH, 400);
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
@@ -850,14 +851,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Reject invalid public key structure.
         if (!RsaPublicKeyValidator.IsValid(model.ClientPublicKey))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400);
         }
 
         // Check the IP blocklist.
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
         {
             await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.IpBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
         }
 
         // Check IP-based mobile login rate limit.
@@ -866,7 +867,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (await mobileLoginRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxMobileLoginRequestsPerIpPerMinute))
         {
             await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.MobileLoginRateLimitExceeded);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_RATE_LIMIT_EXCEEDED, 429));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_RATE_LIMIT_EXCEEDED, 429);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -913,7 +914,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // An unknown request and a wrong poll secret get the same answer.
         if (loginRequest == null || !MobileLoginRequestHelper.IsPollSecretValid(loginRequest, model.PollSecret))
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404);
         }
 
         if (loginRequest.DeclinedAt != null)
@@ -925,7 +926,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             if (MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
             {
-                return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+                return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_EXPIRED, 410);
             }
 
             return Ok(new MobileLoginPollResponse { Status = MobileLoginStatus.Pending });
@@ -934,7 +935,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // One-time use: an approved request is handed out once, and only shortly after the approval.
         if (loginRequest.RetrievedAt != null || loginRequest.EncryptedAccountKey == null || MobileLoginRequestHelper.IsRetrievalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_EXPIRED, 410);
         }
 
         // Sanity check: check if user exists using UserId FK
@@ -942,21 +943,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (user == null)
         {
             await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.InvalidUsername);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
         // Sanity check: check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
         }
 
         // Sanity check: check if the account is locked out.
         if (await userManager.IsLockedOutAsync(user))
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountLocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400));
+            return ApiError.Result(ApiErrorCode.ACCOUNT_LOCKED, 400);
         }
 
         // Claim the request and clear its key material in one transaction.
@@ -968,7 +969,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             .ExecuteUpdateAsync(u => u.SetProperty(r => r.RetrievedAt, retrievedAt).SetProperty(r => r.ClientPublicKey, string.Empty).SetProperty(r => r.EncryptedAccountKey, (string?)null));
         if (claimed != 1)
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_EXPIRED, 410);
         }
 
         // The client needs the key derivation parameters next to the unlock key to be able to unlock offline later.
@@ -1014,7 +1015,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
         if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+            return MobileLoginNotAwaitingApproval(loginRequest);
         }
 
         return Ok(new MobileLoginDetailsResponse
@@ -1044,19 +1045,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
-        if (loginRequest == null || loginRequest.DeclinedAt != null || MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
+        if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
-        }
-
-        // Check if already fulfilled
-        if (loginRequest.FulfilledAt != null)
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400));
+            return MobileLoginNotAwaitingApproval(loginRequest);
         }
 
         // Store the answer in one transaction.
@@ -1067,7 +1062,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             .ExecuteUpdateAsync(u => u.SetProperty(r => r.EncryptedAccountKey, model.EncryptedAccountKey).SetProperty(r => r.UserId, user.Id).SetProperty(r => r.FulfilledAt, fulfilledAt).SetProperty(r => r.MobileIpAddress, mobileIpAddress));
         if (updated != 1)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400));
+            return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400);
         }
 
         return Ok();
@@ -1087,13 +1082,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
         if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
+            return MobileLoginNotAwaitingApproval(loginRequest);
         }
 
         loginRequest.ClientPublicKey = string.Empty;
@@ -1119,13 +1114,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Verify the username matches the current user.
         if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
+            return ApiError.Result(ApiErrorCode.USERNAME_MISMATCH, 400);
         }
 
         // Validate the SRP session (actual password check).
@@ -1134,7 +1129,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return ApiError.Result(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400);
         }
 
         // Log the successful account deletion.
@@ -1149,8 +1144,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         context.AliasVaultUsers.Remove(user);
         await context.SaveChangesAsync();
 
-        return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_SUCCESSFULLY_DELETED, 200));
+        return Ok();
     }
+
+    /// <summary>
+    /// The error for a mobile login request that does not exist or no longer awaits approval.
+    /// </summary>
+    /// <param name="request">The request, or null when it does not exist.</param>
+    /// <returns>The error result.</returns>
+    private static ObjectResult MobileLoginNotAwaitingApproval(MobileLoginRequest? request) => request switch
+    {
+        null => ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404),
+        { DeclinedAt: not null } => ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_DECLINED, 410),
+        { FulfilledAt: not null } => ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400),
+        _ => ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_EXPIRED, 410),
+    };
 
     /// <summary>
     /// Archives the unlock key that is about to be overwritten so it can be reverted to in case of a password change failure.
@@ -1389,21 +1397,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (user == null)
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
+            return (null, null, null, ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400));
         }
 
         // Check if the account is locked out.
         if (await userManager.IsLockedOutAsync(user))
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthentication, AuthFailureReason.AccountLocked);
-            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400)));
+            return (null, null, null, ApiError.Result(ApiErrorCode.ACCOUNT_LOCKED, 400));
         }
 
         // Check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.AccountBlocked);
-            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400)));
+            return (null, null, null, ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400));
         }
 
         // Validate the SRP session (actual password check).
@@ -1419,7 +1427,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             }
 
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, srpResult.FailureReason);
-            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
+            return (null, null, null, ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400));
         }
 
         // Record usage of this unlock method for statistics purposes.

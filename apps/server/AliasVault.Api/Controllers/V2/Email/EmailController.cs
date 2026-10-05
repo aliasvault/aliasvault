@@ -11,6 +11,7 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
+using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V2.Email;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -58,9 +59,9 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             FromLocal = email.FromLocal,
             ToDomain = email.ToDomain,
             ToLocal = email.ToLocal,
-            Date = email.Date,
-            DateSystem = DateTime.SpecifyKind(email.DateSystem, DateTimeKind.Utc),
-            SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem).TotalSeconds,
+            Date = email.Date.ToUniversalTime(),
+            DateSystem = email.DateSystem.ToUniversalTime(),
+            SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem.ToUniversalTime()).TotalSeconds,
             MessageSource = email.MessageSourceBytes is not null ? Convert.ToBase64String(email.MessageSourceBytes) : email.MessageSource,
             PublicKeys = keyTable.PublicKeys,
             DecryptionKeys = keyTable.ToApiModels(callerDecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey))),
@@ -97,7 +98,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         {
             // Log the exception
             logger.LogError(ex, "An error occurred while deleting email with ID {id}.", id);
-            return StatusCode(500, "An error occurred while deleting the email.");
+            return ApiError.Result(ApiErrorCode.INTERNAL_SERVER_ERROR, 500);
         }
     }
 
@@ -121,7 +122,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var part = await context.EmailParts.FirstOrDefaultAsync(x => x.EmailId == email!.Id && x.PartIndex == partIndex);
         if (part == null)
         {
-            return NotFound("Email part not found.");
+            return ApiError.Result(ApiErrorCode.EMAIL_NOT_FOUND, 404);
         }
 
         // Return the encrypted bytes as binary.
@@ -141,7 +142,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // Sanitize input
@@ -150,13 +151,13 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         if (model.Ids.Count == 0)
         {
             // Nothing to delete
-            return StatusCode(304);
+            return Ok(new EmailBulkResponse { SuccessfulEmailIds = [] });
         }
 
         // Every id runs its own access check, so the batch is capped.
         if (model.Ids.Count > MaxBulkDeleteIds)
         {
-            return BadRequest($"At most {MaxBulkDeleteIds} emails can be deleted per request.");
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         // For each email ID, validate if user has access and if email exists
@@ -177,7 +178,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         catch (Exception ex)
         {
             logger.LogError(ex, "An error occurred while deleting the emails.");
-            return StatusCode(500);
+            return ApiError.Result(ApiErrorCode.INTERNAL_SERVER_ERROR, 500);
         }
 
         EmailBulkResponse returnValue = new()
@@ -198,7 +199,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return (null, [], Unauthorized("Not authenticated."));
+            return (null, [], ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401));
         }
 
         return await RetrieveEmailAsync(id, user, context);
@@ -224,13 +225,13 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
 
         if (email is null)
         {
-            return (null, [], NotFound("Email not found."));
+            return (null, [], ApiError.Result(ApiErrorCode.EMAIL_NOT_FOUND, 404));
         }
 
         // Hide emails received after a shadow-block took effect.
         if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)
         {
-            return (null, [], NotFound());
+            return (null, [], ApiError.Result(ApiErrorCode.EMAIL_NOT_FOUND, 404));
         }
 
         // Check if the user has access to the email address.
@@ -238,7 +239,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress);
         if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
-            return (null, [], Unauthorized("User does not have a claim to this email address."));
+            return (null, [], ApiError.Result(ApiErrorCode.EMAIL_NOT_FOUND, 404));
         }
 
         // The email is accessible only through a decryption key the caller holds the private half for.
@@ -246,7 +247,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var callerDecryptionKeys = email.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).ToList();
         if (callerDecryptionKeys.Count == 0)
         {
-            return (null, [], NotFound("Email not found."));
+            return (null, [], ApiError.Result(ApiErrorCode.EMAIL_NOT_FOUND, 404));
         }
 
         return (email, callerDecryptionKeys, null);

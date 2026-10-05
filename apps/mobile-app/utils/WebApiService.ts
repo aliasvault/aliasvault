@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@aliasvault/models/webapi';
+import type { StatusResponse, VaultResponse, AuthLogModel, AuthLogsResponse, RefreshToken, SessionsResponse } from '@aliasvault/models/webapi';
 
 import i18n from '@/i18n';
 
@@ -345,7 +345,7 @@ export class WebApiService {
    * Get the active sessions (logged in devices) for the current user from the server.
    */
   public async getActiveSessions(): Promise<RefreshToken[]> {
-    return this.get<RefreshToken[]>('Security/sessions');
+    return (await this.get<SessionsResponse>('Security/sessions')).sessions;
   }
 
   /**
@@ -359,7 +359,7 @@ export class WebApiService {
    * Get the auth logs for the current user from the server.
    */
   public async getAuthLogs(): Promise<AuthLogModel[]> {
-    return this.get<AuthLogModel[]>('Security/authlogs');
+    return (await this.get<AuthLogsResponse>('Security/authlogs')).authLogs;
   }
 
   /**

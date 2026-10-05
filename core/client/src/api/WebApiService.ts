@@ -14,7 +14,7 @@ import { RequestTimeoutError } from './errors/RequestTimeoutError';
 import { logoutEventEmitter } from './LogoutEventEmitter';
 
 import type { LogoutReason } from '../sync/VaultSyncEngine';
-import type { AuthLogModel, RefreshToken, StatusResponseV2 } from '@aliasvault/models/webapi';
+import type { AuthLogModel, AuthLogsResponse, RefreshToken, SessionsResponse, StatusResponseV2 } from '@aliasvault/models/webapi';
 
 type RequestInit = globalThis.RequestInit;
 
@@ -427,7 +427,7 @@ export class WebApiService {
    * Get the active sessions (logged in devices) for the current user from the server.
    */
   public async getActiveSessions(): Promise<RefreshToken[]> {
-    return this.get<RefreshToken[]>('Security/sessions');
+    return (await this.get<SessionsResponse>('Security/sessions')).sessions;
   }
 
   /**
@@ -441,7 +441,7 @@ export class WebApiService {
    * Get the recent auth logs for the current user from the server.
    */
   public async getAuthLogs(): Promise<AuthLogModel[]> {
-    return this.get<AuthLogModel[]>('Security/authlogs');
+    return (await this.get<AuthLogsResponse>('Security/authlogs')).authLogs;
   }
 
   /**

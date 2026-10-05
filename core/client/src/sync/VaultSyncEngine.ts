@@ -75,6 +75,7 @@ export type VaultSyncEngineResult = VaultSyncEngineResultBase & {
   manifestMigrationRequired: boolean;
   error?: string;
   errorCode?: string;
+  apiErrorCode?: string;
   logoutReason?: LogoutReason;
   requiresLogout: boolean;
   serverVersion?: string;
@@ -95,6 +96,7 @@ export type VaultSyncMigrateManifestResult = VaultSyncEngineResultBase & {
   pushed: boolean;
   error?: string;
   errorCode?: string;
+  apiErrorCode?: string;
   logoutReason?: LogoutReason;
   requiresLogout: boolean;
 };

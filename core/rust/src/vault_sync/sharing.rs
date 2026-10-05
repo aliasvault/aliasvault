@@ -140,28 +140,21 @@ pub(crate) async fn update_shared_manifest_operation(ctx: &mut Ctx) -> SharingOp
 async fn finish(ctx: &Ctx, what: &str, outcome: Outcome) -> SharingOperationResult {
     match outcome {
         Ok(Ok(manifest_id)) => SharingOperationResult { success: true, manifest_id: Some(manifest_id), ..Default::default() },
-        Ok(Err(Refusal::Api(code))) => SharingOperationResult { api_error_code: Some(code), ..Default::default() },
+        Ok(Err(Refusal::Api(code))) => refused(code),
         Ok(Err(Refusal::VaultUpgradeRequired)) => SharingOperationResult { vault_upgrade_required: true, ..Default::default() },
         Err(error) => {
             ctx.warn(format!("[Sharing] Could not {}: {}", what, error)).await;
-            match api_error_code_of(&error) {
-                Some(code) => SharingOperationResult { api_error_code: Some(code), ..Default::default() },
+            match error.api_error_code() {
+                Some(code) => refused(code),
                 None => SharingOperationResult { failure: FailureFields::from(&error), ..Default::default() },
             }
         }
     }
 }
 
-/// The structured API error code (e.g. `GROUP_MANIFEST_LIMIT_REACHED`) of a refused request, when its body names one.
-fn api_error_code_of(error: &SyncError) -> Option<String> {
-    let SyncError::Http { body, .. } = error else { return None };
-    let parsed: serde_json::Value = serde_json::from_str(body).ok()?;
-    ["code", "title"].iter().filter_map(|field| parsed.get(field)?.as_str()).find(|value| is_api_error_code(value)).map(str::to_string)
-}
-
-/// Server error codes are uppercase enum names.
-fn is_api_error_code(value: &str) -> bool {
-    (2..=64).contains(&value.len()) && value.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
+/// A refusal the sharing screen has words for: only the API error code, no engine failure.
+fn refused(code: String) -> SharingOperationResult {
+    SharingOperationResult { failure: FailureFields { api_error_code: Some(code), ..Default::default() }, ..Default::default() }
 }
 
 /// The sharing target the host sent along.

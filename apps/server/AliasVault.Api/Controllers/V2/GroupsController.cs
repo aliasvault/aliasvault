@@ -53,7 +53,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var memberships = await context.GroupMembers
@@ -145,23 +145,23 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // The user's copy of the VEK must be encrypted asymmetrically.
         if (!VaultKeyAlgorithms.TryParse(model.Algorithm, out var algorithm) || !VaultKeyAlgorithms.IsAsymmetric(algorithm))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ALGORITHM, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
         }
 
         if (model.ManifestId == Guid.Empty)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_INVALID, 400));
+            return ApiError.Result(ApiErrorCode.MANIFEST_ID_INVALID, 400);
         }
 
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         // The public key the user's own grant is encrypted for must be one of theirs.
@@ -172,20 +172,20 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         if (selfPublicKeyId is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404);
         }
 
         // The caller signs their own grant like any other, so a reader can tell it was not made up by somebody else.
         var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
         if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(model.ManifestId, 0, me.Id, model.SelfPublicKey, model.Algorithm, model.SelfEncryptedVek), model.SelfGrantSignature))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
+            return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }
 
         // A family holds a handful of manifests, enough to keep e.g. streaming and banking apart without growing without bound.
         if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400));
+            return ApiError.Result(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400);
         }
 
         // Create the empty manifest.
@@ -212,7 +212,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         catch (DbUpdateException)
         {
             // The client-generated manifest id is already taken, which a fresh id makes vanishingly unlikely; the client asks again.
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_TAKEN, 400));
+            return ApiError.Result(ApiErrorCode.MANIFEST_ID_TAKEN, 400);
         }
 
         await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultCreation);
@@ -236,17 +236,17 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!VaultKeyAlgorithms.TryParse(model.Algorithm, out var algorithm) || !VaultKeyAlgorithms.IsAsymmetric(algorithm))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ALGORITHM, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
         }
 
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         var manifestKeyVersion = await context.VaultManifests
@@ -256,7 +256,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         if (manifestKeyVersion is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         /*
@@ -266,45 +266,45 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
          */
         if (!await ManifestAccessHelper.HoldsGrantAsync(context, me.Id, manifestId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         // Access only ever goes to somebody already on the group's roster, which is administered outside the client.
         if (!await GroupHelper.IsSharedGroupMemberAsync(context, groupId, model.UserId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.NOT_GROUP_MEMBER, 400));
+            return ApiError.Result(ApiErrorCode.NOT_GROUP_MEMBER, 400);
         }
 
         // The encrypted key and the offer have to be about the same person.
         if (!string.Equals(model.Grant.RecipientUserId, model.UserId, StringComparison.Ordinal))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         // The key it was encrypted for must really be theirs.
         var recipientPublicKey = await context.UserGrantKeys.Where(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId).Select(k => k.PublicKey).FirstOrDefaultAsync();
         if (recipientPublicKey is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404);
         }
 
         var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
         var nameIsSigned = model.Grant.EncryptedName is null || Signing.Verify(signerPublicKey, Signing.InvitationNameMessage(manifestId, me.Id, recipientPublicKey, model.Grant.EncryptedName), model.Grant.EncryptedNameSignature);
         if (!nameIsSigned || !Signing.Verify(signerPublicKey, Signing.GrantMessage(manifestId, manifestKeyVersion.Value, me.Id, recipientPublicKey, model.Algorithm, model.Grant.EncryptedVek), model.Grant.Signature))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
+            return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }
 
         if (await ManifestAccessHelper.HoldsGrantAsync(context, model.UserId, manifestId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCESS_ALREADY_GRANTED, 400));
+            return ApiError.Result(ApiErrorCode.ACCESS_ALREADY_GRANTED, 400);
         }
 
         await CloseStaleInvitationsAsync(context, manifestId, manifestKeyVersion.Value);
 
         if (await context.GroupInvitations.AnyAsync(i => i.VaultManifestId == manifestId && i.InviteeUserId == model.UserId && i.State == GroupInvitationState.Pending))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400));
+            return ApiError.Result(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400);
         }
 
         var invitation = new GroupInvitation
@@ -335,7 +335,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
         catch (DbUpdateException)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400));
+            return ApiError.Result(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400);
         }
 
         return Ok(new GrantManifestAccessResponse { InvitationId = invitation.Id });
@@ -355,7 +355,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var isSelf = string.Equals(userId, me.Id, StringComparison.Ordinal);
@@ -363,23 +363,23 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         if (isSelf && isAdmin)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.CANNOT_REVOKE_OWN_ACCESS, 400));
+            return ApiError.Result(ApiErrorCode.CANNOT_REVOKE_OWN_ACCESS, 400);
         }
 
         var mayRevoke = isSelf ? await GroupHelper.IsSharedGroupMemberAsync(context, groupId, me.Id) : isAdmin;
         if (!mayRevoke)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
+            return ApiError.Result(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400);
         }
 
         // Create a transaction to ensure the invitation and grant are closed together.
@@ -421,17 +421,17 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         // A shared manifest created before the details existed gets its row on the first change.
@@ -467,17 +467,17 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, me);
@@ -506,18 +506,18 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.GROUP_NOT_FOUND, 404);
         }
 
         var manifest = await context.VaultManifests.FirstOrDefaultAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId);
         if (manifest == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         // Validate the SRP session (actual password check).
@@ -525,7 +525,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return ApiError.Result(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400);
         }
 
         await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultDeletion);
@@ -579,20 +579,20 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var invitation = await context.GroupInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.InviteeUserId == me.Id && i.State == GroupInvitationState.Pending);
         if (invitation is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         // Accepting no longer joins anything: the roster decided that, and a member who was taken off it in the
         // meantime has nothing left to accept.
         if (!await GroupHelper.IsSharedGroupMemberAsync(context, invitation.GroupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         var manifestKeyVersion = invitation.VaultManifestId is null ? null : await context.VaultManifests
@@ -602,7 +602,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         if (manifestKeyVersion is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         // If the current manifest key version is different from the one the invitation was encrypted under, it is no longer valid.
@@ -610,12 +610,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         {
             CloseInvitation(invitation, GroupInvitationState.Stale);
             await context.SaveChangesAsync();
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_KEY_OUTDATED, 400));
+            return ApiError.Result(ApiErrorCode.INVITATION_KEY_OUTDATED, 400);
         }
 
         if (!await PromoteInvitationGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         invitation.State = GroupInvitationState.Accepted;
@@ -646,13 +646,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var invitation = await context.GroupInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.InviteeUserId == me.Id && i.State == GroupInvitationState.Pending);
         if (invitation is null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         CloseInvitation(invitation, GroupInvitationState.Declined);
@@ -673,13 +673,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var me = await GetCurrentUserAsync();
         if (me == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var invitation = await context.GroupInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.State == GroupInvitationState.Pending);
         if (invitation is null || !await GroupHelper.IsGroupAdminAsync(context, invitation.GroupId, me.Id))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
         CloseInvitation(invitation, GroupInvitationState.Revoked);

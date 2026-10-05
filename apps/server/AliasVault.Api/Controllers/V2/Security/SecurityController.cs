@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.V2.Security;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Helpers;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V2.Security;
 using Asp.Versioning;
@@ -34,7 +35,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -50,7 +51,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
 
-        return Ok(refreshTokenList);
+        return Ok(new SessionsResponse { Sessions = refreshTokenList });
     }
 
     /// <summary>
@@ -64,7 +65,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -74,7 +75,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
 
         if (refreshToken == null)
         {
-            return NotFound("Session not found or does not belong to the current user.");
+            return ApiError.Result(ApiErrorCode.SESSION_NOT_FOUND, 404);
         }
 
         context.AliasVaultUserRefreshTokens.Remove(refreshToken);
@@ -93,7 +94,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return Unauthorized("Not authenticated.");
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -116,6 +117,6 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
             })
             .ToListAsync();
 
-        return Ok(authLogs);
+        return Ok(new AuthLogsResponse { AuthLogs = authLogs });
     }
 }

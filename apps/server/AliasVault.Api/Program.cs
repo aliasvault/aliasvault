@@ -20,6 +20,8 @@ using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
 using AliasVault.Logging;
 using AliasVault.Shared.Models.Configuration;
+using AliasVault.Shared.Models.Enums;
+using AliasVault.Shared.Models.WebApi.V2;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
@@ -168,6 +170,12 @@ builder.Services.AddControllers()
         // Ensure consistent date formatting regardless of server locale
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.WriteIndented = false;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // A V2 request that fails model binding or validation gets the coded error body; V1 keeps the framework default.
+        var defaultFactory = options.InvalidModelStateResponseFactory;
+        options.InvalidModelStateResponseFactory = context => ApiError.IsV2Request(context.HttpContext) ? ApiError.Result(ApiErrorCode.INVALID_REQUEST, StatusCodes.Status400BadRequest) : defaultFactory(context);
     });
 builder.Services.AddMemoryCache();
 
@@ -220,6 +228,9 @@ if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PATHBAS
 {
     app.UsePathBase(Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE"));
 }
+
+// An unhandled exception on a V2 request still answers with the coded error body.
+app.UseWhen(ApiError.IsV2Request, v2 => v2.UseExceptionHandler(errorApp => errorApp.Run(context => context.Response.WriteAsJsonAsync(ErrorResponse.Create(ApiErrorCode.INTERNAL_SERVER_ERROR, StatusCodes.Status500InternalServerError)))));
 
 app.UseAuthentication();
 app.UseAuthorization();

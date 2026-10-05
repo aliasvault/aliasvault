@@ -14,6 +14,8 @@ import Text from '@/components/shared/Text';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
+import type { TwoFactorStatusResponse } from '@aliasvault/models/webapi';
+
 export type TwoFactorPageMode = 'status' | 'enable' | 'disable';
 
 /**
@@ -32,7 +34,7 @@ const TwoFactorStatus: React.FC = () => {
   const loadData = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
-      const status = await webApi.get<{ twoFactorEnabled: boolean }>('TwoFactorAuth/status');
+      const status = await webApi.get<TwoFactorStatusResponse>('TwoFactorAuth/status');
       setEnabled(status.twoFactorEnabled);
     } finally {
       setIsLoading(false);

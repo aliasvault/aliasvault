@@ -81,7 +81,7 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
@@ -184,7 +184,7 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         // The caller can fetch a manifest owned by a group they own, or one granted to them (a shared manifest).
@@ -193,7 +193,7 @@ public class VaultController(
 
         if (latest == null)
         {
-            return NotFound();
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         var blobRefs = (await context.VaultBlobReferences
@@ -249,7 +249,7 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
@@ -300,19 +300,19 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
+            return ApiError.Result(ApiErrorCode.USERNAME_MISMATCH, 400);
         }
 
         // Each manifest and each (manifest, bucket kind) may appear at most once.
         if (model.Manifests.Select(m => m.ManifestId).Distinct().Count() != model.Manifests.Count
             || model.Buckets.Select(b => (b.ManifestId, b.Category)).Distinct().Count() != model.Buckets.Count)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         // A routing push names the revision it was built from for every manifest it speaks for, once each.
@@ -322,7 +322,7 @@ public class VaultController(
             var spokenFor = routing.CoveredManifestIds.Concat(routing.EmailAddressList.Select(a => a.ManifestId));
             if (baseIds.Distinct().Count() != baseIds.Count || spokenFor.Any(id => !baseIds.Contains(id)))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
         }
 
@@ -332,7 +332,7 @@ public class VaultController(
         {
             if (!CiphertextHelper.TryDecode(mw.ManifestBlob, out var manifestBlob) || !CiphertextHelper.MatchesHash(manifestBlob, mw.ManifestCiphertextHash))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
             manifestBlobs[mw.ManifestId] = manifestBlob;
@@ -343,7 +343,7 @@ public class VaultController(
         {
             if (!CiphertextHelper.TryDecode(bucket.Blob, out var bucketBlob) || !CiphertextHelper.MatchesHash(bucketBlob, bucket.CiphertextHash))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
             bucketBlobs[(bucket.ManifestId, bucket.Category)] = bucketBlob;
@@ -357,7 +357,7 @@ public class VaultController(
             var row = await ManifestAccessHelper.AccessibleManifests(context, accessScope).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
             if (row == null)
             {
-                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+                return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
             }
 
             resolved.Add((mw, row));
@@ -372,7 +372,7 @@ public class VaultController(
 
             if (!await ManifestAccessHelper.AccessibleManifests(context, accessScope).AnyAsync(x => x.ManifestId == bucketManifestId))
             {
-                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+                return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
             }
         }
 
@@ -387,22 +387,22 @@ public class VaultController(
         {
             if (hasExistingUnlockKey)
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+                return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
             }
 
             if (personalWrite == null || !accountKeys.IsComplete)
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
             if (!accountKeys.FitsStorageLimits || !RsaPublicKeyValidator.IsValid(accountKeys.AccountPublicKey) || !Signing.VerifyAccountPublicKey(accountKeys.SigningPublicKey, accountKeys.AccountPublicKey, accountKeys.AccountPublicKeySignature))
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
         }
         else if (personalWrite != null && !hasExistingUnlockKey)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+            return ApiError.Result(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400);
         }
 
         // All-or-nothing revision gate: every manifest and bucket must be exactly one ahead of the server's current.
@@ -443,13 +443,13 @@ public class VaultController(
         // The SMTP service encrypts every incoming mail with the primary delivery key, so a malformed one would lose that mail.
         if (resolved.Any(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey) && !RsaPublicKeyValidator.IsValid(r.Write.EncryptionPublicKey)))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         // A new delivery key must be signed by the caller, so a stolen access token alone cannot redirect incoming mail.
         if (!await DeliveryKeyChangesAreSignedAsync(context, user.Id, resolved, accountKeys))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
+            return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }
 
         // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated
@@ -602,7 +602,7 @@ public class VaultController(
             {
                 // A concurrent migration push won the race since the unlock key check above.
                 await tx.RollbackAsync();
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+                return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
             }
 
             // 3) Add blob references for each manifest's new revision.
@@ -684,26 +684,26 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
         if (ownerGroupId == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         // Replacing ciphertext is only part of the caller's own KEK/VEK migration, a shared manifest's key change is not implemented
         // yet. TODO: when implementing shared manifest key change, update this check too.
         if (model.Overwrite && ownerGroupId != user.PersonalGroupId)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         // Only allow overwriting the ciphertext if the user has no unlock key yet (as part of one-time legacy migration).
         if (model.Overwrite && await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+            return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
         }
 
         if (model.Blobs.Count == 0)
@@ -713,7 +713,7 @@ public class VaultController(
 
         if (!await TryUpsertBlobObjectsAsync(context, model.ManifestId, model.Blobs, model.Overwrite))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         await context.SaveChangesAsync();
@@ -734,13 +734,13 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
         if (ownerGroupId == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         var hashes = model.Hashes.Distinct().ToList();
@@ -762,7 +762,7 @@ public class VaultController(
     /// because for now we kept the codec language-agnostic. Look into switching to multipart binary in the future.
     /// </summary>
     /// <param name="model">Hash list request.</param>
-    /// <returns>List of blob DTOs.</returns>
+    /// <returns>The stored blobs among the requested hashes.</returns>
     [HttpPost("blobs/download")]
     public async Task<IActionResult> DownloadBlobs([FromBody] BlobHashesRequest model)
     {
@@ -770,19 +770,19 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
         if (ownerGroupId == null)
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         var wanted = model.Hashes.Distinct().ToList();
         if (wanted.Count == 0)
         {
-            return Ok(Array.Empty<Blob>());
+            return Ok(new BlobDownloadResponse());
         }
 
         var rows = await context.VaultBlobObjects
@@ -796,7 +796,7 @@ public class VaultController(
             })
             .ToListAsync();
 
-        return Ok(rows);
+        return Ok(new BlobDownloadResponse { Blobs = rows });
     }
 
     /// <summary>
@@ -812,7 +812,7 @@ public class VaultController(
         var user = await GetCurrentUserAsync();
         if (user == null)
         {
-            return Unauthorized();
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
@@ -822,12 +822,12 @@ public class VaultController(
         var claim = await context.EmailClaims.FirstOrDefaultAsync(c => c.Address == address);
         if (claim?.VaultManifestId is not Guid sourceManifestId || !accessible.Contains(sourceManifestId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.EMAIL_CLAIM_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.EMAIL_CLAIM_NOT_FOUND, 404);
         }
 
         if (!accessible.Contains(model.TargetManifestId))
         {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
         if (sourceManifestId == model.TargetManifestId)
@@ -846,13 +846,13 @@ public class VaultController(
             await context.Entry(claim).ReloadAsync();
             if (claim.VaultManifestId != sourceManifestId)
             {
-                return Conflict(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.EMAIL_CLAIM_NOT_FOUND, 409));
+                return ApiError.Result(ApiErrorCode.EMAIL_CLAIM_MOVED, 409);
             }
 
             var remaining = await GetRemainingAliasAllowancesAsync(context, user, [targetGroupId]);
             if (remaining.TryGetValue(targetGroupId, out var left) && left <= 0)
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALIAS_LIMIT_REACHED, 400));
+                return ApiError.Result(ApiErrorCode.ALIAS_LIMIT_REACHED, 400);
             }
 
             // A Removed claim comes back Active: moving an alias to the item that now carries it is how it is restored.

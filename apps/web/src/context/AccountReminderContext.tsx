@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
+import type { TwoFactorStatusResponse } from '@aliasvault/models/webapi';
+
 /** Two-factor is only promoted once the vault has content, so a brand new account is not flagged right away to prevent fatigue in the out-of-the-box experience. */
 const TWO_FACTOR_REMINDER_MIN_ITEMS = 10;
 
@@ -35,7 +37,7 @@ export const AccountReminderProvider: React.FC<{ children: React.ReactNode }> = 
 
   const refresh = useCallback(async (): Promise<void> => {
     try {
-      const status = await webApi.get<{ twoFactorEnabled: boolean }>('TwoFactorAuth/status');
+      const status = await webApi.get<TwoFactorStatusResponse>('TwoFactorAuth/status');
       setTwoFactorEnabled(status.twoFactorEnabled);
     } catch {
       setTwoFactorEnabled(null);

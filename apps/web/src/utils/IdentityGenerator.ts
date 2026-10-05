@@ -10,6 +10,7 @@ import { vaultStore } from '@/vault/VaultStore';
 
 import type { WebApiService } from '@aliasvault/client/api/WebApiService';
 import type SqliteClient from '@aliasvault/client/database/SqliteClient';
+import type { CheckEmailResponse } from '@aliasvault/models/webapi';
 
 /** Maximum number of identities generated while looking for an email address that is not taken yet. */
 const MAX_EMAIL_ATTEMPTS = 5;
@@ -86,7 +87,7 @@ async function generateAlias(client: SqliteClient): Promise<GeneratedAliasData> 
  */
 async function isEmailTaken(webApi: WebApiService, email: string): Promise<boolean> {
   try {
-    const result = await webApi.post<null, { isTaken: boolean }>(`Identity/CheckEmail/${encodeURIComponent(email)}`, null);
+    const result = await webApi.post<null, CheckEmailResponse>(`Identity/CheckEmail/${encodeURIComponent(email)}`, null);
     return result.isTaken;
   } catch {
     return false;

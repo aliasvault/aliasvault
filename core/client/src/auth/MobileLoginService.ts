@@ -131,8 +131,8 @@ export class MobileLoginService {
         });
 
         if (!response.ok) {
-          if (response.status === 404) {
-            // Request expired or not found.
+          if (response.status === 404 || response.status === 410) {
+            // Request not found (404) or expired (410).
             this.cleanup();
             onError(MobileLoginErrorCode.TIMEOUT);
             return;

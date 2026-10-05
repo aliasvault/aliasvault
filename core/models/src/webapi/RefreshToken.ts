@@ -19,3 +19,13 @@ export type RefreshToken = {
      */
     createdAt: string;
 }
+
+/**
+ * Response of GET /v2/Security/sessions.
+ */
+export type SessionsResponse = {
+    /**
+     * The active sessions, newest first.
+     */
+    sessions: RefreshToken[];
+}
