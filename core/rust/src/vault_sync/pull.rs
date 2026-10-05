@@ -69,12 +69,12 @@ pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<GetResponse> {
 }
 
 /// The `storageFormat` a manifest-v1 snapshot declares.
-const STORAGE_FORMAT_MANIFEST: i32 = 1;
+const STORAGE_FORMAT_MANIFEST: &str = "manifest";
 
-/// Refuse a snapshot in a storage format newer than this build knows, instead of reading it as legacy (0 or absent).
+/// Refuse a snapshot in a storage format newer than this build knows, instead of reading it as legacy.
 fn ensure_known_storage_format(snapshot: &GetResponse) -> SyncResult<()> {
-    match snapshot.storage_format {
-        None | Some(0) | Some(STORAGE_FORMAT_MANIFEST) => Ok(()),
+    match snapshot.storage_format.as_deref() {
+        None | Some(legacy::STORAGE_FORMAT_SQLITE_BLOB) | Some(STORAGE_FORMAT_MANIFEST) => Ok(()),
         Some(format) => Err(SyncError::VaultVersionIncompatible(format!("vault has storage format {}, this app reads up to {}; update the app", format, STORAGE_FORMAT_MANIFEST))),
     }
 }

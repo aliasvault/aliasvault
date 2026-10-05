@@ -36,8 +36,8 @@ public static class ManifestKeyTypes
     /// <returns>The token.</returns>
     public static string ToToken(ManifestKeyType type) => type switch
     {
-        ManifestKeyType.AccountKey => "accountkey",
-        ManifestKeyType.GrantKey => "grantkey",
+        ManifestKeyType.AccountKey => "account-key",
+        ManifestKeyType.GrantKey => "grant-key",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unknown ManifestKeyType."),
     };
 
@@ -51,10 +51,10 @@ public static class ManifestKeyTypes
     {
         switch (token)
         {
-            case "accountkey":
+            case "account-key":
                 type = ManifestKeyType.AccountKey;
                 return true;
-            case "grantkey":
+            case "grant-key":
                 type = ManifestKeyType.GrantKey;
                 return true;
             default:

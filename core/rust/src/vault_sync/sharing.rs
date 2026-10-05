@@ -13,7 +13,7 @@ use crate::vault_codec;
 use crate::vault_model::{id_key, ids_equal};
 
 /// The role of a group member who may not administer it.
-const ROLE_MEMBER: &str = "Member";
+const ROLE_MEMBER: &str = "member";
 
 /// The API error code for a recipient whose account has no keypair yet (legacy non-migrated user account).
 const INVITE_RECIPIENT_NOT_READY: &str = "INVITE_RECIPIENT_NOT_READY";

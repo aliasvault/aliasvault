@@ -5,10 +5,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.Enums;
+namespace AliasVault.Shared.Models.WebApi.V1.Vault;
 
 /// <summary>
-/// Enum representing the status of a vault during get/update operations.
+/// LEGACY (v1 API only): status of a vault get/update, serialized as an int. V2 uses VaultWriteStatus.
+/// Remove together with the v1 vault endpoints once v1 API login is no longer supported.
 /// </summary>
 public enum VaultStatus
 {

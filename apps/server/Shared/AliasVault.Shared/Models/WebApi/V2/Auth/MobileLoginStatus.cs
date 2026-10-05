@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// State of a mobile login request as seen by the polling client.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(KebabCaseEnumConverter))]
 public enum MobileLoginStatus
 {
     /// <summary>

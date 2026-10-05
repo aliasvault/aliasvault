@@ -12,12 +12,12 @@ object VaultDataBucketCategory {
     /**
      * User client settings (sort order, autofill prefs, identity defaults, etc.).
      */
-    const val SETTINGS = "Settings"
+    const val SETTINGS = "settings"
 
     /**
      * Per-item usage statistics (last used, use counts).
      */
-    const val STATS = "Stats"
+    const val STATS = "stats"
 
     /**
      * All known data bucket categories.

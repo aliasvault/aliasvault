@@ -7,8 +7,6 @@
 
 namespace AliasVault.Shared.Models.WebApi.V1.Vault;
 
-using AliasVault.Shared.Models.Enums;
-
 /// <summary>
 /// Vault update response model.
 /// </summary>

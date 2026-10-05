@@ -44,7 +44,7 @@ fn canonicalize_from_sqlite_splits_settings_into_data_bucket() {
     let out = canonicalize_from_sqlite(input).unwrap();
     assert!(out.first().manifest.tables.contains_key("Items"));
     assert!(!out.first().manifest.tables.contains_key("Settings"));
-    assert_eq!(bucket_rows(&out, "Settings", "Settings").len(), 1);
+    assert_eq!(bucket_rows(&out, "settings", "Settings").len(), 1);
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn bucket_layout_matches_bucket_tables_source_of_truth() {
             assert_eq!(bucket_category_for(table), Some(entry.category.as_str()));
         }
     }
-    assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["Settings", "Stats"]);
+    assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["settings", "stats"]);
     assert_eq!(serde_json::to_string(&bucket_layout()).unwrap(), serde_json::to_string(&layout).unwrap());
 }
 
@@ -540,16 +540,16 @@ fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
     // in this client's schema; both must round-trip through the overflow row back to their original place.
     let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }])).unwrap();
     out.manifests[0].manifest.tables.insert("NewTable".to_string(), vec![row(&[("Id", json!("n1")), ("Data", json!("x"))])]);
-    let settings_bucket = out.data_buckets.iter_mut().find(|b| b.category == "Settings").expect("Settings bucket");
+    let settings_bucket = out.data_buckets.iter_mut().find(|b| b.category == "settings").expect("settings bucket");
     settings_bucket.tables.insert("Preferences".to_string(), vec![row(&[("Key", json!("p1"))])]);
 
     let re = materialize_as_sqlite(MaterializeInput { manifests: vec![out.first().manifest.clone()], data_buckets: out.data_buckets.clone(), schema_columns: narrow_client_schema() }).unwrap();
     assert!(!re.tables.iter().any(|t| t.name == "NewTable" || t.name == "Preferences"), "unknown tables never reach the insert set");
     assert_eq!(re.overflow.tables["NewTable"].len(), 1);
-    assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"].len(), 1);
+    assert_eq!(re.overflow.bucket_tables["settings"]["Preferences"].len(), 1);
     // Materialize stamps every row with the manifest it arrived in, unknown tables included. The stamp is what routes the row back to its own manifest on the next canonicalize.
     assert_eq!(re.overflow.tables["NewTable"][0]["ManifestId"], json!(PERSONAL_MANIFEST));
-    assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"][0]["ManifestId"], json!(PERSONAL_MANIFEST));
+    assert_eq!(re.overflow.bucket_tables["settings"]["Preferences"][0]["ManifestId"], json!(PERSONAL_MANIFEST));
     let overflow_table = overflow_table_of(&re).expect("overflow emitted as a regular table row").clone();
 
     let pushed = canonicalize_from_sqlite(basic_input(vec![
@@ -558,11 +558,11 @@ fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
     ]))
     .unwrap();
     assert_eq!(pushed.first().manifest.tables["NewTable"].len(), 1, "unknown manifest table re-emitted into the manifest its stamp names");
-    assert_eq!(bucket_rows(&pushed, "Settings", "Preferences").len(), 1, "unknown bucket table re-emitted into its category");
+    assert_eq!(bucket_rows(&pushed, "settings", "Preferences").len(), 1, "unknown bucket table re-emitted into its category");
 
     // Bucket-only push path: extract_buckets consumes the overflow row read alongside the category's tables.
     let buckets = extract_buckets(
-        "Settings".to_string(),
+        "settings".to_string(),
         vec![PERSONAL_MANIFEST.to_string()],
         [
             ("Settings".to_string(), vec![row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("Key", json!("k")), ("Value", json!("v"))])]),
@@ -588,7 +588,7 @@ fn extract_buckets_remerges_overflow_columns() {
         ..Default::default()
     };
     let buckets = extract_buckets(
-        "Settings".to_string(),
+        "settings".to_string(),
         vec![PERSONAL_MANIFEST.to_string()],
         [
             (
@@ -653,7 +653,7 @@ fn item_stats_route_into_the_stats_bucket_of_the_manifest_that_owns_the_item() {
     let stats_bucket = |manifest_id: &str| -> &[CodecRecord] {
         out.data_buckets
             .iter()
-            .find(|b| b.category == "Stats" && b.manifest_id == manifest_id)
+            .find(|b| b.category == "stats" && b.manifest_id == manifest_id)
             .and_then(|b| b.tables.get("ItemStats"))
             .map(Vec::as_slice)
             .unwrap_or(&[])

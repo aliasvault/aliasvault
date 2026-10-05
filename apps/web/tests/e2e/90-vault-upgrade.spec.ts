@@ -218,7 +218,7 @@ test.describe('90. Vault upgrades', () => {
     await test.step('the server holds the vault in the manifest storage format', async () => {
       const response = await fetch(`${apiUrl}/v2/Vault`, { headers: { Authorization: `Bearer ${testUser.token}` } });
       expect(response.ok).toBe(true);
-      expect(((await response.json()) as { storageFormat?: number }).storageFormat).toBe(1);
+      expect(((await response.json()) as { storageFormat?: string }).storageFormat).toBe('manifest');
     });
 
     await test.step('the upgraded vault opens again after a reload', async () => {

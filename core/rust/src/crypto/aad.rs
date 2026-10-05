@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn labels_are_stable_and_case_insensitive_on_ids() {
         assert_eq!(manifest("0A1B2C3D-0000-0000-0000-000000000001"), b"aliasvault/v1/manifest/0a1b2c3d-0000-0000-0000-000000000001".to_vec());
-        assert_eq!(bucket("0a1b2c3d-0000-0000-0000-000000000001", "Logos"), b"aliasvault/v1/bucket/0a1b2c3d-0000-0000-0000-000000000001/Logos".to_vec());
+        assert_eq!(bucket("0a1b2c3d-0000-0000-0000-000000000001", "settings"), b"aliasvault/v1/bucket/0a1b2c3d-0000-0000-0000-000000000001/settings".to_vec());
         assert_eq!(blob_data("ID", "ABCD"), b"aliasvault/v1/blob/id/abcd".to_vec());
         assert_eq!(blob_key("ID", "ABCD"), b"aliasvault/v1/blob-key/id/abcd".to_vec());
         assert_eq!(manifest_name("ID"), b"aliasvault/v1/manifest-name/id".to_vec());

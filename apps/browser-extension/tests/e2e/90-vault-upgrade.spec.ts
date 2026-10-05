@@ -225,8 +225,8 @@ test.describe.serial('90. Vault upgrades', () => {
       // The migration push may still be on its way when the vault list shows.
       await expect.poll(async () => {
         const response = await fetch(`${apiUrl.replace(/\/$/, '')}/v2/Vault`, { headers: { Authorization: `Bearer ${accessToken}` } });
-        return response.ok ? ((await response.json()) as { storageFormat?: number }).storageFormat : `HTTP ${response.status}`;
-      }, { timeout: Timeouts.LONG }).toBe(1);
+        return response.ok ? ((await response.json()) as { storageFormat?: string }).storageFormat : `HTTP ${response.status}`;
+      }, { timeout: Timeouts.LONG }).toBe('manifest');
     });
   });
 

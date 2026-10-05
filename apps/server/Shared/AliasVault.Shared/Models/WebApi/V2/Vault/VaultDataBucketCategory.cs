@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 /// Adding a new kind requires a server-side rollout first, because the server reasons about kinds for
 /// per-kind retention policies. The canonical list lives in the vault table registry (core/models).
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(KebabCaseEnumConverter))]
 public enum VaultDataBucketCategory
 {
     /// <summary>User client settings (sort order, autofill prefs, identity defaults, etc.).</summary>

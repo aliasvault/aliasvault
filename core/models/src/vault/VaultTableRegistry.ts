@@ -64,7 +64,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
    * upsert and two devices never create competing rows. Listed after Items so a merge inserts the
    * item first.
    */
-  { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true, BucketCategory: 'Stats' },
+  { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true, BucketCategory: 'stats' },
   /*
    * FieldValues: a field value matches on the field it belongs to (FieldKey for system fields,
    * FieldDefinitionId for custom ones; exactly one is set), so independently created rows of the
@@ -133,7 +133,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
     ManifestScoped: true,
     PrimaryKey: ['Key'],
     ItemChild: false,
-    BucketCategory: 'Settings',
+    BucketCategory: 'settings',
   },
 ];
 
@@ -169,7 +169,7 @@ export const VAULT_COLUMN_NAMES: string[] = [
  * Data-bucket categories in declaration order. This order, not the table order, decides the order
  * buckets are emitted in; every category must be used by at least one VAULT_TABLES entry.
  */
-export const VAULT_BUCKET_CATEGORIES: string[] = ['Settings', 'Stats'];
+export const VAULT_BUCKET_CATEGORIES: string[] = ['settings', 'stats'];
 
 /**
  * Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF

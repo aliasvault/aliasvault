@@ -95,10 +95,9 @@ fn snapshot_of(conn: &rusqlite::Connection, vek: &str, revision: i64, salt: &str
         "capabilities": { "sharing": "on" },
     });
     let vault = json!({
-        "status": 0,
-        "storageFormat": 1,
+        "storageFormat": "manifest",
         "personalManifestId": PERSONAL_MANIFEST_ID,
-        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": blob, "ciphertextHash": ciphertext_hash, "revision": revision, "blobReferences": [], "canAdminister": true, "keyType": "accountkey" }],
+        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": blob, "ciphertextHash": ciphertext_hash, "revision": revision, "blobReferences": [], "canAdminister": true, "keyType": "account-key" }],
         "buckets": buckets,
         "emailRouting": { "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] },
     });
@@ -152,10 +151,9 @@ fn contentless_personal_snapshot(revision: i64) -> (Value, Value) {
         "capabilities": {},
     });
     let vault = json!({
-        "status": 0,
-        "storageFormat": 1,
+        "storageFormat": "manifest",
         "personalManifestId": PERSONAL_MANIFEST_ID,
-        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": null, "ciphertextHash": null, "revision": revision, "blobReferences": [], "canAdminister": false, "keyType": "accountkey" }],
+        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": null, "ciphertextHash": null, "revision": revision, "blobReferences": [], "canAdminister": false, "keyType": "account-key" }],
         "buckets": [],
         "emailRouting": { "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] },
     });
@@ -171,7 +169,7 @@ fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
@@ -209,7 +207,7 @@ fn new_account_whose_first_write_fails_retries_it_on_the_next_sync() {
     assert_eq!(result["success"], true, "{}", result);
     assert!(host.is_dirty, "the unwritten new vault stays dirty");
 
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
     let mutation_sequence = host.mutation_sequence;
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, mutation_sequence)).unwrap());
 
@@ -244,7 +242,7 @@ fn unknown_storage_format_is_refused_not_read_as_legacy() {
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, mut vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
-    vault["storageFormat"] = json!(2);
+    vault["storageFormat"] = json!("manifest-v2");
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
 
@@ -295,7 +293,7 @@ fn dirty_client_pushes_only_what_changed() {
     host.mutation_sequence = 1;
     host.is_dirty = true;
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, 1)).unwrap());
 
@@ -347,7 +345,7 @@ fn pushed_blobs_name_the_manifest_that_owns_them() {
     host.is_dirty = true;
     host.respond_with(Box::new(|method, path, body| (method == "POST" && path == "Vault/blobs/missing").then(|| (200, json!({ "missing": body.map(|b| b["hashes"].clone()).unwrap_or_default() })))));
     host.respond("POST", "Vault/blobs", json!({ "acceptedCount": 1 }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, 1)).unwrap());
 
@@ -414,7 +412,7 @@ fn push_local_edit(host: &mut TestHost, vek: &str, name: &str, scopes: &[&str]) 
     host.mutation_sequence += 1;
     host.is_dirty = true;
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
     let mut sync = serde_json::from_str::<Value>(&request("fullSync", vek, true, host.mutation_sequence)).unwrap();
     sync["dirtyScopes"] = json!(scopes);
     let result = host.drive(&SyncSession::new(&sync.to_string()).unwrap());
@@ -496,9 +494,9 @@ fn outdated_push_merges_the_server_change_and_retries() {
         }
         let current = body.and_then(|b| b["manifests"][0]["currentRevision"].as_i64()).unwrap_or(-1);
         Some(if current == 8 {
-            (200, json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 9 }], "bucketRevisions": [], "missingBlobHashes": [] }))
+            (200, json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 9 }], "bucketRevisions": [], "missingBlobHashes": [] }))
         } else {
-            (200, json!({ "status": 2, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }))
+            (200, json!({ "status": "outdated", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }))
         })
     }));
 
@@ -568,11 +566,11 @@ fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it(
         }
         let current = body.and_then(|b| b["buckets"][0]["currentRevision"].as_i64()).unwrap_or(-1);
         let revision = if current == 8 { 9 } else { 8 };
-        Some((200, json!({ "status": if current == 8 { 0 } else { 2 }, "manifestRevisions": [], "bucketRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "category": "Stats", "revision": revision }], "missingBlobHashes": [] })))
+        Some((200, json!({ "status": if current == 8 { "ok" } else { "outdated" }, "manifestRevisions": [], "bucketRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "category": "stats", "revision": revision }], "missingBlobHashes": [] })))
     }));
 
     let mut bucket_request: Value = serde_json::from_str(&request("fullSync", &vek, true, 1)).unwrap();
-    bucket_request["dirtyScopes"] = json!(["Stats"]);
+    bucket_request["dirtyScopes"] = json!(["stats"]);
     let result = host.drive(&SyncSession::new(&bucket_request.to_string()).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
@@ -660,7 +658,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(salt));
     host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
@@ -701,7 +699,7 @@ fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
     host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond("POST", "Vault/blobs", json!({}));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
@@ -731,7 +729,7 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(vault_codec::generate_manifest_salt()));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let status = host.drive(&SyncSession::new(&request("migrationStatus", &vek, false, 0)).unwrap());
     assert_eq!(status["kind"], "schemaRebuild");
@@ -752,8 +750,7 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
 fn legacy_snapshot_of(conn: &rusqlite::Connection, unlock_key: &str, revision: i64) -> Value {
     let bytes = conn.serialize(rusqlite::MAIN_DB).unwrap().to_vec();
     json!({
-        "status": 0,
-        "storageFormat": 0,
+        "storageFormat": "sqlite-blob",
         "legacyVaultBlob": crypto::symmetric_encrypt_bytes(&bytes, unlock_key).unwrap(),
         "legacyRevision": revision,
         "personalManifestId": PERSONAL_MANIFEST_ID,
@@ -772,7 +769,7 @@ fn pre_format_session_host(unlock_key: &str, local_item: &str, server_item: &str
     host.respond("GET", "Vault", legacy_snapshot_of(&server_db, unlock_key, 3));
     host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
     host
 }
 
@@ -828,8 +825,8 @@ fn session_reports_when_a_response_is_missing() {
 
 #[test]
 fn state_helpers_key_buckets_and_fingerprints_like_the_client() {
-    assert_eq!(state::bucket_revision_key("m", "Settings"), "m:Settings");
-    assert_eq!(state::fingerprint_bucket_key("m", "Stats"), "bucket:m:Stats");
+    assert_eq!(state::bucket_revision_key("m", "settings"), "m:settings");
+    assert_eq!(state::fingerprint_bucket_key("m", "stats"), "bucket:m:stats");
     assert_eq!(state::fingerprint_manifest_key("m"), "manifest:m");
     let _unused: HashMap<String, String> = HashMap::new();
 }
@@ -1053,7 +1050,7 @@ fn dirty_legacy_account_probes_for_a_vault_key_once_per_run() {
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
     host.respond("GET", "VaultKey/Password", json!({ "vaultKey": null }));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &unlock_key, true, 1)).unwrap());
 

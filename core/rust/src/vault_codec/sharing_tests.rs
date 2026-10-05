@@ -545,7 +545,7 @@ fn split_keeps_bucketed_and_foreign_key_tables_out_of_shared_manifests() {
      * here, since the single Settings row belongs to the personal manifest. Leaving a manifest's bucket
      * out would read as "unchanged" rather than "emptied", so its last row could never be deleted.
      */
-    let settings: Vec<&DataBucket> = out.data_buckets.iter().filter(|b| b.category == "Settings").collect();
+    let settings: Vec<&DataBucket> = out.data_buckets.iter().filter(|b| b.category == "settings").collect();
     assert_eq!(settings.iter().map(|b| b.manifest_id.as_str()).collect::<Vec<&str>>(), vec!["m-f-shared", PERSONAL_M]);
     assert_eq!(settings[0].tables["Settings"].len(), 0, "the shared manifest holds no settings of its own, and says so");
     assert_eq!(settings[1].tables["Settings"].len(), 1);
@@ -567,7 +567,7 @@ fn split_routes_bucket_rows_to_the_manifest_that_owns_them() {
     let out = canonicalize_from_sqlite(input_with_shares(tables, vec![spec("f-shared")])).unwrap();
 
     let bucket_of = |manifest_id: &str| -> Option<&DataBucket> {
-        out.data_buckets.iter().find(|b| b.category == "Settings" && b.manifest_id == manifest_id)
+        out.data_buckets.iter().find(|b| b.category == "settings" && b.manifest_id == manifest_id)
     };
     let keys = |b: &DataBucket| -> Vec<String> {
         let mut out: Vec<String> = b.tables["Settings"].iter().filter_map(|r| r.get("Key").and_then(|v| v.as_str()).map(str::to_string)).collect();
@@ -593,7 +593,7 @@ fn combine_stamps_bucket_rows_with_the_manifest_that_delivered_them() {
      * so its rows claim that manifest. A bucket whose rows name someone else cannot move them there.
      */
     let out = canonicalize_owner();
-    let mut evil = out.data_buckets.iter().find(|b| b.category == "Settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket").clone();
+    let mut evil = out.data_buckets.iter().find(|b| b.category == "settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket").clone();
     evil.manifest_id = "m-f-shared".to_string();
 
     let re = materialize_as_sqlite(materialize_input(out.first().manifest.clone(), out.rest().iter().map(|s| s.manifest.clone()).collect(), vec![evil])).unwrap();
@@ -606,7 +606,7 @@ fn combine_stamps_bucket_rows_with_the_manifest_that_delivered_them() {
 fn combine_keeps_two_manifests_settings_side_by_side() {
     // Two manifests holding the same setting key are two rows: (ManifestId, Key) keeps them apart.
     let out = canonicalize_owner();
-    let personal_bucket = out.data_buckets.iter().find(|b| b.category == "Settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket").clone();
+    let personal_bucket = out.data_buckets.iter().find(|b| b.category == "settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket").clone();
     let mut shared_bucket = personal_bucket.clone();
     shared_bucket.manifest_id = "m-f-shared".to_string();
 
@@ -635,7 +635,7 @@ fn extract_buckets_splits_a_category_the_way_canonicalize_does() {
     let settings = |rows: Vec<CodecRecord>| -> HashMap<String, Vec<CodecRecord>> { [("Settings".to_string(), rows)].into_iter().collect() };
 
     let buckets = extract_buckets(
-        "Settings".to_string(),
+        "settings".to_string(),
         vec![PERSONAL_M.to_string(), "m-f-shared".to_string()],
         settings(vec![
             row(&[("Key", json!("sort")), ("Value", json!("name")), ("ManifestId", json!("M-F-SHARED"))]),
@@ -659,11 +659,11 @@ fn extract_buckets_splits_a_category_the_way_canonicalize_does() {
     assert_eq!(personal.tables["Settings"][0]["Key"], json!("theme"));
 
     // A manifest holding nothing still gets its bucket, with the category's tables declared empty.
-    let empty = extract_buckets("Settings".to_string(), vec![PERSONAL_M.to_string()], settings(vec![])).unwrap();
+    let empty = extract_buckets("settings".to_string(), vec![PERSONAL_M.to_string()], settings(vec![])).unwrap();
     assert_eq!(empty.len(), 1);
     assert_eq!(empty[0].tables["Settings"].len(), 0, "an emptied table is declared, so the delete reaches the server");
 
-    let unstamped = extract_buckets("Settings".to_string(), vec![PERSONAL_M.to_string()], settings(vec![row(&[("Key", json!("k")), ("Value", json!("v"))])]))
+    let unstamped = extract_buckets("settings".to_string(), vec![PERSONAL_M.to_string()], settings(vec![row(&[("Key", json!("k")), ("Value", json!("v"))])]))
         .unwrap_err()
         .to_string();
     assert!(unstamped.contains("name no manifest"), "the error says what is wrong: {unstamped}");
@@ -704,7 +704,7 @@ fn split_refuses_unregistered_rows_that_name_no_manifest() {
 #[test]
 fn validate_rejects_an_unaddressed_or_cross_stamped_bucket() {
     let out = canonicalize_owner();
-    let bucket = out.data_buckets.iter().find(|b| b.category == "Settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket");
+    let bucket = out.data_buckets.iter().find(|b| b.category == "settings" && b.manifest_id == PERSONAL_M).expect("personal settings bucket");
 
     let mut unaddressed = bucket.clone();
     unaddressed.manifest_id = String::new();

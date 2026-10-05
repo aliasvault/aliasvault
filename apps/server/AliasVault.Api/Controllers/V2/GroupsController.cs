@@ -16,6 +16,7 @@ using AliasVault.Auth;
 using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
+using AliasVault.Shared.Models.WebApi.V2;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Groups;
 using AliasVault.Shared.Server.Capabilities;
@@ -101,7 +102,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             response.Groups.Add(new GroupInfo
             {
                 GroupId = membership.GroupId,
-                Role = membership.Role.ToString(),
+                Role = KebabCaseEnumConverter.ToToken(membership.Role),
                 Manifests = [.. manifests
                     .Where(m => m.OwnerGroupId == membership.GroupId)
                     .Select(m => new { Manifest = m, Holders = grantHolders.GetValueOrDefault(m.ManifestId) ?? [] })
@@ -118,7 +119,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 {
                     UserId = m.UserId,
                     Username = usernames.GetValueOrDefault(m.UserId, string.Empty),
-                    Role = m.Role.ToString(),
+                    Role = KebabCaseEnumConverter.ToToken(m.Role),
                     PublicKeyId = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeyId : null,
                     PublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKey : null,
                     PublicKeySignature = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeySignature : null,

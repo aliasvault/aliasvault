@@ -10,7 +10,7 @@ namespace AliasVault.Api.Controllers.V2.Security;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.V1.Security;
+using AliasVault.Shared.Models.WebApi.V2.Security;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

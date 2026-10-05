@@ -536,9 +536,9 @@ pub struct PendingAction {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetResponse {
-    /// LEGACY: 0 = sqlite-blob, 1 = manifest-v1; absent on servers predating the field.
+    /// `sqlite-blob` (LEGACY) or `manifest`; absent on servers predating the field.
     #[serde(default)]
-    pub storage_format: Option<i32>,
+    pub storage_format: Option<String>,
     #[serde(default)]
     pub legacy_vault_blob: Option<String>,
     #[serde(default)]
@@ -620,8 +620,8 @@ pub struct EmailRoutingDto {
     pub public_email_domain_list: Vec<String>,
 }
 
-pub const KEY_TYPE_ACCOUNT_KEY: &str = "accountkey";
-pub const KEY_TYPE_GRANT_KEY: &str = "grantkey";
+pub const KEY_TYPE_ACCOUNT_KEY: &str = "account-key";
+pub const KEY_TYPE_GRANT_KEY: &str = "grant-key";
 pub const ALGORITHM_RSA_OAEP_SHA256: &str = "rsa-oaep-sha256";
 
 /// One manifest element of `POST v2/Vault`.
@@ -706,14 +706,26 @@ pub struct VaultWriteMigration {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultWriteResponse {
-    #[serde(default)]
-    pub status: i32,
+    pub status: VaultWriteStatus,
     #[serde(default)]
     pub manifest_revisions: Vec<ManifestRevision>,
     #[serde(default)]
     pub bucket_revisions: Vec<BucketRevision>,
     #[serde(default)]
     pub missing_blob_hashes: Vec<String>,
+}
+
+/// `status` of a `POST v2/Vault` response.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum VaultWriteStatus {
+    Ok,
+    /// A manifest or bucket revision is stale; the caller pulls, merges and retries.
+    Outdated,
+    /// A status this build does not know; treated as not accepted.
+    #[default]
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -102,7 +102,6 @@ public class VaultController(
 
             return Ok(new GetResponse
             {
-                Status = VaultStatus.Ok,
                 StorageFormat = StorageFormat.SqliteBlob,
                 LegacyVaultBlob = legacy?.VaultBlob ?? string.Empty,
                 Version = legacy?.Version ?? string.Empty,
@@ -164,7 +163,6 @@ public class VaultController(
 
         return Ok(new GetResponse
         {
-            Status = VaultStatus.Ok,
             StorageFormat = StorageFormat.Manifest,
             Manifests = manifests,
             PersonalManifestId = latestManifests.First(m => m.OwnerGroupId == user.PersonalGroupId).ManifestId,
@@ -434,7 +432,7 @@ public class VaultController(
             var staleRoutingOnly = routingStale.Where(id => resolved.All(r => r.Row.ManifestId != id));
             return Ok(new VaultWriteResponse
             {
-                Status = VaultStatus.Outdated,
+                Status = VaultWriteStatus.Outdated,
                 ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber })
                     .Concat(staleRoutingOnly.Select(id => new ManifestWriteResult { ManifestId = id, Revision = routingCurrentRevisions[id] }))
                     .ToList(),
@@ -481,7 +479,7 @@ public class VaultController(
                 await tx.RollbackAsync();
                 return Ok(new VaultWriteResponse
                 {
-                    Status = VaultStatus.Ok,
+                    Status = VaultWriteStatus.Ok,
                     MissingBlobHashes = missing,
                     ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
                 });
@@ -665,7 +663,7 @@ public class VaultController(
 
             return Ok(new VaultWriteResponse
             {
-                Status = VaultStatus.Ok,
+                Status = VaultWriteStatus.Ok,
                 ManifestRevisions = manifestResults,
                 BucketRevisions = newBucketRevisions,
             });

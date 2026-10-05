@@ -70,10 +70,9 @@ fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, 
         "capabilities": { "sharing": "on" },
     });
     let vault = json!({
-        "status": 0,
-        "storageFormat": 1,
+        "storageFormat": "manifest",
         "personalManifestId": PERSONAL_MANIFEST_ID,
-        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": blob, "ciphertextHash": vault_codec::compute_ciphertext_hash(&blob), "revision": revision, "blobReferences": references, "canAdminister": true, "keyType": "accountkey" }],
+        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": blob, "ciphertextHash": vault_codec::compute_ciphertext_hash(&blob), "revision": revision, "blobReferences": references, "canAdminister": true, "keyType": "account-key" }],
         "buckets": [],
         "emailRouting": { "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] },
     });
@@ -106,7 +105,7 @@ fn sync_dirty(host: &mut TestHost, vek: &str) -> Value {
     host.mutation_sequence += 1;
     host.is_dirty = true;
     host.respond_with(Box::new(|method, path, body| (method == "POST" && path == "Vault/blobs/missing").then(|| (200, json!({ "missing": body.map(|b| b["hashes"].clone()).unwrap_or_default() })))));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 9 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 9 }], "bucketRevisions": [], "missingBlobHashes": [] }));
     host.drive(&SyncSession::new(&request("fullSync", vek, true, host.mutation_sequence)).unwrap())
 }
 
@@ -231,7 +230,7 @@ fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(vault_codec::generate_manifest_salt()));
     host.respond_with(Box::new(|method, path, _| (method == "GET" && path == "VaultKey/Password").then(|| (200, json!({ "vaultKey": null })))));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault", json!({ "status": "ok", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 

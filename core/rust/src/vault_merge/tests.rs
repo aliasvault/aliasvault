@@ -341,10 +341,10 @@ fn bucketed_tables_merge_and_come_back_as_buckets() {
 
     let output = merge_canonical(CanonicalMergeInput {
         server_manifests: vec![items_manifest(PERSONAL, vec![])],
-        server_buckets: vec![DataBucket::new(PERSONAL, "Settings", [("Settings".to_string(), vec![setting("light", "2024-01-01T00:00:00Z")])].into_iter().collect())],
+        server_buckets: vec![DataBucket::new(PERSONAL, "settings", [("Settings".to_string(), vec![setting("light", "2024-01-01T00:00:00Z")])].into_iter().collect())],
         contentless_server_manifest_ids: vec![],
         local_manifests: vec![items_manifest(PERSONAL, vec![])],
-        local_buckets: vec![DataBucket::new(PERSONAL, "Settings", [("Settings".to_string(), vec![setting("dark", "2024-01-09T00:00:00Z")])].into_iter().collect())],
+        local_buckets: vec![DataBucket::new(PERSONAL, "settings", [("Settings".to_string(), vec![setting("dark", "2024-01-09T00:00:00Z")])].into_iter().collect())],
         schema_columns: schema(),
     })
     .unwrap();
@@ -352,7 +352,7 @@ fn bucketed_tables_merge_and_come_back_as_buckets() {
     let merged = &output.manifests[0];
     assert!(!merged.manifest.tables.contains_key("Settings"), "bucketed tables never surface in manifest.tables");
     assert_eq!(merged.buckets.len(), 1);
-    assert_eq!(merged.buckets[0].category, "Settings");
+    assert_eq!(merged.buckets[0].category, "settings");
     assert_eq!(merged.buckets[0].tables["Settings"][0]["Value"], json!("dark"), "the newer local setting wins inside the bucket");
     assert!(crate::vault_codec::validate_data_bucket(&merged.buckets[0]).ok);
 }
@@ -369,7 +369,7 @@ fn an_empty_table_the_server_carried_stays_in_the_merged_manifest() {
     // The empty tables of a bucket the server served come back as that bucket, not as a missing one.
     let output = merge_canonical(CanonicalMergeInput {
         server_manifests: vec![items_manifest(PERSONAL, vec![])],
-        server_buckets: vec![DataBucket::new(PERSONAL, "Settings", [("Settings".to_string(), vec![])].into_iter().collect())],
+        server_buckets: vec![DataBucket::new(PERSONAL, "settings", [("Settings".to_string(), vec![])].into_iter().collect())],
         contentless_server_manifest_ids: vec![],
         local_manifests: vec![items_manifest(PERSONAL, vec![])],
         local_buckets: vec![],

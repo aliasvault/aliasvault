@@ -19,11 +19,11 @@ use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::inline_bytes;
 
 /// The `storageFormat` of a legacy sqlite-blob snapshot; an absent value means the same.
-const STORAGE_FORMAT_SQLITE_BLOB: i32 = 0;
+pub(crate) const STORAGE_FORMAT_SQLITE_BLOB: &str = "sqlite-blob";
 
 /// Whether a snapshot is still on the legacy sqlite-blob format.
 pub(crate) fn is_legacy_sqlite_blob_snapshot(snapshot: &GetResponse) -> bool {
-    matches!(snapshot.storage_format, None | Some(STORAGE_FORMAT_SQLITE_BLOB))
+    matches!(snapshot.storage_format.as_deref(), None | Some(STORAGE_FORMAT_SQLITE_BLOB))
 }
 
 /// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 fingerprints

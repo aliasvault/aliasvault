@@ -24,7 +24,7 @@ export type MobileLoginPollRequest = {
 /**
  * State of a mobile login request as seen by the polling client.
  */
-export type MobileLoginStatus = 'Pending' | 'Approved' | 'Declined';
+export type MobileLoginStatus = 'pending' | 'approved' | 'declined';
 
 /**
  * Mobile login poll response type. The encrypted fields are only set when the status is Approved.

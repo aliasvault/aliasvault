@@ -1,4 +1,4 @@
-import { AuthEventType } from '@aliasvault/models/webapi';
+import { authEventTypeName } from '@aliasvault/models/webapi';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, RefreshControl } from 'react-native';
@@ -153,7 +153,7 @@ export default function AuthLogsScreen() : React.ReactNode {
     }
 
     return logs.map((item) => {
-      const eventType = AuthEventType[item.eventType];
+      const eventType = authEventTypeName(item.eventType);
 
       return (
         <View key={item.id} style={styles.logItem}>

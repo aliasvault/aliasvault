@@ -7,7 +7,7 @@ import type { VaultKeyAlgorithmValue } from './VaultKeyAlgorithm';
 /**
  * A member's role in a group.
  */
-export type GroupRole = 'Owner' | 'Admin' | 'Member';
+export type GroupRole = 'owner' | 'admin' | 'member';
 
 /**
  * One member of a group.

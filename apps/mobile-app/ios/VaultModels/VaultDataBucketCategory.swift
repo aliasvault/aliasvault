@@ -8,10 +8,10 @@ import Foundation
 /// The canonical list lives in the vault table registry (core/models).
 public struct VaultDataBucketCategory {
     /// User client settings (sort order, autofill prefs, identity defaults, etc.).
-    public static let settings = "Settings"
+    public static let settings = "settings"
 
     /// Per-item usage statistics (last used, use counts).
-    public static let stats = "Stats"
+    public static let stats = "stats"
 
     /// All known data bucket categories.
     public static let all = [settings, stats]

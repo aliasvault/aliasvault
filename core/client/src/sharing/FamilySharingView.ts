@@ -110,7 +110,7 @@ export type MemberAccess = {
  * @param group - the group as served by the API.
  */
 export function canAdministerGroup(group: Pick<GroupInfo, 'role'>): boolean {
-  return group.role === 'Owner' || group.role === 'Admin';
+  return group.role === 'owner' || group.role === 'admin';
 }
 
 /**
@@ -165,8 +165,8 @@ export function describeMemberAccess(group: GroupInfo, manifest: SharedManifestI
  */
 export function roleLabel(member: Pick<GroupMemberInfo, 'role'>): string {
   switch (member.role) {
-    case 'Owner': return familySharingText.owner;
-    case 'Admin': return familySharingText.admin;
+    case 'owner': return familySharingText.owner;
+    case 'admin': return familySharingText.admin;
     default: return familySharingText.member;
   }
 }

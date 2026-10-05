@@ -25,9 +25,7 @@ export type SnapshotManifest = {
 
 /** The v2 GET /Vault snapshot (fields relevant to these tests). */
 export type VaultSnapshot = {
-  status: number;
-  /** Server StorageFormat enum: 0 = legacy sqlite-blob, 1 = manifest-v1. */
-  storageFormat: number;
+  storageFormat: 'sqlite-blob' | 'manifest';
   manifests?: SnapshotManifest[];
   /** The manifest owned by the caller's personal group; every other entry is a shared one. */
   personalManifestId?: string | null;
@@ -70,7 +68,7 @@ type BucketWrite = {
 
 /** The result of a POST /v2/Vault write. */
 type VaultWriteResult = {
-  status: number;
+  status: 'ok' | 'outdated';
   manifestRevisions?: Array<{ manifestId: string; revision: number }>;
   missingBlobHashes?: string[];
 };
@@ -100,7 +98,7 @@ export async function getVaultSnapshot(apiBaseUrl: string, token: string): Promi
  */
 export function requirePersonalManifest(snapshot: VaultSnapshot): SnapshotManifest {
   const personal = (snapshot.manifests ?? []).find((m) => m.manifestId === snapshot.personalManifestId);
-  if (snapshot.storageFormat !== 1 || !personal?.blob) {
+  if (snapshot.storageFormat !== 'manifest' || !personal?.blob) {
     throw new Error(`Snapshot is not manifest-v1 yet (storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}).`);
   }
   return personal;
@@ -343,7 +341,7 @@ async function postVaultWrite(
   }
 
   const result = (await response.json()) as VaultWriteResult;
-  if (result.status !== 0 || (result.missingBlobHashes?.length ?? 0) > 0) {
+  if (result.status !== 'ok' || (result.missingBlobHashes?.length ?? 0) > 0) {
     throw new Error(`Vault write rejected: status=${result.status}, missingBlobs=${result.missingBlobHashes?.join(',') ?? 'none'}`);
   }
   return result;

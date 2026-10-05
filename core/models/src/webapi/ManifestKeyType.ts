@@ -12,12 +12,12 @@ export const ManifestKeyType = {
   /**
    * The VEK is encrypted with the user's own Account Key, which their unlock chain produces.
    */
-  AccountKey: 'accountkey',
+  AccountKey: 'account-key',
 
   /**
    * A grant: the VEK is encrypted to a public key of the user, so only its holder's private half can open it.
    */
-  GrantKey: 'grantkey',
+  GrantKey: 'grant-key',
 } as const;
 
 /**

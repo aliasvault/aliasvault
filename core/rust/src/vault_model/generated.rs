@@ -70,8 +70,8 @@ pub static SKIP_TABLES: &[&str] = &[
 /// own server revision without rewriting the manifest. Tuple form `(table_name, bucket_category)`;
 /// `category` mirrors the server `VaultDataBucketCategory`. Several tables may share a category to sync together.
 pub static BUCKET_TABLES: &[(&str, &str)] = &[
-    ("Settings", "Settings"),
-    ("ItemStats", "Stats"),
+    ("Settings", "settings"),
+    ("ItemStats", "stats"),
 ];
 
 /// Tables that belong exclusively to the user's own (personal) vault, never to a shared manifest.

@@ -7,15 +7,13 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
-using AliasVault.Shared.Models.Enums;
-
 /// <summary>
 /// Response for POST /v2/Vault.
 /// </summary>
 public class VaultWriteResponse
 {
     /// <summary>Gets or sets the overall status.</summary>
-    public required VaultStatus Status { get; set; }
+    public required VaultWriteStatus Status { get; set; }
 
     /// <summary>Gets or sets the per-manifest revisions.</summary>
     public List<ManifestWriteResult> ManifestRevisions { get; set; } = [];

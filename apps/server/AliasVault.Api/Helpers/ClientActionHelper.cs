@@ -8,6 +8,7 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Shared.Models.WebApi.V2;
 using AliasVault.Shared.Models.WebApi.V2.ClientActions;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,7 @@ public static class ClientActionHelper
             .OrderBy(a => a.CreatedAt)
             .ToListAsync();
 
-        return actions.ConvertAll(a => new PendingClientAction { Id = a.Id, Type = a.Type.ToString(), ManifestId = a.ManifestId, Payload = a.Payload });
+        return actions.ConvertAll(a => new PendingClientAction { Id = a.Id, Type = KebabCaseEnumConverter.ToToken(a.Type), ManifestId = a.ManifestId, Payload = a.Payload });
     }
 
     /// <summary>

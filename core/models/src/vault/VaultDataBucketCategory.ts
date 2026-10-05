@@ -7,12 +7,12 @@ export const VaultDataBucketCategory = {
   /**
    * User client settings (sort order, autofill prefs, identity defaults, etc.).
    */
-  Settings: 'Settings',
+  Settings: 'settings',
 
   /**
    * Per-item usage statistics (last used, use counts).
    */
-  Stats: 'Stats',
+  Stats: 'stats',
 } as const;
 
 /**
@@ -24,6 +24,6 @@ export type VaultDataBucketCategoryValue = typeof VaultDataBucketCategory[keyof 
  * Human-readable description per category, emitted into the generated platform variants' doc comments.
  */
 export const VaultDataBucketCategoryDescriptions: Record<VaultDataBucketCategoryValue, string> = {
-  Settings: 'User client settings (sort order, autofill prefs, identity defaults, etc.).',
-  Stats: 'Per-item usage statistics (last used, use counts).',
+  settings: 'User client settings (sort order, autofill prefs, identity defaults, etc.).',
+  stats: 'Per-item usage statistics (last used, use counts).',
 };
