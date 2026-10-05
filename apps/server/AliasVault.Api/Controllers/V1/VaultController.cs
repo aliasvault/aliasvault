@@ -159,6 +159,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
+        if (!string.IsNullOrEmpty(model.EncryptionPublicKey) && !RsaPublicKeyValidator.IsValid(model.EncryptionPublicKey))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+        }
+
         // Retrieve the current revision of the user's personal manifest, which contains the current encryption settings.
         var currentManifest = await context.VaultManifests.FirstAsync(x => x.OwnerGroupId == user.PersonalGroupId);
 

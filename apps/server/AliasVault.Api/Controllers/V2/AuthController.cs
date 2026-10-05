@@ -444,7 +444,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        if (!model.AccountKeysFitStorageLimits || !Signing.VerifyAccountPublicKey(model.SigningPublicKey, model.AccountPublicKey, model.AccountPublicKeySignature))
+        if (!model.AccountKeysFitStorageLimits || !RsaPublicKeyValidator.IsValid(model.AccountPublicKey) || !Signing.VerifyAccountPublicKey(model.SigningPublicKey, model.AccountPublicKey, model.AccountPublicKeySignature))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
@@ -817,7 +817,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model, [FromServices] MobileLoginRateLimitService mobileLoginRateLimitService)
     {
         // Reject invalid public key structure.
-        if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
+        if (!RsaPublicKeyValidator.IsValid(model.ClientPublicKey))
         {
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400));
         }
