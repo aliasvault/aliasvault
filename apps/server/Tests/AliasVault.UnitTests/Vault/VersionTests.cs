@@ -160,4 +160,35 @@ public class VersionTests
         Assert.That(VersionHelper.IsVersionBlocked("chrome", string.Empty, blockedVersions), Is.False);
         Assert.That(VersionHelper.IsVersionBlocked("chrome", "0.26.0", emptyBlockedVersions), Is.False);
     }
+
+    /// <summary>
+    /// Test that a client name without an override is checked against the default minimum instead of being rejected.
+    /// </summary>
+    [Test]
+    public void ClientVersionSupportedFallsBackToDefaultMinimumForUnknownClient()
+    {
+        var minimumVersions = new Dictionary<string, string> { { "chrome", "0.30.0" } };
+        var blockedVersions = new Dictionary<string, HashSet<string>> { { "*", ["0.27.0"] } };
+
+        Assert.That(VersionHelper.IsClientVersionSupported("cli", "0.26.3", minimumVersions, "0.26.3", blockedVersions), Is.True);
+        Assert.That(VersionHelper.IsClientVersionSupported("cli", "0.26.2", minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("cli", "0.27.0", minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("chrome", "0.29.0", minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("chrome", "0.30.0", minimumVersions, "0.26.3", blockedVersions), Is.True);
+    }
+
+    /// <summary>
+    /// Test that a missing or unparseable client version is reported as unsupported instead of throwing.
+    /// </summary>
+    [Test]
+    public void ClientVersionSupportedReturnsFalseForInvalidVersion()
+    {
+        var minimumVersions = new Dictionary<string, string>();
+        var blockedVersions = new Dictionary<string, HashSet<string>>();
+
+        Assert.That(VersionHelper.IsClientVersionSupported("chrome", null, minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("chrome", string.Empty, minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("chrome", "abc", minimumVersions, "0.26.3", blockedVersions), Is.False);
+        Assert.That(VersionHelper.IsClientVersionSupported("cli", "v1", minimumVersions, "0.26.3", blockedVersions), Is.False);
+    }
 }

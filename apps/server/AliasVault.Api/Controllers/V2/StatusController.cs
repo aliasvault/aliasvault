@@ -68,16 +68,9 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
         // Current SRP salt: lives on the password VaultManifestAccessKey for v2 migrated users, on the personal manifest for legacy users.
         var encryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
-        // Check client version compatibility if the header is provided.
-        var clientSupported = false;
+        // Client names without an override get the default minimum, so a new client type works against servers that predate it.
         var clientInfo = ClientHeaderInfo.Parse(ClientHeader);
-        if (!string.IsNullOrEmpty(clientInfo.ClientVersion)
-            && AppInfo.MinimumClientVersions.TryGetValue(clientInfo.ClientName, out var minimumVersion))
-        {
-            var meetsMinimum = VersionHelper.IsVersionEqualOrNewer(clientInfo.ClientVersion, minimumVersion);
-            var isBlocked = VersionHelper.IsVersionBlocked(clientInfo.ClientName, clientInfo.ClientVersion, AppInfo.UnsupportedClientVersions);
-            clientSupported = meetsMinimum && !isBlocked;
-        }
+        var clientSupported = VersionHelper.IsClientVersionSupported(clientInfo.ClientName, clientInfo.ClientVersion, AppInfo.MinimumClientVersions, AppInfo.MinimumClientVersion, AppInfo.UnsupportedClientVersions);
 
         return Ok(new StatusModels.StatusResponse
         {
