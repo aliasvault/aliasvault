@@ -12,7 +12,6 @@ import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
 import PasswordConfirmationModal from '@/components/shared/PasswordConfirmationModal';
-import { useAuth } from '@/context/AuthContext';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
@@ -37,7 +36,6 @@ const ImportExport: React.FC = () => {
   
   usePageTitle(t('settings.importExport'));
   const dbContext = useDb();
-  const { username } = useAuth();
   const { showConfirmation } = useConfirmModal();
   const { showLoading, hideLoading } = useLoading();
   const notifications = useNotifications();
@@ -50,11 +48,11 @@ const ImportExport: React.FC = () => {
   const isDebugBuild = import.meta.env.DEV;
 
   /**
-   * The export file name: the date and the username.
+   * The export file name, with the date.
    */
   const getExportFileName = (extension: string): string => {
     const dateStr = new Date().toISOString().substring(0, 10);
-    return `aliasvault-export-${username ?? ''}-${dateStr}.${extension}`;
+    return `aliasvault-export-${dateStr}.${extension}`;
   };
 
   /**
@@ -83,7 +81,7 @@ const ImportExport: React.FC = () => {
       throw new Error('Vault is not available');
     }
     const data = sqliteClient.importExport.getExportData();
-    return AvuxExportService.exportToAvux(data.items, data.folders, data.tags, data.itemTags, data.fieldDefinitions, username ?? '');
+    return AvuxExportService.exportToAvux(data.items, data.folders, data.tags, data.itemTags, data.fieldDefinitions);
   };
 
   /**
@@ -125,7 +123,7 @@ const ImportExport: React.FC = () => {
   const exportVaultAvex = async (exportPassword: string): Promise<void> => {
     showLoading(t('importExport.exportingVaultMessage'));
     try {
-      const avexBytes = await AvexExportService.encryptToAvex(generateAvuxBytes(), exportPassword, username ?? '');
+      const avexBytes = await AvexExportService.encryptToAvex(generateAvuxBytes(), exportPassword);
       downloadBytes(getExportFileName('avex'), avexBytes);
       notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {

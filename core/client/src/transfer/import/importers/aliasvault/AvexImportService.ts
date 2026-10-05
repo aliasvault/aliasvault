@@ -95,7 +95,6 @@ export class AvexImportService {
       },
       metadata: {
         exportedAt: (metadata ? readString(metadata, 'exportedAt') : null) ?? '',
-        exportedBy: (metadata ? readString(metadata, 'exportedBy') : null) ?? '',
         appVersion: metadata ? readString(metadata, 'appVersion') : null,
       },
     };

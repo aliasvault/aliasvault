@@ -24,7 +24,7 @@ describe('AvuxExportService', () => {
     const tags: TagEntity[] = [{ Id: crypto.randomUUID(), Name: 'Test Tag', Color: '#FF0000', DisplayOrder: 0, CreatedAt: new Date(), UpdatedAt: new Date(), IsDeleted: false }];
     const itemTags: ItemTagEntity[] = [{ ItemId: items[0].Id, TagId: tags[0].Id, IsDeleted: false }];
 
-    const avuxBytes = AvuxExportService.exportToAvux(items, folders, tags, itemTags, [], 'test@example.com');
+    const avuxBytes = AvuxExportService.exportToAvux(items, folders, tags, itemTags, []);
 
     expect(avuxBytes.length).toBeGreaterThan(0);
 

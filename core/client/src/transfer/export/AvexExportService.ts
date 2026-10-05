@@ -24,10 +24,9 @@ export class AvexExportService {
    * Encrypt .avux bytes to an .avex file.
    * @param avuxBytes - The unencrypted .avux bytes
    * @param exportPassword - The password to encrypt with
-   * @param username - The username creating the export
    * @returns The .avex file bytes
    */
-  public static async encryptToAvex(avuxBytes: Uint8Array, exportPassword: string, username: string): Promise<Uint8Array> {
+  public static async encryptToAvex(avuxBytes: Uint8Array, exportPassword: string): Promise<Uint8Array> {
     // 1. A random salt and a key derived from it with Argon2id.
     const salt = crypto.getRandomValues(new Uint8Array(32));
     const saltBase64 = bytesToBase64(salt);
@@ -42,7 +41,7 @@ export class AvexExportService {
       version: AvexConstants.FormatVersion,
       kdf: { type: AVEX_KDF_TYPE, salt: saltBase64, params: { ...ARGON2_KDF_PARAMS } },
       encryption: { algorithm: 'AES-256-GCM', encryptedDataOffset: 0 },
-      metadata: { exportedAt: new Date().toISOString(), exportedBy: username, appVersion: AppInfo.VERSION },
+      metadata: { exportedAt: new Date().toISOString(), appVersion: AppInfo.VERSION },
     };
 
     const encoder = new TextEncoder();

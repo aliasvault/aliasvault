@@ -163,7 +163,6 @@ export type AvuxLogo = {
 export type AvuxManifest = {
   version: string;
   exportedAt: string;
-  exportedBy: string;
   items: AvuxItem[];
   folders: AvuxFolder[];
   tags: AvuxTag[];

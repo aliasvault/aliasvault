@@ -19,12 +19,11 @@ export class AvuxExportService {
    * @param tags - The tags to export
    * @param itemTags - The item-tag associations to export
    * @param fieldDefinitions - The custom field definitions to export
-   * @param username - The username creating the export
    * @returns The .avux ZIP file bytes
    */
-  public static exportToAvux(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], username: string): Uint8Array {
+  public static exportToAvux(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[]): Uint8Array {
     const logos = AvuxExportService.itemLogos(items);
-    const manifest = AvuxExportService.createManifest(items, folders, tags, itemTags, fieldDefinitions, logos, username);
+    const manifest = AvuxExportService.createManifest(items, folders, tags, itemTags, fieldDefinitions, logos);
     const attachmentMap = AvuxExportService.extractAttachments(items);
     const logoMap = AvuxExportService.extractLogos(logos);
 
@@ -39,14 +38,12 @@ export class AvuxExportService {
    * @param itemTags - The item-tag associations
    * @param fieldDefinitions - The custom field definitions
    * @param logos - The logos
-   * @param username - The username creating the export
    * @returns The manifest
    */
-  private static createManifest(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], logos: LogoEntity[], username: string): AvuxManifest {
+  private static createManifest(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], logos: LogoEntity[]): AvuxManifest {
     return {
       version: AVUX_FORMAT_VERSION,
       exportedAt: new Date().toISOString(),
-      exportedBy: username,
       items: items.filter(i => !i.IsDeleted).map(AvuxExportService.mapItemToAvux),
       folders: folders.filter(f => !f.IsDeleted).map(AvuxExportService.mapFolderToAvux),
       tags: tags.filter(t => !t.IsDeleted).map(AvuxExportService.mapTagToAvux),
