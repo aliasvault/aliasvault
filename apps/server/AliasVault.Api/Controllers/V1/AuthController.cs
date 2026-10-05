@@ -634,11 +634,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.AccountDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, userManager, user, SrpPurpose.AccountDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
         // Log the successful account deletion.

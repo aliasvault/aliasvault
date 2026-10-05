@@ -520,11 +520,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         // Validate the SRP session (actual password check).
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, SrpPurpose.SharedManifestDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, GetUserManager(), me, SrpPurpose.SharedManifestDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
         await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultDeletion);

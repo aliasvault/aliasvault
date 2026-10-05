@@ -668,18 +668,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual current password check).
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.PasswordChange, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, userManager, user, SrpPurpose.PasswordChange, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (srpResult.Session is null)
         {
-            if (srpResult.ActiveSessionFound)
-            {
-                // The password was wrong: increment failed login attempts which then locks out
-                // the account when the limit is reached.
-                await userManager.AccessFailedAsync(user);
-            }
-
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
@@ -1119,11 +1112,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.AccountDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, userManager, user, SrpPurpose.AccountDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, srpResult.FailureReason);
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
         // Log the successful account deletion.
