@@ -95,8 +95,8 @@ async function writePersonalManifest(apiUrl: string, user: TestUser, blob: strin
       emailRouting: null,
     }),
   });
-  const result = response.ok ? (await response.json()) as { status: number } : null;
-  if (!result || result.status !== 0) {
+  const result = response.ok ? (await response.json()) as { status: string } : null;
+  if (!result || result.status !== 'ok') {
     throw new Error(`POST /v2/Vault did not accept the manifest (HTTP ${response.status}, status ${result?.status}).`);
   }
 }
