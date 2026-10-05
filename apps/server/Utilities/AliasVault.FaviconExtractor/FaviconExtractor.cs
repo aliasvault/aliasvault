@@ -659,17 +659,11 @@ public static class FaviconExtractor
 
         while (redirectCount < maxRedirects)
         {
-            // Create request with referer header to appear more browser-like
+            // Only the first request carries a (generic) referer, so a redirect target does not learn the originally requested URL.
             var request = new HttpRequestMessage(HttpMethod.Get, currentUri);
             if (redirectCount == 0)
             {
-                // First request: add Google referer to appear like navigation
                 request.Headers.Add("Referer", "https://www.google.com/");
-            }
-            else
-            {
-                // Subsequent redirects: use original URL as referer
-                request.Headers.Add("Referer", uri.ToString());
             }
 
             var response = await client.SendAsync(request, cancellationToken);
