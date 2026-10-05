@@ -50,7 +50,7 @@ public class UserGrantKey
     /// <summary>
     /// Gets or sets the private half, encrypted by the user's Account Key.
     /// </summary>
-    [StringLength(4000)]
+    [StringLength(8000)]
     public required string EncryptedPrivateKey { get; set; }
 
     /// <summary>
