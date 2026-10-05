@@ -18,6 +18,8 @@ export type GroupMemberInfo = {
   role: GroupRole;
   publicKeyId: string | null;
   publicKey: string | null;
+  publicKeySignature: string | null;
+  signingPublicKey: string | null;
 }
 
 /**
@@ -48,6 +50,7 @@ export type ReceivedManifestInvitation = {
  */
 export type SharedManifestInfo = {
   manifestId: string;
+  keyVersion: number;
   memberUserIds: string[];
   pendingInvitations: SentManifestInvitation[];
 }
@@ -78,6 +81,7 @@ export type CreateSharedManifestRequest = {
   selfEncryptedVek: string;
   selfPublicKey: string;
   algorithm: VaultKeyAlgorithmValue;
+  selfGrantSignature: string;
   /** The name of the manifest, encrypted with the manifest's own key (base64). */
   encryptedName?: string | null;
 }
@@ -106,6 +110,7 @@ export type ManifestGrant = {
   recipientPublicKeyId: string;
   encryptedVek: string;
   encryptedName?: string | null;
+  signature: string;
 }
 
 /**

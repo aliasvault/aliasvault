@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// A single manifest to write within a <see cref="VaultWriteRequest"/> batch.
 /// </summary>
@@ -35,4 +37,10 @@ public class ManifestWrite
     /// Gets or sets the public half of this manifest's active RSA key pair (used to e.g. encrypt incoming emails).
     /// </summary>
     public string? EncryptionPublicKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the caller's signature over <see cref="EncryptionPublicKey"/>, required when it changes the manifest's primary key.
+    /// </summary>
+    [StringLength(255)]
+    public string? EncryptionPublicKeySignature { get; set; }
 }

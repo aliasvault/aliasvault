@@ -26,9 +26,12 @@ public static class GrantHelper
     /// <param name="encryptedVek">The encrypted VEK.</param>
     /// <param name="algorithm">The algorithm it was encrypted with.</param>
     /// <param name="keyVersion">The version of the manifest's VEK that <paramref name="encryptedVek"/> yields.</param>
+    /// <param name="signature">The granter's signature over the grant.</param>
+    /// <param name="signerUserId">The granter.</param>
+    /// <param name="signerPublicKey">The granter's signing public key.</param>
     /// <param name="now">Current time.</param>
     /// <returns>The unpersisted grant.</returns>
-    public static VaultManifestAccessKey BuildGrant(Guid manifestId, string userId, Guid publicKeyId, string encryptedVek, VaultKeyAlgorithm algorithm, int keyVersion, DateTime now)
+    public static VaultManifestAccessKey BuildGrant(Guid manifestId, string userId, Guid publicKeyId, string encryptedVek, VaultKeyAlgorithm algorithm, int keyVersion, string signature, string signerUserId, string signerPublicKey, DateTime now)
     {
         return new VaultManifestAccessKey
         {
@@ -40,6 +43,9 @@ public static class GrantHelper
             EncryptedVek = encryptedVek,
             KeyVersion = keyVersion,
             UserGrantKeyId = publicKeyId,
+            GrantSignature = signature,
+            GrantSignerUserId = signerUserId,
+            GrantSignerPublicKey = signerPublicKey,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -75,9 +81,24 @@ public static class GrantHelper
             return [];
         }
 
+        var signingKeys = await context.UserSigningKeys
+            .Where(k => ids.Contains(k.UserId) && k.IsPrimary)
+            .ToDictionaryAsync(k => k.UserId, k => k.PublicKey);
+
         return await context.UserGrantKeys
             .Where(k => ids.Contains(k.UserId) && k.IsPrimary)
-            .ToDictionaryAsync(k => k.UserId, k => new MemberPublicKey(k.Id, k.PublicKey));
+            .ToDictionaryAsync(k => k.UserId, k => new MemberPublicKey(k.Id, k.PublicKey, k.PublicKeySignature, signingKeys.GetValueOrDefault(k.UserId)));
+    }
+
+    /// <summary>
+    /// Get a user's primary signing public key.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="userId">The user.</param>
+    /// <returns>The public key, or null for an account not yet on the account key model (no key hierarchy at all).</returns>
+    public static async Task<string?> GetPrimarySigningKeyAsync(AliasServerDbContext context, string userId)
+    {
+        return await context.UserSigningKeys.Where(k => k.UserId == userId && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync();
     }
 
     /// <summary>

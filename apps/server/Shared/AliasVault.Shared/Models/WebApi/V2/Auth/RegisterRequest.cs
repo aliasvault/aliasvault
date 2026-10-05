@@ -26,8 +26,11 @@ public class RegisterRequest
     /// <param name="encryptedAccountKey">The KEK encrypted Account Key.</param>
     /// <param name="accountPublicKey">The account public key.</param>
     /// <param name="encryptedAccountPrivateKey">The AK encrypted account private key.</param>
+    /// <param name="signingPublicKey">The account signing public key.</param>
+    /// <param name="encryptedSigningPrivateKey">The AK encrypted account signing private key.</param>
+    /// <param name="accountPublicKeySignature">The signing key's signature over the account public key.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string encryptedVek, string encryptedAccountKey, string accountPublicKey, string encryptedAccountPrivateKey, string srpIdentity)
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string encryptedVek, string encryptedAccountKey, string accountPublicKey, string encryptedAccountPrivateKey, string signingPublicKey, string encryptedSigningPrivateKey, string accountPublicKeySignature, string srpIdentity)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
@@ -39,6 +42,9 @@ public class RegisterRequest
         EncryptedAccountKey = encryptedAccountKey;
         AccountPublicKey = accountPublicKey;
         EncryptedAccountPrivateKey = encryptedAccountPrivateKey;
+        SigningPublicKey = signingPublicKey;
+        EncryptedSigningPrivateKey = encryptedSigningPrivateKey;
+        AccountPublicKeySignature = accountPublicKeySignature;
     }
 
     /// <summary>
@@ -92,6 +98,21 @@ public class RegisterRequest
     public string? EncryptedAccountPrivateKey { get; }
 
     /// <summary>
+    /// Gets the account signing public key.
+    /// </summary>
+    public string? SigningPublicKey { get; }
+
+    /// <summary>
+    /// Gets the account signing private key encrypted with the Account Key.
+    /// </summary>
+    public string? EncryptedSigningPrivateKey { get; }
+
+    /// <summary>
+    /// Gets the signing key's signature over <see cref="AccountPublicKey"/>.
+    /// </summary>
+    public string? AccountPublicKeySignature { get; }
+
+    /// <summary>
     /// Gets the registration invite code, required when public registration is disabled.
     /// </summary>
     public string? InviteCode { get; init; }
@@ -99,10 +120,12 @@ public class RegisterRequest
     /// <summary>
     /// Gets a value indicating whether the client sent the complete account key hierarchy. A partial one is not usable.
     /// </summary>
-    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey);
+    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
+        && !string.IsNullOrEmpty(SigningPublicKey) && !string.IsNullOrEmpty(EncryptedSigningPrivateKey) && !string.IsNullOrEmpty(AccountPublicKeySignature);
 
     /// <summary>
     /// Gets a value indicating whether every account key fits its storage column, so an oversized value is a validation error instead of a half-created account.
     /// </summary>
-    public bool AccountKeysFitStorageLimits => (EncryptedVek?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (EncryptedAccountKey?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxEncryptedPrivateKeyLength;
+    public bool AccountKeysFitStorageLimits => (EncryptedVek?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (EncryptedAccountKey?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxEncryptedPrivateKeyLength
+        && (SigningPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxSigningPublicKeyLength && (EncryptedSigningPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxSigningValueLength && (AccountPublicKeySignature?.Length ?? 0) <= AccountKeysUpload.MaxSigningValueLength;
 }

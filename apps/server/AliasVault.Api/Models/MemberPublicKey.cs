@@ -12,4 +12,6 @@ namespace AliasVault.Api.Models;
 /// </summary>
 /// <param name="PublicKeyId">The id of the key row.</param>
 /// <param name="PublicKey">The public key itself (JWK).</param>
-public sealed record MemberPublicKey(Guid PublicKeyId, string PublicKey);
+/// <param name="PublicKeySignature">The member's signature over <paramref name="PublicKey"/>.</param>
+/// <param name="SigningPublicKey">The member's signing public key the signature verifies under.</param>
+public sealed record MemberPublicKey(Guid PublicKeyId, string PublicKey, string PublicKeySignature, string? SigningPublicKey);

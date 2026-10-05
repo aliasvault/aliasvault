@@ -90,6 +90,18 @@ public class GroupInvitation
     public virtual UserGrantKey? UserGrantKey { get; set; }
 
     /// <summary>
+    /// Gets or sets the inviter's signature over the grant in <see cref="EncryptedVek"/>. Cleared with it when the invitation closes.
+    /// </summary>
+    [StringLength(255)]
+    public string? GrantSignature { get; set; }
+
+    /// <summary>
+    /// Gets or sets the inviter's signing public key that <see cref="GrantSignature"/> verifies under.
+    /// </summary>
+    [StringLength(100)]
+    public string? GrantSignerPublicKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the version of the manifest's VEK that this invitation was encrypted under. Used to check
     /// if this invitation is still valid for the manifest upon accepting.
     /// </summary>

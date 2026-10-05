@@ -292,4 +292,9 @@ public enum ApiErrorCode
     /// The email address is already in use by another account.
     /// </summary>
     CLAIM_TAKEN,
+
+    /// <summary>
+    /// A required signature is missing or does not verify under the caller's signing key.
+    /// </summary>
+    SIGNATURE_INVALID,
 }

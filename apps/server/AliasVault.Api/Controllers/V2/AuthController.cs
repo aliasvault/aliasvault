@@ -444,7 +444,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        if (!model.AccountKeysFitStorageLimits)
+        if (!model.AccountKeysFitStorageLimits || !Signing.VerifyAccountPublicKey(model.SigningPublicKey, model.AccountPublicKey, model.AccountPublicKeySignature))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
@@ -535,6 +535,19 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
                     PublicKey = model.AccountPublicKey!,
                     EncryptedPrivateKey = model.EncryptedAccountPrivateKey!,
+                    PublicKeySignature = model.AccountPublicKeySignature!,
+                    IsPrimary = true,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                });
+
+                context.UserSigningKeys.Add(new UserSigningKey
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    Algorithm = SigningKeyAlgorithm.Ed25519,
+                    PublicKey = model.SigningPublicKey!,
+                    EncryptedPrivateKey = model.EncryptedSigningPrivateKey!,
                     IsPrimary = true,
                     CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
                     UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,

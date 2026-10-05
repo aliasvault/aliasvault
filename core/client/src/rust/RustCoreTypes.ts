@@ -97,6 +97,9 @@ export type AccountKeyBlobs = {
   encryptedVek: string;
   accountPublicKey: string;
   encryptedAccountPrivateKey: string;
+  signingPublicKey: string;
+  encryptedSigningPrivateKey: string;
+  accountPublicKeySignature: string;
 };
 
 /**
@@ -105,6 +108,7 @@ export type AccountKeyBlobs = {
 export type AccountKeyHierarchy = {
   vaultEncryptionKey: string;
   accountPrivateKey: string;
+  signingPrivateKey: string;
   accountKeys: AccountKeyBlobs;
 };
 

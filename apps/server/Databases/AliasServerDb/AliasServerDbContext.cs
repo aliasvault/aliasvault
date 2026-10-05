@@ -218,6 +218,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<UserGrantKey> UserGrantKeys { get; set; }
 
     /// <summary>
+    /// Gets or sets the UserSigningKeys DbSet.
+    /// </summary>
+    public DbSet<UserSigningKey> UserSigningKeys { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultManifestAccessKeys DbSet.
     /// </summary>
     public DbSet<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; }
@@ -509,6 +514,18 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserGrantKeys_User_Primary");
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserSigningKey: the account signing keypair; one primary per user.
+        modelBuilder.Entity<UserSigningKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserSigningKeys_User_Primary");
+            builder.Property(e => e.Algorithm).HasConversion(v => SigningKeyAlgorithms.ToToken(v), v => SigningKeyAlgorithms.Parse(v));
         });
 
         /*

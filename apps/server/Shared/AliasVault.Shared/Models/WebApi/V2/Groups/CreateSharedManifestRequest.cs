@@ -28,6 +28,10 @@ public class CreateSharedManifestRequest
     /// <summary>Gets or sets the asymmetric algorithm the caller's own grant was encrypted with.</summary>
     public required string Algorithm { get; set; }
 
+    /// <summary>Gets or sets the caller's signature over their own grant.</summary>
+    [StringLength(255)]
+    public required string SelfGrantSignature { get; set; }
+
     /// <summary>Gets or sets the name of the manifest, encrypted with the manifest's own key (base64).</summary>
     [StringLength(2000)]
     public string? EncryptedName { get; set; }

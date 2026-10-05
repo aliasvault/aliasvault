@@ -24,6 +24,12 @@ public class VaultKeyResponse
     /// <summary>Gets or sets the account public key.</summary>
     public string? AccountPublicKey { get; set; }
 
+    /// <summary>Gets or sets the account signing public key.</summary>
+    public string? SigningPublicKey { get; set; }
+
+    /// <summary>Gets or sets the account signing private key encrypted with the Account Key.</summary>
+    public string? EncryptedSigningPrivateKey { get; set; }
+
     /// <summary>
     /// Gets or sets the encrypted VEK.
     /// </summary>

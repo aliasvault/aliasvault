@@ -6,6 +6,8 @@ export type VaultKeyResponse = {
   encryptedAccountKey: string;
   encryptedAccountPrivateKey: string | null;
   accountPublicKey: string | null;
+  signingPublicKey: string | null;
+  encryptedSigningPrivateKey: string | null;
   encryptedVek: string | null;
   salt: string;
   encryptionType: string;

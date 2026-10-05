@@ -30,6 +30,7 @@ export * from './VaultKey';
 export * from './UnlockMethodType';
 export * from './ManifestKeyType';
 export * from './VaultKeyAlgorithm';
+export * from './SigningKeyAlgorithm';
 export * from './Groups';
 export * from './CapabilityKeys';
 export * from './StorageStatistics';

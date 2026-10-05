@@ -75,7 +75,7 @@ export class VaultKeyService {
     }
 
     if (!result.vaultKey) {
-      await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY]);
+      await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, StorageKeys.SIGNING_PUBLIC_KEY, StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY]);
       return unlockKeyBase64;
     }
 
@@ -237,6 +237,15 @@ export class VaultKeyService {
       await getPlatform().storage.set(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, vaultKey.encryptedAccountPrivateKey);
     } else {
       await getPlatform().storage.removeMany([StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY]);
+    }
+
+    if (vaultKey.signingPublicKey && vaultKey.encryptedSigningPrivateKey) {
+      await getPlatform().storage.setMany([
+        { key: StorageKeys.SIGNING_PUBLIC_KEY, value: vaultKey.signingPublicKey },
+        { key: StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY, value: vaultKey.encryptedSigningPrivateKey },
+      ]);
+    } else {
+      await getPlatform().storage.removeMany([StorageKeys.SIGNING_PUBLIC_KEY, StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY]);
     }
   }
 }

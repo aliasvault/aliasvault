@@ -396,6 +396,7 @@ public class TestController(
         user.SrpIdentity = request.SrpIdentity;
         context.UserUnlockKeys.RemoveRange(context.UserUnlockKeys.Where(x => x.UserId == user.Id));
         context.UserGrantKeys.RemoveRange(context.UserGrantKeys.Where(x => x.UserId == user.Id));
+        context.UserSigningKeys.RemoveRange(context.UserSigningKeys.Where(x => x.UserId == user.Id));
         context.VaultManifestAccessKeys.RemoveRange(context.VaultManifestAccessKeys.Where(x => x.UserId == user.Id));
 
         var manifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerGroupId == user.PersonalGroupId);
