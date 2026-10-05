@@ -22,6 +22,12 @@ public class AccountKeysUpload
     /// <summary>Maximum accepted length of <see cref="EncryptedAccountPrivateKey"/>.</summary>
     public const int MaxEncryptedPrivateKeyLength = 4000;
 
+    /// <summary>Maximum accepted length of <see cref="SigningPublicKey"/>.</summary>
+    public const int MaxSigningPublicKeyLength = 100;
+
+    /// <summary>Maximum accepted length of <see cref="EncryptedSigningPrivateKey"/> and <see cref="AccountPublicKeySignature"/>.</summary>
+    public const int MaxSigningValueLength = 255;
+
     /// <summary>Gets or sets the Account Key encrypted with the KEK derived from the unlock method.</summary>
     public string? EncryptedAccountKey { get; set; }
 
@@ -34,13 +40,24 @@ public class AccountKeysUpload
     /// <summary>Gets or sets the account private key encrypted with the Account Key.</summary>
     public string? EncryptedAccountPrivateKey { get; set; }
 
+    /// <summary>Gets or sets the public half (base64) of the account signing keypair.</summary>
+    public string? SigningPublicKey { get; set; }
+
+    /// <summary>Gets or sets the account signing private key encrypted with the Account Key.</summary>
+    public string? EncryptedSigningPrivateKey { get; set; }
+
+    /// <summary>Gets or sets the signing key's signature over <see cref="AccountPublicKey"/>.</summary>
+    public string? AccountPublicKeySignature { get; set; }
+
     /// <summary>
-    /// Gets a value indicating whether all four fields are present. A partial upload is not usable.
+    /// Gets a value indicating whether every field is present. A partial upload is not usable.
     /// </summary>
-    public bool IsComplete => !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey);
+    public bool IsComplete => !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
+        && !string.IsNullOrEmpty(SigningPublicKey) && !string.IsNullOrEmpty(EncryptedSigningPrivateKey) && !string.IsNullOrEmpty(AccountPublicKeySignature);
 
     /// <summary>
     /// Gets a value indicating whether every field fits its storage column, so an oversized value is a validation error instead of a database exception.
     /// </summary>
-    public bool FitsStorageLimits => (EncryptedAccountKey?.Length ?? 0) <= MaxWrappedKeyLength && (EncryptedVek?.Length ?? 0) <= MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= MaxEncryptedPrivateKeyLength;
+    public bool FitsStorageLimits => (EncryptedAccountKey?.Length ?? 0) <= MaxWrappedKeyLength && (EncryptedVek?.Length ?? 0) <= MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= MaxEncryptedPrivateKeyLength
+        && (SigningPublicKey?.Length ?? 0) <= MaxSigningPublicKeyLength && (EncryptedSigningPrivateKey?.Length ?? 0) <= MaxSigningValueLength && (AccountPublicKeySignature?.Length ?? 0) <= MaxSigningValueLength;
 }

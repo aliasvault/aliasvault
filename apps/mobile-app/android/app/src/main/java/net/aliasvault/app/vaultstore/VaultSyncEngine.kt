@@ -98,6 +98,7 @@ class VaultSyncEngine(
         (encryptionKey ?: vaultStore.getEncryptionKeyBase64())?.let { request.put("encryptionKey", it) }
         (state("accountPublicKey") as? String)?.let { request.put("accountPublicKey", it) }
         vaultStore.accountPrivateKey?.let { request.put("accountPrivateKey", it) }
+        vaultStore.accountKeyBase64?.let { request.put("accountKey", it) }
         sharing?.let { request.put("sharing", it) }
         return request.toString()
     }

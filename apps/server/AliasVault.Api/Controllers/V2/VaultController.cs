@@ -14,6 +14,7 @@ using AliasVault.Api.Models;
 using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
+using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
@@ -154,6 +155,10 @@ public class VaultController(
                 EncryptedVek = grant?.EncryptedVek,
                 Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
                 EncryptionPublicKey = grant?.UserGrantKeyId != null ? encryptionPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
+                GrantSignature = grant?.GrantSignature,
+                GrantSignerUserId = grant?.GrantSignerUserId,
+                GrantSignerPublicKey = grant?.GrantSignerPublicKey,
+                KeyVersion = grant?.KeyVersion ?? 0,
             };
         }).ToList();
 
@@ -216,6 +221,10 @@ public class VaultController(
         {
             manifest.EncryptedVek = accessKey.EncryptedVek;
             manifest.Algorithm = VaultKeyAlgorithms.ToToken(accessKey.Algorithm);
+            manifest.GrantSignature = accessKey.GrantSignature;
+            manifest.GrantSignerUserId = accessKey.GrantSignerUserId;
+            manifest.GrantSignerPublicKey = accessKey.GrantSignerPublicKey;
+            manifest.KeyVersion = accessKey.KeyVersion;
             if (accessKey.UserGrantKeyId != null)
             {
                 manifest.EncryptionPublicKey = await context.UserGrantKeys.Where(k => k.Id == accessKey.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
@@ -388,7 +397,7 @@ public class VaultController(
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
             }
 
-            if (!accountKeys.FitsStorageLimits)
+            if (!accountKeys.FitsStorageLimits || !Signing.VerifyAccountPublicKey(accountKeys.SigningPublicKey, accountKeys.AccountPublicKey, accountKeys.AccountPublicKeySignature))
             {
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
             }
@@ -431,6 +440,12 @@ public class VaultController(
                     .ToList(),
                 BucketRevisions = model.Buckets.Select(b => new BucketRevision { ManifestId = b.ManifestId, Category = b.Category, Revision = bucketCurrentRevisions[(b.ManifestId, b.Category)] }).ToList(),
             });
+        }
+
+        // A new delivery key must be signed by the caller, so a stolen access token alone cannot redirect incoming mail.
+        if (!await DeliveryKeyChangesAreSignedAsync(context, user.Id, resolved, accountKeys))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
         }
 
         // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated
@@ -533,6 +548,19 @@ public class VaultController(
                             Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
                             PublicKey = accountKeys.AccountPublicKey!,
                             EncryptedPrivateKey = accountKeys.EncryptedAccountPrivateKey!,
+                            PublicKeySignature = accountKeys.AccountPublicKeySignature!,
+                            IsPrimary = true,
+                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                        });
+
+                        context.UserSigningKeys.Add(new UserSigningKey
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = user.Id,
+                            Algorithm = SigningKeyAlgorithm.Ed25519,
+                            PublicKey = accountKeys.SigningPublicKey!,
+                            EncryptedPrivateKey = accountKeys.EncryptedSigningPrivateKey!,
                             IsPrimary = true,
                             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
                             UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
@@ -918,6 +946,31 @@ public class VaultController(
     {
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
         return await ManifestAccessHelper.AccessibleManifests(context, accessScope).Where(x => x.ManifestId == manifestId).Select(x => (Guid?)x.OwnerGroupId).FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Whether every delivery key this write would make primary is signed by the caller (a key that is already primary needs no signature).
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The calling user.</param>
+    /// <param name="resolved">The manifest writes with their rows.</param>
+    /// <param name="accountKeys">The key hierarchy an upgrade push creates, if any.</param>
+    /// <returns>True when every change is signed.</returns>
+    private static async Task<bool> DeliveryKeyChangesAreSignedAsync(AliasServerDbContext context, string userId, List<(ManifestWrite Write, VaultManifest Row)> resolved, AccountKeysUpload? accountKeys)
+    {
+        var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey)).ToList();
+        if (publishing.Count == 0)
+        {
+            return true;
+        }
+
+        var manifestIds = publishing.Select(r => r.Row.ManifestId).ToList();
+        var primaryKeys = await context.VaultManifestDeliveryKeys.Where(k => manifestIds.Contains(k.VaultManifestId) && k.IsPrimary).ToDictionaryAsync(k => k.VaultManifestId, k => k.PublicKey);
+
+        // The upgrade push carries the signing key it signs with; it is stored in the same write.
+        var signingKey = accountKeys?.SigningPublicKey ?? await GrantHelper.GetPrimarySigningKeyAsync(context, userId);
+        return publishing.All(r => primaryKeys.GetValueOrDefault(r.Row.ManifestId) == r.Write.EncryptionPublicKey
+            || Signing.Verify(signingKey, Signing.DeliveryKeyMessage(r.Row.ManifestId, r.Write.EncryptionPublicKey!, r.Write.CurrentRevision), r.Write.EncryptionPublicKeySignature));
     }
 
     /// <summary>

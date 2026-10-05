@@ -65,6 +65,7 @@ public static class LegacyVaultRollback
              */
             await context.VaultManifestAccessKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
             await context.UserGrantKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+            await context.UserSigningKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
             await context.UserUnlockKeysHistory.Where(x => x.UserId == userId).ExecuteDeleteAsync();
             await context.UserUnlockKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
 

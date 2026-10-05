@@ -78,6 +78,27 @@ public class VaultManifestAccessKey
     public virtual UserGrantKey? UserGrantKey { get; set; }
 
     /// <summary>
+    /// Gets or sets the signature over this grant by the user who handed it out. Grant rows only: an account-key row is
+    /// encrypted with the user's own Account Key, which nobody else can do.
+    /// </summary>
+    [StringLength(255)]
+    public string? GrantSignature { get; set; }
+
+    /// <summary>
+    /// Gets or sets the id of the user who signed this grant (grant rows only). Not a foreign key: the grant stays
+    /// verifiable after its signer deletes their account.
+    /// </summary>
+    [StringLength(255)]
+    public string? GrantSignerUserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the signing public key <see cref="GrantSignature"/> verifies under (grant rows only), kept on the row
+    /// for the same reason as <see cref="GrantSignerUserId"/>.
+    /// </summary>
+    [StringLength(100)]
+    public string? GrantSignerPublicKey { get; set; }
+
+    /// <summary>
     /// Gets or sets optional per-key-type fields as JSON, e.g. SRP salt and verifier, KDF parameters etc. Read and written
     /// through <see cref="VaultKeyMetadata"/>.
     /// </summary>

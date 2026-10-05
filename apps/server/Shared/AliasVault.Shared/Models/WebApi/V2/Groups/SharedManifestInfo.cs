@@ -16,6 +16,9 @@ public class SharedManifestInfo
     /// <summary>Gets or sets the manifest id.</summary>
     public required Guid ManifestId { get; set; }
 
+    /// <summary>Gets or sets the version of the manifest's VEK, which a grant on it is signed for.</summary>
+    public int KeyVersion { get; set; }
+
     /// <summary>Gets or sets the members holding a grant on this manifest, i.e. the ones who can open it.</summary>
     public List<string> MemberUserIds { get; set; } = [];
 

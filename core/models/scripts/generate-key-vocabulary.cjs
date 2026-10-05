@@ -109,6 +109,21 @@ const VOCABULARIES = [
       },
     ],
   },
+  {
+    name: 'SigningKeyAlgorithm',
+    helperName: 'SigningKeyAlgorithms',
+    summary: [
+      'The algorithms an account signing keypair can sign with.',
+    ],
+    flags: [],
+    members: [
+      {
+        name: 'Ed25519',
+        token: 'ed25519',
+        summary: 'Ed25519 (RFC 8032), verified strictly.',
+      },
+    ],
+  },
 ];
 
 /** Convert a PascalCase name to camelCase (Swift). */

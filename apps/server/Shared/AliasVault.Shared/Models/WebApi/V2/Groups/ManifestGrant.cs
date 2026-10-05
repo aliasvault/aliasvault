@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// One recipient's access to a shared manifest: the manifest's VEK encrypted with a public key of theirs.
 /// </summary>
@@ -23,4 +25,8 @@ public class ManifestGrant
 
     /// <summary>Gets or sets the vault's name encrypted with the same public key, null when the client encrypted none.</summary>
     public string? EncryptedName { get; set; }
+
+    /// <summary>Gets or sets the caller's signature over the grant.</summary>
+    [StringLength(255)]
+    public required string Signature { get; set; }
 }

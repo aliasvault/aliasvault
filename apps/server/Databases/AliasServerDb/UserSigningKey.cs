@@ -1,5 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="UserGrantKey.cs" company="aliasvault">
+//-----------------------------------------------------------------------
+// <copyright file="UserSigningKey.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -11,14 +11,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using AliasVault.Shared.Models.Enums;
 
 /// <summary>
-/// A user's account-level asymmetric keypair, used exclusively for encrypting shared-manifest VEK
-/// grants: a sharer encrypts the manifest VEK with the recipient's <see cref="PublicKey"/>, and the recipient
-/// decrypts it with the private half, which is stored here encrypted by the Account Key (retrieved from the user's unlock method).
+/// A user's account signing keypair: other clients check what this user published (their grant key, grants they
+/// create) against its public key. The private half is stored encrypted by the Account Key.
 /// </summary>
-public class UserGrantKey
+public class UserSigningKey
 {
     /// <summary>
-    /// Gets or sets the primary key, referenced by grant rows (<see cref="VaultManifestAccessKey.UserGrantKeyId"/>).
+    /// Gets or sets the primary key.
     /// </summary>
     [Key]
     public Guid Id { get; set; }
@@ -36,31 +35,25 @@ public class UserGrantKey
     public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the algorithm this keypair is for, which is what a sharer must encrypt a VEK with.
+    /// Gets or sets the signature algorithm of this keypair.
     /// </summary>
     [StringLength(30)]
-    public required VaultKeyAlgorithm Algorithm { get; set; }
+    public required SigningKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
-    /// Gets or sets the public half (JWK).
+    /// Gets or sets the public half (base64).
     /// </summary>
-    [StringLength(2000)]
+    [StringLength(100)]
     public required string PublicKey { get; set; }
 
     /// <summary>
     /// Gets or sets the private half, encrypted by the user's Account Key.
     /// </summary>
-    [StringLength(4000)]
+    [StringLength(255)]
     public required string EncryptedPrivateKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the user's signature over <see cref="PublicKey"/>, made with their primary <see cref="UserSigningKey"/>.
-    /// </summary>
-    [StringLength(255)]
-    public required string PublicKeySignature { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this is the user's active keypair.
+    /// Gets or sets a value indicating whether this is the user's active signing keypair.
     /// </summary>
     public bool IsPrimary { get; set; }
 

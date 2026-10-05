@@ -91,6 +91,12 @@ class VaultCrypto(
         get() = sessionKeys()?.accountPrivateKey
 
     /**
+     * The Account Key of the unlocked session (base64), which the sync engine opens the signing key with.
+     */
+    internal val accountKeyBase64: String?
+        get() = sessionKeys()?.accountKey?.let { Base64.encodeToString(it, Base64.NO_WRAP) }
+
+    /**
      * What the Account Key opens in the cached account key chain; a legacy key converts (see [LegacyKeyConversion]).
      */
     @Suppress("SwallowedException")

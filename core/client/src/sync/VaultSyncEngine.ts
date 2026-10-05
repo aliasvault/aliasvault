@@ -39,6 +39,7 @@ export type VaultSyncEngineRequest = {
   encryptionKey?: string;
   accountPublicKey?: string;
   accountPrivateKey?: string;
+  accountKey?: string;
   isDirty: boolean;
   mutationSequence: number;
   dirtyScopes: string[];
@@ -536,6 +537,7 @@ export async function buildVaultSyncRequest(operation: VaultSyncOperation, optio
     encryptionKey: sessionKeys?.vaultEncryptionKey,
     accountPublicKey: accountPublicKey ?? undefined,
     accountPrivateKey: sessionKeys?.accountPrivateKey ?? undefined,
+    accountKey: sessionKeys?.accountKey,
     isDirty: isDirty ?? false,
     mutationSequence: mutationSequence ?? 0,
     dirtyScopes: isDirty ? await getDirtyScopes() : [],

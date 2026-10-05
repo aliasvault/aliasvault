@@ -51,6 +51,10 @@ export const StorageKeys = {
   ACCOUNT_PUBLIC_KEY: 'local:accountPublicKey',
   /** The account private key encrypted with the Account Key. */
   ENCRYPTED_ACCOUNT_PRIVATE_KEY: 'local:encryptedAccountPrivateKey',
+  /** The account signing public key (Ed25519, base64). */
+  SIGNING_PUBLIC_KEY: 'local:signingPublicKey',
+  /** The account signing private key encrypted with the Account Key. */
+  ENCRYPTED_SIGNING_PRIVATE_KEY: 'local:encryptedSigningPrivateKey',
 
   /*
    * -- Sync state --
@@ -143,5 +147,7 @@ export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_ACCOUNT_KEY,
   StorageKeys.ACCOUNT_PUBLIC_KEY,
   StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
+  StorageKeys.SIGNING_PUBLIC_KEY,
+  StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
 ];

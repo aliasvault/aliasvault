@@ -26,4 +26,10 @@ public class GroupMemberInfo
 
     /// <summary>Gets or sets that public key itself (JWK).</summary>
     public string? PublicKey { get; set; }
+
+    /// <summary>Gets or sets the member's signature over <see cref="PublicKey"/>.</summary>
+    public string? PublicKeySignature { get; set; }
+
+    /// <summary>Gets or sets the member's signing public key, which <see cref="PublicKeySignature"/> verifies under.</summary>
+    public string? SigningPublicKey { get; set; }
 }

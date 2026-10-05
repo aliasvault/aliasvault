@@ -250,6 +250,12 @@ class VaultStore(
         get() = crypto.accountPrivateKey
 
     /**
+     * The Account Key of the unlocked session (base64), which the sync engine opens the signing key with.
+     */
+    internal val accountKeyBase64: String?
+        get() = crypto.accountKeyBase64
+
+    /**
      * Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or null when the session
      * holds no private key or it does not open the ciphertext.
      */

@@ -13,6 +13,7 @@ using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
 using AliasVault.Auth;
+using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
@@ -77,7 +78,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             .ToListAsync();
         var manifests = await context.VaultManifests
             .Where(m => groupIds.Contains(m.OwnerGroupId))
-            .Select(m => new { m.ManifestId, m.OwnerGroupId, m.CreatedAt })
+            .Select(m => new { m.ManifestId, m.OwnerGroupId, m.KeyVersion, m.CreatedAt })
             .ToListAsync();
         var grantHolders = await GrantHelper.GetGrantHoldersByManifestAsync(context, manifests.ConvertAll(m => m.ManifestId));
 
@@ -109,6 +110,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                     .Select(m => new SharedManifestInfo
                     {
                         ManifestId = m.Manifest.ManifestId,
+                        KeyVersion = m.Manifest.KeyVersion,
                         MemberUserIds = [.. m.Holders],
                         PendingInvitations = canAdminister ? openInvitations.GetValueOrDefault(m.Manifest.ManifestId) ?? [] : [],
                     })],
@@ -119,6 +121,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                     Role = m.Role.ToString(),
                     PublicKeyId = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeyId : null,
                     PublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKey : null,
+                    PublicKeySignature = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeySignature : null,
+                    SigningPublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.SigningPublicKey : null,
                 })],
             });
         }
@@ -170,6 +174,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
+        // The caller signs their own grant like any other, so a reader can tell it was not made up by somebody else.
+        var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
+        if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(model.ManifestId, 0, me.Id, model.SelfPublicKey, model.Algorithm, model.SelfEncryptedVek), model.SelfGrantSignature))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
+        }
+
         // A family holds a handful of manifests, enough to keep e.g. streaming and banking apart without growing without bound.
         if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
         {
@@ -183,6 +194,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             OwnerGroupId = groupId,
             StorageFormat = VaultManifestBase.ManifestStorageFormat,
             RevisionNumber = 0,
+            KeyVersion = 0,
             FileSize = 0,
             Client = ClientHeader,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
@@ -190,7 +202,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         };
         context.VaultManifests.Add(manifest);
         context.VaultManifestShareDetails.Add(new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.GetUtcNow().UtcDateTime, UpdatedAt = timeProvider.GetUtcNow().UtcDateTime });
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, timeProvider.GetUtcNow().UtcDateTime));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, model.SelfGrantSignature, me.Id, signerPublicKey!, timeProvider.GetUtcNow().UtcDateTime));
 
         try
         {
@@ -269,9 +281,16 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         // The key it was encrypted for must really be theirs.
-        if (!await context.UserGrantKeys.AnyAsync(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId))
+        var recipientPublicKey = await context.UserGrantKeys.Where(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId).Select(k => k.PublicKey).FirstOrDefaultAsync();
+        if (recipientPublicKey is null)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
+        }
+
+        var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
+        if (!Signing.Verify(signerPublicKey, Signing.GrantMessage(manifestId, manifestKeyVersion.Value, me.Id, recipientPublicKey, model.Algorithm, model.Grant.EncryptedVek), model.Grant.Signature))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SIGNATURE_INVALID, 400));
         }
 
         if (await ManifestAccessHelper.HoldsGrantAsync(context, model.UserId, manifestId))
@@ -298,6 +317,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             EncryptedVek = model.Grant.EncryptedVek,
             EncryptedName = model.Grant.EncryptedName,
             UserGrantKeyId = model.Grant.RecipientPublicKeyId,
+            GrantSignature = model.Grant.Signature,
+            GrantSignerPublicKey = signerPublicKey,
             VaultKeyVersion = manifestKeyVersion.Value,
             Algorithm = algorithm,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
@@ -602,6 +623,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
+        invitation.GrantSignature = null;
+        invitation.GrantSignerPublicKey = null;
 
         await context.SaveChangesAsync();
         return Ok();
@@ -739,6 +762,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
+        invitation.GrantSignature = null;
+        invitation.GrantSignerPublicKey = null;
         invitation.RespondedAt = timeProvider.GetUtcNow().UtcDateTime;
         invitation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
     }
@@ -753,7 +778,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <returns>Whether the accepting user ends up holding a grant on the manifest.</returns>
     private async Task<bool> PromoteInvitationGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId, int keyVersion)
     {
-        if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null)
+        if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null || invitation.GrantSignature is null || invitation.GrantSignerPublicKey is null)
         {
             return false;
         }
@@ -764,7 +789,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return true;
         }
 
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, timeProvider.GetUtcNow().UtcDateTime));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, invitation.GrantSignature, invitation.InviterUserId, invitation.GrantSignerPublicKey, timeProvider.GetUtcNow().UtcDateTime));
 
         return true;
     }

@@ -95,6 +95,9 @@ public final class VaultSyncEngine {
         if let privateKey = vaultStore.accountPrivateKey {
             request["accountPrivateKey"] = privateKey
         }
+        if let accountKey = vaultStore.accountKeyBase64 {
+            request["accountKey"] = accountKey
+        }
         if let sharing = sharing {
             request["sharing"] = sharing
         }

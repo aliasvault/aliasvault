@@ -45,6 +45,11 @@ public class VaultStore {
         return sessionKeys?.accountPrivateKey
     }
 
+    /// The Account Key of the unlocked session (base64), which the sync engine opens the signing key with.
+    internal var accountKeyBase64: String? {
+        return sessionKeys?.accountKey.base64EncodedString()
+    }
+
     /// What the Account Key opens in the cached account key chain.
     private var sessionKeys: SessionKeys? {
         guard let accountKey = accountKey else {

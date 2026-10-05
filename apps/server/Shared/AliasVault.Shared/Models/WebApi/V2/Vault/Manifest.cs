@@ -54,4 +54,16 @@ public class Manifest
     /// Gets or sets the public key <see cref="EncryptedVek"/> was encrypted with.
     /// </summary>
     public string? EncryptionPublicKey { get; set; }
+
+    /// <summary>Gets or sets the granter's signature over the grant in <see cref="EncryptedVek"/>.</summary>
+    public string? GrantSignature { get; set; }
+
+    /// <summary>Gets or sets the id of the user who signed the grant.</summary>
+    public string? GrantSignerUserId { get; set; }
+
+    /// <summary>Gets or sets the granter's signing public key that <see cref="GrantSignature"/> verifies under.</summary>
+    public string? GrantSignerPublicKey { get; set; }
+
+    /// <summary>Gets or sets the version of the VEK in <see cref="EncryptedVek"/>, which the grant is signed for.</summary>
+    public int KeyVersion { get; set; }
 }

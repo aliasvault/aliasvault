@@ -62,6 +62,10 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             .Where(x => x.UserId == user.Id && x.IsPrimary)
             .Select(x => new { x.PublicKey, x.EncryptedPrivateKey })
             .FirstOrDefaultAsync();
+        var signingKeypair = await context.UserSigningKeys
+            .Where(x => x.UserId == user.Id && x.IsPrimary)
+            .Select(x => new { x.PublicKey, x.EncryptedPrivateKey })
+            .FirstOrDefaultAsync();
 
         // Get the KEK derivation parameters.
         var credentials = VaultKeyMetadata.Parse(unlockKey.Metadata).RequireSrpCredentials();
@@ -75,6 +79,8 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
                 EncryptedVek = encryptedVek,
                 AccountPublicKey = accountKeypair?.PublicKey,
                 EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,
+                SigningPublicKey = signingKeypair?.PublicKey,
+                EncryptedSigningPrivateKey = signingKeypair?.EncryptedPrivateKey,
                 Salt = credentials.Salt,
                 EncryptionType = credentials.EncryptionType,
                 EncryptionSettings = credentials.EncryptionSettings,

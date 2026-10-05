@@ -539,47 +539,21 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// Updates the user's public key based on the provided public key. If it already exists, do nothing.
+    /// Stores the user's first delivery public key. A v1 push never replaces an existing one: changing it needs a signature
+    /// by the account signing key, which only the v2 endpoint checks.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="personalManifestId">The caller's personal manifest, which their personal keys are scoped to.</param>
-    /// <param name="newPublicKey">The new public key to sync and set as default.</param>
+    /// <param name="newPublicKey">The public key to store.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task UpdateUserPublicKey(AliasServerDbContext context, Guid personalManifestId, string newPublicKey)
     {
-        var publicKeyExists = await context.VaultManifestDeliveryKeys
-            .AnyAsync(x => x.VaultManifestId == personalManifestId && x.IsPrimary && x.PublicKey == newPublicKey);
-
-        // If the public key already exists and is marked as primary (default), do nothing.
-        if (publicKeyExists)
+        if (await context.VaultManifestDeliveryKeys.AnyAsync(x => x.VaultManifestId == personalManifestId))
         {
             return;
         }
 
-        // Update all existing personal keys to not be primary.
-        var otherKeys = await context.VaultManifestDeliveryKeys
-            .Where(x => x.VaultManifestId == personalManifestId)
-            .ToListAsync();
-
-        foreach (var key in otherKeys)
-        {
-            key.IsPrimary = false;
-            key.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-        }
-
-        // Check if the new public key already exists but is not marked as primary.
-        var existingPublicKey = otherKeys.FirstOrDefault(x => x.PublicKey == newPublicKey);
-        if (existingPublicKey is not null)
-        {
-            // Set the existing key to be primary.
-            existingPublicKey.IsPrimary = true;
-            existingPublicKey.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-            await context.SaveChangesAsync();
-            return;
-        }
-
-        // Public key is new, so create it.
-        var newPublicKeyEntry = new VaultManifestDeliveryKey
+        context.VaultManifestDeliveryKeys.Add(new VaultManifestDeliveryKey
         {
             VaultManifestId = personalManifestId,
             Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
@@ -587,8 +561,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             IsPrimary = true,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-        };
-        context.VaultManifestDeliveryKeys.Add(newPublicKeyEntry);
+        });
 
         await context.SaveChangesAsync();
     }
