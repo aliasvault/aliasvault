@@ -5,6 +5,7 @@
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import {
   DEFAULT_LANGUAGE,
@@ -13,14 +14,20 @@ import {
   getNestedValue
 } from './config';
 
-import { storage } from '#imports';
+import { browser, storage } from '#imports';
+
+/** True in a content script, which has no storage.local access and asks the background for the language. */
+const isContentScript = typeof location !== 'undefined' && location.origin !== new URL(browser.runtime.getURL('/')).origin;
 
 /**
  * Get current language from storage
  */
 export async function getCurrentLanguage(): Promise<string> {
   try {
-    // Use extension storage API exclusively (reliable across all contexts)
+    if (isContentScript) {
+      return await sendMessage('GET_LANGUAGE');
+    }
+
     const langFromStorage = await storage.getItem(StorageKeys.LANGUAGE) as string;
     if (langFromStorage && LANGUAGE_CODES.includes(langFromStorage)) {
       return langFromStorage;

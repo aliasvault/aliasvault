@@ -22,22 +22,22 @@ import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleSc
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
-import { FieldKey, ItemTypes, createSystemField, type Item } from '@aliasvault/models/vault';
+import { FieldKey, ItemTypes, createSystemField, getFieldValue, itemToCredential, normalizeTotpPeriod, type Credential, type Item } from '@aliasvault/models/vault';
 
-import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
+import { clearAllSavePromptState, handleGetLastAutofilled, handleStoreLastAutofilled, isRelatedDomain } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { sendMessage, type TotpSecret, type VaultBlobStoreOptions } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpCodePreview, type VaultBlobStoreOptions } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
-import type { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
+import type { AutofillItemSummary, ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
@@ -282,6 +282,79 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
 }
 
 /**
+ * Where an autofill message came from, as reported by the browser.
+ */
+export type AutofillSender = {
+  tabId?: number;
+  pageUrl: string | null;
+};
+
+/**
+ * Reduce an item to what the in-page popup shows before the user picks it.
+ */
+function toAutofillSummary(item: Item): AutofillItemSummary {
+  const firstName = getFieldValue(item, FieldKey.AliasFirstName);
+  const lastName = getFieldValue(item, FieldKey.AliasLastName);
+  const login = getFieldValue(item, FieldKey.LoginUsername) || getFieldValue(item, FieldKey.LoginEmail);
+
+  const details: string[] = [];
+  if (firstName && lastName) {
+    details.push(`${firstName} ${lastName}`);
+  }
+  if (login) {
+    details.push(login);
+  }
+
+  return { Id: item.Id, ManifestId: item.ManifestId, Name: item.Name ?? '', Logo: item.Logo, Details: details.join(' · ') };
+}
+
+/**
+ * Whether an item carries a username, email or password, so it can fill a login form.
+ */
+function hasFillableLoginField(item: Item): boolean {
+  return [FieldKey.LoginUsername, FieldKey.LoginEmail, FieldKey.LoginPassword].some((key) => (getFieldValue(item, key) ?? '').trim() !== '');
+}
+
+/**
+ * Whether `url` is an http(s) URL on the sender's page (same host or same root domain).
+ */
+async function isUrlOnSenderPage(url: string, sender: AutofillSender): Promise<boolean> {
+  if (!sender.pageUrl) {
+    return false;
+  }
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return false;
+    }
+    return await isRelatedDomain(parsed.hostname.toLowerCase(), new URL(sender.pageUrl).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether the item is the one the background last handed out for autofill in the sender's tab, and `url` is on the sender's page.
+ */
+async function isLastAutofilledOnSenderPage(item: ItemRef, url: string, sender: AutofillSender): Promise<boolean> {
+  if (sender.tabId === undefined || !await isUrlOnSenderPage(url, sender)) {
+    return false;
+  }
+  const last = handleGetLastAutofilled({ tabId: sender.tabId }).credential;
+  return last !== null && last.itemId === item.Id && last.manifestId === item.ManifestId;
+}
+
+/**
+ * Remember an item the user picked on the sender's page (recently selected for its root domain) and record the use.
+ */
+async function recordAutofill(item: ItemRef, sender: AutofillSender): Promise<void> {
+  if (sender.pageUrl) {
+    await RecentlySelectedItemService.setRecentlySelected({ Id: item.Id, ManifestId: item.ManifestId }, await extractRootDomainFromUrl(sender.pageUrl));
+  }
+  void handleRecordItemUsage({ itemId: item.Id, manifestId: item.ManifestId, action: 'autofill' });
+}
+
+/**
  * Filter items by URL matching.
  *
  * @param items - The items to filter
@@ -374,13 +447,14 @@ function filterItemsBySearchTerm(items: Item[], searchTerm: string): Item[] {
 }
 
 /**
- * Get items filtered by URL matching (for autofill).
- * Filters items in the background script before sending to reduce message payload size.
+ * Get the fillable items matching the sender's page (for autofill), as summaries.
  *
- * @param message - Filtering parameters: currentUrl, pageTitle, matchingMode, skipRecentlySelected
+ * @param message - Filtering parameters: pageTitle, matchingMode, includeRecentlySelected
+ * @param sender - The sending frame; its URL is what items are matched against.
  */
 export async function handleGetFilteredItems(
-  message: { currentUrl: string, pageTitle: string, matchingMode?: string, includeRecentlySelected?: boolean }
+  message: { pageTitle: string, matchingMode?: string, includeRecentlySelected?: boolean },
+  sender: AutofillSender
 ) : Promise<messageItemsResponse> {
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -390,18 +464,22 @@ export async function handleGetFilteredItems(
   }
 
   try {
+    if (!sender.pageUrl) {
+      return { success: true, items: [] };
+    }
+
     const sqliteClient = await createVaultSqliteClient();
-    const allItems = sqliteClient.items.getAll();
-    const filteredItems = await filterItemsByUrl(allItems, message.currentUrl, message.pageTitle, message.matchingMode);
+    const allItems = sqliteClient.items.getAll().filter(hasFillableLoginField);
+    const filteredItems = await filterItemsByUrl(allItems, sender.pageUrl, message.pageTitle, message.matchingMode);
 
     // Prioritize recently selected item for multi-step login flows (opt-in only)
     if (message.includeRecentlySelected) {
-      const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
+      const rootDomain = await extractRootDomainFromUrl(sender.pageUrl);
       const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, allItems);
-      return { success: true, items: prioritized.items, recentlySelected: prioritized.recentlySelected };
+      return { success: true, items: prioritized.items.map(toAutofillSummary), recentlySelected: prioritized.recentlySelected };
     }
 
-    return { success: true, items: filteredItems };
+    return { success: true, items: filteredItems.map(toAutofillSummary) };
   } catch (error) {
     logFailure('Error getting filtered items', error);
     // E-304: Item read failed
@@ -410,8 +488,7 @@ export async function handleGetFilteredItems(
 }
 
 /**
- * Get items filtered by text search query.
- * Searches across entire vault (name, fields) and returns matches.
+ * Search the fillable items of the entire vault (name, fields), as summaries.
  *
  * @param message - Search parameters: searchTerm
  */
@@ -427,10 +504,10 @@ export async function handleGetSearchItems(
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const allItems = sqliteClient.items.getAll();
+    const allItems = sqliteClient.items.getAll().filter(hasFillableLoginField);
     const searchResults = filterItemsBySearchTerm(allItems, message.searchTerm);
 
-    return { success: true, items: searchResults };
+    return { success: true, items: searchResults.map(toAutofillSummary) };
   } catch (error) {
     logFailure('Error searching items', error);
     // E-304: Item read failed during search
@@ -850,8 +927,13 @@ async function syncIsOnHold(): Promise<boolean> {
  * @returns Whether a duplicate exists and the matching item info if found.
  */
 export async function handleCheckLoginDuplicate(
-  message: { domain: string; username: string }
+  message: { domain: string; username: string },
+  sender: AutofillSender
 ): Promise<DuplicateCheckResponse> {
+  if (!sender.pageUrl || !await isRelatedDomain(message.domain.toLowerCase(), new URL(sender.pageUrl).hostname.toLowerCase())) {
+    return { success: false, isDuplicate: false };
+  }
+
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -942,8 +1024,13 @@ export async function handleSaveLoginCredential(
     password: string;
     url: string;
     domain: string;
-  }
+  },
+  sender: AutofillSender
 ): Promise<SaveLoginResponse> {
+  if (!await isUrlOnSenderPage(message.url, sender)) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
+  }
+
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1005,11 +1092,17 @@ export async function handleSaveLoginCredential(
  * Add a URL to an existing credential in the vault.
  * This is used when a user autofills from an existing credential on a new site
  * and wants to add that URL to the credential instead of creating a new one.
+ * Only the item last autofilled in the sender's tab can be changed, and only with a URL on the sender's page.
  *
  * @param message - The item ID and URL to add.
+ * @param sender - The sending frame.
  * @returns Success status.
  */
-export async function handleAddUrlToCredential(message: { itemId: string; manifestId: string; url: string }): Promise<{ success: boolean; error?: string }> {
+export async function handleAddUrlToCredential(message: { itemId: string; manifestId: string; url: string }, sender: AutofillSender): Promise<{ success: boolean; error?: string }> {
+  if (!await isLastAutofilledOnSenderPage({ Id: message.itemId, ManifestId: message.manifestId }, message.url, sender)) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
+  }
+
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1072,8 +1165,11 @@ export async function handleAddUrlToCredential(message: { itemId: string; manife
 /**
  * Check whether a URL is already linked (host-equivalent) to a credential.
  */
-export async function handleIsUrlLinkedToCredential(message: { itemId: string; manifestId: string; url: string }): Promise<{ linked: boolean }> {
+export async function handleIsUrlLinkedToCredential(message: { itemId: string; manifestId: string; url: string }, sender: AutofillSender): Promise<{ linked: boolean }> {
   try {
+    if (!await isLastAutofilledOnSenderPage({ Id: message.itemId, ManifestId: message.manifestId }, message.url, sender)) {
+      return { linked: false };
+    }
     const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
       return { linked: false };
@@ -1120,13 +1216,15 @@ export async function handleGetLoginSaveSettings(): Promise<{
 }
 
 /**
- * Get items that have TOTP codes, filtered by URL matching.
+ * Get items that have TOTP codes and match the sender's page, as summaries.
  * Used for TOTP autofill popup to show only items with 2FA codes.
  *
- * @param message - Filtering parameters: currentUrl, pageTitle, matchingMode
+ * @param message - Filtering parameters: pageTitle, matchingMode
+ * @param sender - The sending frame; its URL is what items are matched against.
  */
 export async function handleGetItemsWithTotp(
-  message: { currentUrl: string, pageTitle: string, matchingMode?: string }
+  message: { pageTitle: string, matchingMode?: string },
+  sender: AutofillSender
 ): Promise<messageItemsResponse> {
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -1135,6 +1233,10 @@ export async function handleGetItemsWithTotp(
   }
 
   try {
+    if (!sender.pageUrl) {
+      return { success: true, items: [] };
+    }
+
     const sqliteClient = await createVaultSqliteClient();
     const allItems = sqliteClient.items.getAll();
 
@@ -1142,13 +1244,13 @@ export async function handleGetItemsWithTotp(
     const itemsWithTotp = allItems.filter((item: Item) => item.HasTotp === true);
 
     // Then filter by URL matching using shared logic
-    const filteredItems = await filterItemsByUrl(itemsWithTotp, message.currentUrl, message.pageTitle, message.matchingMode);
+    const filteredItems = await filterItemsByUrl(itemsWithTotp, sender.pageUrl, message.pageTitle, message.matchingMode);
 
     // Prioritize recently selected item for multi-step login flows
-    const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
+    const rootDomain = await extractRootDomainFromUrl(sender.pageUrl);
     const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, itemsWithTotp);
 
-    return { success: true, items: prioritized.items, recentlySelected: prioritized.recentlySelected };
+    return { success: true, items: prioritized.items.map(toAutofillSummary), recentlySelected: prioritized.recentlySelected };
   } catch (error) {
     logFailure('Error getting items with TOTP', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
@@ -1180,7 +1282,7 @@ export async function handleSearchItemsWithTotp(
     // Then search using shared logic
     const searchResults = filterItemsBySearchTerm(itemsWithTotp, message.searchTerm);
 
-    return { success: true, items: searchResults };
+    return { success: true, items: searchResults.map(toAutofillSummary) };
   } catch (error) {
     logFailure('Error searching items with TOTP', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
@@ -1188,14 +1290,13 @@ export async function handleSearchItemsWithTotp(
 }
 
 /**
- * Get TOTP secret keys for items.
- * Used by content script to generate codes locally for live preview.
+ * Generate the current TOTP code for each item, for the in-page live preview. The secrets stay in the background.
  *
- * @param message - The items to get TOTP secrets for; the result is keyed by `scopedKey(ManifestId, Id)`
+ * @param message - The items to generate codes for; the result is keyed by `scopedKey(ManifestId, Id)`
  */
-export async function handleGetTotpSecrets(
+export async function handleGetTotpCodes(
   message: { items: ItemRef[] }
-): Promise<{ success: boolean; secrets?: Record<string, TotpSecret>; error?: string }> {
+): Promise<{ success: boolean; codes?: Record<string, TotpCodePreview>; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1204,36 +1305,33 @@ export async function handleGetTotpSecrets(
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const secrets: Record<string, TotpSecret> = {};
+    const codes: Record<string, TotpCodePreview> = {};
 
     for (const item of message.items) {
-      const totpCodes = sqliteClient.items.getTotpCodesForItem(item);
-      if (totpCodes.length > 0) {
-        const totpCode = totpCodes[0];
-        secrets[scopedKey(item.ManifestId, item.Id)] = {
-          SecretKey: totpCode.SecretKey,
-          Algorithm: totpCode.Algorithm,
-          Digits: totpCode.Digits,
-          Period: totpCode.Period
-        };
+      const totpCode = sqliteClient.items.getTotpCodesForItem(item)[0];
+      const code = totpCode ? generateTotpCode(totpCode.SecretKey, totpCode) : null;
+      if (code) {
+        codes[scopedKey(item.ManifestId, item.Id)] = { Code: code, Period: normalizeTotpPeriod(totpCode.Period) };
       }
     }
 
-    return { success: true, secrets };
+    return { success: true, codes };
   } catch (error) {
-    logFailure('Error getting TOTP secrets', error);
+    logFailure('Error generating TOTP codes', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
 
 /**
  * Generate a TOTP code for a specific item.
- * Used by content script to fill TOTP fields.
+ * Used by content script to fill TOTP fields; with `autofill` the pick is recorded for the sender's page.
  *
  * @param message - The item ID to generate TOTP code for
+ * @param sender - The sending frame.
  */
 export async function handleGenerateTotpCode(
-  message: { itemId: string; manifestId: string }
+  message: { itemId: string; manifestId: string; autofill?: boolean },
+  sender: AutofillSender
 ): Promise<{ success: boolean; code?: string; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -1252,6 +1350,10 @@ export async function handleGenerateTotpCode(
     const code = generateTotpCode(totpCodes[0].SecretKey, totpCodes[0]);
     if (!code) {
       return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+    }
+
+    if (message.autofill) {
+      await recordAutofill({ Id: message.itemId, ManifestId: message.manifestId }, sender);
     }
 
     return { success: true, code };
@@ -1289,18 +1391,50 @@ export async function handleRecordItemUsage(
 }
 
 /**
- * Set recently selected item for smart autofill.
+ * Hand out the fill data of the one item the user picked in the in-page popup, and remember the pick for the sender's tab.
+ *
+ * @param message - The item to fill.
+ * @param sender - The sending frame.
  */
-export async function handleSetRecentlySelected(
-  message: { itemId: string; manifestId: string; domain: string }
-): Promise<{ success: boolean }> {
+export async function handleGetAutofillCredential(
+  message: { itemId: string; manifestId: string },
+  sender: AutofillSender
+): Promise<{ success: boolean; credential?: Credential; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
   try {
-    const rootDomain = await extractRootDomain(message.domain);
-    await RecentlySelectedItemService.setRecentlySelected({ Id: message.itemId, ManifestId: message.manifestId }, rootDomain);
-    return { success: true };
+    const sqliteClient = await createVaultSqliteClient();
+    const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
+    if (!item || !sender.pageUrl) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+    }
+
+    const { Id, ServiceName, Username, Password, Alias } = itemToCredential(item);
+
+    if (sender.tabId !== undefined) {
+      handleStoreLastAutofilled({
+        tabId: sender.tabId,
+        credential: {
+          itemId: item.Id,
+          manifestId: item.ManifestId,
+          itemName: ServiceName,
+          username: Username || Alias.Email || '',
+          domain: new URL(sender.pageUrl).hostname,
+          timestamp: Date.now(),
+          faviconUrl: SqliteClient.imgSrcFromBytes(item.Logo) ?? undefined,
+        },
+      });
+    }
+    await recordAutofill(item, sender);
+
+    return { success: true, credential: { Id, ServiceName, Username, Password, Alias } };
   } catch (error) {
-    logFailure('Error setting recently selected item', error);
-    return { success: false };
+    logFailure('Error getting autofill credential', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
 

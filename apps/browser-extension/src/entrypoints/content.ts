@@ -6,18 +6,16 @@ import '@/entrypoints/contentScript/style.css';
 import { setPlatform } from '@aliasvault/client/platform';
 
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
-import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
+import { fillCreatedItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { consumeUnlockResume, getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
-import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
-import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
 import type { CapturedLogin } from '@/utils/loginDetector';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -29,7 +27,7 @@ import { extensionPlatform } from '@/platform/ExtensionPlatform';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { Item } from '@aliasvault/models/vault';
 
-import { defineContentScript, createShadowRootUi, storage } from '#imports';
+import { defineContentScript, createShadowRootUi } from '#imports';
 
 setPlatform(extensionPlatform);
 
@@ -52,13 +50,13 @@ const POPUP_RUNTIME: Record<PopupType, {
   credentials: {
     open: openAutofillPopup,
     /** Resolves true when the user has the credential autofill popup enabled. */
-    enabled: () => LocalPreferencesService.getGlobalAutofillPopupEnabled(),
+    enabled: async () => (await sendMessage('GET_CONTENT_SETTINGS')).credentialPopupEnabled,
     matchMessage: 'GET_FILTERED_ITEMS',
   },
   totp: {
     open: openTotpPopup,
     /** Resolves true when the user has the TOTP autofill popup enabled. */
-    enabled: () => LocalPreferencesService.getTotpAutofillEnabled(),
+    enabled: async () => (await sendMessage('GET_CONTENT_SETTINGS')).totpPopupEnabled,
     matchMessage: 'GET_ITEMS_WITH_TOTP',
   },
 };
@@ -95,13 +93,8 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
  * @param domain - The domain to block from future save prompts.
  */
 async function handleNeverSaveForDomain(domain: string): Promise<void> {
-  // Store the blocked domain in local storage
   try {
-    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
-    if (!blockedDomains.includes(domain)) {
-      blockedDomains.push(domain);
-      await storage.setItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS, blockedDomains);
-    }
+    await sendMessage('BLOCK_LOGIN_SAVE_FOR_DOMAIN', { domain });
   } catch (error) {
     logFailure('[AliasVault] Error saving blocked domain', error);
   }
@@ -159,8 +152,7 @@ async function isLoginSaveEnabled(): Promise<boolean> {
  */
 async function isDomainBlocked(domain: string): Promise<boolean> {
   try {
-    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
-    return blockedDomains.includes(domain);
+    return await sendMessage('IS_LOGIN_SAVE_BLOCKED', { domain });
   } catch {
     return false;
   }
@@ -706,7 +698,7 @@ export default defineContentScript({
           // Close any open inline popup before filling.
           removeExistingPopup(container);
 
-          await fillItem(item as Item, resolvedInput);
+          await fillCreatedItem(item as Item, resolvedInput);
 
           return { success: true };
         });
@@ -739,9 +731,8 @@ export default defineContentScript({
          */
         async function hasMatchForCurrentUrl(popupType: PopupType): Promise<boolean> {
           try {
-            const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+            const { matchingMode } = await sendMessage('GET_CONTENT_SETTINGS');
             const response = await sendMessage(POPUP_RUNTIME[popupType].matchMessage, {
-              currentUrl: window.location.href,
               pageTitle: document.title,
               matchingMode,
             });
@@ -756,20 +747,7 @@ export default defineContentScript({
          * @returns True if site allows autofill, false if site has disabled it
          */
         async function isSiteAllowed(): Promise<boolean> {
-          const disabledSites = await LocalPreferencesService.getDisabledSites();
-          const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
-          const currentHostname = window.location.hostname;
-
-          if (disabledSites.includes(currentHostname)) {
-            return false;
-          }
-
-          const temporaryDisabledUntil = temporaryDisabledSites[currentHostname];
-          if (temporaryDisabledUntil && Date.now() < temporaryDisabledUntil) {
-            return false;
-          }
-
-          return true;
+          return (await sendMessage('GET_CONTENT_SETTINGS')).siteAutofillAllowed;
         }
 
         /**
@@ -838,7 +816,7 @@ export default defineContentScript({
 
             if (authStatus.isVaultLocked) {
               // Check if the user has dismissed the vault locked popup
-              const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+              const { vaultLockedDismissUntil: dismissUntil } = await sendMessage('GET_CONTENT_SETTINGS');
               if (dismissUntil && Date.now() < dismissUntil) {
                 // User has dismissed the popup, don't show it again
                 return;

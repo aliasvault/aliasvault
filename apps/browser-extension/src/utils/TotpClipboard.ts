@@ -1,4 +1,3 @@
-import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -11,7 +10,7 @@ import type { ItemRef } from '@aliasvault/client/database/ItemRef';
  */
 export async function copyTotpToClipboardIfEnabled(item: ItemRef): Promise<void> {
   try {
-    if (!await LocalPreferencesService.getAutoCopyTotpOnAutofill()) {
+    if (!(await sendMessage('GET_CONTENT_SETTINGS')).autoCopyTotpOnAutofill) {
       return;
     }
 

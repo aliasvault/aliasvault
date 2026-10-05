@@ -1,5 +1,4 @@
-import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
-import { itemToCredential, FieldKey } from '@aliasvault/models/vault';
+import { itemToCredential } from '@aliasvault/models/vault';
 
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
@@ -8,13 +7,12 @@ import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
-import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { Item } from '@aliasvault/models/vault';
+import type { Credential, Item } from '@aliasvault/models/vault';
 
 /**
  * Global timestamp to track popup debounce time.
@@ -94,13 +92,40 @@ export function validateInputField(element: Element | null): { isValid: boolean;
 }
 
 /**
- * Fill item into current form.
- * Converts the Item to Credential format for FormFiller compatibility.
+ * Fill the item the user picked in the autofill popup. Its fill data comes from the background, which also records the pick.
  *
  * @param item - The item to fill.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export async function fillItem(item: Item, input: HTMLInputElement): Promise<void> {
+export async function fillItem(item: ItemRef, input: HTMLInputElement): Promise<void> {
+  await fillForm(input, async () => {
+    const response = await sendMessage('GET_AUTOFILL_CREDENTIAL', { itemId: item.Id, manifestId: item.ManifestId });
+    if (!response.success || !response.credential) {
+      logFailure('Failed to get autofill credential', response.error);
+      return null;
+    }
+    return response.credential;
+  });
+
+  // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
+  await copyTotpToClipboardIfEnabled(item);
+}
+
+/**
+ * Fill an item the extension popup just created (and sent to this page) into the form of `input`.
+ *
+ * @param item - The created item.
+ * @param input - The input element the create flow started from.
+ */
+export async function fillCreatedItem(item: Item, input: HTMLInputElement): Promise<void> {
+  await fillForm(input, () => Promise.resolve(itemToCredential(item)));
+  await copyTotpToClipboardIfEnabled(item);
+}
+
+/**
+ * Fill the form of `input` with the credential `getCredential` resolves, which is only asked for once a form is found.
+ */
+async function fillForm(input: HTMLInputElement, getCredential: () => Promise<Credential | null>): Promise<void> {
   // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
   hidePopupFor(300);
 
@@ -117,46 +142,13 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
     return;
   }
 
-  // Convert Item to Credential for FormFiller compatibility
-  const credential = itemToCredential(item);
+  const credential = await getCredential();
+  if (!credential) {
+    return;
+  }
+
   const formFiller = new FormFiller(form, triggerInputEvents);
   await formFiller.fillFields(credential);
-
-  // Track this autofill for the "Add URL to existing credential" feature
-  const usernameField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginUsername);
-  const emailField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginEmail);
-  const usernameValue = usernameField?.Value ?? emailField?.Value;
-  const username = typeof usernameValue === 'string' ? usernameValue : '';
-
-  // Convert logo to data URL for display in prompts
-  const faviconUrl = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : undefined;
-
-  const lastAutofilled: LastAutofilledCredential = {
-    itemId: item.Id,
-    manifestId: item.ManifestId,
-    itemName: item.Name || '',
-    username,
-    domain: window.location.hostname,
-    timestamp: Date.now(),
-    faviconUrl: faviconUrl ?? undefined,
-  };
-
-  sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled).catch(() => {
-    // Ignore errors
-  });
-
-  // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, manifestId: item.ManifestId, domain: window.location.hostname }).catch(() => {
-    // Ignore errors
-  });
-
-  // Record the use in the vault's Stats bucket (last used + counts).
-  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, manifestId: item.ManifestId, action: 'autofill' }).catch(() => {
-    // Ignore errors
-  });
-
-  // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
-  await copyTotpToClipboardIfEnabled(item);
 }
 
 /**
@@ -427,8 +419,8 @@ export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Prom
     // Ignore errors as background script might not be ready
   });
 
-  // Generate TOTP code via background
-  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId });
+  // Generate TOTP code via background, which also records the pick
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId, autofill: true });
 
   if (!response.success || !response.code) {
     logFailure('Failed to generate TOTP code', response.error);
@@ -440,16 +432,6 @@ export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Prom
 
   // Trigger input events for form validation
   triggerInputEvents(input);
-
-  // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, manifestId: item.ManifestId, domain: window.location.hostname }).catch(() => {
-    // Ignore errors as background script might not be ready
-  });
-
-  // Record the use in the vault's Stats bucket (last used + counts).
-  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, manifestId: item.ManifestId, action: 'autofill' }).catch(() => {
-    // Ignore errors as background script might not be ready
-  });
 }
 
 /**

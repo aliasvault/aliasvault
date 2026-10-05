@@ -1,16 +1,15 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
-import { generateTotpCode, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
+import { getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
 import { createUiIconElement, ItemTypeIconSvgs, uiIconSvg } from '@aliasvault/models/icons';
-import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models/vault';
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
 import { DEFAULT_POPUP_TYPE, type PopupType } from '@/utils/autofill/PopupTypes';
-import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpCodePreview } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
+import type { AutofillItemSummary } from '@/utils/types/messaging/ItemsResponse';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -18,7 +17,6 @@ import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { Item } from '@aliasvault/models/vault';
 
 /**
  * The input element the autofill popup was most recently shown for. Used as a fallback fill
@@ -111,15 +109,18 @@ function cleanupTotpInterval(): void {
 }
 
 /**
- * Generate a TOTP code from a secret and its stored parameters, formatted with a space in the middle.
+ * Format a TOTP code with a space in the middle.
  */
-function formatTotpCodeForSecret(secret: TotpSecret): string {
-  const code = generateTotpCode(secret.SecretKey, secret);
-  if (!code) {
-    return '--- ---';
-  }
+function formatTotpCode(code: string): string {
   const half = code.length % 2 === 0 ? code.length / 2 : 3;
   return `${code.slice(0, half)} ${code.slice(half)}`;
+}
+
+/**
+ * The TOTP time step the current moment falls in for `period`; once it changes, the previewed codes are stale.
+ */
+function totpTimeStep(period: number): number {
+  return Math.floor(Date.now() / 1000 / period);
 }
 
 /**
@@ -179,18 +180,17 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
-    const currentUrl = getCurrentAutofillFrameUrl();
-    if (!currentUrl) {
+    // The background matches on the sender's own frame URL.
+    if (!getCurrentAutofillFrameUrl()) {
       removeExistingPopup(container);
       document.removeEventListener('keydown', handleEnterKey);
       return;
     }
 
     // Load autofill matching mode setting to send to background for filtering
-    const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+    const { matchingMode } = await sendMessage('GET_CONTENT_SETTINGS');
 
     const response = await sendMessage('GET_FILTERED_ITEMS', {
-      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode,
       includeRecentlySelected: true // Enable for multi-step login autofill
@@ -201,7 +201,7 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
-        const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+        const { vaultLockedDismissUntil: dismissUntil } = await sendMessage('GET_CONTENT_SETTINGS');
         if (dismissUntil && Date.now() < dismissUntil) {
           // User has dismissed the popup, don't show it again
           removeExistingPopup(container);
@@ -241,17 +241,16 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
-    const currentUrl = getCurrentAutofillFrameUrl();
-    if (!currentUrl) {
+    // The background matches on the sender's own frame URL.
+    if (!getCurrentAutofillFrameUrl()) {
       removeExistingPopup(container);
       document.removeEventListener('keydown', handleEnterKey);
       return;
     }
 
-    const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+    const { matchingMode } = await sendMessage('GET_CONTENT_SETTINGS');
 
     const response = await sendMessage('GET_ITEMS_WITH_TOTP', {
-      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode
     });
@@ -261,7 +260,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
-        const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+        const { vaultLockedDismissUntil: dismissUntil } = await sendMessage('GET_CONTENT_SETTINGS');
         if (dismissUntil && Date.now() < dismissUntil) {
           // User has dismissed the popup, don't show it again
           removeExistingPopup(container);
@@ -278,7 +277,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
  * Create TOTP autofill popup showing items with 2FA codes.
  * Matches the styling of the regular autofill popup.
  */
-async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
+async function createTotpPopup(input: HTMLInputElement, items: AutofillItemSummary[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
   const searchPlaceholder = await t('items.searchPlaceholder');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
@@ -460,7 +459,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
  * @param rootContainer - The root container element.
  * @param noMatchesText - Text to show when no items match.
  */
-function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : void {
+function updateTotpPopupContent(items: AutofillItemSummary[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : void {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -483,32 +482,54 @@ function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, inp
     return;
   }
 
-  // Fetch TOTP secrets and create items with live codes
+  // Fetch the current codes from the background (the secrets never reach the page) and create items with live codes
   (async (): Promise<void> => {
-    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { items: items.map(item => ({ Id: item.Id, ManifestId: item.ManifestId })) });
+    const refs: ItemRef[] = items.map(item => ({ Id: item.Id, ManifestId: item.ManifestId }));
+    let codes: Record<string, TotpCodePreview> = {};
+    let fetchedSteps: Record<string, number> = {};
 
-    const secrets = secretsResponse.success && secretsResponse.secrets ? secretsResponse.secrets : {};
-    const hasSecrets = Object.keys(secrets).length > 0;
+    /**
+     * Fetch the codes for all listed items, remembering the time step each was fetched in.
+     */
+    const fetchCodes = async (): Promise<void> => {
+      const startedAt = Date.now();
+      const response = await sendMessage('GET_TOTP_CODES', { items: refs });
+      codes = response.success && response.codes ? response.codes : {};
+      fetchedSteps = Object.fromEntries(Object.entries(codes).map(([key, preview]) => [key, Math.floor(startedAt / 1000 / preview.Period)]));
+    };
 
-    // Create items (with live codes if secrets available, static otherwise)
+    await fetchCodes();
+    const hasCodes = Object.keys(codes).length > 0;
+
+    // Create items (with live codes if available, static otherwise)
     const codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }> = new Map();
 
     items.forEach(item => {
-      const secret = secrets[scopedKey(item.ManifestId, item.Id)];
+      const preview = codes[scopedKey(item.ManifestId, item.Id)];
       const isRecentlySelected = recentlySelected != null && isSameItem(item, recentlySelected);
-      const itemElement = createTotpItem(item, secret, input, rootContainer, hasSecrets ? codeElements : undefined, isRecentlySelected);
+      const itemElement = createTotpItem(item, preview, input, rootContainer, hasCodes ? codeElements : undefined, isRecentlySelected);
       itemList!.appendChild(itemElement);
     });
 
-    // Set up live updates only if we have secrets
-    if (hasSecrets) {
-      // Initial update
-      updateTotpCodes(codeElements, secrets);
+    // Set up live updates only if we have codes
+    if (hasCodes) {
+      updateTotpCodes(codeElements, codes);
 
-      // Set up interval to update codes every second
-      totpUpdateIntervalId = setInterval(() => {
-        updateTotpCodes(codeElements, secrets);
+      // Update the countdown every second, and fetch new codes once a period rolls over
+      let refreshing = false;
+      const intervalId = setInterval(async () => {
+        if (!itemList!.isConnected) {
+          clearInterval(intervalId);
+          return;
+        }
+        if (!refreshing && Object.entries(codes).some(([key, preview]) => totpTimeStep(preview.Period) !== fetchedSteps[key])) {
+          refreshing = true;
+          await fetchCodes();
+          refreshing = false;
+        }
+        updateTotpCodes(codeElements, codes);
       }, 1000);
+      totpUpdateIntervalId = intervalId;
     }
   })();
 }
@@ -546,26 +567,27 @@ function createPieSlicePath(cx: number, cy: number, r: number, fraction: number)
  */
 function updateTotpCodes(
   codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
-  secrets: Record<string, TotpSecret>
+  codes: Record<string, TotpCodePreview>
 ): void {
   codeElements.forEach((elements, itemKey) => {
-    const secret = secrets[itemKey];
-    if (secret) {
-      elements.codeSpan.textContent = formatTotpCodeForSecret(secret);
+    const preview = codes[itemKey];
+    if (!preview) {
+      return;
     }
+    elements.codeSpan.textContent = formatTotpCode(preview.Code);
     // Each code counts down over its own period, so the pie is computed per item rather than once.
-    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret?.Period)));
+    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, getTotpRemainingSeconds(preview) / preview.Period));
   });
 }
 
 /**
  * Create a TOTP item element.
- * If secret is provided, shows live code with pie chart countdown.
- * If secret is undefined, shows static "000 000" placeholder.
+ * If a code preview is provided, shows the live code with pie chart countdown.
+ * Otherwise shows a static "000 000" placeholder.
  */
 function createTotpItem(
-  item: Item,
-  secret: TotpSecret | undefined,
+  item: AutofillItemSummary,
+  preview: TotpCodePreview | undefined,
   input: HTMLInputElement,
   rootContainer: HTMLElement,
   codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
@@ -612,10 +634,10 @@ function createTotpItem(
 
   // TOTP code span - show generated code or static placeholder
   const codeSpan = document.createElement('span');
-  codeSpan.textContent = secret ? formatTotpCodeForSecret(secret) : '000 000';
+  codeSpan.textContent = preview ? formatTotpCode(preview.Code) : '000 000';
 
   // Pie chart countdown - blue pie that shrinks clockwise from top
-  const fraction = secret ? getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret.Period) : 1; // Static shows full pie
+  const fraction = preview ? getTotpRemainingSeconds(preview) / preview.Period : 1; // Static shows full pie
 
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
@@ -626,7 +648,7 @@ function createTotpItem(
 
   // Blue pie slice that shrinks clockwise from top (like a clock)
   const pieChart = document.createElementNS(svgNS, 'path');
-  pieChart.setAttribute('fill', secret ? '#3b82f6' : '#9ca3af'); // Gray for static
+  pieChart.setAttribute('fill', preview ? '#3b82f6' : '#9ca3af'); // Gray for static
   pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, fraction));
 
   svg.appendChild(pieChart);
@@ -638,8 +660,8 @@ function createTotpItem(
   itemTextContainer.appendChild(detailsContainer);
   itemInfo.appendChild(itemTextContainer);
 
-  // Store references for live updates (only if secret exists and codeElements provided)
-  if (secret && codeElements) {
+  // Store references for live updates (only if a code exists and codeElements provided)
+  if (preview && codeElements) {
     codeElements.set(scopedKey(item.ManifestId, item.Id), { codeSpan, pieChart });
   }
 
@@ -768,7 +790,7 @@ export function createLoadingPopup(input: HTMLInputElement, message: string, roo
  * @param itemList - The item list element.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export async function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
+export async function updatePopupContent(items: AutofillItemSummary[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -822,19 +844,9 @@ export function removeExistingPopup(container: HTMLElement) : void {
 }
 
 /**
- * Whether an item is usable for autofill: it must carry at least a username, email, or
- * password. Items with none of these (e.g. a note-only entry) can't fill a login form, so
- * showing them as a credential match is just noise.
- */
-function hasFillableLoginField(item: Item): boolean {
-  return [FieldKey.LoginUsername, FieldKey.LoginEmail, FieldKey.LoginPassword]
-    .some((key) => (getFieldValue(item, key) ?? '').trim() !== '');
-}
-
-/**
  * Create auto-fill popup
  */
-export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
+export async function createAutofillPopup(input: HTMLInputElement, items: AutofillItemSummary[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
   // Remember the input so a credential created in the full popup window can be filled back here.
   lastAutofillInput = input;
 
@@ -865,13 +877,10 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   credentialList.className = 'av-credential-list';
   popup.appendChild(credentialList);
 
-  // Add initial items (already filtered by background script for performance)
+  // Add initial items (already filtered by background script, which only returns items with something to fill)
   if (!items) {
     items = [];
   }
-
-  // Drop entries that have nothing to fill (no username/email/password) - they're not useful matches.
-  items = items.filter(hasFillableLoginField);
 
   await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText, recentlySelected);
 
@@ -1211,7 +1220,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
  * @param input - The input field that triggered the popup
  * @param noMatchesText - Text to show when no matches found
  */
-async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
+async function handleSearchInput(searchInput: HTMLInputElement, initialItems: AutofillItemSummary[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
@@ -1229,8 +1238,7 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
 
     if (response.success && response.items) {
       // Search results don't carry prioritization, so don't highlight any item
-      const fillableItems = response.items.filter(hasFillableLoginField);
-      await updatePopupContent(fillableItems, itemList, input, rootContainer, noMatchesText);
+      await updatePopupContent(response.items, itemList, input, rootContainer, noMatchesText);
     } else {
       // On error, fallback to showing initial filtered items
       await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelected);
@@ -1393,7 +1401,7 @@ function createViewSwitchPill(label: string): HTMLButtonElement {
  * @param items - The items to display.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null): HTMLElement[] {
+function createItemList(items: AutofillItemSummary[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null): HTMLElement[] {
   const elements: HTMLElement[] = [];
 
   if (items.length > 0) {
@@ -1430,32 +1438,10 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       
       serviceName.appendChild(serviceNameContainer);
 
-      // Details container (secondary text) - extract from fields
+      // Details container (secondary text): alias full name and username or email
       const detailsContainer = document.createElement('div');
       detailsContainer.className = 'av-service-details';
-
-      // Get field values using helper function
-      const firstName = item.Fields.find(f => f.FieldKey === FieldKey.AliasFirstName)?.Value;
-      const lastName = item.Fields.find(f => f.FieldKey === FieldKey.AliasLastName)?.Value;
-      const username = item.Fields.find(f => f.FieldKey === FieldKey.LoginUsername)?.Value;
-      const email = item.Fields.find(f => f.FieldKey === FieldKey.LoginEmail)?.Value;
-
-      // Combine full name (if available) and username or email
-      const details: string[] = [];
-      const firstNameStr = Array.isArray(firstName) ? firstName[0] : firstName;
-      const lastNameStr = Array.isArray(lastName) ? lastName[0] : lastName;
-      const usernameStr = Array.isArray(username) ? username[0] : username;
-      const emailStr = Array.isArray(email) ? email[0] : email;
-
-      if (firstNameStr && lastNameStr) {
-        details.push(`${firstNameStr} ${lastNameStr}`);
-      }
-      if (usernameStr) {
-        details.push(usernameStr);
-      } else if (emailStr) {
-        details.push(emailStr);
-      }
-      detailsContainer.textContent = details.join(' · ');
+      detailsContainer.textContent = item.Details;
 
       itemTextContainer.appendChild(serviceName);
       itemTextContainer.appendChild(detailsContainer);
@@ -1483,45 +1469,17 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
 }
 
 /**
- * Check if auto-popup is disabled for current site
- */
-/**
  * Disable auto-popup for current site
  */
 export async function disableAutoShowPopup(temporary: boolean = false): Promise<void> {
-  const currentHostname = window.location.hostname;
-
-  if (temporary) {
-    // Add to temporary disabled sites with 1 hour expiry
-    const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
-    temporaryDisabledSites[currentHostname] = Date.now() + (60 * 60 * 1000); // 1 hour from now
-    await LocalPreferencesService.setTemporaryDisabledSites(temporaryDisabledSites);
-  } else {
-    // Add to permanently disabled sites
-    const disabledSites = await LocalPreferencesService.getDisabledSites();
-    if (!disabledSites.includes(currentHostname)) {
-      disabledSites.push(currentHostname);
-      await LocalPreferencesService.setDisabledSites(disabledSites);
-    }
-  }
+  await sendMessage('DISABLE_AUTOFILL_FOR_SITE', { temporary });
 }
 
 /**
  * Dismiss vault locked popup for 4 hours if user is logged in, or for 3 days if user is not logged in.
  */
 export async function dismissVaultLockedPopup(): Promise<void> {
-  // First check if user is logged in or not.
-  const authStatus = await sendMessage('CHECK_AUTH_STATUS');
-
-  if (authStatus.isLoggedIn) {
-    // User is logged in - dismiss for 4 hours
-    const fourHoursFromNow = Date.now() + (4 * 60 * 60 * 1000);
-    await LocalPreferencesService.setVaultLockedDismissUntil(fourHoursFromNow);
-  } else {
-    // User is not logged in - dismiss for 3 days
-    const threeDaysFromNow = Date.now() + (3 * 24 * 60 * 60 * 1000);
-    await LocalPreferencesService.setVaultLockedDismissUntil(threeDaysFromNow);
-  }
+  await sendMessage('DISMISS_VAULT_LOCKED_POPUP');
 }
 
 /**
