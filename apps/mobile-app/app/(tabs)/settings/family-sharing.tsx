@@ -1,4 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -13,9 +14,9 @@ import ContextMenu from 'react-native-context-menu-view';
 
 import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useLogout } from '@/hooks/useLogout';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -47,6 +48,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const { t } = useTranslation();
   const router = useRouter();
   const { username } = useApp();
+  const { logoutForced } = useLogout();
   const { sqliteClient } = useDb();
   const { isEnabled, isLoaded } = useCapabilityContext();
   const { showConfirm } = useDialog();
@@ -240,20 +242,32 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Delete a shared manifest behind the native password prompt. The server wants proof of the master password, which
-   * the native layer answers with the unlock key of the open session.
+   * Delete a shared manifest behind the native password prompt, whose unlock key answers the server's SRP challenge.
    * @param group - the group the shared manifest belongs to.
    * @param manifest - the shared manifest to delete.
    */
   const deleteSharedVault = async (group: GroupInfo, manifest: SharedManifestInfo): Promise<void> => {
-    const authenticated = await VaultUnlockHelper.authenticateForAction(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(vaultLabel(manifest)), null, t('common.delete'));
-    if (!authenticated) {
+    let unlockKey: string | null;
+    try {
+      unlockKey = await NativeVaultManager.showPasswordUnlockForKey(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(vaultLabel(manifest)), t('common.delete'));
+    } catch (err) {
+      // Too many wrong passwords: the native layer cleared the vault, so log out.
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'MAX_ATTEMPTS_REACHED') {
+        await logoutForced();
+      }
+      return;
+    }
+
+    if (!unlockKey) {
       return;
     }
 
     await run(async () => {
       try {
-        await SharingService.deleteSharedManifest(webApi, group.groupId, manifest.manifestId, challenge => NativeVaultManager.deriveSrpProof(challenge.salt, challenge.srpIdentity, challenge.serverEphemeral));
+        await SharingService.deleteSharedManifest(webApi, group.groupId, manifest.manifestId, async challenge => {
+          const passwordHash = await SrpAuthService.srpPasswordHash(unlockKey, challenge.encryptionType);
+          return SrpAuthService.deriveClientProof(challenge.salt, challenge.srpIdentity, passwordHash, challenge.serverEphemeral);
+        });
       } catch (deleteError) {
         // Local unlock key could mismatch what is actually stored on server (recent password change on other device), if so we show a incorrect password error.
         if (apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH') {

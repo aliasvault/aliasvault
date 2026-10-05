@@ -209,17 +209,22 @@ const FamilySharing: React.FC = () => {
    * Create another shared manifest for the family. The sync that follows pushes it to the server.
    * @param group - the family to create it for.
    */
-  const createSharedVault = (group: GroupInfo): Promise<void> => {
+  const createSharedVault = async (group: GroupInfo): Promise<void> => {
     const name = (newVaultNames[group.groupId] ?? '').trim();
     if (name.length === 0) {
-      return Promise.resolve();
+      return;
     }
 
-    return run(async () => {
-      unwrap(await vaultStore.createSharedManifest(group.groupId, name), familySharingText.errors.createVaultFailed);
-      setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
-      await syncAndReload();
-    }, familySharingText.errors.createVaultFailed);
+    showLoading();
+    try {
+      await run(async () => {
+        unwrap(await vaultStore.createSharedManifest(group.groupId, name), familySharingText.errors.createVaultFailed);
+        setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
+        await syncAndReload();
+      }, familySharingText.errors.createVaultFailed);
+    } finally {
+      hideLoading();
+    }
   };
 
   /**

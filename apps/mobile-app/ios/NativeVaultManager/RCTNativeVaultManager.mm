@@ -357,6 +357,10 @@
     [vaultManager showPasswordUnlock:title subtitle:subtitle buttonText:buttonText resolver:resolve rejecter:reject];
 }
 
+- (void)showPasswordUnlockForKey:(NSString *)title subtitle:(NSString *)subtitle buttonText:(NSString *)buttonText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPasswordUnlockForKey:title subtitle:subtitle buttonText:buttonText resolver:resolve rejecter:reject];
+}
+
 // MARK: - Mobile Login
 
 - (void)encryptAccountKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

@@ -1019,6 +1019,25 @@ public class VaultManager: NSObject {
                            buttonText: String?,
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        presentPasswordUnlock(title, subtitle: subtitle, buttonText: buttonText, returnUnlockKey: false, resolver: resolve, rejecter: reject)
+    }
+
+    /// Show the password unlock screen and resolve with the unlock key, for callers that answer an SRP challenge with it.
+    @objc
+    func showPasswordUnlockForKey(_ title: String?,
+                                 subtitle: String?,
+                                 buttonText: String?,
+                                 resolver resolve: @escaping RCTPromiseResolveBlock,
+                                 rejecter reject: @escaping RCTPromiseRejectBlock) {
+        presentPasswordUnlock(title, subtitle: subtitle, buttonText: buttonText, returnUnlockKey: true, resolver: resolve, rejecter: reject)
+    }
+
+    private func presentPasswordUnlock(_ title: String?,
+                                       subtitle: String?,
+                                       buttonText: String?,
+                                       returnUnlockKey: Bool,
+                                       resolver resolve: @escaping RCTPromiseResolveBlock,
+                                       rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
                 reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
@@ -1057,7 +1076,7 @@ public class VaultManager: NSObject {
 
                     await MainActor.run {
                         rootVC.dismiss(animated: true) {
-                            resolve(true)
+                            resolve(returnUnlockKey ? unlockKeyBase64 : true)
                         }
                     }
                 },
