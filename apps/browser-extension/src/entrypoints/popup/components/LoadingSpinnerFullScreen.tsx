@@ -38,7 +38,7 @@ const LoadingSpinnerFullScreen: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 w-full h-full z-50 bg-gray-200 dark:bg-gray-500 bg-opacity-90 flex items-center justify-center">
+    <div className="fixed inset-0 w-full h-full z-[100] bg-gray-200 dark:bg-gray-500 bg-opacity-90 flex items-center justify-center">
       <div className="relative">
         {spinner}
       </div>

@@ -244,8 +244,10 @@ class MainActivity : ReactActivity() {
         // Check both promise types - one for showPasswordUnlock() and one for authenticateUser()
         val passwordPromise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise
         val authPromise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
+        val returnUnlockKey = net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockReturnsKey
 
         net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise = null
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockReturnsKey = false
         net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
         net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
 
@@ -275,8 +277,8 @@ class MainActivity : ReactActivity() {
                         // Unlock the vault with the key now in memory
                         vaultStore.unlockVault()
 
-                        // For both showPasswordUnlock() and authenticateUser(), resolve with success (true)
-                        passwordPromise?.resolve(true)
+                        // showPasswordUnlockForKey() resolves with the unlock key, showPasswordUnlock() and authenticateUser() with true
+                        passwordPromise?.resolve(if (returnUnlockKey) unlockKeyBase64 else true)
                         authPromise?.resolve(true)
                     } catch (e: Exception) {
                         android.util.Log.e("MainActivity", "Failed to unlock vault with password", e)

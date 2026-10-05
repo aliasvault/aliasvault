@@ -141,6 +141,8 @@ export interface Spec extends TurboModule {
   // If title/subtitle are null/empty, defaults to "Unlock Vault" context.
   // If buttonText is null/empty, defaults to "Unlock".
   showPasswordUnlock(title: string | null, subtitle: string | null, buttonText: string | null): Promise<boolean | null>;
+  // Same screen, but returns the unlock key (base64) for answering an SRP challenge, null if cancelled. Use only when the key is needed.
+  showPasswordUnlockForKey(title: string | null, subtitle: string | null, buttonText: string | null): Promise<string | null>;
 
   // Mobile login methods
   encryptAccountKeyForMobileLogin(publicKeyJWK: string): Promise<string>;

@@ -101,6 +101,12 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         var passwordUnlockPromise: Promise? = null
 
         /**
+         * Whether the pending password unlock resolves with the unlock key instead of true.
+         */
+        @Volatile
+        var passwordUnlockReturnsKey: Boolean = false
+
+        /**
          * Static holder for authentication context (title, subtitle) to support password fallback
          * when PIN is cancelled in authenticateUser flow.
          */
@@ -1738,14 +1744,33 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Show native password unlock screen.
-     * Returns encryption key (base64) if successful, null if cancelled.
+     * Returns true if successful, null if cancelled.
      *
      * @param title Custom title for the password unlock screen. If null or empty, uses default.
      * @param subtitle Custom subtitle for the password unlock screen. If null or empty, uses default.
-     * @param promise The promise to resolve with encryption key or null.
+     * @param promise The promise to resolve with true or null.
      */
     @ReactMethod
     override fun showPasswordUnlock(title: String?, subtitle: String?, buttonText: String?, promise: Promise) {
+        presentPasswordUnlock(title, subtitle, buttonText, false, promise)
+    }
+
+    /**
+     * Show native password unlock screen and resolve with the unlock key (base64), or null if cancelled.
+     *
+     * @param title Custom title for the password unlock screen. If null or empty, uses default.
+     * @param subtitle Custom subtitle for the password unlock screen. If null or empty, uses default.
+     * @param promise The promise to resolve with the unlock key or null.
+     */
+    @ReactMethod
+    override fun showPasswordUnlockForKey(title: String?, subtitle: String?, buttonText: String?, promise: Promise) {
+        presentPasswordUnlock(title, subtitle, buttonText, true, promise)
+    }
+
+    /**
+     * Launch the password unlock activity for showPasswordUnlock and showPasswordUnlockForKey.
+     */
+    private fun presentPasswordUnlock(title: String?, subtitle: String?, buttonText: String?, returnUnlockKey: Boolean, promise: Promise) {
         val activity = currentActivity
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "No activity available", null)
@@ -1754,6 +1779,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
         // Store promise in static companion object so MainActivity can resolve it directly
         passwordUnlockPromise = promise
+        passwordUnlockReturnsKey = returnUnlockKey
 
         // Launch password unlock activity
         val intent = Intent(activity, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
