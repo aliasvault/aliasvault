@@ -40,10 +40,10 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
-        // Check if the unlock method type is valid.
+        // An unknown unlock method token is a malformed request; a null key is reserved for "no key stored for this method".
         if (!UnlockMethodTypes.TryParse(type?.ToLowerInvariant(), out var parsedType))
         {
-            return Ok(new VaultKeyGetResponse { VaultKey = null });
+            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
         var unlockKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == parsedType);

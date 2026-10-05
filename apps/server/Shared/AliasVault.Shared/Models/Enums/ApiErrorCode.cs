@@ -9,7 +9,6 @@ namespace AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Enumeration of error codes returned by the API.
-/// The member name is the code on the wire, so a member is never renamed or removed; ApiErrorCodeTests pins the list.
 /// </summary>
 public enum ApiErrorCode
 {

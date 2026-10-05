@@ -261,7 +261,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure all DateTime properties to use timestamp with time zone in UTC
+        /*
+         * All DateTime properties are configured to use 'timestamp with time zone' in UTC and are returned as Kind.Utc.
+         * Avoid using ToUniversalTime() inside EF projections, as this bypasses the read converter and results in Kind.Local.
+         */
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())

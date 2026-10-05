@@ -83,7 +83,7 @@ export type GroupOverviewResponse = {
 export type CreateSharedManifestRequest = {
   manifestId: string;
   selfEncryptedVek: string;
-  selfPublicKey: string;
+  selfAccountPublicKey: string;
   algorithm: VaultKeyAlgorithmValue;
   selfGrantSignature: string;
   /** The name of the manifest, encrypted with the manifest's own key (base64). */
@@ -111,7 +111,7 @@ export type CreateSharedManifestResponse = {
  */
 export type ManifestGrant = {
   recipientUserId: string;
-  recipientPublicKeyId: string;
+  recipientAccountPublicKeyId: string;
   encryptedVek: string;
   encryptedName?: string | null;
   encryptedNameSignature?: string | null;
