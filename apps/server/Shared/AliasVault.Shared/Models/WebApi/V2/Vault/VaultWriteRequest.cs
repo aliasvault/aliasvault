@@ -7,6 +7,7 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 /// <summary>
@@ -18,9 +19,11 @@ public class VaultWriteRequest
     public required string Username { get; set; }
 
     /// <summary>Gets or sets the manifests to write.</summary>
+    [MaxLength(VaultWriteLimits.MaxManifestsPerWrite)]
     public List<ManifestWrite> Manifests { get; set; } = [];
 
     /// <summary>Gets or sets the data buckets to upsert.</summary>
+    [MaxLength(VaultWriteLimits.MaxBucketsPerWrite)]
     public List<BucketWrite> Buckets { get; set; } = [];
 
     /// <summary>Gets or sets the email routing data to update server-side.</summary>

@@ -31,6 +31,7 @@ public class ManifestWrite
 
     /// <summary>Gets or sets the complete list of blob hashes this manifest revision references. The server validates
     /// each exists (in the caller's store for their personal manifest; in any member's store for a shared manifest) before committing.</summary>
+    [MaxLength(VaultWriteLimits.MaxBlobReferencesPerManifest)]
     public List<BlobReference> BlobReferences { get; set; } = [];
 
     /// <summary>

@@ -15,9 +15,11 @@ using System.ComponentModel.DataAnnotations;
 public class Blob
 {
     /// <summary>Gets or sets the per-manifest salted SHA-256 hex of the plaintext.</summary>
+    [RegularExpression(VaultWriteLimits.HashPattern)]
     public required string Hash { get; set; }
 
     /// <summary>Gets or sets the blob category ("favicon" or "attachment").</summary>
+    [StringLength(VaultWriteLimits.MaxCategoryLength, MinimumLength = 1)]
     public required string Category { get; set; }
 
     /// <summary>Gets or sets the bytes encrypted with the blob's own key, base64-encoded for transport.</summary>

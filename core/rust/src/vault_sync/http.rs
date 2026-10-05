@@ -79,8 +79,11 @@ pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
 /// Max base64 characters in one blob transfer request or response body.
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_CHARS: usize = 4 * 1024 * 1024;
 
-/// Upper bound on the number of blobs in one transfer batch.
+/// Upper bound on the number of blobs in one transfer batch (the server's `VaultWriteLimits.MaxBlobsPerUpload`).
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_COUNT: usize = 100;
+
+/// Upper bound on the number of hashes in one `blobs/missing` or `blobs/download` request (the server's `VaultWriteLimits.MaxHashesPerRequest`).
+pub(crate) const BLOB_HASH_REQUEST_MAX_COUNT: usize = 1000;
 
 /// Split items into transfer batches bounded by both blob transfer limits.
 pub(crate) fn batch_by_transfer_cost<T>(items: Vec<T>, cost_of: impl Fn(&T) -> usize) -> Vec<Vec<T>> {

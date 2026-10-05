@@ -7,15 +7,19 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// A reference to a content-addressed blob held in VaultBlobObjects.
 /// </summary>
 public class BlobReference
 {
     /// <summary>Gets or sets the per-manifest salted SHA-256 hex of the plaintext.</summary>
+    [RegularExpression(VaultWriteLimits.HashPattern)]
     public required string Hash { get; set; }
 
     /// <summary>Gets or sets the blob category (e.g. "favicon" or "attachment").</summary>
+    [StringLength(VaultWriteLimits.MaxCategoryLength, MinimumLength = 1)]
     public required string Category { get; set; }
 
     /// <summary>

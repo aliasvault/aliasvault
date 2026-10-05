@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// A list of blob hashes, sent as a POST body (not a query string) because a vault can reference hundreds of
 /// blobs and 64-char hex hashes would exceed URL length limits. Used by POST /v2/Vault/blobs/missing and
@@ -18,5 +20,6 @@ public class BlobHashesRequest
     public required Guid ManifestId { get; set; }
 
     /// <summary>Gets or sets the per-manifest salted SHA-256 hex hashes.</summary>
+    [MaxLength(VaultWriteLimits.MaxHashesPerRequest)]
     public required List<string> Hashes { get; set; }
 }

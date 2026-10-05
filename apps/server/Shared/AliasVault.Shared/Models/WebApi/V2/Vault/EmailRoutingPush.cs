@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// The email-routing set a vault push uploads: every alias the client wants routed, each carrying the manifest
 /// that owns it. Aliases missing from a push are disabled, so a push always carries the complete set of the
@@ -18,17 +20,20 @@ public class EmailRoutingPush
     /// Gets or sets the claimed addresses, each with the manifest whose key encrypts its mail. The manifest ids
     /// are a request, not a grant: the server validates each against what the caller may claim for.
     /// </summary>
+    [MaxLength(VaultWriteLimits.MaxClaimedAddressesPerPush)]
     public List<ClaimedEmailAddress> EmailAddressList { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the manifests this push speaks for: every manifest the client opened to build the address list
     /// above, whether or not it holds any alias.
     /// </summary>
+    [MaxLength(VaultWriteLimits.MaxManifestsPerWrite)]
     public List<Guid> CoveredManifestIds { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the revision of each covered manifest the address list was built from. The write is rejected as
     /// outdated when any of them is behind the server.
     /// </summary>
+    [MaxLength(VaultWriteLimits.MaxManifestsPerWrite)]
     public required List<ManifestRevision> BaseRevisions { get; set; }
 }

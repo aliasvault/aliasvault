@@ -7,12 +7,15 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// An email alias the client claims, together with the manifest holding the item it belongs to.
 /// </summary>
 public class ClaimedEmailAddress
 {
     /// <summary>Gets or sets the full email address.</summary>
+    [StringLength(255, MinimumLength = 3)]
     public required string Address { get; set; }
 
     /// <summary>Gets or sets the manifest whose key encrypts mail for this address.</summary>
