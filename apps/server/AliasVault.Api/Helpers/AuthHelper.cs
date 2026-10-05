@@ -13,6 +13,7 @@ using AliasVault.Api.Headers;
 using AliasVault.Api.Models;
 using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -92,9 +93,11 @@ public static class AuthHelper
             return new SrpValidationResult(null, false, null);
         }
 
-        if (!cache.TryGetValue(EphemeralCacheKey(purpose, user, sessionId), out CachedEphemeral? cached) || cached is null)
+        var cacheKey = EphemeralCacheKey(purpose, user, sessionId);
+        var cached = purpose == SrpPurpose.Login ? Peek(cache, cacheKey) : Take(cache, cacheKey);
+        if (cached is null)
         {
-            // No exchange was initiated for this flow, or the server ephemeral has expired.
+            // No exchange was initiated for this flow, it was already used, or the server ephemeral has expired.
             return new SrpValidationResult(null, false, null);
         }
 
@@ -102,6 +105,7 @@ public static class AuthHelper
         var credentials = await GetUserLatestVaultEncryptionSettingsAsync(context, user);
         if (credentials.UnlockKeyId != cached.UnlockKeyId)
         {
+            cache.Remove(cacheKey);
             return new SrpValidationResult(null, false, null);
         }
 
@@ -116,7 +120,55 @@ public static class AuthHelper
             clientSessionProof);
 
         // If validation failed, serverSession will be null here.
+        if (serverSession is null)
+        {
+            cache.Remove(cacheKey);
+        }
+
         return new SrpValidationResult(serverSession, true, credentials.UnlockKeyId);
+    }
+
+    /// <summary>
+    /// Evict a login exchange once the login it proved has completed, so its proof cannot be replayed.
+    /// </summary>
+    /// <param name="cache">IMemoryCache instance.</param>
+    /// <param name="user">The user object.</param>
+    /// <param name="sessionId">The session id the exchange was created with, or null for an exchange cached per identity.</param>
+    /// <returns>False when the exchange was already used or has expired; the login must then be refused.</returns>
+    public static bool ConsumeSrpSession(IMemoryCache cache, AliasVaultUser user, string? sessionId) => Take(cache, EphemeralCacheKey(SrpPurpose.Login, user, sessionId)) is not null;
+
+    /// <summary>
+    /// Check a step-up proof (password confirmation of a logged-in user), refusing it while the account is locked out
+    /// and counting a wrong password towards the lockout like a failed login.
+    /// </summary>
+    /// <param name="cache">IMemoryCache instance.</param>
+    /// <param name="context">Database context, used to resolve the user's current SRP credentials.</param>
+    /// <param name="userManager">User manager that tracks the failed attempts.</param>
+    /// <param name="user">The user object.</param>
+    /// <param name="purpose">The step-up flow the exchange belongs to.</param>
+    /// <param name="clientEphemeral">The client ephemeral value.</param>
+    /// <param name="clientSessionProof">The client session proof.</param>
+    /// <returns>The validation outcome; <see cref="SrpValidationResult.LockedOut"/> is set when the proof was not checked.</returns>
+    public static async Task<SrpValidationResult> ValidateStepUpAsync(IMemoryCache cache, AliasServerDbContext context, UserManager<AliasVaultUser> userManager, AliasVaultUser user, SrpPurpose purpose, string clientEphemeral, string clientSessionProof)
+    {
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            // Spend the exchange anyway, so a guess sent while locked out cannot be checked later.
+            cache.Remove(EphemeralCacheKey(purpose, user, null));
+            return new SrpValidationResult(null, false, null) { LockedOut = true };
+        }
+
+        var result = await ValidateSrpSessionAsync(cache, context, user, purpose, clientEphemeral, clientSessionProof);
+        if (result.Session is not null)
+        {
+            await userManager.ResetAccessFailedCountAsync(user);
+        }
+        else if (result.ActiveSessionFound)
+        {
+            await userManager.AccessFailedAsync(user);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -210,7 +262,50 @@ public static class AuthHelper
     private static string EphemeralCacheKey(SrpPurpose purpose, AliasVaultUser user, string? sessionId) => sessionId is null ? $"{CachePrefixEphemeral}{purpose}_{GetSrpIdentity(user)}" : $"{CachePrefixEphemeral}{purpose}_{GetSrpIdentity(user)}_{sessionId}";
 
     /// <summary>
+    /// The cached exchange under a key, unless it has been claimed already.
+    /// </summary>
+    private static CachedEphemeral? Peek(IMemoryCache cache, string cacheKey) => cache.TryGetValue(cacheKey, out CachedEphemeral? cached) && cached is not null && !cached.IsClaimed ? cached : null;
+
+    /// <summary>
+    /// Claim and evict the cached exchange under a key; of two concurrent callers only one gets it.
+    /// </summary>
+    private static CachedEphemeral? Take(IMemoryCache cache, string cacheKey)
+    {
+        if (!cache.TryGetValue(cacheKey, out CachedEphemeral? cached) || cached is null || !cached.TryClaim())
+        {
+            return null;
+        }
+
+        cache.Remove(cacheKey);
+        return cached;
+    }
+
+    /// <summary>
     /// A cached server ephemeral and the unlock method whose verifier it was created for (null for a legacy account).
     /// </summary>
-    private sealed record CachedEphemeral(string Secret, Guid? UnlockKeyId);
+    private sealed class CachedEphemeral(string secret, Guid? unlockKeyId)
+    {
+        private int claimed;
+
+        /// <summary>
+        /// Gets the secret server ephemeral.
+        /// </summary>
+        public string Secret { get; } = secret;
+
+        /// <summary>
+        /// Gets the unlock key the verifier came from.
+        /// </summary>
+        public Guid? UnlockKeyId { get; } = unlockKeyId;
+
+        /// <summary>
+        /// Gets a value indicating whether the exchange has been used up.
+        /// </summary>
+        public bool IsClaimed => Volatile.Read(ref claimed) == 1;
+
+        /// <summary>
+        /// Mark the exchange as used; true only for the first caller.
+        /// </summary>
+        /// <returns>Whether this call claimed it.</returns>
+        public bool TryClaim() => Interlocked.Exchange(ref claimed, 1) == 0;
+    }
 }

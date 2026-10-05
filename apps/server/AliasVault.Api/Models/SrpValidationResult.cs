@@ -19,8 +19,13 @@ using SecureRemotePassword;
 public sealed record SrpValidationResult(SrpSession? Session, bool ActiveSessionFound, Guid? UnlockKeyId)
 {
     /// <summary>
-    /// Gets the reason to log when <see cref="Session"/> is null: a cached ephemeral means the client got the
-    /// secret wrong, no ephemeral means it never initiated the exchange or took too long over it.
+    /// Gets a value indicating whether the proof was refused unchecked because the account is locked out.
     /// </summary>
-    public AuthFailureReason FailureReason => ActiveSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound;
+    public bool LockedOut { get; init; }
+
+    /// <summary>
+    /// Gets the reason to log when <see cref="Session"/> is null: a cached ephemeral means the client got the
+    /// secret wrong, no ephemeral means it never initiated the exchange, already used it or took too long over it.
+    /// </summary>
+    public AuthFailureReason FailureReason => LockedOut ? AuthFailureReason.AccountLocked : ActiveSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound;
 }
