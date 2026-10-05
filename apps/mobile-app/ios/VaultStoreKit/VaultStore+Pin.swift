@@ -34,8 +34,8 @@ extension VaultStore {
 
     /// Get failed attempts count from secure storage.
     public func getPinFailedAttempts() -> Int {
-        return try {
-            retrievePinFailedAttemptsFromKeychain()
+        do {
+            return try retrievePinFailedAttemptsFromKeychain()
         } catch {
             // Failure to retrieve the counter counts as the maximum for safety reasons.
             return Self.maxPinAttempts
