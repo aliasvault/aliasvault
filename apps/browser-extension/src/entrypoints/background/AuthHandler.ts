@@ -234,11 +234,13 @@ export function handleLoginWithPassword(data: { username: string; password: stri
       const srp = new SrpLoginService(new WebApiService());
       const loginResponse = await srp.initiateLogin(username);
       const credentials = await SrpAuthService.prepareLoginCredentials(data.password, loginResponse, username);
-      const validation = await srp.validateLogin(username, credentials, data.rememberMe, loginResponse);
+      const proof = await srp.createLoginProof(username, credentials, loginResponse);
+      const validation = await srp.validateLoginWithProof(username, proof, data.rememberMe, loginResponse.loginSessionId);
 
       if (validation.requiresTwoFactor) {
-        // Kept in memory for the 2FA step, which may come from a reopened popup.
-        handleStoreTwoFactorState({ username, loginResponse, credentials, rememberMe: data.rememberMe });
+        // Kept in memory for the 2FA step, which may come from a reopened popup. The server accepts the same proof again.
+        const { salt, encryptionType, encryptionSettings } = loginResponse;
+        handleStoreTwoFactorState({ username, rememberMe: data.rememberMe, loginSessionId: loginResponse.loginSessionId, proof, unlockKeyBase64: credentials.unlockKeyBase64, derivationParams: { salt, encryptionType, encryptionSettings } });
         return { status: 'twoFactorRequired', username, rememberMe: data.rememberMe };
       }
       if (!validation.token) {
@@ -264,13 +266,13 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
 
     try {
       const srp = new SrpLoginService(new WebApiService());
-      const validation = await srp.validateLogin2Fa(state.username, state.credentials, state.rememberMe, state.loginResponse, parseInt(data.code));
+      const validation = await srp.validateLogin2FaWithProof(state.username, state.proof, state.rememberMe, state.loginSessionId, parseInt(data.code));
       if (!validation.token) {
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
       handleClearTwoFactorState();
-      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.credentials.unlockKeyBase64, state.loginResponse);
+      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.unlockKeyBase64, state.derivationParams);
     } catch (err) {
       return failureResult('2FA error', err);
     }
