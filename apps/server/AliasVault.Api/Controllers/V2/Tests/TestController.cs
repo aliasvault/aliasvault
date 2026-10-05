@@ -392,7 +392,7 @@ public class TestController(
             return NotFound($"User '{username}' not found");
         }
 
-        // The legacy verifier was created with the identity of that time, which login hands to the client.
+        await context.AliasVaultUsers.Where(u => u.Id != user.Id && u.SrpIdentity == request.SrpIdentity).ExecuteUpdateAsync(u => u.SetProperty(x => x.SrpIdentity, (string?)null));
         user.SrpIdentity = request.SrpIdentity;
         context.UserUnlockKeys.RemoveRange(context.UserUnlockKeys.Where(x => x.UserId == user.Id));
         context.UserGrantKeys.RemoveRange(context.UserGrantKeys.Where(x => x.UserId == user.Id));
