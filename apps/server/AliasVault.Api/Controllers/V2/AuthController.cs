@@ -81,6 +81,16 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     private const int MaxEncryptionSettingsLength = 255;
 
     /// <summary>
+    /// Cache prefix for the successor of a rotated refresh token, followed by the user id and the hash of the rotated token.
+    /// </summary>
+    private const string CachePrefixRefreshTokenSuccessor = "RefreshTokenSuccessor_";
+
+    /// <summary>
+    /// How long after a rotation the replaced refresh token still returns the token that replaced it, so concurrent client refreshes do not log the device out.
+    /// </summary>
+    private static readonly TimeSpan RefreshTokenReuseWindow = TimeSpan.FromSeconds(30);
+
+    /// <summary>
     /// Semaphore to prevent concurrent access to the database when generating new tokens for a user.
     /// </summary>
     private static readonly SemaphoreSlim Semaphore = new(1, 1);
@@ -340,7 +350,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Look up the refresh token directly - we don't need to validate the access token
         // since the refresh token itself contains the user information we need.
-        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.Value == model.RefreshToken);
+        var tokenHash = RefreshTokenHasher.Hash(model.RefreshToken);
+        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
 
         if (refreshTokenEntry == null)
         {
@@ -354,7 +365,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Remove the provided refresh token and any other existing refresh tokens that are issued to the current device ID.
         // This to make sure all tokens are revoked for this device that user is "logging out" from.
         var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
-        var allDeviceTokens = await context.AliasVaultUserRefreshTokens.Where(t => t.UserId == user.Id && (t.Value == model.RefreshToken || t.DeviceIdentifier == deviceIdentifier)).ToListAsync();
+        var allDeviceTokens = await context.AliasVaultUserRefreshTokens.Where(t => t.UserId == user.Id && (t.TokenHash == tokenHash || t.DeviceIdentifier == deviceIdentifier)).ToListAsync();
         context.AliasVaultUserRefreshTokens.RemoveRange(allDeviceTokens);
         await context.SaveChangesAsync();
 
@@ -381,7 +392,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Look up the refresh token directly.
-        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.Value == model.RefreshToken);
+        var tokenHash = RefreshTokenHasher.Hash(model.RefreshToken);
+        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
 
         if (refreshTokenEntry == null)
         {
@@ -1231,6 +1243,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
+    /// Cache key under which the successor of a rotated refresh token is kept for the reuse window.
+    /// </summary>
+    /// <param name="user">The owner of the token.</param>
+    /// <param name="rotatedTokenHash">The hash of the token that was rotated away.</param>
+    /// <returns>The cache key.</returns>
+    private static string RefreshTokenSuccessorCacheKey(AliasVaultUser user, string rotatedTokenHash) => $"{CachePrefixRefreshTokenSuccessor}{user.Id}_{rotatedTokenHash}";
+
+    /// <summary>
     /// Get the JWT key from the container secrets or environment variables.
     /// </summary>
     /// <returns>JWT key as string.</returns>
@@ -1489,25 +1509,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         try
         {
-            // Token reuse window:
-            // Check if a new refresh token was already generated for the current token in the last 30 seconds.
-            // If yes, then return the already generated new token. This is to prevent client-side race conditions.
-            var existingTokenReuseWindow = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-30);
-            var existingTokenReuse = await context.AliasVaultUserRefreshTokens
-                .FirstOrDefaultAsync(t => t.UserId == user.Id &&
-                                            t.PreviousTokenValue == existingTokenValue &&
-                                            t.CreatedAt > existingTokenReuseWindow);
-
-            if (existingTokenReuse is not null)
+            // Token reuse window: if this token was rotated in the last 30 seconds, hand out the token that replaced it
+            // again, so concurrent refreshes from one client do not log it out. The stored row only has the hash, so the
+            // successor comes from memory and is forgotten when the window closes.
+            var existingTokenHash = RefreshTokenHasher.Hash(existingTokenValue);
+            if (cache.TryGetValue(RefreshTokenSuccessorCacheKey(user, existingTokenHash), out RefreshTokenSuccessor? successor) && successor is not null)
             {
-                // A new token was already generated for the current token in the last 30 seconds.
-                // Return the already generated new token.
-                var accessToken = GenerateJwtToken(user, existingTokenReuse.Id);
-                return new TokenModel { Token = accessToken, RefreshToken = existingTokenReuse.Value };
+                return new TokenModel { Token = GenerateJwtToken(user, successor.Id), RefreshToken = successor.RefreshToken };
             }
 
             // Check if the refresh token still exists and is not expired.
-            var existingToken = await context.AliasVaultUserRefreshTokens.FirstOrDefaultAsync(t => t.UserId == user.Id && t.Value == existingTokenValue);
+            var existingToken = await context.AliasVaultUserRefreshTokens.FirstOrDefaultAsync(t => t.UserId == user.Id && t.TokenHash == existingTokenHash);
             if (existingToken == null || existingToken.ExpireDate < timeProvider.GetUtcNow().UtcDateTime)
             {
                 return null;
@@ -1519,7 +1531,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             var existingTokenLifetime = existingToken.ExpireDate - existingToken.CreatedAt;
 
             // Retrieve new refresh token.
-            var newRefreshToken = await GenerateRefreshToken(user, existingTokenLifetime, existingToken.Value);
+            var newRefreshToken = await GenerateRefreshToken(user, existingTokenLifetime, existingToken.TokenHash);
 
             // After successfully retrieving new refresh token, remove the existing one by saving changes.
             await context.SaveChangesAsync();
@@ -1539,9 +1551,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// </summary>
     /// <param name="user">The user to generate the tokens for.</param>
     /// <param name="newTokenLifetime">The lifetime of the new token.</param>
-    /// <param name="existingTokenValue">The existing token value that is being replaced (optional).</param>
+    /// <param name="existingTokenHash">The hash of the existing token that is being replaced (optional).</param>
     /// <returns>TokenModel which includes new access and refresh token.</returns>
-    private async Task<TokenModel> GenerateRefreshToken(AliasVaultUser user, TimeSpan newTokenLifetime, string? existingTokenValue = null)
+    private async Task<TokenModel> GenerateRefreshToken(AliasVaultUser user, TimeSpan newTokenLifetime, string? existingTokenHash = null)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -1557,13 +1569,19 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             UserId = user.Id,
             DeviceIdentifier = deviceIdentifier,
             IpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
-            Value = refreshToken,
-            PreviousTokenValue = existingTokenValue,
+            TokenHash = RefreshTokenHasher.Hash(refreshToken),
+            PreviousTokenHash = existingTokenHash,
             ExpireDate = timeProvider.GetUtcNow().UtcDateTime.Add(newTokenLifetime),
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
         });
 
         await context.SaveChangesAsync();
+
+        if (existingTokenHash is not null)
+        {
+            cache.Set(RefreshTokenSuccessorCacheKey(user, existingTokenHash), new RefreshTokenSuccessor(refreshTokenId, refreshToken), RefreshTokenReuseWindow);
+        }
+
         return new TokenModel { Token = accessToken, RefreshToken = refreshToken };
     }
 
