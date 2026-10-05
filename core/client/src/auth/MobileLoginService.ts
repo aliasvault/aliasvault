@@ -154,10 +154,10 @@ export class MobileLoginService {
           this.cleanup();
 
           // The mobile app encrypted its stored key with our public key.
-          const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey));
+          const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey, MobileLoginProtocol.ACCOUNT_KEY_LABEL));
 
           // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.
-          const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey));
+          const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey, MobileLoginProtocol.PAYLOAD_KEY_LABEL));
           const payload = JSON.parse(await EncryptionUtility.symmetricDecrypt(data.encryptedPayload, symmetricKey)) as MobileLoginPayload;
 
           onSuccess({

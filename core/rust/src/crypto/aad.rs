@@ -15,6 +15,12 @@ pub const ACCOUNT_PRIVATE_KEY: &[u8] = b"aliasvault/v1/account-private-key";
 /// The account Ed25519 signing private key under the Account Key.
 pub const ACCOUNT_SIGNING_PRIVATE_KEY: &[u8] = b"aliasvault/v1/account-signing-private-key";
 
+/// The RSA-OAEP label of the Account Key a mobile app encrypts for a mobile login request's one-off public key.
+pub const MOBILE_LOGIN_ACCOUNT_KEY: &[u8] = b"aliasvault/v1/mobile-login/account-key";
+
+/// The RSA-OAEP label of the session payload key the server encrypts for a mobile login request's one-off public key.
+pub const MOBILE_LOGIN_PAYLOAD_KEY: &[u8] = b"aliasvault/v1/mobile-login/payload-key";
+
 /// A manifest payload under its manifest's VEK.
 pub fn manifest(manifest_id: &str) -> Vec<u8> {
     format!("{}/manifest/{}", PREFIX, normalize(manifest_id)).into_bytes()
@@ -62,5 +68,7 @@ mod tests {
         assert_eq!(blob_key("ID", "ABCD"), b"aliasvault/v1/blob-key/id/abcd".to_vec());
         assert_eq!(manifest_name("ID"), b"aliasvault/v1/manifest-name/id".to_vec());
         assert_eq!(grant("ID"), b"aliasvault/v1/grant/id".to_vec());
+        assert_eq!(MOBILE_LOGIN_ACCOUNT_KEY, b"aliasvault/v1/mobile-login/account-key");
+        assert_eq!(MOBILE_LOGIN_PAYLOAD_KEY, b"aliasvault/v1/mobile-login/payload-key");
     }
 }

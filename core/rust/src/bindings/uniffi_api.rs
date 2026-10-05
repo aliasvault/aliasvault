@@ -322,6 +322,12 @@ pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result
     crate::crypto::decrypt_with_private_key(&base64_ciphertext, &private_key_jwk)
 }
 
+/// RSA-OAEP-256 encrypt the Account Key for a mobile login request's JWK public key, as base64.
+#[uniffi::export]
+pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {
+    crate::crypto::encrypt_with_public_key_and_label(&account_key, &public_key_jwk, crate::crypto::aad::MOBILE_LOGIN_ACCOUNT_KEY)
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Vault sync engine
 // ═══════════════════════════════════════════════════════════════════════════════
