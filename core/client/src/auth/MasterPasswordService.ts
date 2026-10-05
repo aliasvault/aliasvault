@@ -1,3 +1,5 @@
+import { VaultKeyAlgorithm, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
+
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { reencryptAccountKey } from '../rust/RustCore';
@@ -8,7 +10,6 @@ import { VaultKeyService } from './VaultKeyService';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
-import type { PasswordChangeInitiateResponse, PasswordChangeRequest } from '@aliasvault/models/webapi';
 
 /**
  * Thrown when the entered master password does not decrypt the Account Key.
@@ -152,6 +153,7 @@ export class MasterPasswordService {
       newPasswordSalt: next.salt,
       newPasswordVerifier: next.verifier,
       newEncryptedAccountKey,
+      newEncryptedAccountKeyAlgorithm: VaultKeyAlgorithm.Aes256Gcm,
       newEncryptionType: next.encryptionType,
       newEncryptionSettings: next.encryptionSettings,
     }, false);

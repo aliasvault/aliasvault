@@ -116,10 +116,10 @@ fn newer_format(label: &str, version: u32) -> SyncError {
     SyncError::VaultVersionIncompatible(format!("{} has format version {}, this app reads up to {}; update the app", label, version, vault_codec::SCHEMA_VERSION))
 }
 
-/// The grant a shared manifest is remembered by, when the snapshot carries one.
+/// The grant a shared manifest is remembered by, when the snapshot carries a complete one.
 fn grant_of(dto: &ManifestDto) -> Option<(String, String, String)> {
-    match (&dto.encrypted_vek, &dto.encryption_public_key) {
-        (Some(vek), Some(public)) if !vek.is_empty() && !public.is_empty() => Some((vek.clone(), public.clone(), dto.algorithm.clone().unwrap_or_else(|| types::ALGORITHM_RSA_OAEP_SHA256.to_string()))),
+    match (&dto.encrypted_vek, &dto.account_public_key, &dto.algorithm) {
+        (Some(vek), Some(public), Some(algorithm)) if !vek.is_empty() && !public.is_empty() && !algorithm.is_empty() => Some((vek.clone(), public.clone(), algorithm.clone())),
         _ => None,
     }
 }
@@ -176,9 +176,9 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
         }
         if dto.blob.as_deref().unwrap_or("").is_empty() {
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
-            let (encrypted_vek, encryption_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
+            let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
             let encrypted_name = served_encrypted_name(ctx, &previous_records, &dto.manifest_id);
-            shared_records.insert(dto.manifest_id.clone(), SharedManifestDto { manifest_id: dto.manifest_id.clone(), encrypted_vek, encryption_public_key, algorithm, salt: vault_codec::generate_manifest_salt(), encrypted_name, can_administer: dto.can_administer });
+            shared_records.insert(dto.manifest_id.clone(), SharedManifestDto { manifest_id: dto.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: vault_codec::generate_manifest_salt(), encrypted_name, can_administer: dto.can_administer });
             contentless_revisions.insert(dto.manifest_id.clone(), dto.revision);
             continue;
         }
@@ -195,7 +195,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
             continue;
         }
 
-        let (encrypted_vek, encryption_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant this account can re-open, refusing to assemble", entry.manifest_id)))?;
+        let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant this account can re-open, refusing to assemble", entry.manifest_id)))?;
         let encrypted_name = served_encrypted_name(ctx, &previous_records, &entry.manifest_id);
         if let Some(ciphertext) = &encrypted_name {
             match open_manifest_name(ciphertext, &entry.manifest_id, &manifest_key) {
@@ -203,7 +203,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
                 None => ctx.warn(format!("[V2Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
             }
         }
-        shared_records.insert(entry.manifest_id.clone(), SharedManifestDto { manifest_id: entry.manifest_id.clone(), encrypted_vek, encryption_public_key, algorithm, salt: entry.manifest.manifest_salt.clone(), encrypted_name, can_administer: dto.can_administer });
+        shared_records.insert(entry.manifest_id.clone(), SharedManifestDto { manifest_id: entry.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: entry.manifest.manifest_salt.clone(), encrypted_name, can_administer: dto.can_administer });
         resolved.push(entry);
     }
     keys::set_shared_manifest_records(&ctx.host, &shared_records, vek).await?;
@@ -401,7 +401,12 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
 
 /// The key that opens one snapshot manifest.
 async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool) -> SyncResult<String> {
-    let key_type = dto.key_type.clone().unwrap_or_else(|| if is_personal { types::KEY_TYPE_ACCOUNT_KEY.to_string() } else { types::KEY_TYPE_GRANT_KEY.to_string() });
+    // Only a personal manifest that predates the account key hierarchy has no key type; a shared one always states it.
+    let key_type = match dto.key_type.clone() {
+        Some(key_type) => key_type,
+        None if is_personal => types::KEY_TYPE_ACCOUNT_KEY.to_string(),
+        None => return Err(SyncError::Snapshot(format!("shared manifest {} states no key type, refusing to assemble", dto.manifest_id))),
+    };
     if key_type == types::KEY_TYPE_ACCOUNT_KEY {
         if dto.manifest_id != personal_manifest_id {
             return Err(SyncError::Snapshot(format!("manifest {} is unlocked by the account key hierarchy, but this session holds no key for it, refusing to assemble", dto.manifest_id)));

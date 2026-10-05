@@ -8,7 +8,7 @@ use crate::vault_model::{id_key, ids_equal, OVERFLOW_TABLE, TRASH_RETENTION_DEFA
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus};
+use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys};
 use crate::crypto;
@@ -641,8 +641,9 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             current_revision: candidate.current_revision,
             credentials_count: candidate.manifest.tables.get("Items").map(Vec::len).unwrap_or(0),
             blob_references: blob_refs,
-            encryption_public_key: manifest_key,
-            encryption_public_key_signature: manifest_key_signature,
+            delivery_public_key_algorithm: manifest_key.as_ref().map(|_| ALGORITHM_RSA_OAEP_SHA256.to_string()),
+            delivery_public_key: manifest_key,
+            delivery_public_key_signature: manifest_key_signature,
         });
         written.insert(fingerprint_key, fingerprint);
     }

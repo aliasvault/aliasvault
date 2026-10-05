@@ -575,7 +575,7 @@ pub struct ManifestDto {
     #[serde(default)]
     pub algorithm: Option<String>,
     #[serde(default)]
-    pub encryption_public_key: Option<String>,
+    pub account_public_key: Option<String>,
     #[serde(default)]
     pub grant_signature: Option<String>,
     #[serde(default)]
@@ -624,6 +624,7 @@ pub struct EmailRoutingDto {
 pub const KEY_TYPE_ACCOUNT_KEY: &str = "account-key";
 pub const KEY_TYPE_GRANT_KEY: &str = "grant-key";
 pub const ALGORITHM_RSA_OAEP_SHA256: &str = "rsa-oaep-sha256";
+pub const ALGORITHM_AES256_GCM: &str = crate::crypto::key_chain::ACCOUNT_KEY_WRAP_ALGORITHM;
 
 /// One manifest element of `POST v2/Vault`.
 #[derive(Debug, Clone, Serialize)]
@@ -636,9 +637,11 @@ pub struct ManifestWrite {
     pub credentials_count: usize,
     pub blob_references: Vec<BlobRef>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub encryption_public_key: Option<String>,
+    pub delivery_public_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub encryption_public_key_signature: Option<String>,
+    pub delivery_public_key_algorithm: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delivery_public_key_signature: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -774,6 +777,8 @@ pub struct VaultKeyResponse {
     #[serde(default)]
     pub encrypted_account_key: String,
     #[serde(default)]
+    pub algorithm: String,
+    #[serde(default)]
     pub encrypted_account_private_key: Option<String>,
     #[serde(default)]
     pub account_public_key: Option<String>,
@@ -797,7 +802,9 @@ pub struct VaultKeyResponse {
 pub struct SharedManifestDto {
     pub manifest_id: String,
     pub encrypted_vek: String,
-    pub encryption_public_key: String,
+    /// The account public key the grant was encrypted to (stored as `encryptionPublicKey` before 0.31.0 shipped).
+    #[serde(alias = "encryptionPublicKey")]
+    pub account_public_key: String,
     pub algorithm: String,
     pub salt: String,
     /// The manifest's name as the server last served it, encrypted with the manifest's own key.

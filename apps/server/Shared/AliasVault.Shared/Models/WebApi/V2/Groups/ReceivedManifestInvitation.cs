@@ -39,6 +39,9 @@ public class ReceivedManifestInvitation
     /// <summary>Gets or sets the inviter's signing public key that <see cref="EncryptedNameSignature"/> verifies under.</summary>
     public string? SignerPublicKey { get; set; }
 
-    /// <summary>Gets or sets the public half of the recipient's keypair the offer was encrypted to.</summary>
-    public string? RecipientPublicKey { get; set; }
+    /// <summary>Gets or sets the recipient's account public key the offer was encrypted to.</summary>
+    public string? RecipientAccountPublicKey { get; set; }
+
+    /// <summary>Gets or sets the algorithm the offer was encrypted with, as a VaultKeyAlgorithm token.</summary>
+    public required string Algorithm { get; set; }
 }

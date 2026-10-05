@@ -3,11 +3,6 @@
  */
 export type AuthLogModel = {
   /**
-   * Gets or sets the primary key for the auth log entry.
-   */
-  id: number;
-
-  /**
    * Gets or sets the timestamp of the auth log entry.
    */
   timestamp: string;

@@ -1,10 +1,11 @@
+import { VaultKeyAlgorithm, type MobileLoginInitiateResponse, type MobileLoginPayload, type MobileLoginPollResponse } from '@aliasvault/models/webapi';
+
 import EncryptionUtility from '../crypto/EncryptionUtility';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import { MobileLoginProtocol } from './MobileLoginProtocol';
 
 import type { WebApiService } from '../api/WebApiService';
-import type { MobileLoginInitiateResponse, MobileLoginPayload, MobileLoginPollResponse } from '@aliasvault/models/webapi';
 
 /**
  * Error codes for mobile login failures.
@@ -76,7 +77,7 @@ export class MobileLoginService {
       const response = await this.api.rawFetch('auth/mobile-login/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientPublicKey: publicKeyJwk }),
+        body: JSON.stringify({ clientPublicKey: publicKeyJwk, algorithm: VaultKeyAlgorithm.RsaOaepSha256 }),
       });
 
       if (!response.ok) {

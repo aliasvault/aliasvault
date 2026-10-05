@@ -18,6 +18,11 @@ public class MobileLoginDetailsResponse
     public required string ClientPublicKey { get; set; }
 
     /// <summary>
+    /// Gets or sets the algorithm to encrypt the Account Key with, as a VaultKeyAlgorithm token.
+    /// </summary>
+    public required string Algorithm { get; set; }
+
+    /// <summary>
     /// Gets or sets the anonymized IP address the request came from.
     /// </summary>
     public string? IpAddress { get; set; }

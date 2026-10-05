@@ -51,8 +51,8 @@ const AuthLogsSettings: React.FC = () => {
             <p className="p-4 text-sm text-gray-500 dark:text-gray-400">{t('settings.securitySettings.authLogs.noLogs')}</p>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {logs.map((log) => (
-                <div key={log.id} className="p-4">
+              {logs.map((log, index) => (
+                <div key={index} className="p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-medium text-gray-900 dark:text-white break-words">{authEventTypeName(log.eventType)}</p>
                     <span className={`shrink-0 text-sm font-semibold ${log.isSuccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>

@@ -29,6 +29,9 @@ public class PasswordChangeRequest
     /// account keypair and grants are untouched by a password change.</summary>
     public required string NewEncryptedAccountKey { get; set; }
 
+    /// <summary>Gets or sets the algorithm of <see cref="NewEncryptedAccountKey"/>, as a VaultKeyAlgorithm token.</summary>
+    public required string NewEncryptedAccountKeyAlgorithm { get; set; }
+
     /// <summary>Gets or sets the KDF type the client derived the new unlock key with.</summary>
     public required string NewEncryptionType { get; set; }
 

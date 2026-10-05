@@ -2,7 +2,7 @@
  * VaultKeyService with client-side helpers for key operations.
  */
 
-import { UnlockMethodType, type VaultKeyGetResponse, type VaultKeyResponse } from '@aliasvault/models/webapi';
+import { UnlockMethodType, VaultKeyAlgorithm, type VaultKeyGetResponse, type VaultKeyResponse } from '@aliasvault/models/webapi';
 
 import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '../api/errors/AppErrorCodes';
@@ -77,6 +77,10 @@ export class VaultKeyService {
     if (!result.vaultKey) {
       await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, StorageKeys.SIGNING_PUBLIC_KEY, StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY]);
       return unlockKeyBase64;
+    }
+
+    if (result.vaultKey.algorithm !== VaultKeyAlgorithm.Aes256Gcm) {
+      throw new Error(formatErrorWithCode(`Unsupported Account Key algorithm '${result.vaultKey.algorithm}'`, AppErrorCode.VAULT_VERSION_INCOMPATIBLE));
     }
 
     const keys = await VaultKeyService.openChain(unlockKeyBase64, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);

@@ -34,13 +34,18 @@ public class ManifestWrite
     public List<BlobReference> BlobReferences { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the public half of this manifest's active RSA key pair (used to e.g. encrypt incoming emails).
+    /// Gets or sets the public half of this manifest's delivery keypair (used to e.g. encrypt incoming emails).
     /// </summary>
-    public string? EncryptionPublicKey { get; set; }
+    public string? DeliveryPublicKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the caller's signature over <see cref="EncryptionPublicKey"/>, required when it changes the manifest's primary key.
+    /// Gets or sets the algorithm of <see cref="DeliveryPublicKey"/>, as a VaultKeyAlgorithm token. Required when a key is sent.
+    /// </summary>
+    public string? DeliveryPublicKeyAlgorithm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the caller's signature over <see cref="DeliveryPublicKey"/>, required when it changes the manifest's primary key.
     /// </summary>
     [StringLength(255)]
-    public string? EncryptionPublicKeySignature { get; set; }
+    public string? DeliveryPublicKeySignature { get; set; }
 }

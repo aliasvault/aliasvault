@@ -152,11 +152,11 @@ export default function AuthLogsScreen() : React.ReactNode {
       );
     }
 
-    return logs.map((item) => {
+    return logs.map((item, index) => {
       const eventType = authEventTypeName(item.eventType);
 
       return (
-        <View key={item.id} style={styles.logItem}>
+        <View key={index} style={styles.logItem}>
           <View style={styles.logHeader}>
             <ThemedText style={styles.eventType}>{eventType}</ThemedText>
             <ThemedText style={[

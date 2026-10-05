@@ -21,15 +21,15 @@ public class GroupMemberInfo
     /// <summary>Gets or sets their role in the group.</summary>
     public required string Role { get; set; }
 
-    /// <summary>Gets or sets the id of the member's primary public key.</summary>
-    public Guid? PublicKeyId { get; set; }
+    /// <summary>Gets or sets the id of the member's primary account public key.</summary>
+    public Guid? AccountPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets that public key itself (JWK).</summary>
-    public string? PublicKey { get; set; }
+    /// <summary>Gets or sets that account public key itself (JWK).</summary>
+    public string? AccountPublicKey { get; set; }
 
-    /// <summary>Gets or sets the member's signature over <see cref="PublicKey"/>.</summary>
-    public string? PublicKeySignature { get; set; }
+    /// <summary>Gets or sets the member's signature over <see cref="AccountPublicKey"/>.</summary>
+    public string? AccountPublicKeySignature { get; set; }
 
-    /// <summary>Gets or sets the member's signing public key, which <see cref="PublicKeySignature"/> verifies under.</summary>
+    /// <summary>Gets or sets the member's signing public key, which <see cref="AccountPublicKeySignature"/> verifies under.</summary>
     public string? SigningPublicKey { get; set; }
 }

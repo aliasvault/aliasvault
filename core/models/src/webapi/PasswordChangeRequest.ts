@@ -7,6 +7,7 @@ export type PasswordChangeRequest = {
   newPasswordSalt: string;
   newPasswordVerifier: string;
   newEncryptedAccountKey: string;
+  newEncryptedAccountKeyAlgorithm: string;
   newEncryptionType: string;
   newEncryptionSettings: string;
 };

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
-import type { PasswordChangeInitiateResponse, PasswordChangeRequest } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
 import { MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { VaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
@@ -154,6 +154,7 @@ export function useVaultMutate() : {
       newPasswordSalt: next.salt,
       newPasswordVerifier: next.verifier,
       newEncryptedAccountKey,
+      newEncryptedAccountKeyAlgorithm: VaultKeyAlgorithm.Aes256Gcm,
       newEncryptionType: next.encryptionType,
       newEncryptionSettings: next.encryptionSettings,
     }, false);

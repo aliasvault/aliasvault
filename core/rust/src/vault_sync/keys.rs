@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::state::{self, Ctx};
-use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
+use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
 use super::http;
 use crate::crypto;
 
@@ -21,6 +21,14 @@ pub(crate) async fn fetch_vault_key(host: &Host) -> SyncResult<Option<VaultKeyRe
         Err(SyncError::Http { status: 404, .. }) => Ok(None),
         Err(error) => Err(error),
     }
+}
+
+/// Refuse an Account Key encrypted with an algorithm this build cannot open.
+pub(crate) fn ensure_known_unlock_algorithm(vault_key: &VaultKeyResponse) -> SyncResult<()> {
+    if vault_key.algorithm == ALGORITHM_AES256_GCM {
+        return Ok(());
+    }
+    Err(SyncError::VaultVersionIncompatible(format!("the Account Key is encrypted with '{}', which this app cannot open; update the app", vault_key.algorithm)))
 }
 
 /// Persist a server vault-key response's encrypted blobs.
@@ -104,7 +112,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
         return Ok(None);
     }
-    let Some(private_key) = resolve_grant_private_key(ctx, &record.encryption_public_key) else {
+    let Some(private_key) = resolve_grant_private_key(ctx, &record.account_public_key) else {
         ctx.warn(format!("[Sharing] This session holds no account private key that opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
         return Ok(None);
     };
@@ -166,6 +174,7 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     match fetched {
         Ok(response) => match response.vault_key {
             Some(vault_key) if vault_key.encrypted_vek.is_some() => {
+                ensure_known_unlock_algorithm(&vault_key)?;
                 let encrypted_vek = vault_key.encrypted_vek.clone().unwrap_or_default();
                 open_chain(ctx, &vault_key.encrypted_account_key, &encrypted_vek, vault_key.encrypted_account_private_key.as_deref(), &unlock_key).await?;
                 cache_vault_key_blobs(&ctx.host, &vault_key).await?;
@@ -211,6 +220,7 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
     };
     let Some(vault_key) = vault_key else { return Ok(true) };
     let Some(encrypted_vek) = vault_key.encrypted_vek.clone() else { return Ok(true) };
+    ensure_known_unlock_algorithm(&vault_key)?;
 
     // Hosts hold the unlock key and derive the vault key from the cached chain.
     let accepted: SyncResult<()> = async {

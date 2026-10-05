@@ -16,11 +16,21 @@ use super::signing::{self, generate_signing_key_pair};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
 use crate::common::error::VaultResult;
 
+/// The algorithm this build encrypts every Account Key with, as a VaultKeyAlgorithm token.
+pub const ACCOUNT_KEY_WRAP_ALGORITHM: &str = "aes256-gcm";
+
+fn account_key_wrap_algorithm() -> String {
+    ACCOUNT_KEY_WRAP_ALGORITHM.to_string()
+}
+
 /// The wrapped halves of an account key hierarchy: what the server stores.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountKeyBlobs {
     pub encrypted_account_key: String,
+    /// The algorithm of `encrypted_account_key`, as a VaultKeyAlgorithm token.
+    #[serde(default = "account_key_wrap_algorithm")]
+    pub encrypted_account_key_algorithm: String,
     pub encrypted_vek: String,
     pub account_public_key: String,
     pub encrypted_account_private_key: String,
@@ -190,6 +200,7 @@ pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_p
 
     let account_keys = AccountKeyBlobs {
         encrypted_account_key: wrap_account_key(&account_key, unlock_key_base64)?,
+        encrypted_account_key_algorithm: account_key_wrap_algorithm(),
         encrypted_vek: wrap_key(&vault_encryption_key, &account_key, aad::PERSONAL_VEK)?,
         account_public_key: key_pair.public_key.clone(),
         encrypted_account_private_key: symmetric_encrypt_with_aad(&key_pair.private_key, &account_key, aad::ACCOUNT_PRIVATE_KEY)?,

@@ -155,7 +155,7 @@ export function describeMemberAccess(group: GroupInfo, manifest: SharedManifestI
     canRevoke: hasAccess && !isSelf && isAdmin,
     canWithdraw: invitation !== null && !isSelf && isAdmin,
     canInvite: !hasAccess && invitation === null && !isSelf && isAdmin && holdsManifestKey(manifest, ownUserId),
-    isReadyForInvite: Boolean(member.publicKey),
+    isReadyForInvite: Boolean(member.accountPublicKey),
   };
 }
 
