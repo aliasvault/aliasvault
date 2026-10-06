@@ -34,7 +34,7 @@ RUN npm ci --no-audit --no-fund && npm run build
 # ============================================
 # Stage: Serve with nginx
 # ============================================
-FROM nginx:1.24.0 AS final
+FROM nginx:1.31.0 AS final
 
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"

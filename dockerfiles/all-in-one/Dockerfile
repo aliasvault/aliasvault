@@ -87,7 +87,7 @@ RUN find /app -name "*.pdb" -delete && \
 # ============================================
 # Stage 4: Download s6-overlay separately
 # ============================================
-FROM alpine:3.19 AS s6-downloader
+FROM alpine:3.24 AS s6-downloader
 ARG S6_OVERLAY_VERSION=3.2.0.2
 ARG TARGETARCH
 RUN ARCH="${TARGETARCH}"; \
