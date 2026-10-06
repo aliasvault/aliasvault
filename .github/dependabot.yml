@@ -1,71 +1,99 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
     # Enable version updates for NuGet
     - package-ecosystem: "nuget"
-      directory: "/"
+      directory: "/apps/server"
       target-branch: "main"
       open-pull-requests-limit: 10
       labels:
           - "dependencies"
-      # Check for updates once a week
       schedule:
           day: "monday"
           time: "09:00"
           interval: "weekly"
-        # Ignore certain dependencies (optional)
-        # ignore:
-        #   - dependency-name: "SomePackage"
-        #     versions: ["4.x", "5.x"]
+      groups:
+          nuget-minor-patch:
+              update-types:
+                  - "minor"
+                  - "patch"
 
     # Enable version updates for npm
     - package-ecosystem: "npm"
-      # There is no root `package.json`; every npm project lives in a subdirectory.
-      # These must be listed explicitly for the `ignore` rules below to apply to them.
       directories:
           - "/apps/browser-extension"
           - "/apps/mobile-app"
           - "/apps/server/AliasVault.Admin"
           - "/apps/web"
+          - "/core/client"
+          - "/core/i18n"
           - "/core/models"
           - "/core/vault"
           - "/docs"
-      # 0 disables automatic version-update PRs (the previous effective behaviour,
-      # since `directory: "/"` matched no manifest). Security updates still run.
       open-pull-requests-limit: 0
-      # Check for updates once a week
       schedule:
           day: "monday"
           time: "09:00"
           interval: "weekly"
       ignore:
           # eslint 10 is unusable here: eslint-plugin-import peers on `<=9` and has no
-          # v10-compatible release, so the bump breaks `npm ci` with ERESOLVE.
-          # Drop this once eslint-plugin-import supports v10 (or we move to
-          # eslint-plugin-import-x), then upgrade eslint deliberately.
+          # v10-compatible release. Drop this once eslint-plugin-import supports v10.
           - dependency-name: "eslint"
             versions: [">=10"]
 
-    # Enable version updates for Docker
-    - package-ecosystem: "docker"
-      # Look for a `Dockerfile` in the `root` directory
-      directory: "/"
-      # Check for updates once a week
+    # Security updates for the Rust core
+    - package-ecosystem: "cargo"
+      directory: "/core/rust"
+      open-pull-requests-limit: 0
       schedule:
           day: "monday"
           time: "09:00"
           interval: "weekly"
 
-    # Enable version updates for Composer
-    - package-ecosystem: "composer"
-      # Look for a `Dockerfile` in the `root` directory
-      directory: "/"
-      # Check for updates once a week
+    # Security updates for the Android native module.
+    - package-ecosystem: "gradle"
+      directory: "/apps/mobile-app/android"
+      open-pull-requests-limit: 0
       schedule:
           day: "monday"
           time: "09:00"
           interval: "weekly"
+      ignore:
+          # AGP must move together with Gradle, Kotlin and the RN Gradle plugin; bump it deliberately.
+          - dependency-name: "com.android.tools.build:gradle"
+            update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+    # Enable version updates for Docker base images
+    - package-ecosystem: "docker"
+      directories:
+          - "/apps/server"
+          - "/apps/server/AliasVault.Admin"
+          - "/apps/server/AliasVault.Api"
+          - "/apps/server/AliasVault.SmtpService"
+          - "/apps/server/AliasVault.TaskRunner"
+          - "/apps/server/Databases/AliasServerDb"
+          - "/apps/server/Utilities/AliasVault.InstallCli"
+          - "/apps/web"
+          - "/dockerfiles/all-in-one"
+          - "/docs"
+      schedule:
+          day: "monday"
+          time: "09:00"
+          interval: "weekly"
+      groups:
+          docker-images:
+              patterns:
+                  - "*"
+
+    # Enable version updates for GitHub Actions
+    - package-ecosystem: "github-actions"
+      directories:
+          - "/"
+          - "/.github/actions/*"
+      schedule:
+          day: "monday"
+          time: "09:00"
+          interval: "weekly"
+      groups:
+          github-actions:
+              patterns:
+                  - "*"
