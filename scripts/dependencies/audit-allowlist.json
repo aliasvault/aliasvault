@@ -1,0 +1,27 @@
+{
+    "npm": [
+        {
+            "id": "GHSA-vfj7-8cjw-p6xm",
+            "package": "braces",
+            "reason": "No patched release exists (affects <=3.0.3, the latest). Build-time only, via tailwindcss 3, chokidar and micromatch. Disputed, see https://github.com/micromatch/braces/issues/73."
+        },
+        {
+            "id": "GHSA-86w9-cpqp-85rv",
+            "package": "node-forge",
+            "reason": "No patched release exists (affects <=1.4.0, the latest). Build-time only, via @expo/cli (iOS signing identity lookup); not in the app bundle and expo-updates code signing is not used."
+        },
+        {
+            "id": "GHSA-vcc3-ghjq-m6fr",
+            "package": "decode-uri-component",
+            "reason": "Fixed only in 0.5.0, which is ESM-only and breaks the require() in query-string 7 used by expo-router (still on query-string 7 in SDK 57). Impact is a client-side CPU DoS from a crafted deep link query string; recheck on the next Expo SDK upgrade."
+        }
+    ],
+    "nuget": [],
+    "cargo": [
+        {
+            "id": "RUSTSEC-2023-0071",
+            "package": "rsa",
+            "reason": "The Marvin timing attack is primarily relevant when an attacker can observe decryption timing, such as over a network. Since decryption is performed client-side only and uses decrypt_blinded, this provides a sufficient mitigation."
+        }
+    ]
+}
