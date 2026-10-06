@@ -70,7 +70,7 @@ flate2 = { version = "1.0", default-features = false, features = ["rust_backend"
 base64 = "0.22"
 
 # UniFFI for Swift/Kotlin bindings (optional)
-uniffi = { version = "0.28", optional = true }
+uniffi = { version = "0.32", optional = true }
 
 # WASM bindings (optional)
 wasm-bindgen = { version = "0.2", optional = true }

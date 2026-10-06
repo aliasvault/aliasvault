@@ -317,7 +317,7 @@ build_ios() {
     # Note: Use uniffi-cli feature here since we need the bindgen CLI tool
     echo -e "  Generating Swift bindings..."
     cargo run $cargo_flags --features uniffi-cli --bin uniffi-bindgen -- generate \
-        --library "target/aarch64-apple-ios/$cargo_profile/libaliasvault_core.a" \
+        "target/aarch64-apple-ios/$cargo_profile/libaliasvault_core.a" \
         --language swift \
         --no-format \
         --out-dir "$IOS_DIR/swift"
@@ -561,7 +561,7 @@ build_android() {
 
     # Generate bindings from native library
     cargo run --features uniffi-cli --bin uniffi-bindgen -- generate \
-        --library "target/debug/$native_lib_name" \
+        "target/debug/$native_lib_name" \
         --language kotlin \
         --no-format \
         --out-dir "$ANDROID_DIR/kotlin"
