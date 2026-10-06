@@ -113,7 +113,6 @@ PODS:
   - hermes-engine/Pre-built (250829098.0.10)
   - Macaw (0.9.10):
     - SWXMLHash
-  - OpenSSL-Universal (3.6.5000)
   - RCTDeprecation (0.85.3)
   - RCTRequired (0.85.3)
   - RCTSwiftUI (0.85.3)
@@ -1519,52 +1518,6 @@ PODS:
     - React
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-quick-base64 (3.0.0):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
-  - react-native-quick-crypto (0.7.17):
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - react-native-safe-area-context (5.7.0):
     - hermes-engine
     - RCTRequired
@@ -2402,7 +2355,6 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - Macaw (~> 0.9.7)
-  - OpenSSL-Universal (from `https://raw.githubusercontent.com/krzyzanowskim/OpenSSL/3.6.5000/OpenSSL-Universal.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
   - RCTSwiftUI (from `../node_modules/react-native/ReactApple/RCTSwiftUI`)
@@ -2444,8 +2396,6 @@ DEPENDENCIES:
   - react-native-aes-gcm-crypto (from `../node_modules/react-native-aes-gcm-crypto`)
   - react-native-context-menu-view (from `../node_modules/react-native-context-menu-view`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
-  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
-  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2558,8 +2508,6 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.10
-  OpenSSL-Universal:
-    :podspec: https://raw.githubusercontent.com/krzyzanowskim/OpenSSL/3.6.5000/OpenSSL-Universal.podspec
   RCTDeprecation:
     :path: "../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   RCTRequired:
@@ -2640,10 +2588,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-context-menu-view"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
-  react-native-quick-base64:
-    :path: "../node_modules/react-native-quick-base64"
-  react-native-quick-crypto:
-    :path: "../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-slider:
@@ -2764,7 +2708,6 @@ SPEC CHECKSUMS:
   FBLazyVector: 24e62c765683b8d89006a88a2c8f5cf019f0074d
   hermes-engine: f684a01742a30bb5d7332da47aa184074d8ae9b4
   Macaw: 7af8ea57aa2cab35b4a52a45e6f85eea753ea9ae
-  OpenSSL-Universal: 3e13305702e4e724410c7290e0c7dd78ad3c56f4
   RCTDeprecation: a4c521821fab57cbb125b36effe84d897d0dfa12
   RCTRequired: 9f3a7e5645d4bc3f551593de7550bb66ab6e42bc
   RCTSwiftUI: 239ed2eb9e73de5a6f518810630f0c95e01c8702
@@ -2805,8 +2748,6 @@ SPEC CHECKSUMS:
   react-native-aes-gcm-crypto: d572dd7a69f31c539bb8309b3a829bfa3bfad244
   react-native-context-menu-view: da39a4612c1294d651907162529cfba8421e9b89
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-quick-base64: 53393ee5ea472a7486e6652ad3d7a640ebf6ebda
-  react-native-quick-crypto: 4cda9f23b60fa731cae94007a3569a6a0443dc41
   react-native-safe-area-context: 6b4966397ada0f7dd481e4486a2ef936834861a1
   react-native-slider: 08ecfc4e9cc16cc388a56dd9caeca51b55cd9bb7
   react-native-webview: 2da09bdea1aeb6c46e27dd94632e21059cade6c1
@@ -2854,6 +2795,6 @@ SPEC CHECKSUMS:
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
-PODFILE CHECKSUM: c6996460e83f68ca37df65dc9a758b89bb097d49
+PODFILE CHECKSUM: 97a422feed2574ce375469b50618d6ab651962d8
 
 COCOAPODS: 1.16.2

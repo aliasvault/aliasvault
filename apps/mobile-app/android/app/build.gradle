@@ -218,6 +218,12 @@ dependencies {
         }
     }
 
+    // Raise vulnerable transitive dependencies of Expo modules (gson via expo-log-box, commons-io via expo-file-system and expo-document-picker)
+    constraints {
+        implementation("com.google.code.gson:gson:2.14.0")
+        implementation("commons-io:commons-io:2.22.0")
+    }
+
     // Test dependencies (unit tests)
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'

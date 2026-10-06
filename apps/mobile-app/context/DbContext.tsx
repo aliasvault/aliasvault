@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
 import { hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import SqliteClient from '@/utils/SqliteClient';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -191,7 +190,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Clear database and remove from native module, called when logging out.
    */
   const clearDatabase = useCallback(() : void => {
-    EncryptionUtility.clearRsaPrivateKeyCache();
     setDbInitialized(false);
     NativeVaultManager.clearVault();
   }, []);

@@ -4,10 +4,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef } from 'react';
 import { Linking, Platform } from 'react-native';
 import 'react-native-reanimated';
-import 'react-native-get-random-values';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { install } from 'react-native-quick-crypto';
 
+import '@/platform/CryptoPolyfill';
 import '@/platform/MobilePlatform';
 import { resolveDeepLink } from '@/utils/DeepLinkResolver';
 import { clearExportDirectories } from '@/utils/FileUtility';
@@ -28,11 +27,6 @@ import { initI18n } from '@/i18n';
 import { runStartupMigrations } from '@/migrations';
 
 SplashScreen.preventAutoHideAsync();
-
-/*
- * Install react-native-quick-crypto synchronously at module load.
- */
-install();
 
 /**
  * Root layout navigation.
