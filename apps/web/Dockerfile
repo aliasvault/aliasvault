@@ -22,7 +22,7 @@ RUN cd ./core && \
 # ============================================
 # Stage: Build the web app
 # ============================================
-FROM --platform=$BUILDPLATFORM node:20-bookworm-slim AS build
+FROM --platform=$BUILDPLATFORM node:25-bookworm-slim AS build
 WORKDIR /src
 
 COPY --from=core-builder /src/core/ ./core/
@@ -34,7 +34,7 @@ RUN npm ci --no-audit --no-fund && npm run build
 # ============================================
 # Stage: Serve with nginx
 # ============================================
-FROM nginx:1.24.0 AS final
+FROM nginx:1.31.0 AS final
 
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"

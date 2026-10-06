@@ -1,4 +1,4 @@
-FROM postgres:16-alpine
+FROM postgres:18-alpine
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"

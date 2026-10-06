@@ -30,7 +30,7 @@ RUN cd ./core && \
 # ============================================
 # Stage 2: Build the web app
 # ============================================
-FROM --platform=$BUILDPLATFORM node:20-bookworm-slim AS web-builder
+FROM --platform=$BUILDPLATFORM node:25-bookworm-slim AS web-builder
 WORKDIR /src
 
 COPY --from=core-builder /src/core/ ./core/
@@ -87,7 +87,7 @@ RUN find /app -name "*.pdb" -delete && \
 # ============================================
 # Stage 4: Download s6-overlay separately
 # ============================================
-FROM alpine:3.19 AS s6-downloader
+FROM alpine:3.24 AS s6-downloader
 ARG S6_OVERLAY_VERSION=3.2.0.2
 ARG TARGETARCH
 RUN ARCH="${TARGETARCH}"; \
