@@ -1,7 +1,7 @@
 //! Randomness: the one OS entropy entry point and the seedable RNG the generator modules use.
 
 use rand::rngs::StdRng;
-use rand::{RngCore, SeedableRng};
+use rand::{Rng, SeedableRng};
 
 /// Fill a buffer from the operating system's CSPRNG.
 pub(crate) fn fill_random(dest: &mut [u8]) {
@@ -29,7 +29,7 @@ fn parse_seed_hex(hex: &str) -> Option<[u8; 32]> {
 
 /// Get an unbiased random index in `0..max` using rejection sampling over the given CSPRNG.
 /// Handles modulo bias by rejecting values above the largest multiple of `max` that fits in a `u64`.
-pub(crate) fn unbiased_index<R: RngCore + ?Sized>(rng: &mut R, max: usize) -> usize {
+pub(crate) fn unbiased_index<R: Rng + ?Sized>(rng: &mut R, max: usize) -> usize {
     debug_assert!(max > 0, "unbiased_index requires max > 0");
     if max <= 1 {
         return 0;

@@ -3,7 +3,7 @@
 //! Builds a character set from the enabled options and constructs the password so that it is guaranteed to contain at least
 //! one character from every enabled set (as some websites require this).
 
-use rand::RngCore;
+use rand::Rng;
 
 use super::{unbiased_index, PasswordSettings};
 
@@ -16,7 +16,7 @@ const SPECIAL_CHARS: &str = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 const AMBIGUOUS_CHARS: &str = "Il1O0oZzSsBbGg2568|[]{}()<>;:,.`'\"_-";
 
 /// Generate a basic password based on the supplied settings.
-pub fn generate<R: RngCore + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
+pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
     let chars = build_character_set(settings);
     let length = settings.length as usize;
 
@@ -66,7 +66,7 @@ fn build_character_set(settings: &PasswordSettings) -> Vec<char> {
 }
 
 /// Collect one mandatory character per enabled class, so the password contains at least one character from each.
-fn mandatory_characters<R: RngCore + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> Vec<char> {
+fn mandatory_characters<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> Vec<char> {
     let mut mandatory = Vec::new();
     if settings.use_lowercase {
         push_one(&mut mandatory, LOWERCASE_CHARS, settings, rng);
@@ -84,7 +84,7 @@ fn mandatory_characters<R: RngCore + ?Sized>(settings: &PasswordSettings, rng: &
 }
 
 /// Pick one random character from the (ambiguity-filtered) class set and push it onto `out`.
-fn push_one<R: RngCore + ?Sized>(out: &mut Vec<char>, char_set: &str, settings: &PasswordSettings, rng: &mut R) {
+fn push_one<R: Rng + ?Sized>(out: &mut Vec<char>, char_set: &str, settings: &PasswordSettings, rng: &mut R) {
     let safe = safe_character_set(char_set, settings);
     if !safe.is_empty() {
         out.push(safe[unbiased_index(rng, safe.len())]);
@@ -97,7 +97,7 @@ fn safe_character_set(char_set: &str, settings: &PasswordSettings) -> Vec<char> 
 }
 
 /// Shuffle a slice in place with an unbiased Fisher-Yates shuffle, reusing [`unbiased_index`] so a fixed seed stays deterministic.
-fn shuffle<R: RngCore + ?Sized>(items: &mut [char], rng: &mut R) {
+fn shuffle<R: Rng + ?Sized>(items: &mut [char], rng: &mut R) {
     for i in (1..items.len()).rev() {
         let j = unbiased_index(rng, i + 1);
         items.swap(i, j);

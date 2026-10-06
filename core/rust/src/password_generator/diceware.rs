@@ -4,14 +4,14 @@
 //! from the selected language wordlist, applies capitalization, joins them with a separator, and optionally adds a random
 //! alphanumeric "salt" character.
 
-use rand::RngCore;
+use rand::Rng;
 
 use super::{unbiased_index, wordlists, Capitalization, PasswordSettings, Salt, Separator};
 
 const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 /// Generate a Diceware passphrase based on the supplied settings.
-pub fn generate<R: RngCore + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
+pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
     let words = wordlists::list(&settings.language);
 
     let chosen: Vec<String> = (0..settings.word_count)
@@ -41,7 +41,7 @@ fn separator_char(separator: Separator) -> Option<char> {
 }
 
 /// Apply the configured capitalization to a single word.
-fn capitalize_word<R: RngCore + ?Sized>(word: &str, capitalization: Capitalization, rng: &mut R) -> String {
+fn capitalize_word<R: Rng + ?Sized>(word: &str, capitalization: Capitalization, rng: &mut R) -> String {
     match capitalization {
         Capitalization::None => word.to_string(),
         Capitalization::Lowercase => word.to_lowercase(),
@@ -67,7 +67,7 @@ fn capitalize_word<R: RngCore + ?Sized>(word: &str, capitalization: Capitalizati
 }
 
 /// Add a random alphanumeric salt character to the passphrase based on the salt option.
-fn add_salt<R: RngCore + ?Sized>(passphrase: String, salt: Salt, rng: &mut R) -> String {
+fn add_salt<R: Rng + ?Sized>(passphrase: String, salt: Salt, rng: &mut R) -> String {
     match salt {
         Salt::None => passphrase,
         Salt::Prefix => format!("{}{}", random_alphanumeric(rng), passphrase),
@@ -83,6 +83,6 @@ fn add_salt<R: RngCore + ?Sized>(passphrase: String, salt: Salt, rng: &mut R) ->
 }
 
 /// Pick one random alphanumeric character.
-fn random_alphanumeric<R: RngCore + ?Sized>(rng: &mut R) -> char {
+fn random_alphanumeric<R: Rng + ?Sized>(rng: &mut R) -> char {
     char::from(ALPHANUMERIC.as_bytes()[unbiased_index(rng, ALPHANUMERIC.len())])
 }

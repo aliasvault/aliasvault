@@ -36,15 +36,15 @@ serde_json = "1.0"
 chrono = { version = "0.4", default-features = false, features = ["serde", "now", "wasmbind"] }
 
 # Error handling
-thiserror = "1.0"
+thiserror = "2"
 
 # SRP (Secure Remote Password) protocol
 srp = "0.6"
 sha2 = "0.10"
-rand = { version = "0.9", features = ["std", "std_rng"] }
+rand = { version = "0.10", features = ["std", "std_rng"] }
 num-bigint = "0.4"
 subtle = "2.5"
-getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom = { version = "0.4", features = ["wasm_js"] }
 
 # Argon2 password hashing
 argon2 = "0.5"
