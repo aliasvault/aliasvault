@@ -27,7 +27,7 @@ if [ -z "${BASH_VERSION:-}" ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TODAY="$(date +%Y-%m-%d)"
 
 # Colors
@@ -193,7 +193,7 @@ header = [
     "// Mozilla Public Suffix List, rules only: comments and blank lines stripped, internationalized rules in punycode.",
     f"// Source: {url}",
     f"// Upstream version: {version}",
-    f"// Last refreshed: {today} by scripts/refresh-external-dependencies.sh (task public-suffix-list)",
+    f"// Last refreshed: {today} by scripts/dependencies/refresh-external-dependencies.sh (task public-suffix-list)",
     "//",
     "// This Source Code Form is subject to the terms of the Mozilla Public",
     "// License, v. 2.0. If a copy of the MPL was not distributed with this",

@@ -1,2 +1,2 @@
 # Scripts
-This folder contains various scripts that help with maintenance or deployment tasks.
+This folder contains various scripts that help with maintenance and release tasks.

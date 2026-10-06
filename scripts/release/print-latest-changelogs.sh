@@ -5,7 +5,7 @@
 #
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 METADATA_DIR="$ROOT_DIR/fastlane/metadata"
 
 # Function to get the latest changelog file from a directory
