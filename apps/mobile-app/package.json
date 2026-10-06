@@ -51,7 +51,7 @@
     "expo-linking": "~56.0.11",
     "expo-local-authentication": "~56.0.4",
     "expo-localization": "~56.0.6",
-    "expo-router": "~56.2.6",
+    "expo-router": "~58.0.15",
     "expo-sharing": "~56.0.13",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
