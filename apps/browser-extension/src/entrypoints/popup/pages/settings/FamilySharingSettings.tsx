@@ -3,7 +3,7 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,7 +61,7 @@ const FamilySharingSettings: React.FC = () => {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [pendingVaultCreate, setPendingVaultCreate] = useState<GroupInfo | null>(null);
-  const [vaultNames, setVaultNames] = useState<Record<string, string>>({});
+  const vaultNames = useMemo<Record<string, string>>(() => (sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {}), [sqliteClient]);
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(null);
   const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
@@ -74,14 +74,13 @@ const FamilySharingSettings: React.FC = () => {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
       setInvitationNames(await SharingService.openInvitationNames(loaded.receivedInvitations));
-      setVaultNames(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {});
       setError(null);
     } catch {
       setError(familySharingText.errors.loadFailed);
     } finally {
       setIsInitialLoading(false);
     }
-  }, [webApi, sqliteClient, setIsInitialLoading]);
+  }, [webApi, setIsInitialLoading]);
 
   useEffect(() => {
     loadOverview().then(() => {

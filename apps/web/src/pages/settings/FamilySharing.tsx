@@ -4,7 +4,7 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -91,7 +91,7 @@ const FamilySharing: React.FC = () => {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
-  const [vaultNames, setVaultNames] = useState<Record<string, string>>({});
+  const vaultNames = useMemo<Record<string, string>>(() => (sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {}), [sqliteClient]);
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
   const [openVaultMenuId, setOpenVaultMenuId] = useState<string | null>(null);
   const [pendingVaultRename, setPendingVaultRename] = useState<ManifestTarget | null>(null);
@@ -103,14 +103,13 @@ const FamilySharing: React.FC = () => {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
       setInvitationNames(await SharingService.openInvitationNames(loaded.receivedInvitations));
-      setVaultNames(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {});
       setError(null);
     } catch {
       setError(familySharingText.errors.loadFailed);
     } finally {
       setIsLoading(false);
     }
-  }, [webApi, sqliteClient, setIsLoading]);
+  }, [webApi, setIsLoading]);
 
   useEffect(() => {
     void loadOverview();
