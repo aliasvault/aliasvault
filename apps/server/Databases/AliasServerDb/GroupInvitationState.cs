@@ -37,4 +37,9 @@ public enum GroupInvitationState
     /// accepting it would hand the invitee a grant they cannot use. The inviter has to make a fresh invitation.
     /// </summary>
     Stale = 4,
+
+    /// <summary>
+    /// Left unanswered past its lifetime. The inviter has to make a fresh invitation.
+    /// </summary>
+    Expired = 5,
 }

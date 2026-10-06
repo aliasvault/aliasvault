@@ -43,6 +43,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     private const int MaxSharedVaults = 3;
 
     /// <summary>
+    /// How long an offer of access stays open before it expires unanswered.
+    /// </summary>
+    private static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
+
+    /// <summary>
     /// Get the overview of the caller's shared groups and the access offers awaiting their answer.
     /// </summary>
     /// <returns>The overview.</returns>
@@ -63,7 +68,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         var response = new GroupOverviewResponse
         {
-            ReceivedInvitations = await GetReceivedInvitationsAsync(context, me.Id),
+            ReceivedInvitations = await GetReceivedInvitationsAsync(context, me.Id, InvitationCutoff()),
         };
 
         if (memberships.Count == 0)
@@ -93,7 +98,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var publicKeys = administeredGroupIds.Count > 0 ? await GrantHelper.GetPrimaryKeysAsync(context, administeredMemberIds) : [];
 
         // Open offers are only shown to the admins who may withdraw them.
-        var openInvitations = administeredGroupIds.Count > 0 ? await GetOpenInvitationsByManifestAsync(context, [.. administeredGroupIds]) : [];
+        var openInvitations = administeredGroupIds.Count > 0 ? await GetOpenInvitationsByManifestAsync(context, [.. administeredGroupIds], InvitationCutoff()) : [];
 
         foreach (var membership in memberships)
         {
@@ -301,6 +306,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         await CloseStaleInvitationsAsync(context, manifestId, manifestKeyVersion.Value);
+        await CloseExpiredInvitationsAsync(context, manifestId);
 
         if (await context.GroupInvitations.AnyAsync(i => i.VaultManifestId == manifestId && i.InviteeUserId == model.UserId && i.State == GroupInvitationState.Pending))
         {
@@ -613,6 +619,21 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.INVITATION_KEY_OUTDATED, 400);
         }
 
+        if (invitation.CreatedAt < InvitationCutoff())
+        {
+            CloseInvitation(invitation, GroupInvitationState.Expired);
+            await context.SaveChangesAsync();
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+        }
+
+        // The offer is only as good as the inviter's right to make it, checked again now and not only when it was sent.
+        if (!await InviterMayStillGrantAsync(context, invitation))
+        {
+            CloseInvitation(invitation, GroupInvitationState.Revoked);
+            await context.SaveChangesAsync();
+            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+        }
+
         if (!await PromoteInvitationGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
         {
             return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
@@ -693,11 +714,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="groupIds">The groups to list offers of.</param>
+    /// <param name="createdAfter">Offers created before this moment have expired and are left out.</param>
     /// <returns>Manifest id to its open offers.</returns>
-    private static async Task<Dictionary<Guid, List<SentManifestInvitation>>> GetOpenInvitationsByManifestAsync(AliasServerDbContext context, List<Guid> groupIds)
+    private static async Task<Dictionary<Guid, List<SentManifestInvitation>>> GetOpenInvitationsByManifestAsync(AliasServerDbContext context, List<Guid> groupIds, DateTime createdAfter)
     {
         return (await context.GroupInvitations
-                .Where(i => groupIds.Contains(i.GroupId) && i.State == GroupInvitationState.Pending && i.VaultManifestId != null)
+                .Where(i => groupIds.Contains(i.GroupId) && i.State == GroupInvitationState.Pending && i.VaultManifestId != null && i.CreatedAt >= createdAfter)
                 .Select(i => new
                 {
                     ManifestId = i.VaultManifestId!.Value,
@@ -713,11 +735,15 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The invitee.</param>
+    /// <param name="createdAfter">Offers created before this moment have expired and are left out.</param>
     /// <returns>Their open offers.</returns>
-    private static async Task<List<ReceivedManifestInvitation>> GetReceivedInvitationsAsync(AliasServerDbContext context, string userId)
+    private static async Task<List<ReceivedManifestInvitation>> GetReceivedInvitationsAsync(AliasServerDbContext context, string userId, DateTime createdAfter)
     {
+        // Offers the recipient could no longer accept (expired, or the inviter lost the right to make them) are left out.
         var invitations = await context.GroupInvitations
-            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared && i.VaultManifestId != null)
+            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared && i.VaultManifestId != null && i.CreatedAt >= createdAfter)
+            .Where(i => context.GroupMembers.Any(m => m.GroupId == i.GroupId && m.UserId == i.InviterUserId && (m.Role == GroupRole.Owner || m.Role == GroupRole.Admin)))
+            .Where(i => context.VaultManifestAccessKeys.Any(k => k.UserId == i.InviterUserId && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == i.VaultManifestId))
             .OrderBy(i => i.CreatedAt)
             .Select(i => new
             {
@@ -764,6 +790,19 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
+    /// Whether the inviter is still an admin of the group and still holds a grant on the offered manifest.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="invitation">The invitation.</param>
+    /// <returns>True when the inviter may still hand out this manifest's key.</returns>
+    private static async Task<bool> InviterMayStillGrantAsync(AliasServerDbContext context, GroupInvitation invitation)
+    {
+        return invitation.VaultManifestId is Guid manifestId
+            && await GroupHelper.IsSharedGroupAdminAsync(context, invitation.GroupId, invitation.InviterUserId)
+            && await ManifestAccessHelper.HoldsGrantAsync(context, invitation.InviterUserId, manifestId);
+    }
+
+    /// <summary>
     /// Close an offer of access, dropping the manifest key encrypted inside it.
     /// </summary>
     /// <param name="invitation">The invitation to close.</param>
@@ -805,6 +844,34 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, invitation.GrantSignature, invitation.InviterUserId, invitation.GrantSignerPublicKey, timeProvider.GetUtcNow().UtcDateTime));
 
         return true;
+    }
+
+    /// <summary>
+    /// The creation moment before which an open offer of access has expired.
+    /// </summary>
+    /// <returns>The cutoff in UTC.</returns>
+    private DateTime InvitationCutoff()
+    {
+        return timeProvider.GetUtcNow().UtcDateTime - InvitationLifetime;
+    }
+
+    /// <summary>
+    /// Close the open offers on a manifest that expired unanswered, so a new offer to the same person can be made.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="manifestId">The manifest.</param>
+    /// <returns>A task.</returns>
+    private async Task CloseExpiredInvitationsAsync(AliasServerDbContext context, Guid manifestId)
+    {
+        var cutoff = InvitationCutoff();
+        var expired = await context.GroupInvitations
+            .Where(i => i.VaultManifestId == manifestId && i.State == GroupInvitationState.Pending && i.CreatedAt < cutoff)
+            .ToListAsync();
+
+        foreach (var invitation in expired)
+        {
+            CloseInvitation(invitation, GroupInvitationState.Expired);
+        }
     }
 
     /// <summary>
