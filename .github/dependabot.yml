@@ -11,6 +11,9 @@ updates:
           day: "monday"
           time: "09:00"
           interval: "weekly"
+      ignore:
+          - dependency-name: "*"
+            update-types: ["version-update:semver-major"]
       groups:
           nuget-minor-patch:
               update-types:
@@ -79,6 +82,9 @@ updates:
           day: "monday"
           time: "09:00"
           interval: "weekly"
+      ignore:
+          - dependency-name: "*"
+            update-types: ["version-update:semver-major"]
       groups:
           docker-images:
               patterns:
