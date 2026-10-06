@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import { gunzipSync, strFromU8 } from 'fflate';
 import AesGcmCrypto from 'react-native-aes-gcm-crypto';
 
+import { rsaDecrypt } from '@/platform/NativeRustCore';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { EncryptionKey } from '@aliasvault/models/vault';
 import type { Email, EmailDecryptionKey, MailboxEmail } from '@aliasvault/models/webapi';
@@ -32,8 +33,6 @@ export type DecryptedEmail = {
  * - RSA-OAEP asymmetric encryption/decryption
  */
 class EncryptionUtility {
-  private static rsaPrivateKeyCache = new Map<string, Promise<CryptoKey>>();
-
   /**
    * Derives a key from a password using Argon2Id
    */
@@ -128,27 +127,18 @@ class EncryptionUtility {
       return encryptedBytes;
     }
 
-    const key = await crypto.subtle.importKey(
-      "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
-      {
-        name: "AES-GCM",
-        length: 256,
-      },
-      false,
-      ["decrypt"]
-    );
-
     const iv = encryptedBytes.slice(0, 12);
-    const ciphertext = encryptedBytes.slice(12);
+    const tag = encryptedBytes.slice(-16);
+    const content = encryptedBytes.slice(12, -16);
 
-    const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv },
-      key,
-      ciphertext
+    const decryptedBase64 = await AesGcmCrypto.decrypt(
+      Buffer.from(content).toString('base64'),
+      base64Key,
+      Buffer.from(iv).toString('hex'),
+      Buffer.from(tag).toString('hex'),
+      true
     );
-
-    return new Uint8Array(decrypted);
+    return new Uint8Array(Buffer.from(decryptedBase64, 'base64'));
   }
 
   /**
@@ -168,133 +158,6 @@ class EncryptionUtility {
     }
 
     return Buffer.from(decryptedBytes).toString('utf8');
-  }
-
-  /**
-   * Generates a new RSA key pair for asymmetric encryption
-   */
-  public static async generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
-    /*
-     * TODO: this method is currently unused. When we enable the app to actually generate keys, check if the key pair is
-     * generated in the correct format  where private key is in expected JWK format that the WASM app already outputs.
-     */
-    const keyPair = await crypto.subtle.generateKey(
-      {
-        name: "RSA-OAEP",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt", "decrypt"]
-    );
-
-    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-    const privateKey = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-
-    return {
-      publicKey: JSON.stringify(publicKey),
-      privateKey: JSON.stringify(privateKey)
-    };
-  }
-
-  /**
-   * Encrypts data using RSA-OAEP asymmetric encryption with a public key
-   */
-  public static async encryptWithPublicKey(plaintext: string, publicKey: string): Promise<string> {
-    const publicKeyObj = await crypto.subtle.importKey(
-      "jwk",
-      JSON.parse(publicKey),
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      false,
-      ["encrypt"]
-    );
-
-    const encodedPlaintext = new TextEncoder().encode(plaintext);
-    const cipherBuffer = await crypto.subtle.encrypt(
-      {
-        name: "RSA-OAEP"
-      },
-      publicKeyObj,
-      encodedPlaintext
-    );
-
-    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(cipherBuffer))));
-  }
-
-  /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a private key
-   */
-  public static async decryptWithPrivateKey(ciphertext: string, privateKey: string): Promise<Uint8Array> {
-    try {
-      const privateKeyObj = await EncryptionUtility.importPrivateKey(privateKey);
-
-      return await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKeyObj);
-    } catch (error) {
-      console.error('RSA decryption failed:', error);
-      throw new Error(`Failed to decrypt: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
-   */
-  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
-    const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
-    const plaintextBuffer = await crypto.subtle.decrypt(
-      {
-        name: "RSA-OAEP",
-      },
-      privateKey,
-      cipherBuffer
-    );
-
-    return new Uint8Array(plaintextBuffer);
-  }
-
-  /**
-   * Clears cached RSA private keys when the in-memory vault is locked or reset.
-   */
-  public static clearRsaPrivateKeyCache(): void {
-    EncryptionUtility.rsaPrivateKeyCache.clear();
-  }
-
-  /**
-   * Imports an RSA-OAEP private key as non-extractable.
-   */
-  private static async importPrivateKey(privateKey: string): Promise<CryptoKey> {
-    return await crypto.subtle.importKey(
-      "jwk",
-      JSON.parse(privateKey),
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      false,
-      ["decrypt"]
-    );
-  }
-
-  /**
-   * Returns the cached non-extractable private key matching an email encryption public key.
-   */
-  private static async getPrivateKeyObject(encryptionKey: EncryptionKey): Promise<CryptoKey> {
-    const cachedPrivateKey = EncryptionUtility.rsaPrivateKeyCache.get(encryptionKey.PublicKey);
-
-    if (cachedPrivateKey) {
-      return await cachedPrivateKey;
-    }
-
-    const privateKey = EncryptionUtility.importPrivateKey(encryptionKey.PrivateKey).catch(error => {
-      EncryptionUtility.rsaPrivateKeyCache.delete(encryptionKey.PublicKey);
-      throw error;
-    });
-
-    EncryptionUtility.rsaPrivateKeyCache.set(encryptionKey.PublicKey, privateKey);
-    return await privateKey;
   }
 
   /**
@@ -319,8 +182,7 @@ class EncryptionUtility {
    */
   private static async resolveEmailSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
     const match = EncryptionUtility.resolveEmailDecryptionKey(decryptionKeys, publicKeys, encryptionKeys);
-    const privateKey = await EncryptionUtility.getPrivateKeyObject(match.encryptionKey);
-    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(match.encryptedSymmetricKey, privateKey);
+    const symmetricKey = await rsaDecrypt(match.encryptedSymmetricKey, match.encryptionKey.PrivateKey);
     return Buffer.from(symmetricKey).toString('base64');
   }
 

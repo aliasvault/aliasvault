@@ -1593,6 +1593,7 @@ private enum RustCoreDispatcher {
         case "decodeEmailSource": return try json(bytes: try RustCoreFramework.decodeEmailSource(source: try args.data(0)))
         case "extractEmailAttachment":
             return try json(bytes: try RustCoreFramework.extractEmailAttachment(source: try args.data(0), index: try args.uint32(1), detachedBody: try args.optionalData(2)))
+        case "rsaDecrypt": return try json(bytes: try RustCoreFramework.rsaDecrypt(base64Ciphertext: try args.string(0), privateKeyJwk: try args.string(1)))
 
         case "argon2DeriveKey":
             return try json(bytes: try RustCoreFramework.argon2DeriveKey(password: try args.string(0), salt: try args.string(1), encryptionSettings: try args.string(2)))

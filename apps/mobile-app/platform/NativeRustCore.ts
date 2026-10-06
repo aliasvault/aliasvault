@@ -80,3 +80,10 @@ export const nativeRustCore: IRustCore = {
 
   createVaultSyncSession: () => Promise.reject(new Error('The vault sync engine is driven natively on mobile and has no JavaScript session.')),
 };
+
+/**
+ * RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key. Mobile only.
+ */
+export function rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array> {
+  return callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk);
+}

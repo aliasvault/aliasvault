@@ -26,6 +26,7 @@ import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.openAccountKeyChain
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.reencryptAccountKeyJson
+import uniffi.aliasvault_core.rsaDecrypt
 import uniffi.aliasvault_core.selectFaviconTarget
 import uniffi.aliasvault_core.srpDerivePrivateKey
 import uniffi.aliasvault_core.srpDeriveSession
@@ -79,6 +80,7 @@ object RustCoreDispatcher {
             "parseEmailSource" -> parseEmailSource(args.bytes(0))
             "decodeEmailSource" -> json(decodeEmailSource(args.bytes(0)))
             "extractEmailAttachment" -> json(extractEmailAttachment(args.bytes(0), args.uint(1), args.optionalBytes(2)))
+            "rsaDecrypt" -> json(rsaDecrypt(args.string(0), args.string(1)))
 
             "argon2DeriveKey" -> json(argon2DeriveKey(args.string(0), args.string(1), args.string(2)))
             "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))
