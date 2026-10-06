@@ -1,7 +1,7 @@
 PODS:
-  - EXConstants (56.0.23):
+  - EXConstants (56.0.27):
     - ExpoModulesCore
-  - Expo (56.0.19):
+  - Expo (56.0.23):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -27,7 +27,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoAsset (56.0.22):
+  - ExpoAsset (56.0.25):
     - ExpoModulesCore
   - ExpoBlur (56.0.3):
     - ExpoModulesCore
@@ -37,7 +37,7 @@ PODS:
     - ExpoModulesCore
   - ExpoDomWebView (56.0.6):
     - ExpoModulesCore
-  - ExpoFileSystem (56.0.9):
+  - ExpoFileSystem (56.0.11):
     - ExpoModulesCore
   - ExpoFont (56.0.7):
     - ExpoModulesCore
@@ -49,7 +49,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLinearGradient (56.0.4):
     - ExpoModulesCore
-  - ExpoLinking (56.0.11):
+  - ExpoLinking (56.0.18):
     - ExpoModulesCore
   - ExpoLocalAuthentication (56.0.4):
     - ExpoModulesCore
@@ -57,7 +57,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLogBox (56.0.14):
     - React-Core
-  - ExpoModulesCore (56.0.23):
+  - ExpoModulesCore (56.0.27):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -81,27 +81,27 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (56.0.13):
+  - ExpoModulesJSI (56.0.14):
     - React-Core
     - ReactCommon
-  - ExpoModulesWorklets (56.0.23):
+  - ExpoModulesWorklets (56.0.27):
     - ExpoModulesCore
     - ExpoModulesJSI
-  - ExpoModulesWorkletsAdapter (56.0.23):
+  - ExpoModulesWorkletsAdapter (56.0.27):
     - ExpoModulesCore
     - ExpoModulesJSI
     - ExpoModulesWorklets
     - RNWorklets
-  - ExpoRouter (56.2.6):
+  - ExpoRouter (56.2.21):
     - ExpoModulesCore
     - RNScreens
   - ExpoSharing (56.0.24):
     - ExpoModulesCore
   - ExpoSplashScreen (56.0.14):
     - ExpoModulesCore
-  - ExpoSymbols (56.0.5):
+  - ExpoSymbols (56.0.7):
     - ExpoModulesCore
-  - ExpoUI (56.0.13):
+  - ExpoUI (56.0.26):
     - ExpoModulesCore
     - ExpoModulesWorklets
     - React-RCTFabric
@@ -113,7 +113,7 @@ PODS:
   - hermes-engine/Pre-built (250829098.0.10)
   - Macaw (0.9.10):
     - SWXMLHash
-  - OpenSSL-Universal (3.3.3001)
+  - OpenSSL-Universal (3.6.5000)
   - RCTDeprecation (0.85.3)
   - RCTRequired (0.85.3)
   - RCTSwiftUI (0.85.3)
@@ -2402,6 +2402,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - Macaw (~> 0.9.7)
+  - OpenSSL-Universal (from `https://raw.githubusercontent.com/krzyzanowskim/OpenSSL/3.6.5000/OpenSSL-Universal.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
   - RCTSwiftUI (from `../node_modules/react-native/ReactApple/RCTSwiftUI`)
@@ -2494,7 +2495,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Macaw
-    - OpenSSL-Universal
     - SwiftLint
     - SWXMLHash
 
@@ -2558,6 +2558,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.10
+  OpenSSL-Universal:
+    :podspec: https://raw.githubusercontent.com/krzyzanowskim/OpenSSL/3.6.5000/OpenSSL-Universal.podspec
   RCTDeprecation:
     :path: "../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation"
   RCTRequired:
@@ -2732,37 +2734,37 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  EXConstants: 6bcea1db4d1215969dc3409dfe33d94a5bfe50ca
-  Expo: b06a9178293f86989516ee226c240605fb307d12
-  ExpoAsset: 87b14d63c50edc7a07f6e99128c0832c03ef2bad
+  EXConstants: 9d3531b15141ea2e24f4b48d51050291f83ccce7
+  Expo: 668a9b2aa9e6bfc2586f2a0e42d1705e4cfc6f1d
+  ExpoAsset: 248b72382c8285f02fd6fb6d62ff6d2179071023
   ExpoBlur: caddd80171e5f8f3581ff3d865e99c6465047240
   ExpoClipboard: eee843698341fd26d571fd2807800f98abb6123c
   ExpoDocumentPicker: caa9c7c1071dc31262d86a8fe48f51929d291a43
   ExpoDomWebView: 4e53b05879dc73ba374f76bff93dd64c8a0d91b3
-  ExpoFileSystem: fcd66cde377289cd8eeade5b307f742bd1d6bdfa
+  ExpoFileSystem: 9d47583cbcc53ab2411901c601cd0a7ca18b3c11
   ExpoFont: 274487aa78f8c65d6551e2558eca3ec6ce3432ce
   ExpoGlassEffect: 7d4233dc0727ee2b28dd757eda70e1b6abf662fd
   ExpoHaptics: 89364cf3c3ca2cfd54cafed42f3be3169bab6d42
   ExpoKeepAwake: 359c47a1d9ccc3a3c519bca6e39562cce230c5bb
   ExpoLinearGradient: 16c2b9c6105444883d34958d573725de1293b8d0
-  ExpoLinking: 63319fd84bfa6d2ba4b565fc2af1947c65281478
+  ExpoLinking: 98aebaf4ae01ca9fcb0ee31b9c701f0979e332f6
   ExpoLocalAuthentication: 93f29833d2a8b957f996eddc05a632eb2bdeaa7d
   ExpoLocalization: cf50efc436b2ec313510131c1ee0e778366d64b0
   ExpoLogBox: cdad5c9402a186574fb5924ea91df1f08ba9a98a
-  ExpoModulesCore: 06410c6ac2f13edaae5f5444689b9cacc6a9c6d7
-  ExpoModulesJSI: abe8cd3e19c89b38c63426be235af5ef5ac9c1d1
-  ExpoModulesWorklets: 40fe3862230a3d967899ff29211480efc5daf4e2
-  ExpoModulesWorkletsAdapter: 036c0be70f07d6fff89023f33da6e28556a85838
-  ExpoRouter: ec5c793ef2a5ade5ecbd3097831c7b9411ed43be
+  ExpoModulesCore: 66b52fdd6d9559bb4d794bde125e4c496f8f2d13
+  ExpoModulesJSI: be5366379de5036c554db5f6478fc994da8f5ece
+  ExpoModulesWorklets: 706d2511ac0e91743314d8f2e47683a924ae92f3
+  ExpoModulesWorkletsAdapter: 72814d068279d4bfe282d1d5f0ff80df7901b946
+  ExpoRouter: c760bde5ab55028273ba1ebc5d35505e4570c4b4
   ExpoSharing: 8e7afd4f35907e7c0a5130c7df59644bb880abdb
   ExpoSplashScreen: 0c06099febe733279021ca62b0b7534005a43c93
-  ExpoSymbols: f83c91f2897d37102b98b9224c603095630be9d0
-  ExpoUI: b8da9e23eb4cef30e4797bc6de102a9178e6cd2b
+  ExpoSymbols: 37e96a38eed3fb50af4b7c86b8a80ed3054a0a01
+  ExpoUI: 15c5293922df464aefcfb528396c4db211795322
   ExpoWebBrowser: 6e3d90e3fe1952d21a8494872b1e1a485cd50e2f
   FBLazyVector: 24e62c765683b8d89006a88a2c8f5cf019f0074d
   hermes-engine: f684a01742a30bb5d7332da47aa184074d8ae9b4
   Macaw: 7af8ea57aa2cab35b4a52a45e6f85eea753ea9ae
-  OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
+  OpenSSL-Universal: 3e13305702e4e724410c7290e0c7dd78ad3c56f4
   RCTDeprecation: a4c521821fab57cbb125b36effe84d897d0dfa12
   RCTRequired: 9f3a7e5645d4bc3f551593de7550bb66ab6e42bc
   RCTSwiftUI: 239ed2eb9e73de5a6f518810630f0c95e01c8702
@@ -2852,6 +2854,6 @@ SPEC CHECKSUMS:
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
-PODFILE CHECKSUM: 97a422feed2574ce375469b50618d6ab651962d8
+PODFILE CHECKSUM: c6996460e83f68ca37df65dc9a758b89bb097d49
 
 COCOAPODS: 1.16.2

@@ -34,8 +34,8 @@
   "overrides": {
     "serialize-javascript": "^7.0.6",
     "uuid": "^11.1.1",
-    "js-yaml": "^4.2.0",
-    "http-proxy-middleware": "^3.0.7"
+    "tinypool": "^2.2.0",
+    "postcss-selector-parser": "^7.1.6"
   },
   "browserslist": {
     "production": [
@@ -50,6 +50,6 @@
     ]
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=20.0"
   }
 }
