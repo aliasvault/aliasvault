@@ -13,7 +13,7 @@ set -e
 #   - Docker Hub login: docker login (for all-in-one image)
 #
 # Usage:
-#   ./scripts/local-release.sh [options]
+#   ./scripts/release/local-docker-build-push.sh [options]
 #
 # Options:
 #   --version VERSION     Version to release (e.g., 0.26.0). Auto-detected if not specified.
@@ -26,7 +26,7 @@ set -e
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Colors
 RED='\033[0;31m'
@@ -58,15 +58,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ "$BUILD_MULTI" == "false" && "$BUILD_AIO" == "false" ]]; then
-    echo "Usage: ./scripts/local-release.sh [--multi] [--aio] [--all] [options]"
+    echo "Usage: ./scripts/release/local-docker-build-push.sh [--multi] [--aio] [--all] [options]"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/local-release.sh --aio                    # Build & push all-in-one"
-    echo "  ./scripts/local-release.sh --multi                  # Build & push multi-container"
-    echo "  ./scripts/local-release.sh --all                    # Build everything"
-    echo "  ./scripts/local-release.sh --aio --dry-run          # Preview commands"
-    echo "  ./scripts/local-release.sh --aio --skip-push        # Build locally only"
-    echo "  ./scripts/local-release.sh --aio --amd64-only       # Faster single-platform build"
+    echo "  ./scripts/release/local-docker-build-push.sh --aio                    # Build & push all-in-one"
+    echo "  ./scripts/release/local-docker-build-push.sh --multi                  # Build & push multi-container"
+    echo "  ./scripts/release/local-docker-build-push.sh --all                    # Build everything"
+    echo "  ./scripts/release/local-docker-build-push.sh --aio --dry-run          # Preview commands"
+    echo "  ./scripts/release/local-docker-build-push.sh --aio --skip-push        # Build locally only"
+    echo "  ./scripts/release/local-docker-build-push.sh --aio --amd64-only       # Faster single-platform build"
     exit 1
 fi
 

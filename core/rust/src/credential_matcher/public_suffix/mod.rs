@@ -1,7 +1,7 @@
 //! Public Suffix List lookup for registrable domain extraction.
 //!
 //! Rules are extracted from Mozilla's Public Suffix List (<https://publicsuffix.org>) and embedded via `include_str!`.
-//! The list is refreshed by running `scripts/refresh-external-dependencies.sh public-suffix-list`.
+//! The list is refreshed by running `scripts/dependencies/refresh-external-dependencies.sh public-suffix-list`.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;

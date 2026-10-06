@@ -40,7 +40,7 @@ class OriginVerifier {
          *
          * The cached JSON below mirrors Google's published list. We embed it locally so
          * the mobile app does not have to call out to a third-party endpoint at runtime.
-         * Refresh by running: ./scripts/refresh-external-dependencies.sh passkeys-allowlist
+         * Refresh by running: ./scripts/dependencies/refresh-external-dependencies.sh passkeys-allowlist
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json

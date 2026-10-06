@@ -7,67 +7,70 @@ if [ -z "$BASH_VERSION" ]; then
     exit 1
 fi
 
+# Run from the repository root so the paths below resolve wherever the script is called from
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
+
 # Function to extract version from server AppInfo.cs
 get_server_version() {
-    local major=$(grep "public const int VersionMajor = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local minor=$(grep "public const int VersionMinor = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local patch=$(grep "public const int VersionPatch = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local stage=$(grep "public const string VersionStage = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | cut -d'"' -f2)
+    local major=$(grep "public const int VersionMajor = " apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local minor=$(grep "public const int VersionMinor = " apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local patch=$(grep "public const int VersionPatch = " apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local stage=$(grep "public const string VersionStage = " apps/server/Shared/AliasVault.Shared/AppInfo.cs | cut -d'"' -f2)
     echo "$major.$minor.$patch$stage"
 }
 
 # Function to extract version from browser extension config
 get_browser_extension_version() {
-    grep "version: " ../apps/browser-extension/wxt.config.ts | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "version: " apps/browser-extension/wxt.config.ts | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 # Function to extract version from browser extension package.json
 get_browser_extension_package_json_version() {
-    grep "\"version\": " ../apps/browser-extension/package.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "\"version\": " apps/browser-extension/package.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 # Function to extract version from browser extension ExtensionPlatform.ts
 get_browser_extension_ts_version() {
-    grep "export const EXTENSION_VERSION = " ../apps/browser-extension/src/platform/ExtensionPlatform.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "export const EXTENSION_VERSION = " apps/browser-extension/src/platform/ExtensionPlatform.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from mobile app
 get_mobile_app_version() {
-    grep "\"version\": " ../apps/mobile-app/app.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "\"version\": " apps/mobile-app/app.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 get_mobile_app_ts_version() {
-    grep "public static readonly VERSION = " ../apps/mobile-app/utils/AppInfo.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "public static readonly VERSION = " apps/mobile-app/utils/AppInfo.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from iOS app
 get_ios_version() {
-    grep "MARKETING_VERSION = " ../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract iOS build number
 get_ios_build() {
-    grep -A1 "CURRENT_PROJECT_VERSION" ../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep -A1 "CURRENT_PROJECT_VERSION" apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from Android app
 get_android_version() {
-    grep "versionName " ../apps/mobile-app/android/app/build.gradle | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2 | sed 's/versionName//'
+    grep "versionName " apps/mobile-app/android/app/build.gradle | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2 | sed 's/versionName//'
 }
 
 # Function to extract Android build number
 get_android_build() {
-    grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}'
+    grep "versionCode" apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}'
 }
 
 # Function to extract version from Safari extension
 get_safari_version() {
-    grep "MARKETING_VERSION = " ../apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract Safari build number
 get_safari_build() {
-    grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep -A1 "CURRENT_PROJECT_VERSION" apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Collect all versions
