@@ -85,7 +85,6 @@
     "wxt": "^0.21.3"
   },
   "overrides": {
-    "shell-quote": "1.8.4",
-    "esbuild": "0.28.1"
+    "postcss-selector-parser": "7.1.6"
   }
 }
