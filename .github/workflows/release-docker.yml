@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
       multi_container_exists: ${{ steps.check-images.outputs.multi_container_exists }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: .github/actions/detect-release-version
 
@@ -142,7 +142,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build and push Client image
         uses: ./.github/actions/build-docker-image
@@ -224,7 +224,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build and push image
         uses: ./.github/actions/build-docker-image
@@ -249,7 +249,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Free up disk space of unused tools on the GitHub runner as the all-in-one build consumes a
       # lot of disk space. Never do this on self-hosted: it would delete the machine's own
