@@ -1,5 +1,5 @@
 //! Username and email prefix generation based on an identity's name and birth year.
-use rand::RngCore;
+use rand::Rng;
 
 use crate::common::rng::unbiased_index;
 
@@ -9,7 +9,7 @@ const SYMBOLS: [char; 2] = ['.', '-'];
 const RANDOM_CHARS: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789";
 
 /// Generate an email prefix from a first name, last name and optional birth year.
-pub fn generate_email_prefix<R: RngCore + ?Sized>(
+pub fn generate_email_prefix<R: Rng + ?Sized>(
     rng: &mut R,
     first_name: &str,
     last_name: &str,
@@ -64,7 +64,7 @@ pub fn generate_email_prefix<R: RngCore + ?Sized>(
 /// Uses the same construction as the email prefix but strips all non-alphanumeric
 /// characters. Note this rolls its own randomness, so a username generated alongside
 /// an email prefix is not simply the stripped version of that prefix.
-pub fn generate_username<R: RngCore + ?Sized>(
+pub fn generate_username<R: Rng + ?Sized>(
     rng: &mut R,
     first_name: &str,
     last_name: &str,
@@ -77,14 +77,14 @@ pub fn generate_username<R: RngCore + ?Sized>(
 
 /// Generate a random alphanumeric string, suitable for email prefixes that are not
 /// based on any identity (e.g. login-type credentials without persona fields).
-pub fn generate_random_string<R: RngCore + ?Sized>(rng: &mut R, length: usize) -> String {
+pub fn generate_random_string<R: Rng + ?Sized>(rng: &mut R, length: usize) -> String {
     (0..length)
         .map(|_| RANDOM_CHARS[unbiased_index(rng, RANDOM_CHARS.len())] as char)
         .collect()
 }
 
 /// Pad a too-short value with random characters or truncate a too-long one.
-fn adjust_length<R: RngCore + ?Sized>(rng: &mut R, mut value: String) -> String {
+fn adjust_length<R: Rng + ?Sized>(rng: &mut R, mut value: String) -> String {
     let char_count = value.chars().count();
     if char_count < MIN_LENGTH {
         value.push_str(&generate_random_string(rng, MIN_LENGTH - char_count));
@@ -95,7 +95,7 @@ fn adjust_length<R: RngCore + ?Sized>(rng: &mut R, mut value: String) -> String 
 }
 
 /// Return a random symbol 1 in 3 times, otherwise an empty string.
-fn random_symbol<R: RngCore + ?Sized>(rng: &mut R) -> String {
+fn random_symbol<R: Rng + ?Sized>(rng: &mut R) -> String {
     if unbiased_index(rng, 3) == 0 {
         SYMBOLS[unbiased_index(rng, SYMBOLS.len())].to_string()
     } else {

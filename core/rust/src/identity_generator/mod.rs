@@ -15,7 +15,7 @@ mod username_email;
 mod tests;
 
 use chrono::{Datelike, Days, NaiveDate, Utc};
-use rand::RngCore;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::common::error::{json_call, VaultError};
@@ -185,7 +185,7 @@ fn age_range_to_birthdate_options_at(age_range: &str, current_year: i32) -> Opti
 }
 
 /// A random birth date, uniform within the options' year window, or else between 65 and 21 years before `today`.
-fn random_birth_date<R: RngCore + ?Sized>(rng: &mut R, options: Option<BirthdateOptions>, today: NaiveDate) -> NaiveDate {
+fn random_birth_date<R: Rng + ?Sized>(rng: &mut R, options: Option<BirthdateOptions>, today: NaiveDate) -> NaiveDate {
     let (start, end) = match options {
         Some(BirthdateOptions { target_year, year_deviation }) => {
             // Sanity check for overflows in the calculation.
