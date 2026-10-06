@@ -70,6 +70,7 @@ public static class LoggingConfiguration
         services.AddSerilog(new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
+            .Enrich.With<ControlCharacterEscapingEnricher>()
             .Enrich.WithProperty("Application", applicationName)
             .Filter.ByIncludingOnly(GetSourceContextFilter(configuration))
 

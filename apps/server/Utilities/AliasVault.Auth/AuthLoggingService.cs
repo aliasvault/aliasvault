@@ -41,7 +41,7 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         var authAttempt = new AuthLog
         {
             Timestamp = DateTime.UtcNow,
-            Username = username,
+            Username = Truncate(username, AuthLog.UsernameMaxLength)!,
             EventType = eventType,
             IsSuccess = true,
             FailureReason = null,
@@ -87,7 +87,7 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         var authAttempt = new AuthLog
         {
             Timestamp = DateTime.UtcNow,
-            Username = username,
+            Username = Truncate(username, AuthLog.UsernameMaxLength)!,
             EventType = eventType,
             IsSuccess = false,
             FailureReason = failureReason,

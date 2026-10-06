@@ -109,6 +109,11 @@ public class AuthLog
     public const int ClientMaxLength = 100;
 
     /// <summary>
+    /// Maximum stored length of <see cref="Username"/>.
+    /// </summary>
+    public const int UsernameMaxLength = 255;
+
+    /// <summary>
     /// Gets or sets the unique identifier for the authentication log entry.
     /// </summary>
     [Key]
@@ -124,7 +129,7 @@ public class AuthLog
     /// Gets or sets the username associated with the authentication event.
     /// </summary>
     [Required]
-    [MaxLength(255)]
+    [MaxLength(UsernameMaxLength)]
     public string Username { get; set; } = null!;
 
     /// <summary>
