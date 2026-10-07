@@ -211,3 +211,16 @@ export async function enableCapability(apiUrl: string, username: string, key: st
     throw new Error(`Enabling capability "${key}" via ${url} failed with status ${response.status}: ${await response.text()}`);
   }
 }
+
+/**
+ * The JSON header of the binary GET /v2/Vault snapshot (the manifest and bucket ciphertexts follow it).
+ */
+export async function getVaultSnapshotHeader<T>(apiUrl: string, token: string): Promise<T> {
+  const response = await fetch(`${apiUrl}/v2/Vault`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' } });
+  if (!response.ok) {
+    throw new Error(`GET /v2/Vault failed with status ${response.status}: ${await response.text()}`);
+  }
+  const body = new Uint8Array(await response.arrayBuffer());
+  const headerLength = new DataView(body.buffer, body.byteOffset).getUint32(0);
+  return JSON.parse(new TextDecoder().decode(body.subarray(4, 4 + headerLength))) as T;
+}

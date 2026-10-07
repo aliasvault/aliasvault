@@ -8,7 +8,7 @@ import * as OTPAuth from 'otpauth';
 
 import { test, expect, type WebApp } from '../fixtures';
 import { requireSmtp, sendMail } from '../helpers/smtp';
-import { readLegacyVaultFixture, restoreLegacyVault, type LegacyVaultFixture, type LegacyVaultItem, type TestUser } from '../helpers/test-api';
+import { getVaultSnapshotHeader, readLegacyVaultFixture, restoreLegacyVault, type LegacyVaultFixture, type LegacyVaultItem, type TestUser } from '../helpers/test-api';
 
 /**
  * Log in from the start page to an account whose vault still needs an upgrade, ending on the sync page.
@@ -223,9 +223,8 @@ test.describe('90. Vault upgrades', () => {
     });
 
     await test.step('the server holds the vault in the manifest storage format', async () => {
-      const response = await fetch(`${apiUrl}/v2/Vault`, { headers: { Authorization: `Bearer ${testUser.token}` } });
-      expect(response.ok).toBe(true);
-      expect(((await response.json()) as { storageFormat?: string }).storageFormat).toBe('manifest');
+      const snapshot = await getVaultSnapshotHeader<{ storageFormat?: string }>(apiUrl, testUser.token);
+      expect(snapshot.storageFormat).toBe('manifest');
     });
 
     await test.step('the upgraded vault opens again after a reload', async () => {
