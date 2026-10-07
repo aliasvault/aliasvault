@@ -164,7 +164,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options => options.InputFormatters.Insert(0, new BinaryFrameInputFormatter()))
     .AddJsonOptions(options =>
     {
         // Ensure consistent date formatting regardless of server locale

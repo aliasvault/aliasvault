@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="BlobDownloadEntry.cs" company="aliasvault">
+// <copyright file="BlobEntry.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -7,20 +7,30 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
 /// <summary>
-/// One blob in the header of the binary blob download response.
+/// One blob in the header of a binary blob upload or download; its ciphertext follows the header.
 /// </summary>
-public class BlobDownloadEntry
+public class BlobEntry : IFramePart
 {
     /// <summary>Gets or sets the per-manifest salted SHA-256 hex of the plaintext.</summary>
+    [RegularExpression(VaultWriteLimits.HashPattern)]
     public required string Hash { get; set; }
 
     /// <summary>Gets or sets the blob category ("favicon" or "attachment").</summary>
+    [StringLength(VaultWriteLimits.MaxCategoryLength, MinimumLength = 1)]
     public required string Category { get; set; }
 
     /// <summary>Gets or sets the blob's own key, encrypted with the manifest's VEK.</summary>
+    [StringLength(255, MinimumLength = 1)]
     public required string EncryptedBlobKey { get; set; }
 
-    /// <summary>Gets or sets the length in bytes of the blob's ciphertext in the response body.</summary>
+    /// <summary>Gets or sets the length in bytes of the blob's ciphertext in the frame.</summary>
     public int Size { get; set; }
+
+    /// <summary>Gets or sets the blob's ciphertext (encrypted with the blob's own key). Sent after the JSON header, not inside it.</summary>
+    [JsonIgnore]
+    public byte[] Data { get; set; } = [];
 }

@@ -330,6 +330,11 @@ impl VaultSyncSession {
         self.inner.next_command()
     }
 
+    /// Take the raw bytes attached to the last command (the body of a binary `http` request), if any.
+    pub fn command_bytes(&self) -> Result<Option<Vec<u8>>, VaultError> {
+        self.inner.command_bytes()
+    }
+
     /// Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`.
     pub fn resume(&self, response_json: String, bytes: Option<Vec<u8>>) -> Result<(), VaultError> {
         self.inner.resume(&response_json, bytes)

@@ -26,6 +26,11 @@ pub fn symmetric_encrypt_bytes(plaintext: &[u8], key_base64: &str) -> VaultResul
 
 /// Encrypt bytes bound to `aad`, which decryption must present as-is. Returns base64 of `IV | ciphertext | tag`.
 pub fn symmetric_encrypt_bytes_with_aad(plaintext: &[u8], key_base64: &str, aad: &[u8]) -> VaultResult<String> {
+    Ok(base64_encode(&symmetric_encrypt_raw_with_aad(plaintext, key_base64, aad)?))
+}
+
+/// Encrypt bytes bound to `aad`, which decryption must present as-is. Returns the raw `IV | ciphertext | tag`.
+pub fn symmetric_encrypt_raw_with_aad(plaintext: &[u8], key_base64: &str, aad: &[u8]) -> VaultResult<Vec<u8>> {
     let cipher = cipher_for(key_base64)?;
     let mut iv = [0u8; IV_LENGTH];
     fill_random(&mut iv);
@@ -37,7 +42,7 @@ pub fn symmetric_encrypt_bytes_with_aad(plaintext: &[u8], key_base64: &str, aad:
     let mut combined = Vec::with_capacity(IV_LENGTH + ciphertext.len());
     combined.extend_from_slice(&iv);
     combined.extend_from_slice(&ciphertext);
-    Ok(base64_encode(&combined))
+    Ok(combined)
 }
 
 /// Decrypt `IV | ciphertext | tag` bytes with a base64 key and no associated data.

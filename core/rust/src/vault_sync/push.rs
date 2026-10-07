@@ -8,7 +8,7 @@ use crate::vault_model::{id_key, OVERFLOW_TABLE, TRASH_RETENTION_DEFAULT_DAYS};
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
+use super::types::{BlobHashesRequest, BlobUpload, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
 use super::blob_keys::{self, EncryptedBlob};
 use super::write_set::{self, ManifestRecord, SkipReason};
 use super::{db, http, keys};
@@ -222,7 +222,7 @@ async fn write_dirty_buckets(ctx: &Ctx, categories: &[String]) -> SyncResult<Pus
         return Ok(PushStatus::Ok);
     }
     let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: Vec::new(), buckets: writes, email_routing: None, migration: None };
-    let response: VaultWriteResponse = http::with_outdated_server_guard(http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await)?;
+    let response: VaultWriteResponse = http::with_outdated_server_guard(http::post_frame(&ctx.host, http::VAULT_ENDPOINT, &payload).await)?;
     if response.status != VaultWriteStatus::Ok {
         ctx.warn("[Push] Bucket-only write outdated; pulling and merging before the next attempt.").await;
         return Ok(PushStatus::Outdated);
@@ -397,16 +397,16 @@ fn fingerprinted<T: serde::Serialize>(payload: &T) -> SyncResult<(String, String
 
 /// A payload packed and encrypted for the write, with the hash the server verifies it by.
 struct EncryptedPayload {
-    ciphertext: String,
+    ciphertext: Vec<u8>,
     hash: String,
 }
 
 /// Pack and encrypt a JSON payload under `key` bound to `aad`, logging its size at every stage.
 async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
-    let ciphertext = crypto::symmetric_encrypt_bytes_with_aad(&packed, key, aad)?;
+    let ciphertext = crypto::symmetric_encrypt_raw_with_aad(&packed, key, aad)?;
     ctx.log(format!("[Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
-    let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
+    let hash = vault_codec::compute_ciphertext_hash_bytes(&ciphertext);
     Ok(EncryptedPayload { ciphertext, hash })
 }
 
@@ -646,7 +646,7 @@ async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) ->
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
 /// them and retry the identical write once; blobs this client cannot supply fail the push.
 async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, overwrite_personal_blobs: bool, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
-    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
+    let response: VaultWriteResponse = http::post_frame(&ctx.host, http::VAULT_ENDPOINT, payload).await?;
     if response.missing_blob_hashes.is_empty() {
         return Ok(response);
     }
@@ -658,7 +658,7 @@ async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs
     let (missing_personal, missing_shared): (Vec<String>, Vec<String>) = response.missing_blob_hashes.iter().cloned().partition(|h| blobs.entries[h].from_personal);
     uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, overwrite_personal_blobs).await?);
     uploaded.extend(upload_blobs(ctx, blobs, &missing_shared, false).await?);
-    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
+    let response: VaultWriteResponse = http::post_frame(&ctx.host, http::VAULT_ENDPOINT, payload).await?;
     if !response.missing_blob_hashes.is_empty() {
         return Err(SyncError::MissingBlobs(response.missing_blob_hashes));
     }
@@ -722,12 +722,12 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
             let entry = &blobs.entries[&hash];
             let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek, &manifest_id, &hash)?;
             encrypted_blobs.insert(hash.clone(), encrypted.clone());
-            dtos.push(BlobDto { hash, category: entry.kind.clone(), encrypted_data_base64: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key });
+            dtos.push(BlobUpload { hash, category: entry.kind.clone(), encrypted_data: encrypted.encrypted_data, encrypted_blob_key: encrypted.encrypted_blob_key });
         }
-        for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
-            let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
-            ctx.log(format!("[Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
-            http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
+        for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data.len()) {
+            let bytes: usize = batch.iter().map(|dto| dto.encrypted_data.len()).sum();
+            ctx.log(format!("[Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(bytes))).await;
+            http::post_frame_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
         }
     }
     Ok(encrypted_blobs)

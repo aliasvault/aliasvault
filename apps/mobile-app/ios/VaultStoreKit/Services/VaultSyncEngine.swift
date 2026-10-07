@@ -63,7 +63,11 @@ public final class VaultSyncEngine {
                 return result
             }
             let commandStartedAt = Date()
-            let (response, bytes) = await respond(kind: kind, command: command)
+            var commandBytes: Data?
+            if kind == "http", command["binaryBody"] as? Bool == true {
+                commandBytes = try log.engine { try session.commandBytes() }
+            }
+            let (response, bytes) = await respond(kind: kind, command: command, commandBytes: commandBytes)
             log.recordCommand(kind, command: command, response: response, responseBytes: bytes, since: commandStartedAt)
             let responseJson = try log.json { try Self.serializeJson(response) }
             try log.engine { try session.resume(responseJson: responseJson, bytes: bytes) }
@@ -106,10 +110,10 @@ public final class VaultSyncEngine {
 
     // MARK: - Commands
 
-    /// The JSON response to one command.
-    private func respond(kind: String, command: [String: Any]) async -> (json: [String: Any], bytes: Data?) {
+    /// The JSON response to one command; `commandBytes` is the body of a binary `http` request.
+    private func respond(kind: String, command: [String: Any], commandBytes: Data?) async -> (json: [String: Any], bytes: Data?) {
         if kind == "http" {
-            return await http(command)
+            return await http(command, commandBytes: commandBytes)
         }
         guard kind == "dbExport" else {
             return (await handle(kind: kind, command: command), nil)
@@ -185,19 +189,23 @@ public final class VaultSyncEngine {
     }
 
     /// An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
-    private func http(_ command: [String: Any]) async -> (json: [String: Any], bytes: Data?) {
+    private func http(_ command: [String: Any], commandBytes: Data?) async -> (json: [String: Any], bytes: Data?) {
         let method = command["method"] as? String ?? "GET"
         let path = command["path"] as? String ?? ""
         let body = command["body"] as? String
         let auth = command["auth"] as? Bool ?? true
         let largeTransfer = command["largeTransfer"] as? Bool ?? false
         let binaryResponse = command["binaryResponse"] as? Bool ?? false
+        let binaryBody = command["binaryBody"] as? Bool ?? false
         var headers: [String: String] = ["Accept": binaryResponse ? "application/octet-stream" : "application/json"]
-        if body != nil {
+        if binaryBody {
+            headers["Content-Type"] = "application/octet-stream"
+        } else if body != nil {
             headers["Content-Type"] = "application/json"
         }
         do {
-            let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth, largeTransfer: largeTransfer)
+            let bodyData = binaryBody ? commandBytes ?? Data() : nil
+            let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth, largeTransfer: largeTransfer, bodyData: bodyData, rawBinaryResponse: binaryResponse)
             if binaryResponse, let data = response.bodyData {
                 return (["status": response.statusCode], data)
             }

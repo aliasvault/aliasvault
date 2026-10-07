@@ -66,7 +66,8 @@ class VaultSyncEngine(
                     return result
                 }
                 val startNanos = System.nanoTime()
-                val (response, bytes) = respond(kind, command)
+                val commandBytes = if (kind == "http" && command.optBoolean("binaryBody", false)) log.engine { session.commandBytes() } else null
+                val (response, bytes) = respond(kind, command, commandBytes)
                 log.recordCommand(kind, command, response, bytes, System.nanoTime() - startNanos)
                 val responseJson = log.json { response.toString() }
                 log.engine { session.resume(responseJson, bytes) }
@@ -111,9 +112,9 @@ class VaultSyncEngine(
      * The JSON response to one command.
      */
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun respond(kind: String, command: JSONObject): Pair<JSONObject, ByteArray?> {
+    private suspend fun respond(kind: String, command: JSONObject, commandBytes: ByteArray?): Pair<JSONObject, ByteArray?> {
         if (kind == "http") {
-            return http(command)
+            return http(command, commandBytes)
         }
         if (kind != "dbExport") {
             return Pair(handle(kind, command), null)
@@ -192,11 +193,14 @@ class VaultSyncEngine(
      * An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
      */
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun http(command: JSONObject): Pair<JSONObject, ByteArray?> = withContext(Dispatchers.IO) {
+    private suspend fun http(command: JSONObject, commandBytes: ByteArray?): Pair<JSONObject, ByteArray?> = withContext(Dispatchers.IO) {
         val body = if (command.has("body") && !command.isNull("body")) command.getString("body") else null
         val binaryResponse = command.optBoolean("binaryResponse", false)
+        val binaryBody = command.optBoolean("binaryBody", false)
         val headers = mutableMapOf("Accept" to if (binaryResponse) "application/octet-stream" else "application/json")
-        if (body != null) {
+        if (binaryBody) {
+            headers["Content-Type"] = "application/octet-stream"
+        } else if (body != null) {
             headers["Content-Type"] = "application/json"
         }
         try {
@@ -207,6 +211,8 @@ class VaultSyncEngine(
                 headers = headers,
                 requiresAuth = command.optBoolean("auth", true),
                 largeTransfer = command.optBoolean("largeTransfer", false),
+                bodyBytes = if (binaryBody) commandBytes ?: ByteArray(0) else null,
+                rawBinaryResponse = binaryResponse,
             )
             val bytes = response.bodyBytes
             if (binaryResponse && bytes != null) {

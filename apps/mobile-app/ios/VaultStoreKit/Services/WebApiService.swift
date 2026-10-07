@@ -184,6 +184,8 @@ public class WebApiService {
     /**
      * Execute a WebAPI request with support for authentication and token refresh.
      * Pass largeTransfer for a request that carries vault ciphertext, which gets the longer transfer timeout.
+     * Pass bodyData to send raw bytes instead of the text body, and rawBinaryResponse to get a binary
+     * response as `bodyData` instead of as base64 `body` text.
      */
     public func executeRequest(
         method: String,
@@ -191,7 +193,9 @@ public class WebApiService {
         body: String?,
         headers: [String: String],
         requiresAuth: Bool,
-        largeTransfer: Bool = false
+        largeTransfer: Bool = false,
+        bodyData: Data? = nil,
+        rawBinaryResponse: Bool = false
     ) async throws -> WebApiResponse {
         var requestHeaders = headers
 
@@ -209,7 +213,9 @@ public class WebApiService {
             endpoint: endpoint,
             body: body,
             headers: requestHeaders,
-            largeTransfer: largeTransfer
+            largeTransfer: largeTransfer,
+            bodyData: bodyData,
+            rawBinaryResponse: rawBinaryResponse
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -226,7 +232,9 @@ public class WebApiService {
                     endpoint: endpoint,
                     body: body,
                     headers: retryHeaders,
-                    largeTransfer: largeTransfer
+                    largeTransfer: largeTransfer,
+                    bodyData: bodyData,
+                    rawBinaryResponse: rawBinaryResponse
                 )
 
                 return retryResponse
@@ -248,7 +256,9 @@ public class WebApiService {
         endpoint: String,
         body: String?,
         headers: [String: String],
-        largeTransfer: Bool = false
+        largeTransfer: Bool = false,
+        bodyData: Data? = nil,
+        rawBinaryResponse: Bool = false
     ) async throws -> WebApiResponse {
         let urlString = resolveUrl(endpoint)
 
@@ -275,7 +285,9 @@ public class WebApiService {
         }
 
         // Set body if present
-        if let bodyString = body {
+        if let bodyData = bodyData {
+            request.httpBody = bodyData
+        } else if let bodyString = body {
             request.httpBody = bodyString.data(using: .utf8)
         }
 
@@ -304,7 +316,10 @@ public class WebApiService {
 
         // Parse response body
         let responseBody: String
-        if isBinary {
+        if isBinary && rawBinaryResponse {
+            // The caller takes the bytes from bodyData
+            responseBody = ""
+        } else if isBinary {
             // Encode binary data as base64
             responseBody = data.base64EncodedString()
         } else {
@@ -316,7 +331,7 @@ public class WebApiService {
             statusCode: httpResponse.statusCode,
             body: responseBody,
             headers: responseHeaders,
-            bodyData: isBinary ? data : nil
+            bodyData: isBinary && rawBinaryResponse ? data : nil
         )
     }
 

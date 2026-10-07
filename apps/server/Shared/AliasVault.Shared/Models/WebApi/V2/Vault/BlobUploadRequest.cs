@@ -8,22 +8,27 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// POST /v2/Vault/blobs. Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on
 /// (manifest, hash). Clients chunk large blob sets across multiple calls to keep request bodies within server limits.
 /// </summary>
-public class BlobUploadRequest
+public class BlobUploadRequest : IFrameBody
 {
     /// <summary>Gets or sets the manifest the blobs belong to.</summary>
     public required Guid ManifestId { get; set; }
 
     /// <summary>Gets or sets the encrypted blobs to store.</summary>
     [MaxLength(VaultWriteLimits.MaxBlobsPerUpload)]
-    public required List<Blob> Blobs { get; set; }
+    public required List<BlobEntry> Blobs { get; set; }
 
     /// <summary>Gets or sets a value indicating whether existing blobs with the same hash must have their ciphertext
     /// replaced instead of being skipped. Used during the KEK/VEK migration where every blob is re-encrypted with the
     /// new VEK while keeping its (plaintext-based) content hash.</summary>
     public bool Overwrite { get; set; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public IEnumerable<IFramePart> FrameParts => Blobs;
 }
