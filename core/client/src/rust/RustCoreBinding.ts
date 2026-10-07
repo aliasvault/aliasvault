@@ -7,6 +7,9 @@ export interface IVaultSyncSession {
   /** The next command for the host, as JSON. */
   nextCommand(): Promise<string>;
 
+  /** Take the raw bytes attached to the last command (the body of a binary `http` request), if any. */
+  commandBytes(): Promise<Uint8Array | null>;
+
   /** Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`. */
   resume(responseJson: string, bytes: Uint8Array | null): Promise<void>;
 

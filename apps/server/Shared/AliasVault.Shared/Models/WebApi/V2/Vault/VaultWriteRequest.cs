@@ -11,9 +11,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// Unified atomic write for POST /v2/Vault.
+/// Unified atomic write for POST /v2/Vault, sent as a binary frame: the manifest ciphertexts follow this JSON header in
+/// <see cref="Manifests"/> order, then the bucket ciphertexts in <see cref="Buckets"/> order.
 /// </summary>
-public class VaultWriteRequest
+public class VaultWriteRequest : IFrameBody
 {
     /// <summary>Gets or sets the username.</summary>
     public required string Username { get; set; }
@@ -33,4 +34,8 @@ public class VaultWriteRequest
     /// <summary>Gets or sets the one-time migrations to apply atomically with this write.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public VaultWriteMigration? Migration { get; set; }
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public IEnumerable<IFramePart> FrameParts => Manifests.Cast<IFramePart>().Concat(Buckets);
 }

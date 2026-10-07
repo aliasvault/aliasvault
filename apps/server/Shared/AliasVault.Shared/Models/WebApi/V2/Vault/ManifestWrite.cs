@@ -8,17 +8,22 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// A single manifest to write within a <see cref="VaultWriteRequest"/> batch.
 /// </summary>
-public class ManifestWrite
+public class ManifestWrite : IFramePart
 {
     /// <summary>Gets or sets the manifest this write targets.</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the encrypted manifest blob.</summary>
-    public required string ManifestBlob { get; set; }
+    /// <summary>Gets or sets the length of the manifest ciphertext in the frame.</summary>
+    public int Size { get; set; }
+
+    /// <summary>Gets or sets the manifest ciphertext (AES-GCM). Sent after the JSON header, not inside it.</summary>
+    [JsonIgnore]
+    public byte[] Data { get; set; } = [];
 
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext.</summary>
     public required string ManifestCiphertextHash { get; set; }

@@ -9,7 +9,6 @@ use super::state::{self, Ctx};
 use super::types::{self, BlobDownloadEntry, BlobDownloadResponse, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
-use crate::common::encoding::base64_encode;
 use crate::crypto;
 use crate::vault_codec::{self, CanonicalizeInput, CodecTableData, DataBucket, Manifest, ManifestSpec, MaterializeInput, UnpackedPayload};
 use crate::vault_model::SYNCABLE_TABLE_NAMES;
@@ -333,7 +332,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> 
         let blobs = decode_blob_download(&body)?;
         ctx.log(format!("[Pull] Downloaded blob batch {}/{}: requested {}, received {} ({} bytes).", index + 1, batch_count, chunk.len(), blobs.len(), body.len())).await;
         for (entry, ciphertext) in blobs {
-            cache.insert(entry.hash, EncryptedBlob { encrypted_data_base64: base64_encode(ciphertext), encrypted_blob_key: entry.encrypted_blob_key });
+            cache.insert(entry.hash, EncryptedBlob { encrypted_data: ciphertext.to_vec(), encrypted_blob_key: entry.encrypted_blob_key });
         }
     }
 

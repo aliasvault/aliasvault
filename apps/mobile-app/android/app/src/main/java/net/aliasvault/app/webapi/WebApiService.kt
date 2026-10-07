@@ -24,7 +24,7 @@ data class WebApiResponse(
     val body: String,
     /** The response headers as a map of key-value pairs. */
     val headers: Map<String, String>,
-    /** The body as raw bytes, set on success when the request accepted `application/octet-stream`. */
+    /** The body as raw bytes, set on a successful binary response when the request asked for raw bytes. */
     val bodyBytes: ByteArray? = null,
 )
 
@@ -218,6 +218,8 @@ class WebApiService(private val context: Context) {
     /**
      * Execute a WebAPI request with support for authentication and token refresh.
      * Pass largeTransfer for a request that carries vault ciphertext, which gets the longer transfer timeout.
+     * Pass bodyBytes to send raw bytes instead of the text body, and rawBinaryResponse to get a binary
+     * response as `bodyBytes` instead of as base64 `body` text.
      */
     @Suppress("LongParameterList") // One argument per part of the request the callers vary
     suspend fun executeRequest(
@@ -227,6 +229,8 @@ class WebApiService(private val context: Context) {
         headers: Map<String, String>,
         requiresAuth: Boolean,
         largeTransfer: Boolean = false,
+        bodyBytes: ByteArray? = null,
+        rawBinaryResponse: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val requestHeaders = headers.toMutableMap()
 
@@ -248,6 +252,8 @@ class WebApiService(private val context: Context) {
             body = body,
             headers = requestHeaders,
             largeTransfer = largeTransfer,
+            bodyBytes = bodyBytes,
+            rawBinaryResponse = rawBinaryResponse,
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -268,6 +274,8 @@ class WebApiService(private val context: Context) {
                     body = body,
                     headers = retryHeaders,
                     largeTransfer = largeTransfer,
+                    bodyBytes = bodyBytes,
+                    rawBinaryResponse = rawBinaryResponse,
                 )
 
                 return@withContext retryResponse
@@ -284,12 +292,15 @@ class WebApiService(private val context: Context) {
     /**
      * Execute a raw HTTP request without token refresh logic.
      */
+    @Suppress("LongParameterList") // One argument per part of the request the callers vary
     private suspend fun executeRawRequest(
         method: String,
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
         largeTransfer: Boolean = false,
+        bodyBytes: ByteArray? = null,
+        rawBinaryResponse: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val urlString = resolveUrl(endpoint)
 
@@ -312,7 +323,12 @@ class WebApiService(private val context: Context) {
             }
 
             // Set body if present
-            if (body != null && (method.uppercase() == "POST" || method.uppercase() == "PUT" || method.uppercase() == "PATCH")) {
+            val sendsBody = method.uppercase() == "POST" || method.uppercase() == "PUT" || method.uppercase() == "PATCH"
+            if (bodyBytes != null && sendsBody) {
+                connection.doOutput = true
+                connection.setFixedLengthStreamingMode(bodyBytes.size)
+                connection.outputStream.use { it.write(bodyBytes) }
+            } else if (body != null && sendsBody) {
                 connection.doOutput = true
                 OutputStreamWriter(connection.outputStream).use { writer ->
                     writer.write(body)
@@ -324,18 +340,20 @@ class WebApiService(private val context: Context) {
             val statusCode = connection.responseCode
 
             // Read response body
-            var bodyBytes: ByteArray? = null
+            var responseBytes: ByteArray? = null
             val responseBody = try {
                 val acceptHeader = headers.entries.firstOrNull { it.key.equals("Accept", ignoreCase = true) }?.value ?: ""
                 val isBinary = acceptHeader.contains("application/octet-stream", ignoreCase = true)
 
                 if (statusCode in 200..299) {
-                    if (isBinary) {
+                    if (isBinary && rawBinaryResponse) {
+                        // The caller takes the bytes from bodyBytes
+                        responseBytes = connection.inputStream.use { it.readBytes() }
+                        ""
+                    } else if (isBinary) {
                         // Read binary data and encode as base64
                         connection.inputStream.use { inputStream ->
-                            val bytes = inputStream.readBytes()
-                            bodyBytes = bytes
-                            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                            android.util.Base64.encodeToString(inputStream.readBytes(), android.util.Base64.NO_WRAP)
                         }
                     } else {
                         // Read text data
@@ -365,7 +383,7 @@ class WebApiService(private val context: Context) {
                 statusCode = statusCode,
                 body = responseBody,
                 headers = responseHeaders,
-                bodyBytes = bodyBytes,
+                bodyBytes = responseBytes,
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error executing request", e)

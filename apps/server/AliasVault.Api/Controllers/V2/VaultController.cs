@@ -332,27 +332,27 @@ public class VaultController(
             }
         }
 
-        // Decode base64-encoded ciphertexts into raw bytes.
+        // Check each ciphertext against the hash the client computed for it.
         var manifestBlobs = new Dictionary<Guid, byte[]>();
         foreach (var mw in model.Manifests)
         {
-            if (!CiphertextHelper.TryDecode(mw.ManifestBlob, out var manifestBlob) || !CiphertextHelper.MatchesHash(manifestBlob, mw.ManifestCiphertextHash))
+            if (!CiphertextHelper.IsCiphertext(mw.Data) || !CiphertextHelper.MatchesHash(mw.Data, mw.ManifestCiphertextHash))
             {
                 return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
-            manifestBlobs[mw.ManifestId] = manifestBlob;
+            manifestBlobs[mw.ManifestId] = mw.Data;
         }
 
         var bucketBlobs = new Dictionary<(Guid ManifestId, VaultDataBucketCategory Category), byte[]>();
-        foreach (var bucket in model.Buckets.Where(b => !string.IsNullOrEmpty(b.Blob)))
+        foreach (var bucket in model.Buckets.Where(b => b.Data.Length > 0))
         {
-            if (!CiphertextHelper.TryDecode(bucket.Blob, out var bucketBlob) || !CiphertextHelper.MatchesHash(bucketBlob, bucket.CiphertextHash))
+            if (!CiphertextHelper.IsCiphertext(bucket.Data) || !CiphertextHelper.MatchesHash(bucket.Data, bucket.CiphertextHash))
             {
                 return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
-            bucketBlobs[(bucket.ManifestId, bucket.Category)] = bucketBlob;
+            bucketBlobs[(bucket.ManifestId, bucket.Category)] = bucket.Data;
         }
 
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
@@ -801,7 +801,7 @@ public class VaultController(
             .Select(b => new { b.Hash, b.Category, b.EncryptedBlobKey, b.EncryptedData })
             .ToListAsync();
 
-        var header = new BlobDownloadResponse { Blobs = rows.Select(r => new BlobDownloadEntry { Hash = r.Hash, Category = r.Category, EncryptedBlobKey = r.EncryptedBlobKey, Size = r.EncryptedData.Length }).ToList() };
+        var header = new BlobDownloadResponse { Blobs = rows.Select(r => new BlobEntry { Hash = r.Hash, Category = r.Category, EncryptedBlobKey = r.EncryptedBlobKey, Size = r.EncryptedData.Length }).ToList() };
         return File(BinaryFrame.Write(header, rows.Select(r => r.EncryptedData).ToList()), BinaryFrame.ContentType);
     }
 
@@ -1081,7 +1081,7 @@ public class VaultController(
     /// <param name="blobs">Blobs to upsert.</param>
     /// <param name="overwrite">When true, existing blobs with the same hash get their ciphertext replaced.</param>
     /// <returns>True when every payload is structurally valid; false when any is malformed (caller should 400).</returns>
-    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, Guid manifestId, List<Blob> blobs, bool overwrite = false)
+    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, Guid manifestId, List<BlobEntry> blobs, bool overwrite = false)
     {
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
         var hashes = blobs.Select(b => b.Hash).Distinct().ToList();
@@ -1094,10 +1094,12 @@ public class VaultController(
             byte[]? data = null;
             if (!existing.TryGetValue(dto.Hash, out var row) || overwrite)
             {
-                if (!CiphertextHelper.TryDecode(dto.EncryptedDataBase64, out data))
+                if (!CiphertextHelper.IsCiphertext(dto.Data))
                 {
                     return false;
                 }
+
+                data = dto.Data;
             }
 
             if (row != null)

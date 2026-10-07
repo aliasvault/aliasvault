@@ -8,7 +8,7 @@ public struct WebApiResponse {
     public let body: String
     /// The headers of the response
     public let headers: [String: String]
-    /// The body as raw bytes, set on success when the request accepted `application/octet-stream`
+    /// The body as raw bytes, set on a successful binary response when the request asked for raw bytes
     public let bodyData: Data?
 
     /// Initialize a new WebApiResponse

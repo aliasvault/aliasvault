@@ -7,12 +7,26 @@ use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::types::{Command, HttpMethod, HttpResponse, LogLevel, StatusResponse};
 
+/// The body of a request: JSON text, or raw bytes the host sends as `application/octet-stream`.
+enum Body {
+    None,
+    Json(String),
+    Binary(Vec<u8>),
+}
+
 async fn send(host: &Host, method: HttpMethod, path: &str, body: Option<String>, auth: bool, large_transfer: bool) -> SyncResult<HttpResponse> {
+    let body = body.map_or(Body::None, Body::Json);
     Ok(send_with_bytes(host, method, path, body, auth, large_transfer, false).await?.0)
 }
 
-async fn send_with_bytes(host: &Host, method: HttpMethod, path: &str, body: Option<String>, auth: bool, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
-    let (response, bytes): (HttpResponse, _) = host.call_with_bytes(Command::Http { method, path: path.to_string(), body, auth, large_transfer, binary_response }).await?;
+async fn send_with_bytes(host: &Host, method: HttpMethod, path: &str, body: Body, auth: bool, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
+    let (body, binary_body, command_bytes) = match body {
+        Body::None => (None, false, None),
+        Body::Json(json) => (Some(json), false, None),
+        Body::Binary(bytes) => (None, true, Some(bytes)),
+    };
+    let command = Command::Http { method, path: path.to_string(), body, auth, large_transfer, binary_response, binary_body };
+    let (response, bytes): (HttpResponse, _) = host.exchange(command, command_bytes).await?;
     if response.status == 0 {
         let message = response.transport_error.unwrap_or_else(|| "request failed".to_string());
         return Err(if response.timed_out { SyncError::Timeout(message) } else { SyncError::Network(message) });
@@ -64,16 +78,49 @@ pub(crate) async fn post<B: Serialize, T: DeserializeOwned>(host: &Host, path: &
 
 /// Authenticated GET of a v2 endpoint that answers with raw bytes.
 pub(crate) async fn get_binary(host: &Host, path: &str, large_transfer: bool) -> SyncResult<Vec<u8>> {
-    let (response, bytes) = send_with_bytes(host, HttpMethod::Get, path, None, true, large_transfer, true).await?;
+    let (response, bytes) = send_with_bytes(host, HttpMethod::Get, path, Body::None, true, large_transfer, true).await?;
     check(response)?;
     Ok(bytes.unwrap_or_default())
 }
 
 /// Authenticated POST of a v2 endpoint with a JSON body that answers with raw bytes.
 pub(crate) async fn post_binary<B: Serialize>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<Vec<u8>> {
-    let (response, bytes) = send_with_bytes(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, large_transfer, true).await?;
+    let (response, bytes) = send_with_bytes(host, HttpMethod::Post, path, Body::Json(serde_json::to_string(body)?), true, large_transfer, true).await?;
     check(response)?;
     Ok(bytes.unwrap_or_default())
+}
+
+/// A request body sent as a binary frame: its JSON header (which lists each ciphertext's size), then the ciphertexts.
+pub(crate) trait FrameBody: Serialize {
+    /// The ciphertexts, in the order the header lists their sizes.
+    fn parts(&self) -> Vec<&[u8]>;
+}
+
+/// Authenticated POST of a v2 endpoint with a binary frame body and a JSON response.
+pub(crate) async fn post_frame<B: FrameBody, T: DeserializeOwned>(host: &Host, path: &str, body: &B) -> SyncResult<T> {
+    let (response, _) = send_with_bytes(host, HttpMethod::Post, path, Body::Binary(encode_frame(body)?), true, true, false).await?;
+    parse(&check(response)?)
+}
+
+/// Authenticated POST of a v2 endpoint with a binary frame body and no response body.
+pub(crate) async fn post_frame_no_content<B: FrameBody>(host: &Host, path: &str, body: &B) -> SyncResult<()> {
+    let (response, _) = send_with_bytes(host, HttpMethod::Post, path, Body::Binary(encode_frame(body)?), true, true, false).await?;
+    check(response)?;
+    Ok(())
+}
+
+/// A binary frame: 4-byte big-endian header length, the JSON header, then the parts back to back.
+pub(crate) fn encode_frame<B: FrameBody>(body: &B) -> SyncResult<Vec<u8>> {
+    let header = serde_json::to_vec(body)?;
+    let parts = body.parts();
+    let header_length = u32::try_from(header.len()).map_err(|_| SyncError::Other("binary frame header exceeds 4 GiB".to_string()))?;
+    let mut frame = Vec::with_capacity(4 + header.len() + parts.iter().map(|p| p.len()).sum::<usize>());
+    frame.extend_from_slice(&header_length.to_be_bytes());
+    frame.extend_from_slice(&header);
+    for part in parts {
+        frame.extend_from_slice(part);
+    }
+    Ok(frame)
 }
 
 /// The ciphertexts of a binary vault download, after its JSON header, taken in the order the header lists their sizes.

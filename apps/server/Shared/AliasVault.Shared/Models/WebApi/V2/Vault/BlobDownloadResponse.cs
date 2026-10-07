@@ -14,5 +14,5 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 public class BlobDownloadResponse
 {
     /// <summary>Gets or sets the requested blobs the server has stored, in the order their bytes follow the header.</summary>
-    public List<BlobDownloadEntry> Blobs { get; set; } = [];
+    public List<BlobEntry> Blobs { get; set; } = [];
 }

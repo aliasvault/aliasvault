@@ -213,24 +213,25 @@ export class WebApiService {
   /**
    * Run a request on behalf of the Rust sync engine.
    */
-  public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean, binaryResponse = false): Promise<EngineHttpResponse> {
+  public async engineRequest(method: string, path: string, body: string | Uint8Array | undefined, requiresAuth: boolean, largeTransfer: boolean, binaryResponse = false): Promise<EngineHttpResponse> {
     const url = await this.resolveUrl(path);
     const headers = new Headers({ Accept: binaryResponse ? 'application/octet-stream' : 'application/json' });
     if (body !== undefined) {
-      headers.set('Content-Type', 'application/json');
+      headers.set('Content-Type', body instanceof Uint8Array ? 'application/octet-stream' : 'application/json');
     }
+    const requestBody = body as string | Uint8Array<ArrayBuffer> | undefined;
     const accessToken = requiresAuth ? await this.getAccessToken() : null;
     if (accessToken) {
       headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
     try {
-      let response = await this.performFetch(url, path, { method, headers, body }, largeTransfer);
+      let response = await this.performFetch(url, path, { method, headers, body: requestBody }, largeTransfer);
       if (response.status === 401 && requiresAuth) {
         const refreshResult = await this.refreshAccessToken();
         if (refreshResult.token) {
           headers.set('Authorization', `Bearer ${refreshResult.token}`);
-          response = await this.performFetch(url, path, { method, headers, body }, largeTransfer);
+          response = await this.performFetch(url, path, { method, headers, body: requestBody }, largeTransfer);
         } else if (refreshResult.isAuthError) {
           // The session is truly expired; the engine turns the 401 into its logout outcome.
           logoutEventEmitter.emit('common.errors.sessionExpired');

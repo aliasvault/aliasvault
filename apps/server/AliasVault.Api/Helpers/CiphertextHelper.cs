@@ -18,23 +18,12 @@ public static class CiphertextHelper
     private const int MinCiphertextLength = 16;
 
     /// <summary>
-    /// Decodes a base64-encoded ciphertext into the raw ciphertext bytes.
+    /// Checks that the bytes are long enough to be AES-GCM ciphertext.
     /// </summary>
-    /// <param name="base64">The base64-encoded ciphertext as it arrived on the request.</param>
-    /// <param name="bytes">The decoded ciphertext, empty when the ciphertext is malformed.</param>
-    /// <returns>True when the ciphertext decodes to something that can be AES-GCM ciphertext; false when the caller should reject the request.</returns>
-    public static bool TryDecode(string base64, out byte[] bytes)
+    /// <param name="bytes">The ciphertext as it arrived on the request.</param>
+    /// <returns>True when the bytes can be AES-GCM ciphertext; false when the caller should reject the request.</returns>
+    public static bool IsCiphertext(byte[] bytes)
     {
-        try
-        {
-            bytes = Convert.FromBase64String(base64);
-        }
-        catch (FormatException)
-        {
-            bytes = [];
-            return false;
-        }
-
         return bytes.Length >= MinCiphertextLength;
     }
 

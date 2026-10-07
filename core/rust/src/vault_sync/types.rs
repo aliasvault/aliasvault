@@ -260,6 +260,9 @@ pub enum Command {
         /// On success the host returns the body as raw bytes (the `bytes` argument of `SyncSession::resume`), not as `body` text.
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         binary_response: bool,
+        /// The request body is raw bytes, which the host takes with `SyncSession::command_bytes` and sends as `application/octet-stream`.
+        #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+        binary_body: bool,
     },
     /// Read an engine-owned persisted value; response [`StateValue`].
     StateGet { key: String },
@@ -547,7 +550,9 @@ pub const ALGORITHM_AES256_GCM: &str = crate::crypto::key_chain::ACCOUNT_KEY_WRA
 #[serde(rename_all = "camelCase")]
 pub struct ManifestWrite {
     pub manifest_id: String,
-    pub manifest_blob: String,
+    /// The manifest ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
+    #[serde(rename = "size", serialize_with = "serialize_len")]
+    pub manifest_blob: Vec<u8>,
     pub manifest_ciphertext_hash: String,
     pub current_revision: i64,
     pub credentials_count: usize,
@@ -572,18 +577,28 @@ pub struct BlobRef {
 pub struct BucketWrite {
     pub manifest_id: String,
     pub category: String,
-    pub blob: String,
+    /// The bucket ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
+    #[serde(rename = "size", serialize_with = "serialize_len")]
+    pub blob: Vec<u8>,
     pub ciphertext_hash: String,
     pub current_revision: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// One blob of a binary `POST v2/Vault/blobs` upload.
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BlobDto {
+pub struct BlobUpload {
     pub hash: String,
     pub category: String,
-    pub encrypted_data_base64: String,
+    /// The blob ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
+    #[serde(rename = "size", serialize_with = "serialize_len")]
+    pub encrypted_data: Vec<u8>,
     pub encrypted_blob_key: String,
+}
+
+/// Serialize a ciphertext field as its length: the bytes travel after the JSON header of a binary frame.
+fn serialize_len<S: serde::Serializer>(bytes: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_u64(bytes.len() as u64)
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -612,6 +627,12 @@ pub struct VaultWriteRequest {
     pub email_routing: Option<EmailRoutingPush>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub migration: Option<VaultWriteMigration>,
+}
+
+impl super::http::FrameBody for VaultWriteRequest {
+    fn parts(&self) -> Vec<&[u8]> {
+        self.manifests.iter().map(|m| m.manifest_blob.as_slice()).chain(self.buckets.iter().map(|b| b.blob.as_slice())).collect()
+    }
 }
 
 /// One-time migrations applied atomically with a vault write (optional field).
@@ -652,8 +673,14 @@ pub enum VaultWriteStatus {
 #[serde(rename_all = "camelCase")]
 pub struct BlobUploadRequest {
     pub manifest_id: String,
-    pub blobs: Vec<BlobDto>,
+    pub blobs: Vec<BlobUpload>,
     pub overwrite: bool,
+}
+
+impl super::http::FrameBody for BlobUploadRequest {
+    fn parts(&self) -> Vec<&[u8]> {
+        self.blobs.iter().map(|b| b.encrypted_data.as_slice()).collect()
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]

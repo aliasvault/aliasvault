@@ -174,7 +174,7 @@ type EngineSqlStatement = { sql: string; params?: JsonValue[] };
 
 /** The engine's commands; see the Rust `Command` enum. */
 type EngineCommand =
-  | { kind: 'http'; method: string; path: string; body?: string; auth: boolean; largeTransfer: boolean; binaryResponse?: boolean }
+  | { kind: 'http'; method: string; path: string; body?: string; auth: boolean; largeTransfer: boolean; binaryResponse?: boolean; binaryBody?: boolean }
   | { kind: 'stateGet'; key: string }
   | { kind: 'stateSet'; key: string; value: JsonValue }
   | { kind: 'stateRemove'; key: string }
@@ -310,12 +310,13 @@ class EngineRun {
   /**
    * Carry out one command and return the host's response.
    * @param command - the command
+   * @param commandBytes - the raw bytes the engine attached to the command (the body of a binary `http` request)
    */
-  public async handle(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<HostResponse> {
+  public async handle(command: Exclude<EngineCommand, { kind: 'done' }>, commandBytes: Uint8Array | null = null): Promise<HostResponse> {
     const started = now();
     try {
       if (command.kind === 'http') {
-        return await this.http(command);
+        return await this.http(command, commandBytes);
       }
       const response = await this.dispatch(command);
       return response instanceof Uint8Array ? { json: {}, bytes: response } : { json: response, bytes: null };
@@ -401,10 +402,12 @@ class EngineRun {
   /**
    * An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
    * @param command - the command
+   * @param commandBytes - the request body of a binary request
    */
-  private async http(command: Extract<EngineCommand, { kind: 'http' }>): Promise<HostResponse> {
+  private async http(command: Extract<EngineCommand, { kind: 'http' }>, commandBytes: Uint8Array | null): Promise<HostResponse> {
     try {
-      const response = await this.webApi.engineRequest(command.method, command.path, command.body, command.auth, command.largeTransfer, command.binaryResponse);
+      const body = command.binaryBody ? commandBytes ?? new Uint8Array() : command.body;
+      const response = await this.webApi.engineRequest(command.method, command.path, body, command.auth, command.largeTransfer, command.binaryResponse);
       return { json: { status: response.status, body: response.body }, bytes: response.bytes ?? null };
     } catch (error) {
       if (error instanceof NetworkError) {
@@ -503,7 +506,8 @@ export async function runVaultSyncEngine<T extends VaultSyncEngineResultBase>(ho
         devLog(run.summarize(request.operation, now() - started));
         return command.result as T;
       }
-      const response = await run.handle(command);
+      const commandBytes = command.kind === 'http' && command.binaryBody ? await session.commandBytes() : null;
+      const response = await run.handle(command, commandBytes);
       await session.resume(JSON.stringify(response.json), response.bytes);
     }
   } finally {

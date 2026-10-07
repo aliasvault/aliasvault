@@ -325,6 +325,12 @@ impl VaultSyncSessionJs {
         self.inner.next_command().map_err(js_err)
     }
 
+    /// Take the raw bytes attached to the last command (the body of a binary `http` request), if any.
+    #[wasm_bindgen(js_name = commandBytes)]
+    pub fn command_bytes(&self) -> Result<Option<Vec<u8>>, JsValue> {
+        self.inner.command_bytes().map_err(js_err)
+    }
+
     /// Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`.
     pub fn resume(&self, response_json: &str, bytes: Option<Vec<u8>>) -> Result<(), JsValue> {
         self.inner.resume(response_json, bytes).map_err(js_err)

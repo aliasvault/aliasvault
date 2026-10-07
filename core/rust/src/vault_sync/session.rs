@@ -17,8 +17,8 @@ use crate::common::error::{VaultError, VaultResult};
 #[derive(Default)]
 pub(crate) struct Slot {
     pub pending: Option<Command>,
+    pub pending_bytes: Option<Vec<u8>>,
     pub response: Option<Value>,
-    /// Raw bytes the host handed back with the response (the SQLite file of a `dbExport`).
     pub response_bytes: Option<Vec<u8>>,
 }
 
@@ -40,8 +40,13 @@ impl Host {
 
     /// Like [`Host::call`], also returning the raw bytes the host attached to its response, if any.
     pub async fn call_with_bytes<R: DeserializeOwned>(&self, command: Command) -> SyncResult<(R, Option<Vec<u8>>)> {
+        self.exchange(command, None).await
+    }
+
+    /// Send a command with raw bytes attached for the host, returning the typed response and the bytes the host attached to it.
+    pub async fn exchange<R: DeserializeOwned>(&self, command: Command, command_bytes: Option<Vec<u8>>) -> SyncResult<(R, Option<Vec<u8>>)> {
         let kind = command.name();
-        let (response, bytes) = CommandFuture { slot: self.slot.clone(), command: Some(command), sent: false }.await;
+        let (response, bytes) = CommandFuture { slot: self.slot.clone(), command: Some(command), command_bytes, sent: false }.await;
         if let Some(error) = response.get("error").and_then(Value::as_str) {
             return Err(SyncError::Host { command: kind, message: error.to_string() });
         }
@@ -59,6 +64,7 @@ impl Host {
 struct CommandFuture {
     slot: Arc<Mutex<Slot>>,
     command: Option<Command>,
+    command_bytes: Option<Vec<u8>>,
     sent: bool,
 }
 
@@ -68,7 +74,10 @@ impl Future for CommandFuture {
     fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = &mut *self;
         if !this.sent {
-            this.slot.lock().expect("sync host slot poisoned").pending = this.command.take();
+            let mut slot = this.slot.lock().expect("sync host slot poisoned");
+            slot.pending = this.command.take();
+            slot.pending_bytes = this.command_bytes.take();
+            drop(slot);
             this.sent = true;
             return Poll::Pending;
         }
@@ -89,6 +98,8 @@ struct SessionInner {
     slot: Arc<Mutex<Slot>>,
     future: Option<Pin<Box<dyn Future<Output = Value> + Send>>>,
     finished: Option<Value>,
+    /// Raw bytes attached to the last command handed out, until the host takes them.
+    command_bytes: Option<Vec<u8>>,
 }
 
 impl SyncSession {
@@ -98,7 +109,7 @@ impl SyncSession {
         let slot = Arc::new(Mutex::new(Slot::default()));
         let host = Host::new(slot.clone());
         let future: Pin<Box<dyn Future<Output = Value> + Send>> = Box::pin(engine::run(host, request));
-        Ok(Self { inner: Mutex::new(SessionInner { slot, future: Some(future), finished: None }) })
+        Ok(Self { inner: Mutex::new(SessionInner { slot, future: Some(future), finished: None, command_bytes: None }) })
     }
 
     /// The next command for the host, as JSON.
@@ -117,13 +128,23 @@ impl SyncSession {
                 Ok(serde_json::to_string(&Command::Done { result })?)
             }
             Poll::Pending => {
-                let pending = inner.slot.lock().map_err(|_| VaultError::General("sync host slot poisoned".to_string()))?.pending.take();
+                let (pending, pending_bytes) = {
+                    let mut slot = inner.slot.lock().map_err(|_| VaultError::General("sync host slot poisoned".to_string()))?;
+                    (slot.pending.take(), slot.pending_bytes.take())
+                };
+                inner.command_bytes = pending_bytes;
                 match pending {
                     Some(command) => Ok(serde_json::to_string(&command)?),
                     None => Err(VaultError::General("sync session is waiting for a response to its last command".to_string())),
                 }
             }
         }
+    }
+
+    /// Take the raw bytes attached to the last command (the body of a binary `http` request), if any.
+    pub fn command_bytes(&self) -> VaultResult<Option<Vec<u8>>> {
+        let mut inner = self.inner.lock().map_err(|_| VaultError::General("sync session poisoned".to_string()))?;
+        Ok(inner.command_bytes.take())
     }
 
     /// Hand the host's response to the last command back, with raw bytes for a `dbExport` (the SQLite file).
