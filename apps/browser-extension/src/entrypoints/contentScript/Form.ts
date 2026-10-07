@@ -6,6 +6,7 @@ import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
+import { findSplitTotpInputs, isSplitTotpBox } from '@/utils/formDetector/SplitTotpInputs';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
@@ -207,14 +208,7 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
    * Skip icon for split TOTP inputs (single-digit fields)
    * These are too narrow to show the icon nicely
    */
-  const inputMode = actualInput.getAttribute('inputmode');
-  const pattern = actualInput.getAttribute('pattern');
-  const isNumericSingleDigit = actualInput.maxLength === 1 &&
-                                (inputMode === 'numeric' ||
-                                 pattern === '[0-9]*' ||
-                                 pattern === '\\d*');
-
-  if (isNumericSingleDigit) {
+  if (isSplitTotpBox(actualInput)) {
     return;
   }
 
@@ -427,11 +421,28 @@ export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Prom
     return;
   }
 
+  // Split code forms (one box per digit) get one character per box.
+  const splitInputs = findSplitTotpInputs(input, response.code.length);
+  if (splitInputs) {
+    splitInputs.forEach((box, index) => fillSplitTotpBox(box, response.code![index]));
+    return;
+  }
+
   // Fill the TOTP field
   input.value = response.code;
 
   // Trigger input events for form validation
   triggerInputEvents(input);
+}
+
+/**
+ * Fill one box of a split TOTP form.
+ */
+function fillSplitTotpBox(box: HTMLInputElement, char: string): void {
+  box.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+  box.value = char;
+  triggerInputEvents(box);
+  box.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
 }
 
 /**

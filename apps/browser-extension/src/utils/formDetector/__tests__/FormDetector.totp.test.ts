@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+import { findSplitTotpInputs } from '@/utils/formDetector/SplitTotpInputs';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 
 import { FormField, testField, createTestDom } from './TestUtils';
@@ -227,6 +228,54 @@ describe('FormDetector TOTP tests', () => {
       formDetector = new FormDetector(document, document.body);
 
       expect(formDetector.containsLoginForm()).toBe(true);
+    });
+  });
+
+  describe('English TOTP form 15 detection (split boxes without inputmode)', () => {
+    const htmlFile = 'en-totp-form15.html';
+    let document: Document;
+
+    beforeEach(() => {
+      const dom = createTestDom(htmlFile);
+      document = dom.window.document;
+    });
+
+    testField(FormField.Totp, 'pincode-1', htmlFile);
+
+    it('should detect every box as TOTP, not only the first', () => {
+      for (let i = 1; i <= 6; i++) {
+        const box = document.getElementById(`pincode-${i}`) as HTMLInputElement;
+        expect(new FormDetector(document, box).getDetectedFieldType()).toBe(DetectedFieldType.Totp);
+      }
+    });
+
+    it('should find all six boxes in order from any box', () => {
+      const expectedIds = ['pincode-1', 'pincode-2', 'pincode-3', 'pincode-4', 'pincode-5', 'pincode-6'];
+      for (const id of expectedIds) {
+        const boxes = findSplitTotpInputs(document.getElementById(id) as HTMLInputElement, 6);
+        expect(boxes?.map(box => box.id)).toEqual(expectedIds);
+      }
+    });
+
+    it('should not treat the boxes as a split group for a code of a different length', () => {
+      expect(findSplitTotpInputs(document.getElementById('pincode-1') as HTMLInputElement, 8)).toBeNull();
+    });
+
+    it('should not treat the hidden token field as a split box', () => {
+      expect(findSplitTotpInputs(document.getElementById('token') as HTMLInputElement, 6)).toBeNull();
+    });
+  });
+
+  describe('Single code fields are not split groups', () => {
+    it('should return null for a regular TOTP field', () => {
+      const document = createTestDom('en-totp-form1.html').window.document;
+      expect(findSplitTotpInputs(document.getElementById('otp') as HTMLInputElement, 6)).toBeNull();
+    });
+
+    it('should find the split group of the Riot Games form', () => {
+      const document = createTestDom('en-totp-form7.html').window.document;
+      const boxes = findSplitTotpInputs(document.getElementById('riot-mfa-3') as HTMLInputElement, 6);
+      expect(boxes?.map(box => box.id)).toEqual(['riot-mfa-0', 'riot-mfa-1', 'riot-mfa-2', 'riot-mfa-3', 'riot-mfa-4', 'riot-mfa-5']);
     });
   });
 

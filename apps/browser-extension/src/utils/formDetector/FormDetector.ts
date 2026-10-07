@@ -2,6 +2,7 @@ import { devLog } from "@/utils/devLogger/DevLogger";
 import { closestAcrossShadow, collectShadowRoots, getComposedParentElement, getQueryRoot, getShadowHostChain, queryAllDeep } from "@/utils/ShadowDom";
 
 import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, type FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
+import { isInSameSplitTotpGroup } from "./SplitTotpInputs";
 import { DetectedFieldType, type FormFields } from "./types/FormFields";
 
 /**
@@ -1747,7 +1748,7 @@ export class FormDetector {
     const checkVisibility = false;
 
     const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
-    const isTotpField = totpField !== null && elementsToCheck.includes(totpField);
+    const isTotpField = totpField !== null && elementsToCheck.some(el => el === totpField || (el?.tagName === 'INPUT' && isInSameSplitTotpGroup(el as HTMLInputElement, totpField)));
 
     // A 2FA field that carries an unambiguous signal of its own is classified before the credential field types.
     if (isTotpField && this.hasTotpFormContext(totpField)) {
