@@ -43,7 +43,7 @@ pub(crate) async fn open_staging(host: &Host) -> SyncResult<()> {
 
 /// Serialize a database to SQLite bytes.
 pub(crate) async fn export(host: &Host, db: Db) -> SyncResult<Vec<u8>> {
-    let (_, bytes) = host.call_with_bytes::<Ack>(Command::DbExport { db }).await?;
+    let (_, bytes) = host.call_with_bytes::<Ack>(Command::DbExport { db }, None).await?;
     bytes.ok_or_else(|| SyncError::Other("host returned no database bytes".to_string()))
 }
 

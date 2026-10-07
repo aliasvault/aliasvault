@@ -8,13 +8,16 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// An entry of a binary frame header whose ciphertext follows the header.
+/// A header entry of a binary frame whose ciphertext follows the header, addressed by offset and size.
 /// </summary>
 public interface IFramePart
 {
-    /// <summary>Gets the length of the ciphertext in the frame.</summary>
-    int Size { get; }
+    /// <summary>Gets or sets where the ciphertext starts, counted from the first byte after the header.</summary>
+    int Offset { get; set; }
 
-    /// <summary>Gets or sets the ciphertext, read from the frame after the header.</summary>
+    /// <summary>Gets or sets the length of the ciphertext, 0 when the entry carries none.</summary>
+    int Size { get; set; }
+
+    /// <summary>Gets or sets the ciphertext. Sent after the JSON header, not inside it.</summary>
     byte[] Data { get; set; }
 }

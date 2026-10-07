@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 use super::errors::{ErrorCode, Failure, LogoutReason, SyncError};
+use super::frame::{FrameBody, FramePart};
 use crate::sqlite_host::SqlStatement;
 
 /// The operation a session runs.
@@ -458,16 +459,19 @@ pub struct GetResponse {
     pub email_routing: Option<EmailRoutingDto>,
 }
 
+impl FrameBody for GetResponse {
+    fn parts(&mut self) -> Vec<&mut FramePart> {
+        self.manifests.iter_mut().map(|m| &mut m.ciphertext).chain(self.buckets.iter_mut().map(|b| &mut b.ciphertext)).collect()
+    }
+}
+
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ManifestDto {
     pub manifest_id: String,
-    /// Length of the manifest ciphertext in the binary snapshot body, 0 on an empty vault.
-    #[serde(default)]
-    pub size: usize,
-    /// The manifest ciphertext, read from the binary snapshot body after the JSON header.
-    #[serde(skip)]
-    pub blob: Vec<u8>,
+    /// The manifest ciphertext, empty on an empty vault.
+    #[serde(flatten)]
+    pub ciphertext: FramePart,
     #[serde(default)]
     pub ciphertext_hash: Option<String>,
     #[serde(default)]
@@ -497,7 +501,7 @@ pub struct ManifestDto {
 impl ManifestDto {
     /// Whether the server served this manifest with content.
     pub fn has_content(&self) -> bool {
-        !self.blob.is_empty()
+        !self.ciphertext.bytes.is_empty()
     }
 }
 
@@ -506,12 +510,8 @@ impl ManifestDto {
 pub struct BucketDto {
     pub manifest_id: String,
     pub category: String,
-    /// Length of the bucket ciphertext in the binary snapshot body.
-    #[serde(default)]
-    pub size: usize,
-    /// The bucket ciphertext, read from the binary snapshot body after the JSON header.
-    #[serde(skip)]
-    pub blob: Vec<u8>,
+    #[serde(flatten)]
+    pub ciphertext: FramePart,
     #[serde(default)]
     pub ciphertext_hash: Option<String>,
     #[serde(default)]
@@ -550,9 +550,8 @@ pub const ALGORITHM_AES256_GCM: &str = crate::crypto::key_chain::ACCOUNT_KEY_WRA
 #[serde(rename_all = "camelCase")]
 pub struct ManifestWrite {
     pub manifest_id: String,
-    /// The manifest ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
-    #[serde(rename = "size", serialize_with = "serialize_len")]
-    pub manifest_blob: Vec<u8>,
+    #[serde(flatten)]
+    pub ciphertext: FramePart,
     pub manifest_ciphertext_hash: String,
     pub current_revision: i64,
     pub credentials_count: usize,
@@ -577,28 +576,21 @@ pub struct BlobRef {
 pub struct BucketWrite {
     pub manifest_id: String,
     pub category: String,
-    /// The bucket ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
-    #[serde(rename = "size", serialize_with = "serialize_len")]
-    pub blob: Vec<u8>,
+    #[serde(flatten)]
+    pub ciphertext: FramePart,
     pub ciphertext_hash: String,
     pub current_revision: i64,
 }
 
-/// One blob of a binary `POST v2/Vault/blobs` upload.
-#[derive(Debug, Clone, Serialize)]
+/// One blob of a `POST v2/Vault/blobs` upload or `POST v2/Vault/blobs/download` response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BlobUpload {
+pub struct BlobDto {
     pub hash: String,
     pub category: String,
-    /// The blob ciphertext; the JSON header carries its length as `size`, the bytes follow the header.
-    #[serde(rename = "size", serialize_with = "serialize_len")]
-    pub encrypted_data: Vec<u8>,
+    #[serde(flatten)]
+    pub ciphertext: FramePart,
     pub encrypted_blob_key: String,
-}
-
-/// Serialize a ciphertext field as its length: the bytes travel after the JSON header of a binary frame.
-fn serialize_len<S: serde::Serializer>(bytes: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_u64(bytes.len() as u64)
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -629,9 +621,9 @@ pub struct VaultWriteRequest {
     pub migration: Option<VaultWriteMigration>,
 }
 
-impl super::http::FrameBody for VaultWriteRequest {
-    fn parts(&self) -> Vec<&[u8]> {
-        self.manifests.iter().map(|m| m.manifest_blob.as_slice()).chain(self.buckets.iter().map(|b| b.blob.as_slice())).collect()
+impl FrameBody for VaultWriteRequest {
+    fn parts(&mut self) -> Vec<&mut FramePart> {
+        self.manifests.iter_mut().map(|m| &mut m.ciphertext).chain(self.buckets.iter_mut().map(|b| &mut b.ciphertext)).collect()
     }
 }
 
@@ -673,13 +665,13 @@ pub enum VaultWriteStatus {
 #[serde(rename_all = "camelCase")]
 pub struct BlobUploadRequest {
     pub manifest_id: String,
-    pub blobs: Vec<BlobUpload>,
+    pub blobs: Vec<BlobDto>,
     pub overwrite: bool,
 }
 
-impl super::http::FrameBody for BlobUploadRequest {
-    fn parts(&self) -> Vec<&[u8]> {
-        self.blobs.iter().map(|b| b.encrypted_data.as_slice()).collect()
+impl FrameBody for BlobUploadRequest {
+    fn parts(&mut self) -> Vec<&mut FramePart> {
+        self.blobs.iter_mut().map(|b| &mut b.ciphertext).collect()
     }
 }
 
@@ -697,21 +689,17 @@ pub struct MissingBlobsResponse {
     pub missing: Vec<String>,
 }
 
-/// JSON header of the binary `POST v2/Vault/blobs/download` response.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobDownloadResponse {
     #[serde(default)]
-    pub blobs: Vec<BlobDownloadEntry>,
+    pub blobs: Vec<BlobDto>,
 }
 
-/// One blob in the JSON header of the binary `POST v2/Vault/blobs/download` response; its ciphertext follows the header.
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BlobDownloadEntry {
-    pub hash: String,
-    pub encrypted_blob_key: String,
-    pub size: usize,
+impl FrameBody for BlobDownloadResponse {
+    fn parts(&mut self) -> Vec<&mut FramePart> {
+        self.blobs.iter_mut().map(|b| &mut b.ciphertext).collect()
+    }
 }
 
 /// `GET v2/VaultKey/Password`.

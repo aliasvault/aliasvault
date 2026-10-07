@@ -331,7 +331,7 @@ impl VaultSyncSessionJs {
         self.inner.command_bytes().map_err(js_err)
     }
 
-    /// Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`.
+    /// Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport` or a binary `http` response.
     pub fn resume(&self, response_json: &str, bytes: Option<Vec<u8>>) -> Result<(), JsValue> {
         self.inner.resume(response_json, bytes).map_err(js_err)
     }

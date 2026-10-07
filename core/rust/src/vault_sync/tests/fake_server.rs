@@ -393,9 +393,9 @@ impl FakeServer {
 /// A manifest or bucket payload packed and encrypted under `vek`, with its ciphertext hash.
 fn encrypt_payload(json: &str, vek: &str, aad: &[u8]) -> (String, String) {
     let packed = vault_codec::pack_payload(json).unwrap();
-    let blob = crypto::symmetric_encrypt_bytes_with_aad(&packed, vek, aad).unwrap();
+    let blob = crypto::symmetric_encrypt_raw_with_aad(&packed, vek, aad).unwrap();
     let hash = vault_codec::compute_ciphertext_hash(&blob);
-    (blob, hash)
+    (crate::common::encoding::base64_encode(&blob), hash)
 }
 
 /// The `vaultKey` dto of `GET VaultKey/Password` around the account key fields.

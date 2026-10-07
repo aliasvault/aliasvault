@@ -3,12 +3,14 @@
 
 use std::collections::{HashMap, HashSet};
 
+use serde::de::IgnoredAny;
+
 use crate::vault_model::names::ITEMS_TABLE;
 use crate::vault_model::{id_key, OVERFLOW_TABLE, TRASH_RETENTION_DEFAULT_DAYS};
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{BlobHashesRequest, BlobUpload, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
+use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
 use super::blob_keys::{self, EncryptedBlob};
 use super::write_set::{self, ManifestRecord, SkipReason};
 use super::{db, http, keys};
@@ -221,8 +223,8 @@ async fn write_dirty_buckets(ctx: &Ctx, categories: &[String]) -> SyncResult<Pus
         ctx.log("[Push] No bucket changed versus the server baselines; skipping upload.").await;
         return Ok(PushStatus::Ok);
     }
-    let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: Vec::new(), buckets: writes, email_routing: None, migration: None };
-    let response: VaultWriteResponse = http::with_outdated_server_guard(http::post_frame(&ctx.host, http::VAULT_ENDPOINT, &payload).await)?;
+    let mut payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: Vec::new(), buckets: writes, email_routing: None, migration: None };
+    let response: VaultWriteResponse = http::with_outdated_server_guard(http::post_frame(&ctx.host, http::VAULT_ENDPOINT, &mut payload).await)?;
     if response.status != VaultWriteStatus::Ok {
         ctx.warn("[Push] Bucket-only write outdated; pulling and merging before the next attempt.").await;
         return Ok(PushStatus::Outdated);
@@ -406,7 +408,7 @@ async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad
     let packed = vault_codec::pack_payload(plaintext)?;
     let ciphertext = crypto::symmetric_encrypt_raw_with_aad(&packed, key, aad)?;
     ctx.log(format!("[Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
-    let hash = vault_codec::compute_ciphertext_hash_bytes(&ciphertext);
+    let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
     Ok(EncryptedPayload { ciphertext, hash })
 }
 
@@ -459,8 +461,8 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
     let mut uploaded = upload_missing_blobs(ctx, &blobs, &baselines, overwrite_personal_blobs).await?;
     let routed_manifests: Vec<_> = canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
     let email_routing = build_email_routing(&routed_manifests, &ctx.request.private_email_domains, &baselines.manifest_revisions);
-    let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
-    let response = write_vault(ctx, &payload, &blobs, overwrite_personal_blobs, &mut uploaded).await?;
+    let mut payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
+    let response = write_vault(ctx, &mut payload, &blobs, overwrite_personal_blobs, &mut uploaded).await?;
 
     if response.status != VaultWriteStatus::Ok {
         // All-or-nothing: a single stale manifest or bucket rejected the whole write; the caller pulls, merges and retries.
@@ -550,7 +552,7 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], keys_by_mani
             return Err(SyncError::UploadRejected(vec![format!("{} validation failed: {}. {}", label, validation.failed_rules.join(", "), validation.message).trim().to_string()]));
         }
         let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
-        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision: baselines.bucket_revision(bucket) });
+        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), ciphertext: encrypted.ciphertext.into(), ciphertext_hash: encrypted.hash, current_revision: baselines.bucket_revision(bucket) });
         written.insert(fingerprint_key, fingerprint);
     }
     Ok(writes)
@@ -597,7 +599,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
         let blob_refs: Vec<BlobRef> = candidate.manifest.referenced_blobs().into_iter().map(|(hash, category)| BlobRef { hash, category }).collect();
         writes.push(ManifestWrite {
             manifest_id: candidate.record.manifest_id.clone(),
-            manifest_blob: encrypted.ciphertext,
+            ciphertext: encrypted.ciphertext.into(),
             manifest_ciphertext_hash: encrypted.hash,
             current_revision: candidate.current_revision,
             credentials_count: candidate.manifest.tables.get(ITEMS_TABLE).map(Vec::len).unwrap_or(0),
@@ -645,7 +647,7 @@ async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) ->
 
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
 /// them and retry the identical write once; blobs this client cannot supply fail the push.
-async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, overwrite_personal_blobs: bool, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
+async fn write_vault(ctx: &Ctx, payload: &mut VaultWriteRequest, blobs: &UploadBlobs, overwrite_personal_blobs: bool, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
     let response: VaultWriteResponse = http::post_frame(&ctx.host, http::VAULT_ENDPOINT, payload).await?;
     if response.missing_blob_hashes.is_empty() {
         return Ok(response);
@@ -722,12 +724,12 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
             let entry = &blobs.entries[&hash];
             let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek, &manifest_id, &hash)?;
             encrypted_blobs.insert(hash.clone(), encrypted.clone());
-            dtos.push(BlobUpload { hash, category: entry.kind.clone(), encrypted_data: encrypted.encrypted_data, encrypted_blob_key: encrypted.encrypted_blob_key });
+            dtos.push(BlobDto { hash, category: entry.kind.clone(), ciphertext: encrypted.encrypted_data.into(), encrypted_blob_key: encrypted.encrypted_blob_key });
         }
-        for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data.len()) {
-            let bytes: usize = batch.iter().map(|dto| dto.encrypted_data.len()).sum();
+        for batch in http::batch_by_transfer_cost(dtos, |dto| dto.ciphertext.size) {
+            let bytes: usize = batch.iter().map(|dto| dto.ciphertext.size).sum();
             ctx.log(format!("[Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(bytes))).await;
-            http::post_frame_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
+            http::post_frame::<_, IgnoredAny>(&ctx.host, BLOBS_ENDPOINT, &mut BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
         }
     }
     Ok(encrypted_blobs)

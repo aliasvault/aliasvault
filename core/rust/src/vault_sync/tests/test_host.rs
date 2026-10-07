@@ -203,8 +203,7 @@ impl TestHost {
                 Command::Done { result } => return result,
                 Command::Http { method, path, body, binary_response, binary_body, .. } => {
                     let body_json = if binary_body {
-                        // Upload frames reach the responders as the JSON they stand for, each ciphertext back in its base64 field.
-                        Some(decode_upload_frame(&path, &session.command_bytes().unwrap().expect("a binary body carries bytes")))
+                        Some(frame_to_json(&path, &session.command_bytes().unwrap().expect("a binary body carries bytes")))
                     } else {
                         body.as_deref().map(|b| serde_json::from_str(b).unwrap_or(Value::String(b.to_string())))
                     };
@@ -212,9 +211,7 @@ impl TestHost {
                     self.requests.push(RecordedRequest { method: method.clone(), path: path.clone(), body: body_json.clone() });
                     match self.responders.iter().find_map(|r| r(&method, &path, body_json.as_ref())) {
                         Some((status, body)) if binary_response && (200..300).contains(&status) => {
-                            // Responders script binary downloads as JSON; the host hands them over in the server's binary frame.
-                            let frame = if path == "Vault/blobs/download" { encode_blob_download(&body) } else { encode_snapshot(&body) };
-                            session.resume(&json!({ "status": status }).to_string(), Some(frame)).unwrap();
+                            session.resume(&json!({ "status": status }).to_string(), Some(json_to_frame(&path, &body))).unwrap();
                             continue;
                         }
                         Some((status, body)) => json!({ "status": status, "body": body.to_string() }),
@@ -360,56 +357,52 @@ pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> Result<(), String
     sqlite_host::exec(conn, statements).map_err(|e| e.to_string())
 }
 
-/// A binary vault download: 4-byte big-endian header length, the JSON header, then the parts.
-fn encode_frame(header: &Value, parts: Vec<Vec<u8>>) -> Vec<u8> {
-    let header = serde_json::to_vec(header).unwrap();
-    let mut frame = (header.len() as u32).to_be_bytes().to_vec();
-    frame.extend(header);
-    frame.extend(parts.into_iter().flatten());
-    frame
+/*
+ * Responders and the fake server speak JSON with each ciphertext as a base64 field; the engine sends and reads binary
+ * frames. These convert between the two.
+ */
+
+/// The base64 fields that travel as frame parts, per list, for a request to or response from `path`.
+fn frame_fields(path: &str, upload: bool) -> &'static [(&'static str, &'static str)] {
+    match path {
+        "Vault/blobs" | "Vault/blobs/download" => &[("blobs", "encryptedDataBase64")],
+        _ if upload => &[("manifests", "manifestBlob"), ("buckets", "blob")],
+        _ => &[("manifests", "blob"), ("buckets", "blob")],
+    }
 }
 
-/// Take the base64 `blob` out of a JSON entry, leaving its `size`.
-fn take_blob(entry: &mut Value, field: &str) -> Vec<u8> {
-    let bytes = entry.as_object_mut().unwrap().remove(field).and_then(|b| b.as_str().map(str::to_string)).map(|b| crate::common::encoding::base64_decode(&b).unwrap()).unwrap_or_default();
-    entry["size"] = json!(bytes.len());
-    bytes
-}
-
-/// The server's binary snapshot frame for a `GET v2/Vault` JSON body that carries base64 `blob`s.
-pub fn encode_snapshot(body: &Value) -> Vec<u8> {
+/// The server's binary frame for a scripted JSON response.
+fn json_to_frame(path: &str, body: &Value) -> Vec<u8> {
     let mut header = body.clone();
-    let mut parts = Vec::new();
-    for list in ["manifests", "buckets"] {
-        for entry in header.get_mut(list).and_then(Value::as_array_mut).map(|a| a.iter_mut().collect::<Vec<_>>()).unwrap_or_default() {
-            parts.push(take_blob(entry, "blob"));
+    let mut data = Vec::new();
+    for (list, field) in frame_fields(path, false) {
+        for entry in header.get_mut(*list).and_then(Value::as_array_mut).into_iter().flatten() {
+            let base64 = entry.as_object_mut().unwrap().remove(*field);
+            let bytes = base64.as_ref().and_then(Value::as_str).map(|b| crate::common::encoding::base64_decode(b).unwrap()).unwrap_or_default();
+            entry["offset"] = json!(data.len());
+            entry["size"] = json!(bytes.len());
+            data.extend(bytes);
         }
     }
-    encode_frame(&header, parts)
+    let header = serde_json::to_vec(&header).unwrap();
+    [&(header.len() as u32).to_be_bytes()[..], &header, &data].concat()
 }
 
-/// The server's binary blob download frame for a `{ "blobs": [{ hash, category, encryptedDataBase64, encryptedBlobKey }] }` JSON body.
-pub fn encode_blob_download(body: &Value) -> Vec<u8> {
-    let mut header = body.clone();
-    let parts = header.get_mut("blobs").and_then(Value::as_array_mut).map(|a| a.iter_mut().map(|blob| take_blob(blob, "encryptedDataBase64")).collect()).unwrap_or_default();
-    encode_frame(&header, parts)
-}
-
-/// The JSON a binary upload frame stands for: each listed `size` replaced by its ciphertext as base64 in the named field.
-pub fn decode_upload_frame(path: &str, frame: &[u8]) -> Value {
+/// The JSON an uploaded binary frame stands for.
+fn frame_to_json(path: &str, frame: &[u8]) -> Value {
     let header_length = u32::from_be_bytes(frame[..4].try_into().unwrap()) as usize;
     let mut header: Value = serde_json::from_slice(&frame[4..4 + header_length]).unwrap();
-    let mut data = &frame[4 + header_length..];
-    let lists: &[(&str, &str)] = if path == "Vault/blobs" { &[("blobs", "encryptedDataBase64")] } else { &[("manifests", "manifestBlob"), ("buckets", "blob")] };
-    for (list, field) in lists {
-        for entry in header.get_mut(*list).and_then(Value::as_array_mut).map(|a| a.iter_mut().collect::<Vec<_>>()).unwrap_or_default() {
+    let data = &frame[4 + header_length..];
+    let mut listed = 0;
+    for (list, field) in frame_fields(path, true) {
+        for entry in header.get_mut(*list).and_then(Value::as_array_mut).into_iter().flatten() {
             let entry = entry.as_object_mut().unwrap();
-            let size = entry.remove("size").and_then(|s| s.as_u64()).expect("each listed ciphertext has a size") as usize;
-            let (ciphertext, rest) = data.split_at(size);
-            entry.insert(field.to_string(), json!(crate::common::encoding::base64_encode(ciphertext)));
-            data = rest;
+            let offset = entry.remove("offset").and_then(|o| o.as_u64()).expect("each part has an offset") as usize;
+            let size = entry.remove("size").and_then(|s| s.as_u64()).expect("each part has a size") as usize;
+            entry.insert(field.to_string(), json!(crate::common::encoding::base64_encode(&data[offset..offset + size])));
+            listed += size;
         }
     }
-    assert!(data.is_empty(), "the frame carries only the ciphertexts its header lists");
+    assert_eq!(listed, data.len(), "the client sends only the ciphertexts its header lists");
     header
 }

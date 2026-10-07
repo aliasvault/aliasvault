@@ -11,8 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// Unified atomic write for POST /v2/Vault, sent as a binary frame: the manifest ciphertexts follow this JSON header in
-/// <see cref="Manifests"/> order, then the bucket ciphertexts in <see cref="Buckets"/> order.
+/// Unified atomic write for POST /v2/Vault, sent as a binary frame (see <see cref="IFrameBody"/>).
 /// </summary>
 public class VaultWriteRequest : IFrameBody
 {

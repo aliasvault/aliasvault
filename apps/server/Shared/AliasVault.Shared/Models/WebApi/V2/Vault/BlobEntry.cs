@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// One blob in the header of a binary blob upload or download; its ciphertext follows the header.
+/// A single encrypted blob of a blob upload or download.
 /// </summary>
 public class BlobEntry : IFramePart
 {
@@ -27,10 +27,13 @@ public class BlobEntry : IFramePart
     [StringLength(255, MinimumLength = 1)]
     public required string EncryptedBlobKey { get; set; }
 
-    /// <summary>Gets or sets the length in bytes of the blob's ciphertext in the frame.</summary>
+    /// <inheritdoc/>
+    public int Offset { get; set; }
+
+    /// <inheritdoc/>
     public int Size { get; set; }
 
-    /// <summary>Gets or sets the blob's ciphertext (encrypted with the blob's own key). Sent after the JSON header, not inside it.</summary>
+    /// <summary>Gets or sets the bytes encrypted with the blob's own key. Sent after the JSON header, not inside it.</summary>
     [JsonIgnore]
     public byte[] Data { get; set; } = [];
 }

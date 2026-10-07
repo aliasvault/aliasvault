@@ -20,7 +20,7 @@ mod validate;
 
 use serde_json::json;
 
-use crate::common::encoding::{base64_decode, hex_encode_lower};
+use crate::common::encoding::hex_encode_lower;
 use crate::common::error::{VaultError, VaultResult};
 pub use types::SCHEMA_VERSION;
 
@@ -125,19 +125,9 @@ pub fn unpack_versioned_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPaylo
     Ok(UnpackedPayload::Readable(serde_json::to_string(payload)?))
 }
 
-/// SHA-256 (lowercase hex) of a raw ciphertext: storage-layer integrity.
-pub fn compute_ciphertext_hash_bytes(ciphertext: &[u8]) -> String {
+/// SHA-256 (lowercase hex) of a ciphertext: storage-layer integrity.
+pub fn compute_ciphertext_hash(ciphertext: &[u8]) -> String {
     hash::sha256_hex(ciphertext)
-}
-
-/// SHA-256 (lowercase hex) of a base64 ciphertext string: storage-layer integrity.
-pub fn compute_ciphertext_hash(base64_ciphertext: &str) -> String {
-    match base64_decode(base64_ciphertext) {
-        Ok(raw) => compute_ciphertext_hash_bytes(&raw),
-        // An undecodable input still yields a stable hash; callers compare equality, so a malformed
-        // input simply fails the check.
-        Err(_) => hash::sha256_hex(base64_ciphertext.as_bytes()),
-    }
 }
 
 /// Content fingerprint of a manifest / data-bucket payload for client-side change detection: SHA-256
