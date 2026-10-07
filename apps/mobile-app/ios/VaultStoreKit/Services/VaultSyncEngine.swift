@@ -108,6 +108,9 @@ public final class VaultSyncEngine {
 
     /// The JSON response to one command.
     private func respond(kind: String, command: [String: Any]) async -> (json: [String: Any], bytes: Data?) {
+        if kind == "http" {
+            return await http(command)
+        }
         guard kind == "dbExport" else {
             return (await handle(kind: kind, command: command), nil)
         }
@@ -121,8 +124,6 @@ public final class VaultSyncEngine {
     private func handle(kind: String, command: [String: Any]) async -> [String: Any] {
         do {
             switch kind {
-            case "http":
-                return await http(command)
             case "stateGet":
                 return ["value": state(forKey: command["key"] as? String ?? "") ?? NSNull()]
             case "stateSet":
@@ -183,22 +184,27 @@ public final class VaultSyncEngine {
         return ["error": "\(error)"]
     }
 
-    private func http(_ command: [String: Any]) async -> [String: Any] {
+    /// An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
+    private func http(_ command: [String: Any]) async -> (json: [String: Any], bytes: Data?) {
         let method = command["method"] as? String ?? "GET"
         let path = command["path"] as? String ?? ""
         let body = command["body"] as? String
         let auth = command["auth"] as? Bool ?? true
         let largeTransfer = command["largeTransfer"] as? Bool ?? false
-        var headers: [String: String] = ["Accept": "application/json"]
+        let binaryResponse = command["binaryResponse"] as? Bool ?? false
+        var headers: [String: String] = ["Accept": binaryResponse ? "application/octet-stream" : "application/json"]
         if body != nil {
             headers["Content-Type"] = "application/json"
         }
         do {
             let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth, largeTransfer: largeTransfer)
-            return ["status": response.statusCode, "body": response.body]
+            if binaryResponse, let data = response.bodyData {
+                return (["status": response.statusCode], data)
+            }
+            return (["status": response.statusCode, "body": response.body], nil)
         } catch {
             let timedOut = (error as? URLError)?.code == .timedOut
-            return ["status": 0, "transportError": error.localizedDescription, "timedOut": timedOut]
+            return (["status": 0, "transportError": error.localizedDescription, "timedOut": timedOut], nil)
         }
     }
 

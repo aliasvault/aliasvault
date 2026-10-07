@@ -24,6 +24,8 @@ data class WebApiResponse(
     val body: String,
     /** The response headers as a map of key-value pairs. */
     val headers: Map<String, String>,
+    /** The body as raw bytes, set on success when the request accepted `application/octet-stream`. */
+    val bodyBytes: ByteArray? = null,
 )
 
 /**
@@ -322,6 +324,7 @@ class WebApiService(private val context: Context) {
             val statusCode = connection.responseCode
 
             // Read response body
+            var bodyBytes: ByteArray? = null
             val responseBody = try {
                 val acceptHeader = headers.entries.firstOrNull { it.key.equals("Accept", ignoreCase = true) }?.value ?: ""
                 val isBinary = acceptHeader.contains("application/octet-stream", ignoreCase = true)
@@ -331,6 +334,7 @@ class WebApiService(private val context: Context) {
                         // Read binary data and encode as base64
                         connection.inputStream.use { inputStream ->
                             val bytes = inputStream.readBytes()
+                            bodyBytes = bytes
                             android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
                         }
                     } else {
@@ -361,6 +365,7 @@ class WebApiService(private val context: Context) {
                 statusCode = statusCode,
                 body = responseBody,
                 headers = responseHeaders,
+                bodyBytes = bodyBytes,
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error executing request", e)

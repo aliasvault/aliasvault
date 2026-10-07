@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// A single data bucket as carried in list-based payloads.
 /// </summary>
@@ -18,8 +20,12 @@ public class Bucket
     /// <summary>Gets or sets the bucket kind discriminator.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 
-    /// <summary>Gets or sets the encrypted bucket blob (base64 of AES-GCM ciphertext).</summary>
-    public required string Blob { get; set; }
+    /// <summary>Gets or sets the length of the bucket ciphertext in the binary response body.</summary>
+    public int Size { get; set; }
+
+    /// <summary>Gets or sets the bucket ciphertext (AES-GCM). Sent after the JSON header, not inside it.</summary>
+    [JsonIgnore]
+    public byte[] Data { get; set; } = [];
 
     /// <summary>Gets or sets the SHA-256 (hex) of the ciphertext for client-side storage-integrity check.</summary>
     public string? CiphertextHash { get; set; }

@@ -257,6 +257,9 @@ pub enum Command {
         auth: bool,
         /// A vault transfer, which the host may give a longer timeout than a status call (which uses default).
         large_transfer: bool,
+        /// On success the host returns the body as raw bytes (the `bytes` argument of `SyncSession::resume`), not as `body` text.
+        #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+        binary_response: bool,
     },
     /// Read an engine-owned persisted value; response [`StateValue`].
     StateGet { key: String },
@@ -456,8 +459,12 @@ pub struct GetResponse {
 #[serde(rename_all = "camelCase")]
 pub struct ManifestDto {
     pub manifest_id: String,
+    /// Length of the manifest ciphertext in the binary snapshot body, 0 on an empty vault.
     #[serde(default)]
-    pub blob: Option<String>,
+    pub size: usize,
+    /// The manifest ciphertext, read from the binary snapshot body after the JSON header.
+    #[serde(skip)]
+    pub blob: Vec<u8>,
     #[serde(default)]
     pub ciphertext_hash: Option<String>,
     #[serde(default)]
@@ -487,7 +494,7 @@ pub struct ManifestDto {
 impl ManifestDto {
     /// Whether the server served this manifest with content.
     pub fn has_content(&self) -> bool {
-        self.blob.as_deref().is_some_and(|blob| !blob.is_empty())
+        !self.blob.is_empty()
     }
 }
 
@@ -496,8 +503,12 @@ impl ManifestDto {
 pub struct BucketDto {
     pub manifest_id: String,
     pub category: String,
+    /// Length of the bucket ciphertext in the binary snapshot body.
     #[serde(default)]
-    pub blob: Option<String>,
+    pub size: usize,
+    /// The bucket ciphertext, read from the binary snapshot body after the JSON header.
+    #[serde(skip)]
+    pub blob: Vec<u8>,
     #[serde(default)]
     pub ciphertext_hash: Option<String>,
     #[serde(default)]
@@ -659,11 +670,21 @@ pub struct MissingBlobsResponse {
     pub missing: Vec<String>,
 }
 
+/// JSON header of the binary `POST v2/Vault/blobs/download` response.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobDownloadResponse {
     #[serde(default)]
-    pub blobs: Vec<BlobDto>,
+    pub blobs: Vec<BlobDownloadEntry>,
+}
+
+/// One blob in the JSON header of the binary `POST v2/Vault/blobs/download` response; its ciphertext follows the header.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlobDownloadEntry {
+    pub hash: String,
+    pub encrypted_blob_key: String,
+    pub size: usize,
 }
 
 /// `GET v2/VaultKey/Password`.

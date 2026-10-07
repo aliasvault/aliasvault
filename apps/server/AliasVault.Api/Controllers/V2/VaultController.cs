@@ -71,9 +71,10 @@ public class VaultController(
     };
 
     /// <summary>
-    /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing.
+    /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing as a binary frame:
+    /// a <see cref="GetResponse"/> JSON header, then the manifest and bucket ciphertexts (see <see cref="BinaryFrame"/>).
     /// </summary>
-    /// <returns>Snapshot DTO.</returns>
+    /// <returns>Snapshot frame.</returns>
     [HttpGet("")]
     public async Task<IActionResult> Get()
     {
@@ -100,7 +101,7 @@ public class VaultController(
                 .OrderByDescending(x => x.RevisionNumber)
                 .FirstOrDefaultAsync();
 
-            return Ok(new GetResponse
+            var legacyResponse = new GetResponse
             {
                 StorageFormat = StorageFormat.SqliteBlob,
                 LegacyVaultBlob = legacy?.VaultBlob ?? string.Empty,
@@ -108,7 +109,8 @@ public class VaultController(
                 LegacyRevision = legacy?.RevisionNumber ?? 0,
                 PersonalManifestId = legacy?.ManifestId,
                 EmailRouting = emailRouting,
-            });
+            };
+            return File(BinaryFrame.Write(legacyResponse, []), BinaryFrame.ContentType);
         }
 
         var manifestIds = latestManifests.Select(m => m.ManifestId).ToList();
@@ -118,17 +120,17 @@ public class VaultController(
             {
                 ManifestId = x.ManifestId,
                 Category = x.Category,
-                Blob = Convert.ToBase64String(x.EncryptedData),
+                Size = x.EncryptedData.Length,
+                Data = x.EncryptedData,
                 CiphertextHash = x.CiphertextHash,
                 Revision = x.RevisionNumber,
             })
             .ToListAsync();
-        var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
-        var refsByManifest = (await context.VaultBlobReferences
-                .Where(r => manifestIds.Contains(r.ManifestId))
-                .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category, b.SizeBytes })
+
+        var refsByManifest = (await AccessibleManifests(context, accessScope)
+                .Join(context.VaultBlobReferences, m => new { m.ManifestId, m.RevisionNumber }, r => new { r.ManifestId, r.RevisionNumber }, (m, r) => r)
+                .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { r.ManifestId, b.Hash, b.Category, b.SizeBytes })
                 .ToListAsync())
-            .Where(x => currentRevisionByManifest.TryGetValue(x.ManifestId, out var rev) && rev == x.RevisionNumber)
             .GroupBy(x => x.ManifestId)
             .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category, SizeBytes = x.SizeBytes }).ToList());
 
@@ -145,7 +147,8 @@ public class VaultController(
             return new Manifest
             {
                 ManifestId = m.ManifestId,
-                Blob = m.ManifestBlob != null ? Convert.ToBase64String(m.ManifestBlob) : null,
+                Size = m.ManifestBlob?.Length ?? 0,
+                Data = m.ManifestBlob,
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
@@ -161,14 +164,16 @@ public class VaultController(
             };
         }).ToList();
 
-        return Ok(new GetResponse
+        var response = new GetResponse
         {
             StorageFormat = StorageFormat.Manifest,
             Manifests = manifests,
             PersonalManifestId = latestManifests.First(m => m.OwnerGroupId == user.PersonalGroupId).ManifestId,
             Buckets = buckets,
             EmailRouting = emailRouting,
-        });
+        };
+        var parts = manifests.Where(m => m.Data != null).Select(m => m.Data!).Concat(buckets.Select(b => b.Data)).ToList();
+        return File(BinaryFrame.Write(response, parts), BinaryFrame.ContentType);
     }
 
     /// <summary>
@@ -176,7 +181,7 @@ public class VaultController(
     /// plus its blob references, without the rest of the snapshot.
     /// </summary>
     /// <param name="manifestId">The stable identifier of the logical manifest to fetch.</param>
-    /// <returns>The manifest DTO, or 404 when the user has no such manifest-v1 manifest.</returns>
+    /// <returns>A binary frame of the manifest DTO and its ciphertext, or 404 when the user has no such manifest-v1 manifest.</returns>
     [HttpGet("manifest/{manifestId:guid}")]
     public async Task<IActionResult> GetManifest(Guid manifestId)
     {
@@ -206,7 +211,8 @@ public class VaultController(
         var manifest = new Manifest
         {
             ManifestId = latest.ManifestId,
-            Blob = latest.ManifestBlob != null ? Convert.ToBase64String(latest.ManifestBlob) : null,
+            Size = latest.ManifestBlob?.Length ?? 0,
+            Data = latest.ManifestBlob,
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
             BlobReferences = blobRefs,
@@ -235,7 +241,7 @@ public class VaultController(
             manifest.CanAdminister = await GroupHelper.IsGroupAdminAsync(context, latest.OwnerGroupId, user.Id);
         }
 
-        return Ok(manifest);
+        return File(BinaryFrame.Write(manifest, manifest.Data != null ? [manifest.Data] : []), BinaryFrame.ContentType);
     }
 
     /// <summary>
@@ -768,8 +774,8 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Download a batch of one manifest's encrypted blobs by hash. TODO: Returns base64-encoded payloads in JSON
-    /// because for now we kept the codec language-agnostic. Look into switching to multipart binary in the future.
+    /// Download a batch of one manifest's encrypted blobs by hash as raw bytes (application/octet-stream). The body is a
+    /// 4-byte big-endian header length, a <see cref="BlobDownloadResponse"/> JSON header, then each blob's ciphertext in header order.
     /// </summary>
     /// <param name="model">Hash list request.</param>
     /// <returns>The stored blobs among the requested hashes.</returns>
@@ -790,23 +796,13 @@ public class VaultController(
         }
 
         var wanted = model.Hashes.Distinct().ToList();
-        if (wanted.Count == 0)
-        {
-            return Ok(new BlobDownloadResponse());
-        }
-
         var rows = await context.VaultBlobObjects
             .Where(b => b.ManifestId == model.ManifestId && wanted.Contains(b.Hash))
-            .Select(b => new Blob
-            {
-                Hash = b.Hash,
-                Category = b.Category,
-                EncryptedDataBase64 = Convert.ToBase64String(b.EncryptedData),
-                EncryptedBlobKey = b.EncryptedBlobKey,
-            })
+            .Select(b => new { b.Hash, b.Category, b.EncryptedBlobKey, b.EncryptedData })
             .ToListAsync();
 
-        return Ok(new BlobDownloadResponse { Blobs = rows });
+        var header = new BlobDownloadResponse { Blobs = rows.Select(r => new BlobDownloadEntry { Hash = r.Hash, Category = r.Category, EncryptedBlobKey = r.EncryptedBlobKey, Size = r.EncryptedData.Length }).ToList() };
+        return File(BinaryFrame.Write(header, rows.Select(r => r.EncryptedData).ToList()), BinaryFrame.ContentType);
     }
 
     /// <summary>

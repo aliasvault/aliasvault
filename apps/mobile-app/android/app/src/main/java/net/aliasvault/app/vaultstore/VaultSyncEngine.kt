@@ -112,6 +112,9 @@ class VaultSyncEngine(
      */
     @Suppress("TooGenericExceptionCaught")
     private suspend fun respond(kind: String, command: JSONObject): Pair<JSONObject, ByteArray?> {
+        if (kind == "http") {
+            return http(command)
+        }
         if (kind != "dbExport") {
             return Pair(handle(kind, command), null)
         }
@@ -126,7 +129,6 @@ class VaultSyncEngine(
     private suspend fun handle(kind: String, command: JSONObject): JSONObject {
         return try {
             when (kind) {
-                "http" -> http(command)
                 "stateGet" -> JSONObject().put("value", state(command.optString("key")) ?: JSONObject.NULL)
                 "stateSet" -> {
                     setState(command.optString("key"), command.opt("value"))
@@ -186,10 +188,14 @@ class VaultSyncEngine(
         return JSONObject().put("error", e.message ?: e.toString())
     }
 
+    /**
+     * An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
+     */
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun http(command: JSONObject): JSONObject = withContext(Dispatchers.IO) {
+    private suspend fun http(command: JSONObject): Pair<JSONObject, ByteArray?> = withContext(Dispatchers.IO) {
         val body = if (command.has("body") && !command.isNull("body")) command.getString("body") else null
-        val headers = mutableMapOf("Accept" to "application/json")
+        val binaryResponse = command.optBoolean("binaryResponse", false)
+        val headers = mutableMapOf("Accept" to if (binaryResponse) "application/octet-stream" else "application/json")
         if (body != null) {
             headers["Content-Type"] = "application/json"
         }
@@ -202,11 +208,16 @@ class VaultSyncEngine(
                 requiresAuth = command.optBoolean("auth", true),
                 largeTransfer = command.optBoolean("largeTransfer", false),
             )
-            JSONObject().put("status", response.statusCode).put("body", response.body)
+            val bytes = response.bodyBytes
+            if (binaryResponse && bytes != null) {
+                Pair(JSONObject().put("status", response.statusCode), bytes)
+            } else {
+                Pair(JSONObject().put("status", response.statusCode).put("body", response.body), null)
+            }
         } catch (e: SocketTimeoutException) {
-            JSONObject().put("status", 0).put("transportError", e.toString()).put("timedOut", true)
+            Pair(JSONObject().put("status", 0).put("transportError", e.toString()).put("timedOut", true), null)
         } catch (e: Exception) {
-            JSONObject().put("status", 0).put("transportError", e.toString()).put("timedOut", false)
+            Pair(JSONObject().put("status", 0).put("transportError", e.toString()).put("timedOut", false), null)
         }
     }
 
