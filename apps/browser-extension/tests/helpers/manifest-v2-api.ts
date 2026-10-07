@@ -334,18 +334,21 @@ async function postVaultWrite(
   manifests: ManifestWrite[],
   buckets: BucketWrite[]
 ): Promise<VaultWriteResult> {
-  const payload = {
+  // The body is a 4-byte big-endian header length, the JSON header (sizes in place of the base64 ciphertexts), then the ciphertexts.
+  const ciphertexts = [...manifests.map((m) => Buffer.from(m.manifestBlob, 'base64')), ...buckets.map((b) => Buffer.from(b.blob, 'base64'))];
+  const header = Buffer.from(JSON.stringify({
     username: SrpAuthService.normalizeUsername(username),
-    manifests,
-    buckets,
-    newBlobs: [],
+    manifests: manifests.map(({ manifestBlob, ...rest }) => ({ ...rest, size: Buffer.from(manifestBlob, 'base64').length })),
+    buckets: buckets.map(({ blob, ...rest }) => ({ ...rest, size: Buffer.from(blob, 'base64').length })),
     emailRouting: null,
-  };
+  }));
+  const headerLength = Buffer.alloc(4);
+  headerLength.writeUInt32BE(header.length);
 
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/octet-stream', Authorization: `Bearer ${token}` },
+    body: Buffer.concat([headerLength, header, ...ciphertexts]),
   });
   if (!response.ok) {
     throw new Error(`POST /v2/Vault failed with status ${response.status}: ${await response.text()}`);

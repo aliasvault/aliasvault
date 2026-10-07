@@ -124,7 +124,7 @@ impl FakeServer {
         for (blob_hash, blob_entry) in &entry.blobs {
             let bytes = crate::common::encoding::base64_decode(&blob_entry.bytes_base64).unwrap();
             let encrypted = blob_keys::encrypt_blob(&bytes, blob_key, &personal, blob_hash).unwrap();
-            store.insert(blob_hash.clone(), json!({ "hash": blob_hash, "category": blob_entry.kind, "encryptedDataBase64": encrypted.encrypted_data_base64, "encryptedBlobKey": encrypted.encrypted_blob_key }));
+            store.insert(blob_hash.clone(), json!({ "hash": blob_hash, "category": blob_entry.kind, "encryptedDataBase64": crate::common::encoding::base64_encode(&encrypted.encrypted_data), "encryptedBlobKey": encrypted.encrypted_blob_key }));
             references.push(json!({ "hash": blob_hash, "category": blob_entry.kind, "sizeBytes": bytes.len() }));
         }
         let access = self.manifests.get(&personal).map(|m| m.access.clone()).unwrap_or_else(|| json!({ "canAdminister": true, "keyType": "account-key" }));

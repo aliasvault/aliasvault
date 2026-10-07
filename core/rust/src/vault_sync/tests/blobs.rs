@@ -5,7 +5,7 @@
 use serde_json::{json, Value};
 
 use super::fake_server::FakeServer;
-use super::test_host::{encode_blob_download, encode_snapshot, open_schema_db, query, TestHost};
+use super::test_host::{decode_upload_frame, encode_blob_download, encode_snapshot, open_schema_db, query, TestHost};
 use super::{insert_attachment, insert_delivery_key, insert_item, insert_logo, rename_item, synced, Synced, ITEM_A, ITEM_B, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec;
@@ -212,4 +212,21 @@ fn a_binary_snapshot_fills_each_manifest_and_bucket_with_its_ciphertext() {
     assert!(!snapshot.manifests[1].has_content());
     assert_eq!(snapshot.buckets[0].blob, vec![4u8, 5]);
     assert!(decode_snapshot(&frame[..frame.len() - 1]).is_err(), "a truncated bucket");
+}
+
+#[test]
+fn a_binary_upload_keeps_each_ciphertext_out_of_the_json_header() {
+    use crate::vault_sync::http::encode_frame;
+    use crate::vault_sync::types::{BlobUpload, BlobUploadRequest};
+
+    let request = BlobUploadRequest { manifest_id: "m1".to_string(), overwrite: false, blobs: vec![
+        BlobUpload { hash: "a".to_string(), category: "favicon".to_string(), encrypted_data: vec![1, 2, 3], encrypted_blob_key: "ka".to_string() },
+        BlobUpload { hash: "b".to_string(), category: "attachment".to_string(), encrypted_data: vec![4], encrypted_blob_key: "kb".to_string() },
+    ] };
+    let frame = encode_frame(&request).unwrap();
+    let header_length = u32::from_be_bytes(frame[..4].try_into().unwrap()) as usize;
+    let header: Value = serde_json::from_slice(&frame[4..4 + header_length]).unwrap();
+    assert_eq!(header["blobs"][0], json!({ "hash": "a", "category": "favicon", "size": 3, "encryptedBlobKey": "ka" }));
+    assert_eq!(&frame[4 + header_length..], &[1, 2, 3, 4]);
+    assert_eq!(decode_upload_frame("Vault/blobs", &frame)["blobs"][1]["encryptedDataBase64"], json!("BA=="));
 }
