@@ -111,7 +111,7 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.Sql("""
                 INSERT INTO "Groups" ("Id", "Name", "Type", "ShadowBlocked", "ShadowBlockedAt", "MaxEmails", "MaxEmailAgeDays", "EmailsReceived", "CreatedAt", "UpdatedAt")
-                SELECT m."GroupId", COALESCE(u."UserName", 'Personal'), 'Personal', u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", now(), now()
+                SELECT m."GroupId", COALESCE(u."UserName", 'Personal'), 'Personal', u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", u."CreatedAt", u."CreatedAt"
                 FROM "AliasVaultUsers" u
                 JOIN "UserMigrationMap" m ON m."UserId" = u."Id";
 

@@ -53,7 +53,7 @@ public class RateLimit
     public AccountTier? Tier { get; set; }
 
     /// <summary>
-    /// Gets or sets the rolling window length in seconds (0 = absolute cap on currently-held aliases).
+    /// Gets or sets the rolling window length in seconds (0 = all-time cap, including disabled aliases).
     /// </summary>
     public int WindowSeconds { get; set; }
 
