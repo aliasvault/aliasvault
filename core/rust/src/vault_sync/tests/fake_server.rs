@@ -78,6 +78,7 @@ pub struct FakeServer {
     pub legacy: Option<LegacyVault>,
     pub pending_actions: Vec<Value>,
     pub capabilities: Value,
+    pub email_domains: Value,
     pub faults: Faults,
 }
 
@@ -94,6 +95,7 @@ impl FakeServer {
             legacy: None,
             pending_actions: Vec::new(),
             capabilities: json!({ "sharing": "on" }),
+            email_domains: json!({ "privateEmailDomainList": ["private.io"], "hiddenPrivateEmailDomainList": [], "publicEmailDomainList": [] }),
             faults: Faults::default(),
         }))
     }
@@ -258,14 +260,14 @@ impl FakeServer {
             "srpSalt": self.srp_salt,
             "capabilities": self.capabilities,
             "pendingActions": self.pending_actions,
+            "emailDomains": self.email_domains,
         })
     }
 
     /// The `GET Vault` body.
     pub fn vault(&self) -> Value {
-        let email_routing = json!({ "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] });
         if let Some(legacy) = &self.legacy {
-            return json!({ "storageFormat": "sqlite-blob", "legacyVaultBlob": legacy.blob, "legacyRevision": legacy.revision, "personalManifestId": self.personal_manifest_id, "emailRouting": email_routing });
+            return json!({ "storageFormat": "sqlite-blob", "legacyVaultBlob": legacy.blob, "legacyRevision": legacy.revision, "personalManifestId": self.personal_manifest_id });
         }
         let manifests: Vec<Value> = self.manifests.iter().map(|(id, m)| {
             let mut dto = json!({ "manifestId": id, "blob": m.blob, "ciphertextHash": m.ciphertext_hash, "revision": m.revision, "blobReferences": m.blob_references });
@@ -275,7 +277,7 @@ impl FakeServer {
             dto
         }).collect();
         let buckets: Vec<Value> = self.buckets.iter().map(|((manifest_id, category), b)| json!({ "manifestId": manifest_id, "category": category, "blob": b.blob, "ciphertextHash": b.ciphertext_hash, "revision": b.revision })).collect();
-        json!({ "storageFormat": "manifest", "personalManifestId": self.personal_manifest_id, "manifests": manifests, "buckets": buckets, "emailRouting": email_routing })
+        json!({ "storageFormat": "manifest", "personalManifestId": self.personal_manifest_id, "manifests": manifests, "buckets": buckets })
     }
 
     /// The manifest and bucket revisions the server currently holds.

@@ -153,6 +153,40 @@ fn dirty_client_pushes_only_what_changed() {
     s.server.borrow().assert_converged(&s.host);
 }
 
+/// Give an item a login email.
+fn set_login_email(db: &rusqlite::Connection, item_id: &str, email: &str) {
+    db.execute("INSERT INTO FieldValues (ManifestId, Id, ItemId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted) VALUES (?1, ?2, ?3, 'login.email', ?4, 0, 0, ?5, ?5, 0)", (PERSONAL_MANIFEST_ID, crate::vault_sync::db::new_id(), item_id, email, super::now())).unwrap();
+}
+
+#[test]
+fn push_routes_with_the_domains_from_status() {
+    let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
+    s.server.borrow_mut().email_domains = json!({ "privateEmailDomainList": ["private.io", "legacy.io"], "hiddenPrivateEmailDomainList": ["legacy.io"], "publicEmailDomainList": [] });
+
+    // The request still carries the domains of the last pull, which lack legacy.io.
+    s.host.edit(|db| {
+        insert_item(db, ITEM_B, "Legacy alias");
+        set_login_email(db, ITEM_B, "alias@legacy.io");
+    });
+    let result = s.host.sync();
+
+    assert_eq!(result["success"], true, "{}", result);
+    let write = s.host.last_vault_write();
+    assert_eq!(write["emailRouting"]["emailAddressList"][0]["address"], "alias@legacy.io", "a hidden domain still routes");
+    assert_eq!(result["emailDomains"]["hiddenPrivateEmailDomainList"], json!(["legacy.io"]), "the host is handed the current domains");
+}
+
+#[test]
+fn status_check_reports_the_email_domains() {
+    let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
+    s.server.borrow_mut().email_domains = json!({ "privateEmailDomainList": ["private.io"], "hiddenPrivateEmailDomainList": [], "publicEmailDomainList": ["spamok.com"] });
+
+    let result = s.host.run("statusCheck");
+
+    assert_eq!(result["success"], true, "{}", result);
+    assert_eq!(result["emailDomains"]["publicEmailDomainList"], json!(["spamok.com"]));
+}
+
 #[test]
 fn no_op_mutation_clears_the_dirty_flag_without_a_write() {
     let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
