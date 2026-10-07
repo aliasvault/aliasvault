@@ -8,11 +8,14 @@ public struct WebApiResponse {
     public let body: String
     /// The headers of the response
     public let headers: [String: String]
+    /// The body as raw bytes, set on success when the request accepted `application/octet-stream`
+    public let bodyData: Data?
 
     /// Initialize a new WebApiResponse
-    public init(statusCode: Int, body: String, headers: [String: String]) {
+    public init(statusCode: Int, body: String, headers: [String: String], bodyData: Data? = nil) {
         self.statusCode = statusCode
         self.body = body
         self.headers = headers
+        self.bodyData = bodyData
     }
 }

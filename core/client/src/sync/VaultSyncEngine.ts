@@ -174,7 +174,7 @@ type EngineSqlStatement = { sql: string; params?: JsonValue[] };
 
 /** The engine's commands; see the Rust `Command` enum. */
 type EngineCommand =
-  | { kind: 'http'; method: string; path: string; body?: string; auth: boolean; largeTransfer: boolean }
+  | { kind: 'http'; method: string; path: string; body?: string; auth: boolean; largeTransfer: boolean; binaryResponse?: boolean }
   | { kind: 'stateGet'; key: string }
   | { kind: 'stateSet'; key: string; value: JsonValue }
   | { kind: 'stateRemove'; key: string }
@@ -188,7 +188,7 @@ type EngineCommand =
   | { kind: 'log'; level: 'log' | 'warn' | 'phase'; message: string }
   | { kind: 'done'; result: JsonValue };
 
-/** The host's response to one command: the JSON, plus the SQLite file for a `dbExport`. */
+/** The host's response to one command: the JSON, plus the raw bytes of a `dbExport` or a binary `http` response. */
 type HostResponse = { json: JsonValue; bytes: Uint8Array | null };
 
 /** The database names a command may address. */
@@ -314,6 +314,9 @@ class EngineRun {
   public async handle(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<HostResponse> {
     const started = now();
     try {
+      if (command.kind === 'http') {
+        return await this.http(command);
+      }
       const response = await this.dispatch(command);
       return response instanceof Uint8Array ? { json: {}, bytes: response } : { json: response, bytes: null };
     } catch (error) {
@@ -356,10 +359,8 @@ class EngineRun {
    * The command handlers. Raw bytes (a `dbExport`) go back to the engine outside the JSON.
    * @param command - the command
    */
-  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<JsonValue | Uint8Array> {
+  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' | 'http' }>): Promise<JsonValue | Uint8Array> {
     switch (command.kind) {
-      case 'http':
-        return this.http(command);
       case 'stateGet':
         return { value: await getPlatform().storage.get<JsonValue>(stateKey(command.key)) };
       case 'stateSet':
@@ -398,16 +399,16 @@ class EngineRun {
   }
 
   /**
-   * An API request.
+   * An API request. On success a binary response returns its body as raw bytes instead of as `body` text in the JSON.
    * @param command - the command
    */
-  private async http(command: Extract<EngineCommand, { kind: 'http' }>): Promise<JsonValue> {
+  private async http(command: Extract<EngineCommand, { kind: 'http' }>): Promise<HostResponse> {
     try {
-      const response = await this.webApi.engineRequest(command.method, command.path, command.body, command.auth, command.largeTransfer);
-      return { status: response.status, body: response.body };
+      const response = await this.webApi.engineRequest(command.method, command.path, command.body, command.auth, command.largeTransfer, command.binaryResponse);
+      return { json: { status: response.status, body: response.body }, bytes: response.bytes ?? null };
     } catch (error) {
       if (error instanceof NetworkError) {
-        return { status: 0, transportError: error.message, timedOut: error instanceof RequestTimeoutError };
+        return { json: { status: 0, transportError: error.message, timedOut: error instanceof RequestTimeoutError }, bytes: null };
       }
       throw error;
     }

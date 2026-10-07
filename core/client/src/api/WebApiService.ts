@@ -80,6 +80,8 @@ type TokenResponse = {
 export type EngineHttpResponse = {
   status: number;
   body: string;
+  /** The body as raw bytes, set on success when the request asked for a binary response. */
+  bytes?: Uint8Array;
 };
 
 /**
@@ -211,9 +213,9 @@ export class WebApiService {
   /**
    * Run a request on behalf of the Rust sync engine.
    */
-  public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean): Promise<EngineHttpResponse> {
+  public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean, binaryResponse = false): Promise<EngineHttpResponse> {
     const url = await this.resolveUrl(path);
-    const headers = new Headers({ Accept: 'application/json' });
+    const headers = new Headers({ Accept: binaryResponse ? 'application/octet-stream' : 'application/json' });
     if (body !== undefined) {
       headers.set('Content-Type', 'application/json');
     }
@@ -236,6 +238,9 @@ export class WebApiService {
         } else {
           throw new NetworkError('Token refresh failed due to network error');
         }
+      }
+      if (binaryResponse && response.ok) {
+        return { status: response.status, body: '', bytes: new Uint8Array(await response.arrayBuffer()) };
       }
       return { status: response.status, body: await response.text() };
     } catch (error) {

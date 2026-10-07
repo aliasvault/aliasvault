@@ -8,7 +8,11 @@ use super::session::Host;
 use super::types::{Command, HttpMethod, HttpResponse, LogLevel, StatusResponse};
 
 async fn send(host: &Host, method: HttpMethod, path: &str, body: Option<String>, auth: bool, large_transfer: bool) -> SyncResult<HttpResponse> {
-    let response: HttpResponse = host.call(Command::Http { method, path: path.to_string(), body, auth, large_transfer }).await?;
+    Ok(send_with_bytes(host, method, path, body, auth, large_transfer, false).await?.0)
+}
+
+async fn send_with_bytes(host: &Host, method: HttpMethod, path: &str, body: Option<String>, auth: bool, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
+    let (response, bytes): (HttpResponse, _) = host.call_with_bytes(Command::Http { method, path: path.to_string(), body, auth, large_transfer, binary_response }).await?;
     if response.status == 0 {
         let message = response.transport_error.unwrap_or_else(|| "request failed".to_string());
         return Err(if response.timed_out { SyncError::Timeout(message) } else { SyncError::Network(message) });
@@ -16,7 +20,7 @@ async fn send(host: &Host, method: HttpMethod, path: &str, body: Option<String>,
     if response.status == 426 {
         return Err(SyncError::ClientUpgradeRequired);
     }
-    Ok(response)
+    Ok((response, bytes))
 }
 
 fn check(response: HttpResponse) -> SyncResult<String> {
@@ -56,6 +60,50 @@ pub(crate) async fn get<T: DeserializeOwned>(host: &Host, path: &str, large_tran
 pub(crate) async fn post<B: Serialize, T: DeserializeOwned>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<T> {
     let body = check(send(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, large_transfer).await?)?;
     parse(&body)
+}
+
+/// Authenticated GET of a v2 endpoint that answers with raw bytes.
+pub(crate) async fn get_binary(host: &Host, path: &str, large_transfer: bool) -> SyncResult<Vec<u8>> {
+    let (response, bytes) = send_with_bytes(host, HttpMethod::Get, path, None, true, large_transfer, true).await?;
+    check(response)?;
+    Ok(bytes.unwrap_or_default())
+}
+
+/// Authenticated POST of a v2 endpoint with a JSON body that answers with raw bytes.
+pub(crate) async fn post_binary<B: Serialize>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<Vec<u8>> {
+    let (response, bytes) = send_with_bytes(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, large_transfer, true).await?;
+    check(response)?;
+    Ok(bytes.unwrap_or_default())
+}
+
+/// The ciphertexts of a binary vault download, after its JSON header, taken in the order the header lists their sizes.
+pub(crate) struct Frame<'a> {
+    data: &'a [u8],
+}
+
+fn malformed_frame(reason: &str) -> SyncError {
+    SyncError::ServerVaultUnreadable(format!("binary response is malformed: {}", reason))
+}
+
+/// Open a binary vault download body: a 4-byte big-endian header length, the JSON header, then the raw ciphertexts.
+pub(crate) fn open_frame<T: DeserializeOwned>(body: &[u8]) -> SyncResult<(T, Frame<'_>)> {
+    let (length, rest) = body.split_first_chunk::<4>().ok_or_else(|| malformed_frame("no header length"))?;
+    let (header, data) = rest.split_at_checked(u32::from_be_bytes(*length) as usize).ok_or_else(|| malformed_frame("header exceeds the body"))?;
+    Ok((serde_json::from_slice(header).map_err(|e| malformed_frame(&e.to_string()))?, Frame { data }))
+}
+
+impl<'a> Frame<'a> {
+    /// The next `size` bytes.
+    pub fn take(&mut self, size: usize) -> SyncResult<&'a [u8]> {
+        let (part, rest) = self.data.split_at_checked(size).ok_or_else(|| malformed_frame("a ciphertext exceeds the body"))?;
+        self.data = rest;
+        Ok(part)
+    }
+
+    /// Refuse bytes the header did not account for.
+    pub fn finish(self) -> SyncResult<()> {
+        if self.data.is_empty() { Ok(()) } else { Err(malformed_frame("trailing bytes")) }
+    }
 }
 
 /// Authenticated POST that returns no body.

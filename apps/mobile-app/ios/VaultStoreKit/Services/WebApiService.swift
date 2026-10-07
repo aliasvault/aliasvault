@@ -300,11 +300,11 @@ public class WebApiService {
         }
 
         let acceptHeader = headers.first { $0.key.caseInsensitiveCompare("Accept") == .orderedSame }?.value ?? ""
-        let isBinary = acceptHeader.lowercased().contains("application/octet-stream")
+        let isBinary = acceptHeader.lowercased().contains("application/octet-stream") && httpResponse.statusCode >= 200 && httpResponse.statusCode < 300
 
         // Parse response body
         let responseBody: String
-        if isBinary && httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 {
+        if isBinary {
             // Encode binary data as base64
             responseBody = data.base64EncodedString()
         } else {
@@ -315,7 +315,8 @@ public class WebApiService {
         return WebApiResponse(
             statusCode: httpResponse.statusCode,
             body: responseBody,
-            headers: responseHeaders
+            headers: responseHeaders,
+            bodyData: isBinary ? data : nil
         )
     }
 

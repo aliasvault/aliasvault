@@ -8,7 +8,8 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Atomic snapshot returned by GET /v2/Vault.
+/// Atomic snapshot returned by GET /v2/Vault, as the JSON header of a binary body: the manifest ciphertexts follow it
+/// in <see cref="Manifests"/> order, then the bucket ciphertexts in <see cref="Buckets"/> order.
 /// </summary>
 public class GetResponse
 {

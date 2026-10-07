@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// A single vault manifest as carried in list-based payloads. A user's logical vault is assembled from one or more
 /// manifests: the one owned by their personal group plus any number owned by shared groups they belong to.
@@ -18,8 +20,12 @@ public class Manifest
     /// <summary>Gets or sets the stable identifier of the logical manifest (constant across its revisions).</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext), null on empty vault.</summary>
-    public string? Blob { get; set; }
+    /// <summary>Gets or sets the length of the manifest ciphertext in the binary response body, 0 on empty vault.</summary>
+    public int Size { get; set; }
+
+    /// <summary>Gets or sets the manifest ciphertext (AES-GCM), null on empty vault. Sent after the JSON header, not inside it.</summary>
+    [JsonIgnore]
+    public byte[]? Data { get; set; }
 
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext for client-side storage-integrity check.</summary>
     public string? CiphertextHash { get; set; }
