@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault 자동 완성</string>
+  <string name="autofill_service_description">AliasVault 자동 완성</string>
   <string name="aliasvault_icon">AliasVault 아이콘</string>
   <string name="common_close">닫기</string>
   <string name="common_next">다음</string>
@@ -11,7 +12,7 @@
   <string name="common_hide_details">세부 정보 숨기기</string>
   <string name="common_copy">복사</string>
   <string name="common_copied_to_clipboard">클립보드에 복사되었습니다</string>
-  <string name="unknown_error">알 수 없는 오류가 발생했습니다</string>
+  <string name="unknown_error">알 수 없는 오류가 발생했습니다.</string>
   <string name="autofill_failed_to_retrieve">가져오지 못했습니다. 앱을 여세요</string>
   <string name="autofill_no_match_found">일치하는 항목 없음</string>
   <string name="autofill_open_app">앱 열기</string>
@@ -29,9 +30,9 @@
   <string name="passkey_website_label">웹사이트</string>
   <string name="passkey_username_label">사용자 이름</string>
   <string name="passkey_create_button">패스키 생성</string>
-  <string name="passkey_creating">패스키 생성 중…</string>
-  <string name="passkey_saving">보관함에 저장 중…</string>
-  <string name="passkey_syncing">서버와 동기화 중…</string>
+  <string name="passkey_creating">패스키 생성 중...</string>
+  <string name="passkey_saving">Saving to vault...</string>
+  <string name="passkey_syncing">Syncing with server...</string>
   <string name="passkey_error_title">오류</string>
   <string name="passkey_error_empty_name">패스키 이름을 입력하세요</string>
   <string name="passkey_creation_failed">패스키를 생성하지 못했습니다</string>
@@ -43,13 +44,13 @@
   <string name="passkey_add_to_existing">또는 기존 항목에 패스키 추가:</string>
   <string name="passkey_replace_explanation">기존 패스키가 새 패스키로 대체됩니다. 이전 패스키는 덮어써지며 더 이상 접근할 수 없게 되니 유의하세요. 대신 별도의 패스키를 만들려면 이전 화면으로 돌아가세요.</string>
   <string name="passkey_merge_explanation">기존 항목에 패스키를 추가합니다. 비밀번호 및 기타 데이터는 유지됩니다.</string>
-  <string name="passkey_replacing">패스키 대체 중…</string>
+  <string name="passkey_replacing">Replacing passkey...</string>
   <string name="add_passkey">패스키 추가</string>
   <string name="add_passkey_subtitle">기존 항목에 패스키 추가 중</string>
-  <string name="passkey_checking_connection">연결 확인 중…</string>
-  <string name="passkey_retrieving">패스키 가져오는 중…</string>
-  <string name="passkey_verifying">확인 중…</string>
-  <string name="passkey_authenticating">인증 중…</string>
+  <string name="passkey_checking_connection">연결 확인 중...</string>
+  <string name="passkey_retrieving">Retrieving passkey...</string>
+  <string name="passkey_verifying">Verifying...</string>
+  <string name="passkey_authenticating">Authenticating...</string>
   <string name="connection_error_title">연결 오류</string>
   <string name="connection_error_message">서버에 연결할 수 없습니다. 인터넷 연결을 확인한 후 패스키 생성을 다시 시도하세요.</string>
   <string name="session_expired_title">세션 만료</string>
@@ -57,13 +58,13 @@
   <string name="password_changed_title">비밀번호 변경됨</string>
   <string name="password_changed_message">비밀번호가 변경되었습니다. 다시 로그인하세요.</string>
   <string name="version_not_supported_title">업데이트 필요</string>
-  <string name="version_not_supported_message">현재 앱 버전은 더 이상 지원되지 않습니다. 최신 버전으로 업데이트하세요.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">서버를 사용할 수 없음</string>
   <string name="server_unavailable_message">현재 서버를 사용할 수 없습니다. 나중에 다시 시도하세요.</string>
   <string name="network_error_title">네트워크 오류</string>
   <string name="network_error_message">네트워크 오류가 발생했습니다. 연결 상태를 확인하고 다시 시도하세요.</string>
   <string name="server_version_not_supported_title">서버 업데이트 필요</string>
-  <string name="server_version_not_supported_message">서버 버전이 오래되었습니다. 관리자에게 문의하여 서버를 업데이트하세요.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">계속하려면 기본 AliasVault 앱에서 생체 인증 또는 PIN 인증을 활성화하세요</string>
   <string name="error_unlock_vault_first">먼저 AliasVault 앱에서 보관함 잠금을 해제하세요</string>
   <string name="error_vault_decrypt_failed">보관함을 복호화하지 못했습니다</string>
@@ -72,7 +73,7 @@
   <string name="pin_unlock_vault">보관함 잠금 해제</string>
   <string name="pin_enter_to_unlock">보관함을 잠금 해제하려면 PIN을 입력하세요</string>
   <string name="pin_locked_max_attempts">시도 횟수 초과로 PIN이 잠겼습니다</string>
-  <string name="pin_incorrect_attempts_remaining">잘못된 PIN입니다. 남은 시도 횟수: %d회</string>
+  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <string name="pin_setup_title">PIN 설정</string>
   <string name="pin_setup_description">보관함을 잠금 해제할 PIN을 선택하세요</string>
   <string name="pin_confirm_title">PIN 확인</string>
@@ -84,6 +85,6 @@
   <string name="password_unlock_button">잠금 해제</string>
   <string name="password_unlock_incorrect">비밀번호가 올바르지 않습니다. 다시 시도해 주세요.</string>
   <string name="password_unlock_error">비밀번호를 확인하지 못했습니다</string>
-  <string name="password_unlock_attempts_warning">잘못된 비밀번호입니다. 비밀번호를 %d회 더 잘못 입력하면 로그아웃됩니다.</string>
+  <string name="password_unlock_attempts_warning">비밀번호가 올바르지 않습니다. 비밀번호를 %d회 더 잘못 입력하면 로그아웃됩니다.</string>
   <string name="password_unlock_max_attempts_reached">잠금 해제 시도 횟수를 초과했습니다. 보안을 위해 로그아웃되었습니다.</string>
 </resources>

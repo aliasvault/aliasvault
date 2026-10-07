@@ -25,6 +25,7 @@ async function importLocale(code: string): Promise<{ default: TranslationTree }>
     case 'hu': return import('../locales/hu.json');
     case 'id': return import('../locales/id.json');
     case 'it': return import('../locales/it.json');
+    case 'ko': return import('../locales/ko.json');
     case 'nl': return import('../locales/nl.json');
     case 'pl': return import('../locales/pl.json');
     case 'pt': return import('../locales/pt.json');
