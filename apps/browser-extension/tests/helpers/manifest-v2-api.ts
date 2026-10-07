@@ -17,6 +17,7 @@ import { bucketAad, manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
   manifestId: string;
+  size: number;
   blob: string;
   ciphertextHash: string;
   revision: number;
@@ -29,7 +30,7 @@ export type VaultSnapshot = {
   manifests?: SnapshotManifest[];
   /** The manifest owned by the caller's personal group; every other entry is a shared one. */
   personalManifestId?: string | null;
-  buckets?: Array<{ category: string; blob: string; ciphertextHash: string; revision: number }>;
+  buckets?: Array<{ category: string; size: number; blob: string; ciphertextHash: string; revision: number }>;
 };
 
 /** The account-key unlock chain from GET /v2/VaultKey/{type} (fields relevant to these tests). */
@@ -74,7 +75,7 @@ type VaultWriteResult = {
 };
 
 /**
- * Fetches the v2 vault snapshot for the authenticated user.
+ * Fetches the v2 vault snapshot for the authenticated user, with each manifest and bucket ciphertext as base64 `blob`.
  *
  * @param apiBaseUrl - The base URL of the API
  * @param token - Bearer token
@@ -82,12 +83,22 @@ type VaultWriteResult = {
  */
 export async function getVaultSnapshot(apiBaseUrl: string, token: string): Promise<VaultSnapshot> {
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' },
   });
   if (!response.ok) {
     throw new Error(`GET /v2/Vault failed with status ${response.status}: ${await response.text()}`);
   }
-  return (await response.json()) as VaultSnapshot;
+
+  // The body is a 4-byte big-endian header length, the JSON header, then the manifest and bucket ciphertexts in header order.
+  const body = Buffer.from(await response.arrayBuffer());
+  const headerLength = body.readUInt32BE(0);
+  const snapshot = JSON.parse(body.subarray(4, 4 + headerLength).toString('utf8')) as VaultSnapshot;
+  let offset = 4 + headerLength;
+  for (const entry of [...(snapshot.manifests ?? []), ...(snapshot.buckets ?? [])]) {
+    entry.blob = body.subarray(offset, offset + entry.size).toString('base64');
+    offset += entry.size;
+  }
+  return snapshot;
 }
 
 /**

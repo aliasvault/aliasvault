@@ -5,11 +5,12 @@
 use serde_json::{json, Value};
 
 use super::fake_server::FakeServer;
-use super::test_host::{open_schema_db, query, TestHost};
+use super::test_host::{encode_blob_download, encode_snapshot, open_schema_db, query, TestHost};
 use super::{insert_attachment, insert_delivery_key, insert_item, insert_logo, rename_item, synced, Synced, ITEM_A, ITEM_B, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec;
 use crate::vault_sync::blob_keys;
+use crate::vault_sync::pull::{decode_blob_download, decode_snapshot};
 
 /// A server vault holding one item with a logo and an attachment.
 fn vault_with_blobs(db: &rusqlite::Connection) {
@@ -175,4 +176,40 @@ fn an_attachment_row_that_references_no_blob_does_not_fail_the_pull() {
     let rows = query(&s.host.local, "SELECT Filename, Blob, BlobHash FROM Attachments WHERE IsDeleted = 0", &[]).unwrap();
     assert_eq!(rows.len(), 1);
     assert_eq!((&rows[0]["Blob"], &rows[0]["BlobHash"]), (&Value::Null, &Value::Null));
+}
+
+#[test]
+fn a_binary_blob_download_splits_into_its_blobs() {
+    let frame = encode_blob_download(&json!({ "blobs": [
+        { "hash": "a", "category": "favicon", "encryptedDataBase64": "AQID", "encryptedBlobKey": "ka" },
+        { "hash": "b", "category": "attachment", "encryptedDataBase64": "", "encryptedBlobKey": "kb" },
+        { "hash": "c", "category": "attachment", "encryptedDataBase64": "BAUGBw==", "encryptedBlobKey": "kc" },
+    ] }));
+    let blobs = decode_blob_download(&frame).unwrap();
+    let decoded: Vec<(&str, &str, &[u8])> = blobs.iter().map(|(entry, bytes)| (entry.hash.as_str(), entry.encrypted_blob_key.as_str(), *bytes)).collect();
+    assert_eq!(decoded, vec![("a", "ka", &[1u8, 2, 3][..]), ("b", "kb", &[][..]), ("c", "kc", &[4u8, 5, 6, 7][..])]);
+    assert!(decode_blob_download(&encode_blob_download(&json!({ "blobs": [] }))).unwrap().is_empty());
+}
+
+#[test]
+fn a_malformed_binary_blob_download_is_refused() {
+    let frame = encode_blob_download(&json!({ "blobs": [{ "hash": "a", "category": "favicon", "encryptedDataBase64": "AQID", "encryptedBlobKey": "ka" }] }));
+    assert!(decode_blob_download(&[]).is_err());
+    assert!(decode_blob_download(&frame[..frame.len() - 1]).is_err(), "a truncated blob");
+    assert!(decode_blob_download(&[frame.as_slice(), &[0]].concat()).is_err(), "trailing bytes");
+    assert!(decode_blob_download(&[0, 0, 1, 0, b'{']).is_err(), "a header longer than the body");
+}
+
+#[test]
+fn a_binary_snapshot_fills_each_manifest_and_bucket_with_its_ciphertext() {
+    let frame = encode_snapshot(&json!({
+        "storageFormat": "manifest",
+        "manifests": [{ "manifestId": "m1", "blob": "AQID", "revision": 3 }, { "manifestId": "m2", "blob": null, "revision": 0 }],
+        "buckets": [{ "manifestId": "m1", "category": "settings", "blob": "BAU=", "revision": 1 }],
+    }));
+    let snapshot = decode_snapshot(&frame).unwrap();
+    assert_eq!(snapshot.manifests.iter().map(|m| m.blob.clone()).collect::<Vec<_>>(), vec![vec![1u8, 2, 3], vec![]]);
+    assert!(!snapshot.manifests[1].has_content());
+    assert_eq!(snapshot.buckets[0].blob, vec![4u8, 5]);
+    assert!(decode_snapshot(&frame[..frame.len() - 1]).is_err(), "a truncated bucket");
 }

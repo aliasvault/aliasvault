@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import * as OTPAuth from 'otpauth';
 
 import { test, expect, TestClient, Timeouts } from '../fixtures';
+import { getVaultSnapshot } from '../helpers/manifest-v2-api';
 import { readLegacyVaultFixture, restoreLegacyVault, type LegacyVaultFixture, type LegacyVaultItem } from '../helpers/test-api';
 
 /**
@@ -224,8 +225,7 @@ test.describe.serial('90. Vault upgrades', () => {
       expect(accessToken, 'the test user was registered with a session').toBeTruthy();
       // The migration push may still be on its way when the vault list shows.
       await expect.poll(async () => {
-        const response = await fetch(`${apiUrl.replace(/\/$/, '')}/v2/Vault`, { headers: { Authorization: `Bearer ${accessToken}` } });
-        return response.ok ? ((await response.json()) as { storageFormat?: string }).storageFormat : `HTTP ${response.status}`;
+        return getVaultSnapshot(apiUrl, accessToken ?? '').then((snapshot) => snapshot.storageFormat, (error: Error) => error.message);
       }, { timeout: Timeouts.LONG }).toBe('manifest');
     });
   });

@@ -201,11 +201,17 @@ impl TestHost {
             let command: Command = serde_json::from_str(&session.next_command().unwrap()).unwrap();
             let response = match command {
                 Command::Done { result } => return result,
-                Command::Http { method, path, body, .. } => {
+                Command::Http { method, path, body, binary_response, .. } => {
                     let body_json = body.as_deref().map(|b| serde_json::from_str(b).unwrap_or(Value::String(b.to_string())));
                     let method = serde_json::to_value(method).unwrap().as_str().expect("http method serializes as text").to_string();
                     self.requests.push(RecordedRequest { method: method.clone(), path: path.clone(), body: body_json.clone() });
                     match self.responders.iter().find_map(|r| r(&method, &path, body_json.as_ref())) {
+                        Some((status, body)) if binary_response && (200..300).contains(&status) => {
+                            // Responders script binary downloads as JSON; the host hands them over in the server's binary frame.
+                            let frame = if path == "Vault/blobs/download" { encode_blob_download(&body) } else { encode_snapshot(&body) };
+                            session.resume(&json!({ "status": status }).to_string(), Some(frame)).unwrap();
+                            continue;
+                        }
                         Some((status, body)) => json!({ "status": status, "body": body.to_string() }),
                         None => json!({ "status": 0, "transportError": format!("no scripted response for {} {}", method, path) }),
                     }
@@ -347,4 +353,39 @@ pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> Result<Vec<Map<S
 
 pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> Result<(), String> {
     sqlite_host::exec(conn, statements).map_err(|e| e.to_string())
+}
+
+/// A binary vault download: 4-byte big-endian header length, the JSON header, then the parts.
+fn encode_frame(header: &Value, parts: Vec<Vec<u8>>) -> Vec<u8> {
+    let header = serde_json::to_vec(header).unwrap();
+    let mut frame = (header.len() as u32).to_be_bytes().to_vec();
+    frame.extend(header);
+    frame.extend(parts.into_iter().flatten());
+    frame
+}
+
+/// Take the base64 `blob` out of a JSON entry, leaving its `size`.
+fn take_blob(entry: &mut Value, field: &str) -> Vec<u8> {
+    let bytes = entry.as_object_mut().unwrap().remove(field).and_then(|b| b.as_str().map(str::to_string)).map(|b| crate::common::encoding::base64_decode(&b).unwrap()).unwrap_or_default();
+    entry["size"] = json!(bytes.len());
+    bytes
+}
+
+/// The server's binary snapshot frame for a `GET v2/Vault` JSON body that carries base64 `blob`s.
+pub fn encode_snapshot(body: &Value) -> Vec<u8> {
+    let mut header = body.clone();
+    let mut parts = Vec::new();
+    for list in ["manifests", "buckets"] {
+        for entry in header.get_mut(list).and_then(Value::as_array_mut).map(|a| a.iter_mut().collect::<Vec<_>>()).unwrap_or_default() {
+            parts.push(take_blob(entry, "blob"));
+        }
+    }
+    encode_frame(&header, parts)
+}
+
+/// The server's binary blob download frame for a `{ "blobs": [{ hash, category, encryptedDataBase64, encryptedBlobKey }] }` JSON body.
+pub fn encode_blob_download(body: &Value) -> Vec<u8> {
+    let mut header = body.clone();
+    let parts = header.get_mut("blobs").and_then(Value::as_array_mut).map(|a| a.iter_mut().map(|blob| take_blob(blob, "encryptedDataBase64")).collect()).unwrap_or_default();
+    encode_frame(&header, parts)
 }

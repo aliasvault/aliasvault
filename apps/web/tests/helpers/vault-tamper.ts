@@ -10,7 +10,7 @@ import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGene
 
 import './client-platform';
 
-import type { TestUser } from './test-api';
+import { getVaultSnapshotHeader, type TestUser } from './test-api';
 
 /**
  * The part of GET /v2/Vault these helpers read.
@@ -60,11 +60,7 @@ async function encryptManifest(packed: Uint8Array, base64Key: string, manifestId
  * The account's personal manifest id and current revision.
  */
 async function getPersonalManifest(apiUrl: string, user: TestUser): Promise<{ manifestId: string; revision: number }> {
-  const response = await fetch(`${apiUrl}/v2/Vault`, { headers: { Authorization: `Bearer ${user.token}` } });
-  if (!response.ok) {
-    throw new Error(`GET /v2/Vault failed with status ${response.status}: ${await response.text()}`);
-  }
-  const snapshot = (await response.json()) as VaultSnapshot;
+  const snapshot = await getVaultSnapshotHeader<VaultSnapshot>(apiUrl, user.token);
   const current = snapshot.manifests?.find((m) => m.manifestId === snapshot.personalManifestId);
   if (!current) {
     throw new Error('Test account has no personal manifest to overwrite.');
