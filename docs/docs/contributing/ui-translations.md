@@ -20,6 +20,7 @@ AliasVault is currently available in the following languages. See how complete e
 - 🇮🇩 Indonesian
 - 🇮🇪 Irish
 - 🇮🇹 Italian
+- 🇰🇷 Korean
 - 🇵🇱 Polish
 - 🇧🇷 Portuguese (Brazilian)
 - 🇷🇴 Romanian

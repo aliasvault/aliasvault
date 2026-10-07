@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "오류";
 "cancel" = "취소";
 "back" = "뒤로";
@@ -7,8 +7,7 @@
 "website" = "웹사이트";
 "username" = "사용자 이름";
 "title" = "제목";
-"unknown_error" = "알 수 없는 오류가 발생했습니다";
-
+"unknown_error" = "알 수 없는 오류가 발생했습니다.";
 "loading_items" = "항목을 불러오는 중...";
 "no_items_found" = "항목을 찾을 수 없음";
 "no_items_match" = "검색과 일치하는 기존 항목이 없습니다";
@@ -30,8 +29,6 @@
 "password" = "비밀번호";
 "items_load_error" = "항목을 불러오지 못했습니다. 업데이트를 확인하려면 AliasVault 앱을 여세요.";
 "no_item_selected" = "선택된 항목이 없습니다.";
-
-/* Context menu strings */
 "copy_username" = "사용자 이름 복사";
 "copy_password" = "비밀번호 복사";
 "copy_email" = "이메일 복사";
@@ -42,49 +39,33 @@
 "email_copied" = "이메일을 복사했습니다";
 "totp_code_copied" = "TOTP 코드를 복사했습니다";
 "totp_code" = "TOTP 코드";
-
-/* Search bar */
 "search_items" = "항목 검색...";
-
-/* Passkey registration */
 "create_passkey_title" = "새 패스키 생성";
 "create_passkey_subtitle" = "이 웹사이트의 새 패스키를 등록하세요. 보관함에 안전하게 저장되며 AliasVault를 사용하는 모든 기기에 자동으로 동기화됩니다.";
 "create_passkey_button_confirm" = "패스키 생성";
-
-/* Passkey provider */
 "passkey" = "패스키";
 "loading_passkeys" = "패스키를 불러오는 중...";
 "no_passkeys_found" = "패스키를 찾을 수 없음";
 "no_passkeys_match" = "검색과 일치하는 기존 패스키가 없습니다";
 "select_passkey" = "패스키 선택";
 "passkeys_load_error" = "패스키를 불러오지 못했습니다. 업데이트를 확인하려면 AliasVault 앱을 여세요.";
-
-/* Passkey replacement */
 "create_new_passkey" = "새 패스키 생성";
 "select_passkey_to_replace" = "또는 기존 패스키 대체";
 "replace_passkey" = "패스키 대체";
 "replace_passkey_explanation" = "기존 패스키가 새 패스키로 대체됩니다. 이전 패스키는 덮어써지며 더 이상 접근할 수 없게 되니 유의하세요. 대신 별도의 패스키를 만들려면 이전 화면으로 돌아가세요.";
 "create_passkey_explanation" = "새 패스키를 생성하여 보관함에 저장합니다. AliasVault를 사용하는 모든 기기에 자동으로 동기화됩니다.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "또는 기존 항목에 패스키 추가";
 "add_passkey" = "패스키 추가";
 "merge_passkey_explanation" = "기존 항목에 패스키를 추가합니다. 비밀번호 및 기타 데이터는 유지됩니다.";
-
-/* PIN Unlock */
 "unlock_vault" = "보관함 잠금 해제";
 "enter_pin_to_unlock_vault" = "보관함을 잠금 해제하려면 PIN을 입력하세요";
 "pin_locked_max_attempts" = "시도 횟수 초과로 PIN이 잠겼습니다";
-"pin_incorrect_attempts_remaining" = "잘못된 PIN입니다. 남은 시도 횟수: %d회";
-
-/* Password Unlock */
+"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 "enter_password_to_unlock" = "마스터 비밀번호 입력";
 "unlock" = "잠금 해제";
 "incorrect_password" = "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.";
-"attempts_warning" = "잘못된 비밀번호입니다. 비밀번호를 %d회 더 잘못 입력하면 로그아웃됩니다.";
+"attempts_warning" = "비밀번호가 올바르지 않습니다. 비밀번호를 %d회 더 잘못 입력하면 로그아웃됩니다.";
 "max_attempts_reached" = "잠금 해제 시도 횟수를 초과했습니다. 보안을 위해 로그아웃되었습니다.";
-
-/* PIN Setup */
 "pin_setup_title" = "PIN 설정";
 "pin_setup_subtitle" = "보관함을 잠금 해제할 PIN을 선택하세요";
 "pin_confirm_title" = "PIN 확인";

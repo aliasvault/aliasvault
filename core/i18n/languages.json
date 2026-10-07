@@ -1,5 +1,5 @@
 {
-  "uiLanguages": ["en", "da", "de", "es", "fi", "fr", "ga", "he", "hu", "id", "it", "nl", "pl", "pt", "ro", "ru", "sv", "uk", "zh"],
+  "uiLanguages": ["en", "da", "de", "es", "fi", "fr", "ga", "he", "hu", "id", "it", "ko", "nl", "pl", "pt", "ro", "ru", "sv", "uk", "zh"],
   "languages": [
     {"code": "en", "flag": "🇺🇸", "label": "English", "alternativeCodes": ["en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-IE", "en-ZA", "en-SG", "en-IN"]},
     {"code": "da", "flag": "🇩🇰", "label": "Dansk", "alternativeCodes": ["da-DK"]},
@@ -13,6 +13,7 @@
     {"code": "hu", "flag": "🇭🇺", "label": "Magyar", "alternativeCodes": ["hu-HU"]},
     {"code": "id", "flag": "🇮🇩", "label": "Bahasa Indonesia", "alternativeCodes": ["id-ID"]},
     {"code": "it", "flag": "🇮🇹", "label": "Italiano", "alternativeCodes": ["it-IT", "it-CH", "it-SM", "it-VA"]},
+    {"code": "ko", "flag": "🇰🇷", "label": "한국어", "alternativeCodes": ["ko-KR"]},
     {"code": "nl", "flag": "🇳🇱", "label": "Nederlands", "alternativeCodes": ["nl-NL", "nl-BE"]},
     {"code": "pl", "flag": "🇵🇱", "label": "Polski", "alternativeCodes": ["pl-PL"]},
     {"code": "pt", "flag": "🇧🇷", "label": "Português Brasileiro", "alternativeCodes": ["pt-BR", "pt-PT"]},
