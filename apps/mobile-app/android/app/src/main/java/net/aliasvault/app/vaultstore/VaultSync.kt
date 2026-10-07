@@ -201,7 +201,7 @@ class VaultSync(
 
     /**
      * Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
-     * and the email routing a pulled vault came with.
+     * and the server's email domains.
      */
     private fun persistSyncResult(result: JSONObject) {
         result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
@@ -209,11 +209,11 @@ class VaultSync(
         if (result.has("isOfflineMode")) {
             vaultStore.metadata.setOfflineMode(result.optBoolean("isOfflineMode", false))
         }
-        result.optJSONObject("emailRouting")?.let { routing ->
+        result.optJSONObject("emailDomains")?.let { domains ->
             val metadata = VaultMetadata(
-                publicEmailDomains = routing.optJSONArray("publicEmailDomainList").toStringList(),
-                privateEmailDomains = routing.optJSONArray("privateEmailDomainList").toStringList(),
-                hiddenPrivateEmailDomains = routing.optJSONArray("hiddenPrivateEmailDomainList").toStringList(),
+                publicEmailDomains = domains.optJSONArray("publicEmailDomainList").toStringList(),
+                privateEmailDomains = domains.optJSONArray("privateEmailDomainList").toStringList(),
+                hiddenPrivateEmailDomains = domains.optJSONArray("hiddenPrivateEmailDomainList").toStringList(),
                 vaultRevisionNumber = if (result.has("pulledRevision")) result.optInt("pulledRevision") else vaultStore.metadata.getVaultRevisionNumber(),
             )
             vaultStore.metadata.storeMetadata(

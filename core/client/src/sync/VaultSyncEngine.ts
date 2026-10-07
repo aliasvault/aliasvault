@@ -50,9 +50,8 @@ export type VaultSyncEngineRequest = {
   sharing?: VaultSyncSharingParams;
 };
 
-/** The email routing a pulled vault came with. */
-export type VaultSyncEmailRouting = {
-  emailAddressList: string[];
+/** The email domains the server serves; hidden private domains are also in the private list. */
+export type VaultSyncEmailDomains = {
   privateEmailDomainList: string[];
   hiddenPrivateEmailDomainList: string[];
   publicEmailDomainList: string[];
@@ -82,7 +81,7 @@ export type VaultSyncEngineResult = VaultSyncEngineResultBase & {
   capabilities?: Record<string, string>;
   isOfflineMode: boolean;
   pulledRevision?: number;
-  emailRouting?: VaultSyncEmailRouting;
+  emailDomains?: VaultSyncEmailDomains;
 };
 
 /** Outcome of the migration classification. */

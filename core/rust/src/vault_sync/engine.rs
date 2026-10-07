@@ -117,6 +117,9 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
         Ok(status) => status,
         Err(result) => return Ok(Flow::Done(result)),
     };
+    if let Some(domains) = &status.email_domains {
+        ctx.request.private_email_domains = domains.private_email_domain_list.clone();
+    }
     let mut needs_pull = ctx.request.force_pull || server_state_needs_pull(ctx, &status).await?;
     ctx.log(format!("[Sync] Status received (needsPull {}, isDirty {})", needs_pull, ctx.is_dirty)).await;
 
@@ -162,6 +165,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
         Flow::Done(mut result) => {
             result.server_version = Some(status.server_version.clone());
             result.capabilities = status.capabilities.clone();
+            result.email_domains = status.email_domains.clone();
             ctx.log("[Sync] Sync finished").await;
             Flow::Done(result)
         }
@@ -381,7 +385,7 @@ async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -
 async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<FullSyncResult> {
     let migration_required = migration::vault_requires_manifest_migration(ctx).await?;
     let legacy_chain = migration::schema_state(ctx).await? == db::SchemaState::LegacyChain;
-    Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required: legacy_chain, manifest_migration_required: migration_required, pulled_revision: Some(pulled.personal_revision), email_routing: Some(pulled.email_routing.clone()), ..Default::default() })
+    Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required: legacy_chain, manifest_migration_required: migration_required, pulled_revision: Some(pulled.personal_revision), ..Default::default() })
 }
 
 /// Store a pulled vault, then commit its revisions; a refused store (a mutation raced the pull) returns a resync.
@@ -486,7 +490,7 @@ async fn status_check(ctx: &mut Ctx) -> StatusCheckResult {
         }
         assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
         let has_newer_vault = server_state_needs_pull(ctx, &status).await?;
-        Ok(StatusCheckResult { success: true, has_newer_vault, has_dirty_changes: ctx.is_dirty, server_version: Some(status.server_version), capabilities: status.capabilities, ..Default::default() })
+        Ok(StatusCheckResult { success: true, has_newer_vault, has_dirty_changes: ctx.is_dirty, server_version: Some(status.server_version), capabilities: status.capabilities, email_domains: status.email_domains, ..Default::default() })
     }
     .await;
     match checked {

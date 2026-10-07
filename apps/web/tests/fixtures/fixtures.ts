@@ -95,8 +95,6 @@ async function prepareContext(context: BrowserContext, apiUrl: string, publicReg
     contentType: 'application/json',
     body: JSON.stringify({
       ApiUrl: apiUrl,
-      PrivateEmailDomains: ['example.tld', 'example2.tld'],
-      HiddenPrivateEmailDomains: [],
       SupportEmail: 'support@example.tld',
       PublicRegistrationEnabled: String(publicRegistrationEnabled),
       DeploymentMode: 'e2e',

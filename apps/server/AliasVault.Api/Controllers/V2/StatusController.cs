@@ -29,8 +29,9 @@ using StatusModels = AliasVault.Shared.Models.WebApi.V2.Status;
 /// <param name="dbContextFactory">DbContext factory.</param>
 /// <param name="userManager">UserManager.</param>
 /// <param name="capabilityService">Resolves which capabilities the caller may use.</param>
+/// <param name="config">Config instance.</param>
 [ApiVersion("2")]
-public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, CapabilityService capabilityService) : AuthenticatedRequestController(userManager)
+public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, CapabilityService capabilityService, Config config) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Status endpoint called by the client to get the full sync status in one call.
@@ -82,6 +83,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             BucketRevisions = bucketRevisions,
             Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, ClientHeader),
             PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
+            EmailDomains = EmailDomainHelper.GetEmailDomains(config),
         });
     }
 }

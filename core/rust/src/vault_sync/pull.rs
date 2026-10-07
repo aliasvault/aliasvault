@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{self, BlobDownloadResponse, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
+use super::types::{self, BlobDownloadResponse, BlobHashesRequest, Db, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
 use crate::crypto;
@@ -45,8 +45,8 @@ impl OpenedManifestSet {
     }
 
     /// The opened set as a vault ready to become the local one.
-    pub fn pulled_vault(&self, encrypted_vault: String, email_routing: EmailRoutingDto) -> PulledVault {
-        PulledVault { encrypted_vault, personal_revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
+    pub fn pulled_vault(&self, encrypted_vault: String) -> PulledVault {
+        PulledVault { encrypted_vault, personal_revision: self.personal_revision, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
     }
 }
 
@@ -54,7 +54,6 @@ impl OpenedManifestSet {
 pub(crate) struct PulledVault {
     pub encrypted_vault: String,
     pub personal_revision: i64,
-    pub email_routing: EmailRoutingDto,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,
     /// The vault is new and has never been written to the server; it is stored dirty and pushed by the same sync.
@@ -135,7 +134,7 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
     let opened = open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
     let sqlite_bytes = materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
     ctx.log(format!("[Pull] Materialized SQLite ({} bytes); re-encrypting for local storage...", sqlite_bytes.len())).await;
-    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, snapshot.email_routing.clone().unwrap_or_default()))
+    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?))
 }
 
 /// Open every manifest a snapshot carries, personal first, and record the snapshot as this device's sync state.

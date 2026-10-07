@@ -85,7 +85,6 @@ public class VaultController(
         }
 
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
-        var emailRouting = await BuildEmailRoutingAsync(context, accessScope);
 
         // Every manifest the caller can open.
         var latestManifests = await AccessibleManifests(context, accessScope)
@@ -107,7 +106,6 @@ public class VaultController(
                 Version = legacy?.Version ?? string.Empty,
                 LegacyRevision = legacy?.RevisionNumber ?? 0,
                 PersonalManifestId = legacy?.ManifestId,
-                EmailRouting = emailRouting,
             };
             return File(BinaryFrame.Write(legacyResponse), BinaryFrame.ContentType);
         }
@@ -167,7 +165,6 @@ public class VaultController(
             Manifests = manifests,
             PersonalManifestId = latestManifests.First(m => m.OwnerGroupId == user.PersonalGroupId).ManifestId,
             Buckets = buckets,
-            EmailRouting = emailRouting,
         };
         return File(BinaryFrame.Write(response), BinaryFrame.ContentType);
     }
@@ -1117,33 +1114,6 @@ public class VaultController(
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Builds the email routing DTO for a user, listing the live aliases of the manifests they can open.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="scope">The caller's manifest access scope.</param>
-    /// <returns>The email routing DTO.</returns>
-    private async Task<EmailRouting> BuildEmailRoutingAsync(AliasServerDbContext context, ManifestAccessScope scope)
-    {
-        var accessible = ManifestAccessHelper.AccessibleManifests(context, scope);
-        var claims = await context.EmailClaims
-            .Where(c => c.State != EmailClaimState.Removed && accessible.Any(m => m.ManifestId == c.VaultManifestId))
-            .Select(c => c.Address)
-            .ToListAsync();
-
-        return new EmailRouting
-        {
-            EmailAddressList = claims,
-            PrivateEmailDomainList = config.PrivateEmailDomains,
-            HiddenPrivateEmailDomainList = config.HiddenPrivateEmailDomains,
-            PublicEmailDomainList = new List<string>
-            {
-                "spamok.com", "solarflarecorp.com", "spamok.nl", "3060.nl", "landmail.nl",
-                "asdasd.nl", "spamok.de", "spamok.com.ua", "spamok.es", "spamok.fr",
-            },
-        };
     }
 
     /// <summary>

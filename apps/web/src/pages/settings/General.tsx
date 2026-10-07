@@ -7,7 +7,6 @@ import FormLabel from '@/components/shared/FormLabel';
 import PageContent from '@/components/shared/PageContent';
 import SectionTitle from '@/components/shared/SectionTitle';
 import Select from '@/components/shared/Select';
-import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -57,8 +56,8 @@ const GeneralSettings: React.FC = () => {
      */
     const load = async (): Promise<void> => {
       const metadata = await vaultStore.getVaultMetadata();
-      const hidden = metadata?.hiddenPrivateEmailDomains ?? getAppConfig().hiddenPrivateEmailDomains;
-      const privateList = (metadata?.privateEmailDomains ?? getAppConfig().privateEmailDomains).filter(d => !hidden.includes(d));
+      const hidden = metadata?.hiddenPrivateEmailDomains ?? [];
+      const privateList = (metadata?.privateEmailDomains ?? []).filter(d => !hidden.includes(d));
       const publicList = metadata?.publicEmailDomains ?? [];
       if (cancelled) {
         return;

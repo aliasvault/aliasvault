@@ -18,7 +18,6 @@ import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
 import ResponsivePaginator from '@/components/shared/ResponsivePaginator';
 import Text from '@/components/shared/Text';
-import { getAppConfig } from '@/config/AppConfig';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -96,7 +95,7 @@ const EmailsHome: React.FC = () => {
   const getEmailClaimList = useCallback(async (): Promise<string[]> => {
     const routable = dbContext.sqliteClient?.items.getRoutableEmailAddresses() ?? [];
     const storedDomains = await getPlatform().storage.get<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-    const privateDomains = (storedDomains && storedDomains.length > 0 ? storedDomains : getAppConfig().privateEmailDomains).filter(d => d.trim().length > 0);
+    const privateDomains = (storedDomains ?? []).filter(d => d.trim().length > 0);
     if (privateDomains.length === 0) {
       return [];
     }

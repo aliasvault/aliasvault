@@ -164,7 +164,7 @@ internal final class VaultSync {
     }
 
     /// Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
-    /// and the email routing a pulled vault came with.
+    /// and the server's email domains.
     private func persistSyncResult(_ result: [String: Any]) {
         if let serverVersion = result["serverVersion"] as? String, !serverVersion.isEmpty {
             vaultStore.setServerVersion(serverVersion)
@@ -175,11 +175,11 @@ internal final class VaultSync {
         if let offline = result["isOfflineMode"] as? Bool {
             vaultStore.setOfflineMode(offline)
         }
-        if let routing = result["emailRouting"] as? [String: Any] {
+        if let domains = result["emailDomains"] as? [String: Any] {
             let metadata = VaultMetadata(
-                publicEmailDomains: routing["publicEmailDomainList"] as? [String] ?? [],
-                privateEmailDomains: routing["privateEmailDomainList"] as? [String] ?? [],
-                hiddenPrivateEmailDomains: routing["hiddenPrivateEmailDomainList"] as? [String] ?? [],
+                publicEmailDomains: domains["publicEmailDomainList"] as? [String] ?? [],
+                privateEmailDomains: domains["privateEmailDomainList"] as? [String] ?? [],
+                hiddenPrivateEmailDomains: domains["hiddenPrivateEmailDomainList"] as? [String] ?? [],
                 vaultRevisionNumber: result["pulledRevision"] as? Int ?? vaultStore.getCurrentVaultRevisionNumber()
             )
             if let data = try? JSONEncoder().encode(metadata), let json = String(data: data, encoding: .utf8) {

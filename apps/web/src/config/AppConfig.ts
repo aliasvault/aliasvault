@@ -11,9 +11,6 @@ import { getPlatform } from '@aliasvault/client/platform';
  */
 type AppSettingsFile = {
   ApiUrl?: string;
-  PrivateEmailDomains?: string[];
-  HiddenPrivateEmailDomains?: string[];
-  PublicEmailDomains?: string[];
   SupportEmail?: string;
   PublicRegistrationEnabled?: string | boolean;
   DeploymentMode?: string;
@@ -25,8 +22,6 @@ type AppSettingsFile = {
  */
 export type AppConfig = {
   apiUrl: string;
-  privateEmailDomains: string[];
-  hiddenPrivateEmailDomains: string[];
   supportEmail: string;
   publicRegistrationEnabled: boolean;
   deploymentMode: string;
@@ -69,8 +64,6 @@ export async function loadAppConfig(): Promise<AppConfig> {
 
   current = {
     apiUrl,
-    privateEmailDomains: (file.PrivateEmailDomains ?? []).map(domain => domain.trim().toLowerCase()),
-    hiddenPrivateEmailDomains: (file.HiddenPrivateEmailDomains ?? []).map(domain => domain.trim().toLowerCase()),
     supportEmail: file.SupportEmail ?? '',
     publicRegistrationEnabled: String(file.PublicRegistrationEnabled ?? 'true').toLowerCase() === 'true',
     deploymentMode: file.DeploymentMode ?? '',

@@ -29,6 +29,15 @@ export type PendingClientAction = {
 }
 
 /**
+ * The email domains a server serves; hidden private domains are also in the private list.
+ */
+export type EmailDomains = {
+  privateEmailDomainList: string[];
+  hiddenPrivateEmailDomainList: string[];
+  publicEmailDomainList: string[];
+}
+
+/**
  * Status response type (v2).
  */
 export type StatusResponseV2 = {
@@ -40,4 +49,5 @@ export type StatusResponseV2 = {
   capabilities?: Record<string, string>;
   bucketRevisions?: BucketRevision[];
   pendingActions?: PendingClientAction[];
+  emailDomains?: EmailDomains;
 }

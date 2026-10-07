@@ -59,4 +59,9 @@ public class StatusResponse
     /// vault content, a vault key, a private key. This primarily affects vault sharing and revocation actions.
     /// </summary>
     public List<PendingClientAction> PendingActions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the email domains this server serves, so clients pick up a domain change without a vault pull.
+    /// </summary>
+    public EmailDomains EmailDomains { get; set; } = new();
 }

@@ -33,7 +33,7 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
         manifest_revisions.insert(personal.clone(), revision);
     }
     ctx.log("[Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
-    Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), personal_revision: revision, email_routing: snapshot.email_routing.clone().unwrap_or_default(), manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
+    Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), personal_revision: revision, manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
 }
 
 /*

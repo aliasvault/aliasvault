@@ -37,7 +37,6 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         }
         Snapshot::Manifest(snapshot) => snapshot,
     };
-    let email_routing = snapshot.email_routing.clone().unwrap_or_default();
 
     let opened = pull::open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
     let local_side = canonicalize_vault(ctx, None).await?;
@@ -49,13 +48,13 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         }
     };
 
-    match merge_onto_opened_manifests(ctx, &opened, local_side, &vek, email_routing.clone()).await {
+    match merge_onto_opened_manifests(ctx, &opened, local_side, &vek).await {
         Ok(outcome) => Ok(outcome),
         Err(merge_error) => {
             // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
             ctx.warn(format!("[Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
             let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
-            Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing)))
+            Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?)))
         }
     }
 }
@@ -80,7 +79,7 @@ fn ground_moved_under_canonicalize(records: &[ManifestRecord], opened: &OpenedMa
 }
 
 /// Merge the local side against the opened manifests, validate per manifest, and materialize.
-async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, local_side: CanonicalizedSet, vek: &str, email_routing: super::types::EmailRoutingDto) -> SyncResult<PullAndMergeOutcome> {
+async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, local_side: CanonicalizedSet, vek: &str) -> SyncResult<PullAndMergeOutcome> {
     let schema = ctx.schema().await?;
     ctx.log(format!("[Merge] Merging {} local manifest(s) onto {} server manifest(s)...", local_side.canonicalized.manifests.len(), opened.resolved.len())).await;
     let merge_output = merge_canonical(CanonicalMergeInput {
@@ -142,7 +141,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
     ctx.log(format!("[Merge] Canonical merge complete: {} local row(s) won, {} local-only row(s) kept, {} validation fallback(s), {} dropped local manifest(s).", stats.incoming_won, stats.incoming_only, fallbacks, merge_output.dropped_local_manifest_ids.len())).await;
 
     let push_canonical = if fallbacks == 0 { merge_output_for_push(&manifests, &data_buckets, merged_blobs, &local_side.manifest_records) } else { None };
-    Ok(PullAndMergeOutcome::Merged { pulled: opened.pulled_vault(encrypted_vault, email_routing), push_canonical })
+    Ok(PullAndMergeOutcome::Merged { pulled: opened.pulled_vault(encrypted_vault), push_canonical })
 }
 
 /// The merged vault in the shape the push writes from, when it covers exactly the manifests this session writes.

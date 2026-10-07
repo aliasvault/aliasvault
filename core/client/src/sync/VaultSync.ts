@@ -20,7 +20,7 @@ import { devError, devLog, devWarn } from '../platform/Logger';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 import type { TranslationKey } from '@aliasvault/i18n';
 
@@ -79,7 +79,7 @@ type PersistableSyncResult = VaultSyncEngineResultBase & {
   serverVersion?: string;
   capabilities?: Record<string, string>;
   isOfflineMode?: boolean;
-  emailRouting?: VaultSyncEmailRouting;
+  emailDomains?: VaultSyncEmailDomains;
 };
 
 /** The engine's failure fields. */
@@ -263,7 +263,7 @@ export class VaultSync {
 
   /**
    * Persist what the engine reported: server version and capabilities, offline mode, session values it changed, and
-   * the email routing a pulled vault came with.
+   * the server's email domains.
    * @param result - the engine's outcome
    */
   private async persistSyncResult(result: PersistableSyncResult): Promise<void> {
@@ -277,11 +277,11 @@ export class VaultSync {
     if (result.isOfflineMode !== undefined) {
       await storage.set(StorageKeys.IS_OFFLINE_MODE, result.isOfflineMode);
     }
-    if (result.emailRouting) {
+    if (result.emailDomains) {
       await storage.setMany([
-        { key: StorageKeys.PUBLIC_EMAIL_DOMAINS, value: result.emailRouting.publicEmailDomainList },
-        { key: StorageKeys.PRIVATE_EMAIL_DOMAINS, value: result.emailRouting.privateEmailDomainList },
-        { key: StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, value: result.emailRouting.hiddenPrivateEmailDomainList },
+        { key: StorageKeys.PUBLIC_EMAIL_DOMAINS, value: result.emailDomains.publicEmailDomainList },
+        { key: StorageKeys.PRIVATE_EMAIL_DOMAINS, value: result.emailDomains.privateEmailDomainList },
+        { key: StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, value: result.emailDomains.hiddenPrivateEmailDomainList },
       ]);
     }
   }

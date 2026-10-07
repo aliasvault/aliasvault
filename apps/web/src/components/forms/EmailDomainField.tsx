@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 
 import Icon from '@/components/shared/Icon';
 import ToggleChip from '@/components/shared/ToggleChip';
-import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
 import { vaultStore } from '@/vault/VaultStore';
 
@@ -43,9 +42,9 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
       if (cancelled) {
         return;
       }
-      const hidden = metadata?.hiddenPrivateEmailDomains ?? getAppConfig().hiddenPrivateEmailDomains;
+      const hidden = metadata?.hiddenPrivateEmailDomains ?? [];
       setHiddenPrivateDomains(hidden);
-      setPrivateDomains((metadata?.privateEmailDomains ?? getAppConfig().privateEmailDomains).filter(d => !hidden.includes(d)));
+      setPrivateDomains((metadata?.privateEmailDomains ?? []).filter(d => !hidden.includes(d)));
       setPublicDomains(metadata?.publicEmailDomains ?? []);
     });
     return (): void => {

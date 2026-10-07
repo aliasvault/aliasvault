@@ -42,9 +42,6 @@ public class GetResponse : IFrameBody
     /// <summary>Gets or sets the data buckets (e.g. settings) for this user, each with its own kind + revision.</summary>
     public List<Bucket> Buckets { get; set; } = [];
 
-    /// <summary>Gets or sets the plaintext email routing data (private/public domains + claimed addresses).</summary>
-    public EmailRouting EmailRouting { get; set; } = new();
-
     /// <inheritdoc/>
     [JsonIgnore]
     public IEnumerable<IFramePart> FrameParts => Manifests.Cast<IFramePart>().Concat(Buckets);

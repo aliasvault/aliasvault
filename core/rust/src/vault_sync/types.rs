@@ -131,7 +131,7 @@ pub struct FullSyncResult {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pulled_revision: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub email_routing: Option<EmailRoutingDto>,
+    pub email_domains: Option<EmailDomainsDto>,
 }
 
 /// The pending local migration, as the upgrade gate classifies it.
@@ -208,6 +208,8 @@ pub struct StatusCheckResult {
     pub server_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capabilities: Option<HashMap<String, String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email_domains: Option<EmailDomainsDto>,
 }
 
 /*
@@ -409,6 +411,8 @@ pub struct StatusResponse {
     pub capabilities: Option<HashMap<String, String>>,
     #[serde(default)]
     pub pending_actions: Vec<PendingAction>,
+    #[serde(default)]
+    pub email_domains: Option<EmailDomainsDto>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -455,8 +459,6 @@ pub struct GetResponse {
     pub manifests: Vec<ManifestDto>,
     #[serde(default)]
     pub buckets: Vec<BucketDto>,
-    #[serde(default)]
-    pub email_routing: Option<EmailRoutingDto>,
 }
 
 impl FrameBody for GetResponse {
@@ -527,11 +529,10 @@ pub struct StoredBlobRef {
     pub size_bytes: i64,
 }
 
+/// The email domains a server serves.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EmailRoutingDto {
-    #[serde(default)]
-    pub email_address_list: Vec<String>,
+pub struct EmailDomainsDto {
     #[serde(default)]
     pub private_email_domain_list: Vec<String>,
     #[serde(default)]
