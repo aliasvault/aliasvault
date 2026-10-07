@@ -79,6 +79,7 @@ async function writePersonalManifest(apiUrl: string, user: TestUser, blob: strin
     username: SrpAuthService.normalizeUsername(user.username),
     manifests: [{
       manifestId,
+      offset: 0,
       size: ciphertext.length,
       manifestCiphertextHash: createHash('sha256').update(ciphertext).digest('hex'),
       currentRevision: revision,

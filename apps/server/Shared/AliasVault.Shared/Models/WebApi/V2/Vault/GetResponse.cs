@@ -7,11 +7,12 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
-/// Atomic snapshot returned by GET /v2/Vault, as the JSON header of a binary body: the manifest ciphertexts follow it
-/// in <see cref="Manifests"/> order, then the bucket ciphertexts in <see cref="Buckets"/> order.
+/// Atomic snapshot returned by GET /v2/Vault, as the JSON header of a binary frame (see <see cref="IFrameBody"/>).
 /// </summary>
-public class GetResponse
+public class GetResponse : IFrameBody
 {
     /// <summary>
     /// Gets or sets the storage format of the returned vault.
@@ -43,4 +44,8 @@ public class GetResponse
 
     /// <summary>Gets or sets the plaintext email routing data (private/public domains + claimed addresses).</summary>
     public EmailRouting EmailRouting { get; set; } = new();
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public IEnumerable<IFramePart> FrameParts => Manifests.Cast<IFramePart>().Concat(Buckets);
 }

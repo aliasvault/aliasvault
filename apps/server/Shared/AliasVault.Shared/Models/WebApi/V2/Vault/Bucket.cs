@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// A single data bucket as carried in list-based payloads.
 /// </summary>
-public class Bucket
+public class Bucket : IFramePart
 {
     /// <summary>Gets or sets the id of the manifest that owns this bucket.</summary>
     public required Guid ManifestId { get; set; }
@@ -20,10 +20,13 @@ public class Bucket
     /// <summary>Gets or sets the bucket kind discriminator.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 
-    /// <summary>Gets or sets the length of the bucket ciphertext in the binary response body.</summary>
+    /// <inheritdoc/>
+    public int Offset { get; set; }
+
+    /// <inheritdoc/>
     public int Size { get; set; }
 
-    /// <summary>Gets or sets the bucket ciphertext (AES-GCM). Sent after the JSON header, not inside it.</summary>
+    /// <inheritdoc/>
     [JsonIgnore]
     public byte[] Data { get; set; } = [];
 

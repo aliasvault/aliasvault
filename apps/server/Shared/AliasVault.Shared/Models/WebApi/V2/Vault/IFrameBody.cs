@@ -8,11 +8,10 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// A request body that arrives as a binary frame: a 4-byte big-endian header length, this object as JSON, then the
-/// ciphertexts of its <see cref="FrameParts"/> back to back.
+/// A body sent as a binary frame: this object is the JSON header, the ciphertexts of its parts follow it.
 /// </summary>
 public interface IFrameBody
 {
-    /// <summary>Gets the entries that carry a ciphertext, in the order their bytes follow the header.</summary>
+    /// <summary>Gets the entries whose ciphertext follows the header, in frame order.</summary>
     IEnumerable<IFramePart> FrameParts { get; }
 }

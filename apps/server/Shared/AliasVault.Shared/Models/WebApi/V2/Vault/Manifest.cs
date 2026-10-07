@@ -15,17 +15,20 @@ using System.Text.Json.Serialization;
 /// Which is which follows from <see cref="GetResponse.PersonalManifestId"/>, not from a flag on each entry. Each
 /// manifest is independently encrypted and revisioned, and carries its own blob references.
 /// </summary>
-public class Manifest
+public class Manifest : IFramePart, IFrameBody
 {
     /// <summary>Gets or sets the stable identifier of the logical manifest (constant across its revisions).</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the length of the manifest ciphertext in the binary response body, 0 on empty vault.</summary>
+    /// <inheritdoc/>
+    public int Offset { get; set; }
+
+    /// <inheritdoc/>
     public int Size { get; set; }
 
-    /// <summary>Gets or sets the manifest ciphertext (AES-GCM), null on empty vault. Sent after the JSON header, not inside it.</summary>
+    /// <summary>Gets or sets the manifest ciphertext (AES-GCM), empty on an empty vault.</summary>
     [JsonIgnore]
-    public byte[]? Data { get; set; }
+    public byte[] Data { get; set; } = [];
 
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext for client-side storage-integrity check.</summary>
     public string? CiphertextHash { get; set; }
@@ -72,4 +75,8 @@ public class Manifest
 
     /// <summary>Gets or sets the version of the VEK in <see cref="EncryptedVek"/>, which the grant is signed for.</summary>
     public int KeyVersion { get; set; }
+
+    /// <summary>Gets this manifest as its own frame part, for GET /v2/Vault/manifest/{id}.</summary>
+    [JsonIgnore]
+    public IEnumerable<IFramePart> FrameParts => [this];
 }

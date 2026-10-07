@@ -32,16 +32,16 @@ public class BinaryFrameInputFormatter : InputFormatter
         await context.HttpContext.Request.Body.CopyToAsync(buffer, context.HttpContext.RequestAborted);
         var body = buffer.GetBuffer().AsMemory(0, (int)buffer.Length);
 
-        if (body.Length < 4 || BinaryPrimitives.ReadUInt32BigEndian(body.Span) > (uint)(body.Length - 4))
+        var headerLength = body.Length < 4 ? uint.MaxValue : BinaryPrimitives.ReadUInt32BigEndian(body.Span);
+        if (headerLength > body.Length - 4)
         {
             return Malformed(context, "The frame header length exceeds the body.");
         }
 
-        var headerLength = (int)BinaryPrimitives.ReadUInt32BigEndian(body.Span);
         IFrameBody? model;
         try
         {
-            model = JsonSerializer.Deserialize(body.Span.Slice(4, headerLength), context.ModelType, JsonSerializerOptions.Web) as IFrameBody;
+            model = JsonSerializer.Deserialize(body.Span.Slice(4, (int)headerLength), context.ModelType, JsonSerializerOptions.Web) as IFrameBody;
         }
         catch (JsonException ex)
         {
@@ -53,19 +53,19 @@ public class BinaryFrameInputFormatter : InputFormatter
             return Malformed(context, "The frame header is empty.");
         }
 
-        var offset = 4 + headerLength;
+        // Bytes no known part points at are ignored, as unknown JSON fields are.
+        var data = body[(4 + (int)headerLength)..];
         foreach (var part in model.FrameParts)
         {
-            if (part.Size < 0 || part.Size > body.Length - offset)
+            if (part.Offset < 0 || part.Size < 0 || (long)part.Offset + part.Size > data.Length)
             {
                 return Malformed(context, "A ciphertext exceeds the body.");
             }
 
-            part.Data = body.Slice(offset, part.Size).ToArray();
-            offset += part.Size;
+            part.Data = data.Slice(part.Offset, part.Size).ToArray();
         }
 
-        return offset == body.Length ? await InputFormatterResult.SuccessAsync(model) : Malformed(context, "The body carries bytes the header does not list.");
+        return await InputFormatterResult.SuccessAsync(model);
     }
 
     /// <inheritdoc/>

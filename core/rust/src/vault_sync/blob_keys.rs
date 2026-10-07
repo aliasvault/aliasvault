@@ -10,7 +10,7 @@ use crate::common::error::VaultResult;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct EncryptedBlob {
-    /// The bytes, encrypted with the blob key. Kept as base64 in the persisted cache (the field name predates raw transport).
+    /// The bytes, encrypted with the blob key. Persisted as base64 under the old field name, so existing caches still read.
     #[serde(rename = "encryptedDataBase64", with = "base64_bytes")]
     pub encrypted_data: Vec<u8>,
     /// The blob key, encrypted with the manifest's VEK.

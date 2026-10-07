@@ -7,12 +7,17 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
-/// JSON header of the binary POST /v2/Vault/blobs/download response. The body is a 4-byte big-endian header length,
-/// this header as UTF-8 JSON, then each blob's ciphertext bytes in header order.
+/// Response for POST /v2/Vault/blobs/download, as the JSON header of a binary frame (see <see cref="IFrameBody"/>).
 /// </summary>
-public class BlobDownloadResponse
+public class BlobDownloadResponse : IFrameBody
 {
-    /// <summary>Gets or sets the requested blobs the server has stored, in the order their bytes follow the header.</summary>
+    /// <summary>Gets or sets the requested blobs the server has stored.</summary>
     public List<BlobEntry> Blobs { get; set; } = [];
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    public IEnumerable<IFramePart> FrameParts => Blobs;
 }

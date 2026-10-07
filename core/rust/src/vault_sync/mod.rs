@@ -5,6 +5,7 @@ pub(crate) mod db;
 mod email_routing;
 mod engine;
 pub(crate) mod errors;
+mod frame;
 mod http;
 mod keys;
 mod legacy;

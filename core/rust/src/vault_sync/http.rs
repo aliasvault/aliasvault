@@ -4,29 +4,26 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use super::errors::{SyncError, SyncResult};
+use super::frame::{self, FrameBody};
 use super::session::Host;
 use super::types::{Command, HttpMethod, HttpResponse, LogLevel, StatusResponse};
 
-/// The body of a request: JSON text, or raw bytes the host sends as `application/octet-stream`.
+/// A request body: none, JSON text, or a binary frame the host sends as `application/octet-stream`.
 enum Body {
     None,
     Json(String),
-    Binary(Vec<u8>),
+    Frame(Vec<u8>),
 }
 
-async fn send(host: &Host, method: HttpMethod, path: &str, body: Option<String>, auth: bool, large_transfer: bool) -> SyncResult<HttpResponse> {
-    let body = body.map_or(Body::None, Body::Json);
-    Ok(send_with_bytes(host, method, path, body, auth, large_transfer, false).await?.0)
-}
-
-async fn send_with_bytes(host: &Host, method: HttpMethod, path: &str, body: Body, auth: bool, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
-    let (body, binary_body, command_bytes) = match body {
+/// Send a request; with `binary_response` a successful response comes back as raw bytes instead of as `body` text.
+async fn send(host: &Host, method: HttpMethod, path: &str, body: Body, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
+    let (body, binary_body, bytes) = match body {
         Body::None => (None, false, None),
         Body::Json(json) => (Some(json), false, None),
-        Body::Binary(bytes) => (None, true, Some(bytes)),
+        Body::Frame(frame) => (None, true, Some(frame)),
     };
-    let command = Command::Http { method, path: path.to_string(), body, auth, large_transfer, binary_response, binary_body };
-    let (response, bytes): (HttpResponse, _) = host.exchange(command, command_bytes).await?;
+    let command = Command::Http { method, path: path.to_string(), body, auth: true, large_transfer, binary_response, binary_body };
+    let (response, bytes): (HttpResponse, _) = host.call_with_bytes(command, bytes).await?;
     if response.status == 0 {
         let message = response.transport_error.unwrap_or_else(|| "request failed".to_string());
         return Err(if response.timed_out { SyncError::Timeout(message) } else { SyncError::Network(message) });
@@ -35,6 +32,19 @@ async fn send_with_bytes(host: &Host, method: HttpMethod, path: &str, body: Body
         return Err(SyncError::ClientUpgradeRequired);
     }
     Ok((response, bytes))
+}
+
+/// Send a request that answers with JSON and return the checked body.
+async fn send_json(host: &Host, method: HttpMethod, path: &str, body: Body, large_transfer: bool) -> SyncResult<String> {
+    check(send(host, method, path, body, large_transfer, false).await?.0)
+}
+
+/// Send a request that answers with a binary frame and decode it.
+async fn send_for_frame<T: FrameBody + DeserializeOwned>(host: &Host, method: HttpMethod, path: &str, body: Body) -> SyncResult<T> {
+    let (response, bytes) = send(host, method, path, body, true, true).await?;
+    check(response)?;
+    // A host that could not read the body hands back no bytes: a transfer failure, not a damaged vault.
+    frame::decode(&bytes.ok_or_else(|| SyncError::Network(format!("{} answered without a body", path)))?)
 }
 
 fn check(response: HttpResponse) -> SyncResult<String> {
@@ -66,103 +76,39 @@ fn parse<T: DeserializeOwned>(body: &str) -> SyncResult<T> {
 
 /// Authenticated GET of a v2 endpoint.
 pub(crate) async fn get<T: DeserializeOwned>(host: &Host, path: &str, large_transfer: bool) -> SyncResult<T> {
-    let body = check(send(host, HttpMethod::Get, path, None, true, large_transfer).await?)?;
-    parse(&body)
+    parse(&send_json(host, HttpMethod::Get, path, Body::None, large_transfer).await?)
 }
 
 /// Authenticated POST of a v2 endpoint with a JSON body.
 pub(crate) async fn post<B: Serialize, T: DeserializeOwned>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<T> {
-    let body = check(send(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, large_transfer).await?)?;
-    parse(&body)
-}
-
-/// Authenticated GET of a v2 endpoint that answers with raw bytes.
-pub(crate) async fn get_binary(host: &Host, path: &str, large_transfer: bool) -> SyncResult<Vec<u8>> {
-    let (response, bytes) = send_with_bytes(host, HttpMethod::Get, path, Body::None, true, large_transfer, true).await?;
-    check(response)?;
-    Ok(bytes.unwrap_or_default())
-}
-
-/// Authenticated POST of a v2 endpoint with a JSON body that answers with raw bytes.
-pub(crate) async fn post_binary<B: Serialize>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<Vec<u8>> {
-    let (response, bytes) = send_with_bytes(host, HttpMethod::Post, path, Body::Json(serde_json::to_string(body)?), true, large_transfer, true).await?;
-    check(response)?;
-    Ok(bytes.unwrap_or_default())
-}
-
-/// A request body sent as a binary frame: its JSON header (which lists each ciphertext's size), then the ciphertexts.
-pub(crate) trait FrameBody: Serialize {
-    /// The ciphertexts, in the order the header lists their sizes.
-    fn parts(&self) -> Vec<&[u8]>;
-}
-
-/// Authenticated POST of a v2 endpoint with a binary frame body and a JSON response.
-pub(crate) async fn post_frame<B: FrameBody, T: DeserializeOwned>(host: &Host, path: &str, body: &B) -> SyncResult<T> {
-    let (response, _) = send_with_bytes(host, HttpMethod::Post, path, Body::Binary(encode_frame(body)?), true, true, false).await?;
-    parse(&check(response)?)
-}
-
-/// Authenticated POST of a v2 endpoint with a binary frame body and no response body.
-pub(crate) async fn post_frame_no_content<B: FrameBody>(host: &Host, path: &str, body: &B) -> SyncResult<()> {
-    let (response, _) = send_with_bytes(host, HttpMethod::Post, path, Body::Binary(encode_frame(body)?), true, true, false).await?;
-    check(response)?;
-    Ok(())
-}
-
-/// A binary frame: 4-byte big-endian header length, the JSON header, then the parts back to back.
-pub(crate) fn encode_frame<B: FrameBody>(body: &B) -> SyncResult<Vec<u8>> {
-    let header = serde_json::to_vec(body)?;
-    let parts = body.parts();
-    let header_length = u32::try_from(header.len()).map_err(|_| SyncError::Other("binary frame header exceeds 4 GiB".to_string()))?;
-    let mut frame = Vec::with_capacity(4 + header.len() + parts.iter().map(|p| p.len()).sum::<usize>());
-    frame.extend_from_slice(&header_length.to_be_bytes());
-    frame.extend_from_slice(&header);
-    for part in parts {
-        frame.extend_from_slice(part);
-    }
-    Ok(frame)
-}
-
-/// The ciphertexts of a binary vault download, after its JSON header, taken in the order the header lists their sizes.
-pub(crate) struct Frame<'a> {
-    data: &'a [u8],
-}
-
-fn malformed_frame(reason: &str) -> SyncError {
-    SyncError::ServerVaultUnreadable(format!("binary response is malformed: {}", reason))
-}
-
-/// Open a binary vault download body: a 4-byte big-endian header length, the JSON header, then the raw ciphertexts.
-pub(crate) fn open_frame<T: DeserializeOwned>(body: &[u8]) -> SyncResult<(T, Frame<'_>)> {
-    let (length, rest) = body.split_first_chunk::<4>().ok_or_else(|| malformed_frame("no header length"))?;
-    let (header, data) = rest.split_at_checked(u32::from_be_bytes(*length) as usize).ok_or_else(|| malformed_frame("header exceeds the body"))?;
-    Ok((serde_json::from_slice(header).map_err(|e| malformed_frame(&e.to_string()))?, Frame { data }))
-}
-
-impl<'a> Frame<'a> {
-    /// The next `size` bytes.
-    pub fn take(&mut self, size: usize) -> SyncResult<&'a [u8]> {
-        let (part, rest) = self.data.split_at_checked(size).ok_or_else(|| malformed_frame("a ciphertext exceeds the body"))?;
-        self.data = rest;
-        Ok(part)
-    }
-
-    /// Refuse bytes the header did not account for.
-    pub fn finish(self) -> SyncResult<()> {
-        if self.data.is_empty() { Ok(()) } else { Err(malformed_frame("trailing bytes")) }
-    }
+    parse(&send_json(host, HttpMethod::Post, path, Body::Json(serde_json::to_string(body)?), large_transfer).await?)
 }
 
 /// Authenticated POST that returns no body.
 pub(crate) async fn post_no_content<B: Serialize>(host: &Host, path: &str, body: &B) -> SyncResult<()> {
-    check(send(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, false).await?)?;
+    send_json(host, HttpMethod::Post, path, Body::Json(serde_json::to_string(body)?), false).await?;
     Ok(())
 }
 
 /// Authenticated DELETE of a v2 endpoint.
 pub(crate) async fn delete(host: &Host, path: &str) -> SyncResult<()> {
-    check(send(host, HttpMethod::Delete, path, None, true, false).await?)?;
+    send_json(host, HttpMethod::Delete, path, Body::None, false).await?;
     Ok(())
+}
+
+/// Authenticated GET of a v2 endpoint that answers with a binary frame.
+pub(crate) async fn get_frame<T: FrameBody + DeserializeOwned>(host: &Host, path: &str) -> SyncResult<T> {
+    send_for_frame(host, HttpMethod::Get, path, Body::None).await
+}
+
+/// Authenticated POST of a v2 endpoint with a JSON body that answers with a binary frame.
+pub(crate) async fn post_for_frame<B: Serialize, T: FrameBody + DeserializeOwned>(host: &Host, path: &str, body: &B) -> SyncResult<T> {
+    send_for_frame(host, HttpMethod::Post, path, Body::Json(serde_json::to_string(body)?)).await
+}
+
+/// Authenticated POST of a v2 endpoint with a binary frame body and a JSON response.
+pub(crate) async fn post_frame<B: FrameBody + Serialize, T: DeserializeOwned>(host: &Host, path: &str, body: &mut B) -> SyncResult<T> {
+    parse(&send_json(host, HttpMethod::Post, path, Body::Frame(frame::encode(body)?), true).await?)
 }
 
 /// The v2 vault endpoint (`GET`/`POST v2/Vault`).
@@ -171,8 +117,8 @@ pub(crate) const VAULT_ENDPOINT: &str = "Vault";
 /// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's password-wrapped key chain.
 pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
 
-/// Max base64 characters in one blob transfer request or response body.
-pub(crate) const BLOB_TRANSFER_BATCH_MAX_CHARS: usize = 4 * 1024 * 1024;
+/// Max ciphertext bytes in one blob transfer request or response body.
+pub(crate) const BLOB_TRANSFER_BATCH_MAX_BYTES: usize = 4 * 1024 * 1024;
 
 /// Upper bound on the number of blobs in one transfer batch (the server's `VaultWriteLimits.MaxBlobsPerUpload`).
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_COUNT: usize = 100;
@@ -184,15 +130,15 @@ pub(crate) const BLOB_HASH_REQUEST_MAX_COUNT: usize = 1000;
 pub(crate) fn batch_by_transfer_cost<T>(items: Vec<T>, cost_of: impl Fn(&T) -> usize) -> Vec<Vec<T>> {
     let mut batches = Vec::new();
     let mut batch = Vec::new();
-    let mut chars = 0usize;
+    let mut bytes = 0usize;
     for item in items {
         let cost = cost_of(&item);
-        if !batch.is_empty() && (chars + cost > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.len() >= BLOB_TRANSFER_BATCH_MAX_COUNT) {
+        if !batch.is_empty() && (bytes + cost > BLOB_TRANSFER_BATCH_MAX_BYTES || batch.len() >= BLOB_TRANSFER_BATCH_MAX_COUNT) {
             batches.push(std::mem::take(&mut batch));
-            chars = 0;
+            bytes = 0;
         }
         batch.push(item);
-        chars += cost;
+        bytes += cost;
     }
     if !batch.is_empty() {
         batches.push(batch);

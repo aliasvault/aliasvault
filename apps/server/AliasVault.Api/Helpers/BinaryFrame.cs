@@ -9,10 +9,12 @@ namespace AliasVault.Api.Helpers;
 
 using System.Buffers.Binary;
 using System.Text.Json;
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Writes the binary body of the v2 vault downloads: a 4-byte big-endian header length, the header as UTF-8 JSON, then
-/// the raw ciphertexts back to back. The header carries each ciphertext's size, in the order the bytes follow.
+/// The binary body of the v2 vault transfers: a 4-byte big-endian header length, a UTF-8 JSON header, then the raw
+/// ciphertexts. Each <see cref="IFramePart"/> in the header gives the offset (counted from the first byte after the
+/// header) and size of its ciphertext, so readers skip entries and bytes they do not know.
 /// </summary>
 public static class BinaryFrame
 {
@@ -22,22 +24,29 @@ public static class BinaryFrame
     public const string ContentType = "application/octet-stream";
 
     /// <summary>
-    /// Builds a frame from a header and the ciphertexts that follow it.
+    /// Builds a frame from a header, setting each part's offset and size.
     /// </summary>
     /// <param name="header">The JSON header.</param>
-    /// <param name="parts">The ciphertexts, in the order the header lists their sizes.</param>
     /// <returns>The frame bytes.</returns>
-    public static byte[] Write(object header, IReadOnlyList<byte[]> parts)
+    public static byte[] Write(IFrameBody header)
     {
-        var headerBytes = JsonSerializer.SerializeToUtf8Bytes(header, JsonSerializerOptions.Web);
-        var body = new byte[4 + headerBytes.Length + parts.Sum(p => p.Length)];
+        var partList = header.FrameParts.ToList();
+        var dataLength = 0;
+        foreach (var part in partList)
+        {
+            part.Offset = dataLength;
+            part.Size = part.Data.Length;
+            dataLength += part.Data.Length;
+        }
+
+        var headerBytes = JsonSerializer.SerializeToUtf8Bytes(header, header.GetType(), JsonSerializerOptions.Web);
+        var dataStart = 4 + headerBytes.Length;
+        var body = new byte[dataStart + dataLength];
         BinaryPrimitives.WriteUInt32BigEndian(body, (uint)headerBytes.Length);
         headerBytes.CopyTo(body, 4);
-        var offset = 4 + headerBytes.Length;
-        foreach (var part in parts)
+        foreach (var part in partList)
         {
-            part.CopyTo(body, offset);
-            offset += part.Length;
+            part.Data.CopyTo(body, dataStart + part.Offset);
         }
 
         return body;

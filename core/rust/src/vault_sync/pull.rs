@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{self, BlobDownloadEntry, BlobDownloadResponse, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
+use super::types::{self, BlobDownloadResponse, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestDto, StoredBlobRef};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
 use crate::crypto;
@@ -73,8 +73,7 @@ pub(crate) enum Snapshot {
 
 /// `GET v2/Vault`. A snapshot in a storage format newer than this build knows is refused, never read as legacy.
 pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<Snapshot> {
-    let body = http::with_outdated_server_guard(http::get_binary(&ctx.host, http::VAULT_ENDPOINT, true).await)?;
-    let snapshot = decode_snapshot(&body)?;
+    let snapshot: GetResponse = http::with_outdated_server_guard(http::get_frame(&ctx.host, http::VAULT_ENDPOINT).await)?;
     match snapshot.storage_format.as_deref() {
         None | Some(legacy::STORAGE_FORMAT_SQLITE_BLOB) => Ok(Snapshot::LegacySqliteBlob(snapshot)),
         Some(STORAGE_FORMAT_MANIFEST) => Ok(Snapshot::Manifest(snapshot)),
@@ -82,23 +81,10 @@ pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<Snapshot> {
     }
 }
 
-/// Split a binary snapshot body into its header, filling each manifest and bucket with its ciphertext.
-pub(crate) fn decode_snapshot(body: &[u8]) -> SyncResult<GetResponse> {
-    let (mut snapshot, mut frame) = http::open_frame::<GetResponse>(body)?;
-    for manifest in &mut snapshot.manifests {
-        manifest.blob = frame.take(manifest.size)?.to_vec();
-    }
-    for bucket in &mut snapshot.buckets {
-        bucket.blob = frame.take(bucket.size)?.to_vec();
-    }
-    frame.finish()?;
-    Ok(snapshot)
-}
-
 /// Verify a ciphertext against the server's hash, decrypt it bound to `aad` and open it via the codec.
 fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], expected_ciphertext_hash: Option<&str>, label: &str) -> SyncResult<String> {
     if let Some(expected) = expected_ciphertext_hash.filter(|hash| !hash.is_empty()) {
-        if vault_codec::compute_ciphertext_hash_bytes(ciphertext) != expected {
+        if vault_codec::compute_ciphertext_hash(ciphertext) != expected {
             return Err(SyncError::ServerVaultUnreadable(format!("{} ciphertext hash mismatch, refusing to load (possible storage corruption)", label)));
         }
     }
@@ -280,12 +266,12 @@ async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[Resolv
     let mut fingerprints = HashMap::new();
     let mut revisions = HashMap::new();
     for dto in &snapshot.buckets {
-        if dto.blob.is_empty() {
+        if dto.ciphertext.bytes.is_empty() {
             continue;
         }
         let key = key_by_manifest.get(dto.manifest_id.as_str()).ok_or_else(|| SyncError::Snapshot(format!("data bucket \"{}\" belongs to manifest {}, which this vault did not open, refusing to assemble", dto.category, dto.manifest_id)))?;
         let label = format!("\"{}\" bucket of manifest {}", dto.category, dto.manifest_id);
-        let bucket_json = verify_decrypt_unpack(&dto.blob, key, &crypto::aad::bucket(&dto.manifest_id, &dto.category), dto.ciphertext_hash.as_deref(), &label)?;
+        let bucket_json = verify_decrypt_unpack(&dto.ciphertext.bytes, key, &crypto::aad::bucket(&dto.manifest_id, &dto.category), dto.ciphertext_hash.as_deref(), &label)?;
         let bucket: DataBucket = serde_json::from_str(&bucket_json)?;
         ensure_readable(bucket.schema_version, &label)?;
         if !ids_equal(&bucket.manifest_id, &dto.manifest_id) || bucket.category != dto.category {
@@ -328,11 +314,12 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> 
     }
     let batch_count = batches.len();
     for (index, (manifest_id, chunk)) in batches.into_iter().enumerate() {
-        let body = http::post_binary(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?;
-        let blobs = decode_blob_download(&body)?;
-        ctx.log(format!("[Pull] Downloaded blob batch {}/{}: requested {}, received {} ({} bytes).", index + 1, batch_count, chunk.len(), blobs.len(), body.len())).await;
-        for (entry, ciphertext) in blobs {
-            cache.insert(entry.hash, EncryptedBlob { encrypted_data: ciphertext.to_vec(), encrypted_blob_key: entry.encrypted_blob_key });
+        let request = BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() };
+        let blobs = http::post_for_frame::<_, BlobDownloadResponse>(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &request).await?.blobs;
+        let bytes: usize = blobs.iter().map(|b| b.ciphertext.size).sum();
+        ctx.log(format!("[Pull] Downloaded blob batch {}/{}: requested {}, received {} ({} bytes).", index + 1, batch_count, chunk.len(), blobs.len(), bytes)).await;
+        for dto in blobs {
+            cache.insert(dto.hash, EncryptedBlob { encrypted_data: dto.ciphertext.bytes, encrypted_blob_key: dto.encrypted_blob_key });
         }
     }
 
@@ -355,14 +342,6 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> 
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &pruned_cache).await?;
     state::set(&ctx.host, state::VAULT_SERVER_BLOB_HASHES, &refs.iter().map(|r| r.hash.clone()).collect::<Vec<_>>()).await?;
     Ok(blob_map)
-}
-
-/// Split a binary blob download body into its blobs.
-pub(crate) fn decode_blob_download(body: &[u8]) -> SyncResult<Vec<(BlobDownloadEntry, &[u8])>> {
-    let (header, mut frame) = http::open_frame::<BlobDownloadResponse>(body)?;
-    let blobs = header.blobs.into_iter().map(|entry| frame.take(entry.size).map(|ciphertext| (entry, ciphertext))).collect::<SyncResult<Vec<_>>>()?;
-    frame.finish()?;
-    Ok(blobs)
 }
 
 /// Materialize manifests and buckets into a fresh database and return its bytes.
@@ -391,7 +370,7 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
 
 fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<ResolvedManifest> {
     let label = if is_personal { "manifest".to_string() } else { format!("shared manifest {}", dto.manifest_id) };
-    let manifest_json = verify_decrypt_unpack(&dto.blob, vek, &crypto::aad::manifest(&dto.manifest_id), dto.ciphertext_hash.as_deref(), &label)?;
+    let manifest_json = verify_decrypt_unpack(&dto.ciphertext.bytes, vek, &crypto::aad::manifest(&dto.manifest_id), dto.ciphertext_hash.as_deref(), &label)?;
     let manifest: Manifest = serde_json::from_str(&manifest_json)?;
     ensure_readable(manifest.schema_version, &label)?;
     if !ids_equal(&manifest.manifest_id, &dto.manifest_id) {

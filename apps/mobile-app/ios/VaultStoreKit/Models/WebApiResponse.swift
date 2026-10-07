@@ -1,3 +1,5 @@
+import Foundation
+
 /**
  * Response object from a WebAPI request containing status code, body, and headers
  */

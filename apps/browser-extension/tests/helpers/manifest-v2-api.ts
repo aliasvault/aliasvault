@@ -17,6 +17,7 @@ import { bucketAad, manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
   manifestId: string;
+  offset: number;
   size: number;
   blob: string;
   ciphertextHash: string;
@@ -30,7 +31,7 @@ export type VaultSnapshot = {
   manifests?: SnapshotManifest[];
   /** The manifest owned by the caller's personal group; every other entry is a shared one. */
   personalManifestId?: string | null;
-  buckets?: Array<{ category: string; size: number; blob: string; ciphertextHash: string; revision: number }>;
+  buckets?: Array<{ category: string; offset: number; size: number; blob: string; ciphertextHash: string; revision: number }>;
 };
 
 /** The account-key unlock chain from GET /v2/VaultKey/{type} (fields relevant to these tests). */
@@ -89,14 +90,13 @@ export async function getVaultSnapshot(apiBaseUrl: string, token: string): Promi
     throw new Error(`GET /v2/Vault failed with status ${response.status}: ${await response.text()}`);
   }
 
-  // The body is a 4-byte big-endian header length, the JSON header, then the manifest and bucket ciphertexts in header order.
+  // The body is a 4-byte big-endian header length, the JSON header, then the ciphertexts, each at its entry's offset after the header.
   const body = Buffer.from(await response.arrayBuffer());
   const headerLength = body.readUInt32BE(0);
   const snapshot = JSON.parse(body.subarray(4, 4 + headerLength).toString('utf8')) as VaultSnapshot;
-  let offset = 4 + headerLength;
+  const data = body.subarray(4 + headerLength);
   for (const entry of [...(snapshot.manifests ?? []), ...(snapshot.buckets ?? [])]) {
-    entry.blob = body.subarray(offset, offset + entry.size).toString('base64');
-    offset += entry.size;
+    entry.blob = data.subarray(entry.offset, entry.offset + entry.size).toString('base64');
   }
   return snapshot;
 }
@@ -334,12 +334,19 @@ async function postVaultWrite(
   manifests: ManifestWrite[],
   buckets: BucketWrite[]
 ): Promise<VaultWriteResult> {
-  // The body is a 4-byte big-endian header length, the JSON header (sizes in place of the base64 ciphertexts), then the ciphertexts.
-  const ciphertexts = [...manifests.map((m) => Buffer.from(m.manifestBlob, 'base64')), ...buckets.map((b) => Buffer.from(b.blob, 'base64'))];
+  // The body is a 4-byte big-endian header length, the JSON header (offset and size in place of each base64 ciphertext), then the ciphertexts.
+  const ciphertexts: Buffer[] = [];
+  let dataLength = 0;
+  const place = (base64: string): { offset: number; size: number } => {
+    const bytes = Buffer.from(base64, 'base64');
+    ciphertexts.push(bytes);
+    dataLength += bytes.length;
+    return { offset: dataLength - bytes.length, size: bytes.length };
+  };
   const header = Buffer.from(JSON.stringify({
     username: SrpAuthService.normalizeUsername(username),
-    manifests: manifests.map(({ manifestBlob, ...rest }) => ({ ...rest, size: Buffer.from(manifestBlob, 'base64').length })),
-    buckets: buckets.map(({ blob, ...rest }) => ({ ...rest, size: Buffer.from(blob, 'base64').length })),
+    manifests: manifests.map(({ manifestBlob, ...rest }) => ({ ...rest, ...place(manifestBlob) })),
+    buckets: buckets.map(({ blob, ...rest }) => ({ ...rest, ...place(blob) })),
     emailRouting: null,
   }));
   const headerLength = Buffer.alloc(4);

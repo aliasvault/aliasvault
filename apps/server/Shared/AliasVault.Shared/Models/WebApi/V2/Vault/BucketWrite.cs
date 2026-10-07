@@ -21,10 +21,13 @@ public class BucketWrite : IFramePart
     /// <summary>Gets or sets the bucket kind discriminator.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 
-    /// <summary>Gets or sets the length of the bucket ciphertext in the frame.</summary>
+    /// <inheritdoc/>
+    public int Offset { get; set; }
+
+    /// <inheritdoc/>
     public int Size { get; set; }
 
-    /// <summary>Gets or sets the bucket ciphertext (AES-GCM). Sent after the JSON header, not inside it.</summary>
+    /// <inheritdoc/>
     [JsonIgnore]
     public byte[] Data { get; set; } = [];
 

@@ -71,8 +71,7 @@ public class VaultController(
     };
 
     /// <summary>
-    /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing as a binary frame:
-    /// a <see cref="GetResponse"/> JSON header, then the manifest and bucket ciphertexts (see <see cref="BinaryFrame"/>).
+    /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing as a <see cref="BinaryFrame"/>.
     /// </summary>
     /// <returns>Snapshot frame.</returns>
     [HttpGet("")]
@@ -110,7 +109,7 @@ public class VaultController(
                 PersonalManifestId = legacy?.ManifestId,
                 EmailRouting = emailRouting,
             };
-            return File(BinaryFrame.Write(legacyResponse, []), BinaryFrame.ContentType);
+            return File(BinaryFrame.Write(legacyResponse), BinaryFrame.ContentType);
         }
 
         var manifestIds = latestManifests.Select(m => m.ManifestId).ToList();
@@ -120,7 +119,6 @@ public class VaultController(
             {
                 ManifestId = x.ManifestId,
                 Category = x.Category,
-                Size = x.EncryptedData.Length,
                 Data = x.EncryptedData,
                 CiphertextHash = x.CiphertextHash,
                 Revision = x.RevisionNumber,
@@ -147,8 +145,7 @@ public class VaultController(
             return new Manifest
             {
                 ManifestId = m.ManifestId,
-                Size = m.ManifestBlob?.Length ?? 0,
-                Data = m.ManifestBlob,
+                Data = m.ManifestBlob ?? [],
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
@@ -172,8 +169,7 @@ public class VaultController(
             Buckets = buckets,
             EmailRouting = emailRouting,
         };
-        var parts = manifests.Where(m => m.Data != null).Select(m => m.Data!).Concat(buckets.Select(b => b.Data)).ToList();
-        return File(BinaryFrame.Write(response, parts), BinaryFrame.ContentType);
+        return File(BinaryFrame.Write(response), BinaryFrame.ContentType);
     }
 
     /// <summary>
@@ -181,7 +177,7 @@ public class VaultController(
     /// plus its blob references, without the rest of the snapshot.
     /// </summary>
     /// <param name="manifestId">The stable identifier of the logical manifest to fetch.</param>
-    /// <returns>A binary frame of the manifest DTO and its ciphertext, or 404 when the user has no such manifest-v1 manifest.</returns>
+    /// <returns>The manifest as a <see cref="BinaryFrame"/>, or 404 when the user has no such manifest-v1 manifest.</returns>
     [HttpGet("manifest/{manifestId:guid}")]
     public async Task<IActionResult> GetManifest(Guid manifestId)
     {
@@ -211,8 +207,7 @@ public class VaultController(
         var manifest = new Manifest
         {
             ManifestId = latest.ManifestId,
-            Size = latest.ManifestBlob?.Length ?? 0,
-            Data = latest.ManifestBlob,
+            Data = latest.ManifestBlob ?? [],
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
             BlobReferences = blobRefs,
@@ -241,7 +236,7 @@ public class VaultController(
             manifest.CanAdminister = await GroupHelper.IsGroupAdminAsync(context, latest.OwnerGroupId, user.Id);
         }
 
-        return File(BinaryFrame.Write(manifest, manifest.Data != null ? [manifest.Data] : []), BinaryFrame.ContentType);
+        return File(BinaryFrame.Write(manifest), BinaryFrame.ContentType);
     }
 
     /// <summary>
@@ -774,8 +769,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Download a batch of one manifest's encrypted blobs by hash as raw bytes (application/octet-stream). The body is a
-    /// 4-byte big-endian header length, a <see cref="BlobDownloadResponse"/> JSON header, then each blob's ciphertext in header order.
+    /// Download a batch of one manifest's encrypted blobs by hash, as a <see cref="BinaryFrame"/>.
     /// </summary>
     /// <param name="model">Hash list request.</param>
     /// <returns>The stored blobs among the requested hashes.</returns>
@@ -796,13 +790,12 @@ public class VaultController(
         }
 
         var wanted = model.Hashes.Distinct().ToList();
-        var rows = await context.VaultBlobObjects
+        var blobs = await context.VaultBlobObjects
             .Where(b => b.ManifestId == model.ManifestId && wanted.Contains(b.Hash))
-            .Select(b => new { b.Hash, b.Category, b.EncryptedBlobKey, b.EncryptedData })
+            .Select(b => new BlobEntry { Hash = b.Hash, Category = b.Category, EncryptedBlobKey = b.EncryptedBlobKey, Data = b.EncryptedData })
             .ToListAsync();
 
-        var header = new BlobDownloadResponse { Blobs = rows.Select(r => new BlobEntry { Hash = r.Hash, Category = r.Category, EncryptedBlobKey = r.EncryptedBlobKey, Size = r.EncryptedData.Length }).ToList() };
-        return File(BinaryFrame.Write(header, rows.Select(r => r.EncryptedData).ToList()), BinaryFrame.ContentType);
+        return File(BinaryFrame.Write(new BlobDownloadResponse { Blobs = blobs }), BinaryFrame.ContentType);
     }
 
     /// <summary>
@@ -1091,15 +1084,9 @@ public class VaultController(
 
         foreach (var dto in blobs)
         {
-            byte[]? data = null;
-            if (!existing.TryGetValue(dto.Hash, out var row) || overwrite)
+            if ((!existing.TryGetValue(dto.Hash, out var row) || overwrite) && !CiphertextHelper.IsCiphertext(dto.Data))
             {
-                if (!CiphertextHelper.IsCiphertext(dto.Data))
-                {
-                    return false;
-                }
-
-                data = dto.Data;
+                return false;
             }
 
             if (row != null)
@@ -1107,9 +1094,9 @@ public class VaultController(
                 if (overwrite)
                 {
                     row.Category = dto.Category;
-                    row.EncryptedData = data!;
+                    row.EncryptedData = dto.Data;
                     row.EncryptedBlobKey = dto.EncryptedBlobKey;
-                    row.SizeBytes = data!.Length;
+                    row.SizeBytes = dto.Data.Length;
                 }
 
                 continue;
@@ -1120,9 +1107,9 @@ public class VaultController(
                 Hash = dto.Hash,
                 ManifestId = manifestId,
                 Category = dto.Category,
-                EncryptedData = data!,
+                EncryptedData = dto.Data,
                 EncryptedBlobKey = dto.EncryptedBlobKey,
-                SizeBytes = data!.Length,
+                SizeBytes = dto.Data.Length,
                 CreatedAt = nowUtc,
             };
             context.VaultBlobObjects.Add(entity);

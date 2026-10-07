@@ -18,10 +18,13 @@ public class ManifestWrite : IFramePart
     /// <summary>Gets or sets the manifest this write targets.</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the length of the manifest ciphertext in the frame.</summary>
+    /// <inheritdoc/>
+    public int Offset { get; set; }
+
+    /// <inheritdoc/>
     public int Size { get; set; }
 
-    /// <summary>Gets or sets the manifest ciphertext (AES-GCM). Sent after the JSON header, not inside it.</summary>
+    /// <inheritdoc/>
     [JsonIgnore]
     public byte[] Data { get; set; } = [];
 
