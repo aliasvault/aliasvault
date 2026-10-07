@@ -73,23 +73,27 @@ async function getPersonalManifest(apiUrl: string, user: TestUser): Promise<{ ma
  */
 async function writePersonalManifest(apiUrl: string, user: TestUser, blob: string): Promise<void> {
   const { manifestId, revision } = await getPersonalManifest(apiUrl, user);
+  // The body is a 4-byte big-endian header length, the JSON header, then the manifest ciphertext.
+  const ciphertext = Buffer.from(blob, 'base64');
+  const header = Buffer.from(JSON.stringify({
+    username: SrpAuthService.normalizeUsername(user.username),
+    manifests: [{
+      manifestId,
+      size: ciphertext.length,
+      manifestCiphertextHash: createHash('sha256').update(ciphertext).digest('hex'),
+      currentRevision: revision,
+      credentialsCount: 0,
+      blobReferences: [],
+    }],
+    buckets: [],
+    emailRouting: null,
+  }));
+  const headerLength = Buffer.alloc(4);
+  headerLength.writeUInt32BE(header.length);
   const response = await fetch(`${apiUrl}/v2/Vault`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
-    body: JSON.stringify({
-      username: SrpAuthService.normalizeUsername(user.username),
-      manifests: [{
-        manifestId,
-        manifestBlob: blob,
-        manifestCiphertextHash: createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex'),
-        currentRevision: revision,
-        credentialsCount: 0,
-        blobReferences: [],
-      }],
-      buckets: [],
-      newBlobs: [],
-      emailRouting: null,
-    }),
+    headers: { 'Content-Type': 'application/octet-stream', Authorization: `Bearer ${user.token}` },
+    body: Buffer.concat([headerLength, header, ciphertext]),
   });
   const result = response.ok ? (await response.json()) as { status: string } : null;
   if (!result || result.status !== 'ok') {
