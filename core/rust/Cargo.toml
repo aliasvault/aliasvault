@@ -55,6 +55,9 @@ hkdf = "0.12"
 # HMAC-SHA256 (per-manifest blob addresses)
 hmac = "0.12"
 
+# SHA-1 (hmac-sha1 TOTP generator)
+sha1 = "0.10"
+
 # AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
 aes-gcm = "0.10"
 rsa = "0.9"
