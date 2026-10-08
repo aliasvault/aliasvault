@@ -13,7 +13,6 @@ export * from './Mailbox';
 export * from './Inbox';
 export * from './MailboxEmail';
 export * from './Email';
-export * from './EmailAttachment';
 export * from './EmailDecryptionKey';
 export * from './AuthLog';
 export * from './RefreshToken';

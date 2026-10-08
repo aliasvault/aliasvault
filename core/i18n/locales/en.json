@@ -420,8 +420,7 @@
     },
     "title": "Emails",
     "to": "To:",
-    "toColumn": "To",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "To"
   },
   "fieldLabels": {
     "alias": {
@@ -1177,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Clipboard Settings",
     "contextMenuDescription": "Right-click on input fields to access AliasVault options",
     "contextMenuSettings": "Context Menu Settings",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1417,8 +1415,6 @@
         "verificationCodePlaceholder": "Enter verification code",
         "verifyAndEnableButton": "Verify and Enable"
       },
-      "pageDescription": "Configure security settings.",
-      "pageTitle": "Security settings",
       "passkeyUnlock": {
         "disableButton": "Disable Passkey Unlock",
         "disabledDescription": "By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.",
@@ -1640,8 +1636,7 @@
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Saving changes to vault",
     "syncingUpdatedVault": "Syncing updated vault",
-    "syncingVault": "Syncing vault",
-    "uploadingVaultToServer": "Uploading vault to server"
+    "syncingVault": "Syncing vault"
   },
   "web": {
     "footer": {
@@ -1655,8 +1650,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Switch to dark mode",
       "enableLightMode": "Switch to light mode",
-      "logOut": "Log out",
-      "openMenuLabel": "Open menu"
+      "logOut": "Log out"
     },
     "welcome": {
       "createFirstIdentityButton": "Create Your First Identity",

@@ -257,12 +257,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
     return modes;
   }, [htmlBody, textBody, hasSource]);
 
-  /*
-   * A source the parser found no body in is shown as-is plus a notice to update the app, in case a newer
-   * server stores a shape this parser does not know yet.
-   */
-  const isSourceOnly = hasSource && !htmlBody && !textBody;
-
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
     plain: t('emails.formatPlain'),
@@ -439,18 +433,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
       backgroundColor: colors.background,
       flexDirection: 'row',
       padding: 2,
-    },
-    updateNotice: {
-      backgroundColor: colors.warningBackground,
-      borderColor: colors.warning,
-      borderRadius: 6,
-      borderWidth: 1,
-      margin: 8,
-      padding: 10,
-    },
-    updateNoticeText: {
-      color: colors.warning,
-      fontSize: 13,
     },
     webView: {
       flex: 1,
@@ -657,13 +639,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
         {error && (
           <View style={styles.inlineError}>
             <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
-          </View>
-        )}
-        {isSourceOnly && (
-          <View style={styles.updateNotice}>
-            <ThemedText style={styles.updateNoticeText}>
-              {t('emails.updateClientForFormattedView')}
-            </ThemedText>
           </View>
         )}
         {emailView}
