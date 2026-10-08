@@ -88,7 +88,7 @@
   "common.errorPasswordMismatch": "Password confirmation mismatch error",
   "common.errors.clientNotSupported": "The server rejects this app version (web app, browser extension or mobile app). Keep it generic: it is shown in every app.",
   "common.errors.clientOutdated": "The vault was upgraded by a newer AliasVault version than this one. Shown in every app, so keep it generic.",
-  "common.errors.serverOutdated": "The AliasVault server is too old for this app version. Shown in every app, so keep it generic.",
+  "common.errors.serverOutdated": "The AliasVault server is too old for this app version. Shown in every app; covers both the official server (briefly behind during a rollout) and self-hosted servers.",
   "common.generate": "Button tooltip for generating a random value",
   "common.help": "Screen reader label of a help button",
   "common.hide": "Button text for hiding content",
