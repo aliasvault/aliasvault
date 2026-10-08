@@ -110,6 +110,9 @@ pub(crate) struct PasswordSettings {
     /// Whether to exclude ambiguous characters.
     #[serde(default)]
     pub use_non_ambiguous_chars: bool,
+    /// Characters that must never appear in the password (user supplied).
+    #[serde(default)]
+    pub excluded_chars: String,
 
     /// Number of words in the passphrase.
     #[serde(default = "default_word_count")]

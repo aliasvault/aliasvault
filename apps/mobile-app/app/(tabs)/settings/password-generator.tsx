@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -86,6 +86,9 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
       fontSize: 13,
       marginBottom: 16,
     },
+    keyboardAvoidingView: {
+      flex: 1,
+    },
   });
 
   if (!settings) {
@@ -99,17 +102,19 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   }
 
   return (
-    <ThemedContainer>
-      <ThemedScrollView>
-        <ThemedText style={styles.descriptionText}>
-          {t('settings.passwordGeneratorSettings.description')}
-        </ThemedText>
-        <PasswordGeneratorPanel
-          key={loadKey}
-          initialSettings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
-      </ThemedScrollView>
-    </ThemedContainer>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
+      <ThemedContainer>
+        <ThemedScrollView>
+          <ThemedText style={styles.descriptionText}>
+            {t('settings.passwordGeneratorSettings.description')}
+          </ThemedText>
+          <PasswordGeneratorPanel
+            key={loadKey}
+            initialSettings={settings}
+            onSettingsChange={handleSettingsChange}
+          />
+        </ThemedScrollView>
+      </ThemedContainer>
+    </KeyboardAvoidingView>
   );
 }

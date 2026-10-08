@@ -279,6 +279,8 @@
   "items.delete.yesImSureButton": "Confirmation button text",
   "items.editableFieldLabel.deleteField": "Tooltip for delete field button",
   "items.editableFieldLabel.editLabel": "Tooltip for edit label button",
+  "items.excludedCharsDescription": "Help text under the password generator field where the user types characters that must never appear in generated passwords; keep the example characters as-is",
+  "items.excludedCharsLabel": "Label of the password generator text field for characters that must never appear in generated passwords",
   "items.fieldHistory.deleteConfirm": "Delete confirmation text",
   "items.folders.deleteModal.deleteFolderAndContentsDescription": "Description for delete folder and contents option. {0} is item count.",
   "items.folders.deleteModal.deleteFolderAndContentsTitle": "Title for delete folder and contents option",

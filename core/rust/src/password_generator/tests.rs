@@ -92,6 +92,28 @@ fn basic_no_classes_falls_back_to_lowercase() {
 }
 
 #[test]
+fn basic_excluded_chars_never_appear() {
+    // Dead keys on a US International layout plus a few letters and digits, spanning every class.
+    let excluded = "^`'\"~$aE7";
+    let json = r#"{"Type":"basic","Length":80,"ExcludedChars":"^`'\"~$aE7"}"#;
+    for _ in 0..20 {
+        let pw = generate_password(json).unwrap();
+        assert!(pw.chars().all(|c| !excluded.contains(c)), "found excluded char in {pw}");
+        assert_eq!(pw.chars().count(), 80);
+    }
+}
+
+#[test]
+fn basic_excluding_a_whole_class_still_fills_the_length() {
+    // Numbers are enabled but all excluded: the mandatory digit is skipped and the rest fills the length.
+    let json = r#"{"Type":"basic","Length":40,"UseLowercase":false,"UseUppercase":false,"UseSpecialChars":false,"UseNumbers":true,"ExcludedChars":"0123456789"}"#;
+    let pw = generate_password(json).unwrap();
+    assert_eq!(pw.chars().count(), 40);
+    // Every enabled character was excluded, so the exclusions are ignored instead of producing nothing.
+    assert!(pw.chars().all(|c| c.is_ascii_digit()), "unexpected chars in {pw}");
+}
+
+#[test]
 fn basic_non_ambiguous_excludes_ambiguous_chars() {
     let ambiguous = "Il1O0oZzSsBbGg2568|[]{}()<>;:,.`'\"_-";
     let json = r#"{"Type":"basic","Length":80,"UseNonAmbiguousChars":true}"#;
