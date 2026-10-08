@@ -12,12 +12,6 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { AVAILABLE_LANGUAGES } from '@/i18n/config';
 import { changeLanguage } from '@/i18n/i18n';
-import { vaultStore } from '@/vault/VaultStore';
-
-/**
- * Whether the private domain list holds a usable domain.
- */
-const hasValidPrivateDomains = (domains: string[]): boolean => domains.length > 0 && !(domains.length === 1 && (domains[0].trim().length === 0 || domains[0] === 'DISABLED.TLD'));
 
 /**
  * The general settings page.
@@ -26,12 +20,9 @@ const GeneralSettings: React.FC = () => {
   const { t, i18n } = useTranslation();
   const dbContext = useDb();
   const { executeVaultMutationInBackground } = useVaultMutate();
-  
+
   usePageTitle(t('settings.general.pageTitle'));
 
-  const [privateDomains, setPrivateDomains] = useState<string[]>([]);
-  const [publicDomains, setPublicDomains] = useState<string[]>([]);
-  const [defaultEmailDomain, setDefaultEmailDomain] = useState('');
   const [autoEmailRefresh, setAutoEmailRefresh] = useState(true);
   const [appLanguage, setAppLanguage] = useState(i18n.language);
 
@@ -46,36 +37,9 @@ const GeneralSettings: React.FC = () => {
 
   useEffect(() => {
     const client = dbContext.sqliteClient;
-    if (!client) {
-      return;
-    }
-    let cancelled = false;
-
-    /**
-     * Load the email domains and the current settings.
-     */
-    const load = async (): Promise<void> => {
-      const metadata = await vaultStore.getVaultMetadata();
-      const hidden = metadata?.hiddenPrivateEmailDomains ?? [];
-      const privateList = (metadata?.privateEmailDomains ?? []).filter(d => !hidden.includes(d));
-      const publicList = metadata?.publicEmailDomains ?? [];
-      if (cancelled) {
-        return;
-      }
-
-      setPrivateDomains(privateList);
-      setPublicDomains(publicList);
-      let domain = client.settings.getDefaultEmailDomain();
-      if (domain.length === 0 || hidden.includes(domain)) {
-        domain = hasValidPrivateDomains(privateList) ? privateList[0] : publicList[0] ?? '';
-      }
-      setDefaultEmailDomain(domain);
+    if (client) {
       setAutoEmailRefresh(client.settings.getSetting('AutoEmailRefresh', 'True').toLowerCase() === 'true');
-    };
-    void load();
-    return (): void => {
-      cancelled = true;
-    };
+    }
   }, [dbContext.sqliteClient]);
 
   /**
@@ -94,38 +58,18 @@ const GeneralSettings: React.FC = () => {
       <PageContent>
         <Card>
           <SectionTitle className="mb-4">{t('settings.general.appLanguageTitle')}</SectionTitle>
-          <div className="mb-4">
+          <div>
             <FormLabel htmlFor="appLanguage">{t('settings.language')}</FormLabel>
             <Select id="appLanguage" value={appLanguage} onChange={e => void updateAppLanguage(e.target.value)}>
               {AVAILABLE_LANGUAGES.map(language => <option key={language.code} value={language.code}>{language.flag} {language.nativeName}</option>)}
             </Select>
-            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t('settings.general.appLanguageDescription')}</span>
+            <span className="block mt-2 text-sm text-gray-500 dark:text-gray-400">{t('settings.general.appLanguageDescription')}</span>
           </div>
         </Card>
 
         <Card>
           <SectionTitle className="mb-4">{t('settings.general.emailSettingsTitle')}</SectionTitle>
-          <div className="mb-4">
-            <FormLabel htmlFor="defaultEmailDomain">{t('settings.general.defaultEmailDomainLabel')}</FormLabel>
-            <Select id="defaultEmailDomain" value={defaultEmailDomain} onChange={(e) => {
-              setDefaultEmailDomain(e.target.value);
-              void updateSetting('DefaultEmailDomain', e.target.value);
-            }}>
-              <optgroup label={t('settings.general.privateDomainsLabel')}>
-                {hasValidPrivateDomains(privateDomains)
-                  ? privateDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)
-                  : <option disabled value="_">{t('settings.general.privateDomainsDisabledLabel')}</option>}
-              </optgroup>
-              <optgroup label={t('settings.general.publicDomainsLabel')}>
-                {publicDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)}
-              </optgroup>
-            </Select>
-            <span className="block text-sm font-normal text-gray-500 dark:text-gray-400 mt-2">
-              {t('settings.general.defaultEmailDomainDescription')} {t('settings.general.defaultEmailDomainDescriptionNote')} <a href="https://docs.aliasvault.com/misc/private-vs-public-email.html" className="text-primary-500 hover:text-primary-700 hover:underline" target="_blank" rel="noopener noreferrer">{t('settings.general.defaultEmailDomainLearnMore')}</a>.
-            </span>
-          </div>
-
-          <div className="flex items-center mb-4">
+          <div className="flex items-center">
             <input id="autoEmailRefresh" type="checkbox" checked={autoEmailRefresh} onChange={(e) => {
               setAutoEmailRefresh(e.target.checked);
               void updateSetting('AutoEmailRefresh', e.target.checked ? 'True' : 'False');
@@ -133,7 +77,6 @@ const GeneralSettings: React.FC = () => {
             <label htmlFor="autoEmailRefresh" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{t('settings.general.autoEmailRefreshLabel')}</label>
           </div>
         </Card>
-
       </PageContent>
     </>
   );

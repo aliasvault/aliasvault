@@ -223,11 +223,11 @@ const ImportExport: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('importExport.exportSectionDescription')}</p>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border-2 border-amber-200 dark:border-amber-800 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+            <div className="flex items-center justify-between p-3 border-2 border-amber-300 dark:border-amber-500/40 rounded-lg bg-amber-50 dark:bg-amber-500/10">
               <div className="flex-1 min-w-0 mr-4">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t('importExport.exportAvexTitle')}</h4>
-                  <span className="px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900 rounded">{t('importExport.recommendedLabel')}</span>
+                  <span className="px-1.5 py-0.5 text-xs font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-500/20 rounded">{t('importExport.recommendedLabel')}</span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportAvexDescription')}</p>
               </div>

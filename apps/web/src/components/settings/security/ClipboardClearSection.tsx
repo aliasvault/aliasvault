@@ -35,7 +35,7 @@ const ClipboardClearSection: React.FC = () => {
 
   return (
     <SecuritySection title={t('settings.clipboardClear')}>
-      <div className="mb-4">
+      <div>
         <FormLabel htmlFor="clipboardClearSeconds">{t('settings.general.clipboardClearSecondsLabel')}</FormLabel>
         <Select id="clipboardClearSeconds" value={clipboardClearSeconds} onChange={(e) => void update(e.target.value)}>
           <option value="0">{t('common.disabled')}</option>
@@ -43,8 +43,8 @@ const ClipboardClearSection: React.FC = () => {
           <option value="10">{t('settings.clipboardClearOptions.10seconds')}</option>
           <option value="15">{t('common.duration.15seconds')}</option>
         </Select>
-        <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t('settings.general.clipboardClearSecondsDescription')}</span>
-        <WarningBox className="mt-2">
+        <span className="block mt-2 text-sm text-gray-500 dark:text-gray-400">{t('settings.general.clipboardClearSecondsDescription')}</span>
+        <WarningBox className="mt-3">
           <p>{t('settings.general.clipboardClearLimitationNote')}</p>
         </WarningBox>
       </div>

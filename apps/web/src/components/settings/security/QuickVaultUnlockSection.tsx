@@ -1,8 +1,11 @@
-import React, { useCallback, useImperativeHandle, useState, forwardRef } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import SecuritySection, { type SectionHandle } from '@/components/settings/security/SecuritySection';
 import Button from '@/components/shared/Button';
+import Card from '@/components/shared/Card';
+import Icon from '@/components/shared/Icon';
+import StatusPill from '@/components/shared/StatusPill';
+import Text from '@/components/shared/Text';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { WebAuthnNotSupportedError, WebAuthnService } from '@/utils/WebAuthnService';
@@ -11,16 +14,11 @@ import { WebAuthnNotSupportedError, WebAuthnService } from '@/utils/WebAuthnServ
  * Passkey quick unlock for this local browser session only.
  * TODO: this will be replaced by a fully integrated passkey PRF unlock feature, which is technically possible once 0.31.0+ is released.
  */
-const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
+const QuickVaultUnlockSection: React.FC = () => {
   const { t } = useTranslation();
   const auth = useAuth();
   const notifications = useNotifications();
   const [enabled, setEnabled] = useState(() => WebAuthnService.isEnabled());
-
-  const loadData = useCallback(async (): Promise<void> => {
-    setEnabled(WebAuthnService.isEnabled());
-  }, []);
-  useImperativeHandle(ref, () => ({ loadData }), [loadData]);
 
   /**
    * Create a passkey and encrypt the Account Key with it.
@@ -38,35 +36,41 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
       }
       return;
     }
-    await loadData();
+    setEnabled(WebAuthnService.isEnabled());
   };
 
   /**
    * Forget the passkey.
    */
-  const disable = async (): Promise<void> => {
+  const disable = (): void => {
     WebAuthnService.disable();
     notifications.addSuccessMessage(t('settings.securitySettings.passkeyUnlock.successDisabledMessage'), true);
-    await loadData();
+    setEnabled(WebAuthnService.isEnabled());
   };
 
   return (
-    <SecuritySection title={t('settings.securitySettings.passkeyUnlock.title')}>
+    <Card>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Icon name="key" className="flex-shrink-0 w-5 h-5 text-primary-600 dark:text-primary-400" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings.securitySettings.passkeyUnlock.title')}</h3>
+        </div>
+        <StatusPill id="passkey-unlock-status" enabled={enabled} size="md" />
+      </div>
       {enabled ? (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.enabledDescription')}</div>
-          <Button color="danger" onClick={() => void disable()}>{t('settings.securitySettings.passkeyUnlock.disableButton')}</Button>
+          <Text variant="muted" className="mb-4">{t('settings.securitySettings.passkeyUnlock.enabledDescription')}</Text>
+          <Button color="danger" onClick={disable}>{t('settings.securitySettings.passkeyUnlock.disableButton')}</Button>
         </>
       ) : (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.disabledDescription')}</div>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.experimentalWarning')}</div>
+          <Text variant="muted" className="mb-3">{t('settings.securitySettings.passkeyUnlock.disabledDescription')}</Text>
+          <Text variant="muted" className="mb-4">{t('settings.securitySettings.passkeyUnlock.experimentalWarning')}</Text>
           <Button color="success" onClick={() => void enable()}>{t('settings.securitySettings.passkeyUnlock.enableButton')}</Button>
         </>
       )}
-    </SecuritySection>
+    </Card>
   );
-});
-QuickVaultUnlockSection.displayName = 'QuickVaultUnlockSection';
+};
 
 export default QuickVaultUnlockSection;

@@ -29,7 +29,7 @@ const ChangePassword: React.FC = () => {
   const { showLoading, hideLoading } = useLoading();
   const { syncVault } = useVaultSync();
   
-  usePageTitle(t('settings.securitySettings.changePassword.changePassword'));
+  usePageTitle(t('settings.securitySettings.changeMasterPassword'));
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -113,7 +113,7 @@ const ChangePassword: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="security" title={t('settings.securitySettings.changePassword.changePassword')} description={t('settings.securitySettings.changePassword.headerText')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
+      <SettingsPageHeader icon="changePassword" title={t('settings.securitySettings.changeMasterPassword')} description={t('settings.securitySettings.changePassword.headerText')} />
 
       <Card>
         <form onSubmit={changePassword} className="space-y-4">

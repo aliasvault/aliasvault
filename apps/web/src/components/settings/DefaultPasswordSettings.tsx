@@ -21,12 +21,12 @@ const DefaultPasswordSettings: React.FC = () => {
   }, [dbContext.sqliteClient]);
 
   return (
-    <div className="mb-4">
+    <div>
       <FormLabel htmlFor="password-generator-settings-modal">{t('settings.passwordGeneratorSettings.passwordGeneratorSettingsLabel')}</FormLabel>
       <button type="button" id="password-generator-settings-modal" className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600" onClick={() => setIsVisible(true)}>
         {t('settings.passwordGeneratorSettings.configureButton')}
       </button>
-      <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400 mt-2">{t('settings.passwordGeneratorSettings.description')}</span>
+      <span className="block mt-2 text-sm text-gray-500 dark:text-gray-400">{t('settings.passwordGeneratorSettings.description')}</span>
 
       {isVisible && settings && (
         <PasswordSettingsPopup passwordSettings={settings} isTemporary={false} onSaveSettings={(saved) => setSettings(saved)} onClose={() => setIsVisible(false)} />

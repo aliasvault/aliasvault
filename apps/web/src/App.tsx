@@ -1,6 +1,6 @@
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { RequireCapability } from '@/context/CapabilityContext';
 import AuthLayout from '@/layouts/AuthLayout';
@@ -26,10 +26,11 @@ import ImportExport from '@/pages/settings/importexport/ImportExport';
 import ResetVault from '@/pages/settings/importexport/ResetVault';
 import PasswordGeneratorSettings from '@/pages/settings/PasswordGenerator';
 import ChangePassword from '@/pages/settings/security/ChangePassword';
+import Clipboard from '@/pages/settings/security/Clipboard';
 import DeleteAccount from '@/pages/settings/security/DeleteAccount';
-import SecuritySettings from '@/pages/settings/security/Security';
 import SessionsAndLogs from '@/pages/settings/security/SessionsAndLogs';
 import TwoFactor from '@/pages/settings/security/TwoFactor';
+import VaultUnlock from '@/pages/settings/security/VaultUnlock';
 import SettingsOverview from '@/pages/settings/Settings';
 import StorageInsights from '@/pages/settings/StorageInsights';
 import Sync from '@/pages/sync/Sync';
@@ -70,8 +71,10 @@ const App: React.FC = () => (
         <Route path="/settings/general" element={<GeneralSettings />} />
         <Route path="/settings/password-generator" element={<PasswordGeneratorSettings />} />
         <Route path="/settings/identity-generator" element={<IdentityGeneratorSettings />} />
-        <Route path="/settings/security" element={<SecuritySettings />} />
+        <Route path="/settings/security" element={<Navigate to="/settings" replace />} />
         <Route path="/settings/security/change-password" element={<ChangePassword />} />
+        <Route path="/settings/security/vault-unlock" element={<VaultUnlock />} />
+        <Route path="/settings/security/clipboard" element={<Clipboard />} />
         <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
         <Route path="/settings/sessions" element={<SessionsAndLogs />} />
         <Route path="/settings/two-factor" element={<TwoFactor key="status" />} />

@@ -81,7 +81,7 @@ const DeleteAccount: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="security" title={t('settings.securitySettings.deleteAccount.deleteAccount')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
+      <SettingsPageHeader icon="deleteAccount" title={t('settings.securitySettings.deleteAccount.deleteAccount')} description={t('settings.securitySettings.deleteAccountSection.description')} />
 
       <Card>
         {!showPasswordConfirm ? (

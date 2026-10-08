@@ -2,15 +2,17 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import WarningBox from '@/components/alerts/WarningBox';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
-import SettingsIcon from '@/components/settings/SettingsIcon';
 import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import TwoFactorDisableStep from '@/components/settings/twofactor/TwoFactorDisableStep';
 import TwoFactorEnableStep from '@/components/settings/twofactor/TwoFactorEnableStep';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
+import StatusPill from '@/components/shared/StatusPill';
 import Text from '@/components/shared/Text';
+import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -25,6 +27,7 @@ const TwoFactorStatus: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const webApi = useWebApi();
+  const { twoFactorReminderDismissed, dismissTwoFactorReminder } = useAccountReminders();
   const [isLoading, setIsLoading] = useState(true);
   const [enabled, setEnabled] = useState(false);
 
@@ -49,18 +52,13 @@ const TwoFactorStatus: React.FC = () => {
 
   return (
     <>
-      {!enabled && (
-        <div id="two-factor-warning" role="alert" className="flex items-start gap-3 mx-4 mb-4 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
-          <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
-            <SettingsIcon name="warning" className="w-5 h-5" />
-          </span>
-          <p className="text-sm pt-1.5">{t('settings.securitySettings.twoFactor.notEnabledWarning')}</p>
-        </div>
+      {!enabled && !twoFactorReminderDismissed && (
+        <WarningBox id="two-factor-warning" icon="exclamation" className="mx-4 mb-4" actions={<Button id="two-factor-warning-dismiss" color="outline" onClick={() => void dismissTwoFactorReminder()}>{t('common.dismiss')}</Button>}>
+          <p>{t('settings.securitySettings.twoFactor.notEnabledWarning')}</p>
+        </WarningBox>
       )}
       <Card>
-        <span id="two-factor-status" className={`inline-flex items-center px-2.5 py-0.5 text-sm font-semibold rounded-full ${enabled ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'}`}>
-          {enabled ? t('common.enabled') : t('common.disabled')}
-        </span>
+        <StatusPill id="two-factor-status" enabled={enabled} size="md" />
         <Text className="mt-3 mb-5">
           {enabled ? t('settings.securitySettings.twoFactor.enabledMessage') : t('settings.securitySettings.twoFactor.disabledMessage')}
         </Text>
