@@ -194,7 +194,7 @@ public static class UiIcons
     public static UiIconDefinition QuestionMarkCircle { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z""/>");
 
     /// <summary>Gets the "refresh" icon.</summary>
-    public static UiIconDefinition Refresh { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15""/>");
+    public static UiIconDefinition Refresh { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M20 4v5h-.582M4.062 11A8.001 8.001 0 0119.418 9m0 0H15M4 20v-5h.581m0 0a8.003 8.003 0 0015.357-2M4.581 15H9""/>");
 
     /// <summary>Gets the "reply" icon.</summary>
     public static UiIconDefinition Reply { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6""/>");

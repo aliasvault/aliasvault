@@ -39,7 +39,7 @@ const RefreshButton: React.FC<RefreshButtonProps> = ({ onClick, buttonText, icon
 
   return (
     <Button onClick={() => void handleClick()} display="flex" color="outline" additionalClasses={additionalClasses}>
-      <Icon name="refresh" className={`${iconOnly ? 'w-5 h-5' : 'w-4 h-4'} ${isRefreshing ? 'animate-spin-ccw' : ''}`} />
+      <Icon name="refresh" className={`w-[18px] h-[18px] ${isRefreshing ? 'animate-spin' : ''}`} />
       <span className={iconOnly ? 'sr-only' : 'ml-2'}>{buttonText}</span>
     </Button>
   );
