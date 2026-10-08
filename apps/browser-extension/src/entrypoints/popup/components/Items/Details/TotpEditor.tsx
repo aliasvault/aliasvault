@@ -1,5 +1,4 @@
-import { buildOtpAuthUri, otpAuthDisplayName, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
-import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
+import { buildOtpAuthUri, hasCustomTotpParameters, parseOtpAuthUri, resolveTotpEntry, totpAdvancedValues, totpParametersFrom, type TotpAdvancedValues } from '@aliasvault/client/items/OtpAuthUri';
 import QRCode from 'qrcode';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,17 +6,20 @@ import { useTranslation } from 'react-i18next';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
+import TotpAdvancedFields, { TotpSettingsButton } from '@/entrypoints/popup/components/Items/Details/TotpAdvancedFields';
 
 import { logFailure } from '@/utils/Diagnostics';
 
 import type { TotpCode } from '@aliasvault/models/vault';
 
-type TotpFormData = {
+export type TotpFormData = {
   name: string;
   secretKey: string;
+  /** Algorithm, digits and time step; absent means the defaults. */
+  advanced?: TotpAdvancedValues;
 }
 
-type TotpEditorState = {
+export type TotpEditorState = {
   isAddFormVisible: boolean;
   formData: TotpFormData;
 }
@@ -54,49 +56,13 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
   const [editName, setEditName] = useState('');
   const [showEditNameField, setShowEditNameField] = useState(false);
   const [editSecret, setEditSecret] = useState('');
+  const [editAdvanced, setEditAdvanced] = useState<TotpAdvancedValues>(totpAdvancedValues());
+  const [showAdvanced, setShowAdvanced] = useState(!!formData.advanced && hasCustomTotpParameters(totpParametersFrom(formData.advanced)));
+  const [showEditAdvanced, setShowEditAdvanced] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [totpToDelete, setTotpToDelete] = useState<TotpCode | null>(null);
-
-  /**
-   * Sanitizes the secret key by extracting it from a TOTP URI if needed
-   */
-  const sanitizeSecretKey = (secretKeyInput: string, nameInput: string): { secretKey: string, name: string, algorithm: string, digits: number, period: number } => {
-    let secretKey = secretKeyInput.trim();
-    let name = nameInput.trim();
-    let algorithm = TOTP_DEFAULT_ALGORITHM;
-    let digits = TOTP_DEFAULT_DIGITS;
-    let period = TOTP_DEFAULT_PERIOD;
-
-    // Check if it's a TOTP URI
-    if (secretKey.toLowerCase().startsWith('otpauth://totp/')) {
-      const parsed = parseOtpAuthUri(secretKey);
-      if (!parsed) {
-        throw new Error(t('totp.errors.invalidSecretKey'));
-      }
-      secretKey = parsed.secret;
-      // Keep the URI's parameters instead of silently regenerating codes with the defaults.
-      algorithm = parsed.algorithm;
-      digits = parsed.digits;
-      period = parsed.period;
-      // If name is empty, use the issuer and account from the URI
-      if (!name) {
-        name = otpAuthDisplayName(parsed);
-      }
-    }
-
-    // Remove spaces from the secret key
-    secretKey = secretKey.replace(/\s/g, '');
-
-    // Validate the secret key format (base32)
-    if (!/^[A-Z2-7]+=*$/i.test(secretKey)) {
-      throw new Error(t('totp.errors.invalidSecretKey'));
-    }
-
-    // Name is optional; keep it blank when none was provided or derived.
-    return { secretKey, name, algorithm, digits, period };
-  };
 
   /**
    * Shows the add form
@@ -108,6 +74,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
     });
     setFormError(null);
     setShowNameField(false);
+    setShowAdvanced(false);
   };
 
   /**
@@ -133,6 +100,22 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
   };
 
   /**
+   * Updates the secret; a pasted otpauth URI also fills the advanced fields with its parameters.
+   */
+  const updateSecretKey = (secretKey: string): void => {
+    const parsed = parseOtpAuthUri(secretKey);
+    if (!parsed) {
+      updateFormData({ secretKey });
+      return;
+    }
+    const parameters = { Algorithm: parsed.algorithm, Digits: parsed.digits, Period: parsed.period };
+    updateFormData({ secretKey, advanced: totpAdvancedValues(parameters) });
+    if (hasCustomTotpParameters(parameters)) {
+      setShowAdvanced(true);
+    }
+  };
+
+  /**
    * Hides the optional name field again and clears any entered value
    */
   const hideNameField = (): void => {
@@ -153,34 +136,24 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       return;
     }
 
-    try {
-      // Sanitize the secret key
-      const { secretKey, name, algorithm, digits, period } = sanitizeSecretKey(formData.secretKey, formData.name);
-
-      // Create new TOTP code
-      const newTotpCode: TotpCode = {
-        Id: crypto.randomUUID(),
-        Name: name,
-        SecretKey: secretKey,
-        Algorithm: algorithm,
-        Digits: digits,
-        Period: period,
-        ItemId: '' // Will be set when saving the item
-      };
-
-      // Add to the list
-      const updatedTotpCodes = [...totpCodes, newTotpCode];
-      onTotpCodesChange(updatedTotpCodes);
-
-      // Hide the form
-      hideAddForm();
-    } catch (error) {
-      if (error instanceof Error) {
-        setFormError(error.message);
-      } else {
-        setFormError(t('common.errors.unknownErrorTryAgain'));
-      }
+    const entry = resolveTotpEntry(formData.secretKey, formData.name, formData.advanced);
+    if (!entry) {
+      setFormError(t('totp.errors.invalidSecretKey'));
+      return;
     }
+
+    const newTotpCode: TotpCode = {
+      Id: crypto.randomUUID(),
+      Name: entry.name,
+      SecretKey: entry.secretKey,
+      Algorithm: entry.algorithm,
+      Digits: entry.digits,
+      Period: entry.period,
+      ItemId: '' // Will be set when saving the item
+    };
+
+    onTotpCodesChange([...totpCodes, newTotpCode]);
+    hideAddForm();
   };
 
   /**
@@ -237,6 +210,8 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
     setEditName(totpCode.Name);
     setShowEditNameField(!!totpCode.Name);
     setEditSecret(totpCode.SecretKey);
+    setEditAdvanced(totpAdvancedValues(totpCode));
+    setShowEditAdvanced(hasCustomTotpParameters(totpCode));
     setIsEditModalOpen(true);
     setShowQrCode(false);
   };
@@ -276,7 +251,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
     const updatedTotpCodes = totpCodes.map(tc =>
       tc.Id === editingTotpCode.Id
-        ? { ...tc, Name: finalName, SecretKey: editSecret }
+        ? { ...tc, Name: finalName, SecretKey: editSecret, ...totpParametersFrom(editAdvanced) }
         : tc
     );
 
@@ -374,15 +349,18 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
           )}
 
           <div className="mb-4">
-            <label htmlFor="totp-secret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              {t('totp.secretKey')}
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="totp-secret" className="text-sm font-medium text-gray-900 dark:text-white">
+                {t('totp.secretKey')}
+              </label>
+              <TotpSettingsButton id="totp-settings" isOpen={showAdvanced} onToggle={() => setShowAdvanced(!showAdvanced)} />
+            </div>
             <input
               id="totp-secret"
               type="text"
               autoFocus
               value={formData.secretKey}
-              onChange={(e) => updateFormData({ secretKey: e.target.value })}
+              onChange={(e) => updateSecretKey(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -390,6 +368,13 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                 }
               }}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+            />
+            <TotpAdvancedFields
+              idPrefix="totp"
+              values={formData.advanced ?? totpAdvancedValues()}
+              onChange={(advanced) => updateFormData({ advanced })}
+              isOpen={showAdvanced}
+              onOpen={() => setShowAdvanced(true)}
             />
           </div>
 
@@ -499,14 +484,17 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                   <label className="text-sm font-medium text-gray-900 dark:text-white">
                     {t('totp.secretKey')}
                   </label>
-                  <button
-                    type="button"
-                    onClick={toggleQrCode}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
-                    title={showQrCode ? t('common.hide') + ' QR Code' : t('common.show') + ' QR Code'}
-                  >
-                    <Icon name="qrcode" className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center">
+                    <TotpSettingsButton id="totp-edit-settings" isOpen={showEditAdvanced} onToggle={() => setShowEditAdvanced(!showEditAdvanced)} />
+                    <button
+                      type="button"
+                      onClick={toggleQrCode}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                      title={showQrCode ? t('common.hide') + ' QR Code' : t('common.show') + ' QR Code'}
+                    >
+                      <Icon name="qrcode" className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <input
                   type="text"
@@ -514,6 +502,13 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                   onChange={(e) => setEditSecret(e.target.value)}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono"
                   placeholder={t('totp.secretKey')}
+                />
+                <TotpAdvancedFields
+                  idPrefix="totp-edit"
+                  values={editAdvanced}
+                  onChange={setEditAdvanced}
+                  isOpen={showEditAdvanced}
+                  onOpen={() => setShowEditAdvanced(true)}
                 />
                 {showQrCode && qrCodeDataUrl && (
                   <div className="flex justify-center mt-3">
