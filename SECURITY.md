@@ -2,11 +2,7 @@
 
 **Important**: please report any potential security issues to the email below rather than opening public issues.
 
---
-
-Security is very important to us. We truly appreciate the security community and responsible researchers who report issues, your findings help us improve AliasVault for everyone. 
-
-We investigate all reported issues and work with researchers on responsible disclosure. Certain vulnerabilities, especially those impacting confidentiality, integrity, authentication, or core protection mechanisms, may qualify for a CVE (Common Vulnerabilities and Exposures) identifier. Others may still result in fixes or defense-in-depth improvements.
+We appreciate the security community and responsible researchers who report issues: your findings help us improve AliasVault for everyone. We investigate every report and work with researchers on coordinated disclosure. Vulnerabilities that breach the security boundary (see Section 2.1) may qualify for a CVE identifier; others may still result in fixes or defense-in-depth improvements.
 
 ## Supported versions
 
@@ -25,9 +21,9 @@ Please include:
 5. Prerequisites for exploitation
 6. Suggested remediation (optional)
 
-We acknowledge reports within **48 hours**. Please do not publicly disclose issues before coordinated resolution.
+Before reporting, please check the open [GitHub issues](https://github.com/aliasvault/aliasvault/issues) and the latest `main` branch: issues already tracked or fixed there count as duplicates (see Section 4.1).
 
-We value good-faith security research and review every report, even those that do not qualify for CVE assignment. Reports classified as Class 2 or Class 3 (see below) may still result in fixes or defense-in-depth improvements in future updates. We will credit reporters where applicable (with permission) when fixes are released.
+We acknowledge reports within **48 hours**. Please do not publicly disclose issues before coordinated resolution. We will credit reporters where applicable (with permission) when fixes are released.
 
 ---
 
@@ -35,7 +31,7 @@ We value good-faith security research and review every report, even those that d
 
 AliasVault is a **zero-knowledge, end-to-end encrypted password and email alias manager**.
 
-> Note: We only request CVEs for vulnerabilities that breach the encryption/access control boundary (defined in Section 2.1). Post-compromise scenarios — issues that assume an attacker has already compromised the user's device, runtime environment, or account through external means — are not considered CVE-worthy, though we may still address them as defense-in-depth improvements.
+> Note: We only request CVEs for vulnerabilities that breach the encryption/access control boundary (defined in Section 2.1). Post-compromise scenarios (issues that assume an attacker has already compromised the user's device, runtime environment, or account through external means) are not considered CVE-worthy, though we may still address them as defense-in-depth improvements.
 
 ### 2.1 Primary Security Boundary
 
@@ -106,7 +102,7 @@ A report must:
 
 ## 3.2 Security Hardening Issues (Class 2)
 
-These are security improvements but **not typically CVE-eligible**. Such issues may still be addressed in future updates as defense-in-depth improvements, even though they typically will not receive a CVE or security advisory.
+These are security improvements but **not typically CVE-eligible**. They may still be addressed in future updates as defense-in-depth improvements, without a CVE or security advisory.
 
 ### 3.2.1 Compromised Device Scenarios
 Issues that only arise or can only be exploited after an attacker has fully compromised the user's device or runtime environment. For example, issues requiring:
@@ -168,7 +164,11 @@ We will request or pursue a CVE ID only if an issue meets **all** of the followi
 
 CVE eligibility also requires that the issue does not fall within an out-of-scope category defined in Sections 3.3 or 5.
 
-Issues that do not meet these criteria will still be reviewed and may result in fixes, but they will be announced as regular updates rather than security advisories and are tracked as **hardening or quality improvements**. Every report is valued regardless of classification.
+Issues that do not meet these criteria may still result in fixes, announced as regular updates rather than security advisories and tracked as **hardening or quality improvements**.
+
+## 4.1 Duplicates
+
+A report is a duplicate when the issue was already reported, tracked publicly, found in our own review, or fixed on `main` (released or not) before we received it. Duplicates are not credited. If the issue qualifies for a CVE, we request it ourselves, credited to whoever found it first.
 
 ---
 
