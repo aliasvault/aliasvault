@@ -12,24 +12,12 @@ extension VaultStore {
         clearLastSuccessfulAuth()
     }
 
-    /// Clear session data only (for forced logout).
-    /// Preserves vault data on disk for recovery on next login.
-    /// This is used when the user is forcibly logged out (e.g., 401, token revocation)
-    /// to allow recovery of unsynced local changes.
-    public func clearSession() {
-        print("Clearing session - preserving vault data for recovery")
-
-        // Clear in-memory data only
-        self.accountKey = nil
-        self.dbConnection = nil
-        clearLastSuccessfulAuth()
-
-        // Clear biometric-protected key from keychain (user will need to re-authenticate)
-        do {
-            try removeKeyFromKeychain()
-            print("Successfully removed encryption key from keychain")
-        } catch {
-            print("Failed to remove encryption key from keychain: \(error)")
+    /// Clear the vault for a forced logout (e.g. 401, token revocation), keeping only the username for the login prefill.
+    public func clearSession() throws {
+        let username = getUsername()
+        try clearVault()
+        if let username {
+            setUsername(username)
         }
     }
 

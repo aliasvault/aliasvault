@@ -86,20 +86,15 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     }
 
     override fun clearStorage() {
-        // Clear shared preferences, but preserve API URL settings for self-hosted instances
+        // Clear shared preferences, but preserve the connection settings (API URL, proxy headers) for self-hosted instances
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
-
-        // Save API URL before clearing
         val apiUrl = sharedPreferences.getString("apiUrl", null)
+        val customProxyHeaders = sharedPreferences.getString("customProxyHeaders", null)
 
-        // Clear all preferences
-        sharedPreferences.edit { clear() }
-
-        // Restore API URL if it was set
-        if (apiUrl != null) {
-            sharedPreferences.edit {
-                putString("apiUrl", apiUrl)
-            }
+        sharedPreferences.edit {
+            clear()
+            apiUrl?.let { putString("apiUrl", it) }
+            customProxyHeaders?.let { putString("customProxyHeaders", it) }
         }
 
         // Clear encrypted database file

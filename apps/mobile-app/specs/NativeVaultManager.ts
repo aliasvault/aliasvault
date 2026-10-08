@@ -21,7 +21,7 @@ export interface Spec extends TurboModule {
   isVaultUnlocked(): Promise<boolean>;
   getVaultMetadata(): Promise<string>;
   unlockVault(): Promise<boolean>;
-  clearSession(): Promise<void>;  // Clears session only, preserves vault for potential RPO recovery
+  clearSession(): Promise<void>;  // Clears everything including vault data, keeps the username for the login prefill
   clearVault(): Promise<void>;    // Clears everything including vault data
 
   // Rust core dispatch. The client core's Rust binding routes every call through here: `name` is the uniffi
@@ -47,7 +47,6 @@ export interface Spec extends TurboModule {
   // Sync state management
   getSyncState(): Promise<{isDirty: boolean; dirtyScopes: string[]; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
-  clearEncryptedVaultForFreshDownload(): Promise<void>;
 
   // Vault SQL operations. executeQuery returns BLOB columns as base64 behind an "av-blob-base64:" prefix.
   executeQuery(query: string, params: (string | number | null)[]): Promise<string[]>;

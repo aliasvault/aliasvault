@@ -916,14 +916,12 @@ class VaultStore(
     }
 
     /**
-     * Clear session data only (for forced logout).
-     * Preserves vault data on disk for recovery on next login.
-     * This is used when the user is forcibly logged out (e.g., 401, token revocation)
-     * to allow recovery of unsynced local changes.
+     * Clear the vault for a forced logout (e.g. 401, token revocation), keeping only the username for the login prefill.
      */
     fun clearSession() {
-        cache.clearSession()
-        clearLastSuccessfulAuth()
+        val username = getUsername()
+        clearVault()
+        username?.let { setUsername(it) }
     }
 
     /**

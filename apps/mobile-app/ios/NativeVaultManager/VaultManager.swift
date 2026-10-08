@@ -233,11 +233,14 @@ public class VaultManager: NSObject {
         }
     }
 
-    /// Clear session data only (for forced logout).
-    /// Preserves vault data on disk for recovery on next login.
+    /// Clear the vault for a forced logout, keeping only the username for the login prefill.
     @objc
     func clearSession() {
-        vaultStore.clearSession()
+        do {
+            try vaultStore.clearSession()
+        } catch {
+            print("Failed to clear session: \(error)")
+        }
 
         // Reset password unlock failed attempts counter on logout
         UserDefaults.standard.removeObject(forKey: "password_unlock_failed_attempts")
@@ -1448,27 +1451,6 @@ public class VaultManager: NSObject {
                        rejecter reject: @escaping RCTPromiseRejectBlock) {
         let cleared = vaultStore.markVaultClean(mutationSeqAtStart: mutationSeqAtStart, newServerRevision: newServerRevision)
         resolve(cleared)
-    }
-
-    @objc
-    func clearEncryptedVaultForFreshDownload(_ resolve: @escaping RCTPromiseResolveBlock,
-                                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            try vaultStore.removeEncryptedDatabase()
-            print("Deleted corrupted encrypted database for fresh download")
-        } catch {
-            print("Could not delete encrypted database (may not exist): \(error)")
-        }
-
-        // Close in-memory database connection if open
-        vaultStore.clearCache()
-
-        // Reset sync state - set isDirty=false and revision=0 so sync sees server as newer
-        vaultStore.setIsDirty(false)
-        vaultStore.setCurrentVaultRevisionNumber(0)
-        vaultStore.clearSyncEngineState()
-
-        resolve(nil)
     }
 
     @objc

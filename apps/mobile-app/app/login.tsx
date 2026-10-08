@@ -182,6 +182,11 @@ export default function LoginScreen() : React.ReactNode {
     unlockKeyBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
+    // Login always starts from the server's vault, so drop one an older app version kept after a forced logout.
+    if (await NativeVaultManager.hasEncryptedDatabase()) {
+      await NativeVaultManager.clearSession();
+    }
+
     // Get biometric display name
     const biometricDisplayName = await AppUnlockUtility.getBiometricDisplayName();
     const isBiometricsEnabledOnDevice = await AppUnlockUtility.isBiometricsAvailableOnDevice();
@@ -278,41 +283,10 @@ export default function LoginScreen() : React.ReactNode {
      */
     await NativeVaultManager.resolveVaultKey(unlockKeyBase64);
 
-    /*
-     * Forced logout recovery check:
-     * If there's an existing local vault (from forced logout), try to unlock it.
-     * First check if it belongs to the same user - if different user, clear and download fresh.
-     * If decryption fails (password changed or corrupted), reset sync state so
-     * sync will do a clean download instead of trying to merge.
-     */
-    const hasExistingVault = await NativeVaultManager.hasEncryptedDatabase();
-    if (hasExistingVault) {
-      const storedUsername = await NativeVaultManager.getUsername();
-      const normalizedLoginUsername = SrpAuthService.normalizeUsername(credentials.username);
-
-      if (storedUsername && storedUsername !== normalizedLoginUsername) {
-        // Different user: clear vault and download fresh
-        console.info(`Existing vault belongs to different user (${storedUsername}), clearing for fresh download`);
-        await NativeVaultManager.clearEncryptedVaultForFreshDownload();
-      } else {
-        try {
-          await NativeVaultManager.unlockVault();
-          // Decryption succeeded, local vault is valid, sync will handle it
-          console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
-        } catch {
-          // Decryption failed (password changed or corrupted), clear vault and download fresh
-          console.info('Existing vault could not be decrypted (password changed or corrupted), clearing for fresh download');
-          await NativeVaultManager.clearEncryptedVaultForFreshDownload();
-        }
-      }
-    }
-
     let upgradeRequired = false;
 
     /*
      * Sync vault from server (downloads, stores, and validates compatibility)
-     * This will handle the forced logout recovery check in case our local vault is dirty
-     * or is ahead of server in case of RPO event.
      *
      * Critical errors (auth, version) are handled internally via app.logout(message)
      * which shows a native alert. We check the return value to know if sync succeeded.
