@@ -98,6 +98,32 @@ export function groupFieldsByCategory(item: Item): Record<string, ItemField[]> {
 }
 
 /**
+ * A run of custom fields under one section field; Section is null for the fields before the first section.
+ */
+export type CustomFieldSection = {
+  Section: ItemField | null;
+  Fields: ItemField[];
+};
+
+/**
+ * Group an item's custom fields, in display order, under the section field that precedes them.
+ */
+export function groupCustomFieldsBySection(item: Item): CustomFieldSection[] {
+  const customFields = item.Fields.filter(field => field.IsCustomField).sort((a, b) => (a.DisplayOrder ?? 0) - (b.DisplayOrder ?? 0));
+  const sections: CustomFieldSection[] = [{ Section: null, Fields: [] }];
+
+  for (const field of customFields) {
+    if (field.FieldType === FieldTypes.Section) {
+      sections.push({ Section: field, Fields: [] });
+    } else {
+      sections[sections.length - 1].Fields.push(field);
+    }
+  }
+
+  return sections[0].Fields.length === 0 ? sections.slice(1) : sections;
+}
+
+/**
  * Convert new Item model to legacy Credential model for backward compatibility.
  * @deprecated Use Item model directly. This is a temporary compatibility layer.
  */

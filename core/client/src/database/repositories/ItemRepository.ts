@@ -952,9 +952,9 @@ export class ItemRepository extends BaseRepository {
       }
     }
 
-    // Soft-delete every live row no value was kept on
+    // Soft-delete every live row no value was kept on, except fields this build does not know
     for (const row of storedRows) {
-      if (!row.IsDeleted && !keptIds.has(row.Id)) {
+      if (!row.IsDeleted && !keptIds.has(row.Id) && !FieldMapper.isUnknownSystemField(row.FieldKey)) {
         yield* this.execute(FieldValueQueries.SOFT_DELETE, [currentDateTime, row.Id, manifestId]);
       }
     }

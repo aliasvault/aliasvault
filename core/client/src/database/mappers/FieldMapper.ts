@@ -1,4 +1,4 @@
-import { FieldTypes, getSystemField } from '@aliasvault/models/vault';
+import { FieldTypes, getSystemField, isSystemField } from '@aliasvault/models/vault';
 
 import { scopedKey } from '../ItemRef';
 
@@ -43,6 +43,15 @@ export type ProcessedField = {
  */
 export class FieldMapper {
   /**
+   * Whether a row carries a system field key this build does not know (e.g. written by a newer client); these rows stay hidden and untouched.
+   * @param fieldKey - The row's FieldKey, null for a custom field
+   * @returns True for an unknown system field key
+   */
+  public static isUnknownSystemField(fieldKey: string | null | undefined): boolean {
+    return !!fieldKey && !isSystemField(fieldKey.toLowerCase());
+  }
+
+  /**
    * Process raw field rows from database into a map of scoped item key -> ItemField[].
    * Handles system vs custom fields and multi-value field grouping.
    * @param rows - Raw field rows from database
@@ -50,7 +59,7 @@ export class FieldMapper {
    */
   public static processFieldRows(rows: FieldRow[]): Map<string, ItemField[]> {
     // First, convert rows to processed fields with proper metadata
-    const processedFields = rows.map(row => this.processFieldRow(row));
+    const processedFields = rows.filter(row => !this.isUnknownSystemField(row.FieldKey)).map(row => this.processFieldRow(row));
 
     // Group by ItemId and FieldKey (to handle multi-value fields)
     const fieldsByItem = new Map<string, ItemField[]>();
@@ -168,6 +177,10 @@ export class FieldMapper {
     }>();
 
     for (const row of rows) {
+      if (this.isUnknownSystemField(row.FieldKey)) {
+        continue;
+      }
+
       const fieldKey = row.FieldKey || row.FieldDefinitionId || '';
 
       // Accumulate values

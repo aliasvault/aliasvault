@@ -116,6 +116,8 @@ export const FieldTypes = {
   Number: 'Number',
   Phone: 'Phone',
   TextArea: 'TextArea',
+  // Custom field that starts a section: the custom fields after this field, by display order, are displayed as part of it.
+  Section: 'Section',
 } as const;
 
 /**

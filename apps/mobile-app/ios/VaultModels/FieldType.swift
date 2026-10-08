@@ -33,8 +33,11 @@ public struct FieldType {
     /// TextArea field type.
     public static let textArea = "TextArea"
 
+    /// Section field type.
+    public static let section = "Section"
+
     /// All available field types.
-    public static let all = [text, password, hidden, email, uRL, date, number, phone, textArea]
+    public static let all = [text, password, hidden, email, uRL, date, number, phone, textArea, section]
 
     /// Checks if a string value is a valid field type.
     public static func isValid(_ value: String?) -> Bool {

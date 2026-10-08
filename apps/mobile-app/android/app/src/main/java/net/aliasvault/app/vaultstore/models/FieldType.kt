@@ -54,9 +54,14 @@ object FieldType {
     const val TEXT_AREA = "TextArea"
 
     /**
+     * Section field type.
+     */
+    const val SECTION = "Section"
+
+    /**
      * All available field types.
      */
-    val all = listOf(TEXT, PASSWORD, HIDDEN, EMAIL, U_R_L, DATE, NUMBER, PHONE, TEXT_AREA)
+    val all = listOf(TEXT, PASSWORD, HIDDEN, EMAIL, U_R_L, DATE, NUMBER, PHONE, TEXT_AREA, SECTION)
 
     /**
      * Checks if a string value is a valid field type.
