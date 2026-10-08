@@ -30,15 +30,21 @@ public sealed class EmailKeyTable
     public List<string> PublicKeys { get; }
 
     /// <summary>
-    /// Build the key table for the encryption keys the caller holds the private half of.
+    /// Build the key table for only the delivery keys the returned emails reference.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="decryptableKeyIds">The encryption key ids resolved by <see cref="EmailAccessHelper.ResolveDecryptableKeyIdsAsync"/>.</param>
+    /// <param name="referencedKeyIds">The delivery key ids of the returned emails' decryption keys.</param>
     /// <returns>The key table.</returns>
-    public static async Task<EmailKeyTable> BuildAsync(AliasServerDbContext context, List<Guid> decryptableKeyIds)
+    public static async Task<EmailKeyTable> BuildAsync(AliasServerDbContext context, IEnumerable<Guid> referencedKeyIds)
     {
+        var keyIds = referencedKeyIds.Distinct().ToList();
+        if (keyIds.Count == 0)
+        {
+            return Create([]);
+        }
+
         var keys = await context.VaultManifestDeliveryKeys
-            .Where(k => decryptableKeyIds.Contains(k.Id))
+            .Where(k => keyIds.Contains(k.Id))
             .Select(k => new { k.Id, k.PublicKey })
             .ToListAsync();
 

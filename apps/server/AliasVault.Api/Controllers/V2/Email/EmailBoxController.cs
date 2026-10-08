@@ -87,7 +87,6 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Retrieve emails from database, restricted to emails carrying a decryption key the caller can open.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        var keyTable = await EmailKeyTable.BuildAsync(context, decryptableKeyIds);
         var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.DecryptionKeys.Any(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)));
 
         // A removed alias still answers with its owner (so the client can offer to move it), but without its mail.
@@ -125,6 +124,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             .Take(50)
             .ToListAsync();
 
+        var keyTable = await EmailKeyTable.BuildAsync(context, rows.SelectMany(r => r.DecryptionKeys.Select(d => d.VaultManifestDeliveryKeyId)));
         var emails = rows.ConvertAll(r =>
         {
             r.Mail.DecryptionKeys = keyTable.ToApiModels(r.DecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey)));
@@ -155,7 +155,6 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
     public async Task<IActionResult> GetEmailBoxBulk([FromBody] MailboxBulkRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
-
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
@@ -173,7 +172,6 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Restrict to emails this user holds a key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        var keyTable = await EmailKeyTable.BuildAsync(context, decryptableKeyIds);
 
         // Fetch the newest emails for each address individually, restricted to emails carrying a decryption key the caller can open.
         var cutoffClause = shadowCutoff is null ? string.Empty : @" AND e2.""DateSystem"" <= @cutoff";
@@ -227,6 +225,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             })
             .ToListAsync();
 
+        var keyTable = await EmailKeyTable.BuildAsync(context, rows.SelectMany(r => r.DecryptionKeys.Select(d => d.VaultManifestDeliveryKeyId)));
         var mails = rows.ConvertAll(r =>
         {
             r.Mail.DecryptionKeys = keyTable.ToApiModels(r.DecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey)));
