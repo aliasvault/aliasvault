@@ -12,13 +12,13 @@ import { ItemIcon } from '@/components/items/ItemIcon';
 import { useDialog } from '@/context/DialogContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
-import { generateTotpCode } from '@/utils/TotpUtility';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
 import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {

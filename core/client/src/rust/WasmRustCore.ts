@@ -54,6 +54,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     selectFaviconTarget: (urls): Promise<FaviconTarget | null> => ready(() => (core.selectFaviconTarget(urls) ?? null) as FaviconTarget | null),
     filterCredentials: (input: FilterCredentialsInput): Promise<FilterCredentialsOutput> => ready(() => core.filterCredentials(input) as FilterCredentialsOutput),
 
+    generateTotpCode: (secret, unixSeconds, algorithm, digits, period): Promise<string | null> => ready(() => core.generateTotpCode(secret, unixSeconds, algorithm, digits, period) ?? null),
+
     generatePassword: (settingsJson): Promise<string> => ready(() => core.generatePassword(settingsJson)),
     getDicewareLanguages: (): Promise<string[]> => ready(() => core.getDicewareLanguages()),
     generateIdentity: (requestJson): Promise<string> => ready(() => core.generateIdentity(requestJson)),

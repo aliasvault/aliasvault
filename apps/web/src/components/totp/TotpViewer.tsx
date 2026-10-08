@@ -16,11 +16,6 @@ type TotpViewerProps = {
 };
 
 /**
- * The current code of a TOTP entry, or empty when the secret is unusable.
- */
-const codeOf = (totpCode: TotpCode): string => generateTotpCode(totpCode.SecretKey, totpCode) ?? '';
-
-/**
  * A code split in two halves for readability ("123 456"); an odd length is shown as-is.
  */
 const formatCode = (code: string): string => (code.length % 2 === 0 ? `${code.slice(0, code.length / 2)} ${code.slice(code.length / 2)}` : code);
@@ -31,11 +26,25 @@ const formatCode = (code: string): string => (code.length % 2 === 0 ? `${code.sl
 const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = ({ totpCode, item, tick }) => {
   const { t } = useTranslation();
   const { copied, copyToClipboard } = useClipboardCopy(totpCode.Id, item);
-  const code = codeOf(totpCode);
+  const [code, setCode] = useState('');
   const period = normalizeTotpPeriod(totpCode.Period);
   const remaining = getTotpRemainingSeconds(totpCode);
   const percentage = Math.floor(((period - remaining) / period) * 100);
   void tick;
+  const timeStep = Math.floor(Date.now() / 1000 / period);
+
+  // Generate a new code whenever the time step rolls over; an unusable secret shows as empty.
+  useEffect(() => {
+    let cancelled = false;
+    void generateTotpCode(totpCode.SecretKey, totpCode).then(next => {
+      if (!cancelled) {
+        setCode(next ?? '');
+      }
+    });
+    return (): void => {
+      cancelled = true;
+    };
+  }, [totpCode, timeStep]);
 
   return (
     <button type="button" onClick={() => void copyToClipboard(code)} className="group w-full text-left p-2 ps-3 pe-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">

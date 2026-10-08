@@ -1309,7 +1309,7 @@ export async function handleGetTotpCodes(
 
     for (const item of message.items) {
       const totpCode = sqliteClient.items.getTotpCodesForItem(item)[0];
-      const code = totpCode ? generateTotpCode(totpCode.SecretKey, totpCode) : null;
+      const code = totpCode ? await generateTotpCode(totpCode.SecretKey, totpCode) : null;
       if (code) {
         codes[scopedKey(item.ManifestId, item.Id)] = { Code: code, Period: normalizeTotpPeriod(totpCode.Period) };
       }
@@ -1347,7 +1347,7 @@ export async function handleGenerateTotpCode(
       return { success: false, error: 'No TOTP codes found for this item' };
     }
 
-    const code = generateTotpCode(totpCodes[0].SecretKey, totpCodes[0]);
+    const code = await generateTotpCode(totpCodes[0].SecretKey, totpCodes[0]);
     if (!code) {
       return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
     }

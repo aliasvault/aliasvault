@@ -43,6 +43,8 @@ export const nativeRustCore: IRustCore = {
   selectFaviconTarget: (urls) => call('selectFaviconTarget', urls),
   filterCredentials: (input) => call('filterCredentialsJson', JSON.stringify(input)),
 
+  generateTotpCode: (secret, unixSeconds, algorithm, digits, period) => call('generateTotpCode', secret, unixSeconds, algorithm, digits, period),
+
   generatePassword: (settingsJson) => call('generatePassword', settingsJson),
   getDicewareLanguages: () => call('getDicewareLanguages'),
   generateIdentity: (requestJson) => call('generateIdentity', requestJson),

@@ -17,6 +17,7 @@ import uniffi.aliasvault_core.generateIdentityEmailPrefix
 import uniffi.aliasvault_core.generateIdentityUsername
 import uniffi.aliasvault_core.generatePassword
 import uniffi.aliasvault_core.generateRandomEmailPrefix
+import uniffi.aliasvault_core.generateTotpCode
 import uniffi.aliasvault_core.getDicewareLanguages
 import uniffi.aliasvault_core.getIdentityAgeRanges
 import uniffi.aliasvault_core.getIdentityLanguages
@@ -67,6 +68,7 @@ object RustCoreDispatcher {
                 JSONObject().put("url", target.url).put("source", target.source).toString()
             }
             "filterCredentialsJson" -> filterCredentialsJson(args.string(0))
+            "generateTotpCode" -> generateTotpCode(args.string(0), args.long(1), args.string(2), args.uint(3), args.uint(4))?.let { json(it) } ?: "null"
 
             "generatePassword" -> json(generatePassword(args.string(0)))
             "getDicewareLanguages" -> json(getDicewareLanguages())
@@ -123,6 +125,8 @@ object RustCoreDispatcher {
         fun optionalString(index: Int): String? = if (index < values.length() && !values.isNull(index)) values.getString(index) else null
 
         fun uint(index: Int): UInt = values.getInt(index).toUInt()
+
+        fun long(index: Int): Long = values.getLong(index)
 
         fun strings(index: Int): List<String> {
             val array = values.getJSONArray(index)

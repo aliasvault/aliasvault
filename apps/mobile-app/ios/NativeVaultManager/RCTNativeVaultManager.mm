@@ -179,10 +179,6 @@
     [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds localOnly:localOnly resolver:resolve rejecter:reject];
 }
 
-- (void)generateTotpCode:(NSString *)secret algorithm:(NSString *)algorithm digits:(double)digits period:(double)period resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generateTotpCode:secret algorithm:algorithm digits:digits period:period resolver:resolve rejecter:reject];
-}
-
 // MARK: - Android-specific methods (stubs for iOS)
 
 - (void)isIgnoringBatteryOptimizations:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
