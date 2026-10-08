@@ -367,8 +367,8 @@ export class ItemRepository extends BaseRepository {
     );
     for (const row of fieldValueRows) {
       yield* this.execute(`
-        INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
-        SELECT ?, ?, ManifestId, ?, FieldKey, Value, Weight, ?, ?, 0 FROM FieldValues WHERE Id = ? AND ManifestId = ?`,
+        INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, IsDisabled, CreatedAt, UpdatedAt, IsDeleted)
+        SELECT ?, ?, ManifestId, ?, FieldKey, Value, Weight, ValueIndex, IsDisabled, ?, ?, 0 FROM FieldValues WHERE Id = ? AND ManifestId = ?`,
       [
         this.generateId(),
         newItemId,
