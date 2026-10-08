@@ -57,7 +57,7 @@ export const ThemeColors = {
     success: '#10b981',
     successBackground: '#1a3d2b',
     warning: '#f59e0b',
-    warningBackground: '#422006',
+    warningBackground: '#352d1e',
     info: '#3b82f6',
     infoBackground: '#1e3a5f',
     destructive: '#ef4444',

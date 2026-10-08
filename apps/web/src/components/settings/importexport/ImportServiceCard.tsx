@@ -555,7 +555,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
           <strong>{t('importExport.serviceCard.supportedFormats')}:</strong> {acceptedFileExtensions.join(', ')}
         </p>
-        <div className="mb-4 bg-amber-50 border border-amber-400 dark:bg-amber-800/30 dark:border-amber-500/50 rounded-lg p-4">
+        <div className="mb-4 bg-amber-50 border border-amber-300 dark:bg-amber-500/10 dark:border-amber-500/40 rounded-lg p-4">
           <Text className="mb-4">{t('importExport.serviceCard.uploadExportFileText', { service: serviceName })}</Text>
           <input ref={fileInputRef} type="file" accept={fileAcceptTypes} onChange={e => void handleFileUpload(e)} className="text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/40 dark:file:text-primary-300 dark:hover:file:bg-primary-800/60" />
         </div>
@@ -584,8 +584,8 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             <label htmlFor="decryptionPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('importExport.serviceCard.decryptionPasswordLabel')}</label>
             <input id="decryptionPassword" type="password" value={decryptionPassword} onChange={e => setDecryptionPassword(e.target.value)} onKeyDown={handlePasswordKeyDown} autoFocus autoComplete="off" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
-          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <p className="text-sm text-amber-800 dark:text-amber-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
+          <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-300 dark:bg-amber-500/10 dark:border-amber-500/40">
+            <p className="text-sm text-amber-900 dark:text-amber-100">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
           </div>
           <div className="flex justify-end mt-6 space-x-2">
             <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
@@ -600,10 +600,10 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
    * The callout listing the items that could not be parsed.
    */
   const renderParseFailures = (): React.ReactNode => (
-    <div className="mb-4 p-4 rounded-lg bg-amber-50 border border-amber-400 dark:bg-amber-900/20 dark:border-amber-700" role="alert">
+    <div className="mb-4 p-4 rounded-lg bg-amber-50 border border-amber-300 dark:bg-amber-500/10 dark:border-amber-500/40" role="alert">
       <div className="flex items-start gap-2 mb-2">
-        <Icon name="exclamation" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
-        <p className="font-medium text-amber-900 dark:text-amber-200">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
+        <Icon name="exclamation" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-500" />
+        <p className="font-medium text-amber-900 dark:text-amber-100">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
       </div>
       <ul className="mb-3 ml-7 text-sm list-disc pl-5 space-y-0.5 text-gray-700 dark:text-gray-300">
         {parseFailures.slice(0, FAILED_ITEMS_PREVIEW_LIMIT).map(failure => (
@@ -616,7 +616,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       {parseFailures.length > FAILED_ITEMS_PREVIEW_LIMIT && (
         <p className="mb-3 ml-7 text-sm text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.moreCredentials', { count: parseFailures.length - FAILED_ITEMS_PREVIEW_LIMIT })}</p>
       )}
-      <button type="button" onClick={() => setShowFailureDetails(!showFailureDetails)} className="ml-7 inline-flex items-center gap-1 text-sm font-medium text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 hover:underline">
+      <button type="button" onClick={() => setShowFailureDetails(!showFailureDetails)} className="ml-7 inline-flex items-center gap-1 text-sm font-medium text-amber-900 dark:text-amber-100 hover:underline">
         <span className={`${showFailureDetails ? 'rotate-90' : ''} transition-transform`}>▸</span>
         {showFailureDetails ? t('common.hideDetails') : t('common.showDetails')}
       </button>
@@ -647,7 +647,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         {parseFailures.length > 0 && renderParseFailures()}
 
         {importedCredentials.length === 0 ? (
-          <div className="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
+          <div className="p-4 mb-4 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
             <p>{t('importExport.serviceCard.noNewCredentials')}</p>
           </div>
         ) : (
@@ -727,7 +727,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
           <div className="mb-4">
             <Text className="mb-4">{t('importExport.serviceCard.confirmImportText', { count: importedCredentials.length })}</Text>
             {extractFavicons && (
-              <div className="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
+              <div className="p-4 mb-4 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
                 <p>{t('importExport.serviceCard.faviconExtractionNote')}</p>
               </div>
             )}

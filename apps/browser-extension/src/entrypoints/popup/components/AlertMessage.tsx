@@ -37,7 +37,7 @@ const AlertMessage: React.FC<IAlertMessageProps> = ({ type, message, className =
       case 'success':
         return `${baseClasses} bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-300`;
       case 'warning':
-        return `${baseClasses} bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300`;
+        return `${baseClasses} bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-100`;
       case 'info':
         return `${baseClasses} bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300`;
       default:

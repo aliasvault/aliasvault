@@ -42,7 +42,7 @@ public struct ColorConstants {
         public static let success = SwiftUI.Color(hex: "#10b981")
         public static let successBackground = SwiftUI.Color(hex: "#1a3d2b")
         public static let warning = SwiftUI.Color(hex: "#f59e0b")
-        public static let warningBackground = SwiftUI.Color(hex: "#422006")
+        public static let warningBackground = SwiftUI.Color(hex: "#352d1e")
         public static let info = SwiftUI.Color(hex: "#3b82f6")
         public static let infoBackground = SwiftUI.Color(hex: "#1e3a5f")
         public static let destructive = SwiftUI.Color(hex: "#ef4444")

@@ -166,7 +166,7 @@ const ImportServiceGenericCsv: React.FC = () => {
     <ImportServiceCard serviceName="Generic CSV" description={t('importExport.services.genericCsvDescription')} logoUrl="/img/importers/generic-csv.svg" acceptedFileExtensions={['.csv']} processFile={parseByExtension({ '.csv': csv(importGenericCsv) })}>
       <Instruction>{t('importExport.services.genericCsvInstructionsPart1')}</Instruction>
       <ol className="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-4">
-        {step(1, <>{t('importExport.services.genericCsvStep1')} <button type="button" onClick={downloadTemplate} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 underline">{t('importExport.services.template')}</button></>)}
+        {step(1, <>{t('importExport.services.genericCsvStep1')} <button type="button" onClick={downloadTemplate} className="text-amber-600 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-200 underline">{t('importExport.services.template')}</button></>)}
         {step(2, t('importExport.services.genericCsvStep2'))}
         {step(3, t('importExport.services.genericCsvStep3'))}
         {step(4, t('importExport.services.genericCsvStep4'))}

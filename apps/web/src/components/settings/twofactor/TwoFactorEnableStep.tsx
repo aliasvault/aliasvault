@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import WarningBox from '@/components/alerts/WarningBox';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
-import SettingsIcon from '@/components/settings/SettingsIcon';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import InputTextField from '@/components/shared/InputTextField';
@@ -27,13 +27,9 @@ const RecoveryCodes: React.FC<{ recoveryCodes: string[] }> = ({ recoveryCodes })
     <Card>
       <SectionTitle className="mb-2">{t('settings.securitySettings.recoveryCodes.title')}</SectionTitle>
       <Text variant="muted" className="mb-4">{t('settings.securitySettings.recoveryCodes.description')}</Text>
-      <div className="flex items-start gap-3 mb-5 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200" role="alert">
-        <SettingsIcon name="warning" className="flex-shrink-0 w-5 h-5 mt-0.5 text-amber-600 dark:text-amber-400" />
-        <div className="text-sm">
-          <p className="font-semibold">{t('settings.securitySettings.recoveryCodes.warningTitle')}</p>
-          <p>{t('settings.securitySettings.recoveryCodes.warningDescription')}</p>
-        </div>
-      </div>
+      <WarningBox icon="exclamation" className="mb-5" title={t('settings.securitySettings.recoveryCodes.warningTitle')}>
+        <p>{t('settings.securitySettings.recoveryCodes.warningDescription')}</p>
+      </WarningBox>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 mb-6" id="recovery-codes">
         {recoveryCodes.map(code => (
           <code key={code} className="block p-3 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 rounded-lg border border-gray-200 dark:border-gray-600 font-mono text-center">{code}</code>

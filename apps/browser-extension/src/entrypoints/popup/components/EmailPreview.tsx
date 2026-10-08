@@ -266,8 +266,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
   };
 
   const ownerNoticeBlock = ownerNotice && (
-    <div className="mb-2 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded">
-      <p className="text-sm text-amber-800 dark:text-amber-200">{ownerNotice.notice}</p>
+    <div className="mb-2 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 rounded">
+      <p className="text-sm text-amber-900 dark:text-amber-100">{ownerNotice.notice}</p>
       {ownerNotice.canMove && (
         <button
           id="move-alias-here"

@@ -135,8 +135,8 @@ const TopMenu: React.FC = () => {
                   )}
                   <AccountMenuLink onNavigate={closeUserMenu} to="/settings/two-factor" icon="twoFactor" label={t('common.twoFactorAuthentication')}>
                     {reminders.enableTwoFactor && (
-                      <span title={t('settings.securitySettings.twoFactor.disabledMessage')} className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
-                        <SettingsIcon name="warning" className="w-4 h-4" />
+                      <span title={t('settings.securitySettings.twoFactor.disabledMessage')} className="flex items-center justify-center w-7 h-7">
+                        <span className="w-2 h-2 rounded-full bg-primary-500" aria-hidden="true" />
                         <span className="sr-only">{t('common.disabled')}</span>
                       </span>
                     )}

@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
+import WarningBox from '@/components/alerts/WarningBox';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
 import Button from '@/components/shared/Button';
 import Icon from '@/components/shared/Icon';
@@ -251,11 +252,9 @@ const Sync: React.FC = () => {
                       </button>
                     </div>
                     {showVersionDescription && (
-                      <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg">
-                        <p className="text-sm text-amber-800 dark:text-amber-200">
-                          {t('upgrade.upgradeRequiredDescription', { changes: latestVersion?.description ?? t('upgrade.noDescriptionAvailable') })}
-                        </p>
-                      </div>
+                      <WarningBox className="mb-4">
+                        <p>{t('upgrade.upgradeRequiredDescription', { changes: latestVersion?.description ?? t('upgrade.noDescriptionAvailable') })}</p>
+                      </WarningBox>
                     )}
                     <div className="space-y-2">
                       <p className="flex justify-between items-center">
@@ -270,11 +269,9 @@ const Sync: React.FC = () => {
                   </div>
                 )}
                 {upgradeKind === 'storage-format' && (
-                  <div className="rounded-lg dark:bg-gray-900">
-                    <div className="p-4 text-sm text-left bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg text-amber-800 dark:text-amber-300">
-                      {t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}
-                    </div>
-                  </div>
+                  <WarningBox icon="exclamation" className="text-left">
+                    <p>{t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}</p>
+                  </WarningBox>
                 )}
                 <div>
                   {upgradeError && <AlertMessageError message={upgradeError} />}

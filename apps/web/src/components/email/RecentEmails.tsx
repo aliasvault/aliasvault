@@ -6,8 +6,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
+import WarningBox from '@/components/alerts/WarningBox';
 import EmailModal from '@/components/email/EmailModal';
 import SkeletonBase from '@/components/loading/SkeletonBase';
+import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import Icon from '@/components/shared/Icon';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -238,14 +240,9 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
         </div>
 
         {!isLoading && error.length === 0 && ownerNotice && (
-          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <p className="text-sm text-amber-800 dark:text-amber-200">{ownerNotice.notice}</p>
-            {ownerNotice.canMove && (
-              <button id="move-alias-here" type="button" onClick={() => void moveHere()} className="mt-2 py-1.5 px-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium">
-                {familySharingText.aliasOwner.moveHere}
-              </button>
-            )}
-          </div>
+          <WarningBox className="mt-4" actions={ownerNotice.canMove && <Button id="move-alias-here" onClick={() => void moveHere()}>{familySharingText.aliasOwner.moveHere}</Button>}>
+            <p>{ownerNotice.notice}</p>
+          </WarningBox>
         )}
 
         {isLoading ? (

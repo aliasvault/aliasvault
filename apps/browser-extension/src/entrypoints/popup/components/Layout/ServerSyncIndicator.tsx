@@ -158,7 +158,7 @@ const ServerSyncIndicator: React.FC = () => {
       <button
         onClick={handleRetry}
         disabled={isRetrying}
-        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
         title={t('sync.tapToRetry')}
       >
         <div className="relative">

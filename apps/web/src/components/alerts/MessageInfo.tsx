@@ -1,22 +1,12 @@
 import React from 'react';
 
-import Icon from '@/components/shared/Icon';
+import WarningBox from '@/components/alerts/WarningBox';
 
 /**
  * Amber info box with a title.
  */
 const MessageInfo: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 mb-6" role="alert">
-    <div className="flex">
-      <div className="py-1">
-        <Icon name="information-circle" className="h-6 w-6 text-amber-500 mr-4" />
-      </div>
-      <div>
-        {title && <p className="font-bold">{title}</p>}
-        <div className="text-sm">{children}</div>
-      </div>
-    </div>
-  </div>
+  <WarningBox icon="information-circle" title={title} className="mb-6">{children}</WarningBox>
 );
 
 export default MessageInfo;

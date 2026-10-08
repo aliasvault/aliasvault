@@ -6,6 +6,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import Alert from '@/entrypoints/popup/components/Alert';
 import Button from '@/entrypoints/popup/components/Button';
 import { CountdownBar, type ICountdownBarHandle } from '@/entrypoints/popup/components/CountdownBar';
 import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutConfirmModal';
@@ -475,9 +476,9 @@ const Upgrade: React.FC = () => {
           )}
 
           {kind === UpgradeKind.StorageFormat && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded p-4 text-sm text-amber-800 dark:text-amber-300">
+            <Alert variant="warning" icon>
               {t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}
-            </div>
+            </Alert>
           )}
         </div>
 

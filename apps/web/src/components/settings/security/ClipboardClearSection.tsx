@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import WarningBox from '@/components/alerts/WarningBox';
 import SecuritySection from '@/components/settings/security/SecuritySection';
 import FormLabel from '@/components/shared/FormLabel';
 import Select from '@/components/shared/Select';
@@ -43,9 +44,9 @@ const ClipboardClearSection: React.FC = () => {
           <option value="15">{t('common.duration.15seconds')}</option>
         </Select>
         <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t('settings.general.clipboardClearSecondsDescription')}</span>
-        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-800">
-          <p className="text-sm text-amber-800 dark:text-amber-200">{t('settings.general.clipboardClearLimitationNote')}</p>
-        </div>
+        <WarningBox className="mt-2">
+          <p>{t('settings.general.clipboardClearLimitationNote')}</p>
+        </WarningBox>
       </div>
     </SecuritySection>
   );
