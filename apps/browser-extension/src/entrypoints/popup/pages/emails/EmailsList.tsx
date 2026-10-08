@@ -20,7 +20,7 @@ import { logFailure } from '@/utils/Diagnostics';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { InboxResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /**
  * Emails list page.
@@ -68,10 +68,7 @@ const EmailsList: React.FC = () => {
 
       try {
         // The server resolves the mailbox from the caller's active alias claims.
-        const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-          page: 1,
-          pageSize: PAGE_SIZE,
-        });
+        const data = await webApi.get<InboxResponse>(`EmailBox?page=1&pageSize=${PAGE_SIZE}`);
 
         // Decrypt emails locally using private key associated with the email address.
         const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
@@ -110,10 +107,7 @@ const EmailsList: React.FC = () => {
 
       const nextPage = currentPage + 1;
 
-      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-        page: nextPage,
-        pageSize: PAGE_SIZE,
-      });
+      const data = await webApi.get<InboxResponse>(`EmailBox?page=${nextPage}&pageSize=${PAGE_SIZE}`);
 
       // Decrypt emails locally
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
@@ -198,10 +192,6 @@ const EmailsList: React.FC = () => {
     );
   }
 
-  if (error) {
-    return <div className="text-red-500">{t('common.error')}: {error}</div>;
-  }
-
   // Show offline message if in offline mode
   if (dbContext.isOffline) {
     return (
@@ -225,11 +215,15 @@ const EmailsList: React.FC = () => {
           <PageTitle>{t('emails.title')}</PageTitle>
           <ReloadButton onClick={loadEmails} />
         </div>
-        <div className="text-gray-500 dark:text-gray-400 space-y-2">
-          <p className="text-sm">
-            {t('emails.emptyMessage')}
-          </p>
-        </div>
+        {error ? (
+          <p className="text-sm text-red-500">{t('common.error')}: {error}</p>
+        ) : (
+          <div className="text-gray-500 dark:text-gray-400 space-y-2">
+            <p className="text-sm">
+              {t('emails.emptyMessage')}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -242,6 +236,7 @@ const EmailsList: React.FC = () => {
         <PageTitle>{t('emails.title')}</PageTitle>
         <ReloadButton onClick={() => loadEmails(true)} />
       </div>
+      {error && <p className="mb-4 text-sm text-red-500">{t('common.error')}: {error}</p>}
       <div className="space-y-2">
         {emails.map((email) => (
           <Link

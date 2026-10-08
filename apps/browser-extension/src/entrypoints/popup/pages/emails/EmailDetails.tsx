@@ -102,7 +102,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           setViewMode('source');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
       } finally {
         setIsLoading(false);
         setIsInitialLoading(false);
@@ -155,8 +155,8 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
     decodeEmailSource(sourceBytes)
       .then(decoded => setSourceText(new TextDecoder().decode(decoded)))
-      .catch(err => setError(err instanceof Error ? err.message : 'Failed to decode email source'));
-  }, [viewMode, sourceText, sourceBytes]);
+      .catch(err => setError(err instanceof Error ? err.message : t('common.errors.unknownError')));
+  }, [viewMode, sourceText, sourceBytes, t]);
 
   const sanitizedHtmlBody = useMemo(() => htmlBody ? sanitizeEmailHtml(htmlBody) : null, [htmlBody]);
 
@@ -188,9 +188,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         navigate(fromPath ?? '/emails');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete email');
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     }
-  }, [id, webApi, navigate, fromPath]);
+  }, [id, webApi, navigate, fromPath, t]);
 
   /**
    * Open the email details in a new expanded popup.
@@ -220,7 +220,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       downloadBytes(attachment.filename, bytes, attachment.mimeType);
     } catch (err) {
       logFailure('[Email] Downloading the attachment failed', err);
-      setError(err instanceof Error ? err.message : 'Failed to download attachment');
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     }
   };
 
@@ -273,8 +273,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     );
   }
 
-  if (error) {
-    return <div className="text-red-500">{t('common.error')} {error}</div>;
+  // Errors on a loaded email show inline so the email stays visible.
+  if (error && !email) {
+    return <div className="text-red-500">{t('common.error')}: {error}</div>;
   }
 
   if (!email) {
@@ -296,6 +297,8 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         cancelText={t('common.cancel')}
         variant="danger"
       />
+
+      {error && <p className="mb-4 text-sm text-red-500">{t('common.error')}: {error}</p>}
 
       <div>
         {/* Header */}

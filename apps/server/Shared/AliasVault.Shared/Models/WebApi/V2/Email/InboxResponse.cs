@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="MailboxBulkResponse.cs" company="aliasvault">
+// <copyright file="InboxResponse.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -8,9 +8,9 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Email;
 
 /// <summary>
-/// Represents the bulk mailbox response.
+/// One page of the inbox: the newest emails across all of the caller's active aliases.
 /// </summary>
-public class MailboxBulkResponse
+public class InboxResponse
 {
     /// <summary>
     /// Gets or sets requested page number.

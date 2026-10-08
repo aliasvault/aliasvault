@@ -29,7 +29,7 @@ import { itemRoute } from '@/utils/ItemRoute';
 import { StorageKeys } from '@/utils/StorageKeys';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { InboxResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /** Emails per page. */
 const PAGE_SIZE = 50;
@@ -126,7 +126,7 @@ const EmailsHome: React.FC = () => {
     }
 
     try {
-      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', { page, pageSize });
+      const data = await webApi.get<InboxResponse>(`EmailBox?page=${page}&pageSize=${pageSize}`);
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
       const decrypted: MailboxEmail[] = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
       const lookup = getItemLookup();

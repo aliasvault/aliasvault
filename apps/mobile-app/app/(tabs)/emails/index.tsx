@@ -21,7 +21,7 @@ import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { InboxResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /**
  * Emails screen.
@@ -65,10 +65,7 @@ export default function EmailsScreen() : React.ReactNode {
 
       try {
         // The server resolves the mailbox from the caller's active alias claims.
-        const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-          page: 1,
-          pageSize: PAGE_SIZE,
-        });
+        const data = await webApi.get<InboxResponse>(`EmailBox?page=1&pageSize=${PAGE_SIZE}`);
 
         // Decrypt emails locally using private key associated with the email address
         const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
@@ -121,10 +118,7 @@ export default function EmailsScreen() : React.ReactNode {
 
       const nextPage = currentPage + 1;
 
-      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-        page: nextPage,
-        pageSize: PAGE_SIZE,
-      });
+      const data = await webApi.get<InboxResponse>(`EmailBox?page=${nextPage}&pageSize=${PAGE_SIZE}`);
 
       // Decrypt emails locally
       const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
@@ -210,6 +204,7 @@ export default function EmailsScreen() : React.ReactNode {
       justifyContent: 'center',
     },
     contentContainer: {
+      flexGrow: 1,
       paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 10,
       paddingTop: Platform.OS === 'ios' ? 42 : 16,
     },
@@ -217,6 +212,9 @@ export default function EmailsScreen() : React.ReactNode {
       color: colors.textMuted,
       opacity: 0.7,
       textAlign: 'center',
+    },
+    errorContainer: {
+      paddingVertical: 16,
     },
     errorText: {
       color: colors.errorText,
@@ -271,26 +269,31 @@ export default function EmailsScreen() : React.ReactNode {
       );
     }
 
-    if (error) {
-      return (
-        <View style={styles.centerContainer}>
-          <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
-        </View>
-      );
-    }
+    // The error sits inside the scroll view so pull to refresh keeps working.
+    const errorView = error ? (
+      <View style={styles.errorContainer}>
+        <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
+      </View>
+    ) : null;
 
     if (emails.length === 0) {
       return (
-        <View style={styles.centerContainer}>
-          <ThemedText style={styles.emptyText}>
-            {t('emails.emptyMessage')}
-          </ThemedText>
-        </View>
+        <>
+          {errorView}
+          {!error && (
+            <View style={styles.centerContainer}>
+              <ThemedText style={styles.emptyText}>
+                {t('emails.emptyMessage')}
+              </ThemedText>
+            </View>
+          )}
+        </>
       );
     }
 
     return (
       <>
+        {errorView}
         {emails.map((email) => (
           <EmailCard key={email.id} email={email} />
         ))}
@@ -339,6 +342,7 @@ export default function EmailsScreen() : React.ReactNode {
         scrollEventThrottle={16}
         contentContainerStyle={styles.contentContainer}
         scrollIndicatorInsets={{ bottom: 40 }}
+        alwaysBounceVertical={true}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}

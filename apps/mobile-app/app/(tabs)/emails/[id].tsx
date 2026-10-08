@@ -6,7 +6,7 @@ import { Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform, ScrollView, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewNavigation } from 'react-native-webview';
 
@@ -344,6 +344,10 @@ export default function EmailDetailsScreen() : React.ReactNode {
       fontSize: 14,
       fontWeight: '600',
     },
+    inlineError: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
     metadataContainer: {
       padding: 2,
     },
@@ -403,6 +407,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
       flex: 1,
       fontSize: 15,
       padding: 16,
+    },
+    refreshContainer: {
+      alignItems: 'center',
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 20,
     },
     sourceText: {
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -494,10 +504,18 @@ export default function EmailDetailsScreen() : React.ReactNode {
     );
   }
 
-  if (error) {
+  // A failed load stays pull-to-refreshable; errors on a loaded email show inline below.
+  if (error && !email) {
     return (
-      <ThemedView style={styles.centerContainer}>
-        <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
+      <ThemedView style={styles.container}>
+        <Stack.Screen options={{ title: t('emails.emailDetails') }} />
+        <ScrollView
+          contentContainerStyle={styles.refreshContainer}
+          alwaysBounceVertical={true}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={loadEmail} colors={[colors.primary]} tintColor={colors.primary} />}
+        >
+          <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
+        </ScrollView>
       </ThemedView>
     );
   }
@@ -636,6 +654,11 @@ export default function EmailDetailsScreen() : React.ReactNode {
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ title: t('emails.emailDetails') }} />
         {metadataView}
+        {error && (
+          <View style={styles.inlineError}>
+            <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
+          </View>
+        )}
         {isSourceOnly && (
           <View style={styles.updateNotice}>
             <ThemedText style={styles.updateNoticeText}>

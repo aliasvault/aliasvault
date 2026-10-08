@@ -34,9 +34,9 @@ using NpgsqlTypes;
 public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService, TakenAliasLookupRateLimitService takenAliasLookupRateLimit, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
-    /// Highest page the bulk mailbox serves; each address scans up to page * pageSize rows.
+    /// Highest page the inbox serves; each address scans up to page * pageSize rows.
     /// </summary>
-    private const int MaxBulkPage = 1000;
+    private const int MaxInboxPage = 1000;
 
     /// <summary>
     /// Returns a list of emails for the provided email address.
@@ -147,12 +147,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
     }
 
     /// <summary>
-    /// Returns a list of emails for the provided list of email addresses.
+    /// Returns the newest emails across all of the caller's active aliases, paged.
     /// </summary>
-    /// <param name="model">The request model extracted from POST body.</param>
-    /// <returns>List of emails in JSON format.</returns>
-    [HttpPost(template: "bulk", Name = "GetEmailBoxBulk")]
-    public async Task<IActionResult> GetEmailBoxBulk([FromBody] MailboxBulkRequest model)
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of emails per page, at most 50.</param>
+    /// <returns>One page of the inbox.</returns>
+    [HttpGet(Name = "GetInbox")]
+    public async Task<IActionResult> GetInbox([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var user = await GetCurrentUserAsync();
@@ -164,8 +165,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         // Shadow-block: when active, only emails received before the block took effect are visible.
         var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
-        model.PageSize = Math.Clamp(model.PageSize, 1, 50);
-        var page = Math.Clamp(model.Page, 1, MaxBulkPage);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+        page = Math.Clamp(page, 1, MaxInboxPage);
 
         // The server picks the addresses, so a request carries no collection that could amplify the queries below.
         var validAddresses = await EmailAccessHelper.ResolveActiveAddressesAsync(context, user.Id);
@@ -189,7 +190,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         [
             new("addresses", validAddresses.ToArray()),
             new("keyids", decryptableKeyIds.ToArray()),
-            new("limit", page * model.PageSize),
+            new("limit", page * pageSize),
         ];
 
         if (shadowCutoff is not null)
@@ -202,8 +203,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             .FromSqlRaw(pageSql, parameters.ToArray())
             .AsNoTracking()
             .OrderByDescending(x => x.DateSystem)
-            .Skip((page - 1) * model.PageSize)
-            .Take(model.PageSize)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new
             {
                 Mail = new MailboxEmailApiModel
@@ -241,11 +242,11 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         var totalRecords = await countQuery.CountAsync();
 
-        MailboxBulkResponse returnValue = new()
+        InboxResponse returnValue = new()
         {
             PublicKeys = keyTable.PublicKeys,
             Mails = mails,
-            PageSize = model.PageSize,
+            PageSize = pageSize,
             CurrentPage = page,
             TotalRecords = totalRecords,
         };
