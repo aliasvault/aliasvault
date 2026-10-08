@@ -2,9 +2,9 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
-import type { PasswordSettings, DicewareCapitalization, DicewareSeparator, DicewareSalt } from '@aliasvault/models/vault';
+import type { PasswordSettings, PasswordGeneratorType, DicewareCapitalization, DicewareSeparator, DicewareSalt } from '@aliasvault/models/vault';
 import { getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/i18n/languages';
 import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
@@ -136,6 +136,28 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingVertical: 12,
+    },
+    excludedDescription: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 18,
+      marginTop: 8,
+    },
+    excludedInput: {
+      backgroundColor: colors.modalSurface,
+      borderColor: colors.accentBorder,
+      borderRadius: 6,
+      borderWidth: 1,
+      color: colors.text,
+      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+      fontSize: 15,
+      marginTop: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    excludedSection: {
+      paddingBottom: 14,
+      paddingTop: 10,
     },
     languageValue: {
       alignItems: 'center',
@@ -363,6 +385,21 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
               </TouchableOpacity>
             </View>
           ))}
+
+          {/* Excluded characters. */}
+          <View style={[styles.excludedSection, styles.rowDivider]}>
+            <ThemedText style={styles.sliderLabel}>{t('items.excludedCharsLabel')}</ThemedText>
+            <TextInput
+              style={styles.excludedInput}
+              value={settings.ExcludedChars ?? ''}
+              onChangeText={(text) => applyChange({ ExcludedChars: text })}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              testID="excluded-chars-input"
+            />
+            <ThemedText style={styles.excludedDescription}>{t('items.excludedCharsDescription')}</ThemedText>
+          </View>
         </View>
       ) : (
         <View style={styles.card}>

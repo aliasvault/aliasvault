@@ -56,6 +56,11 @@ export type PasswordSettings = {
   UseNonAmbiguousChars: boolean;
 
   /**
+   * Characters that must never appear in a generated password (basic generator). Empty or absent means no exclusions.
+   */
+  ExcludedChars?: string;
+
+  /**
    * Which generator to use. Defaults to 'basic' when absent.
    */
   Type?: PasswordGeneratorType;

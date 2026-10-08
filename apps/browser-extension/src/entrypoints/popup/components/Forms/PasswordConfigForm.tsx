@@ -257,6 +257,23 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                 {t('items.avoidAmbiguousCharacters')}
               </label>
             </div>
+
+            {/* Excluded characters */}
+            <div>
+              <label htmlFor="excluded-chars" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('items.excludedCharsLabel')}
+              </label>
+              <input
+                id="excluded-chars"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={settings.ExcludedChars ?? ''}
+                onChange={(e) => onSettingChange('ExcludedChars', e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white font-mono focus:ring-primary-500 focus:border-primary-500"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('items.excludedCharsDescription')}</p>
+            </div>
           </div>
         )}
 

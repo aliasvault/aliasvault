@@ -62,7 +62,13 @@ fn build_character_set(settings: &PasswordSettings) -> Vec<char> {
         chars.push_str(LOWERCASE_CHARS);
     }
 
-    safe_character_set(&chars, settings)
+    let safe = safe_character_set(&chars, settings);
+    if !safe.is_empty() {
+        return safe;
+    }
+
+    // Every enabled character was excluded: ignore the exclusions rather than produce nothing.
+    chars.chars().filter(|c| !settings.use_non_ambiguous_chars || !AMBIGUOUS_CHARS.contains(*c)).collect()
 }
 
 /// Collect one mandatory character per enabled class, so the password contains at least one character from each.
@@ -91,9 +97,13 @@ fn push_one<R: Rng + ?Sized>(out: &mut Vec<char>, char_set: &str, settings: &Pas
     }
 }
 
-/// Get a character set with ambiguous characters removed if the option is enabled.
+/// Get a character set with the user's excluded characters removed, and the ambiguous ones if that option is enabled.
 fn safe_character_set(char_set: &str, settings: &PasswordSettings) -> Vec<char> {
-    char_set.chars().filter(|c| !settings.use_non_ambiguous_chars || !AMBIGUOUS_CHARS.contains(*c)).collect()
+    char_set
+        .chars()
+        .filter(|c| !settings.excluded_chars.contains(*c))
+        .filter(|c| !settings.use_non_ambiguous_chars || !AMBIGUOUS_CHARS.contains(*c))
+        .collect()
 }
 
 /// Shuffle a slice in place with an unbiased Fisher-Yates shuffle, reusing [`unbiased_index`] so a fixed seed stays deterministic.
