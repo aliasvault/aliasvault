@@ -11,6 +11,7 @@
 //! - **email_parser**: RFC 822 email parsing into bodies and attachment metadata
 //! - **favicon**: Favicon handling and source selection
 //! - **password_generator**: Password and passphrase (Diceware) generation
+//! - **totp**: RFC 6238 TOTP code generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **crypto**: Argon2id derivation, AES-256-GCM, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
 //! - **common**: `VaultError`, byte encodings, randomness and the vault timestamp formats
@@ -25,6 +26,7 @@ pub mod credential_matcher;
 pub mod email_parser;
 pub mod favicon;
 pub mod password_generator;
+pub mod totp;
 pub mod identity_generator;
 pub mod crypto;
 pub mod vault_sync;

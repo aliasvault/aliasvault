@@ -9,15 +9,11 @@ use crate::common::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 use crate::vault_codec::{self, CanonicalizeInput};
 
-// Vault sync.
-
 /// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
 pub fn get_syncable_table_names() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
-
-// Credential matcher.
 
 /// Filter credentials for autofill by the current URL/app and page title.
 /// Input: `CredentialMatcherInput` JSON. Output: `CredentialMatcherOutput` JSON.
@@ -50,8 +46,6 @@ pub fn is_related_origin_allowed(caller_origin: String, origins: Vec<String>) ->
     crate::credential_matcher::is_related_origin_allowed(&caller_origin, &origins)
 }
 
-// Favicon.
-
 /// Pick the favicon target for an item from its URLs, in the order the item lists them.
 ///
 /// Returns the URL to fetch from and the `Logos.Source` key to store the result under, or
@@ -68,7 +62,11 @@ pub fn favicon_source_key(url: String) -> String {
     crate::favicon::favicon_source_key(&url)
 }
 
-// Password generator.
+/// The RFC 6238 code for a Base32 secret at `unix_seconds`, or `None` for an unusable secret. Unknown parameters fall back to SHA1, 6 digits, 30 seconds.
+#[uniffi::export]
+pub fn generate_totp_code(secret: String, unix_seconds: i64, algorithm: String, digits: u32, period: u32) -> Option<String> {
+    crate::totp::generate_totp_code(&secret, unix_seconds, &algorithm, digits, period)
+}
 
 /// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware" and an
 /// optional 64-character hex `Seed` makes the output deterministic for UI previews.
@@ -82,8 +80,6 @@ pub fn generate_password(settings_json: String) -> Result<String, VaultError> {
 pub fn get_diceware_languages() -> Vec<String> {
     crate::password_generator::available_languages()
 }
-
-// Identity generator.
 
 /// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
 /// returns `Identity` JSON with camelCase fields.
@@ -124,8 +120,6 @@ pub fn get_identity_age_ranges() -> Vec<String> {
     crate::identity_generator::available_age_ranges()
 }
 
-// Email parser.
-
 /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata, returned as
 /// a JSON string (`{htmlBody, textBody, attachments: [{filename, mimeType, size, detached, partIndex}]}`). Input that
 /// starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the decrypted
@@ -146,8 +140,6 @@ pub fn decode_email_source(source: Vec<u8>) -> Result<Vec<u8>, VaultError> {
 pub fn extract_email_attachment(source: Vec<u8>, index: u32, detached_body: Option<Vec<u8>>) -> Result<Vec<u8>, VaultError> {
     crate::email_parser::extract_email_attachment(&source, index as usize, detached_body.as_deref())
 }
-
-// Vault codec (manifest-v1 storage format).
 
 /// Canonicalize normalized tables into manifest + metadata + blob map.
 /// Input: `CanonicalizeInput` JSON. Output: `CanonicalizedVault` JSON.
@@ -187,8 +179,6 @@ pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultEr
 pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultError> {
     crate::vault_codec::unpack_payload(&plain_bytes)
 }
-
-// Argon2id key derivation and the account key chain.
 
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[uniffi::export]
@@ -256,8 +246,6 @@ pub fn open_account_key_chain(stored_key: Vec<u8>, encrypted_account_key: String
     })
 }
 
-// SRP (Secure Remote Password).
-
 /// A random 32-byte SRP salt as an uppercase hex string.
 #[uniffi::export]
 pub fn srp_generate_salt() -> String {
@@ -294,8 +282,6 @@ pub fn srp_verify_session(client_public: String, client_proof: String, session_k
     crate::crypto::srp::srp_verify_session(&client_public, &client_proof, &session_key, &server_proof)
 }
 
-// RSA-OAEP.
-
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[uniffi::export]
 pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result<Vec<u8>, VaultError> {
@@ -307,8 +293,6 @@ pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result
 pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {
     crate::crypto::encrypt_with_public_key_and_label(&account_key, &public_key_jwk, crate::crypto::aad::MOBILE_LOGIN_ACCOUNT_KEY)
 }
-
-// Vault sync engine and SQLite host.
 
 /// One engine operation. The host loops on `next_command` / `resume` until the command is `done`; see the
 /// `vault_sync` module docs for the command and response shapes.

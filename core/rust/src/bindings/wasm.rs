@@ -23,15 +23,11 @@ fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
     value.serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true)).map_err(js_err)
 }
 
-// Vault sync.
-
 /// Get the list of table names that take part in a vault sync.
 #[wasm_bindgen(js_name = getSyncableTableNames)]
 pub fn get_syncable_table_names_js() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
-
-// Vault codec (manifest-v1 storage format).
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what `vaultCodecLogoIdFor` then derives the row id from.
@@ -74,8 +70,6 @@ pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsVal
     vault_codec::unpack_payload(plain_bytes).map_err(js_err)
 }
 
-// Credential matcher.
-
 /// Filter credentials for autofill. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.
 #[wasm_bindgen(js_name = filterCredentials)]
 pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
@@ -110,8 +104,6 @@ pub fn is_related_origin_allowed_js(caller_origin: &str, origins: Vec<String>) -
     crate::credential_matcher::is_related_origin_allowed(caller_origin, &origins)
 }
 
-// Favicon.
-
 /// The favicon target for an item's URLs (in item order): the URL to fetch and the `Logos.Source` key, or null.
 #[wasm_bindgen(js_name = selectFaviconTarget)]
 pub fn select_favicon_target_js(urls: Vec<String>) -> Result<JsValue, JsValue> {
@@ -121,7 +113,11 @@ pub fn select_favicon_target_js(urls: Vec<String>) -> Result<JsValue, JsValue> {
     }
 }
 
-// Password generator.
+/// The RFC 6238 code for a Base32 secret at `unixSeconds`, or undefined for an unusable secret. Unknown parameters fall back to SHA1, 6 digits, 30 seconds.
+#[wasm_bindgen(js_name = generateTotpCode)]
+pub fn generate_totp_code_js(secret: &str, unix_seconds: f64, algorithm: &str, digits: u32, period: u32) -> Option<String> {
+    crate::totp::generate_totp_code(secret, unix_seconds as i64, algorithm, digits, period)
+}
 
 /// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware".
 #[wasm_bindgen(js_name = generatePassword)]
@@ -134,8 +130,6 @@ pub fn generate_password_js(settings_json: &str) -> Result<String, JsValue> {
 pub fn get_diceware_languages_js() -> Vec<String> {
     available_languages()
 }
-
-// Identity generator.
 
 /// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
 /// returns `Identity` JSON.
@@ -176,8 +170,6 @@ pub fn get_identity_age_ranges_js() -> Vec<String> {
     crate::identity_generator::available_age_ranges()
 }
 
-// Email parser.
-
 /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
 /// Input that starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the
 /// decrypted `MessageSource` of both legacy and source-only emails can be passed as-is.
@@ -199,8 +191,6 @@ pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
 pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: Option<Box<[u8]>>) -> Result<Vec<u8>, JsValue> {
     crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref()).map_err(js_err)
 }
-
-// Argon2id key derivation and the account key chain.
 
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[wasm_bindgen(js_name = argon2DeriveKey)]
@@ -262,8 +252,6 @@ pub fn open_account_key_chain_js(stored_key: &str, encrypted_account_key: &str, 
     to_js(&result)
 }
 
-// SRP (Secure Remote Password).
-
 /// A random 32-byte SRP salt as an uppercase hex string.
 #[wasm_bindgen(js_name = srpGenerateSalt)]
 pub fn srp_generate_salt_js() -> String {
@@ -301,8 +289,6 @@ pub fn srp_derive_session_js(client_secret: &str, server_public: &str, salt: &st
 pub fn srp_verify_session_js(client_public: &str, client_proof: &str, session_key: &str, server_proof: &str) -> Result<bool, JsValue> {
     crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof).map_err(js_err)
 }
-
-// Vault sync engine and SQLite host.
 
 /// One engine operation. The host loops on `nextCommand` / `resume` until the command is `done`; see the
 /// `vault_sync` module docs for the command and response shapes.
