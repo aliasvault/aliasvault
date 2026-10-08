@@ -91,7 +91,7 @@ export class ItemQueries {
 
   /**
    * Get a single item by its manifest-qualified key: an id alone does not identify a row, since the
-   * same id can exist in two or more manifests.
+   * same id can exist in two or more manifests. Items in the trash count as not found.
    */
   public static readonly GET_BY_ID = `
     SELECT
@@ -113,7 +113,7 @@ export class ItemQueries {
       i.ArchivedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
-    WHERE i.Id = ? AND i.ManifestId = ? AND i.IsDeleted = 0`;
+    WHERE i.Id = ? AND i.ManifestId = ? AND i.IsDeleted = 0 AND i.DeletedAt IS NULL`;
 
   /**
    * Count of recently deleted items.

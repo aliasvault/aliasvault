@@ -204,7 +204,7 @@ export class ItemRepository extends BaseRepository {
   /**
    * Fetch a single item with its dynamic fields and tags.
    * @param ref - The item, named by its manifest and id
-   * @returns Item object or null if not found
+   * @returns Item object, or null if not found or in the trash
    */
   public *getById(ref: ItemRef): DbOp<Item | null> {
 
