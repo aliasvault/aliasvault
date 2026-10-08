@@ -39,6 +39,9 @@ export const TOTP_DEFAULT_PERIOD = 30;
 /** The HMAC algorithms the TOTP generators implement. Anything else falls back to {@link TOTP_DEFAULT_ALGORITHM}. */
 export const TOTP_SUPPORTED_ALGORITHMS = ['SHA1', 'SHA256', 'SHA512'] as const;
 
+/** The code lengths the TOTP generators accept. Anything else falls back to {@link TOTP_DEFAULT_DIGITS}. */
+export const TOTP_SUPPORTED_DIGITS = [6, 7, 8] as const;
+
 /**
  * Normalizes a raw `algorithm` value (from an otpauth:// URI or an older vault row) to one of
  * {@link TOTP_SUPPORTED_ALGORITHMS}, falling back to {@link TOTP_DEFAULT_ALGORITHM}.
@@ -62,7 +65,7 @@ export function normalizeTotpAlgorithm(value: string | null | undefined): string
  */
 export function normalizeTotpDigits(value: string | number | null | undefined): number {
   const parsed = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
-  return Number.isInteger(parsed) && parsed >= 6 && parsed <= 8 ? parsed : TOTP_DEFAULT_DIGITS;
+  return (TOTP_SUPPORTED_DIGITS as readonly number[]).includes(parsed) ? parsed : TOTP_DEFAULT_DIGITS;
 }
 
 /**
