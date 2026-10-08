@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AliasServerDb;
+using AliasVault.Api.Filters;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
@@ -82,6 +83,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Status endpoint called by client to check if user is still authenticated and get sync status.
     /// </summary>
     /// <returns>Returns status response if valid authentication is provided, otherwise it will return 401 unauthorized.</returns>
+    [AllowAfterV2Migration]
     [Authorize]
     [HttpGet("status")]
     public async Task<IActionResult> Status()
@@ -120,7 +122,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // A caller on this v1 endpoint cannot serve a user whose vault has moved to the v2 storage format. Reporting
         // the client as unsupported makes it show its built-in "please update" message and log out cleanly, instead
         // of running into a hard failure on the vault endpoints later on.
-        clientSupported = clientSupported && !await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id);
+        clientSupported = clientSupported && !await LegacyVaultHelper.HasMigratedToV2Async(context, cache, user.Id);
 
         return Ok(new StatusResponse
         {
@@ -153,7 +155,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             // Log the attempt internally
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return UpgradeRequiredResponse();
+            return LegacyVaultHelper.UpgradeRequiredResult();
         }
 
         // Check if the account is locked out.
@@ -177,7 +179,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // A v1 client can only answer a legacy verifier; for an upgraded one it would report a wrong password.
         if (latestVaultEncryptionSettings.EncryptionType != Defaults.LegacyEncryptionType)
         {
-            return UpgradeRequiredResponse();
+            return LegacyVaultHelper.UpgradeRequiredResult();
         }
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
@@ -393,6 +395,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// </summary>
     /// <param name="model">Token model.</param>
     /// <returns>IActionResult.</returns>
+    [AllowAfterV2Migration]
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke([FromBody] TokenModel model)
     {
@@ -436,6 +439,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// </summary>
     /// <param name="model">Token model.</param>
     /// <returns>IActionResult.</returns>
+    [AllowAfterV2Migration]
     [HttpPost("revoke-token")]
     public async Task<IActionResult> RevokeToken([FromBody] TokenModel model)
     {
@@ -1001,10 +1005,4 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         return new TokenModel { Token = accessToken, RefreshToken = refreshToken };
     }
-
-    /// <summary>
-    /// The response for an account a v1 client cannot sign in to.
-    /// </summary>
-    /// <returns>IActionResult.</returns>
-    private ObjectResult UpgradeRequiredResponse() => StatusCode(426, new { error = "UPGRADE_REQUIRED", message = "Your client is out of date. Please update to access this vault." });
 }

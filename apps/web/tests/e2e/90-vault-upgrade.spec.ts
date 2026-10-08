@@ -289,8 +289,10 @@ test.describe('90. Vault upgrades', () => {
       return ((await response.json()) as { encryptionType: string }).encryptionType;
     };
 
-    await test.step('the upgraded vault still has the verifier of the 0.1.0 vault', async () => {
+    await test.step('the upgraded vault still has the verifier of the 0.1.0 vault, which v1 may no longer use', async () => {
       expect(await encryptionType()).toBe('Argon2Id');
+      const v1 = await fetch(`${apiUrl}/v1/Auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: testUser.username }) });
+      expect(v1.status).toBe(426);
     });
 
     await test.step('a password login replaces it with the split verifier', async () => {

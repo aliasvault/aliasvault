@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 #if DEBUG
 
@@ -38,6 +39,7 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="serverSettingsService">ServerSettingsService instance.</param>
 /// <param name="registrationInviteService">RegistrationInviteService instance.</param>
 /// <param name="capabilityService">CapabilityService instance.</param>
+/// <param name="cache">IMemoryCache instance.</param>
 [ApiVersion("2")]
 public class TestController(
     UserManager<AliasVaultUser> userManager,
@@ -45,7 +47,8 @@ public class TestController(
     IAliasServerDbContextFactory dbContextFactory,
     ServerSettingsService serverSettingsService,
     RegistrationInviteService registrationInviteService,
-    CapabilityService capabilityService) : AuthenticatedRequestController(userManager)
+    CapabilityService capabilityService,
+    IMemoryCache cache) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Authenticated test request. Used to verify authentication is working.
@@ -432,6 +435,7 @@ public class TestController(
             Verifier = request.Verifier,
         });
         await context.SaveChangesAsync();
+        LegacyVaultHelper.ForgetMigrationState(cache, user.Id);
 
         return Ok(new
         {

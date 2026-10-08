@@ -12,6 +12,7 @@ using System.Text.Json;
 using AliasServerDb;
 using AliasServerDb.Configuration;
 using AliasVault.Api;
+using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Jwt;
 using AliasVault.Api.Services;
@@ -164,7 +165,11 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-builder.Services.AddControllers(options => options.InputFormatters.Insert(0, new BinaryFrameInputFormatter()))
+builder.Services.AddControllers(options =>
+    {
+        options.InputFormatters.Insert(0, new BinaryFrameInputFormatter());
+        options.Filters.Add<LegacyApiGuardFilter>();
+    })
     .AddJsonOptions(options =>
     {
         // Ensure consistent date formatting regardless of server locale

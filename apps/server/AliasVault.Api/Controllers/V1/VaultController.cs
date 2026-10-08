@@ -71,13 +71,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return Unauthorized();
         }
 
-        // v2 storage-format guard: once the user has migrated to manifest-v1, v1 vault endpoints refuse to serve so
-        // outdated clients can't accidentally overwrite the new format with a legacy SQLite blob.
-        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
-        {
-            return UpgradeRequired();
-        }
-
         // Logic to retrieve vault for the user: the current revision of the user's personal manifest.
         var vault = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerGroupId == user.PersonalGroupId);
 
@@ -143,11 +136,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         if (user == null)
         {
             return Unauthorized();
-        }
-
-        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
-        {
-            return UpgradeRequired();
         }
 
         // Compare the logged-in username with the username in the provided vault model.
@@ -231,11 +219,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         if (user == null)
         {
             return Unauthorized();
-        }
-
-        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
-        {
-            return UpgradeRequired();
         }
 
         // Compare the logged-in username with the username in the provided vault model.
@@ -326,22 +309,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
         context.VaultManifestsHistory.Add(archivedRevision);
         return archivedRevision;
-    }
-
-    /// <summary>
-    /// HTTP 426 Upgrade Required: returned to legacy v1 clients hitting a migrated user. This is a backstop only:
-    /// the status endpoint already reports such clients as unsupported, so a well-behaved client logs out with a
-    /// proper "update your client" message before it ever calls a vault endpoint.
-    /// </summary>
-    private IActionResult UpgradeRequired()
-    {
-        return StatusCode(
-            426,
-            new
-            {
-                error = "UPGRADE_REQUIRED",
-                message = "Your client is out of date. Please update to access this vault.",
-            });
     }
 
     /// <summary>

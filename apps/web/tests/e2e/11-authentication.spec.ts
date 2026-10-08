@@ -48,4 +48,53 @@ test.describe('11. Authentication', () => {
       await app.expectItemView('Return after unlock');
     });
   });
+
+  test('11.4 should refuse every v1 endpoint for a v2 account', async ({ apiUrl, testUser }) => {
+    /**
+     * Call a v1 endpoint, authenticated as the test user unless the token is null.
+     */
+    const v1 = (method: string, path: string, body?: unknown, token: string | null = testUser.token): Promise<Response> => fetch(`${apiUrl}/v1/${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+
+    await test.step('the status endpoint answers, reporting the client as unsupported', async () => {
+      const status = await v1('GET', 'Auth/status');
+      expect(status.status).toBe(200);
+      expect(((await status.json()) as { clientVersionSupported: boolean }).clientVersionSupported).toBe(false);
+    });
+
+    await test.step('authenticated endpoints are refused', async () => {
+      const requests: [string, string, unknown?][] = [
+        ['GET', 'Vault'],
+        ['GET', 'Auth/change-password/initiate'],
+        ['GET', 'TwoFactorAuth/status'],
+        ['POST', 'TwoFactorAuth/enable'],
+        ['POST', 'TwoFactorAuth/disable', '000000'],
+        ['GET', 'Security/sessions'],
+        ['GET', 'Security/authlogs'],
+        ['GET', 'EmailBox/test@example.com'],
+        ['GET', 'Email/1'],
+        ['DELETE', 'Email/1'],
+        ['POST', 'Identity/CheckEmail/test@example.com'],
+        ['GET', 'Favicon/Extract?url=https://example.com'],
+      ];
+      for (const [method, path, body] of requests) {
+        expect((await v1(method, path, body)).status, `${method} /v1/${path}`).toBe(426);
+      }
+    });
+
+    await test.step('sign-in endpoints are refused', async () => {
+      const proof = { username: testUser.username, clientPublicEphemeral: 'aa', clientSessionProof: 'aa', rememberMe: false };
+      expect((await v1('POST', 'Auth/login', { username: testUser.username }, null)).status).toBe(426);
+      expect((await v1('POST', 'Auth/validate', proof, null)).status).toBe(426);
+      expect((await v1('POST', 'Auth/validate-2fa', { ...proof, code2Fa: 123456 }, null)).status).toBe(426);
+      expect((await v1('POST', 'Auth/refresh', { token: testUser.token, refreshToken: 'unknown' }, null)).status).toBe(426);
+    });
+
+    await test.step('logging out still works', async () => {
+      expect((await v1('POST', 'Auth/revoke', { token: testUser.token, refreshToken: 'unknown' }, null)).status).toBe(200);
+    });
+  });
 });
