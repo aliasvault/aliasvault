@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7D10C012F000000000F0004 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		07A10A71081ED4937FFAA625 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -57,6 +58,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A7D10C012F000000000F0005 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
 		1F09A0CB86D87B7C44135D75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -360,6 +368,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE7782782EA3E70B00A75E6F /* VaultModels.framework in Frameworks */,
+				A7D10C012F000000000F0004 /* RustCoreFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -743,6 +752,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				A7D10C012F000000000F0006 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CE77825E2EA1822400A75E6F /* VaultUtils */,
@@ -1368,6 +1378,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A7D10C012F000000000F0006 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = A7D10C012F000000000F0005 /* PBXContainerItemProxy */;
+		};
 		174AAF666366E11F87CAB46E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RustCoreFramework;

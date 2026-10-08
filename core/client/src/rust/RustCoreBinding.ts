@@ -30,6 +30,8 @@ export interface IRustCore {
   selectFaviconTarget(urls: string[]): Promise<FaviconTarget | null>;
   filterCredentials(input: FilterCredentialsInput): Promise<FilterCredentialsOutput>;
 
+  generateTotpCode(secret: string, unixSeconds: number, algorithm: string, digits: number, period: number): Promise<string | null>;
+
   generatePassword(settingsJson: string): Promise<string>;
   getDicewareLanguages(): Promise<string[]>;
   generateIdentity(requestJson: string): Promise<string>;

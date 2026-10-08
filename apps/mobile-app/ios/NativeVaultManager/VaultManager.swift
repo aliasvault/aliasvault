@@ -448,21 +448,6 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func generateTotpCode(_ secret: String,
-                          algorithm: String,
-                          digits: Double,
-                          period: Double,
-                          resolver resolve: @escaping RCTPromiseResolveBlock,
-                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        // Returns nil for invalid secrets; the JS side treats null as "code unavailable".
-        let code = TotpGenerator.generateCode(secret: secret,
-                                              period: Int(period),
-                                              digits: Int(digits),
-                                              algorithm: algorithm)
-        resolve(code)
-    }
-
-    @objc
     func copyToClipboardWithExpiration(_ text: String,
                                       expirationSeconds: Double,
                                       localOnly: Bool,
@@ -1549,6 +1534,11 @@ private enum RustCoreDispatcher {
             return value.uint32Value
         }
 
+        func int64(_ index: Int) throws -> Int64 {
+            guard index < values.count, let value = values[index] as? NSNumber else { throw DispatchError.badArgument(index) }
+            return value.int64Value
+        }
+
         func strings(_ index: Int) throws -> [String] {
             guard index < values.count, let value = values[index] as? [String] else { throw DispatchError.badArgument(index) }
             return value
@@ -1579,6 +1569,9 @@ private enum RustCoreDispatcher {
             guard let target = RustCoreFramework.selectFaviconTarget(urls: try args.strings(0)) else { return "null" }
             return try json(["url": target.url, "source": target.source])
         case "filterCredentialsJson": return try RustCoreFramework.filterCredentialsJson(inputJson: try args.string(0))
+        case "generateTotpCode":
+            guard let code = RustCoreFramework.generateTotpCode(secret: try args.string(0), unixSeconds: try args.int64(1), algorithm: try args.string(2), digits: try args.uint32(3), period: try args.uint32(4)) else { return "null" }
+            return try json(code)
 
         case "generatePassword": return try json(try RustCoreFramework.generatePassword(settingsJson: try args.string(0)))
         case "getDicewareLanguages": return try json(RustCoreFramework.getDicewareLanguages())

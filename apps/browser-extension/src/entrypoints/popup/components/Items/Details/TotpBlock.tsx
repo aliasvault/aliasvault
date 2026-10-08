@@ -90,32 +90,24 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
   }, [itemId, manifestId, dbContext?.sqliteClient]);
 
   useEffect(() => {
+    let cancelled = false;
+
     /**
-     * Updates the current TOTP codes.
+     * Regenerates the codes; a failed code keeps its previous value so a single bad tick does not empty the displayed value.
      */
-    const updateTotpCodes = (prevCodes: Record<string, string>): Record<string, string> => {
-      const newCodes: Record<string, string> = {};
-      totpCodes.forEach(code => {
-        // Keep the previous code when generation fails, so a single bad tick doesn't blank the display.
-        newCodes[code.Id] = generateTotpCode(code.SecretKey, code) ?? prevCodes[code.Id] ?? 'Error';
-      });
-      return newCodes;
+    const refreshCodes = async (): Promise<void> => {
+      const generated = await Promise.all(totpCodes.map(async code => [code.Id, await generateTotpCode(code.SecretKey, code)] as const));
+      if (cancelled) {
+        return;
+      }
+      setCurrentCodes(prevCodes => Object.fromEntries(generated.map(([id, code]) => [id, code ?? prevCodes[id] ?? 'Error'])));
     };
 
-    // Generate initial codes
-    const initialCodes: Record<string, string> = {};
-    totpCodes.forEach(code => {
-      initialCodes[code.Id] = generateTotpCode(code.SecretKey, code) ?? 'Error';
-    });
-    setCurrentCodes(initialCodes);
+    void refreshCodes();
+    const intervalId = setInterval(() => void refreshCodes(), 1000);
 
-    // Set up interval to refresh codes
-    const intervalId = setInterval(() => {
-      setCurrentCodes(updateTotpCodes);
-    }, 1000);
-
-    // Clean up interval on unmount or when totpCodes change
     return () : void => {
+      cancelled = true;
       clearInterval(intervalId);
     };
   }, [totpCodes]);

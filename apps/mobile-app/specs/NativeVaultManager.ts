@@ -89,9 +89,6 @@ export interface Spec extends TurboModule {
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 
-  // TOTP code generation via native layer.
-  generateTotpCode(secret: string, algorithm: string, digits: number, period: number): Promise<string | null>;
-
   // Battery optimization management (Android only)
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;

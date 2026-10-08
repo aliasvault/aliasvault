@@ -1,6 +1,6 @@
 import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
-import * as OTPAuth from 'otpauth';
 
+import { rustCore } from '../rust/RustCore';
 import { logExpected } from '../utilities/Diagnostics';
 
 /**
@@ -16,34 +16,18 @@ export type TotpParameters = {
 };
 
 /**
- * Build an OTPAuth.TOTP for a secret using the stored parameters, falling back to the RFC 6238
- * defaults for anything missing or unsupported.
+ * Generate the TOTP code for a secret using its stored parameters, via the Rust core.
  *
  * @param secretKey - Base32-encoded TOTP secret
- * @param parameters - Stored algorithm/digits/period
- * @returns A configured OTPAuth.TOTP instance
+ * @param parameters - Stored algorithm/digits/period (when not set, use sha-1 common defaults instead)
+ * @param unixSeconds - The moment to generate the code for, defaults to now
+ * @returns The code, or null when the secret cannot be used
  */
-function createTotp(secretKey: string, parameters?: TotpParameters): OTPAuth.TOTP {
-  return new OTPAuth.TOTP({
-    secret: secretKey,
-    algorithm: normalizeTotpAlgorithm(parameters?.Algorithm),
-    digits: normalizeTotpDigits(parameters?.Digits),
-    period: normalizeTotpPeriod(parameters?.Period)
-  });
-}
-
-/**
- * Generate the current TOTP code for a secret using its stored parameters.
- *
- * @param secretKey - Base32-encoded TOTP secret
- * @param parameters - Stored algorithm/digits/period
- * @returns The current code, or null when the secret cannot be used
- */
-export function generateTotpCode(secretKey: string, parameters?: TotpParameters): string | null {
+export async function generateTotpCode(secretKey: string, parameters?: TotpParameters, unixSeconds: number = Math.floor(Date.now() / 1000)): Promise<string | null> {
   try {
-    return createTotp(secretKey, parameters).generate();
+    return await rustCore().generateTotpCode(secretKey, unixSeconds, normalizeTotpAlgorithm(parameters?.Algorithm), normalizeTotpDigits(parameters?.Digits), normalizeTotpPeriod(parameters?.Period));
   } catch (error) {
-    logExpected('[Totp] The stored secret cannot generate a code', error);
+    logExpected('[Totp] Generating a code failed', error);
     return null;
   }
 }

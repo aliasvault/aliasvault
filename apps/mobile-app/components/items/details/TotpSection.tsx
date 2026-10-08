@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-import { generateTotpCode } from '@/utils/TotpUtility';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
+import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -105,7 +105,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
     let cancelled = false;
 
     /**
-     * Generate codes for all current TOTP entries via the native bridge and
+     * Generate codes for all current TOTP entries via the Rust core and
      * push them into state. Falls back to "Error" only when no previous code
      * exists for that entry, so the display doesn't flicker when a single
      * tick fails.
