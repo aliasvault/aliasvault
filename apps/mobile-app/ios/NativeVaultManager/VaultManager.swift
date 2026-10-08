@@ -258,16 +258,6 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func getEncryptedDatabase(_ resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if let encryptedDb = vaultStore.getEncryptedDatabase() {
-            resolve(encryptedDb)
-        } else {
-            reject("DB_ERROR", "Failed to get encrypted database", nil)
-        }
-    }
-
-    @objc
     func hasEncryptedDatabase(_ resolve: @escaping RCTPromiseResolveBlock,
                           rejecter reject: @escaping RCTPromiseRejectBlock) {
         let isInitialized = vaultStore.hasEncryptedDatabase

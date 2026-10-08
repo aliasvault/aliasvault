@@ -147,10 +147,6 @@
     resolve(nil);
 }
 
-- (void)getEncryptedDatabase:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getEncryptedDatabase:resolve rejecter:reject];
-}
-
 - (void)deriveKeyFromPassword:(NSString *)password salt:(NSString *)salt encryptionType:(NSString *)encryptionType encryptionSettings:(NSString *)encryptionSettings resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager deriveKeyFromPassword:password salt:salt encryptionType:encryptionType encryptionSettings:encryptionSettings resolver:resolve rejecter:reject];
 }

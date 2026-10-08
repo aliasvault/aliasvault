@@ -76,20 +76,12 @@ extension VaultStore {
 
         // Step 2: Open the bytes in the Rust core's memory directly without persisting to the filesystem.
         self.dbConnection = nil
-        let opened: SqliteMemoryDatabase
         do {
-            opened = try SqliteMemoryDatabase.fromBytes(bytes: decryptedDbData)
+            let opened = try SqliteMemoryDatabase.fromBytes(bytes: decryptedDbData)
             _ = try opened.queryValues(sql: "SELECT count(*) FROM sqlite_master", params: [])
+            self.dbConnection = opened
         } catch {
             throw AppError.databaseOpenFailed
         }
-
-        // Step 3: Set pragmas
-        do {
-            try opened.executeBatch(sql: "PRAGMA foreign_keys = ON")
-        } catch {
-            throw AppError.databasePragmaFailed
-        }
-        self.dbConnection = opened
     }
 }

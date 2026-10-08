@@ -28,12 +28,6 @@ import type { ISqliteDatabase } from '../platform/SqliteEngine';
 import type { VaultMutationScope } from '../sync/VaultMutationScope';
 import type { VaultVersion } from '@aliasvault/vault';
 
-/** Minimum number of free pages before a VACUUM is worth the full database rewrite on export. */
-const VACUUM_MIN_FREE_PAGES = 64;
-
-/** A VACUUM runs when the freelist holds at least this fraction (1/n) of the database's pages. */
-const VACUUM_FREE_PAGE_RATIO = 10;
-
 /**
  * Core SQLite database client.
  * Provides low-level database operations and exposes repositories for domain-specific operations.
@@ -299,7 +293,7 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * Export the SQLite database as raw bytes.
+   * Export the SQLite database as raw bytes (the Rust core compacts it first when fragmented).
    * @returns The database bytes
    */
   public exportToBytes(): Uint8Array {
@@ -308,23 +302,10 @@ export class SqliteClient implements ISyncDatabaseClient {
     }
 
     try {
-      this.vacuumIfFragmented();
       return this.db.export();
     } catch (error) {
       logDefect('[Sqlite] Exporting the database failed', error);
       throw error;
-    }
-  }
-
-  /**
-   * Rebuild the database to reclaim free pages, but only when enough of them have accumulated to be worth it.
-   */
-  private vacuumIfFragmented(): void {
-    const freePages = this.executeQuery<{ freelist_count: number }>('PRAGMA freelist_count')[0]?.freelist_count ?? 0;
-    const totalPages = this.executeQuery<{ page_count: number }>('PRAGMA page_count')[0]?.page_count ?? 0;
-
-    if (freePages >= VACUUM_MIN_FREE_PAGES && freePages * VACUUM_FREE_PAGE_RATIO >= totalPages) {
-      this.executeRaw('VACUUM');
     }
   }
 

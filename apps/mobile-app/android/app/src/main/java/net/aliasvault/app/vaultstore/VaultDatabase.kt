@@ -95,7 +95,7 @@ class VaultDatabase(
 
         close()
         JnaInitializer.ensureInitialized()
-        val opened = try {
+        db = try {
             SqliteMemoryDatabase.fromBytes(bytes).also {
                 it.queryValues("SELECT count(*) FROM sqlite_master", emptyList())
             }
@@ -103,14 +103,6 @@ class VaultDatabase(
             Log.e(TAG, "Failed to open the vault database (data may be corrupt)", e)
             throw AppError.DatabaseOpenFailed(cause = e)
         }
-        try {
-            opened.executeBatch("PRAGMA foreign_keys = ON")
-        } catch (e: Exception) {
-            opened.destroy()
-            Log.e(TAG, "Failed to set database pragmas", e)
-            throw AppError.DatabasePragmaFailed(cause = e)
-        }
-        db = opened
     }
 
     /**
@@ -174,8 +166,7 @@ class VaultDatabase(
      */
     fun commitTransaction(scope: String = VaultMutationScope.MAIN) {
         connection().executeBatch("COMMIT")
-        persistDatabaseToEncryptedStorage()
-        markMutated(scope)
+        persistAndMarkDirty(scope)
     }
 
     /**
@@ -197,9 +188,8 @@ class VaultDatabase(
 
     /**
      * Persist the in-memory database to encrypted local storage.
-     * This method can be called independently to persist the database without committing a transaction.
      */
-    fun persistDatabaseToEncryptedStorage() {
+    private fun persistDatabaseToEncryptedStorage() {
         val connection = connection()
         // End any open transactions.
         try { connection.executeBatch("END") } catch (_: Exception) {}
@@ -221,13 +211,9 @@ class VaultDatabase(
     }
 
     /**
-     * The database as SQLite file bytes, compacted first when no transaction is open.
+     * The database as SQLite file bytes.
      */
-    fun export(): ByteArray {
-        val connection = connection()
-        try { connection.executeBatch("VACUUM") } catch (_: Exception) {}
-        return connection.export()
-    }
+    fun export(): ByteArray = connection().export()
 
     /**
      * Close the database connection.

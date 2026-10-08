@@ -45,7 +45,7 @@ extension VaultStore {
     }
 
     /// Persist the in-memory database to encrypted local storage.
-    public func persistDatabaseToEncryptedStorage() throws {
+    private func persistDatabaseToEncryptedStorage() throws {
         let database = try requireDatabase()
         // End any open transactions.
         _ = try? database.executeBatch(sql: "END")
@@ -53,23 +53,16 @@ extension VaultStore {
         try storeEncryptedDatabase(encrypted.base64EncodedString())
     }
 
-    /// The database as SQLite file bytes, compacted first when no transaction is open.
+    /// The database as SQLite file bytes.
     public func exportDatabase() throws -> Data {
-        let database = try requireDatabase()
-        _ = try? database.executeBatch(sql: "VACUUM")
-        return try database.export()
+        return try requireDatabase().export()
     }
 
     /// Commit a transaction on the database. This is required for all database operations that modify the database.
     /// - Parameter scope: What the mutation touched, so the next sync can push only that scope
     public func commitTransaction(scope: String = VaultMutationScope.main) throws {
         try requireDatabase().executeBatch(sql: "COMMIT")
-        try persistDatabaseToEncryptedStorage()
-
-        // Atomically mark vault as dirty and increment mutation sequence
-        // This ensures sync can properly detect local changes
-        markDirty(scope: scope)
-        _ = incrementMutationSequence()
+        try persistAndMarkDirty(scope: scope)
     }
 
     /// Rollback a transaction on the database on error.

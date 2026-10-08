@@ -418,21 +418,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Get the encrypted database.
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun getEncryptedDatabase(promise: Promise) {
-        try {
-            val encryptedDb = vaultStore.getEncryptedDatabase()
-            promise.resolve(encryptedDb)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting encrypted database", e)
-            promise.reject("ERR_GET_DB", "Failed to get encrypted database: ${e.message}", e)
-        }
-    }
-
-    /**
      * Execute a query on the vault.
      * @param query The query
      * @param params The parameters to the query

@@ -73,7 +73,6 @@ export interface Spec extends TurboModule {
   getPersonalManifestId(): Promise<string | null>;
   decryptInvitationName(encryptedName: string): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
-  getEncryptedDatabase(): Promise<string | null>;
 
   // Auto-lock settings
   setAutoLockTimeout(timeout: number): Promise<void>;

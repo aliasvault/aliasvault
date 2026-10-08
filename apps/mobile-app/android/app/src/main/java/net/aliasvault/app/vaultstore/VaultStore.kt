@@ -377,40 +377,28 @@ class VaultStore(
      * Execute a read-only SQL query (SELECT) on the vault.
      */
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
-        // Process params - convert base64-prefixed strings to ByteArray for blob binding
-        val convertedParams = params.map { param ->
-            when {
-                param == null -> null
-                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
-                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
-                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
-                }
-                param is ByteArray -> param
-                else -> param.toString()
-            }
-        }
-
-        return database.query(queryString, convertedParams)
+        return database.query(queryString, bridgeParams(params))
     }
 
     /**
      * Execute an SQL update on the vault that mutates it.
      */
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
-        // Process params - convert base64-prefixed strings to ByteArray for blob binding
-        val processedParams = params.map { param ->
-            when {
-                param == null -> null
-                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
-                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
-                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
-                }
-                param is ByteArray -> param
-                else -> param.toString()
-            }
-        }
+        return database.execute(queryString, bridgeParams(params))
+    }
 
-        return database.execute(queryString, processedParams)
+    /**
+     * Bridge parameters as SQL values: base64-prefixed strings bind as a BLOB, everything else as text.
+     */
+    private fun bridgeParams(params: Array<Any?>): List<Any?> = params.map { param ->
+        when {
+            param == null -> null
+            param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
+                android.util.Base64.decode(param.removePrefix(BASE64_BLOB_PREFIX), android.util.Base64.NO_WRAP)
+            }
+            param is ByteArray -> param
+            else -> param.toString()
+        }
     }
 
     /**

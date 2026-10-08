@@ -1,6 +1,7 @@
 //! An in-memory SQLite database that host applications use for uniform access to the database.
 //!
-//! The database lives in SQLite's own memory and is never persisted to the filesystem.
+//! The database lives in SQLite's own memory and is never persisted to the filesystem; temporary tables and the
+//! scratch copy a VACUUM builds stay in memory too (`temp_store = MEMORY`), so no plaintext page spills to disk.
 
 use std::sync::Mutex;
 
@@ -12,6 +13,12 @@ use serde_json::{json, Map, Value};
 use crate::common::encoding::base64_decode;
 use crate::common::error::{VaultError, VaultResult};
 use crate::vault_codec::row::{inline_b64, inline_bytes};
+
+/// Minimum number of free pages before a VACUUM is worth the full database rewrite on export.
+const VACUUM_MIN_FREE_PAGES: i64 = 64;
+
+/// A VACUUM runs when the freelist holds at least this fraction (1/n) of the database's pages.
+const VACUUM_FREE_PAGE_RATIO: i64 = 10;
 
 /// One parameterized SQL statement, as the bindings and the sync engine hand it to a host.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,19 +55,19 @@ pub struct MemoryDatabase {
 impl MemoryDatabase {
     /// Open a database from its file bytes.
     pub fn from_bytes(bytes: &[u8]) -> VaultResult<Self> {
-        let mut conn = Connection::open_in_memory().map_err(sql_error)?;
+        let mut conn = open_connection()?;
         deserialize_into(&mut conn, bytes)?;
         Ok(Self { conn: Mutex::new(conn) })
     }
 
     /// Open an empty database.
     pub fn empty() -> VaultResult<Self> {
-        Ok(Self { conn: Mutex::new(Connection::open_in_memory().map_err(sql_error)?) })
+        Ok(Self { conn: Mutex::new(open_connection()?) })
     }
 
     /// Open an empty database and run a schema script on it.
     pub fn with_schema(schema_sql: &str) -> VaultResult<Self> {
-        let conn = Connection::open_in_memory().map_err(sql_error)?;
+        let conn = open_connection()?;
         conn.execute_batch(schema_sql).map_err(sql_error)?;
         Ok(Self { conn: Mutex::new(conn) })
     }
@@ -106,14 +113,36 @@ impl MemoryDatabase {
         Ok(conn.changes())
     }
 
-    /// The database as SQLite file bytes.
+    /// The database as SQLite file bytes, compacted first when it is fragmented and no transaction is open.
     pub fn export(&self) -> VaultResult<Vec<u8>> {
-        Ok(self.lock().serialize(MAIN_DB).map_err(sql_error)?.to_vec())
+        let conn = self.lock();
+        vacuum_if_fragmented(&conn)?;
+        Ok(conn.serialize(MAIN_DB).map_err(sql_error)?.to_vec())
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, Connection> {
         self.conn.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
+}
+
+/// An in-memory connection.
+fn open_connection() -> VaultResult<Connection> {
+    let conn = Connection::open_in_memory().map_err(sql_error)?;
+    conn.pragma_update(None, "temp_store", "MEMORY").map_err(sql_error)?;
+    Ok(conn)
+}
+
+/// Rebuild the database to reclaim free pages if there are enough free pages to make it worth it.
+fn vacuum_if_fragmented(conn: &Connection) -> VaultResult<()> {
+    if !conn.is_autocommit() {
+        return Ok(());
+    }
+    let free_pages: i64 = conn.pragma_query_value(None, "freelist_count", |row| row.get(0)).map_err(sql_error)?;
+    let total_pages: i64 = conn.pragma_query_value(None, "page_count", |row| row.get(0)).map_err(sql_error)?;
+    if free_pages >= VACUUM_MIN_FREE_PAGES && free_pages * VACUUM_FREE_PAGE_RATIO >= total_pages {
+        conn.execute_batch("VACUUM").map_err(sql_error)?;
+    }
+    Ok(())
 }
 
 /// Load SQLite file bytes into a connection's main database, held in SQLite-owned memory.
@@ -242,6 +271,49 @@ mod tests {
             db.execute("UPDATE T SET Data = ? WHERE Id = ?", &[SqlValue::Blob(bytes.clone()), SqlValue::Integer(id as i64)]).unwrap();
             assert_eq!(db.export().map(|exported| MemoryDatabase::from_bytes(&exported).unwrap().query_values("SELECT Data FROM T WHERE Id = ?", &[SqlValue::Integer(id as i64)]).unwrap().rows[0][0].clone()).unwrap(), SqlValue::Blob(bytes.clone()));
         }
+    }
+
+    #[test]
+    fn temporary_storage_stays_in_memory() {
+        let db = MemoryDatabase::empty().unwrap();
+        assert_eq!(db.query("PRAGMA temp_store", &[]).unwrap()[0]["temp_store"], json!(2));
+        let reopened = MemoryDatabase::from_bytes(&db.export().unwrap()).unwrap();
+        assert_eq!(reopened.query("PRAGMA temp_store", &[]).unwrap()[0]["temp_store"], json!(2));
+    }
+
+    #[test]
+    fn foreign_keys_are_on_by_default() {
+        let db = MemoryDatabase::empty().unwrap();
+        assert_eq!(db.query("PRAGMA foreign_keys", &[]).unwrap()[0]["foreign_keys"], json!(1), "the hosts rely on the bundled SQLite default");
+    }
+
+    #[test]
+    fn export_compacts_only_a_fragmented_database_outside_a_transaction() {
+        let page_count = |db: &MemoryDatabase| db.query("PRAGMA page_count", &[]).unwrap()[0]["page_count"].as_i64().unwrap();
+        let free_pages = |db: &MemoryDatabase| db.query("PRAGMA freelist_count", &[]).unwrap()[0]["freelist_count"].as_i64().unwrap();
+        let db = MemoryDatabase::with_schema("CREATE TABLE T (Id INTEGER, Data BLOB);").unwrap();
+        for id in 0..200 {
+            db.execute("INSERT INTO T (Id, Data) VALUES (?, ?)", &[SqlValue::Integer(id), SqlValue::Blob(vec![7u8; 4096])]).unwrap();
+        }
+
+        db.execute("DELETE FROM T WHERE Id < 5", &[]).unwrap();
+        let slightly_fragmented = free_pages(&db);
+        assert!(slightly_fragmented > 0 && slightly_fragmented < VACUUM_MIN_FREE_PAGES);
+        db.export().unwrap();
+        assert_eq!(free_pages(&db), slightly_fragmented, "a few free pages are not worth a rewrite");
+
+        db.execute_batch("BEGIN; DELETE FROM T WHERE Id < 150;").unwrap();
+        db.export().unwrap();
+        assert!(free_pages(&db) >= VACUUM_MIN_FREE_PAGES, "no VACUUM inside an open transaction");
+        db.execute_batch("COMMIT").unwrap();
+
+        let before = page_count(&db);
+        let exported = db.export().unwrap();
+        assert_eq!(free_pages(&db), 0);
+        assert!(page_count(&db) < before);
+        let reopened = MemoryDatabase::from_bytes(&exported).unwrap();
+        assert_eq!(reopened.query("SELECT COUNT(*) AS N FROM T", &[]).unwrap()[0]["N"], json!(50));
+        assert_eq!(free_pages(&reopened), 0);
     }
 
     #[test]
