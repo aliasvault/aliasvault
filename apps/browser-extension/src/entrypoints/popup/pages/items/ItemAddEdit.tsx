@@ -24,7 +24,7 @@ import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import AttachmentUploader from '@/entrypoints/popup/components/Items/Details/AttachmentUploader';
 import PasskeyEditor from '@/entrypoints/popup/components/Items/Details/PasskeyEditor';
-import TotpEditor from '@/entrypoints/popup/components/Items/Details/TotpEditor';
+import TotpEditor, { type TotpEditorState } from '@/entrypoints/popup/components/Items/Details/TotpEditor';
 import ItemLogoPicker from '@/entrypoints/popup/components/Items/ItemLogoPicker';
 import ItemNameInput from '@/entrypoints/popup/components/Items/ItemNameInput';
 import ItemTypeSelector from '@/entrypoints/popup/components/Items/ItemTypeSelector';
@@ -62,13 +62,7 @@ type PersistedFormData = {
   fieldValues: Record<string, string | string[]>;
   typeSwitchStash?: Record<string, FormFieldValue>;
   customFields: CustomFieldDefinition[];
-  totpEditorState?: {
-    isAddFormVisible: boolean;
-    formData: {
-      name: string;
-      secretKey: string;
-    };
-  };
+  totpEditorState?: TotpEditorState;
   show2FA: boolean;
   showAttachments: boolean;
   manuallyAddedFields: string[];
@@ -157,10 +151,7 @@ const ItemAddEdit: React.FC = () => {
   // TOTP codes state
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
-  const [totpEditorState, setTotpEditorState] = useState<{
-    isAddFormVisible: boolean;
-    formData: { name: string; secretKey: string };
-  }>({
+  const [totpEditorState, setTotpEditorState] = useState<TotpEditorState>({
     isAddFormVisible: false,
     formData: { name: '', secretKey: '' }
   });
