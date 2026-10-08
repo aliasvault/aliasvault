@@ -64,7 +64,7 @@
   <string name="network_error_title">Erreur réseau</string>
   <string name="network_error_message">Une erreur réseau s\'est produite. Veuillez vérifier votre connexion et réessayer.</string>
   <string name="server_version_not_supported_title">Mise à jour du serveur requise</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Veuillez activer l\'authentification biométrique ou PIN dans l\'application principale AliasVault pour continuer</string>
   <string name="error_unlock_vault_first">Veuillez d\'abord déverrouiller le coffre-fort dans l\'application AliasVault</string>
   <string name="error_vault_decrypt_failed">Échec du déchiffrement du coffre-fort</string>

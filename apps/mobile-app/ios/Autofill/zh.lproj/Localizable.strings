@@ -28,6 +28,6 @@
 "network_error_title" = "网络错误";
 "network_error_message" = "网络发生错误，请检查您的连接后重试。";
 "server_version_not_supported_title" = "服务器需要更新";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "检索加密密钥失败";
 "no_encryption_key_message" = "请先在 AliasVault 应用中解锁密码库";

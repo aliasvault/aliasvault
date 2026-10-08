@@ -28,6 +28,6 @@
 "network_error_title" = "Netzwerkfehler";
 "network_error_message" = "Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfe Deine Verbindung und versuche es erneut.";
 "server_version_not_supported_title" = "Server-Update erforderlich";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Fehler beim Abrufen des Schlüssel";
 "no_encryption_key_message" = "Bitte entsperre zuerst den Tresor in der AliasVault-App";

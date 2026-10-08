@@ -28,6 +28,6 @@
 "network_error_title" = "Kesalahan Jaringan";
 "network_error_message" = "Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.";
 "server_version_not_supported_title" = "Diperlukan Pembaruan Server";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Gagal mengambil kunci enkripsi";
 "no_encryption_key_message" = "Silakan buka kunci brankas di aplikasi AliasVault terlebih dahulu";

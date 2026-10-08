@@ -28,6 +28,6 @@
 "network_error_title" = "Ошибка сети";
 "network_error_message" = "Произошла сетевая ошибка. Проверьте подключение и повторите попытку.";
 "server_version_not_supported_title" = "Требуется обновление сервера";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Не удалось получить ключ шифрования";
 "no_encryption_key_message" = "Сначала разблокируйте хранилище в приложении AliasVault";

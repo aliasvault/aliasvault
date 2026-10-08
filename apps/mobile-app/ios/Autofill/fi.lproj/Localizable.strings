@@ -28,6 +28,6 @@
 "network_error_title" = "Verkkovirhe";
 "network_error_message" = "Verkkovirhe tapahtui. Tarkista yhteytesi ja yritä uudelleen.";
 "server_version_not_supported_title" = "Palvelimen päivtys vaaditaan";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Salausavaimen noutaminen epäonnistui";
 "no_encryption_key_message" = "Ole hyvä ja avaa holvi ensin AliasVault-sovelluksessa";

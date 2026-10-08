@@ -64,7 +64,7 @@
   <string name="network_error_title">Hálózati hiba</string>
   <string name="network_error_message">Hálózati hiba lépett fel. Kérem, ellenőrizze internet kapcsolatát, és próbálja újra.</string>
   <string name="server_version_not_supported_title">Szerver frissítés szükséges</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Kérem, kapcsolja be a PIN kódos vagy biometrikus belépést a fő appban mielőtt tovább halad</string>
   <string name="error_unlock_vault_first">Kérem, először oldja fel az AliasVault-ot az appban</string>
   <string name="error_vault_decrypt_failed">A széf dekódolása sikertelen</string>

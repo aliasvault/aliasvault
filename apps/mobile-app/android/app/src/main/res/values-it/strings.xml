@@ -64,7 +64,7 @@
   <string name="network_error_title">Errore Di Rete</string>
   <string name="network_error_message">Si è verificato un errore di rete. Controlla la connessione e riprova.</string>
   <string name="server_version_not_supported_title">Aggiornamento Del Server Richiesto</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Si prega di abilitare l\'autenticazione biometrica o PIN nell\'app principale di AliasVault per continuare</string>
   <string name="error_unlock_vault_first">Si prega di sbloccare prima la cassaforte nell\'app AliasVault</string>
   <string name="error_vault_decrypt_failed">Decifratura della cassaforte non riuscita</string>

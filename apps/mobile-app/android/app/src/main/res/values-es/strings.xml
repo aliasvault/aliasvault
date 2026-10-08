@@ -64,7 +64,7 @@
   <string name="network_error_title">Error de red</string>
   <string name="network_error_message">Se produjo un error de red. Por favor, comprueba la conexión y vuelve a intentarlo.</string>
   <string name="server_version_not_supported_title">Actualización del servidor necesaria</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Por favor, habilite la autenticación biométrica o PIN en la aplicación principal de AliasVault para continuar</string>
   <string name="error_unlock_vault_first">Por favor, primero desbloquea bóveda en la aplicación AliasVault</string>
   <string name="error_vault_decrypt_failed">Error al descifrar la bóveda</string>

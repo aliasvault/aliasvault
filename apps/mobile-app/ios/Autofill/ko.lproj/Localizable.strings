@@ -28,6 +28,6 @@
 "network_error_title" = "네트워크 오류";
 "network_error_message" = "네트워크 오류가 발생했습니다. 연결 상태를 확인하고 다시 시도하세요.";
 "server_version_not_supported_title" = "서버 업데이트 필요";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "암호화 키를 가져오지 못했습니다";
 "no_encryption_key_message" = "먼저 AliasVault 앱에서 보관함 잠금을 해제하세요";

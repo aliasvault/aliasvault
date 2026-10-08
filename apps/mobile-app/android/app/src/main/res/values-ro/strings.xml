@@ -64,7 +64,7 @@
   <string name="network_error_title">Eroare de rețea</string>
   <string name="network_error_message">A apărut o eroare de rețea. Verifică conexiunea și încearcă din nou.</string>
   <string name="server_version_not_supported_title">Actualizare server necesară</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Activează autentificarea biometrică sau deblocarea prin PIN în aplicația AliasVault pentru a continua</string>
   <string name="error_unlock_vault_first">Deblochează mai întâi seiful în aplicația AliasVault</string>
   <string name="error_vault_decrypt_failed">Decriptarea seifului a eșuat</string>

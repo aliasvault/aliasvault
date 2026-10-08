@@ -28,6 +28,6 @@
 "network_error_title" = "Hálózati hiba";
 "network_error_message" = "Hálózati hiba lépett fel. Kérem, ellenőrizze internet kapcsolatát, és próbálja újra.";
 "server_version_not_supported_title" = "Szerver frissítés szükséges";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Nem sikerült a kódolási kulcs kinyerése";
 "no_encryption_key_message" = "Kérem, először oldja fel az AliasVault-ot az appban";

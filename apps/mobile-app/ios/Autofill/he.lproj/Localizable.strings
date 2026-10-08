@@ -28,6 +28,6 @@
 "network_error_title" = "שגיאת רשת";
 "network_error_message" = "אירעה שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.";
 "server_version_not_supported_title" = "יש לעדכן את השרת";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "משיכת מפתח ההצפנה נכשל";
 "no_encryption_key_message" = "נא לשחרר את נעילת הכספת ביישום של AppVault תחילה";

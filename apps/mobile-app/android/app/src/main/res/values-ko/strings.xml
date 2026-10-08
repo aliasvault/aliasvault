@@ -64,7 +64,7 @@
   <string name="network_error_title">네트워크 오류</string>
   <string name="network_error_message">네트워크 오류가 발생했습니다. 연결 상태를 확인하고 다시 시도하세요.</string>
   <string name="server_version_not_supported_title">서버 업데이트 필요</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">계속하려면 기본 AliasVault 앱에서 생체 인증 또는 PIN 인증을 활성화하세요</string>
   <string name="error_unlock_vault_first">먼저 AliasVault 앱에서 보관함 잠금을 해제하세요</string>
   <string name="error_vault_decrypt_failed">보관함을 복호화하지 못했습니다</string>

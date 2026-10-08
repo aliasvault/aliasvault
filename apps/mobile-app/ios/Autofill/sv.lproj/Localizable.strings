@@ -28,6 +28,6 @@
 "network_error_title" = "Nätverksfel";
 "network_error_message" = "Ett nätverksfel inträffade. Vänligen kontrollera din anslutning och försök igen.";
 "server_version_not_supported_title" = "Serveruppdatering krävs";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Det gick inte att hämta krypteringsnyckeln";
 "no_encryption_key_message" = "Lås upp valv i AliasVault-appen först";

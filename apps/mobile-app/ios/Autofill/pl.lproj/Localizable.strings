@@ -28,6 +28,6 @@
 "network_error_title" = "Błąd sieci";
 "network_error_message" = "Wystąpił błąd sieci. Sprawdź połączenie i spróbuj ponownie.";
 "server_version_not_supported_title" = "Wymagana aktualizacja serwera";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Nie udało się pobrać klucza szyfrującego";
 "no_encryption_key_message" = "Najpierw odblokuj sejf w aplikacji AliasVault";

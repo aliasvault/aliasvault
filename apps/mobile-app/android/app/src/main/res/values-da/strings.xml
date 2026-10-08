@@ -64,7 +64,7 @@
   <string name="network_error_title">Netværksfejl</string>
   <string name="network_error_message">Der opstod en netværksfejl. Tjek venligst din forbindelse og prøv igen.</string>
   <string name="server_version_not_supported_title">Serveropdatering påkrævet</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Aktiver venligst biometrisk- eller PIN-godkendelse i den primære AliasVault-app for at fortsætte</string>
   <string name="error_unlock_vault_first">Lås venligst boksen op i AliasVault-appen først</string>
   <string name="error_vault_decrypt_failed">Kunne ikke dekryptere boks</string>

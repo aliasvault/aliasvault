@@ -64,7 +64,7 @@
   <string name="network_error_title">Nätverksfel</string>
   <string name="network_error_message">Ett nätverksfel inträffade. Vänligen kontrollera din anslutning och försök igen.</string>
   <string name="server_version_not_supported_title">Serveruppdatering krävs</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Aktivera biometrisk eller PIN-autentisering i AliasVault-appen för att fortsätta</string>
   <string name="error_unlock_vault_first">Lås upp valv i AliasVault-appen först</string>
   <string name="error_vault_decrypt_failed">Misslyckades att dekryptera valvet</string>

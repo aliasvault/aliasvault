@@ -28,6 +28,6 @@
 "network_error_title" = "Errore Di Rete";
 "network_error_message" = "Si è verificato un errore di rete. Controlla la connessione e riprova.";
 "server_version_not_supported_title" = "Aggiornamento Del Server Richiesto";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Impossibile recuperare la chiave di cifratura";
 "no_encryption_key_message" = "Si prega di sbloccare prima la cassaforte nell'app AliasVault";

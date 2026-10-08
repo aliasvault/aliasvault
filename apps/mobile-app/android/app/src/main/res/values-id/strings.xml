@@ -64,7 +64,7 @@
   <string name="network_error_title">Kesalahan Jaringan</string>
   <string name="network_error_message">Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.</string>
   <string name="server_version_not_supported_title">Diperlukan Pembaruan Server</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Silakan aktifkan otentikasi biometrik atau PIN di aplikasi utama AliasVault agar dapat melanjutkan</string>
   <string name="error_unlock_vault_first">Silakan buka kunci brankas di aplikasi AliasVault terlebih dahulu</string>
   <string name="error_vault_decrypt_failed">Gagal mendekripsi brankas</string>

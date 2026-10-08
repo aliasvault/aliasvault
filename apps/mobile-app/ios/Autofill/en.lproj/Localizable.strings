@@ -28,6 +28,6 @@
 "network_error_title" = "Network Error";
 "network_error_message" = "A network error occurred. Please check your connection and try again.";
 "server_version_not_supported_title" = "Server Update Required";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Failed to retrieve encryption key";
 "no_encryption_key_message" = "Please unlock vault in AliasVault app first";

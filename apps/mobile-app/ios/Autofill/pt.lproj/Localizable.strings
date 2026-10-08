@@ -28,6 +28,6 @@
 "network_error_title" = "Erro de Rede";
 "network_error_message" = "Ocorreu um erro de rede. Por favor, confira sua conexão e tente novamente.";
 "server_version_not_supported_title" = "Atualização de Servidor Necessária";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Falha ao recuperar chave de criptografia";
 "no_encryption_key_message" = "Por favor, desbloqueie seu cofre no aplicativo do AliasVault antes";

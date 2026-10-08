@@ -64,7 +64,7 @@
   <string name="network_error_title">Ошибка сети</string>
   <string name="network_error_message">Произошла сетевая ошибка. Проверьте подключение и повторите попытку.</string>
   <string name="server_version_not_supported_title">Требуется обновление сервера</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
   <string name="error_unlock_method_required">Чтобы продолжить, включите аутентификацию по биометрии или ПИН-коду в основном приложении AliasVault</string>
   <string name="error_unlock_vault_first">Сначала разблокируйте хранилище в приложении AliasVault</string>
   <string name="error_vault_decrypt_failed">Не удалось расшифровать хранилище</string>

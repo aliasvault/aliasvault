@@ -28,6 +28,6 @@
 "network_error_title" = "Verbindingsfout";
 "network_error_message" = "Er is een netwerkfout opgetreden. Controleer je verbinding en probeer het opnieuw.";
 "server_version_not_supported_title" = "Server update vereist";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
 "keychain_error_message" = "Fout bij ophalen van encryptiesleutel";
 "no_encryption_key_message" = "Ontgrendel eerst de vault in de AliasVault app";
