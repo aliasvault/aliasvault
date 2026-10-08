@@ -22,17 +22,15 @@ import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterD
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
-import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
-import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
+import { useVaultRefresh } from '@/entrypoints/popup/hooks/useVaultRefresh';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
-import { logFailure } from '@/utils/Diagnostics';
 import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
@@ -125,9 +123,8 @@ const ItemsList: React.FC = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const dbContext = useDb();
-  const app = useApp();
   const navigate = useNavigate();
-  const { syncVault } = useVaultSync();
+  const refreshVault = useVaultRefresh();
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
   const [items, setItems] = useState<Item[]>([]);
@@ -431,51 +428,6 @@ const ItemsList: React.FC = () => {
     // Close modal
     setShowEditFolderModal(false);
   }, [dbContext, currentFolderRef, executeVaultMutationAsync]);
-
-  /**
-   * Retrieve latest vault and refresh the items list.
-   */
-  const onRefresh = useCallback(async () : Promise<void> => {
-    if (!dbContext?.sqliteClient) {
-      return;
-    }
-
-    try {
-      // Sync vault and load items
-      await syncVault({
-        /**
-         * On success.
-         */
-        onSuccess: async (_hasNewVault) => {
-          // Items list is refreshed automatically when the (new) sqlite client is available via useEffect hook below.
-        },
-        /**
-         * On offline.
-         */
-        onOffline: () => {
-          // Continue with local vault in offline mode.
-        },
-        /**
-         * On error.
-         */
-        onError: async (error) => {
-          logFailure('Error syncing vault', error);
-        },
-      });
-    } catch (err) {
-      logFailure('Error refreshing items', err);
-      await app.logout('Error while syncing vault, please re-authenticate.');
-    }
-  }, [dbContext, app, syncVault]);
-
-  /**
-   * Get latest vault from server and refresh the items list.
-   */
-  const syncVaultAndRefresh = useCallback(async () : Promise<void> => {
-    setIsLoading(true);
-    await onRefresh();
-    setIsLoading(false);
-  }, [onRefresh, setIsLoading]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -961,7 +913,7 @@ const ItemsList: React.FC = () => {
               </>
             )}
           </div>
-          <ReloadButton onClick={syncVaultAndRefresh} />
+          <ReloadButton onClick={() => void refreshVault()} />
         </div>
       </div>
 

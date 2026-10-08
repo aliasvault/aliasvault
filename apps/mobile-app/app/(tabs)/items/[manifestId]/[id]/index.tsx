@@ -4,7 +4,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform, Share, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform, RefreshControl, Share, TouchableOpacity } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import Toast from 'react-native-toast-message';
 
@@ -15,6 +15,7 @@ import { itemEditRoute } from '@/utils/ItemRoute';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
 import { AliasDetails } from '@/components/items/details/AliasDetails';
@@ -94,25 +95,39 @@ export default function ItemDetailsScreen() : React.ReactNode {
     navigation.setOptions(headerOptions);
   }, [navigation, item, handleEdit, colors.primary, router, t]);
 
+  /**
+   * Load the item, returns false when it no longer exists.
+   */
+  const loadItem = useCallback(async () : Promise<boolean> => {
+    if (!dbContext.dbAvailable) {
+      return true;
+    }
+
+    try {
+      const result = await dbContext.sqliteClient!.items.getById(itemRef);
+      setItem(result);
+      return result !== null;
+    } catch (err) {
+      console.error('Error loading item:', err);
+      return true;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [itemRef, dbContext.dbAvailable, dbContext.sqliteClient]);
+
+  /**
+   * Reload the item after a pull-to-refresh sync, leaving the screen when it was deleted elsewhere.
+   */
+  const reloadAfterSync = useCallback(async () : Promise<void> => {
+    if (!await loadItem()) {
+      router.back();
+    }
+  }, [loadItem, router]);
+
+  const { refreshing, onRefresh } = useVaultRefresh(reloadAfterSync);
+
   useEffect(() => {
-    /**
-     * Load the item.
-     */
-    const loadItem = async () : Promise<void> => {
-      if (!dbContext.dbAvailable) {
-        return;
-      }
-
-      try {
-        const result = await dbContext.sqliteClient!.items.getById(itemRef);
-        setItem(result);
-      } catch (err) {
-        console.error('Error loading item:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadItem is async; setState only fires after data is fetched
     loadItem();
 
     // Add listener for item changes
@@ -132,7 +147,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
       itemChangedSub.remove();
       Toast.hide();
     };
-  }, [itemRef, dbContext.dbAvailable, dbContext.sqliteClient]);
+  }, [itemRef, loadItem]);
 
   if (isLoading) {
     return (
@@ -291,7 +306,17 @@ export default function ItemDetailsScreen() : React.ReactNode {
 
   return (
     <ThemedContainer>
-      <ThemedScrollView>
+      <ThemedScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+            progressViewOffset={Platform.OS === 'ios' ? 44 : undefined}
+          />
+        }
+      >
         {/* Folder breadcrumb navigation */}
         <FolderBreadcrumb folder={item.FolderId ? { Id: item.FolderId, ManifestId: item.ManifestId } : null} />
 

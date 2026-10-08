@@ -32,7 +32,7 @@ import { useQuickCreate } from '@/context/QuickCreateContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
-import { useVaultSync } from '@/hooks/useVaultSync';
+import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { folderRoute } from '@/utils/ItemRoute';
 import { getLocalPreferenceJson, setLocalPreferenceJson } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
@@ -80,7 +80,6 @@ const ItemsHome: React.FC = () => {
   const [searchParams] = useSearchParams();
   const dbContext = useDb();
   const notifications = useNotifications();
-  const { syncVault } = useVaultSync();
   const { executeVaultMutationAsync, executeVaultMutationInBackground } = useVaultMutate();
   usePageTitle('Home');
 
@@ -348,12 +347,7 @@ const ItemsHome: React.FC = () => {
     setVisibleItemCount(BATCH_SIZE);
   };
 
-  /**
-   * Pull the latest vault from the server, then reload the list.
-   */
-  const refreshVault = async (): Promise<void> => {
-    await syncVault({ onSuccess: loadItems });
-  };
+  const refreshVault = useVaultRefresh(loadItems);
 
   /**
    * Infinite scroll: load the next batch when the sentinel comes into view.

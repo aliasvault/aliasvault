@@ -22,6 +22,7 @@ import Icon from '@/components/shared/Icon';
 import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
+import RefreshButton from '@/components/shared/RefreshButton';
 import SectionTitle from '@/components/shared/SectionTitle';
 import TotpViewer from '@/components/totp/TotpViewer';
 import { useDb } from '@/context/DbContext';
@@ -30,6 +31,7 @@ import { useEmailDomains } from '@/hooks/useEmailDomains';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { folderRoute, itemRoute } from '@/utils/ItemRoute';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -118,6 +120,8 @@ const ItemView: React.FC = () => {
   // Reload when the vault is (re)loaded, so changes synced from other devices show without a refresh.
   useEffect(() => loadEntry(), [loadEntry]);
 
+  const refreshVault = useVaultRefresh(loadEntry);
+
   useKeyboardShortcut('ge', () => {
     if (item) {
       navigate(itemRoute(item, true));
@@ -177,6 +181,7 @@ const ItemView: React.FC = () => {
         titleSuffix={<ItemTypePill itemType={item.ItemType} />}
         customActions={(
           <>
+            <RefreshButton onClick={refreshVault} buttonText={t('common.refresh')} iconOnly />
             <LinkButton smallText={t('common.edit')} text={t('items.editItem')} href={itemRoute(item, true)} color="primary" />
             <Button color="danger" onClick={() => setShowDeleteModal(true)}>
               <span className="md:hidden">{t('common.delete')}</span>

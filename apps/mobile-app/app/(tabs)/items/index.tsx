@@ -8,13 +8,11 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
@@ -22,10 +20,9 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
-import { useVaultSync } from '@/hooks/useVaultSync';
+import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 
 import Logo from '@/assets/images/logo.svg';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
@@ -68,7 +65,6 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
  * Items screen - main vault items list.
  */
 export default function ItemsScreen(): React.ReactNode {
-  const { syncVault } = useVaultSync();
   const { t } = useTranslation();
   const colors = useColors();
   const navigate = useNavigationDebounce();
@@ -84,7 +80,6 @@ export default function ItemsScreen(): React.ReactNode {
   const personalManifestId = usePersonalManifestId();
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
-  const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
   const [showFolderModal, setShowFolderModal] = useState(false);
 
@@ -101,16 +96,6 @@ export default function ItemsScreen(): React.ReactNode {
 
   // Scoped key (manifest and id) of a freshly duplicated item that gets scrolled into view and briefly highlighted
   const [highlightedItemKey, setHighlightedItemKey] = useState<string | null>(null);
-
-  // Alert dialog state
-  const [alertConfig, setAlertConfig] = useState<{ title: string; message: string } | null>(null);
-
-  /**
-   * Hide the alert dialog.
-   */
-  const hideAlert = useCallback((): void => {
-    setAlertConfig(null);
-  }, []);
 
   const authContext = useApp();
   const dbContext = useDb();
@@ -329,78 +314,9 @@ export default function ItemsScreen(): React.ReactNode {
       unsubscribeFocus();
       unsubscribeBlur();
     };
-  }, [isTabFocused, loadItems, navigation, setRefreshing]);
+  }, [isTabFocused, loadItems, navigation]);
 
-  /**
-   * Handle pull-to-refresh.
-   */
-  const onRefresh = useCallback(async () => {
-    HapticsUtility.impact();
-
-    setRefreshing(true);
-    setIsLoadingItems(true);
-
-    // Always attempt sync, even when offline - this allows recovery when connection is restored
-    try {
-      await syncVault({
-        /**
-         * On success.
-         */
-        onSuccess: async (hasNewVault) => {
-          await loadItems();
-          await dbContext.refreshSyncState(); // Clear offline state if we were offline
-          setIsLoadingItems(false);
-          setRefreshing(false);
-          setTimeout(() => {
-            Toast.show({
-              type: 'success',
-              text1: hasNewVault ? t('items.vaultSyncedSuccessfully') : t('items.vaultUpToDate'),
-              position: 'top',
-              visibilityTime: 1200,
-            });
-          }, 200);
-        },
-        /**
-         * On offline - just update state, ServerSyncIndicator shows offline status.
-         */
-        onOffline: async () => {
-          setRefreshing(false);
-          setIsLoadingItems(false);
-          await dbContext.setIsOffline(true);
-          await dbContext.refreshSyncState();
-        },
-        /**
-         * On error.
-         */
-        onError: async (error) => {
-          console.error('Error syncing vault:', error);
-          setRefreshing(false);
-          setIsLoadingItems(false);
-
-          // Show generic error message to user, detailed error is logged above
-          setAlertConfig({ title: t('common.error'), message: t('common.errors.unknownError') });
-        },
-        /**
-         * On upgrade required.
-         */
-        onUpgradeRequired: (): void => {
-          router.replace('/upgrade');
-        },
-      });
-    } catch (err) {
-      console.error('Error refreshing items:', err);
-      setRefreshing(false);
-      setIsLoadingItems(false);
-
-      if (!(err instanceof VaultAuthenticationError)) {
-        Toast.show({
-          type: 'error',
-          text1: t('items.vaultSyncFailed'),
-          text2: t('common.errors.unknownError'),
-        });
-      }
-    }
-  }, [syncVault, loadItems, setIsLoadingItems, setRefreshing, dbContext, router, t]);
+  const { refreshing, onRefresh } = useVaultRefresh(loadItems, setIsLoadingItems);
 
   useEffect(() => {
     if (!isAuthenticated || !isDatabaseAvailable) {
@@ -990,14 +906,6 @@ export default function ItemsScreen(): React.ReactNode {
         mode="create"
       />
 
-      {/* Alert dialog */}
-      <ConfirmDialog
-        isVisible={alertConfig !== null}
-        title={alertConfig?.title ?? ''}
-        message={alertConfig?.message ?? ''}
-        buttons={[{ text: t('common.ok'), style: 'default', onPress: hideAlert }]}
-        onClose={hideAlert}
-      />
     </ThemedContainer>
   );
 }

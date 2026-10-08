@@ -14,9 +14,11 @@ import {
   PasskeyBlock
 } from '@/entrypoints/popup/components/Items/Details';
 import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
+import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useVaultRefresh } from '@/entrypoints/popup/hooks/useVaultRefresh';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { logExpected, logFailure } from '@/utils/Diagnostics';
@@ -37,6 +39,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
   const [item, setItem] = useState<Item | null>(null);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
+  const refreshVault = useVaultRefresh();
 
   /**
    * Open the item details in a new expanded popup.
@@ -193,6 +196,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
             )}
           </div>
         </div>
+        <ReloadButton onClick={() => void refreshVault()} />
       </div>
 
       {/* Email block with recent emails - only for Login and Alias types with email field */}
