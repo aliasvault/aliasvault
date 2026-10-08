@@ -1,19 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Icon from '@/components/shared/Icon';
 import ToggleChip from '@/components/shared/ToggleChip';
-import { useDb } from '@/context/DbContext';
-import { vaultStore } from '@/vault/VaultStore';
+import type { VaultMetadata } from '@/vault/VaultStore';
+
+export const EMPTY_EMAIL_DOMAINS: VaultMetadata = { publicEmailDomains: [], privateEmailDomains: [], hiddenPrivateEmailDomains: [] };
+
+/**
+ * Whether the domain is one the server serves aliases for.
+ */
+const isAliasDomain = (domain: string, domains: VaultMetadata): boolean =>
+  domains.publicEmailDomains.includes(domain) || domains.privateEmailDomains.includes(domain) || domains.hiddenPrivateEmailDomains.includes(domain);
 
 type EmailDomainFieldProps = {
   id: string;
   value: string;
   onChange: (value: string) => void;
+  domains: VaultMetadata;
   error?: string | null;
   required?: boolean;
   onRemove?: () => void;
-  /** Start in free text email mode instead of alias mode. */
+  /** Start in free text email mode instead of alias mode when the value has no domain. */
   defaultToEmailMode?: boolean;
   onGenerateAlias?: () => void;
 };
@@ -21,13 +29,15 @@ type EmailDomainFieldProps = {
 /**
  * Email input that switches between a free text email and an alias email (which shows a domain picker element).
  */
-const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange, error = null, required = false, onRemove, defaultToEmailMode = false, onGenerateAlias }) => {
+const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange, domains, error = null, required = false, onRemove, defaultToEmailMode = false, onGenerateAlias }) => {
   const { t } = useTranslation();
-  const { sqliteClient } = useDb();
-  const [privateDomains, setPrivateDomains] = useState<string[]>([]);
-  const [publicDomains, setPublicDomains] = useState<string[]>([]);
-  const [hiddenPrivateDomains, setHiddenPrivateDomains] = useState<string[]>([]);
-  const [isCustomDomain, setIsCustomDomain] = useState(defaultToEmailMode);
+  const publicDomains = domains.publicEmailDomains;
+  const hiddenPrivateDomains = domains.hiddenPrivateEmailDomains;
+  const privateDomains = useMemo(() => domains.privateEmailDomains.filter(d => !hiddenPrivateDomains.includes(d)), [domains.privateEmailDomains, hiddenPrivateDomains]);
+  const [isCustomDomain, setIsCustomDomain] = useState(() => {
+    const at = value.indexOf('@');
+    return at >= 0 ? !isAliasDomain(value.substring(at + 1), domains) : defaultToEmailMode;
+  });
   const [localPart, setLocalPart] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -35,22 +45,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
 
   const showPrivateDomains = privateDomains.length > 0 && !(privateDomains.length === 1 && (privateDomains[0] === 'DISABLED.TLD' || privateDomains[0] === ''));
   const defaultDomain = showPrivateDomains ? privateDomains[0] : publicDomains[0] ?? '';
-
-  useEffect(() => {
-    let cancelled = false;
-    void vaultStore.getVaultMetadata().then((metadata) => {
-      if (cancelled) {
-        return;
-      }
-      const hidden = metadata?.hiddenPrivateEmailDomains ?? [];
-      setHiddenPrivateDomains(hidden);
-      setPrivateDomains((metadata?.privateEmailDomains ?? []).filter(d => !hidden.includes(d)));
-      setPublicDomains(metadata?.publicEmailDomains ?? []);
-    });
-    return (): void => {
-      cancelled = true;
-    };
-  }, [sqliteClient]);
 
   /*
    * Derive the local part, domain and mode from the value. After a toggle the user's mode choice is kept; on load
@@ -71,7 +65,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
       setLocalPart(local);
       setSelectedDomain(domain);
       if (!skipAutoDetect) {
-        setIsCustomDomain(!(publicDomains.includes(domain) || privateDomains.includes(domain) || hiddenPrivateDomains.includes(domain)));
+        setIsCustomDomain(!isAliasDomain(domain, domains));
       }
       return;
     }

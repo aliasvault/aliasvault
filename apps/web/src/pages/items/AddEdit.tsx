@@ -9,7 +9,7 @@ import DraggableCustomFieldsList from '@/components/forms/DraggableCustomFieldsL
 import EditFormRow from '@/components/forms/EditFormRow';
 import EditPasswordFormRow from '@/components/forms/EditPasswordFormRow';
 import EditUsernameFormRow from '@/components/forms/EditUsernameFormRow';
-import EmailDomainField from '@/components/forms/EmailDomainField';
+import EmailDomainField, { EMPTY_EMAIL_DOMAINS } from '@/components/forms/EmailDomainField';
 import FormInput from '@/components/forms/FormInput';
 import MultiValueFormRow from '@/components/forms/MultiValueFormRow';
 import RemovableSection from '@/components/forms/RemovableSection';
@@ -44,6 +44,7 @@ import {
 import { waitForMinimumDuration } from '@/utils/Delay';
 import { generateAliasEmail, generateIdentity, generateRandomEmail, generateUsername, type GeneratedAliasData } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
+import { type VaultMetadata, vaultStore } from '@/vault/VaultStore';
 
 const MIN_SAVE_INDICATOR_MS = 250;
 
@@ -102,6 +103,7 @@ const ItemAddEditForm: React.FC = () => {
   const typeSwitchStash = useRef<Record<string, FieldEdit>>({});
   const [storedLogo, setStoredLogo] = useState<ItemLogo | undefined>(undefined);
   const [logoBytes, setLogoBytes] = useState<Item['Logo']>(undefined);
+  const [emailDomains, setEmailDomains] = useState<VaultMetadata>(EMPTY_EMAIL_DOMAINS);
 
   /**
    * Keep the icon bytes the form previews, so saving stores exactly what is shown.
@@ -193,6 +195,7 @@ const ItemAddEditForm: React.FC = () => {
       setPasskeyMarkedForDeletion(false);
       setNameError('');
       const allFolders = client.folders.getAll();
+      setEmailDomains(await vaultStore.getVaultMetadata() ?? EMPTY_EMAIL_DOMAINS);
 
       if (editMode) {
         if (!manifestId) {
@@ -458,6 +461,7 @@ const ItemAddEditForm: React.FC = () => {
       id="email"
       value={getFieldValue(edit, FieldKey.LoginEmail)}
       onChange={value => update(current => setFieldValue(current, FieldKey.LoginEmail, value))}
+      domains={emailDomains}
       defaultToEmailMode={edit.ItemType === ItemTypes.Login}
       onRemove={!passkey && canRemoveField(FieldKey.LoginEmail) ? (): void => removeOptionalField(FieldKey.LoginEmail) : undefined}
       onGenerateAlias={() => void onGenerateEmail()}

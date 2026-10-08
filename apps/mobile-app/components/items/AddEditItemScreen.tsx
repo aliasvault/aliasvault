@@ -28,7 +28,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { AddFieldMenu, type OptionalSection } from '@/components/form/AddFieldMenu';
 import { AdvancedPasswordField } from '@/components/form/AdvancedPasswordField';
 import { DraggableCustomFieldsList, type CustomFieldDefinition } from '@/components/form/DraggableCustomFieldsList';
-import { EmailDomainField } from '@/components/form/EmailDomainField';
+import { EmailDomainField, EMPTY_EMAIL_DOMAINS, type EmailDomains } from '@/components/form/EmailDomainField';
 import { FormField } from '@/components/form/FormField';
 import { FormSection } from '@/components/form/FormSection';
 import { HiddenField } from '@/components/form/HiddenField';
@@ -122,9 +122,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     email: string | null;
   }>({ username: null, password: null, email: null });
 
-  // Password settings state (loaded immediately to prevent flicker)
   const [passwordSettings, setPasswordSettings] = useState<PasswordSettings | undefined>(undefined);
-
+  const [emailDomains, setEmailDomains] = useState<EmailDomains>(EMPTY_EMAIL_DOMAINS);
   const isEditMode = editRef !== undefined;
 
   /**
@@ -512,6 +511,13 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
         console.error('Error loading folders:', err);
       }
 
+      // Load the email domains before the item, so the email field starts in the right mode.
+      try {
+        setEmailDomains(await dbContext.getVaultMetadata() ?? EMPTY_EMAIL_DOMAINS);
+      } catch (err) {
+        console.error('Error loading email domains:', err);
+      }
+
       if (isEditMode) {
         // Load password settings BEFORE loading item so it's available when components render
         try {
@@ -576,7 +582,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     };
 
     initializeComponent();
-  }, [isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, folderManifestIdParam, loadExistingItem, router, t, dbContext.sqliteClient]);
+  }, [isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, folderManifestIdParam, loadExistingItem, router, t, dbContext.sqliteClient, dbContext.getVaultMetadata]);
 
   /**
    * Auto-generate alias when alias fields are shown by default in create mode, or after an existing item was switched to the alias type.
@@ -1126,6 +1132,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
           <EmailDomainField
             value={stringValue}
             onChange={(val) => handleFieldChange(fieldKey, val)}
+            domains={emailDomains}
             label={label}
             onRemove={onRemove}
             testID={testID}
@@ -1180,7 +1187,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
           />
         );
     }
-  }, [fieldValues, handleFieldChange, isPasswordVisible, isEditMode, aliasFieldsShownByDefault, generateRandomUsername, handleGenerateAliasEmail, handleGenerateRandomEmail, t, getFieldTestId, item?.ItemType, passwordSettings]);
+  }, [fieldValues, handleFieldChange, isPasswordVisible, isEditMode, aliasFieldsShownByDefault, generateRandomUsername, handleGenerateAliasEmail, handleGenerateRandomEmail, t, getFieldTestId, item?.ItemType, emailDomains, passwordSettings]);
 
   const styles = StyleSheet.create({
     container: {

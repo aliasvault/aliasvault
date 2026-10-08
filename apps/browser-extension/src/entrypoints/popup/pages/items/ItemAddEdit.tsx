@@ -13,7 +13,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import AddFieldMenu, { type OptionalSection } from '@/entrypoints/popup/components/Forms/AddFieldMenu';
 import DraggableCustomFieldsList, { type CustomFieldDefinition } from '@/entrypoints/popup/components/Forms/DraggableCustomFieldsList';
-import EmailDomainField from '@/entrypoints/popup/components/Forms/EmailDomainField';
+import EmailDomainField, { detectEmailMode, EMPTY_EMAIL_DOMAINS, type EmailDomains } from '@/entrypoints/popup/components/Forms/EmailDomainField';
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
 import FormSection from '@/entrypoints/popup/components/Forms/FormSection';
 import HiddenField from '@/entrypoints/popup/components/Forms/HiddenField';
@@ -105,72 +105,38 @@ const ItemAddEdit: React.FC = () => {
   const { detectService } = useServiceDetection();
   const webApi = useWebApi();
 
-  // Component state
   const [localLoading, setLocalLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  // A draft until the vault writes it: a new item's manifest follows from the folder it lands in.
   const [item, setItem] = useState<Item | null>(null);
-
-  // Form state for dynamic fields
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
   const [typeSwitchStash, setTypeSwitchStash] = useState<Record<string, FormFieldValue>>({});
-
-  // Custom field definitions (temporary until saved)
   const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
-
-  // Folder selection state
   const [folders, setFolders] = useState<Folder[]>([]);
-
-  // Alternative service-name suggestions (create mode) derived from the page title/domain.
   const [suggestedNames, setSuggestedNames] = useState<string[]>([]);
-
-  // UI visibility state
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
-
-  // Track if alias was already auto-generated (to avoid re-generating on re-renders)
   const aliasGeneratedRef = useRef(false);
-
-  // Set when an existing item without alias identity values is switched to the alias type, so the identity gets generated
   const aliasRequestedByTypeChangeRef = useRef(false);
-
-  // Ref for the item name input field (for auto-focus)
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  // Track password field visibility (for showing generated passwords)
   const [showPassword, setShowPassword] = useState(false);
-
-  // Track manually added optional fields (fields that are not shown by default but user added)
   const [manuallyAddedFields, setManuallyAddedFields] = useState<Set<string>>(new Set());
-
-  // Track fields that had values initially (edit mode) - these stay visible even if value is cleared
   const [initiallyVisibleFields, setInitiallyVisibleFields] = useState<Set<string>>(new Set());
-
-  // TOTP codes state
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
+  const [passkeyIdsMarkedForDeletion, setPasskeyIdsMarkedForDeletion] = useState<string[]>([]);
+  const [isLoginEmailInEmailMode, setIsLoginEmailInEmailMode] = useState(true);
+  const [emailDomains, setEmailDomains] = useState<EmailDomains>(EMPTY_EMAIL_DOMAINS);
+  const { getVaultMetadata } = dbContext;
+  const [passwordSettings, setPasswordSettings] = useState<PasswordSettings | undefined>(undefined);
+  const [skipFormRestore] = useState(false);
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
   const [totpEditorState, setTotpEditorState] = useState<TotpEditorState>({
     isAddFormVisible: false,
     formData: { name: '', secretKey: '' }
   });
-
-  // Attachments state
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
-
-  // Passkeys state (only IDs marked for deletion - passkeys cannot be created/edited manually)
-  const [passkeyIdsMarkedForDeletion, setPasskeyIdsMarkedForDeletion] = useState<string[]>([]);
-
-  // Track email field mode for Login type (true = free text "Email", false = domain chooser "Alias")
-  const [isLoginEmailInEmailMode, setIsLoginEmailInEmailMode] = useState(true);
-
-  // Track password settings for persistence (so slider position and options are remembered)
-  const [passwordSettings, setPasswordSettings] = useState<PasswordSettings | undefined>(undefined);
-
-  // Track whether to skip form restoration (set during initialization)
-  const [skipFormRestore] = useState(false);
 
   /**
    * Memoized restore callback for form persistence.
@@ -360,6 +326,7 @@ const ItemAddEdit: React.FC = () => {
         // Use the service detection hook to get name, URL and alternative name suggestions
         const { serviceName, serviceUrl, suggestedNames: detectedSuggestedNames } = await detectService(itemTitleParam);
         setSuggestedNames(detectedSuggestedNames);
+        setEmailDomains(await getVaultMetadata() ?? EMPTY_EMAIL_DOMAINS);
 
         // A new item belongs in the manifest of the folder it starts in, or the personal one outside any folder.
         const startManifestId = manifestForItemIn(folderIdParam ? { ManifestId: folderManifestIdParam! } : null, dbContext?.sqliteClient?.getPersonalManifestId());
@@ -470,6 +437,12 @@ const ItemAddEdit: React.FC = () => {
         });
 
         setFieldValues(initialValues);
+
+        // Decide the email field mode before the form shows, so it does not switch after the first render.
+        const domains = await getVaultMetadata() ?? EMPTY_EMAIL_DOMAINS;
+        setEmailDomains(domains);
+        setIsLoginEmailInEmailMode(detectEmailMode((initialValues['login.email'] as string) ?? '', domains) ?? result.ItemType === ItemTypes.Login);
+
         // Sort custom fields by displayOrder when loading
         existingCustomFields.sort((a, b) => a.displayOrder - b.displayOrder);
         setCustomFields(existingCustomFields);
@@ -510,7 +483,7 @@ const ItemAddEdit: React.FC = () => {
     };
 
     void initializeEditMode();
-  }, [dbContext?.sqliteClient, id, manifestId, isEditMode, itemTypeParam, itemTitleParam, folderIdParam, folderManifestIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
+  }, [dbContext?.sqliteClient, getVaultMetadata, id, manifestId, isEditMode, itemTypeParam, itemTitleParam, folderIdParam, folderManifestIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
 
   /**
    * Handle generating alias and populating fields.
@@ -1273,6 +1246,7 @@ const ItemAddEdit: React.FC = () => {
             id={fieldKey}
             value={stringValue}
             onChange={(value) => handleFieldChange(fieldKey, value)}
+            domains={emailDomains}
             onRemove={onRemove}
             onGenerateAlias={aliasFieldsShownByDefault ? handleGenerateAliasEmail : handleGenerateRandomEmail}
             isEmailMode={isLoginEmailInEmailMode}
@@ -1309,7 +1283,7 @@ const ItemAddEdit: React.FC = () => {
         );
     }
 
-  }, [fieldValues, handleFieldChange, showPassword, t, handleGenerateAliasEmail, handleGenerateRandomEmail, aliasFieldsShownByDefault, generateRandomUsername, isLoginEmailInEmailMode, passwordSettings]);
+  }, [fieldValues, handleFieldChange, showPassword, t, handleGenerateAliasEmail, handleGenerateRandomEmail, aliasFieldsShownByDefault, generateRandomUsername, isLoginEmailInEmailMode, emailDomains, passwordSettings]);
 
   /**
    * Handle form submission via Enter key.

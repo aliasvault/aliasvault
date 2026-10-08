@@ -2,12 +2,35 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next';
 
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
-import { useDb } from '@/entrypoints/popup/context/DbContext';
+
+/**
+ * The email domain lists the server published on the last sync.
+ */
+export type EmailDomains = {
+  publicEmailDomains: string[];
+  privateEmailDomains: string[];
+  hiddenPrivateEmailDomains: string[];
+};
+
+export const EMPTY_EMAIL_DOMAINS: EmailDomains = { publicEmailDomains: [], privateEmailDomains: [], hiddenPrivateEmailDomains: [] };
+
+/**
+ * The mode an address starts the field in: email (free text) unless its domain is a known alias domain. Null without a domain.
+ */
+export const detectEmailMode = (value: string, domains: EmailDomains): boolean | null => {
+  const at = value.indexOf('@');
+  if (at < 0) {
+    return null;
+  }
+  const domain = value.substring(at + 1);
+  return !(domains.publicEmailDomains.includes(domain) || domains.privateEmailDomains.includes(domain) || domains.hiddenPrivateEmailDomains.includes(domain));
+};
 
 type EmailDomainFieldProps = {
   id: string;
   value: string;
   onChange: (value: string) => void;
+  domains: EmailDomains;
   error?: string;
   required?: boolean;
   /**
@@ -38,6 +61,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   id,
   value,
   onChange,
+  domains,
   error,
   required = false,
   onRemove,
@@ -46,11 +70,11 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   onEmailModeChange
 }) => {
   const { t } = useTranslation();
-  const dbContext = useDb();
+  const { publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains } = domains;
 
   // Support both controlled and uncontrolled modes
   const isControlled = isEmailMode !== undefined;
-  const [internalIsCustomDomain, setInternalIsCustomDomain] = useState(true);
+  const [internalIsCustomDomain, setInternalIsCustomDomain] = useState(() => detectEmailMode(value, domains) ?? true);
 
   // Use controlled value if provided, otherwise use internal state
   const isCustomDomain = isControlled ? isEmailMode : internalIsCustomDomain;
@@ -69,9 +93,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const [localPart, setLocalPart] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [publicEmailDomains, setPublicEmailDomains] = useState<string[]>([]);
-  const [privateEmailDomains, setPrivateEmailDomains] = useState<string[]>([]);
-  const [hiddenPrivateEmailDomains, setHiddenPrivateEmailDomains] = useState<string[]>([]);
   const popupRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -80,20 +101,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
    * While true, the value useEffect skips auto-detection of isCustomDomain.
    */
   const modeToggledByUser = useRef(false);
-
-  // Get email domains from vault metadata
-  useEffect(() => {
-    /**
-     * Load email domains from vault metadata.
-     */
-    const loadDomains = async (): Promise<void> => {
-      const metadata = await dbContext.getVaultMetadata();
-      setPublicEmailDomains(metadata?.publicEmailDomains ?? []);
-      setPrivateEmailDomains(metadata?.privateEmailDomains ?? []);
-      setHiddenPrivateEmailDomains(metadata?.hiddenPrivateEmailDomains ?? []);
-    };
-    loadDomains();
-  }, [dbContext]);
 
   // Private domains that are available to the user to pick from
   const selectablePrivateEmailDomains = useMemo(() => {
@@ -132,14 +139,11 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
        * hasn't explicitly toggled mode via the Email/Alias buttons.
        */
       if (!modeToggledByUser.current) {
-        const isKnownDomain = publicEmailDomains.includes(domain) ||
-                             privateEmailDomains.includes(domain) ||
-                             hiddenPrivateEmailDomains.includes(domain);
-
+        const emailMode = !(publicEmailDomains.includes(domain) || privateEmailDomains.includes(domain) || hiddenPrivateEmailDomains.includes(domain));
         if (isControlled && onEmailModeChange) {
-          onEmailModeChange(!isKnownDomain);
+          onEmailModeChange(emailMode);
         } else if (!isControlled) {
-          setIsCustomDomain(!isKnownDomain);
+          setIsCustomDomain(emailMode);
         }
       }
     } else {
@@ -156,38 +160,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       }
     }
   }, [value, publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, selectablePrivateEmailDomains, showPrivateDomains, isControlled, onEmailModeChange, selectedDomain, setIsCustomDomain]);
-
-  /*
-   * Re-check domain mode when domains finish loading.
-   * This handles the case where value was set before domains were loaded.
-   * Skip if the user has explicitly toggled mode via buttons.
-   */
-  useEffect(() => {
-    if (modeToggledByUser.current) {
-      return;
-    }
-
-    if (!value || !value.includes('@')) {
-      return;
-    }
-
-    const domain = value.split('@')[1];
-    if (!domain) {
-      return;
-    }
-
-    const isKnownDomain = publicEmailDomains.includes(domain) ||
-                         privateEmailDomains.includes(domain) ||
-                         hiddenPrivateEmailDomains.includes(domain);
-
-    if (isControlled && onEmailModeChange) {
-      onEmailModeChange(!isKnownDomain);
-    } else if (!isControlled) {
-      if (isKnownDomain && isCustomDomain) {
-        setIsCustomDomain(false);
-      }
-    }
-  }, [publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, value, isCustomDomain, isControlled, onEmailModeChange, setIsCustomDomain]);
 
   /*
    * Ensure that when in alias mode (domain chooser), the value always includes the domain.
