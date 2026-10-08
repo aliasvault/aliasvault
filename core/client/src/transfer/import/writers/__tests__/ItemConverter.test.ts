@@ -10,6 +10,7 @@ describe('convertToItem', () => {
     const credentials: ImportedCredential[] = [
       { ServiceName: 'Sha512Service', TwoFactorSecret: 'otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60' },
       { ServiceName: 'PlainService', TwoFactorSecret: 'JBSWY3DPEHPK3PXP' },
+      { ServiceName: 'UppercaseScheme', TwoFactorSecret: 'OTPAUTH://TOTP/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example&algorithm=SHA256' },
     ];
 
     const items = convertToItems(credentials);
@@ -22,6 +23,7 @@ describe('convertToItem', () => {
     expect(withDefaults.Algorithm).toBe(TOTP_DEFAULT_ALGORITHM);
     expect(withDefaults.Digits).toBe(TOTP_DEFAULT_DIGITS);
     expect(withDefaults.Period).toBe(TOTP_DEFAULT_PERIOD);
+    expect(itemByName(items, 'UppercaseScheme').TotpCodes[0]).toMatchObject({ Name: 'Example: me', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA256' });
   });
 
   it('assigns folders when converting to items', () => {

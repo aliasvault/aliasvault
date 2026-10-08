@@ -126,7 +126,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
 function buildTotpCode(secret: string, itemId: string, row: Pick<TotpCodeEntity, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): TotpCodeEntity | null {
   try {
     const sanitized = sanitizeTotpSecretKey(secret);
-    return { Id: crypto.randomUUID(), ItemId: itemId, Name: sanitized.name ?? '', SecretKey: sanitized.secretKey, Algorithm: sanitized.algorithm, Digits: sanitized.digits, Period: sanitized.period, ...row };
+    return { Id: crypto.randomUUID(), ItemId: itemId, Name: sanitized.name, SecretKey: sanitized.secretKey, Algorithm: sanitized.algorithm, Digits: sanitized.digits, Period: sanitized.period, ...row };
   } catch (error) {
     logExpected('Error importing TOTP code', error);
     return null;
