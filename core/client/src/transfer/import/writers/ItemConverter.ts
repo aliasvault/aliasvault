@@ -1,4 +1,4 @@
-import { FieldKey, ItemTypes, type ItemType } from '@aliasvault/models/vault';
+import { FieldKey, FieldTypes, ItemTypes, type ItemType } from '@aliasvault/models/vault';
 
 import { logExpected } from '../../../utilities/Diagnostics';
 import { formatDateOnly } from '../../shared/DateTimeUtils';
@@ -90,7 +90,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
   // Values of the same source definition share one definition.
   const definitionsBySourceId = new Map<string, FieldDefinitionEntity>();
   for (const customField of credential.CustomFieldValues ?? []) {
-    if (isBlank(customField.Value)) {
+    if (isBlank(customField.Value) && holdsValue(customField.FieldType)) {
       continue;
     }
 
@@ -110,7 +110,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
       definitionsBySourceId.set(customField.DefinitionId, definition);
     }
 
-    item.FieldValues.push({ Id: crypto.randomUUID(), ItemId: itemId, FieldDefinition: definition, FieldDefinitionId: definition.Id, FieldKey: null, Value: customField.Value, Weight: customField.ValueWeight, ...row });
+    item.FieldValues.push({ Id: crypto.randomUUID(), ItemId: itemId, FieldDefinition: definition, FieldDefinitionId: definition.Id, FieldKey: null, Value: customField.Value ?? '', Weight: customField.ValueWeight, ...row });
   }
 
   return item;
@@ -151,4 +151,13 @@ function determineItemType(credential: ImportedCredential): ItemType {
 function hasAliasData(credential: ImportedCredential): boolean {
   const alias = credential.Alias;
   return !!alias && (!!alias.FirstName || !!alias.LastName || !!alias.Gender || !!alias.BirthDate);
+}
+
+/**
+ * Whether a custom field type is one this build knows to carry a value; blank fields of other types (a section, a newer layout type) are kept.
+ * @param fieldType - The field type
+ * @returns True for a known value type
+ */
+function holdsValue(fieldType: string): boolean {
+  return fieldType !== FieldTypes.Section && (Object.values(FieldTypes) as string[]).includes(fieldType);
 }

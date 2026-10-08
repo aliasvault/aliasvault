@@ -344,12 +344,12 @@ export class AvuxImportService {
   }
 
   /**
-   * Map a field type string to a known field type, Text for anything unknown.
+   * Read a field type, keeping one this build does not know as-is (it renders as text, like on sync); Text when empty.
    * @param value - The field type text
    * @returns The field type
    */
-  private static toFieldType(value: string): FieldType {
-    return (Object.values(FieldTypes) as string[]).includes(value) ? value as FieldType : FieldTypes.Text;
+  private static toFieldType(value: string | null | undefined): FieldType {
+    return value ? value as FieldType : FieldTypes.Text;
   }
 
   /**
