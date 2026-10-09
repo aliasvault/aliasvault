@@ -108,8 +108,19 @@ public abstract class MainBase : OwningComponentBase
 
         if (firstRender)
         {
-            // Update default ApexCharts chart color based on the dark mode setting.
-            await SetDefaultApexChartOptionsAsync();
+            // Update default ApexCharts chart color based on the dark mode setting. Cosmetic, so a failure must not end the circuit.
+            try
+            {
+                await SetDefaultApexChartOptionsAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser disconnected before the first render finished, nothing left to style.
+            }
+            catch (InvalidOperationException)
+            {
+                // The page script did not load in time, charts keep their default colors.
+            }
         }
     }
 

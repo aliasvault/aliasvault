@@ -15,6 +15,11 @@ using Microsoft.JSInterop;
 public class JsInvokeService(IJSRuntime js)
 {
     /// <summary>
+    /// The smallest delay between attempts, so a zero initial delay still backs off.
+    /// </summary>
+    private static readonly TimeSpan MinRetryDelay = TimeSpan.FromMilliseconds(50);
+
+    /// <summary>
     /// Invoke a JavaScript function with retry and exponential backoff.
     /// </summary>
     /// <param name="functionName">The JS function name to call.</param>
@@ -24,7 +29,7 @@ public class JsInvokeService(IJSRuntime js)
     /// <returns>Async Task.</returns>
     public async Task RetryInvokeAsync(string functionName, TimeSpan initialDelay, int maxAttempts, params object[] args)
     {
-        TimeSpan delay = initialDelay;
+        TimeSpan delay = initialDelay > MinRetryDelay ? initialDelay : MinRetryDelay;
         for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
             try
@@ -35,6 +40,11 @@ public class JsInvokeService(IJSRuntime js)
                     await js.InvokeVoidAsync(functionName, args);
                     return; // Successfully called the JS function, exit the method
                 }
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser is gone, retrying cannot succeed.
+                return;
             }
             catch
             {
@@ -61,9 +71,10 @@ public class JsInvokeService(IJSRuntime js)
     /// <param name="args">Arguments to pass on to the javascript function.</param>
     /// <returns>The value returned from the JavaScript function.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the JS function could not be called after all attempts.</exception>
+    /// <exception cref="JSDisconnectedException">Thrown when the browser disconnected from the circuit.</exception>
     public async Task<TValue> RetryInvokeWithResultAsync<TValue>(string functionName, TimeSpan initialDelay, int maxAttempts, params object[] args)
     {
-        TimeSpan delay = initialDelay;
+        TimeSpan delay = initialDelay > MinRetryDelay ? initialDelay : MinRetryDelay;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
@@ -74,6 +85,11 @@ public class JsInvokeService(IJSRuntime js)
                 {
                     return await js.InvokeAsync<TValue>(functionName, args);
                 }
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser is gone, retrying cannot succeed.
+                throw;
             }
             catch
             {
