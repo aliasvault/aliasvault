@@ -4,7 +4,7 @@
 //! core/models/src/vault/VaultTableRegistry.ts by core/models/scripts/generate-vault-table-registry.cjs.
 //! Edit the TypeScript source and run 'core/models/build.sh' to regenerate.
 
-use super::{BlobColumn, TableConfig};
+use super::{BlobColumn, SystemField, TableConfig};
 
 /// All tables that need LWW merge, in registry order. Order matters: a merge inserts rows
 /// in this order, so child tables must be listed after the table they reference (Items first).
@@ -83,6 +83,25 @@ pub static PERSONAL_TABLES: &[&str] = &[];
 /// (IsMultiValue). A value of such a field owns its row id (two devices each adding a value are
 /// adding two different things) and is not derived.
 pub static MULTI_VALUE_FIELD_KEYS: &[&str] = &["login.url"];
+
+/// The system fields and their metadata, from SystemFieldRegistry, in registry order.
+pub static SYSTEM_FIELDS: &[SystemField] = &[
+    SystemField { key: "login.email", field_type: "Email", is_hidden: false, is_multi_value: false, enable_history: true, default_display_order: 10 },
+    SystemField { key: "login.username", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: true, default_display_order: 15 },
+    SystemField { key: "login.password", field_type: "Password", is_hidden: true, is_multi_value: false, enable_history: true, default_display_order: 20 },
+    SystemField { key: "login.url", field_type: "URL", is_hidden: false, is_multi_value: true, enable_history: false, default_display_order: 5 },
+    SystemField { key: "alias.first_name", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 20 },
+    SystemField { key: "alias.last_name", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 30 },
+    SystemField { key: "alias.gender", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 50 },
+    SystemField { key: "alias.birthdate", field_type: "Date", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 60 },
+    SystemField { key: "card.cardholder_name", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 10 },
+    SystemField { key: "card.number", field_type: "Hidden", is_hidden: true, is_multi_value: false, enable_history: false, default_display_order: 20 },
+    SystemField { key: "card.expiry_month", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 30 },
+    SystemField { key: "card.expiry_year", field_type: "Text", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 40 },
+    SystemField { key: "card.cvv", field_type: "Hidden", is_hidden: true, is_multi_value: false, enable_history: false, default_display_order: 50 },
+    SystemField { key: "card.pin", field_type: "Hidden", is_hidden: true, is_multi_value: false, enable_history: false, default_display_order: 60 },
+    SystemField { key: "notes.content", field_type: "TextArea", is_hidden: false, is_multi_value: false, enable_history: false, default_display_order: 100 },
+];
 
 /// System field keys whose field holds one value. A key in neither list is a field this build does
 /// not know (a newer writer's), whose rows the codec leaves as it found them.

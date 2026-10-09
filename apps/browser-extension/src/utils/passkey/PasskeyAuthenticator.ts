@@ -1,60 +1,21 @@
-/**
- * PasskeyAuthenticator
- * -------------------------
- * A WebAuthn "virtual authenticator" for browser extensions.
- * Implements passkey creation (registration) and authentication (assertion) following
- * the WebAuthn Level 2 specification.
- *
- * This is the reference TypeScript implementation:
- * - iOS: apps/mobile-app/ios/VaultStoreKit/Passkeys/PasskeyAuthenticator.swift
- * - Android: apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/passkey/PasskeyAuthenticator.kt
- *
- * IMPORTANT: Keep all implementations synchronized. Changes to the public interface must be
- * reflected in all ports. Method names, parameters, and behavior should remain consistent.
- *
- * Key features:
- * - ES256 (ECDSA P-256) and RS256 (RSASSA-PKCS1-v1.5) key pair generation
- * - CBOR/COSE encoding for attestation objects
- * - Proper authenticator data with WebAuthn flags
- * - Self-attestation (packed format) or none attestation
- * - Consistent base64url handling
- * - Sign count always 0 for syncable passkeys
- * - BE/BS flags for backup-eligible and backed-up status
- */
+import { passkeyCreate, passkeyGetAssertion, passkeyPickAlgorithm } from '@aliasvault/client/rust/WasmPasskey';
+
+import { PasskeyHelper } from './PasskeyHelper';
 
 import type { CreateRequest, GetRequest, StoredPasskeyRecord } from './types';
+import type { PasskeyPrfResults } from '@aliasvault/client/rust/WasmPasskey';
 
 /**
- * PasskeyAuthenticator - Static utility class for WebAuthn operations
+ * The WebAuthn authenticator of the browser extension. It builds the client data JSON and the responses the page
+ * receives; key generation, authenticator data, the attestation object, signatures and PRF run in the Rust core
+ * (core/rust/src/passkey).
+ * Other platform implementations: PasskeyAuthenticator.swift (iOS), PasskeyAuthenticator.kt (Android).
  */
 export class PasskeyAuthenticator {
   /**
    * Private constructor to prevent instantiation.
    */
   private constructor() {}
-
-  /** AliasVault AAGUID: a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942 */
-  private static readonly AAGUID = new Uint8Array([
-    0xa1, 0x1a, 0x5f, 0xaa, 0x9f, 0x32, 0x4b, 0x8c,
-    0x8c, 0x5d, 0x2f, 0x7d, 0x13, 0xe8, 0xc9, 0x42
-  ]);
-
-  /** COSE algorithm identifier for ES256 (ECDSA P-256 with SHA-256). */
-  private static readonly ALG_ES256 = -7;
-
-  /** COSE algorithm identifier for RS256 (RSASSA-PKCS1-v1.5 with SHA-256). */
-  private static readonly ALG_RS256 = -257;
-
-  /**
-   * Algorithms supported by this authenticator, in our order of preference.
-   * When an RP lists multiple, we honor the RP's order and pick the first match.
-   */
-  private static readonly SUPPORTED_ALGORITHMS = [
-    PasskeyAuthenticator.ALG_ES256,
-    PasskeyAuthenticator.ALG_RS256
-  ];
-
-  // MARK: - Public API
 
   /**
    * Create a new passkey (registration).
@@ -64,133 +25,73 @@ export class PasskeyAuthenticator {
     req: CreateRequest,
     opts?: {
       uvPerformed?: boolean;
-      credentialIdBytes?: number;
       enablePrf?: boolean;
       prfInputs?: { first: string; second?: string };
     }
   ): Promise<PasskeyCreationResult> {
-    // 1. Validate algorithm support and pick the credential algorithm
-    const alg = PasskeyAuthenticator.pickSupportedAlgorithm(req.publicKey.pubKeyCredParams);
-
-    // 2. Compute RP ID hash
+    const algorithm = await PasskeyAuthenticator.pickAlgorithm(req.publicKey.pubKeyCredParams);
     const rpId = req.publicKey.rp?.id || new URL(req.origin).hostname;
-    const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', PasskeyAuthenticator.te(rpId) as BufferSource));
-
-    // 3. Generate key pair for the chosen algorithm
-    const keyPair = await crypto.subtle.generateKey(
-      PasskeyAuthenticator.keyGenParams(alg),
-      true,
-      ['sign', 'verify']
-    ) as CryptoKeyPair;
-    const pubJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
-    const prvJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
-
-    // 4. Build credential ID and COSE key
-    const credentialIdB64u = PasskeyAuthenticator.toB64u(credentialIdBytes);
-    const coseKey = alg === PasskeyAuthenticator.ALG_RS256
-      ? PasskeyAuthenticator.buildCoseRsaRs256(pubJwk)
-      : PasskeyAuthenticator.buildCoseEc2Es256(pubJwk);
-
-    // 5. Build authenticator flags.
-    let flags = 0x41; // UP (bit 0) + AT (bit 6)
 
     /*
-     * As in getAssertion, an omitted authenticatorSelection.userVerification defaults to
-     * "preferred" per the WebAuthn spec. Keep registration and assertion symmetric so a
-     * credential registered as verified also asserts as verified.
+     * An omitted authenticatorSelection.userVerification defaults to "preferred" per the WebAuthn spec. Keep
+     * registration and assertion symmetric so a credential registered as verified also asserts as verified.
      */
     const uvReq = req.publicKey.authenticatorSelection?.userVerification ?? 'preferred';
-    const uvPerformed = !!opts?.uvPerformed;
-    if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
-      flags |= 0x04; // UV (bit 2)
-    }
-    flags |= 0x08; // BE (bit 3)
-    flags |= 0x10; // BS (bit 4)
+    const uvPerformed = uvReq === 'required' || (uvReq === 'preferred' && !!opts?.uvPerformed);
 
-    // 6. Sign count (always 0 for syncable credentials)
-    const signCount = new Uint8Array([0, 0, 0, 0]);
+    const clientDataJSON = PasskeyAuthenticator.clientDataJSON('webauthn.create', req.publicKey.challenge, req.origin);
 
-    // 7. Build attested credential data
-    const credIdLenBytes = new Uint8Array([(credentialIdBytes.length >> 8) & 0xff, credentialIdBytes.length & 0xff]);
-    const attestedCredData = PasskeyAuthenticator.concat(PasskeyAuthenticator.AAGUID, credIdLenBytes, credentialIdBytes, coseKey);
+    // "direct" and "enterprise" get packed self-attestation over the client data; "none" and "indirect" get none.
+    const attestation = req.publicKey.attestation || 'none';
+    const selfAttestationClientDataHash = attestation === 'none' || attestation === 'indirect' ? undefined : await PasskeyAuthenticator.sha256(clientDataJSON);
 
-    // 8. Build authenticator data
-    const authenticatorData = PasskeyAuthenticator.concat(rpIdHash, new Uint8Array([flags]), signCount, attestedCredData);
+    const prfInputs = opts?.enablePrf && opts.prfInputs
+      ? { first: PasskeyHelper.base64urlToBytes(opts.prfInputs.first), second: opts.prfInputs.second ? PasskeyHelper.base64urlToBytes(opts.prfInputs.second) : undefined }
+      : undefined;
 
-    // 9. Build client data JSON
-    const challengeB64u = PasskeyAuthenticator.challengeToB64u(req.publicKey.challenge);
-    const clientDataObj = {
-      type: 'webauthn.create',
-      challenge: challengeB64u,
-      origin: req.origin,
-      crossOrigin: false
-    };
-    const clientDataJSONStr = JSON.stringify(clientDataObj);
-    const clientDataJSONBytes = PasskeyAuthenticator.te(clientDataJSONStr);
+    const created = await passkeyCreate({
+      credentialId: credentialIdBytes,
+      rpId,
+      algorithm,
+      uvPerformed,
+      enablePrf: !!opts?.enablePrf,
+      prfInputs,
+      selfAttestationClientDataHash
+    });
 
-    // 10. Build attestation object
-    const attPref = req.publicKey.attestation || 'none';
-    const attObjBytes =
-      attPref === 'none' || attPref === 'indirect'
-        ? PasskeyAuthenticator.buildAttObjNone(authenticatorData)
-        : await PasskeyAuthenticator.buildAttObjPackedSelf(authenticatorData, clientDataJSONBytes, keyPair.privateKey, alg);
-
-    // 11. Process user ID
     let userIdB64: string | null = null;
     if (req.publicKey.user?.id) {
       userIdB64 = typeof req.publicKey.user.id === 'string'
         ? req.publicKey.user.id
-        : PasskeyAuthenticator.toB64(req.publicKey.user.id instanceof Uint8Array ? req.publicKey.user.id : new Uint8Array(req.publicKey.user.id));
+        : PasskeyHelper.arrayBufferToBase64(req.publicKey.user.id);
     }
 
-    // 12. Generate PRF secret if requested
-    let prfSecret: string | undefined;
-    let prfEnabled = false;
-    let prfResults: { first: ArrayBuffer; second?: ArrayBuffer } | undefined;
-    if (opts?.enablePrf) {
-      const prfSecretBytes = new Uint8Array(32);
-      crypto.getRandomValues(prfSecretBytes);
-      prfSecret = PasskeyAuthenticator.toB64u(prfSecretBytes);
-      prfEnabled = true;
-
-      // 13. Evaluate PRF values if requested during registration
-      if (opts?.prfInputs) {
-        const firstSalt = PasskeyAuthenticator.fromB64u(opts.prfInputs.first);
-        prfResults = {
-          first: await PasskeyAuthenticator.evaluatePrf(prfSecretBytes, firstSalt)
-        };
-
-        if (opts.prfInputs.second) {
-          const secondSalt = PasskeyAuthenticator.fromB64u(opts.prfInputs.second);
-          prfResults.second = await PasskeyAuthenticator.evaluatePrf(prfSecretBytes, secondSalt);
-        }
-      }
-    }
-
-    // 14. Build stored record
+    const credentialIdB64u = PasskeyHelper.bytesToBase64url(credentialIdBytes);
     const stored: StoredPasskeyRecord = {
       rpId,
       credentialId: credentialIdB64u,
-      publicKey: pubJwk,
-      privateKey: prvJwk,
+      publicKey: JSON.parse(created.publicKeyJwk) as JsonWebKey,
+      privateKey: JSON.parse(created.privateKeyJwk) as JsonWebKey,
       userId: userIdB64,
       userName: req.publicKey.user?.name,
       userDisplayName: req.publicKey.user?.displayName,
-      prfSecret
+      prfSecret: created.prfSecret ? PasskeyHelper.bytesToBase64url(created.prfSecret) : undefined
     };
 
-    // 15. Build credential response
     const credential = {
       id: credentialIdB64u,
       rawId: credentialIdB64u,
       response: {
-        clientDataJSON: PasskeyAuthenticator.toB64u(clientDataJSONBytes),
-        attestationObject: PasskeyAuthenticator.toB64u(attObjBytes)
+        clientDataJSON: PasskeyHelper.bytesToBase64url(clientDataJSON),
+        attestationObject: PasskeyHelper.bytesToBase64url(created.attestationObject),
+        authenticatorData: PasskeyHelper.bytesToBase64url(created.authenticatorData),
+        publicKey: PasskeyHelper.bytesToBase64url(created.publicKeySpki),
+        publicKeyAlgorithm: algorithm
       },
       type: 'public-key' as const
     };
 
-    return { credential, stored, prfEnabled, prfResults };
+    return { credential, stored, prfEnabled: !!opts?.enablePrf, prfResults: PasskeyAuthenticator.prfResults(created.prfResults) };
   }
 
   /**
@@ -200,403 +101,99 @@ export class PasskeyAuthenticator {
   public static async getAssertion(
     req: GetRequest,
     storedRecord: StoredPasskeyRecord,
-    opts?: { uvPerformed?: boolean; includeBEBS?: boolean; prfInputs?: { first: ArrayBuffer | Uint8Array; second?: ArrayBuffer | Uint8Array } }
+    opts?: { uvPerformed?: boolean; prfInputs?: { first: ArrayBuffer | Uint8Array; second?: ArrayBuffer | Uint8Array } }
   ): Promise<PasskeyAssertionResult> {
     const rec = storedRecord;
-
-    // 1. Compute RP ID hash
     const rpId = req.publicKey.rpId || new URL(req.origin).hostname;
-    const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', PasskeyAuthenticator.te(rpId) as BufferSource));
-
-    // 2. Build authenticator flags.
-    let flags = 0x01; // UP (bit 0)
 
     /*
-     * An omitted userVerification defaults to "preferred" per the WebAuthn spec (not
-     * "discouraged"), and this authenticator always performs UV, so set the UV flag for
-     * required/preferred. RPs that registered with UV "required" reject UV=0 assertions.
+     * An omitted userVerification defaults to "preferred" per the WebAuthn spec (not "discouraged"), and this
+     * authenticator always performs UV, so set the UV flag for required/preferred. RPs that registered with UV
+     * "required" reject UV=0 assertions.
      */
     const uvReq = req.publicKey.userVerification ?? 'preferred';
-    const uvPerformed = !!opts?.uvPerformed;
-    if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
-      flags |= 0x04; // UV (bit 2)
-    }
-    if (opts?.includeBEBS ?? true) {
-      flags |= 0x08; // BE (bit 3)
-      flags |= 0x10; // BS (bit 4)
-    }
+    const uvPerformed = uvReq === 'required' || (uvReq === 'preferred' && !!opts?.uvPerformed);
 
-    // 3. Sign count (always 0 for syncable credentials)
-    const signCount = new Uint8Array([0, 0, 0, 0]);
+    const clientDataJSON = PasskeyAuthenticator.clientDataJSON('webauthn.get', req.publicKey.challenge, req.origin);
+    const prfInputs = opts?.prfInputs && rec.prfSecret
+      ? { first: PasskeyAuthenticator.bytes(opts.prfInputs.first), second: opts.prfInputs.second ? PasskeyAuthenticator.bytes(opts.prfInputs.second) : undefined }
+      : undefined;
 
-    // 4. Build authenticator data
-    const authenticatorData = PasskeyAuthenticator.concat(rpIdHash, new Uint8Array([flags]), signCount);
-
-    // 5. Build client data JSON
-    const challengeB64u = PasskeyAuthenticator.challengeToB64u(req.publicKey.challenge);
-    const clientDataObj = {
-      type: 'webauthn.get',
-      challenge: challengeB64u,
-      origin: req.origin,
-      crossOrigin: false
-    };
-    const clientDataJSONStr = JSON.stringify(clientDataObj);
-    const clientDataJSONBytes = PasskeyAuthenticator.te(clientDataJSONStr);
-
-    // 6. Build data to sign: authenticatorData || clientDataHash
-    const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientDataJSONBytes as BufferSource));
-    const toSign = PasskeyAuthenticator.concat(authenticatorData, clientDataHash);
-
-    /*
-     * 7. Determine algorithm from the stored key, import it, and sign.
-     * The signature is already in the form the RP expects (DER for ES256, raw for RS256).
-     */
-    const alg = rec.privateKey.kty === 'RSA' ? PasskeyAuthenticator.ALG_RS256 : PasskeyAuthenticator.ALG_ES256;
-    const privateKey = await crypto.subtle.importKey(
-      'jwk',
-      rec.privateKey,
-      PasskeyAuthenticator.keyImportParams(alg),
-      false,
-      ['sign']
-    );
-    const signature = await PasskeyAuthenticator.sign(privateKey, toSign, alg);
-
-    // 9. Process user handle
-    let userHandleB64u: string | null = null;
-    if (rec.userId) {
-      userHandleB64u = rec.userId.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-
-    // 10. Evaluate PRF if requested
-    let prfResults: { first: ArrayBuffer; second?: ArrayBuffer } | undefined;
-    if (opts?.prfInputs && rec.prfSecret) {
-      const prfSecretBytes = PasskeyAuthenticator.fromB64u(rec.prfSecret);
-
-      const firstResult = await PasskeyAuthenticator.evaluatePrf(prfSecretBytes, opts.prfInputs.first);
-      prfResults = { first: firstResult };
-
-      if (opts.prfInputs.second) {
-        const secondResult = await PasskeyAuthenticator.evaluatePrf(prfSecretBytes, opts.prfInputs.second);
-        prfResults.second = secondResult;
-      }
-    }
+    const assertion = await passkeyGetAssertion({
+      rpId,
+      clientDataHash: await PasskeyAuthenticator.sha256(clientDataJSON),
+      privateKeyJwk: JSON.stringify(rec.privateKey),
+      uvPerformed,
+      prfInputs,
+      prfSecret: rec.prfSecret ? PasskeyHelper.base64urlToBytes(rec.prfSecret) : undefined
+    });
 
     return {
       id: rec.credentialId,
       rawId: rec.credentialId,
-      clientDataJSON: PasskeyAuthenticator.toB64u(clientDataJSONBytes),
-      authenticatorData: PasskeyAuthenticator.toB64u(authenticatorData),
-      signature: PasskeyAuthenticator.toB64u(signature),
-      userHandle: userHandleB64u,
-      prfResults
+      clientDataJSON: PasskeyHelper.bytesToBase64url(clientDataJSON),
+      authenticatorData: PasskeyHelper.bytesToBase64url(assertion.authenticatorData),
+      signature: PasskeyHelper.bytesToBase64url(assertion.signature),
+      userHandle: rec.userId ? rec.userId.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null,
+      prfResults: PasskeyAuthenticator.prfResults(assertion.prfResults)
     };
   }
 
-  // MARK: - PRF Extension
-
   /**
-   * Evaluate PRF (hmac-secret extension).
-   * Implements: HMAC-SHA256(prfSecret, SHA-256("WebAuthn PRF\x00" || salt)).
-   */
-  private static async evaluatePrf(prfSecretBytes: Uint8Array, salt: ArrayBuffer | Uint8Array): Promise<ArrayBuffer> {
-    const saltBytes = salt instanceof Uint8Array ? salt : new Uint8Array(salt);
-
-    const prefix = PasskeyAuthenticator.te('WebAuthn PRF\x00');
-    const domainSeparatedSalt = PasskeyAuthenticator.concat(prefix, saltBytes);
-    const hashedSalt = await crypto.subtle.digest('SHA-256', domainSeparatedSalt as BufferSource);
-
-    const hmacKey = await crypto.subtle.importKey(
-      'raw',
-      prfSecretBytes as BufferSource,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-
-    const prfOutput = await crypto.subtle.sign('HMAC', hmacKey, hashedSalt);
-
-    return prfOutput;
-  }
-
-  // MARK: - CBOR Encoding
-
-  /**
-   * Pick a supported credential algorithm from the RP's pubKeyCredParams.
-   * Honors the RP's preference order and returns the first algorithm we support.
-   * Defaults to ES256 when the RP provides no params.
+   * The credential algorithm for the RP's pubKeyCredParams, in the RP's order; ES256 when it lists none.
    * @param params - Public key credential parameters
    * @returns COSE algorithm identifier (-7 for ES256, -257 for RS256)
    */
-  private static pickSupportedAlgorithm(params?: Array<{ type: 'public-key'; alg: number }>): number {
+  private static async pickAlgorithm(params?: Array<{ type: 'public-key'; alg: number }>): Promise<number> {
     if (!params || params.length === 0) {
-      return PasskeyAuthenticator.ALG_ES256;
+      return passkeyPickAlgorithm([]);
     }
-    for (const p of params) {
-      if (p.type === 'public-key' && PasskeyAuthenticator.SUPPORTED_ALGORITHMS.includes(p.alg)) {
-        return p.alg;
-      }
+    const publicKeyAlgorithms = params.filter(p => p.type === 'public-key').map(p => p.alg);
+    if (publicKeyAlgorithms.length === 0) {
+      throw new Error('No supported algorithm (ES256, RS256) in pubKeyCredParams');
     }
-    throw new Error('No supported algorithm (ES256, RS256) in pubKeyCredParams');
+    return passkeyPickAlgorithm(publicKeyAlgorithms);
   }
 
   /**
-   * WebCrypto key generation parameters for a COSE algorithm.
+   * The client data JSON bytes of a ceremony.
+   * @param type - The ceremony type
+   * @param challenge - The RP's challenge
+   * @param origin - The calling origin
+   * @returns The UTF-8 JSON bytes
    */
-  private static keyGenParams(alg: number): EcKeyGenParams | RsaHashedKeyGenParams {
-    if (alg === PasskeyAuthenticator.ALG_RS256) {
-      return {
-        name: 'RSASSA-PKCS1-v1_5',
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: 'SHA-256'
-      };
+  private static clientDataJSON(type: 'webauthn.create' | 'webauthn.get', challenge: ArrayBuffer | Uint8Array | string, origin: string): Uint8Array {
+    return new TextEncoder().encode(JSON.stringify({ type, challenge: PasskeyAuthenticator.challengeToB64u(challenge), origin, crossOrigin: false }));
+  }
+
+  /**
+   * PRF results from the Rust core in the shape the callers expect.
+   * @param results - The PRF outputs, or null
+   * @returns The outputs as ArrayBuffers
+   */
+  private static prfResults(results: PasskeyPrfResults | null): { first: ArrayBuffer; second?: ArrayBuffer } | undefined {
+    if (!results) {
+      return undefined;
     }
-    return { name: 'ECDSA', namedCurve: 'P-256' };
+    return { first: results.first.slice().buffer, second: results.second ? results.second.slice().buffer : undefined };
   }
 
   /**
-   * WebCrypto key import parameters for a COSE algorithm.
+   * SHA-256 of bytes.
+   * @param bytes - The bytes to hash
+   * @returns The digest
    */
-  private static keyImportParams(alg: number): EcKeyImportParams | RsaHashedImportParams {
-    if (alg === PasskeyAuthenticator.ALG_RS256) {
-      return { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
-    }
-    return { name: 'ECDSA', namedCurve: 'P-256' };
+  private static async sha256(bytes: Uint8Array): Promise<Uint8Array> {
+    return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as BufferSource));
   }
 
   /**
-   * Sign data with the given private key, returning the signature in the encoding
-   * the RP expects: DER-encoded for ES256, raw PKCS#1 v1.5 for RS256.
+   * Bytes of an ArrayBuffer or Uint8Array.
+   * @param value - The buffer
+   * @returns The bytes
    */
-  private static async sign(privateKey: CryptoKey, data: Uint8Array, alg: number): Promise<Uint8Array> {
-    if (alg === PasskeyAuthenticator.ALG_RS256) {
-      return new Uint8Array(
-        await crypto.subtle.sign({ name: 'RSASSA-PKCS1-v1_5' }, privateKey, data as BufferSource)
-      );
-    }
-    const rawSig = new Uint8Array(
-      await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, data as BufferSource)
-    );
-    return PasskeyAuthenticator.ecdsaRawToDer(rawSig);
-  }
-
-  /**
-   * Build COSE EC2 public key for ES256.
-   * CBOR map: {1: 2, 3: -7, -1: 1, -2: x, -3: y}.
-   */
-  private static buildCoseEc2Es256(jwk: JsonWebKey): Uint8Array {
-    const x = PasskeyAuthenticator.pad32(PasskeyAuthenticator.fromB64u(jwk.x!));
-    const y = PasskeyAuthenticator.pad32(PasskeyAuthenticator.fromB64u(jwk.y!));
-
-    return new Uint8Array([
-      0xa5,
-      0x01, 0x02,               // 1: 2 (kty: EC2)
-      0x03, 0x26,               // 3: -7 (alg: ES256)
-      0x20, 0x01,               // -1: 1 (crv: P-256)
-      0x21, 0x58, 0x20, ...x,   // -2: bytes(32) for x
-      0x22, 0x58, 0x20, ...y    // -3: bytes(32) for y
-    ]);
-  }
-
-  /**
-   * Build COSE RSA public key for RS256 (RFC 8230).
-   * CBOR map: {1: 3 (kty: RSA), 3: -257 (alg: RS256), -1: n (modulus), -2: e (exponent)}.
-   */
-  private static buildCoseRsaRs256(jwk: JsonWebKey): Uint8Array {
-    const n = PasskeyAuthenticator.fromB64u(jwk.n!);
-    const e = PasskeyAuthenticator.fromB64u(jwk.e!);
-
-    return PasskeyAuthenticator.concat(
-      new Uint8Array([0xa4]),                          // map of 4 pairs
-      new Uint8Array([0x01, 0x03]),                    // 1: 3 (kty: RSA)
-      new Uint8Array([0x03]), PasskeyAuthenticator.cborInt(PasskeyAuthenticator.ALG_RS256), // 3: -257 (alg: RS256)
-      new Uint8Array([0x20]), PasskeyAuthenticator.cborBstr(n),  // -1: modulus n
-      new Uint8Array([0x21]), PasskeyAuthenticator.cborBstr(e)   // -2: exponent e
-    );
-  }
-
-  /**
-   * Build attestation object with "none" format.
-   * CBOR map: {fmt: "none", attStmt: {}, authData: <bytes>}.
-   */
-  private static buildAttObjNone(authenticatorData: Uint8Array): Uint8Array {
-    const fmtKey = PasskeyAuthenticator.cborText('fmt');
-    const fmtVal = PasskeyAuthenticator.cborText('none');
-    const attStmtKey = PasskeyAuthenticator.cborText('attStmt');
-    const attStmtVal = new Uint8Array([0xa0]);
-    const authDataKey = PasskeyAuthenticator.cborText('authData');
-    const authDataVal = PasskeyAuthenticator.cborBstr(authenticatorData);
-
-    return PasskeyAuthenticator.concat(
-      new Uint8Array([0xa3]),
-      fmtKey, fmtVal,
-      attStmtKey, attStmtVal,
-      authDataKey, authDataVal
-    );
-  }
-
-  /**
-   * Build "packed" self-attestation object (no x5c).
-   */
-  private static async buildAttObjPackedSelf(
-    authenticatorData: Uint8Array,
-    clientDataJSON: Uint8Array,
-    privateKey: CryptoKey,
-    alg: number
-  ): Promise<Uint8Array> {
-    const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientDataJSON as BufferSource));
-    const toSign = PasskeyAuthenticator.concat(authenticatorData, clientDataHash);
-    const sig = await PasskeyAuthenticator.sign(privateKey, toSign, alg);
-
-    const attStmtMap = PasskeyAuthenticator.concat(
-      PasskeyAuthenticator.cborText('alg'), PasskeyAuthenticator.cborInt(alg),
-      PasskeyAuthenticator.cborText('sig'), PasskeyAuthenticator.cborBstr(sig)
-    );
-    const attStmt = PasskeyAuthenticator.concat(new Uint8Array([0xa2]), attStmtMap);
-
-    const fmtKey = PasskeyAuthenticator.cborText('fmt');
-    const fmtVal = PasskeyAuthenticator.cborText('packed');
-    const attStmtKey = PasskeyAuthenticator.cborText('attStmt');
-    const authDataKey = PasskeyAuthenticator.cborText('authData');
-    const authDataVal = PasskeyAuthenticator.cborBstr(authenticatorData);
-
-    return PasskeyAuthenticator.concat(
-      new Uint8Array([0xa3]),
-      fmtKey, fmtVal,
-      attStmtKey, attStmt,
-      authDataKey, authDataVal
-    );
-  }
-
-  /**
-   * Encode a string as CBOR text.
-   */
-  private static cborText(s: string): Uint8Array {
-    const bytes = PasskeyAuthenticator.te(s);
-    if (bytes.length <= 23) {
-      return new Uint8Array([0x60 | bytes.length, ...bytes]);
-    }
-    if (bytes.length <= 0xff) {
-      return new Uint8Array([0x78, bytes.length, ...bytes]);
-    }
-    return new Uint8Array([0x79, (bytes.length >> 8) & 0xff, bytes.length & 0xff, ...bytes]);
-  }
-
-  /**
-   * Encode an integer as CBOR (major type 0 for non-negative, 1 for negative).
-   * Used for COSE algorithm identifiers, e.g. -7 (ES256) and -257 (RS256).
-   */
-  private static cborInt(value: number): Uint8Array {
-    /*
-     * Major type 0 (positive) uses the value directly; major type 1 (negative)
-     * encodes -1 - value (so -7 -> 6, -257 -> 256) under the 0x20 prefix.
-     */
-    const major = value < 0 ? 0x20 : 0x00;
-    const n = value < 0 ? -1 - value : value;
-    if (n <= 23) {
-      return new Uint8Array([major | n]);
-    }
-    if (n <= 0xff) {
-      return new Uint8Array([major | 0x18, n]);
-    }
-    return new Uint8Array([major | 0x19, (n >> 8) & 0xff, n & 0xff]);
-  }
-
-  /**
-   * Encode bytes as CBOR byte string.
-   */
-  private static cborBstr(b: Uint8Array): Uint8Array {
-    if (b.length <= 23) {
-      return new Uint8Array([0x40 | b.length, ...b]);
-    }
-    if (b.length <= 0xff) {
-      return new Uint8Array([0x58, b.length, ...b]);
-    }
-    return new Uint8Array([0x59, (b.length >> 8) & 0xff, b.length & 0xff, ...b]);
-  }
-
-  // MARK: - Signature Conversion
-
-  /**
-   * Convert raw ECDSA signature (r|s, 64 bytes) to DER SEQUENCE.
-   */
-  private static ecdsaRawToDer(raw: Uint8Array): Uint8Array {
-    if (raw.length !== 64) {
-      throw new Error('Unexpected ECDSA signature length');
-    }
-    const r = raw.slice(0, 32);
-    const s = raw.slice(32, 64);
-    const rDer = PasskeyAuthenticator.derInt(r);
-    const sDer = PasskeyAuthenticator.derInt(s);
-    return new Uint8Array([0x30, rDer.length + sDer.length, ...rDer, ...sDer]);
-  }
-
-  /**
-   * Encode a positive big integer as DER INTEGER.
-   */
-  private static derInt(src: Uint8Array): Uint8Array {
-    let i = 0;
-    while (i < src.length - 1 && src[i] === 0x00) {
-      i++;
-    }
-    let v = src.slice(i);
-    if ((v[0] & 0x80) !== 0) {
-      const padded = new Uint8Array(v.length + 1);
-      padded[0] = 0x00;
-      padded.set(v, 1);
-      v = padded;
-    }
-    return new Uint8Array([0x02, v.length, ...v]);
-  }
-
-  // MARK: - Base64 Encoding
-
-  /**
-   * UTF-8 encode string to bytes.
-   * @param s - String to encode
-   * @returns Encoded bytes
-   */
-  private static te(s: string): Uint8Array {
-    const encoder = new TextEncoder();
-    return encoder.encode(s);
-  }
-
-  /**
-   * Base64 encode bytes.
-   * @param bytes - Bytes to encode
-   * @returns Base64 string
-   */
-  private static toB64(bytes: Uint8Array): string {
-    let bin = '';
-    for (let i = 0; i < bytes.length; i++) {
-      bin += String.fromCharCode(bytes[i]);
-    }
-    return btoa(bin);
-  }
-
-  /**
-   * Base64url encode bytes.
-   * @param bytes - Bytes to encode
-   * @returns Base64url string
-   */
-  private static toB64u(bytes: Uint8Array): string {
-    return PasskeyAuthenticator.toB64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
-
-  /**
-   * Base64url decode to bytes.
-   * @param b64u - Base64url string
-   * @returns Decoded bytes
-   */
-  private static fromB64u(b64u: string): Uint8Array {
-    const b64 = b64u.replace(/-/g, '+').replace(/_/g, '/');
-    const pad = b64.length % 4 === 2 ? '==' : b64.length % 4 === 3 ? '=' : '';
-    const s = atob(b64 + pad);
-    const out = new Uint8Array(s.length);
-    for (let i = 0; i < s.length; i++) {
-      out[i] = s.charCodeAt(i);
-    }
-    return out;
+  private static bytes(value: ArrayBuffer | Uint8Array): Uint8Array {
+    return value instanceof Uint8Array ? value : new Uint8Array(value);
   }
 
   /**
@@ -608,38 +205,7 @@ export class PasskeyAuthenticator {
     if (typeof challenge === 'string') {
       return challenge.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-    const bytes = challenge instanceof Uint8Array ? challenge : new Uint8Array(challenge);
-    return PasskeyAuthenticator.toB64u(bytes);
-  }
-
-  /**
-   * Left-pad to 32 bytes for P-256 coordinates.
-   * @param b - Bytes to pad
-   * @returns Padded bytes
-   */
-  private static pad32(b: Uint8Array): Uint8Array {
-    if (b.length === 32) {
-      return b;
-    }
-    const out = new Uint8Array(32);
-    out.set(b, 32 - b.length);
-    return out;
-  }
-
-  /**
-   * Concatenate typed arrays.
-   * @param chunks - Arrays to concatenate
-   * @returns Concatenated array
-   */
-  private static concat(...chunks: Uint8Array[]): Uint8Array {
-    const total = chunks.reduce((s, c) => s + c.length, 0);
-    const out = new Uint8Array(total);
-    let o = 0;
-    for (const c of chunks) {
-      out.set(c, o);
-      o += c.length;
-    }
-    return out;
+    return PasskeyHelper.bytesToBase64url(PasskeyAuthenticator.bytes(challenge));
   }
 }
 
@@ -654,6 +220,12 @@ export type PasskeyCreationResult = {
     response: {
       clientDataJSON: string;
       attestationObject: string;
+      /** The authenticator data inside the attestation object (base64url). */
+      authenticatorData: string;
+      /** The public key as DER SubjectPublicKeyInfo (base64url). */
+      publicKey: string;
+      /** The COSE algorithm of the key. */
+      publicKeyAlgorithm: number;
     };
     type: 'public-key';
   };

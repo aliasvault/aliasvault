@@ -20,6 +20,9 @@ const VACUUM_MIN_FREE_PAGES: i64 = 64;
 /// A VACUUM runs when the freelist holds at least this fraction (1/n) of the database's pages.
 const VACUUM_FREE_PAGE_RATIO: i64 = 10;
 
+/// The complete client vault schema, generated from `core/vault/src/sql/SqlConstants.ts` by `core/vault/build.sh`.
+pub const VAULT_SCHEMA_SQL: &str = include_str!("vault_schema.sql");
+
 /// One parameterized SQL statement, as the bindings and the sync engine hand it to a host.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SqlStatement {
@@ -72,6 +75,13 @@ impl MemoryDatabase {
         Ok(Self { conn: Mutex::new(conn) })
     }
 
+    /// Open an empty database on the latest vault schema, foreign keys off so rows can be inserted in any order.
+    pub fn with_latest_schema() -> VaultResult<Self> {
+        let db = Self::with_schema(VAULT_SCHEMA_SQL)?;
+        db.execute_batch("PRAGMA foreign_keys = OFF")?;
+        Ok(db)
+    }
+
     /// Run a SQL script (several statements, no parameters).
     pub fn execute_batch(&self, sql: &str) -> VaultResult<()> {
         self.lock().execute_batch(sql).map_err(sql_error)
@@ -120,6 +130,11 @@ impl MemoryDatabase {
         Ok(conn.serialize(MAIN_DB).map_err(sql_error)?.to_vec())
     }
 
+    /// Run `f` on the connection, holding the lock for the whole call.
+    pub fn with_connection<R>(&self, f: impl FnOnce(&Connection) -> VaultResult<R>) -> VaultResult<R> {
+        f(&self.lock())
+    }
+
     fn lock(&self) -> std::sync::MutexGuard<'_, Connection> {
         self.conn.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
     }
@@ -153,7 +168,7 @@ pub fn deserialize_into(conn: &mut Connection, bytes: &[u8]) -> VaultResult<()> 
     conn.deserialize_read_exact(MAIN_DB, bytes, bytes.len(), false).map_err(sql_error)
 }
 
-fn sql_error(error: rusqlite::Error) -> VaultError {
+pub(crate) fn sql_error(error: rusqlite::Error) -> VaultError {
     VaultError::General(error.to_string())
 }
 

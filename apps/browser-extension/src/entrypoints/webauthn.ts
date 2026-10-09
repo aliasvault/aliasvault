@@ -148,42 +148,6 @@ export default defineUnlistedScript(() => {
           // Create a proper credential object with required methods
           const cred: ProviderCreateCredential = e.detail.credential;
           try {
-            // Decode the attestation object to extract authenticator data
-            const attestationObjectBuffer = base64ToBuffer(cred.attestationObject);
-            const attObjBytes = new Uint8Array(attestationObjectBuffer);
-
-            /*
-             * Simple CBOR parser to extract authData
-             * CBOR map starts with 0xA3 (map with 3 items)
-             * Keys are: "fmt" (0x63), "attStmt" (0x67), "authData" (0x68)
-             */
-            let authDataBuffer = new ArrayBuffer(0);
-            try {
-              // Find "authData" key (0x68 0x61 0x75 0x74 0x68 0x44 0x61 0x74 0x61)
-              const authDataKeyBytes = [0x68, 0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61];
-              for (let i = 0; i < attObjBytes.length - authDataKeyBytes.length; i++) {
-                let match = true;
-                for (let j = 0; j < authDataKeyBytes.length; j++) {
-                  if (attObjBytes[i + j] !== authDataKeyBytes[j]) {
-                    match = false;
-                    break;
-                  }
-                }
-                if (match) {
-                  // Found "authData" key, next byte is the type (0x58 = byte string)
-                  const typeIdx = i + authDataKeyBytes.length;
-                  if (attObjBytes[typeIdx] === 0x58) {
-                    // Next byte is the length
-                    const length = attObjBytes[typeIdx + 1];
-                    authDataBuffer = attObjBytes.slice(typeIdx + 2, typeIdx + 2 + length).buffer;
-                  }
-                  break;
-                }
-              }
-            } catch {
-              // Ignore
-            }
-
             // Create response object with proper prototype
             const response = Object.create(AuthenticatorAttestationResponse.prototype);
             const clientDataJSONBuffer = base64ToBuffer(cred.clientDataJSON);
@@ -195,7 +159,7 @@ export default defineUnlistedScript(() => {
                 configurable: true
               },
               attestationObject: {
-                value: attestationObjectBuffer,
+                value: base64ToBuffer(cred.attestationObject),
                 writable: false,
                 enumerable: true,
                 configurable: true
@@ -216,7 +180,7 @@ export default defineUnlistedScript(() => {
                  * getAuthenticatorData
                  */
                 value: function() : ArrayBuffer {
-                  return authDataBuffer;
+                  return base64ToBuffer(cred.authenticatorData);
                 },
                 writable: true,
                 enumerable: true,
@@ -226,8 +190,8 @@ export default defineUnlistedScript(() => {
                 /**
                  * getPublicKey
                  */
-                value: function() : JsonWebKey | null {
-                  return null;
+                value: function() : ArrayBuffer {
+                  return base64ToBuffer(cred.publicKey);
                 },
                 writable: true,
                 enumerable: true,
@@ -238,7 +202,7 @@ export default defineUnlistedScript(() => {
                  * getPublicKeyAlgorithm
                  */
                 value: function() : number {
-                  return -7; // ES256
+                  return cred.publicKeyAlgorithm;
                 },
                 writable: true,
                 enumerable: true,

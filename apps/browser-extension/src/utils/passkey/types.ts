@@ -11,6 +11,9 @@ export type PasskeyCreateCredentialResponse = {
   rawId: string;                 // base64url (same as id for compatibility)
   clientDataJSON: string;        // base64url encoded client data JSON
   attestationObject: string;     // base64url encoded attestation object (CBOR)
+  authenticatorData: string;     // base64url encoded authenticator data
+  publicKey: string;             // base64url encoded DER SubjectPublicKeyInfo
+  publicKeyAlgorithm: number;    // COSE algorithm of the key
   extensions?: {
     prf?: {
       enabled: boolean;

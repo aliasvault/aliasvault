@@ -121,7 +121,7 @@ public class CredentialIdentityStore {
             let userName = passkey.userName ?? credential.identifier
 
             // Convert passkey.Id to bytes for credentialID
-            let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)
+            let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
 
             // For passkeys, we use the rpId from the passkey itself, not the service URL
             // This is because passkeys are tied to the RP ID, which may differ from the service URL

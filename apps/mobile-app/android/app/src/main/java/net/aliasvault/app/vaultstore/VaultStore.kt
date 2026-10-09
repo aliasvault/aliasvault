@@ -7,14 +7,21 @@ import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.BiometricAuthCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
+import net.aliasvault.app.vaultstore.models.BuiltinLogos
 import net.aliasvault.app.vaultstore.models.Item
+import net.aliasvault.app.vaultstore.models.ItemField
 import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.models.TotpCode
+import net.aliasvault.app.vaultstore.models.VaultDataBucketCategory
 import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONObject
+import uniffi.aliasvault_core.ItemUsageAction
 import uniffi.aliasvault_core.VaultException
+import uniffi.aliasvault_core.VaultItem
 import uniffi.aliasvault_core.rsaDecrypt
+import java.util.Date
+import java.util.UUID
 import kotlin.coroutines.resume
 
 /**
@@ -122,8 +129,6 @@ class VaultStore(
     private val crypto = VaultCrypto(keystoreProvider, storageProvider)
     internal val metadata = VaultMetadataManager(storageProvider)
     internal val database = VaultDatabase(storageProvider, crypto, metadata)
-    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(database)
-    private val itemStatsRepository = net.aliasvault.app.vaultstore.repositories.ItemStatsRepository(database)
     private val auth = VaultAuth(
         storageProvider,
         onClearCache = {
@@ -445,7 +450,7 @@ class VaultStore(
      * as the autofill candidate list.
      */
     fun getAllItems(): List<Item> {
-        return itemRepository.getAll()
+        return database.connection().getAllActiveItems().mapNotNull(::toItem)
     }
 
     /**
@@ -458,7 +463,9 @@ class VaultStore(
             return null
         }
         return try {
-            itemRepository.getTotpForItem(itemId, manifestId)
+            database.connection().getTotpCodesForItem(itemId.lowercase(), manifestId).firstOrNull()?.let {
+                TotpCode(secretKey = it.secretKey, algorithm = it.algorithm, digits = it.digits.toInt(), period = it.period.toInt())
+            }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error getting TOTP code for item", e)
             null
@@ -469,8 +476,35 @@ class VaultStore(
      * Record one use of an item (autofill, copy or passkey assertion) in its usage statistics.
      * Persists the vault and marks it dirty, so the next sync pushes it.
      */
-    fun recordItemUsage(itemId: String, manifestId: String, action: net.aliasvault.app.vaultstore.repositories.ItemUsageAction) {
-        itemStatsRepository.recordUsage(itemId, manifestId, action)
+    fun recordItemUsage(itemId: String, manifestId: String, action: ItemUsageAction) {
+        // Usage statistics live in their own data bucket, pushed without a full manifest write.
+        database.withTransaction(VaultDataBucketCategory.STATS) { db -> db.recordItemUse(itemId.lowercase(), manifestId, action) }
+    }
+
+    /**
+     * An item from the Rust core as the model the autofill layer works with.
+     */
+    private fun toItem(row: VaultItem): Item? {
+        val id = runCatching { UUID.fromString(row.id) }.getOrNull() ?: return null
+        // A built-in logo carries no bytes: it is drawn from the shared catalog, keyed by its Source.
+        val logo = if (row.logoKind == "builtin") row.logoSource?.let { BuiltinLogos.svgFor(it) }?.toByteArray(Charsets.UTF_8) else row.logo
+        return Item(
+            id = id,
+            manifestId = row.manifestId,
+            name = row.name,
+            itemType = row.itemType,
+            logo = logo,
+            folderId = row.folderId?.let { runCatching { UUID.fromString(it) }.getOrNull() },
+            folderPath = row.folderPath.ifEmpty { null },
+            fields = row.fields.map {
+                ItemField(it.fieldKey, it.label, it.fieldType, it.value, it.isHidden, it.displayOrder.toInt(), it.isCustomField, it.enableHistory)
+            },
+            hasPasskey = row.hasPasskey,
+            hasAttachment = row.hasAttachment,
+            hasTotp = row.hasTotp,
+            createdAt = Date(row.createdAtMs),
+            updatedAt = Date(row.updatedAtMs),
+        )
     }
 
     /**
@@ -487,7 +521,7 @@ class VaultStore(
                 unlockVault()
             }
 
-            callback.onSuccess(itemRepository.getAll())
+            callback.onSuccess(getAllItems())
             return true
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error retrieving items", e)
@@ -792,50 +826,23 @@ class VaultStore(
     // region Passkey Methods
 
     /**
-     * Get a passkey by its credential ID (the WebAuthn credential ID).
-     */
-    fun getPasskeyByCredentialId(credentialId: ByteArray): net.aliasvault.app.vaultstore.models.Passkey? {
-        return passkey.getPasskeyByCredentialId(credentialId)
-    }
-
-    /**
-     * Get all passkeys for an item.
-     */
-    fun getPasskeysForItem(itemId: java.util.UUID, manifestId: String): List<net.aliasvault.app.vaultstore.models.Passkey> {
-        return passkey.getPasskeysForItem(itemId, manifestId)
-    }
-
-    /**
-     * Get all passkeys for a specific relying party identifier (RP ID).
-     */
-    fun getPasskeysForRpId(
-        rpId: String,
-    ): List<net.aliasvault.app.vaultstore.models.Passkey> {
-        return passkey.getPasskeysForRpId(rpId)
-    }
-
-    /**
      * Get passkeys with credential info for a specific rpId.
      */
-    fun getPasskeysWithCredentialInfo(
-        rpId: String,
-        userName: String? = null,
-        userId: ByteArray? = null,
-    ): List<net.aliasvault.app.vaultstore.mappers.PasskeyWithItem> {
+    fun getPasskeysWithCredentialInfo(rpId: String, userName: String? = null, userId: ByteArray? = null): List<PasskeyWithItem> {
         return passkey.getPasskeysWithCredentialInfo(rpId, userName, userId)
     }
 
     /**
-     * Get all passkeys with their associated items in a single query.
+     * Get every passkey whose item is live, with the item's name and account.
      */
-    fun getAllPasskeysWithItems(): List<net.aliasvault.app.vaultstore.repositories.PasskeyAndItem> {
+    fun getAllPasskeysWithItems(): List<PasskeyWithItem> {
         return passkey.getAllPasskeysWithItems()
     }
 
     /**
-     * Get a passkey by its ID.
+     * Get a passkey by its ID, in any manifest.
      */
-    fun getPasskeyById(passkeyId: java.util.UUID): net.aliasvault.app.vaultstore.models.Passkey? {
+    fun getPasskeyById(passkeyId: UUID): net.aliasvault.app.vaultstore.models.Passkey? {
         return passkey.getPasskeyById(passkeyId)
     }
 
@@ -848,32 +855,30 @@ class VaultStore(
         displayName: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         logo: ByteArray? = null,
-    ): net.aliasvault.app.vaultstore.models.Item {
-        return passkey.createItemWithPasskey(url, userName, displayName, passkeyObj, logo)
+    ) {
+        passkey.createItemWithPasskey(url, userName, displayName, passkeyObj, logo)
     }
 
     /**
-     * Replace an existing passkey with a new one. The url names the domain the favicon was fetched for.
+     * Replace an existing passkey with a new one on the same item. The url names the domain the favicon was fetched for.
      */
+    @Suppress("LongParameterList") // One argument per value the replacement writes
     fun replacePasskey(
-        oldPasskeyId: java.util.UUID,
+        oldPasskeyId: UUID,
+        manifestId: String,
         newPasskey: net.aliasvault.app.vaultstore.models.Passkey,
         displayName: String,
         url: String,
         logo: ByteArray? = null,
     ) {
-        passkey.replacePasskey(oldPasskeyId, newPasskey, displayName, url, logo)
+        passkey.replacePasskey(oldPasskeyId, manifestId, newPasskey, displayName, url, logo)
     }
 
     /**
      * Get Items that match an rpId but don't have a passkey yet.
      * Used for finding existing credentials that could have a passkey added to them.
      */
-    fun getItemsWithoutPasskeyForRpId(
-        rpId: String,
-        rpName: String? = null,
-        userName: String? = null,
-    ): List<net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo> {
+    fun getItemsWithoutPasskeyForRpId(rpId: String, rpName: String? = null, userName: String? = null): List<ItemWithCredentialInfo> {
         return passkey.getItemsWithoutPasskeyForRpId(rpId, rpName, userName)
     }
 
@@ -882,7 +887,7 @@ class VaultStore(
      * the favicon was fetched for.
      */
     fun addPasskeyToExistingItem(
-        itemId: java.util.UUID,
+        itemId: UUID,
         manifestId: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         url: String,

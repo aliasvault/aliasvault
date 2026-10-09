@@ -8,7 +8,6 @@ import type { Passkey } from '@aliasvault/models/vault';
 
 /**
  * Repository for Passkey CRUD operations.
- * Other platform implementations: PasskeyRepository.swift (iOS), PasskeyRepository.kt (Android), which also write items.
  */
 export class PasskeyRepository extends BaseRepository {
   /**

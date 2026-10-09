@@ -20,10 +20,9 @@ import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
-import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
-import net.aliasvault.app.vaultstore.repositories.ItemUsageAction
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import org.json.JSONObject
+import uniffi.aliasvault_core.ItemUsageAction
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -242,7 +241,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                 }
 
                 // Use PasskeyAuthenticator.getAssertion for signing
-                val credentialId = PasskeyHelper.guidToBytes(passkey.id.toString())
+                val credentialId = PasskeyAuthenticator.guidToBytes(passkey.id.toString())
                 val prfInputs = extractPrfInputs(requestObj)
                 val assertion = PasskeyAuthenticator.getAssertion(
                     credentialId = credentialId,

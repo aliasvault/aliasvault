@@ -142,7 +142,6 @@ export async function buildPasskeyAssertion(
 
   const assertion = await PasskeyAuthenticator.getAssertion(getRequest, storedRecord, {
     uvPerformed: true,
-    includeBEBS: true,
     prfInputs: extractPrfInputs(request.publicKey)
   });
 

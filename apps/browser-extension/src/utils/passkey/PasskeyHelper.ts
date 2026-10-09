@@ -1,14 +1,5 @@
 /**
- * PasskeyHelper
- * -------------------------
- * Utility class for passkey-related operations, including GUID/base64url conversions.
- *
- * This is the reference implementation. Platform-specific ports of this class:
- * - iOS: apps/mobile-app/ios/VaultStoreKit/Passkeys/PasskeyHelper.swift
- * - Android: apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/passkey/PasskeyHelper.kt
- *
- * IMPORTANT: Keep all implementations synchronized. Changes to the public interface must be
- * reflected in all ports. Method names, parameters, and behavior should remain consistent.
+ * Credential id conversions between GUID text, bytes and base64url, plus the base64 helpers of the passkey flow.
  */
 export class PasskeyHelper {
   /**
@@ -102,10 +93,10 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert ArrayBuffer to base64 string (standard base64, not URL-safe)
+   * Convert bytes to a standard (not URL-safe) base64 string
    */
-  public static arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
+  public static arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.length; i++) {
       binary += String.fromCharCode(bytes[i]);

@@ -26,12 +26,11 @@ import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 import net.aliasvault.app.exceptions.PasskeyOperationException
 import net.aliasvault.app.exceptions.VaultOperationException
 import net.aliasvault.app.utils.Helpers
+import net.aliasvault.app.vaultstore.ItemWithCredentialInfo
+import net.aliasvault.app.vaultstore.PasskeyWithItem
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.mappers.PasskeyWithItem
 import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
-import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
-import net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONObject
 import java.util.Date
@@ -287,7 +286,7 @@ class PasskeyFormFragment : Fragment() {
 
             // Generate passkey credentials
             val passkeyId = UUID.randomUUID()
-            val credentialId = PasskeyHelper.guidToBytes(passkeyId.toString())
+            val credentialId = PasskeyAuthenticator.guidToBytes(passkeyId.toString())
 
             // Parse request to get challenge (for building response clientDataJSON later)
             val requestObj = JSONObject(viewModel.requestJson)
@@ -494,7 +493,7 @@ class PasskeyFormFragment : Fragment() {
 
             // Generate new passkey credentials
             val newPasskeyId = UUID.randomUUID()
-            val credentialId = PasskeyHelper.guidToBytes(newPasskeyId.toString())
+            val credentialId = PasskeyAuthenticator.guidToBytes(newPasskeyId.toString())
 
             // Parse request to get challenge
             val requestObj = JSONObject(viewModel.requestJson)
@@ -549,6 +548,7 @@ class PasskeyFormFragment : Fragment() {
 
             vaultStore.replacePasskey(
                 oldPasskeyId = passkeyToReplace.passkey.id,
+                manifestId = requireNotNull(passkeyToReplace.passkey.manifestId),
                 newPasskey = newPasskey,
                 displayName = displayName,
                 url = url,
@@ -706,7 +706,7 @@ class PasskeyFormFragment : Fragment() {
 
             // Generate passkey credentials
             val passkeyId = UUID.randomUUID()
-            val credentialId = PasskeyHelper.guidToBytes(passkeyId.toString())
+            val credentialId = PasskeyAuthenticator.guidToBytes(passkeyId.toString())
 
             // Parse request to get challenge
             val requestObj = JSONObject(viewModel.requestJson)

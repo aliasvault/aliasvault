@@ -7,5 +7,6 @@ export default defineConfig({
   ],
   test: {
     exclude: ['**/node_modules/**', '**/tests/**'],
+    setupFiles: ['./vitest.setup.ts'],
   },
 });

@@ -8,6 +8,7 @@ use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
 use crate::common::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 use crate::vault_codec::{self, CanonicalizeInput};
+use crate::vault_items;
 
 /// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
@@ -375,10 +376,10 @@ impl SqliteMemoryDatabase {
         Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::from_bytes(&bytes)? }))
     }
 
-    /// Open an empty database and run a schema script on it.
+    /// Open an empty database on the latest vault schema, foreign keys off.
     #[uniffi::constructor]
-    pub fn with_schema(schema_sql: String) -> Result<std::sync::Arc<Self>, VaultError> {
-        Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::with_schema(&schema_sql)? }))
+    pub fn with_latest_schema() -> Result<std::sync::Arc<Self>, VaultError> {
+        Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::with_latest_schema()? }))
     }
 
     /// Run a SQL script without parameters.
@@ -414,3 +415,127 @@ impl SqliteMemoryDatabase {
     }
 }
 
+
+/// Item, passkey and usage-statistics operations on the open vault. Writes open no transaction of their own:
+/// the host wraps each call in the transaction whose commit persists the vault.
+#[uniffi::export]
+impl SqliteMemoryDatabase {
+    /// Every active item (not deleted, trashed or archived) with its fields and folder path, newest first.
+    pub fn get_all_active_items(&self) -> Result<Vec<vault_items::VaultItem>, VaultError> {
+        self.inner.with_connection(vault_items::get_all_active_items)
+    }
+
+    /// The live TOTP codes of one item.
+    pub fn get_totp_codes_for_item(&self, item_id: String, manifest_id: String) -> Result<Vec<vault_items::VaultTotpCode>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_totp_codes_for_item(conn, &item_id, &manifest_id))
+    }
+
+    /// Append one value to a system field of an item and return the rows inserted.
+    pub fn append_field_value(&self, item_id: String, manifest_id: String, field_key: String, value: String) -> Result<u64, VaultError> {
+        self.inner.with_connection(|conn| vault_items::append_field_value(conn, &item_id, &manifest_id, &field_key, &value))
+    }
+
+    /// The passkey with this credential id in any manifest.
+    pub fn get_passkey_by_id(&self, passkey_id: String) -> Result<Option<vault_items::VaultPasskeyWithItem>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_passkey_by_id(conn, &passkey_id))
+    }
+
+    /// The passkey with this id inside one manifest.
+    pub fn get_passkey_in_manifest(&self, passkey_id: String, manifest_id: String) -> Result<Option<vault_items::VaultPasskeyWithItem>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_passkey_in_manifest(conn, &passkey_id, &manifest_id))
+    }
+
+    /// The passkeys of one item, newest first.
+    pub fn get_passkeys_for_item(&self, item_id: String, manifest_id: String) -> Result<Vec<vault_items::VaultPasskey>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_passkeys_for_item(conn, &item_id, &manifest_id))
+    }
+
+    /// The passkeys for a relying party, narrowed to an account when a user name or handle is given.
+    pub fn get_passkeys_for_rp_id(&self, rp_id: String, user_name: Option<String>, user_handle: Option<Vec<u8>>) -> Result<Vec<vault_items::VaultPasskeyWithItem>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_passkeys_for_rp_id(conn, &rp_id, user_name.as_deref(), user_handle.as_deref()))
+    }
+
+    /// Every passkey whose item is live.
+    pub fn get_all_passkeys_with_items(&self) -> Result<Vec<vault_items::VaultPasskeyWithItem>, VaultError> {
+        self.inner.with_connection(vault_items::get_all_passkeys_with_items)
+    }
+
+    /// The Login items without a passkey that match a relying party, best match first.
+    pub fn get_items_without_passkey_for_rp_id(&self, rp_id: String, rp_name: Option<String>, user_name: Option<String>) -> Result<Vec<vault_items::PasskeyMergeCandidate>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_items_without_passkey_for_rp_id(conn, &rp_id, rp_name.as_deref(), user_name.as_deref()))
+    }
+
+    /// Create a Login item in a manifest that holds a new passkey, with its URL, username and favicon.
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_item_with_passkey(
+        &self,
+        manifest_id: String,
+        item_id: String,
+        item_name: String,
+        url: String,
+        user_name: Option<String>,
+        passkey: vault_items::NewPasskey,
+        logo: Option<Vec<u8>>,
+    ) -> Result<(), VaultError> {
+        self.inner.with_connection(|conn| vault_items::create_item_with_passkey(conn, &manifest_id, &item_id, &item_name, &url, user_name.as_deref(), &passkey, logo.as_deref()))
+    }
+
+    /// Add a new passkey to an existing item, refreshing its favicon for `url`.
+    pub fn add_passkey_to_item(&self, item_id: String, manifest_id: String, passkey: vault_items::NewPasskey, url: String, logo: Option<Vec<u8>>) -> Result<(), VaultError> {
+        self.inner.with_connection(|conn| vault_items::add_passkey_to_item(conn, &item_id, &manifest_id, &passkey, &url, logo.as_deref()))
+    }
+
+    /// Replace a passkey with a new one on the same item and return the item id.
+    pub fn replace_passkey(&self, old_passkey_id: String, manifest_id: String, passkey: vault_items::NewPasskey, url: String, logo: Option<Vec<u8>>) -> Result<String, VaultError> {
+        self.inner.with_connection(|conn| vault_items::replace_passkey(conn, &old_passkey_id, &manifest_id, &passkey, &url, logo.as_deref()))
+    }
+
+    /// Record one use of an item; false when the item does not exist.
+    pub fn record_item_use(&self, item_id: String, manifest_id: String, action: vault_items::ItemUsageAction) -> Result<bool, VaultError> {
+        self.inner.with_connection(|conn| vault_items::record_item_use(conn, &item_id, &manifest_id, action))
+    }
+}
+
+/// The first passkey algorithm (COSE id) in the relying party's order that the authenticator supports; ES256 for an empty list.
+#[uniffi::export]
+pub fn passkey_pick_algorithm(requested: Vec<i64>) -> Result<i64, VaultError> {
+    crate::passkey::pick_algorithm(&requested)
+}
+
+/// Create a passkey: a fresh key pair, the "none" attestation object, and a PRF secret when `enable_prf` is set.
+#[uniffi::export]
+pub fn passkey_create(
+    credential_id: Vec<u8>,
+    rp_id: String,
+    algorithm: i64,
+    uv_performed: bool,
+    enable_prf: bool,
+    prf_inputs: Option<crate::passkey::PasskeyPrfInputs>,
+) -> Result<crate::passkey::PasskeyCreation, VaultError> {
+    crate::passkey::create_passkey(&credential_id, &rp_id, algorithm, uv_performed, enable_prf, prf_inputs.as_ref(), None)
+}
+
+/// Sign a passkey assertion with a stored private key JWK.
+#[uniffi::export]
+pub fn passkey_get_assertion(
+    rp_id: String,
+    client_data_hash: Vec<u8>,
+    private_key_jwk: String,
+    uv_performed: bool,
+    prf_inputs: Option<crate::passkey::PasskeyPrfInputs>,
+    prf_secret: Option<Vec<u8>>,
+) -> Result<crate::passkey::PasskeyAssertion, VaultError> {
+    crate::passkey::get_assertion(&rp_id, &client_data_hash, &private_key_jwk, uv_performed, prf_inputs.as_ref(), prf_secret.as_deref())
+}
+
+/// The 16 bytes of a passkey credential id from its GUID text.
+#[uniffi::export]
+pub fn passkey_guid_to_bytes(guid: String) -> Result<Vec<u8>, VaultError> {
+    crate::passkey::guid_to_bytes(&guid)
+}
+
+/// The lowercase GUID text of a 16-byte passkey credential id.
+#[uniffi::export]
+pub fn passkey_bytes_to_guid(bytes: Vec<u8>) -> Result<String, VaultError> {
+    crate::passkey::bytes_to_guid(&bytes)
+}

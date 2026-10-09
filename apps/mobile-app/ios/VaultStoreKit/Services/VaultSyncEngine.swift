@@ -319,10 +319,7 @@ public final class VaultSyncEngine {
     /// Open a fresh staging database in memory with the current client schema.
     private func openStaging() throws {
         closeStaging()
-        let opened = try SqliteMemoryDatabase.withSchema(schemaSql: VaultSql.completeSchema)
-        // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
-        try opened.executeBatch(sql: "PRAGMA foreign_keys = OFF")
-        staging = opened
+        staging = try SqliteMemoryDatabase.withLatestSchema()
     }
 
     private func closeStaging() {

@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.rustcore.JnaInitializer
 import net.aliasvault.app.utils.AppInfo
-import net.aliasvault.app.vaultstore.models.VaultSql
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONArray
@@ -317,10 +316,7 @@ class VaultSyncEngine(
      */
     private fun openStaging() {
         closeStaging()
-        staging = SqliteMemoryDatabase.withSchema(VaultSql.completeSchema).also {
-            // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
-            it.executeBatch("PRAGMA foreign_keys = OFF")
-        }
+        staging = SqliteMemoryDatabase.withLatestSchema()
     }
 
     private fun closeStaging() {

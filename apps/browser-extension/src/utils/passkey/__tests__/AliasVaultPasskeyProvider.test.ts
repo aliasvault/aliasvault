@@ -682,47 +682,6 @@ describe('PasskeyAuthenticator', () => {
       expect(assertion.userHandle).toBeNull();
     });
 
-    it('should not set BE/BS flags when includeBEBS is false', async () => {
-      // Create passkey
-      const createRequest: CreateRequest = {
-        origin: 'https://example.com',
-        publicKey: {
-          challenge: 'create-challenge',
-          pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
-        }
-      };
-
-      const credentialIdBytes = crypto.getRandomValues(new Uint8Array(16));
-      const createResult = await PasskeyAuthenticator.createPasskey(credentialIdBytes, createRequest);
-      storedPasskeys.set(createResult.credential.id, createResult.stored);
-
-      // Authenticate without BE/BS flags
-      const getRequest: GetRequest = {
-        origin: 'https://example.com',
-        publicKey: {
-          challenge: 'auth-challenge'
-        }
-      };
-
-      const storedRecord = storedPasskeys.get(createResult.credential.id)!;
-      const assertion = await PasskeyAuthenticator.getAssertion(getRequest, storedRecord, {
-        includeBEBS: false
-      });
-
-      // Decode authenticatorData and check flags
-      const authDataBytes = Uint8Array.from(fromBase64url(assertion.authenticatorData), c => c.charCodeAt(0));
-      const flags = authDataBytes[32];
-
-      // Should not have BE (0x08) or BS (0x10) set
-      expect(flags & 0x08).toBe(0x00);
-      expect(flags & 0x10).toBe(0x00);
-
-      // Should still have UP (0x01) set
-      expect(flags & 0x01).toBe(0x01);
-    });
-  });
-
-  describe('Storage callbacks verification', () => {
     it('should call store callback with userId when creating passkey', async () => {
       const userIdBytes = new Uint8Array([10, 20, 30, 40]);
       const createRequest: CreateRequest = {
@@ -850,6 +809,52 @@ describe('PasskeyAuthenticator', () => {
   });
 
   describe('Cross-verification', () => {
+    it.each([
+      { alg: -7, importParams: { name: 'ECDSA', namedCurve: 'P-256' } as EcKeyImportParams, verifyParams: { name: 'ECDSA', hash: 'SHA-256' } as EcdsaParams },
+      { alg: -257, importParams: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' } as RsaHashedImportParams, verifyParams: { name: 'RSASSA-PKCS1-v1_5' } as AlgorithmIdentifier }
+    ])('should hand the page the authenticator data, SPKI public key and algorithm for alg $alg', async ({ alg, importParams, verifyParams }) => {
+      const createRequest: CreateRequest = {
+        origin: 'https://example.com',
+        publicKey: {
+          rp: { id: 'example.com' },
+          challenge: 'create-challenge',
+          pubKeyCredParams: [{ type: 'public-key', alg }]
+        }
+      };
+
+      const createResult = await PasskeyAuthenticator.createPasskey(crypto.getRandomValues(new Uint8Array(16)), createRequest);
+      const { response } = createResult.credential;
+      expect(response.publicKeyAlgorithm).toBe(alg);
+
+      // The authenticator data is the tail of the attestation object, after its authData byte-string header.
+      const attestationObject = fromBase64url(response.attestationObject);
+      expect(attestationObject.endsWith(fromBase64url(response.authenticatorData))).toBe(true);
+
+      // The SPKI key verifies an assertion made with the stored private key.
+      const spki = Uint8Array.from(fromBase64url(response.publicKey), c => c.charCodeAt(0));
+      const publicKey = await crypto.subtle.importKey('spki', spki, importParams, false, ['verify']);
+      const getRequest: GetRequest = { origin: 'https://example.com', publicKey: { rpId: 'example.com', challenge: 'auth-challenge' } };
+      const assertion = await PasskeyAuthenticator.getAssertion(getRequest, createResult.stored);
+
+      const authData = Uint8Array.from(fromBase64url(assertion.authenticatorData), c => c.charCodeAt(0));
+      const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fromBase64url(assertion.clientDataJSON))));
+      let signature = Uint8Array.from(fromBase64url(assertion.signature), c => c.charCodeAt(0));
+      if (alg === -7) {
+        // WebCrypto verifies ECDSA over raw r||s, not DER.
+        const rLength = signature[3];
+        const r = signature.slice(4, 4 + rLength);
+        const s = signature.slice(6 + rLength, 6 + rLength + signature[5 + rLength]);
+        /**
+         * One DER integer as 32 big-endian bytes.
+         * @param v - The integer bytes
+         * @returns The padded or trimmed bytes
+         */
+        const pad = (v: Uint8Array): Uint8Array => (v.length > 32 ? v.slice(v.length - 32) : new Uint8Array([...new Uint8Array(32 - v.length), ...v]));
+        signature = new Uint8Array([...pad(r), ...pad(s)]);
+      }
+      expect(await crypto.subtle.verify(verifyParams, publicKey, signature, new Uint8Array([...authData, ...clientDataHash]))).toBe(true);
+    });
+
     it('should verify signature with public key', async () => {
       // Create passkey
       const createRequest: CreateRequest = {

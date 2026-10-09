@@ -118,7 +118,7 @@ function emitRust(registry) {
 //! ${TS_SOURCE_REL} by ${GENERATOR_REL}.
 //! Edit the TypeScript source and run 'core/models/build.sh' to regenerate.
 
-use super::{BlobColumn, TableConfig};
+use super::{BlobColumn, SystemField, TableConfig};
 
 /// All tables that need LWW merge, in registry order. Order matters: a merge inserts rows
 /// in this order, so child tables must be listed after the table they reference (Items first).
@@ -159,6 +159,11 @@ pub static PERSONAL_TABLES: &[&str] = &[${registry.VAULT_PERSONAL_TABLES.map((t)
 /// (IsMultiValue). A value of such a field owns its row id (two devices each adding a value are
 /// adding two different things) and is not derived.
 pub static MULTI_VALUE_FIELD_KEYS: &[&str] = ${rustStrSlice(registry.MULTI_VALUE_FIELD_KEYS)};
+
+/// The system fields and their metadata, from SystemFieldRegistry, in registry order.
+pub static SYSTEM_FIELDS: &[SystemField] = &[
+${Object.values(registry.SystemFieldRegistry).map((f) => `    SystemField { key: "${f.FieldKey}", field_type: "${f.FieldType}", is_hidden: ${f.IsHidden}, is_multi_value: ${f.IsMultiValue}, enable_history: ${f.EnableHistory}, default_display_order: ${f.DefaultDisplayOrder} },`).join('\n')}
+];
 
 /// System field keys whose field holds one value. A key in neither list is a field this build does
 /// not know (a newer writer's), whose rows the codec leaves as it found them.

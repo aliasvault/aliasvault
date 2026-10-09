@@ -18,6 +18,22 @@ pub fn ids_equal(a: &str, b: &str) -> bool {
     a.trim().eq_ignore_ascii_case(b.trim())
 }
 
+/// A system field and the metadata every client reads it with.
+#[derive(Debug, Clone)]
+pub struct SystemField {
+    pub key: &'static str,
+    pub field_type: &'static str,
+    pub is_hidden: bool,
+    pub is_multi_value: bool,
+    pub enable_history: bool,
+    pub default_display_order: i64,
+}
+
+/// The system field with this key (case-insensitive), or None for a key this build does not know.
+pub fn system_field(key: &str) -> Option<&'static SystemField> {
+    SYSTEM_FIELDS.iter().find(|field| field.key.eq_ignore_ascii_case(key))
+}
+
 /// A column whose bytes are extracted into a content-addressed blob.
 #[derive(Debug, Clone)]
 pub struct BlobColumn {

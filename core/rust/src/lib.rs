@@ -31,6 +31,8 @@ pub mod identity_generator;
 pub mod crypto;
 pub mod vault_sync;
 pub mod sqlite_host;
+pub mod vault_items;
+pub mod passkey;
 
 pub use common::error::VaultError;
 

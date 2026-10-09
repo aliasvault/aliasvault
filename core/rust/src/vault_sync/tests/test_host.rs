@@ -45,13 +45,9 @@ pub struct TestHost {
     pub logs: Vec<String>,
 }
 
-/// The current client schema, read from the TypeScript source of truth.
+/// The current client schema.
 pub fn complete_schema_sql() -> String {
-    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../vault/src/sql/SqlConstants.ts");
-    let source = std::fs::read_to_string(path).expect("core/vault/src/sql/SqlConstants.ts");
-    let start = source.find("COMPLETE_SCHEMA_SQL = `").expect("COMPLETE_SCHEMA_SQL") + "COMPLETE_SCHEMA_SQL = `".len();
-    let end = source[start..].find("`;").expect("end of template literal") + start;
-    source[start..end].replace('\u{feff}', "")
+    sqlite_host::VAULT_SCHEMA_SQL.to_string()
 }
 
 /// Open a database from its file bytes, in memory.

@@ -73,7 +73,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             }
 
             // Generate assertion
-            let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)
+            let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
             let assertion = try PasskeyAuthenticator.getAssertion(
                 credentialId: credentialId ?? Data(),
                 clientDataHash: clientDataHash,
@@ -457,12 +457,11 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 // Step 3: Create passkey credentials
                 let itemId = UUID()  // Item ID that will contain the passkey
                 let passkeyId = UUID()  // Passkey credential ID
-                let credentialId = try PasskeyHelper.guidToBytes(passkeyId.uuidString)
+                let credentialId = try PasskeyAuthenticator.guidToBytes(passkeyId.uuidString)
 
                 // Create the passkey using PasskeyAuthenticator
                 let passkeyResult = try PasskeyAuthenticator.createPasskey(
                     credentialId: credentialId,
-                    clientDataHash: clientDataHash,
                     rpId: rpId,
                     userId: userId,
                     userName: userName,
@@ -604,7 +603,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         prfInputs: PrfInputs? = nil
     ) throws {
         // Generate assertion using PasskeyAuthenticator
-        let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)
+        let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
 
         let assertion = try PasskeyAuthenticator.getAssertion(
             credentialId: credentialId ?? Data(),

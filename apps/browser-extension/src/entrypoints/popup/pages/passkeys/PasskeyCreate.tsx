@@ -313,7 +313,6 @@ const PasskeyCreate: React.FC = () => {
       // Create passkey using static method (generates keys and credential ID)
       const result = await PasskeyAuthenticator.createPasskey(newPasskeyGuidBytes, createRequest, {
         uvPerformed: true,
-        credentialIdBytes: 16,
         enablePrf,
         prfInputs: prfEvalInputs // Pass PRF evaluation salts if provided
       });
@@ -473,6 +472,9 @@ const PasskeyCreate: React.FC = () => {
         rawId: newPasskeyGuidBase64url,
         clientDataJSON: credential.response.clientDataJSON,
         attestationObject: credential.response.attestationObject,
+        authenticatorData: credential.response.authenticatorData,
+        publicKey: credential.response.publicKey,
+        publicKeyAlgorithm: credential.response.publicKeyAlgorithm,
         extensions: prfExtensionResponse
       };
 

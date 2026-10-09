@@ -4,9 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import net.aliasvault.app.utils.Helpers
-import net.aliasvault.app.vaultstore.models.Item
-import net.aliasvault.app.vaultstore.models.Passkey
-import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
+import net.aliasvault.app.vaultstore.PasskeyWithItem
+import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -98,11 +97,7 @@ class CredentialIdentityStore private constructor(context: Context) {
             // This replaces the N+1 query pattern that was calling getPasskeysForItem() for each item
             val passkeysWithItems = vaultStore.getAllPasskeysWithItems()
 
-            passkeysWithItems.forEach { (passkey, item) ->
-                if (!passkey.isDeleted) {
-                    passkeyIdentities.add(createPasskeyIdentity(passkey, item))
-                }
-            }
+            passkeysWithItems.forEach { passkeyIdentities.add(createPasskeyIdentity(it)) }
 
             // Serialize to JSON and save
             val jsonArray = JSONArray()
@@ -178,14 +173,15 @@ class CredentialIdentityStore private constructor(context: Context) {
     }
 
     /**
-     * Create a PasskeyIdentity from a Passkey and its parent Item.
+     * Create a PasskeyIdentity from a passkey and the account of its item.
      */
-    private fun createPasskeyIdentity(passkey: Passkey, item: Item): PasskeyIdentity {
-        // Get userName - prefer passkey's userName, fallback to item's username or email fields
-        val userName = passkey.userName ?: item.username ?: item.email
+    private fun createPasskeyIdentity(entry: PasskeyWithItem): PasskeyIdentity {
+        val passkey = entry.passkey
+        // Get userName - prefer passkey's userName, fallback to the item's username or email
+        val userName = passkey.userName ?: entry.username ?: entry.email
 
         // Convert passkey ID to credential ID (base64url-encoded bytes)
-        val credentialIdBytes = PasskeyHelper.guidToBytes(passkey.id.toString())
+        val credentialIdBytes = PasskeyAuthenticator.guidToBytes(passkey.id.toString())
         val credentialId = Helpers.bytesToBase64url(credentialIdBytes)
 
         // Convert user handle to base64url if present

@@ -14,7 +14,7 @@ import net.aliasvault.app.autofill.models.FieldType
 import net.aliasvault.app.autofill.utils.AutofillFieldMapper
 import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.repositories.ItemUsageAction
+import uniffi.aliasvault_core.ItemUsageAction
 
 /**
  * Transparent activity launched by the OS when the user picks an autofill

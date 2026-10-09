@@ -26,11 +26,14 @@ impl fmt::Debug for RsaKeyPair {
     }
 }
 
-/// The JWK fields WebCrypto emits for an RSA-OAEP-256 key. Optional members are absent on a public key.
+/// The JWK fields WebCrypto emits for an RSA-OAEP-256 key.
 #[derive(Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 struct RsaJwk {
+    #[serde(default)]
     key_ops: Vec<String>,
+    #[serde(default)]
     ext: bool,
+    #[serde(default)]
     alg: String,
     kty: String,
     n: String,
@@ -110,7 +113,7 @@ fn public_from_jwk(jwk: &str) -> VaultResult<RsaPublicKey> {
     RsaPublicKey::new(field(&parsed.n)?, field(&parsed.e)?).map_err(|e| VaultError::General(format!("Invalid RSA public key: {}", e)))
 }
 
-fn private_from_jwk(jwk: &str) -> VaultResult<RsaPrivateKey> {
+pub(crate) fn private_from_jwk(jwk: &str) -> VaultResult<RsaPrivateKey> {
     let parsed = parse_jwk(jwk)?;
     let d = parsed.d.as_deref().ok_or_else(|| VaultError::General("JWK is not a private key".to_string()))?;
     let p = parsed.p.as_deref().ok_or_else(|| VaultError::General("JWK private key is missing p".to_string()))?;

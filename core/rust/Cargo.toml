@@ -60,7 +60,9 @@ sha1 = "0.10"
 
 # AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
 aes-gcm = "0.10"
-rsa = "0.9"
+rsa = { version = "0.9", features = ["sha2"] }
+# ECDSA P-256 (ES256 passkeys)
+p256 = { version = "0.13", default-features = false, features = ["alloc", "ecdsa", "pkcs8", "std"] }
 rand_core06 = { package = "rand_core", version = "0.6", features = ["getrandom"] }
 
 # Wipes key material from memory on drop

@@ -3,9 +3,12 @@ import RustCoreFramework
 import VaultModels
 import VaultUtils
 
+/// A query parameter: nil, String, Int, Int64, Double, Bool, Data, SqlValue, or a base64 string behind `av-base64-to-blob:`.
+public typealias SqliteBindValue = Any?
+
 /// Extension for the VaultStore class to handle query management
 extension VaultStore {
-    // MARK: - Core Database Operations (DatabaseClient Protocol)
+    // MARK: - Core Database Operations
 
     /// Prefix repositories put in front of base64 text to bind it as a BLOB.
     private static let blobParamPrefix = "av-base64-to-blob:"
@@ -130,32 +133,83 @@ extension VaultStore {
         }
     }
 
-    // MARK: - Items (Using Repository Pattern)
-
-    /// Get all active items from the database using the field-based model.
-    /// Delegates to ItemRepository for the actual query logic.
-    public func getAllItems() throws -> [Item] {
-        return try itemRepository.getAll()
+    /// Run `operation` in a transaction whose commit persists the vault and marks it dirty for `scope`.
+    internal func withTransaction<T>(scope: String = VaultMutationScope.main, _ operation: () throws -> T) throws -> T {
+        try beginTransaction()
+        do {
+            let result = try operation()
+            try commitTransaction(scope: scope)
+            return result
+        } catch {
+            try? rollbackTransaction()
+            throw error
+        }
     }
 
-    /// Append a URL to an existing credential's `login.url` multi-value field
-    /// without disturbing existing URLs on the credential. Caller is responsible
-    /// for kicking off `mutateVault(using:)` afterwards to push the change.
+    // MARK: - Items
+
+    /// Get all active items (not deleted, trashed or archived) with their fields and folder paths, newest first.
+    public func getAllItems() throws -> [Item] {
+        return try requireDatabase().getAllActiveItems().compactMap(Self.item(from:))
+    }
+
+    /// Append a URL to an existing credential's `login.url` values without touching its other URLs. The caller
+    /// starts `mutateVault(using:)` afterwards to push the change.
     /// - Parameters:
     ///   - itemId: The UUID of the credential to append to
     ///   - manifestId: The manifest the credential belongs to
     ///   - url: The URL or app package identifier to add
     public func appendUrl(toItemId itemId: UUID, manifestId: String, url: String) throws {
-        try itemRepository.appendFieldValue(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, fieldKey: FieldKey.loginUrl, value: url)
+        try withTransaction {
+            _ = try requireDatabase().appendFieldValue(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, fieldKey: FieldKey.loginUrl, value: url)
+        }
     }
 
-    /// Record one use of an item in its ItemStats row. Runs in a transaction, so the vault is persisted and marked dirty.
+    /// Record one use of an item in its ItemStats row, in its own transaction so the vault is persisted and marked dirty.
     /// - Parameters:
     ///   - itemId: The item that was used
     ///   - manifestId: The manifest the item belongs to
     ///   - action: What the user did with it
     public func recordItemUsage(itemId: UUID, manifestId: String, action: ItemUsageAction) throws {
-        try itemStatsRepository.recordUsage(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, action: action)
+        // Usage statistics live in their own data bucket, pushed without a full manifest write.
+        try withTransaction(scope: VaultDataBucketCategory.stats) {
+            _ = try requireDatabase().recordItemUse(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, action: action)
+        }
+    }
+
+    /// An item from the Rust core as the model the autofill layer works with.
+    private static func item(from row: VaultItem) -> Item? {
+        guard let id = UUID(uuidString: row.id) else { return nil }
+
+        // A built-in logo carries no bytes: it is drawn from the shared catalog, keyed by its Source.
+        let logo = row.logoKind == "builtin" ? row.logoSource.flatMap { BuiltinLogos.svg(for: $0)?.data(using: .utf8) } : row.logo
+        let fields = row.fields.map {
+            ItemField(
+                fieldKey: $0.fieldKey,
+                label: $0.label,
+                fieldType: $0.fieldType,
+                value: $0.value,
+                isHidden: $0.isHidden,
+                displayOrder: Int($0.displayOrder),
+                isCustomField: $0.isCustomField,
+                enableHistory: $0.enableHistory
+            )
+        }
+        return Item(
+            id: id,
+            manifestId: row.manifestId,
+            name: row.name,
+            itemType: row.itemType,
+            logo: logo,
+            folderId: row.folderId.flatMap { UUID(uuidString: $0) },
+            folderPath: row.folderPath.isEmpty ? nil : row.folderPath,
+            fields: fields,
+            hasPasskey: row.hasPasskey,
+            hasAttachment: row.hasAttachment,
+            hasTotp: row.hasTotp,
+            createdAt: date(row.createdAtMs),
+            updatedAt: date(row.updatedAtMs)
+        )
     }
 
     // MARK: - Autofill Credentials
@@ -192,6 +246,9 @@ extension VaultStore {
     /// - Returns: Optional TotpCode if one exists
     /// - Throws: Database errors
     public func getFirstTotpCode(forItemId itemId: UUID, manifestId: String) throws -> TotpCode? {
-        return try totpRepository.getFirstTotpCodeForItem(itemId, manifestId: manifestId)
+        guard let row = try requireDatabase().getTotpCodesForItem(itemId: itemId.uuidString.lowercased(), manifestId: manifestId).first, let id = UUID(uuidString: row.id) else {
+            return nil
+        }
+        return TotpCode(id: id, name: row.name, secretKey: row.secretKey, algorithm: row.algorithm, digits: Int(row.digits), period: Int(row.period), itemId: itemId, isDeleted: false)
     }
 }

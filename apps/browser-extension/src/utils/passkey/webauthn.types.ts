@@ -11,6 +11,9 @@ export type ProviderCreateCredential = {
   rawId: string;
   clientDataJSON: string;
   attestationObject: string;
+  authenticatorData: string;
+  publicKey: string;
+  publicKeyAlgorithm: number;
   extensions?: ProviderCreateCredentialExtensions;
 };
 

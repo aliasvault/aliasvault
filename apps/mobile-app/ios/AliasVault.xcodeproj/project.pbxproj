@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A7D10C012F000000000F0004 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		07A10A71081ED4937FFAA625 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -21,6 +20,7 @@
 		835999B8CD9DA8BC5D467BA1 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		905A3FBFD11ECE1AAC428868 /* RustCoreFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E8B9B9318C79E9CBB868429 /* libPods-VaultStoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D17078F549B652835E3A4AFA /* libPods-VaultStoreKit.a */; };
+		A7D10C012F000000000F0004 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		B00629AD90FABE8F65D64107 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		B2E3CEC9AABDA3497BFE65B7 /* libPods-VaultStoreKitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9AD944E3A0F270C797F5DD /* libPods-VaultStoreKitTests.a */; };
@@ -58,13 +58,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		A7D10C012F000000000F0005 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
-			remoteInfo = RustCoreFramework;
-		};
 		1F09A0CB86D87B7C44135D75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -73,6 +66,13 @@
 			remoteInfo = RustCoreFramework;
 		};
 		438C62A9BB3AAF42A6633996 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
+		A7D10C012F000000000F0005 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
@@ -262,7 +262,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */ = {
+		CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -272,73 +272,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE77825E2EA1822400A75E6F /* VaultUtils */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUtils;
-			sourceTree = "<group>";
-		};
-		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKit;
-			sourceTree = "<group>";
-		};
-		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKitTests;
-			sourceTree = "<group>";
-		};
-		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUI;
-			sourceTree = "<group>";
-		};
-		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultModels;
-			sourceTree = "<group>";
-		};
-		CEE909812DA548C7008D568F /* Autofill */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = Autofill;
-			sourceTree = "<group>";
-		};
+		CE77825E2EA1822400A75E6F /* VaultUtils */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUtils; sourceTree = "<group>"; };
+		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKit; sourceTree = "<group>"; };
+		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKitTests; sourceTree = "<group>"; };
+		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUI; sourceTree = "<group>"; };
+		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultModels; sourceTree = "<group>"; };
+		CEE909812DA548C7008D568F /* Autofill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Autofill; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -490,7 +429,7 @@
 			path = Generated;
 			sourceTree = "<group>";
 		};
-		6114AD0A31612EA499210371 /*  */ = {
+		6114AD0A31612EA499210371 = {
 			isa = PBXGroup;
 			children = (
 				8F8258CE46969A87661E0302 /* RustCore.swift */,
@@ -525,7 +464,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				83CBBA001A601CBA00E9B192 /* Products */,
-				6114AD0A31612EA499210371 /*  */,
+				6114AD0A31612EA499210371,
 				CE5212B62F0C061800F4C835 /* Recovered References */,
 				3AD00C41DD88E219A26C2E41 /* RustCoreFramework */,
 			);
@@ -1378,12 +1317,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		A7D10C012F000000000F0006 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = RustCoreFramework;
-			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
-			targetProxy = A7D10C012F000000000F0005 /* PBXContainerItemProxy */;
-		};
 		174AAF666366E11F87CAB46E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RustCoreFramework;
@@ -1395,6 +1328,12 @@
 			name = RustCoreFramework;
 			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
 			targetProxy = DEAC25BDB7E709F0299B67EA /* PBXContainerItemProxy */;
+		};
+		A7D10C012F000000000F0006 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = A7D10C012F000000000F0005 /* PBXContainerItemProxy */;
 		};
 		CE48FD662DBEA3B800E5E3D6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1656,10 +1595,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -1722,10 +1658,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;

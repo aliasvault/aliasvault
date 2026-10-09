@@ -177,6 +177,21 @@ class VaultDatabase(
     }
 
     /**
+     * Run [operation] in a transaction whose commit persists the vault and marks it dirty for [scope].
+     */
+    fun <T> withTransaction(scope: String = VaultMutationScope.MAIN, operation: (SqliteMemoryDatabase) -> T): T {
+        beginTransaction()
+        return try {
+            val result = operation(connection())
+            commitTransaction(scope)
+            result
+        } catch (e: Exception) {
+            rollbackTransaction()
+            throw e
+        }
+    }
+
+    /**
      * Persist the in-memory database and mark it as changed locally, without committing a SQL transaction.
      * Used after migrations, whose scripts manage their own transactions.
      * @param scope What the mutation touched, so the next sync can push only that scope

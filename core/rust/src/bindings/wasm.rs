@@ -478,3 +478,74 @@ mod sqlite_js {
         rows.into()
     }
 }
+
+/// Passkey authenticator bindings for the browser extension. Results are plain objects with Uint8Array bytes.
+mod passkey_js {
+    use js_sys::{Object, Reflect, Uint8Array};
+    use wasm_bindgen::prelude::*;
+
+    use super::js_err;
+    use crate::passkey::{self, PasskeyPrfInputs, PasskeyPrfResults};
+
+    /// The first algorithm (COSE id) in the relying party's order that the authenticator supports; ES256 for an empty list.
+    #[wasm_bindgen(js_name = passkeyPickAlgorithm)]
+    pub fn pick_algorithm(requested: Vec<i32>) -> Result<i32, JsValue> {
+        let requested: Vec<i64> = requested.into_iter().map(i64::from).collect();
+        passkey::pick_algorithm(&requested).map(|alg| alg as i32).map_err(js_err)
+    }
+
+    /// Create a passkey: `{ attestationObject, authenticatorData, publicKeyJwk, publicKeySpki, privateKeyJwk, prfSecret, prfResults }`.
+    /// With `selfAttestationClientDataHash` the attestation is "packed" self-attestation, otherwise "none".
+    #[wasm_bindgen(js_name = passkeyCreate)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn create(
+        credential_id: &[u8],
+        rp_id: &str,
+        algorithm: i32,
+        uv_performed: bool,
+        enable_prf: bool,
+        prf_first: Option<Vec<u8>>,
+        prf_second: Option<Vec<u8>>,
+        self_attestation_client_data_hash: Option<Vec<u8>>,
+    ) -> Result<JsValue, JsValue> {
+        let inputs = PasskeyPrfInputs { first: prf_first, second: prf_second };
+        let created = passkey::create_passkey(credential_id, rp_id, i64::from(algorithm), uv_performed, enable_prf, Some(&inputs), self_attestation_client_data_hash.as_deref()).map_err(js_err)?;
+        let object = Object::new();
+        set(&object, "attestationObject", bytes(&created.attestation_object));
+        set(&object, "authenticatorData", bytes(&created.authenticator_data));
+        set(&object, "publicKeyJwk", JsValue::from_str(&created.public_key_jwk));
+        set(&object, "publicKeySpki", bytes(&created.public_key_spki));
+        set(&object, "privateKeyJwk", JsValue::from_str(&created.private_key_jwk));
+        set(&object, "prfSecret", created.prf_secret.as_deref().map_or(JsValue::NULL, bytes));
+        set(&object, "prfResults", prf_results(created.prf_results.as_ref()));
+        Ok(object.into())
+    }
+
+    /// Sign an assertion: `{ authenticatorData, signature, prfResults }`.
+    #[wasm_bindgen(js_name = passkeyGetAssertion)]
+    pub fn get_assertion(rp_id: &str, client_data_hash: &[u8], private_key_jwk: &str, uv_performed: bool, prf_first: Option<Vec<u8>>, prf_second: Option<Vec<u8>>, prf_secret: Option<Vec<u8>>) -> Result<JsValue, JsValue> {
+        let inputs = PasskeyPrfInputs { first: prf_first, second: prf_second };
+        let assertion = passkey::get_assertion(rp_id, client_data_hash, private_key_jwk, uv_performed, Some(&inputs), prf_secret.as_deref()).map_err(js_err)?;
+        let object = Object::new();
+        set(&object, "authenticatorData", bytes(&assertion.authenticator_data));
+        set(&object, "signature", bytes(&assertion.signature));
+        set(&object, "prfResults", prf_results(assertion.prf_results.as_ref()));
+        Ok(object.into())
+    }
+
+    fn prf_results(results: Option<&PasskeyPrfResults>) -> JsValue {
+        let Some(results) = results else { return JsValue::NULL };
+        let object = Object::new();
+        set(&object, "first", bytes(&results.first));
+        set(&object, "second", results.second.as_deref().map_or(JsValue::NULL, bytes));
+        object.into()
+    }
+
+    fn bytes(value: &[u8]) -> JsValue {
+        Uint8Array::from(value).into()
+    }
+
+    fn set(object: &Object, key: &str, value: JsValue) {
+        let _ = Reflect::set(object, &JsValue::from_str(key), &value);
+    }
+}
