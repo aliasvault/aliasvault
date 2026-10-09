@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "החשבון שלך הושבת. אם לדעתך מדובר בטעות, נא ליצור קשר עם התמיכה.",
     "ACCOUNT_LOCKED": "החשבון נעול זמנית עקב ריבוי ניסיונות כושלים. נא לנסות שוב מאוחר יותר.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "החשבון נמחק בהצלחה.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "אירעה שגיאה בניסיון לטעון את הודעות הדוא״ל. נא לנסות לערוך ולשמור את רשומת פרטי הקשר כדי לסנכרן את מסד הנתונים ואז לנסות שוב.",
-    "CLAIM_DOES_NOT_MATCH_USER": "כתובת הדוא״ל שנבחרה תפוסה. נא לשנות את כתובת הדוא״ל על ידי עריכת פרטי הגישה.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "שגיאת שרת פנימית.",
     "INVALID_AUTHENTICATOR_CODE": "קוד מאמת שגוי. נא לנסות שוב.",
     "INVALID_RECOVERY_CODE": "קוד שחזור שגוי. נא לנסות שוב.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "הגדרות",
-      "termsAndConditionsStepTitle": "שימוש ב־AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "קראתי והתנאים וההגבלות מקובלים עליי",
-        "pleaseReadAndAgree": "נא לקרוא ולהסכים לתנאים וההגבלות הבאים בטרם בחירה להמשיך.",
-        "termsContent": "AliasVault תוכנן לשפר את האבטחה שלך ברשת ולהגן על הפרטיות שלך. עם AliasVault, אפשר ליצור זהויות ייחודיות וכינויי כתובות דוא״ל למגוון החשבונות המקוונים שלך, מה שמסייע לך להישאר בשליטה בבנוגע לפרטים האישיים שלך ולצמצם סכנות לגניבת זהות.\n\nעל ידי שימוש ב־AliasVault התנאים הבאים מקובלים עליך או עלייך:\n\n1. אין לעשות שימוש ב־AliasVault למטרות לא חוקיות, כולל אך לא מוגבל להונאה, גניבת זהות או התחזות לבני אדם אמיתיים.\n\n2. האחריות על סודיות החשבון שלך והכינויים שנוצרים דרך AliasVault הם באחריותך הבלעדית.\n\n3. חברת AliasVault שומרת לה את הזכות להשמיד את החשבון שלך במקרה של חשד לשימוש בלתי הולם או עקב הפרה של התנאים האלה.\n\n4. ברור לך שלמרות ש־AliasVault משפר את הפרטיות שלך, אין אף מערכת חסינה לחלוטית, והשימוש בשירות הוא על אחריותך בלבד."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "מסייע AliasVault",
         "enterUsernameInstructions": "נא למלא את שם המשתמש בו ברצונך להשתמש. זאת יכולה להיות כתובת הדוא״ל שלך או כל שם ייחודי אחר שמתחשק לך.",
-        "greatNowLetsSetupUsername": "מעולה! עכשיו בוא נגדיר את שם המשתמש שלך ל־AliasVault.",
         "rememberUsernameNote": "חשוב לשים לב: השם הזה ישמש אותך לכניסה בהמשך, לכן חשוב לוודא שקל לך לזכור את השם הזה!",
         "serverCommunicationError": "אירעה שגיאה בתקשורת מול שרת ה־AliasVault.",
         "usernamePlaceholder": "נא למלא את שם המשתמש או כתובת הדוא״ל שמתחשק לך",
-        "validatingUsernameMessage": "שם המשתמש נבדק…"
+        "validatingUsernameMessage": "שם המשתמש נבדק…",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "נא לבחור שם משתמש"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
       "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "הודעות דוא״ל",
     "to": "אל:",
-    "toColumn": "אל",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "אל"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "אירעה שגיאה לא צפויה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Error loading items",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Are you sure?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "הגדרות לוח הגזירים",
     "contextMenuDescription": "ניתן ללחוץ על שדה עם הלחצן הימני כדי לגשת לאפשרויות AliasVault",
     "contextMenuSettings": "הגדרות תפריט הקשר",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "נא למלא קוד אימות",
         "verifyAndEnableButton": "לאמת ולהפעיל"
       },
-      "pageDescription": "הגדרת תצורת אבטחה.",
-      "pageTitle": "הגדרות אבטחה",
       "passkeyUnlock": {
         "disableButton": "Disable Passkey Unlock",
         "disabledDescription": "By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.",
@@ -1565,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "הוספת קוד מאמת אימות דו־שלבי",
     "addTotpCodeModalTitle": "הוספת קוד חד־פעמי זמני של אימות דו־שלבי",
+    "algorithm": "Algorithm",
     "closeFormButton": "סגירת טופס",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "למחוק את הקוד החד־פעמי הזמני הזה?",
     "deleteCodeTitle": "מחיקת קוד חד־פעמי זמני",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "deleteTotpCodeTitle": "Delete 2FA Code",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "שם (רשות)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "scanQrCode": "Scan QR Code",
     "secretKey": "מפתח סודי",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
     "checkingVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
-    "errors": {
-      "failedToGetEncryptedDatabase": "משיכת מסד הנתונים המוצפן נכשלה",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "usernameNotFound": "שם המשתמש לא נמצא"
-    },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "השינוים לכספת נשמרים",
     "syncingUpdatedVault": "הכספת העדכנית מסתנכרת",
-    "syncingVault": "הכספת מסתנכרת",
-    "uploadingVaultToServer": "הכספת נשלחת לשרת"
+    "syncingVault": "הכספת מסתנכרת"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "בטא",
       "enableDarkMode": "מעבר למצב כהה",
       "enableLightMode": "מעבר למצב בהיר",
-      "logOut": "יציאה",
-      "openMenuLabel": "פתיחת תפריט"
+      "logOut": "יציאה"
     },
     "welcome": {
       "createFirstIdentityButton": "יצירת הזהות הראשונה שלך",
