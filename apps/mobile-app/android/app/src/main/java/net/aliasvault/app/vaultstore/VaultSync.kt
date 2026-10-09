@@ -2,6 +2,8 @@ package net.aliasvault.app.vaultstore
 
 import android.util.Log
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.aliasvault.app.vaultstore.models.VaultMetadata
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -31,6 +33,9 @@ class VaultSync(
         /** The engine operations the sharing screen may ask for. */
         private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest", "updateSharedManifest")
     }
+
+    /** One engine run at a time: two runs against the same vault overwrite each other's stores and dirty flag. */
+    private val runMutex = Mutex()
 
     /**
      * Full vault sync: status check, then pull (and merge) or push as the server and local revisions decide.
@@ -190,13 +195,15 @@ class VaultSync(
     @Suppress("TooGenericExceptionCaught")
     private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null, sharing: JSONObject? = null): JSONObject {
         waitForSyncHoldRelease(operation)
-        val result = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey, sharing = sharing)
-        } catch (e: Exception) {
-            throw driverError(e)
+        return runMutex.withLock {
+            val result = try {
+                VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey, sharing = sharing)
+            } catch (e: Exception) {
+                throw driverError(e)
+            }
+            persistSyncResult(result)
+            result
         }
-        persistSyncResult(result)
-        return result
     }
 
     /**

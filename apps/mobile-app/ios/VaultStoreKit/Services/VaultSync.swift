@@ -12,6 +12,8 @@ import VaultUtils
 /// - apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultSync.kt
 internal final class VaultSync {
     private let vaultStore: VaultStore
+    private var lastRun: Task<Void, Never>?
+    private let runLock = NSLock()
 
     init(vaultStore: VaultStore) {
         self.vaultStore = vaultStore
@@ -143,6 +145,19 @@ internal final class VaultSync {
     /// Run one engine operation and persist what it reported. A driver failure surfaces as the native error.
     private func run(_ operation: String, using webApiService: WebApiService, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
         await waitForSyncHoldRelease(operation)
+        let run: Task<[String: Any], Error> = runLock.withLock {
+            let previous = lastRun
+            let run = Task { () async throws -> [String: Any] in
+                await previous?.value
+                return try await self.runNow(operation, using: webApiService, encryptionKey: encryptionKey, sharing: sharing)
+            }
+            lastRun = Task { _ = try? await run.value }
+            return run
+        }
+        return try await run.value
+    }
+
+    private func runNow(_ operation: String, using webApiService: WebApiService, encryptionKey: String?, sharing: [String: Any]?) async throws -> [String: Any] {
         let result: [String: Any]
         do {
             result = try await VaultSyncEngine(vaultStore: vaultStore, webApiService: webApiService).run(operation: operation, encryptionKey: encryptionKey, sharing: sharing)
