@@ -8,9 +8,11 @@ import Toast from 'react-native-toast-message';
 
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { isServerUnreachable } from '@/utils/ServerReachability';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { EmailCard } from '@/components/EmailCard';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -32,6 +34,7 @@ export default function EmailsScreen() : React.ReactNode {
   const webApi = useWebApi();
   const colors = useColors();
   const navigation = useNavigation();
+  const { syncVault } = useVaultSync();
   const [scrollY] = useState(() => new Animated.Value(0));
   const scrollViewRef = useRef<ScrollView>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +83,12 @@ export default function EmailsScreen() : React.ReactNode {
         }
         setIsLoading(false);
       } catch {
+        // An unreachable server puts the app in offline mode, like a vault sync does.
+        if (await isServerUnreachable()) {
+          await dbContext.setIsOffline(true);
+          return;
+        }
+
         /*
          * Suppress errors while vault has unsynced changes or if we're offline
          * Network errors during sync can trigger false positives
@@ -129,6 +138,11 @@ export default function EmailsScreen() : React.ReactNode {
       setCurrentPage(data.currentPage);
       setTotalRecords(data.totalRecords);
     } catch (err) {
+      if (await isServerUnreachable()) {
+        await dbContext.setIsOffline(true);
+        return;
+      }
+
       setError(err instanceof Error ? err.message : t('common.error'));
       console.error('Failed to load more emails:', err);
 
@@ -141,7 +155,7 @@ export default function EmailsScreen() : React.ReactNode {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
+  }, [isLoadingMore, dbContext, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
@@ -192,10 +206,15 @@ export default function EmailsScreen() : React.ReactNode {
 
     setIsLoading(true);
     setIsRefreshing(true);
-    await loadEmails();
+    if (dbContext.isOffline) {
+      // Leaving offline mode reloads the emails through the mount effect.
+      await syncVault();
+    } else {
+      await loadEmails();
+    }
     setIsRefreshing(false);
     setIsLoading(false);
-  }, [loadEmails, setIsLoading, setIsRefreshing]);
+  }, [dbContext.isOffline, loadEmails, syncVault, setIsLoading, setIsRefreshing]);
 
   const styles = StyleSheet.create({
     centerContainer: {

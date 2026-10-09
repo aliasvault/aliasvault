@@ -1,4 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
+import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { getPlatform } from '@aliasvault/client/platform';
 import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
@@ -24,6 +25,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useVaultSync } from '@/hooks/useVaultSync';
 import { type EmailViewModel, loadAliasVaultEmail } from '@/utils/EmailViewModel';
 import { itemRoute } from '@/utils/ItemRoute';
 import { StorageKeys } from '@/utils/StorageKeys';
@@ -67,6 +69,7 @@ const EmailsHome: React.FC = () => {
   const webApi = useWebApi();
   const notifications = useNotifications();
   const { showConfirmation } = useConfirmModal();
+  const { syncVault } = useVaultSync();
   usePageTitle(t('emails.title'));
 
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 300);
@@ -149,6 +152,11 @@ const EmailsHome: React.FC = () => {
 
       return { emails, totalRecords: data.totalRecords, currentPage: data.currentPage, pageSize: data.pageSize };
     } catch (error) {
+      if (isServerUnreachable(error)) {
+        await dbContext.setIsOffline(true);
+        return null;
+      }
+
       // Claim does not exist errors from the email API are expected while local changes are still being synced.
       if (!dbContext.isSyncing && !await hasUnsyncedUserChanges()) {
         if (apiErrorCodeOf(error) === 'CLAIM_DOES_NOT_EXIST') {
@@ -174,6 +182,11 @@ const EmailsHome: React.FC = () => {
     setNewEmailIds(new Set());
     knownEmailIds.current = new Set();
 
+    if (dbContext.getIsOffline()) {
+      setIsLoading(false);
+      return;
+    }
+
     const targetPage = preserveCurrentPage ? page : 1;
     const emailClaimList = await getEmailClaimList();
     if (emailClaimList.length === 0) {
@@ -193,17 +206,27 @@ const EmailsHome: React.FC = () => {
       }
     }
     setIsLoading(false);
-  }, [getEmailClaimList, loadEmailsFromServer, setIsLoading]);
+  }, [dbContext, getEmailClaimList, loadEmailsFromServer, setIsLoading]);
 
   useEffect(() => {
     void refreshData();
   }, [refreshData]);
 
   /**
+   * Refresh button: while offline, retry the vault sync first, which leaves offline mode when the server is back.
+   */
+  const onRefreshClick = useCallback(async (): Promise<void> => {
+    if (dbContext.getIsOffline()) {
+      await syncVault();
+    }
+    await refreshData();
+  }, [dbContext, refreshData, syncVault]);
+
+  /**
    * Check for new emails without disrupting the current view.
    */
   const checkForNewEmails = useCallback(async (): Promise<void> => {
-    if (!isPageVisible.current || !autoRefreshEnabled || currentPage !== 1 || noEmailClaims) {
+    if (!isPageVisible.current || !autoRefreshEnabled || currentPage !== 1 || noEmailClaims || dbContext.getIsOffline()) {
       return;
     }
     const result = await loadEmailsFromServer(1, 5);
@@ -222,7 +245,7 @@ const EmailsHome: React.FC = () => {
     setTimeout(() => {
       setNewEmailIds(ids => new Set([...ids].filter(id => !arrivedIds.includes(id))));
     }, NEW_EMAIL_INDICATOR_MS);
-  }, [autoRefreshEnabled, currentPage, noEmailClaims, loadEmailsFromServer]);
+  }, [autoRefreshEnabled, currentPage, noEmailClaims, dbContext, loadEmailsFromServer]);
 
   /**
    * Poll while the tab is visible.
@@ -431,7 +454,7 @@ const EmailsHome: React.FC = () => {
             {autoRefreshEnabled && currentPage === 1 && (
               <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('emails.home.autoRefreshEnabledTooltip')}></div>
             )}
-            <RefreshButton onClick={() => refreshData()} buttonText={t('common.refresh')} />
+            <RefreshButton onClick={onRefreshClick} buttonText={t('common.refresh')} />
             {checkedEmailIds.size > 0 && (
               <DeleteAllSelectedButton onClick={showBulkDeleteConfirmation} buttonText={t('emails.home.deleteSelectedEmails', { count: checkedEmailIds.size })} />
             )}
@@ -459,6 +482,12 @@ const EmailsHome: React.FC = () => {
               <div className="w-3/4">
                 <EmailPreviewSkeleton />
               </div>
+            </div>
+          </div>
+        ) : dbContext.isOffline ? (
+          <div className="p-4 mx-4 mt-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="px-4 py-2 text-gray-400 rounded">
+              <Text variant="muted">{t('emails.offlineMessage')}</Text>
             </div>
           </div>
         ) : noEmailClaims ? (

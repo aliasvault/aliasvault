@@ -1,10 +1,13 @@
 import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { IncorrectPasswordError, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
+
+import { isServerUnreachable } from '@/utils/ServerReachability';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -18,6 +21,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedTextInput } from '@/components/themed/ThemedTextInput';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useAuth } from '@/context/AuthContext';
+import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
 /**
@@ -27,6 +31,7 @@ import { useDialog } from '@/context/DialogContext';
 export default function ChangePasswordScreen(): React.ReactNode {
   const colors = useColors();
   const authContext = useAuth();
+  const dbContext = useDb();
   const { executeVaultPasswordChange, syncStatus } = useVaultMutate();
   const { t } = useTranslation();
   const { showAlert } = useDialog();
@@ -63,6 +68,20 @@ export default function ChangePasswordScreen(): React.ReactNode {
       fontSize: 16,
       marginBottom: 8,
     },
+    offlineWarning: {
+      alignItems: 'center',
+      backgroundColor: colors.warningBackground,
+      borderRadius: 12,
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 16,
+      padding: 12,
+    },
+    offlineWarningText: {
+      flex: 1,
+      fontSize: 14,
+      lineHeight: 20,
+    },
   });
 
   /**
@@ -84,6 +103,12 @@ export default function ChangePasswordScreen(): React.ReactNode {
    * @returns {Promise<void>} A promise that resolves when the operation is complete
    */
   const handleSubmit = async (): Promise<void> => {
+    // A password change is a handshake with the server, so it cannot run offline.
+    if (dbContext.isOffline) {
+      showAlert(t('common.error'), t('common.errors.serverNotAvailable'));
+      return;
+    }
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       showAlert(t('common.error'), t('settings.securitySettings.changePassword.fillAllFields'));
       return;
@@ -125,6 +150,11 @@ export default function ChangePasswordScreen(): React.ReactNode {
       });
     } catch (error) {
       console.error('Password change error:', error);
+      if (await isServerUnreachable()) {
+        await dbContext.setIsOffline(true);
+        showAlert(t('common.error'), t('common.errors.serverNotAvailable'));
+        return;
+      }
       showAlert(t('common.error'), errorMessage(error));
     } finally {
       setIsLoading(false);
@@ -147,6 +177,12 @@ export default function ChangePasswordScreen(): React.ReactNode {
               {t('settings.securitySettings.changePassword.headerText')}
             </ThemedText>
             <UsernameDisplay />
+            {dbContext.isOffline && (
+              <View style={styles.offlineWarning}>
+                <Ionicons name="warning" size={20} color={colors.warning} />
+                <ThemedText style={styles.offlineWarningText}>{t('common.errors.serverNotAvailable')}</ThemedText>
+              </View>
+            )}
             <View style={styles.form}>
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>{t('settings.securitySettings.changePassword.currentPassword')}</ThemedText>
@@ -187,6 +223,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
                 title={t('settings.securitySettings.changePassword.changePassword')}
                 onPress={handleSubmit}
                 loading={isLoading}
+                disabled={dbContext.isOffline}
                 style={styles.button}
               />
             </View>

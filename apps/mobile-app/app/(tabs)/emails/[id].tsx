@@ -16,6 +16,7 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { getFileForFilename } from '@/utils/FileUtility';
 import { itemRoute } from '@/utils/ItemRoute';
+import { isServerUnreachable } from '@/utils/ServerReachability';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
@@ -107,6 +108,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
         setViewMode('source');
       }
     } catch (err) {
+      if (await isServerUnreachable()) {
+        await dbContext.setIsOffline(true);
+        setError(t('emails.offlineMessage'));
+        return;
+      }
+
       /*
        * Suppress errors while vault has unsynced changes
        * Network errors during sync can trigger false positives

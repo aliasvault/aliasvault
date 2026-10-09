@@ -1,3 +1,4 @@
+import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
 import { decryptEmail, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
 import { sanitizeEmailHtml } from '@aliasvault/client/email/EmailHtmlSanitizer';
@@ -102,6 +103,11 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           setViewMode('source');
         }
       } catch (err) {
+        if (isServerUnreachable(err)) {
+          await dbContext.setIsOffline(true);
+          setError(t('emails.offlineMessage'));
+          return;
+        }
         setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
       } finally {
         setIsLoading(false);
@@ -110,7 +116,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     };
 
     loadEmail();
-  }, [id, dbContext?.sqliteClient, dbContext.isOffline, t, webApi, setIsLoading, setIsInitialLoading]);
+  }, [id, dbContext, t, webApi, setIsLoading, setIsInitialLoading]);
 
   /*
    * Resolve the credential (item) that owns the recipient address for this email so we can

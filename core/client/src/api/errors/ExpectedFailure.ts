@@ -52,3 +52,14 @@ export function logFailure(message: string, error: unknown): void {
   }
   logDefect(message, error);
 }
+
+/**
+ * Whether a failed request means the server is unreachable: no response at all, or a gateway in front of it reporting it down.
+ * @param error - the error to classify
+ */
+export function isServerUnreachable(error: unknown): boolean {
+  if (error instanceof NetworkError) {
+    return true;
+  }
+  return error instanceof ApiRequestError && [502, 503, 504].includes(error.statusCode);
+}

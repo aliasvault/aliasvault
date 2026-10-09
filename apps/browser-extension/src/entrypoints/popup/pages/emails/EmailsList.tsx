@@ -1,3 +1,4 @@
+import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -83,6 +84,10 @@ const EmailsList: React.FC = () => {
         }
       } catch (error) {
         logFailure('[Emails] Loading the mailbox failed', error);
+        if (isServerUnreachable(error)) {
+          await dbContext.setIsOffline(true);
+          return;
+        }
         throw new Error(t('common.errors.unknownError'));
       }
     } catch (err) {
@@ -91,7 +96,7 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
+  }, [dbContext, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
 
   /**
    * Loads more emails (next page).
@@ -118,12 +123,16 @@ const EmailsList: React.FC = () => {
       setCurrentPage(data.currentPage);
       setTotalRecords(data.totalRecords);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
       logFailure('Failed to load more emails', err);
+      if (isServerUnreachable(err)) {
+        await dbContext.setIsOffline(true);
+        return;
+      }
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
+  }, [isLoadingMore, dbContext, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     loadEmails();
