@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Sua conta foi desabilitada. Se você acredita que isto foi um erro, por favor, entre em contato com o suporte.",
     "ACCOUNT_LOCKED": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Conta excluída com sucesso.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, tente editar e salvar a credencial para sincronizar com o banco de dados, e tente novamente.",
-    "CLAIM_DOES_NOT_MATCH_USER": "O e-mail escolhido já está em uso. Por favor, altere o endereço de e-mail editando esta credencial.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Erro intero do servidor.",
     "INVALID_AUTHENTICATOR_CODE": "Código de autenticação inválido. Por favor, tente novamente.",
     "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor, tente novamente.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Configuração",
-      "termsAndConditionsStepTitle": "Utilizando AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Eu li e aceito os Termos e Condições",
-        "pleaseReadAndAgree": "Por favor, leia e aceite os seguintes termos e condições antes de continuar.",
-        "termsContent": "AliasVault foi designado para aumentar sua segurança e proteger sua privacidade. Com o AliasVault, você pode criar identidades únicas e aliases de e-mail para suas diversas contas online, te ajudando a manter controle sobre suas informações pessoais e reduzir o risco de roubo de identidade.\n\nUsando o AliasVault, você aceita os seguintes termos:\n\n1. Você não utilizará o AliasVault para nenhum ato ilícito, incluindo mas não limitando à fraudes, roubo de identidade, ou se passar por outros indivíduos.\n\n2. Você é responsável por manter a confidencialidade da sua conta e quaisquer aliases criados através do AliasVault.\n\n3. O AliasVault reserva o direito de finalizar sua conta se suspeitarmos de qualquer uso incorreto ou violações destes termos.\n\n4. Você entende que enquanto o AliasVault aumenta sua privacidade, nenhum sistema é completamente infalível, e você utiliza o serviço por sua conta e risco."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Assistente AliasVault",
         "enterUsernameInstructions": "Por favor, digite o nome de usuário que você quer utilizar. Pode ser o seu endereço de e-mail ou qualquer nome único que você preferir.",
-        "greatNowLetsSetupUsername": "Ótimo! Agora, vamos configurar seu nome de usuário para o AliasVault.",
         "rememberUsernameNote": "Lembre-se: Isto será utilizado quando você fizer login mais tarde, então tenha certeza que é algo que você se lembrará!",
         "serverCommunicationError": "Ocorreu um erro durante a comunicação com o servidor do AliasVault.",
         "usernamePlaceholder": "Digite seu nome de usuário ou e-mail",
-        "validatingUsernameMessage": "Validando nome de usuário..."
+        "validatingUsernameMessage": "Validando nome de usuário...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Escolher Nome de Usuário"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "E-mails",
     "to": "Para:",
-    "toColumn": "Para",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "Para"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
     "errorLoadingItems": "Erro ao carregar itens",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Têm certeza?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Apenas área de transferência local",
     "clipboardLocalOnlyDescription": "Mantenha as credenciais copiadas neste dispositivo ao invés de sincronizá-las para seus outros dispositivos Apple através da Área de Transferência Universal.",
     "clipboardLocalOnlyDisabledWarning": "Com esta opção desativada, credenciais copiadas podem ser sincronizadas para seus dispositivos Apple (Mac, iPad, etc.) através da Área de Transferência Universal.",
-    "clipboardSettings": "Configurações da Área de Transferência",
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
     "contextMenuSettings": "Configurações do Menu de Contexto",
     "copyTotpOnFill": "Copiar código de dois fatores ao autopreencher",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Digite o código de verificação",
         "verifyAndEnableButton": "Verificar e Habilitar"
       },
-      "pageDescription": "Configurar configurações de segurança.",
-      "pageTitle": "Configurações de segurança",
       "passkeyUnlock": {
         "disableButton": "Desabilitar Desbloqueio com Passkey",
         "disabledDescription": "Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente usando a extensão PRF da passkey. Nota: a passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.",
@@ -1565,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Adicionar um código de autenticação de dois fatores",
     "addTotpCodeModalTitle": "Adicionar código TOTP 2FA",
+    "algorithm": "Algorithm",
     "closeFormButton": "Fechar formulário",
     "defaultName": "Autenticador",
     "deleteCodeConfirmation": "Tem certeza que deseja excluir este código TOTP?",
     "deleteCodeTitle": "Excluir código TOTP",
     "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Excluir Código 2FA",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Salvar para ver o código",
     "scanQrCode": "Escanear Código QR",
     "secretKey": "Chave Secreta",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Verificando atualizações do cofre",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
-      "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online.",
-      "usernameNotFound": "Usuário não encontrado"
-    },
     "mergingVault": "Integrando mudanças do cofre...",
     "savingChangesToVault": "Salvando mudanças no cofre",
     "syncingUpdatedVault": "Sincronizando cofre atualizado",
-    "syncingVault": "Sincronizando cofre",
-    "uploadingVaultToServer": "Fazendo upload do cofre para o servidor"
+    "syncingVault": "Sincronizando cofre"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Mudar para modo escuro",
       "enableLightMode": "Mudar para modo claro",
-      "logOut": "Sair",
-      "openMenuLabel": "Abrir menu"
+      "logOut": "Sair"
     },
     "welcome": {
       "createFirstIdentityButton": "Criar Primeira Identidade",
