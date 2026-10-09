@@ -377,15 +377,22 @@ export default function UpgradeScreen() : React.ReactNode {
     currentVersionValue: {
       color: colors.primary,
     },
+    errorContainer: {
+      backgroundColor: colors.errorBackground,
+      borderColor: colors.errorBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 16,
+      padding: 12,
+    },
     errorDetail: {
       color: colors.textMuted,
       fontSize: 12,
       marginTop: 4,
     },
     errorText: {
-      color: colors.red,
+      color: colors.errorText,
       fontSize: 14,
-      marginBottom: 16,
     },
     gradientContainer: {
       height: Dimensions.get('window').height * 0.4,
@@ -568,7 +575,7 @@ export default function UpgradeScreen() : React.ReactNode {
                   <ThemedText style={styles.subtitle}>{t('upgrade.subtitle')}</ThemedText>
 
                   {error && (
-                    <View>
+                    <View style={styles.errorContainer}>
                       <ThemedText style={styles.errorText}>{error}</ThemedText>
                       {errorDetail && <ThemedText style={styles.errorDetail}>{errorDetail}</ThemedText>}
                     </View>
