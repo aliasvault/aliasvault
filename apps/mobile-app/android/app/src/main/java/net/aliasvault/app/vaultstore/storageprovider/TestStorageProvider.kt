@@ -21,6 +21,7 @@ class TestStorageProvider : StorageProvider {
     private var serverVersion: String? = null
     private var capabilities: String? = null
     private var isDirty: Boolean = false
+    private var deviceId: String? = null
     private var dirtyScopes: List<String> = emptyList()
     private var mutationSequence: Int = 0
     private var isSyncing: Boolean = false
@@ -134,6 +135,14 @@ class TestStorageProvider : StorageProvider {
 
     override fun setIsDirty(isDirty: Boolean) {
         this.isDirty = isDirty
+    }
+
+    override fun getDeviceId(): String? {
+        return deviceId
+    }
+
+    override fun setDeviceId(deviceId: String) {
+        this.deviceId = deviceId
     }
 
     override fun getIsDirty(): Boolean {

@@ -4,9 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { View, Text, Platform, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 
 import { useClipboardCountdown } from '@/context/ClipboardCountdownContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
@@ -17,6 +20,8 @@ type FormInputCopyToClipboardProps = {
   type?: 'text' | 'password';
   /** Optional element to render next to the label (e.g., history button) */
   labelSuffix?: React.ReactNode;
+  /** The item the value belongs to, whose usage statistics count the copy */
+  item?: ItemRef;
 }
 
 /**
@@ -27,11 +32,13 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   value,
   type = 'text',
   labelSuffix,
+  item,
 }) : React.ReactNode => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
   const { activeField, startCountdown, clearCountdown } = useClipboardCountdown();
+  const recordItemCopy = useRecordItemCopy();
 
   const animatedWidth = useRef(new Animated.Value(0)).current;
   // Create a stable unique ID based on label and value
@@ -78,6 +85,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         // Use centralized clipboard utility
         await copyToClipboardWithExpiration(value, timeoutSeconds);
+        recordItemCopy(item);
 
         // Handle animation state
         if (timeoutSeconds > 0) {

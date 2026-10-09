@@ -643,6 +643,7 @@ namespace AliasClientDb.Migrations
                 {
                     ManifestId = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
                     Id = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
+                    DeviceId = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "", collation: "NOCASE"),
                     LastUsedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     UseCount = table.Column<int>(type: "INTEGER", nullable: false),
                     LastAutofilledAt = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -657,7 +658,7 @@ namespace AliasClientDb.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ItemStats", x => new { x.ManifestId, x.Id });
+                    table.PrimaryKey("PK_ItemStats", x => new { x.ManifestId, x.Id, x.DeviceId });
                 });
 
             migrationBuilder.CreateTable(

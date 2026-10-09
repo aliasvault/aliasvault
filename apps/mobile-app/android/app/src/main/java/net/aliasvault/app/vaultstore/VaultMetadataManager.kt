@@ -188,6 +188,16 @@ class VaultMetadataManager(
     }
 
     /**
+     * The random id of this install, created on first use. Per-device vault rows (item usage statistics) are keyed by it.
+     */
+    fun getOrCreateDeviceId(): String {
+        storageProvider.getDeviceId()?.takeIf { it.isNotEmpty() }?.let { return it }
+        val deviceId = java.util.UUID.randomUUID().toString().lowercase()
+        storageProvider.setDeviceId(deviceId)
+        return deviceId
+    }
+
+    /**
      * Get the dirty flag.
      */
     fun getIsDirty(): Boolean {

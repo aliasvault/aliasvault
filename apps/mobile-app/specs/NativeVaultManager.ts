@@ -91,6 +91,9 @@ export interface Spec extends TurboModule {
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;
 
+  // Item usage statistics
+  recordItemCopy(itemId: string, manifestId: string): Promise<void>;
+
   // Credential identity management
   registerCredentialIdentities(): Promise<void>;
   removeCredentialIdentities(): Promise<void>;

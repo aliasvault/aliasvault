@@ -484,9 +484,9 @@ impl SqliteMemoryDatabase {
         self.inner.with_connection(|conn| vault_items::replace_passkey(conn, &old_passkey_id, &manifest_id, &passkey, &url, logo.as_deref()))
     }
 
-    /// Record one use of an item; false when the item does not exist.
-    pub fn record_item_use(&self, item_id: String, manifest_id: String, action: vault_items::ItemUsageAction) -> Result<bool, VaultError> {
-        self.inner.with_connection(|conn| vault_items::record_item_use(conn, &item_id, &manifest_id, action))
+    /// Record one use of an item by this device; false when the item does not exist.
+    pub fn record_item_use(&self, item_id: String, manifest_id: String, device_id: String, action: vault_items::ItemUsageAction) -> Result<bool, VaultError> {
+        self.inner.with_connection(|conn| vault_items::record_item_use(conn, &item_id, &manifest_id, &device_id, action))
     }
 }
 

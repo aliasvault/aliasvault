@@ -80,13 +80,13 @@ CREATE INDEX "IX_Credentials_ServiceId" ON "Credentials" ("ServiceId");
 CREATE INDEX "IX_Passwords_CredentialId" ON "Passwords" ("CredentialId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240708094944_1.0.0-InitialMigration', '10.0.10');
+VALUES ('20240708094944_1.0.0-InitialMigration', '10.0.12');
 
 COMMIT;
 
 BEGIN TRANSACTION;
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240708224522_1.0.1-EmptyTestMigration', '10.0.10');
+VALUES ('20240708224522_1.0.1-EmptyTestMigration', '10.0.12');
 
 COMMIT;
 
@@ -94,7 +94,7 @@ BEGIN TRANSACTION;
 ALTER TABLE "Aliases" RENAME COLUMN "EmailPrefix" TO "Email";
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240711204207_1.0.2-ChangeEmailColumn', '10.0.10');
+VALUES ('20240711204207_1.0.2-ChangeEmailColumn', '10.0.12');
 
 COMMIT;
 
@@ -109,7 +109,7 @@ CREATE TABLE "EncryptionKeys" (
 );
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240729105618_1.1.0-AddPkiTables', '10.0.10');
+VALUES ('20240729105618_1.1.0-AddPkiTables', '10.0.12');
 
 COMMIT;
 
@@ -122,7 +122,7 @@ CREATE TABLE "Settings" (
 );
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240805073413_1.2.0-AddSettingsTable', '10.0.10');
+VALUES ('20240805073413_1.2.0-AddSettingsTable', '10.0.12');
 
 COMMIT;
 
@@ -157,7 +157,7 @@ COMMIT;
 PRAGMA foreign_keys = 1;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240805122422_1.3.0-UpdateIdentityStructure', '10.0.10');
+VALUES ('20240805122422_1.3.0-UpdateIdentityStructure', '10.0.12');
 
 BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Credentials" (
@@ -197,7 +197,7 @@ CREATE INDEX "IX_Credentials_ServiceId" ON "Credentials" ("ServiceId");
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240812141727_1.3.1-MakeUsernameOptional', '10.0.10');
+VALUES ('20240812141727_1.3.1-MakeUsernameOptional', '10.0.12');
 
 BEGIN TRANSACTION;
 ALTER TABLE "Settings" ADD "IsDeleted" INTEGER NOT NULL DEFAULT 0;
@@ -215,7 +215,7 @@ ALTER TABLE "Attachment" ADD "IsDeleted" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "Aliases" ADD "IsDeleted" INTEGER NOT NULL DEFAULT 0;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240916105320_1.4.0-AddSyncSupport', '10.0.10');
+VALUES ('20240916105320_1.4.0-AddSyncSupport', '10.0.12');
 
 COMMIT;
 
@@ -256,7 +256,7 @@ CREATE INDEX "IX_Attachments_CredentialId" ON "Attachments" ("CredentialId");
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20240917191243_1.4.1-RenameAttachmentsPlural', '10.0.10');
+VALUES ('20240917191243_1.4.1-RenameAttachmentsPlural', '10.0.12');
 
 BEGIN TRANSACTION;
 CREATE TABLE "TotpCodes" (
@@ -273,7 +273,7 @@ CREATE TABLE "TotpCodes" (
 CREATE INDEX "IX_TotpCodes_CredentialId" ON "TotpCodes" ("CredentialId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20250310131554_1.5.0-AddTotpCodes', '10.0.10');
+VALUES ('20250310131554_1.5.0-AddTotpCodes', '10.0.12');
 
 COMMIT;
 
@@ -696,7 +696,7 @@ CREATE INDEX "IX_Passkeys_CredentialId" ON "Passkeys" ("CredentialId");
 CREATE INDEX "IX_Passkeys_RpId" ON "Passkeys" ("RpId");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20251014122838_1.6.0-AddPasskeys', '10.0.10');
+VALUES ('20251014122838_1.6.0-AddPasskeys', '10.0.12');
 
 COMMIT;
 
@@ -1295,11 +1295,11 @@ CREATE INDEX "IX_TotpCodes_ItemId" ON "TotpCodes" ("ItemId");
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '10.0.10');
+VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '10.0.12');
 
 BEGIN TRANSACTION;
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260130221620_2.0.0-MajorVersionBump', '10.0.10');
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '10.0.12');
 
 COMMIT;
 
@@ -1378,6 +1378,7 @@ CREATE TABLE "CodecOverflows" (
 CREATE TABLE "ItemStats" (
     "ManifestId" TEXT COLLATE NOCASE NOT NULL,
     "Id" TEXT COLLATE NOCASE NOT NULL,
+    "DeviceId" TEXT COLLATE NOCASE NOT NULL DEFAULT '',
     "LastUsedAt" TEXT NULL,
     "UseCount" INTEGER NOT NULL,
     "LastAutofilledAt" TEXT NULL,
@@ -1389,7 +1390,7 @@ CREATE TABLE "ItemStats" (
     "CreatedAt" TEXT NOT NULL,
     "UpdatedAt" TEXT NOT NULL,
     "IsDeleted" INTEGER NOT NULL,
-    CONSTRAINT "PK_ItemStats" PRIMARY KEY ("ManifestId", "Id")
+    CONSTRAINT "PK_ItemStats" PRIMARY KEY ("ManifestId", "Id", "DeviceId")
 );
 
 CREATE TABLE "Manifests" (
@@ -1783,7 +1784,7 @@ CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("Mani
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260918090000_2.1.0-ManifestScopedStorage', '10.0.10');
+VALUES ('20261009150000_2.1.0-ManifestScopedStorage', '10.0.12');
 
 BEGIN TRANSACTION;
 CREATE TRIGGER IF NOT EXISTS "TR_Items_ClearTombstoneBeforeReturn"
@@ -1829,7 +1830,7 @@ COMMIT;
 PRAGMA foreign_keys = ON;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260918090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
+VALUES ('20261009150100_2.1.1-ItemChildManifestTrigger', '10.0.12');
 `;
 /**
  * Individual migration SQL scripts

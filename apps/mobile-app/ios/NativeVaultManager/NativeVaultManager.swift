@@ -477,6 +477,24 @@ public class NativeVaultManager: NSObject {
         }
     }
 
+    /// Record a copied value in its item's usage statistics (this device's row); the next sync pushes it.
+    @objc
+    func recordItemCopy(_ itemId: String,
+                        manifestId: String,
+                        resolver resolve: @escaping RCTPromiseResolveBlock,
+                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let id = UUID(uuidString: itemId) else {
+            reject("RECORD_ITEM_USAGE_ERROR", "Invalid item id", nil)
+            return
+        }
+        do {
+            try vaultStore.recordItemUsage(itemId: id, manifestId: manifestId, action: .copy)
+            resolve(nil)
+        } catch {
+            reject("RECORD_ITEM_USAGE_ERROR", "Failed to record item usage: \(error.localizedDescription)", error)
+        }
+    }
+
     @objc
     func registerCredentialIdentities(_ resolve: @escaping RCTPromiseResolveBlock,
                                     rejecter reject: @escaping RCTPromiseRejectBlock) {

@@ -60,11 +60,11 @@ export type VaultTableDefinition = {
 export const VAULT_TABLES: VaultTableDefinition[] = [
   { Name: 'Items', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: false },
   /*
-   * ItemStats is keyed by the item it describes: Id is the item's id, so recording a use is an
-   * upsert and two devices never create competing rows. Listed after Items so a merge inserts the
-   * item first.
+   * ItemStats holds one row per item per device: Id is the item's id and DeviceId the recording install, so a
+   * device only ever updates its own row and last-write-wins never drops another device's counts. Listed after
+   * Items so a merge inserts the item first.
    */
-  { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true, BucketCategory: 'stats' },
+  { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id', 'DeviceId'], ItemChild: true, BucketCategory: 'stats' },
   /*
    * FieldValues: a field value matches on the field it belongs to (FieldKey for system fields,
    * FieldDefinitionId for custom ones; exactly one is set), so independently created rows of the
@@ -154,6 +154,7 @@ export const VAULT_COLUMN_NAMES: string[] = [
   'ParentFolderId',
   'FolderId',
   'LogoId',
+  'DeviceId',
   'Kind',
   'Source',
   'FileData',

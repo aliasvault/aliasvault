@@ -92,7 +92,10 @@ public struct CredentialProviderView: View {
                                                     password: password
                                                 )
                                             },
-                                            onCopy: presentToast
+                                            onCopy: { message in
+                                                viewModel.recordCopy(of: credential)
+                                                presentToast(message)
+                                            }
                                         )
                                     }
                                 }
@@ -341,13 +344,17 @@ public class CredentialProviderViewModel: ObservableObject {
     /// vault can record the use.
     private let usageRecorder: ((AutofillCredential) -> Void)?
 
+    /// Optional handler called when the user copies a value of a credential from the picker's menu.
+    private let copyRecorder: ((AutofillCredential) -> Void)?
+
     public init(
         loader: @escaping () async throws -> [AutofillCredential],
         selectionHandler: @escaping (String, String) -> Void,
         cancelHandler: @escaping () -> Void,
         serviceUrl: String? = nil,
         urlLinker: ((AutofillCredential, String) async -> Void)? = nil,
-        usageRecorder: ((AutofillCredential) -> Void)? = nil
+        usageRecorder: ((AutofillCredential) -> Void)? = nil,
+        copyRecorder: ((AutofillCredential) -> Void)? = nil
     ) {
         self.loader = loader
         self.selectionHandler = selectionHandler
@@ -355,6 +362,7 @@ public class CredentialProviderViewModel: ObservableObject {
         self.serviceUrl = serviceUrl
         self.urlLinker = urlLinker
         self.usageRecorder = usageRecorder
+        self.copyRecorder = copyRecorder
         if let url = serviceUrl {
             self.searchText = url
         }
@@ -467,6 +475,11 @@ public class CredentialProviderViewModel: ObservableObject {
     private func complete(credential: AutofillCredential, username: String, password: String) {
         usageRecorder?(credential)
         selectionHandler(username, password)
+    }
+
+    /// Record that a value of the credential was copied from the picker's menu.
+    func recordCopy(of credential: AutofillCredential) {
+        copyRecorder?(credential)
     }
 
     func handleSelection(username: String, password: String) {

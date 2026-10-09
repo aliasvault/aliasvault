@@ -45,7 +45,7 @@ fn schema() -> HashMap<String, Vec<String>> {
         ("Items".to_string(), columns(&["ManifestId", "Id", "Name", "IsDeleted", "DeletedAt", "UpdatedAt"])),
         ("TotpCodes".to_string(), columns(&["ManifestId", "Id", "ItemId", "SecretKey", "IsDeleted", "UpdatedAt"])),
         ("Settings".to_string(), columns(&["ManifestId", "Key", "Value", "UpdatedAt"])),
-        ("ItemStats".to_string(), columns(&["ManifestId", "Id", "LastUsedAt", "UpdatedAt"])),
+        ("ItemStats".to_string(), columns(&["ManifestId", "Id", "DeviceId", "UseCount", "LastUsedAt", "UpdatedAt"])),
         ("FieldValues".to_string(), columns(&["ManifestId", "Id", "ItemId", "FieldKey", "FieldDefinitionId", "ValueIndex", "Value", "IsDeleted", "UpdatedAt"])),
         ("ItemTags".to_string(), columns(&["ManifestId", "ItemId", "TagId", "UpdatedAt"])),
         ("Attachments".to_string(), columns(&["ManifestId", "Id", "Blob", "UpdatedAt"])),
@@ -361,7 +361,7 @@ fn a_permanent_delete_is_settled_against_the_item_as_a_unit_both_ways() {
 #[test]
 fn a_usage_counter_does_not_outlive_a_delete() {
     // ItemStats ticks on every autofill; that is not an edit and must not undo a delete.
-    let stats = at(T_NEW, &[("Id", json!("item-1")), ("LastUsedAt", json!(T_NEW))]);
+    let stats = at(T_NEW, &[("Id", json!("item-1")), ("DeviceId", json!("device-a")), ("LastUsedAt", json!(T_NEW))]);
     let output = merge_with_buckets(vec![item_manifest(vec![tombstone("item-1", T_MID)], vec![])], vec![], vec![item_manifest(vec![item("item-1", "item", T_OLD)], vec![])], vec![DataBucket::new(PERSONAL, "stats", [("ItemStats".to_string(), vec![stats])].into_iter().collect())]);
     let merged = &output.manifests[0];
     assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(1));
@@ -379,4 +379,31 @@ fn an_item_moved_to_another_manifest_does_not_stay_behind_in_the_one_it_left() {
     assert!(by_id[PERSONAL].manifest.tables["FieldValues"].is_empty());
     assert_eq!(by_id[SHARED].manifest.tables["Items"][0]["IsDeleted"], json!(0));
     assert_eq!(live_values(by_id[SHARED]), vec!["secret"], "and the moved item arrives whole");
+}
+
+#[test]
+fn two_devices_using_one_item_keep_both_counts() {
+    // Each device writes only its own row, so the newer device's row cannot replace the other's count.
+    let use_row = |device: &str, count: i64, updated_at: &str| at(updated_at, &[("Id", json!("item-1")), ("DeviceId", json!(device)), ("UseCount", json!(count)), ("LastUsedAt", json!(updated_at))]);
+    let stats_bucket = |rows: Vec<CodecRecord>| DataBucket::new(PERSONAL, "stats", [("ItemStats".to_string(), rows)].into_iter().collect());
+    let items = || item_manifest(vec![item("item-1", "item", T_OLD)], vec![]);
+
+    let output = merge_with_buckets(vec![items()], vec![stats_bucket(vec![use_row("device-web", 51, T_NEW)])], vec![items()], vec![stats_bucket(vec![use_row("device-phone", 55, T_MID)])]);
+
+    let stats = output.manifests[0].buckets.iter().find(|b| b.category == "stats").expect("stats bucket");
+    let mut counts: Vec<(String, i64)> = stats.tables["ItemStats"].iter().map(|r| (r["DeviceId"].as_str().unwrap().to_string(), r["UseCount"].as_i64().unwrap())).collect();
+    counts.sort();
+    assert_eq!(counts, vec![("device-phone".to_string(), 55), ("device-web".to_string(), 51)]);
+}
+
+#[test]
+fn a_stats_row_without_a_device_is_dropped() {
+    // Rows from before stats were kept per device would collide on materialize, so they do not survive a merge.
+    let legacy = at(T_NEW, &[("Id", json!("item-1")), ("UseCount", json!(9)), ("LastUsedAt", json!(T_NEW))]);
+    let stats_bucket = |rows: Vec<CodecRecord>| DataBucket::new(PERSONAL, "stats", [("ItemStats".to_string(), rows)].into_iter().collect());
+    let items = || item_manifest(vec![item("item-1", "item", T_OLD)], vec![]);
+
+    let output = merge_with_buckets(vec![items()], vec![stats_bucket(vec![legacy])], vec![items()], vec![]);
+
+    assert!(output.manifests[0].buckets.iter().all(|b| b.tables.get("ItemStats").is_none_or(Vec::is_empty)));
 }

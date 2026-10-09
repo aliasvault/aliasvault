@@ -12,6 +12,7 @@ extension VaultStore {
     /// Store the encrypted database
     public func storeEncryptedDatabase(_ base64EncryptedDb: String) throws {
         try base64EncryptedDb.write(to: getEncryptedDbPath(), atomically: true, encoding: .utf8)
+        loadedVaultStamp = storedVaultStamp()
     }
 
     /// Get the encrypted database
@@ -25,6 +26,8 @@ extension VaultStore {
 
     /// Unlock the vault - decrypt the database and setup the database connection.
     public func unlockVault() throws {
+        // Taken before the read: a write landing in between leaves the stamp behind, which only causes one extra reload.
+        let stamp = storedVaultStamp()
         guard let encryptedDbBase64 = getEncryptedDatabase() else {
             throw AppError.encryptionKeyNotFound
         }
@@ -36,6 +39,7 @@ extension VaultStore {
         do {
             let decrypted = try decrypt(data: encryptedDbData)
             try setupDatabaseWithDecryptedData(decrypted)
+            loadedVaultStamp = stamp
         } catch let vaultError as AppError {
             // Pass through AppError types
             throw vaultError
@@ -43,6 +47,21 @@ extension VaultStore {
             // Wrap other errors as decryption failure
             throw AppError.vaultDecryptFailed
         }
+    }
+
+    /// Reload the live database when another process (the app or the autofill extension) stored the vault since this
+    /// one loaded it, so a write never builds on, or a sync never pushes from, a stale copy. A no-op while locked.
+    public func reloadIfStoredVaultChanged() throws {
+        guard dbConnection != nil, let stamp = storedVaultStamp(), stamp != loadedVaultStamp else {
+            return
+        }
+        print("[VaultStore] Stored vault changed in another process, reloading the live database")
+        try unlockVault()
+    }
+
+    /// The modification date of the stored vault file, which every store replaces atomically.
+    private func storedVaultStamp() -> Date? {
+        return (try? FileManager.default.attributesOfItem(atPath: getEncryptedDbPath().path))?[.modificationDate] as? Date
     }
 
     /// Remove the encrypted database from the local filesystem

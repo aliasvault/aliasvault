@@ -40,6 +40,8 @@ public final class VaultSyncEngine {
     public func run(operation: String, forcePull: Bool = false, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
         let log = VaultSyncRunLog(operation: operation)
         runLog = log
+        // The engine reads and pushes from the live database, so it must hold what the other process last stored.
+        try vaultStore.reloadIfStoredVaultChanged()
         var finalResult: [String: Any]?
         let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey, sharing: sharing))
         defer {

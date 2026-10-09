@@ -264,6 +264,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false 
             value={value}
             type={field.FieldType === FieldTypes.Password || field.IsHidden ? 'password' : 'text'}
             labelSuffix={idx === 0 ? HistoryButton : undefined}
+            item={item}
           />
         ))}
         {HistoryModal}
@@ -284,6 +285,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false 
             value={value}
             type="password"
             labelSuffix={HistoryButton}
+            item={item}
           />
           {HistoryModal}
         </>
@@ -311,6 +313,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false 
             value={value}
             type="text"
             labelSuffix={HistoryButton}
+            item={item}
           />
           {HistoryModal}
         </>

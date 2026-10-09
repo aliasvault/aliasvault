@@ -187,6 +187,18 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         }
     }
 
+    override fun getDeviceId(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("device_id", null)
+    }
+
+    override fun setDeviceId(deviceId: String) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("device_id", deviceId)
+        }
+    }
+
     override fun getIsDirty(): Boolean {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("is_dirty", false)

@@ -11,8 +11,8 @@ use super::types::{is_guid, is_id_column};
 use crate::common::timestamp::updated_at;
 use crate::vault_model::{id_key, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS, SINGLE_VALUE_FIELD_KEYS};
 use crate::vault_model::names::{
-    CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
-    FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
+    CHANGED_AT_COL, DEVICE_ID_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
+    FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_STATS_TABLE, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
 };
 
 /// Domain-separation prefix for derived field value ids.
@@ -75,6 +75,15 @@ pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>
     }
     if let Some(rows) = tables.get_mut(ITEM_TAGS_TABLE) {
         normalize_item_tags(rows);
+    }
+    drop_deviceless_item_stats(tables);
+}
+
+/// Drop ItemStats rows written before stats were kept per device. They carry no DeviceId, so on materialize they
+/// would take the column default and collide with the same item's other device-less row.
+pub(crate) fn drop_deviceless_item_stats(tables: &mut HashMap<String, Vec<CodecRecord>>) {
+    if let Some(rows) = tables.get_mut(ITEM_STATS_TABLE) {
+        rows.retain(|row| str_col(row, DEVICE_ID_COL).is_some_and(|device| !device.is_empty()));
     }
 }
 

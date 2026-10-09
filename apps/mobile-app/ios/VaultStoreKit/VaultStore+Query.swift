@@ -44,6 +44,7 @@ extension VaultStore {
 
     /// Begin a transaction on the database. This is required for all database operations that modify the database.
     public func beginTransaction() throws {
+        try reloadIfStoredVaultChanged()
         try requireDatabase().executeBatch(sql: "BEGIN TRANSACTION")
     }
 
@@ -172,8 +173,9 @@ extension VaultStore {
     ///   - action: What the user did with it
     public func recordItemUsage(itemId: UUID, manifestId: String, action: ItemUsageAction) throws {
         // Usage statistics live in their own data bucket, pushed without a full manifest write.
+        let deviceId = getOrCreateDeviceId()
         try withTransaction(scope: VaultDataBucketCategory.stats) {
-            _ = try requireDatabase().recordItemUse(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, action: action)
+            _ = try requireDatabase().recordItemUse(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, deviceId: deviceId, action: action)
         }
     }
 

@@ -1,5 +1,6 @@
 export type { IAppIdentity } from './AppIdentity';
 export { getPlatform, setPlatform, tryGetPlatform, type IClientPlatform } from './ClientPlatform';
+export { getOrCreateDeviceId } from './DeviceId';
 export type { IKeyValueStore, StorageKey } from './KeyValueStore';
 export { devError, devLog, devWarn, type ILogger } from './Logger';
 export type { ISqliteDatabase, ISqliteEngine, SqliteRow, SqliteValue } from './SqliteEngine';

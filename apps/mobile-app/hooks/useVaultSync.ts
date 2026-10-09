@@ -8,6 +8,7 @@ import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import emitter from '@/utils/EventEmitter';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import {
   AppErrorCode,
   getAppErrorCode,
@@ -119,7 +120,8 @@ export const useVaultSync = (): {
       // Show appropriate indicator based on what sync will do
       if (statusCheck.hasNewerVault) {
         dbContext.setIsSyncing(true);
-      } else if (statusCheck.hasDirtyChanges && !statusCheck.isOffline) {
+      } else if (statusCheck.hasDirtyChanges && !statusCheck.isOffline && hasUserVisibleScope((await NativeVaultManager.getSyncState()).dirtyScopes as VaultMutationScope[])) {
+        // Silent scopes (usage statistics) upload without the indicator.
         dbContext.setIsUploading(true);
       }
 

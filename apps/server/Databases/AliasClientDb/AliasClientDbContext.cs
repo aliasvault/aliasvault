@@ -149,7 +149,8 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Attachment>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<Passkey>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<TotpCode>().HasKey(e => new { e.ManifestId, e.Id });
-        modelBuilder.Entity<ItemStat>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<ItemStat>().HasKey(e => new { e.ManifestId, e.Id, e.DeviceId });
+        modelBuilder.Entity<ItemStat>().Property(e => e.DeviceId).HasDefaultValue(string.Empty).UseCollation("NOCASE");
         modelBuilder.Entity<Setting>().HasKey(e => new { e.ManifestId, e.Key });
         modelBuilder.Entity<ItemTag>().HasKey(e => new { e.ManifestId, e.ItemId, e.TagId });
 

@@ -1,3 +1,4 @@
+import { getOrCreateDeviceId } from '@aliasvault/client/platform/DeviceId';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useDb } from '@/context/DbContext';
@@ -33,7 +34,8 @@ export function useClipboardCopy(id: string, item?: ItemRef): { copied: boolean;
 
     // Stats-only writes push silently, without the sync indicator.
     executeVaultMutationInBackground(async () => {
-      if (!dbContext.sqliteClient?.itemStats.recordUsage({ Id: itemId, ManifestId: manifestId }, 'copy')) {
+      const deviceId = await getOrCreateDeviceId();
+      if (!dbContext.sqliteClient?.itemStats.recordUsage({ Id: itemId, ManifestId: manifestId }, 'copy', deviceId)) {
         throw new Error('Item not found');
       }
     }).catch((error) => devLog('[Clipboard] Failed to record item usage', error));

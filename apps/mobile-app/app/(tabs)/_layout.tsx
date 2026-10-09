@@ -6,6 +6,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useForegroundSync } from '@/hooks/useForegroundSync';
 
 import { ServerSyncIndicator } from '@/components/ServerSyncIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -23,6 +24,8 @@ export default function TabLayout() : React.ReactNode {
   const authContext = useApp();
   const dbContext = useDb();
   const { t } = useTranslation();
+
+  useForegroundSync();
 
   // Check if user is authenticated and database is available
   const isFullyInitialized = authContext.isInitialized && dbContext.dbInitialized;

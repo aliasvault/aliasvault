@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260918090000_2.1.0-ManifestScopedStorage")]
+    [Migration("20261009150000_2.1.0-ManifestScopedStorage")]
     partial class _210ManifestScopedStorage
     {
         /// <inheritdoc />
@@ -391,6 +391,12 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
+                    b.Property<string>("DeviceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("")
+                        .UseCollation("NOCASE");
+
                     b.Property<int>("AutofillCount")
                         .HasColumnType("INTEGER");
 
@@ -424,7 +430,7 @@ namespace AliasClientDb.Migrations
                     b.Property<int>("UseCount")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ManifestId", "Id");
+                    b.HasKey("ManifestId", "Id", "DeviceId");
 
                     b.ToTable("ItemStats");
                 });

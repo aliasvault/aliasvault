@@ -32,6 +32,9 @@ public class VaultStore {
     /// The live vault, held in the Rust core's memory. Nil while vault is locked.
     internal var dbConnection: SqliteMemoryDatabase?
 
+    /// The modification date of the stored vault file the live database was loaded from or last written to.
+    internal var loadedVaultStamp: Date?
+
     /// The Account Key the unlocked session holds and the keychain and PIN protect (see `VaultStore+LegacyKeyConversion`).
     internal var accountKey: Data?
 

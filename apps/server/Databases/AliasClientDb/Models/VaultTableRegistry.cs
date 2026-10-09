@@ -22,7 +22,7 @@ public static class VaultTableRegistry
     public static IReadOnlyList<VaultTableDefinition> Tables { get; } = new VaultTableDefinition[]
     {
         new("Items", new[] { "Id" }, ManifestScoped: true, ItemChild: false),
-        new("ItemStats", new[] { "Id" }, ManifestScoped: true, ItemChild: true),
+        new("ItemStats", new[] { "Id", "DeviceId" }, ManifestScoped: true, ItemChild: true),
         new("FieldValues", new[] { "Id" }, ManifestScoped: true, ItemChild: true),
         new("Folders", new[] { "Id" }, ManifestScoped: true, ItemChild: false),
         new("Tags", new[] { "Id" }, ManifestScoped: true, ItemChild: false),

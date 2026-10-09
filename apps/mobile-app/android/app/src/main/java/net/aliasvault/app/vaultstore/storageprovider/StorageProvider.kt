@@ -162,6 +162,18 @@ interface StorageProvider {
      */
     fun getCapabilities(): String?
 
+    /**
+     * Get the random id of this install, which per-device vault rows are keyed by.
+     * @return The device id, or null when none was created yet
+     */
+    fun getDeviceId(): String?
+
+    /**
+     * Set the random id of this install.
+     * @param deviceId The device id
+     */
+    fun setDeviceId(deviceId: String)
+
     // region Sync State
 
     /**

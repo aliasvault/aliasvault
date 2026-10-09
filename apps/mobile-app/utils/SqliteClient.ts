@@ -5,7 +5,6 @@ import { EncryptionKeyRepository } from '@aliasvault/client/database/repositorie
 import { FolderRepository } from '@aliasvault/client/database/repositories/FolderRepository';
 import { ImportExportRepository } from '@aliasvault/client/database/repositories/ImportExportRepository';
 import { ItemRepository } from '@aliasvault/client/database/repositories/ItemRepository';
-import { ItemStatsRepository } from '@aliasvault/client/database/repositories/ItemStatsRepository';
 import { LogoRepository } from '@aliasvault/client/database/repositories/LogoRepository';
 import { PasskeyRepository } from '@aliasvault/client/database/repositories/PasskeyRepository';
 import { SettingsRepository } from '@aliasvault/client/database/repositories/SettingsRepository';
@@ -65,11 +64,6 @@ class SqliteClient {
    * Repository for the vault export.
    */
   public readonly importExport = asyncRepository(new ImportExportRepository(this.database, this.logoRepository), this.database);
-
-  /**
-   * Repository for per-item usage statistics.
-   */
-  public readonly itemStats = asyncRepository(new ItemStatsRepository(this.database), this.database, VaultDataBucketCategory.Stats);
 
   /**
    * The id of the user's personal manifest, or null when no pull has recorded one yet.

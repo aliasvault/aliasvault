@@ -14,6 +14,7 @@ import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
 import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
@@ -38,6 +39,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   const { showConfirm } = useDialog();
   const dbContext = useDb();
   const navigate = useNavigationDebounce();
+  const recordItemCopy = useRecordItemCopy();
 
   /**
    * Get the display text for an item, showing username by default,
@@ -81,6 +83,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
 
       // Use centralized clipboard utility
       await copyToClipboardWithExpiration(text, timeoutSeconds);
+      recordItemCopy({ Id: item.Id, ManifestId: item.ManifestId });
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
     }

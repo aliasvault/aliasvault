@@ -65,6 +65,13 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 } catch {
                     print("[Autofill] Failed to record credential usage: \(error)")
                 }
+            },
+            copyRecorder: { credential in
+                do {
+                    try vaultStore.recordItemUsage(itemId: credential.id, manifestId: credential.manifestId, action: .copy)
+                } catch {
+                    print("[Autofill] Failed to record credential copy: \(error)")
+                }
             }
         )
 

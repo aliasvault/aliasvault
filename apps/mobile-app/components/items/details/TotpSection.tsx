@@ -9,6 +9,7 @@ import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
@@ -40,6 +41,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
   const colors = useColors();
   const dbContext = useDb();
   const { t } = useTranslation();
+  const recordItemCopy = useRecordItemCopy();
 
   /**
    * Get the remaining seconds in the current TOTP window.
@@ -66,6 +68,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
 
       // Use centralized clipboard utility
       await copyToClipboardWithExpiration(code, timeoutSeconds);
+      recordItemCopy({ Id: item.Id, ManifestId: item.ManifestId });
 
       if (Platform.OS !== 'android') {
         // Only show toast on iOS, Android already shows a native toast on clipboard interactions.

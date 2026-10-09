@@ -32,6 +32,7 @@ import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONArray
 import org.json.JSONObject
+import uniffi.aliasvault_core.ItemUsageAction
 
 /**
  * The native vault manager that manages the vault store and all input/output operations on it.
@@ -1168,6 +1169,23 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error executing WebAPI request", e)
             promise.reject("ERR_WEB_API_REQUEST", "Failed to execute WebAPI request: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Record a copied value in its item's usage statistics (this device's row); the next sync pushes it.
+     * @param itemId The item the value belongs to
+     * @param manifestId The manifest the item belongs to
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun recordItemCopy(itemId: String, manifestId: String, promise: Promise) {
+        try {
+            vaultStore.recordItemUsage(itemId, manifestId, ItemUsageAction.COPY)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error recording item usage", e)
+            promise.reject("ERR_RECORD_ITEM_USAGE", "Failed to record item usage: ${e.message}", e)
         }
     }
 

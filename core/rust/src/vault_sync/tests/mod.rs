@@ -66,8 +66,8 @@ pub fn insert_attachment(conn: &Connection, item_id: &str, bytes: Option<&[u8]>)
     conn.execute("INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 'passport.pdf', ?, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, ATTACHMENT, item_id, bytes, now(), now()]).unwrap();
 }
 
-pub fn insert_item_stats(conn: &Connection, item_id: &str, use_count: i64) {
-    conn.execute("INSERT INTO ItemStats (ManifestId, Id, UseCount, AutofillCount, CopyCount, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 0, 0, 0, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, item_id, use_count, now(), now()]).unwrap();
+pub fn insert_item_stats(conn: &Connection, item_id: &str, device_id: &str, use_count: i64) {
+    conn.execute("INSERT INTO ItemStats (ManifestId, Id, DeviceId, UseCount, AutofillCount, CopyCount, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 0, 0, 0, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, item_id, device_id, use_count, now(), now()]).unwrap();
 }
 
 /// Rename every item, stamped now: a local edit newer than the synced state.

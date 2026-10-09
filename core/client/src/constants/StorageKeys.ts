@@ -24,6 +24,8 @@ export const StorageKeys = {
   API_URL: 'local:apiUrl',
   /** Base URL of the web client, used for deep links. */
   CLIENT_URL: 'local:clientUrl',
+  /** Random id of this install, which per-device vault rows (item usage statistics) are keyed by. */
+  DEVICE_ID: 'local:deviceId',
   /** Version reported by the server on the last status call. */
   SERVER_VERSION: 'local:serverVersion',
   /** The capabilities that are enabled for this account passed from the server. */

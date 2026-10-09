@@ -161,6 +161,17 @@ extension VaultStore {
         userDefaults.synchronize()
     }
 
+    /// The random id of this install, created on first use and shared by the app and the autofill extension.
+    /// Per-device vault rows (item usage statistics) are keyed by it.
+    public func getOrCreateDeviceId() -> String {
+        if let deviceId = userDefaults.string(forKey: VaultConstants.deviceIdKey), !deviceId.isEmpty {
+            return deviceId
+        }
+        let deviceId = UUID().uuidString.lowercased()
+        userDefaults.set(deviceId, forKey: VaultConstants.deviceIdKey)
+        return deviceId
+    }
+
     /// Get the dirty flag
     public func getIsDirty() -> Bool {
         return userDefaults.bool(forKey: VaultConstants.isDirtyKey)

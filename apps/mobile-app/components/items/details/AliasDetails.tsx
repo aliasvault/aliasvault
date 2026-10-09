@@ -33,24 +33,28 @@ export const AliasDetails: React.FC<AliasDetailsProps> = ({ item }) : React.Reac
       <ThemedText type="subtitle">{t('common.alias')}</ThemedText>
       {hasName && (
         <FormInputCopyToClipboard
+          item={item}
           label={t('items.fullName')}
           value={fullName}
         />
       )}
       {firstName && (
         <FormInputCopyToClipboard
+          item={item}
           label={t('fieldLabels.alias.first_name')}
           value={firstName}
         />
       )}
       {lastName && (
         <FormInputCopyToClipboard
+          item={item}
           label={t('fieldLabels.alias.last_name')}
           value={lastName}
         />
       )}
       {IdentityHelperUtils.isValidBirthDate(birthDate) && (
         <FormInputCopyToClipboard
+          item={item}
           label={t('fieldLabels.alias.birthdate')}
           value={IdentityHelperUtils.normalizeBirthDate(birthDate!)}
         />

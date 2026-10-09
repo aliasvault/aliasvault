@@ -1,8 +1,8 @@
 /**
  * SQL query constants for per-item usage statistics.
  *
- * A stats row is addressed by `(ManifestId, Id)` where `Id` *is* the item's id, so recording a use is an
- * upsert against the item itself rather than a lookup through a foreign key.
+ * A stats row is addressed by `(ManifestId, Id, DeviceId)` where `Id` *is* the item's id, so each device upserts its
+ * own row of an item and never overwrites another device's counts.
  */
 export class ItemStatsQueries {
   /**
@@ -14,14 +14,14 @@ export class ItemStatsQueries {
     WHERE Id = ? AND ManifestId = ?`;
 
   /**
-   * Create the stats row for an item on its first recorded use.
+   * Create this device's stats row for an item on its first recorded use.
    */
   public static readonly INSERT_ROW = `
     INSERT OR IGNORE INTO ItemStats (
-      ManifestId, Id, LastUsedAt, UseCount, LastAutofilledAt, AutofillCount,
+      ManifestId, Id, DeviceId, LastUsedAt, UseCount, LastAutofilledAt, AutofillCount,
       LastCopiedAt, CopyCount, LastPasskeyAuthAt, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted
     )
-    VALUES (?, ?, NULL, 0, NULL, 0, NULL, 0, NULL, 0, ?, ?, 0)`;
+    VALUES (?, ?, ?, NULL, 0, NULL, 0, NULL, 0, NULL, 0, ?, ?, 0)`;
 
   /**
    * Record one use of an item, bumping the aggregate and the per-action pair for `action`.
@@ -31,7 +31,7 @@ export class ItemStatsQueries {
    * item was last emptied out of the trash.
    * @param lastColumn - The per-action timestamp column
    * @param countColumn - The per-action counter column
-   * @returns The UPDATE statement, taking (now, now, ManifestId, Id)
+   * @returns The UPDATE statement, taking (now, now, now, ManifestId, Id, DeviceId)
    */
   public static forAction(lastColumn: string, countColumn: string): string {
     return `
@@ -42,6 +42,6 @@ export class ItemStatsQueries {
           ${countColumn} = ${countColumn} + 1,
           UpdatedAt = ?,
           IsDeleted = 0
-      WHERE ManifestId = ? AND Id = ?`;
+      WHERE ManifestId = ? AND Id = ? AND DeviceId = ?`;
   }
 }

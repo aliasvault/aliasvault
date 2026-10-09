@@ -187,6 +187,10 @@
     resolve(@"Not applicable on iOS");
 }
 
+- (void)recordItemCopy:(NSString *)itemId manifestId:(NSString *)manifestId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager recordItemCopy:itemId manifestId:manifestId resolver:resolve rejecter:reject];
+}
+
 - (void)registerCredentialIdentities:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager registerCredentialIdentities:resolve rejecter:reject];
 }

@@ -23,21 +23,22 @@ const ACTION_COLUMNS: Record<ItemUsageAction, { last: string; count: string }> =
  */
 export class ItemStatsRepository extends BaseRepository {
   /**
-   * Record one use of an item.
+   * Record one use of an item in this device's row.
    * @param item - The item that was used, named by its manifest and id
    * @param action - What the user did with it
-   * @returns True when a use was recorded, false when no such item exists
+   * @param deviceId - The random id of this install
+   * @returns True when a use was recorded, false when no such item exists or no device id is given
    */
-  public *recordUsage(item: ItemRef, action: ItemUsageAction): DbOp<boolean> {
-    if ((yield* this.query<{ Found: number }>(ItemStatsQueries.ITEM_EXISTS, [item.Id, item.ManifestId])).length === 0) {
+  public *recordUsage(item: ItemRef, action: ItemUsageAction, deviceId: string): DbOp<boolean> {
+    if (!deviceId || (yield* this.query<{ Found: number }>(ItemStatsQueries.ITEM_EXISTS, [item.Id, item.ManifestId])).length === 0) {
       return false;
     }
 
     const now = this.now();
     const columns = ACTION_COLUMNS[action];
 
-    yield* this.execute(ItemStatsQueries.INSERT_ROW, [item.ManifestId, item.Id, now, now]);
-    yield* this.execute(ItemStatsQueries.forAction(columns.last, columns.count), [now, now, now, item.ManifestId, item.Id]);
+    yield* this.execute(ItemStatsQueries.INSERT_ROW, [item.ManifestId, item.Id, deviceId, now, now]);
+    yield* this.execute(ItemStatsQueries.forAction(columns.last, columns.count), [now, now, now, item.ManifestId, item.Id, deviceId]);
     return true;
   }
 }

@@ -7,6 +7,8 @@ use crate::vault_codec::logo_id_for;
 const PERSONAL: &str = "11111111-1111-4111-8111-111111111111";
 const SHARED: &str = "22222222-2222-4222-8222-222222222222";
 const ITEM: &str = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const DEVICE: &str = "6f1c1a2e-3b4d-4c5e-8f60-718293a4b5c6";
+const OTHER_DEVICE: &str = "0a9b8c7d-6e5f-4a3b-9c2d-1e0f2a3b4c5d";
 const T0: &str = "2026-01-01 10:00:00.000";
 const T1: &str = "2026-01-02 10:00:00.000";
 
@@ -190,12 +192,26 @@ fn merge_candidates_are_matched_by_rp_id_and_stay_apart_per_manifest() {
 fn recording_a_use_counts_per_action_and_ignores_missing_items() {
     with_vault(|conn| {
         insert_item(conn, PERSONAL, ITEM, "Example", T0);
-        assert!(record_item_use(conn, ITEM, PERSONAL, ItemUsageAction::Autofill).unwrap());
-        assert!(record_item_use(conn, ITEM, PERSONAL, ItemUsageAction::Passkey).unwrap());
-        assert!(!record_item_use(conn, ITEM, SHARED, ItemUsageAction::Copy).unwrap());
+        assert!(record_item_use(conn, ITEM, PERSONAL, DEVICE, ItemUsageAction::Autofill).unwrap());
+        assert!(record_item_use(conn, ITEM, PERSONAL, DEVICE, ItemUsageAction::Passkey).unwrap());
+        assert!(!record_item_use(conn, ITEM, SHARED, DEVICE, ItemUsageAction::Copy).unwrap());
+        assert!(!record_item_use(conn, ITEM, PERSONAL, "", ItemUsageAction::Copy).unwrap(), "a use without a device is not recorded");
 
         let counts: (i64, i64, i64) = conn.query_row("SELECT UseCount, AutofillCount, PasskeyAuthCount FROM ItemStats", [], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).unwrap();
         assert_eq!(counts, (2, 1, 1));
+    });
+}
+
+#[test]
+fn each_device_counts_the_uses_of_an_item_in_its_own_row() {
+    with_vault(|conn| {
+        insert_item(conn, PERSONAL, ITEM, "Example", T0);
+        assert!(record_item_use(conn, ITEM, PERSONAL, DEVICE, ItemUsageAction::Autofill).unwrap());
+        assert!(record_item_use(conn, ITEM, PERSONAL, OTHER_DEVICE, ItemUsageAction::Copy).unwrap());
+        assert!(record_item_use(conn, ITEM, PERSONAL, OTHER_DEVICE, ItemUsageAction::Copy).unwrap());
+
+        let rows = conn.query_row("SELECT COUNT(*), SUM(UseCount) FROM ItemStats WHERE Id = ?1", [ITEM], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?))).unwrap();
+        assert_eq!(rows, (2, 3));
     });
 }
 

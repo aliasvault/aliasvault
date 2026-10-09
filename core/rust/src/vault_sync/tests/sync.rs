@@ -9,6 +9,10 @@ use crate::crypto;
 use crate::vault_codec;
 use crate::vault_sync::session::SyncSession;
 
+/// The install ids the stats tests record uses under.
+const THIS_DEVICE: &str = "6f1c1a2e-3b4d-4c5e-8f60-718293a4b5c6";
+const OTHER_DEVICE: &str = "0a9b8c7d-6e5f-4a3b-9c2d-1e0f2a3b4c5d";
+
 #[test]
 fn fresh_client_pulls_and_materializes_the_server_vault() {
     let vek = crypto::generate_key_base64();
@@ -255,7 +259,7 @@ fn bucket_only_push_writes_the_manifest_while_the_personal_delivery_key_is_missi
     let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
     let category = vault_codec::bucket_layout()[0].category.clone();
 
-    s.host.edit(|db| insert_item_stats(db, ITEM_A, 1));
+    s.host.edit(|db| insert_item_stats(db, ITEM_A, THIS_DEVICE, 1));
     let result = s.host.sync_scoped(&[category.as_str()]);
 
     assert_eq!(result["success"], true, "{}", result);
@@ -298,10 +302,10 @@ fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it(
 
     // Another device writes the stats of item B after this client's status check, while this one used item A.
     let stale_status = s.server.borrow().status();
-    insert_item_stats(&s.db, ITEM_B, 5);
+    insert_item_stats(&s.db, ITEM_B, OTHER_DEVICE, 5);
     s.publish(8);
     s.host.respond_once("GET", "Status", stale_status);
-    s.host.edit(|db| insert_item_stats(db, ITEM_A, 1));
+    s.host.edit(|db| insert_item_stats(db, ITEM_A, THIS_DEVICE, 1));
 
     let result = s.host.sync_scoped(&["stats"]);
 

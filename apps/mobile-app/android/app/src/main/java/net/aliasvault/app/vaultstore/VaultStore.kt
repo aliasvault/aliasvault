@@ -478,7 +478,8 @@ class VaultStore(
      */
     fun recordItemUsage(itemId: String, manifestId: String, action: ItemUsageAction) {
         // Usage statistics live in their own data bucket, pushed without a full manifest write.
-        database.withTransaction(VaultDataBucketCategory.STATS) { db -> db.recordItemUse(itemId.lowercase(), manifestId, action) }
+        val deviceId = metadata.getOrCreateDeviceId()
+        database.withTransaction(VaultDataBucketCategory.STATS) { db -> db.recordItemUse(itemId.lowercase(), manifestId, deviceId, action) }
     }
 
     /**

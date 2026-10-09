@@ -13,6 +13,7 @@ import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
+import { getOrCreateDeviceId } from '@aliasvault/client/platform/DeviceId';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -1377,7 +1378,7 @@ export async function handleRecordItemUsage(
     }
 
     const sqliteClient = await createVaultSqliteClient();
-    if (!sqliteClient.itemStats.recordUsage({ Id: message.itemId, ManifestId: message.manifestId }, message.action)) {
+    if (!sqliteClient.itemStats.recordUsage({ Id: message.itemId, ManifestId: message.manifestId }, message.action, await getOrCreateDeviceId())) {
       // No such item (deleted between use and record); nothing to attribute the use to.
       return { success: false };
     }

@@ -11,7 +11,7 @@ use super::{BlobColumn, SystemField, TableConfig};
 /// Per-table rationale (merge key choices, natural keys) is documented in the TypeScript source.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Items").manifest_scoped(),
-    TableConfig::new("ItemStats").manifest_scoped().item_child(),
+    TableConfig::new("ItemStats").manifest_scoped().item_child().with_primary_key(&["Id", "DeviceId"]),
     TableConfig::new("FieldValues")
         .manifest_scoped()
         .item_child()
@@ -195,6 +195,8 @@ pub mod names {
     pub const FOLDER_ID_COL: &str = "FolderId";
     /// The `LogoId` column.
     pub const LOGO_ID_COL: &str = "LogoId";
+    /// The `DeviceId` column.
+    pub const DEVICE_ID_COL: &str = "DeviceId";
     /// The `Kind` column.
     pub const KIND_COL: &str = "Kind";
     /// The `Source` column.
