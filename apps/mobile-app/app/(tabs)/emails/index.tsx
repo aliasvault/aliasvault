@@ -1,3 +1,4 @@
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,7 +6,6 @@ import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated, Touch
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 

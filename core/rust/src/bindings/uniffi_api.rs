@@ -186,10 +186,52 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
     crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
 }
 
-/// `argon2_derive_key` over raw bytes: the mobile PIN unlock's Keychain/Keystore salt is random bytes, not UTF-8.
+/// AES-256-GCM encrypt bytes with a base64 key. Returns `IV | ciphertext | tag`.
 #[uniffi::export]
-pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
-    crate::crypto::argon2::argon2_derive_key_bytes_from_settings(&password, &salt, &encryption_settings)
+pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::symmetric_encrypt_raw_with_aad(&plaintext, &key_base64, &[])
+}
+
+/// AES-256-GCM decrypt `IV | ciphertext | tag` bytes with a base64 key.
+#[uniffi::export]
+pub fn symmetric_decrypt_bytes(encrypted: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::symmetric_decrypt_bytes(&encrypted, &key_base64)
+}
+
+/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
+#[uniffi::export]
+pub fn symmetric_decrypt(base64_ciphertext: String, key_base64: String) -> Result<String, VaultError> {
+    crate::crypto::symmetric_decrypt(&base64_ciphertext, &key_base64)
+}
+
+/// A fresh random salt for a new PIN wrap.
+#[uniffi::export]
+pub fn pin_generate_salt() -> Vec<u8> {
+    crate::crypto::pin_generate_salt()
+}
+
+/// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.
+#[uniffi::export]
+pub fn pin_encrypt(pin: String, salt: Vec<u8>, secret: Vec<u8>) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::pin_encrypt(&pin, &salt, &secret)
+}
+
+/// Decrypt a PIN wrap. Fails for a wrong PIN.
+#[uniffi::export]
+pub fn pin_decrypt(pin: String, salt: Vec<u8>, encrypted: Vec<u8>) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::pin_decrypt(&pin, &salt, &encrypted)
+}
+
+/// Whether a stored failed-attempt count means the PIN is locked.
+#[uniffi::export]
+pub fn pin_is_locked(failed_attempts: u32) -> bool {
+    crate::crypto::pin_is_locked(failed_attempts)
+}
+
+/// The counter state after one more failed PIN attempt on top of the stored count.
+#[uniffi::export]
+pub fn pin_register_failure(failed_attempts: u32) -> crate::crypto::PinFailure {
+    crate::crypto::pin_register_failure(failed_attempts)
 }
 
 /// Create a new account key hierarchy for the unlock key around an account keypair (JWK) the caller generated, as JSON.

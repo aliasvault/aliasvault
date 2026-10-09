@@ -6,7 +6,7 @@ import initWasm, * as core from '../../wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -69,10 +69,27 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     decodeEmailSource: (source): Promise<Uint8Array> => ready(() => core.decodeEmailSource(source)),
     extractEmailAttachment: (source, index, detachedBody): Promise<Uint8Array> => ready(() => core.extractEmailAttachment(source, index, detachedBody)),
 
+    symmetricEncryptBytes: (plaintext, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricEncryptBytes(plaintext, keyBase64)),
+    symmetricDecryptBytes: (encrypted, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricDecryptBytes(encrypted, keyBase64)),
+    symmetricDecrypt: (base64Ciphertext, keyBase64): Promise<string> => ready(() => core.symmetricDecrypt(base64Ciphertext, keyBase64)),
+    rsaDecrypt: (base64Ciphertext, privateKeyJwk): Promise<Uint8Array> => ready(() => core.rsaDecrypt(base64Ciphertext, privateKeyJwk)),
+
     /*
-     * Argon2 blocks the thread it runs on for up to a few seconds on slow devices, so let the caller's loading
-     * indicator paint first before proceeding with the expensive operation.
+     * Argon2 (also behind pinEncrypt and pinDecrypt) blocks the thread it runs on for up to a few seconds on slow
+     * devices, so let the caller's loading indicator paint first before proceeding with the expensive operation.
      */
+    pinGenerateSalt: (): Promise<Uint8Array> => ready(() => core.pinGenerateSalt()),
+    pinEncrypt: async (pin, salt, secret): Promise<Uint8Array> => {
+      await yieldToPaint();
+      return ready(() => core.pinEncrypt(pin, salt, secret));
+    },
+    pinDecrypt: async (pin, salt, encrypted): Promise<Uint8Array> => {
+      await yieldToPaint();
+      return ready(() => core.pinDecrypt(pin, salt, encrypted));
+    },
+    pinIsLocked: (failedAttempts): Promise<boolean> => ready(() => core.pinIsLocked(failedAttempts)),
+    pinRegisterFailure: (failedAttempts): Promise<PinFailure> => ready(() => core.pinRegisterFailure(failedAttempts) as PinFailure),
+
     argon2DeriveKey: async (password, salt, encryptionSettings): Promise<Uint8Array> => {
       await yieldToPaint();
       return ready(() => core.argon2DeriveKey(password, salt, encryptionSettings));

@@ -1,11 +1,12 @@
 import Foundation
-import CryptoKit
 import Security
 import RustCoreFramework
 import VaultModels
 import VaultUtils
 
-/// Extension for the VaultStore class to handle PIN unlock functionality
+/// Extension for the VaultStore class to handle PIN unlock functionality.
+/// The key wrap and the attempt policy live in the Rust core (crypto/pin.rs); this file only stores them.
+/// Other platform implementations: VaultPin.kt (Android), PinUnlockService.ts (browser extension).
 extension VaultStore {
     // MARK: - PIN Constants
 
@@ -13,10 +14,6 @@ extension VaultStore {
     private static let pinSaltKey = "pinSalt"
     private static let pinLengthKey = "pinLength"
     private static let pinFailedAttemptsKey = "pinFailedAttempts"
-    private static let maxPinAttempts = 4
-
-    /// Argon2id cost parameters for PIN key derivation.
-    private static let pinArgon2Settings = "{\"MemorySize\":65536,\"Iterations\":3,\"DegreeOfParallelism\":1}"
 
     // MARK: - PIN Status Methods
 
@@ -32,14 +29,9 @@ extension VaultStore {
         return length > 0 ? length : nil
     }
 
-    /// Get failed attempts count from secure storage.
-    public func getPinFailedAttempts() -> Int {
-        do {
-            return try retrievePinFailedAttemptsFromKeychain()
-        } catch {
-            // Failure to retrieve the counter counts as the maximum for safety reasons.
-            return Self.maxPinAttempts
-        }
+    /// Get the failed attempts count from secure storage, or nil when it is unreadable (which counts as locked).
+    private func getPinFailedAttempts() -> UInt32? {
+        return try? retrievePinFailedAttemptsFromKeychain()
     }
 
     // MARK: - PIN Setup Methods
@@ -65,24 +57,8 @@ extension VaultStore {
 
     /// Encrypt the Account Key with a key derived from the PIN and keep it in the keychain.
     internal func encryptKeyWithPin(_ accountKey: Data, pin: String) throws {
-        // Generate random salt
-        var salt = Data(count: 16)
-        let result = salt.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!)
-        }
-        guard result == errSecSuccess else {
-            throw NSError(domain: "VaultStore", code: 22, userInfo: [NSLocalizedDescriptionKey: "Failed to generate random salt"])
-        }
-
-        // Derive key from PIN + salt using Argon2id
-        let pinKey = try derivePinKey(pin: pin, salt: salt)
-
-        // Encrypt the Account Key using AES-GCM
-        let symmetricKey = SymmetricKey(data: pinKey)
-        let sealedBox = try AES.GCM.seal(accountKey, using: symmetricKey)
-        guard let encryptedData = sealedBox.combined else {
-            throw NSError(domain: "VaultStore", code: 23, userInfo: [NSLocalizedDescriptionKey: "Failed to encrypt vault key"])
-        }
+        let salt = RustCoreFramework.pinGenerateSalt()
+        let encryptedData = try RustCoreFramework.pinEncrypt(pin: pin, salt: salt, secret: accountKey)
 
         // Store encrypted key and salt in keychain (without biometric protection)
         try storePinDataInKeychain(encryptedKey: encryptedData, salt: salt)
@@ -113,22 +89,14 @@ extension VaultStore {
 
     /// Decrypt the key the PIN protects, counting a failure against the PIN attempts.
     private func decryptPinProtectedKey(_ pin: String) throws -> Data {
-        if getPinFailedAttempts() >= Self.maxPinAttempts {
+        guard let failedAttempts = getPinFailedAttempts(), !RustCoreFramework.pinIsLocked(failedAttempts: failedAttempts) else {
             try? removeAndDisablePin()
             throw PinUnlockError.locked
         }
 
         do {
-            // Retrieve encrypted key and salt from keychain
             let (encryptedKey, salt) = try retrievePinDataFromKeychain()
-
-            // Derive key from PIN + salt
-            let pinKey = try derivePinKey(pin: pin, salt: salt)
-
-            // Decrypt the vault encryption key
-            let symmetricKey = SymmetricKey(data: pinKey)
-            let sealedBox = try AES.GCM.SealedBox(combined: encryptedKey)
-            let decryptedKey = try AES.GCM.open(sealedBox, using: symmetricKey)
+            let decryptedKey = try RustCoreFramework.pinDecrypt(pin: pin, salt: salt, encrypted: encryptedKey)
 
             // Reset failed attempts on success
             try storePinFailedAttemptsInKeychain(0)
@@ -136,20 +104,16 @@ extension VaultStore {
 
             return decryptedKey
         } catch {
-            // Increment failed attempts
-            let currentAttempts = getPinFailedAttempts()
-            let newAttempts = currentAttempts + 1
-            try? storePinFailedAttemptsInKeychain(newAttempts)
+            let failure = RustCoreFramework.pinRegisterFailure(failedAttempts: failedAttempts)
+            try? storePinFailedAttemptsInKeychain(Int(failure.failedAttempts))
 
             // If max attempts reached, disable PIN and clear all stored data
-            if newAttempts >= Self.maxPinAttempts {
+            if failure.locked {
                 try? removeAndDisablePin()
                 throw PinUnlockError.locked
             }
 
-            // Return incorrect PIN error with attempts remaining
-            let attemptsRemaining = Self.maxPinAttempts - newAttempts
-            throw PinUnlockError.incorrectPin(attemptsRemaining: attemptsRemaining)
+            throw PinUnlockError.incorrectPin(attemptsRemaining: Int(failure.attemptsRemaining))
         }
     }
 
@@ -175,28 +139,6 @@ extension VaultStore {
     }
 
     // MARK: - Private PIN Methods
-
-    /// Derive encryption key from PIN + salt using Argon2id
-    ///
-    /// Uses Argon2id with high memory cost (64 MB) to make brute-force attacks expensive.
-    /// The salt is stored in Keychain with device-unlock protection, which means an attacker
-    /// who steals the encrypted blob cannot brute-force offline because they cannot access
-    /// the salt without unlocking the device.
-    ///
-    /// Parameters:
-    /// - pin: User's PIN (low entropy)
-    /// - salt: Random salt (stored in Keychain, requires device unlock to access)
-    private func derivePinKey(pin: String, salt: Data) throws -> Data {
-        guard let pinData = pin.data(using: .utf8) else {
-            throw NSError(domain: "VaultStore", code: 28, userInfo: [NSLocalizedDescriptionKey: "Failed to convert PIN to data"])
-        }
-
-        guard let derivedKey = try? RustCoreFramework.argon2DeriveKeyBytes(password: pinData, salt: salt, encryptionSettings: Self.pinArgon2Settings) else {
-            throw NSError(domain: "VaultStore", code: 29, userInfo: [NSLocalizedDescriptionKey: "Argon2 PIN hashing failed"])
-        }
-
-        return derivedKey
-    }
 
     /// Store PIN encrypted data in keychain (without biometric protection)
     private func storePinDataInKeychain(encryptedKey: Data, salt: Data) throws {
@@ -298,7 +240,7 @@ extension VaultStore {
     }
 
     /// Retrieve failed attempts counter from Keychain
-    private func retrievePinFailedAttemptsFromKeychain() throws -> Int {
+    private func retrievePinFailedAttemptsFromKeychain() throws -> UInt32 {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: VaultConstants.keychainService,
@@ -320,10 +262,10 @@ extension VaultStore {
         }
 
         let attempts = data.withUnsafeBytes { $0.loadUnaligned(as: Int.self) }
-        guard attempts >= 0 else {
+        guard attempts >= 0, let count = UInt32(exactly: attempts) else {
             throw NSError(domain: "VaultStore", code: 43, userInfo: [NSLocalizedDescriptionKey: "Invalid PIN failed attempts value"])
         }
-        return attempts
+        return count
     }
 
     /// Remove failed attempts counter from Keychain

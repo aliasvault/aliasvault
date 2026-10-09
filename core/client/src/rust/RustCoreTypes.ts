@@ -80,6 +80,16 @@ export type SrpSession = {
   key: string;
 };
 
+/** The PIN attempt counter after a failed attempt (the Rust `pin_register_failure`). */
+export type PinFailure = {
+  /** The failed-attempt count to store. */
+  failedAttempts: number;
+  /** Attempts left before the PIN locks; 0 when `locked`. */
+  attemptsRemaining: number;
+  /** Whether the host must now delete the PIN wrap and disable PIN unlock. */
+  locked: boolean;
+};
+
 /**
  * The outcome of opening a key chain with a stored key (the Rust `open_account_key_chain`). Keys are base64; on
  * success `accountKey` is what the caller stores in place of the key it passed in.

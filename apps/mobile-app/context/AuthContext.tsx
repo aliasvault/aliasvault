@@ -1,8 +1,6 @@
-import { Buffer } from 'buffer';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import type { AuthMethod } from '@/utils/AppUnlockUtility';
 
 import { useDb } from '@/context/DbContext';
@@ -259,14 +257,7 @@ export const AuthProvider: React.FC<{
     }
 
     // Derive the unlock key from the password using the stored parameters
-    const unlockKey = await EncryptionUtility.deriveKeyFromPassword(
-      password,
-      params.salt,
-      params.encryptionType,
-      params.encryptionSettings
-    );
-
-    const unlockKeyBase64 = Buffer.from(unlockKey).toString('base64');
+    const unlockKeyBase64 = await NativeVaultManager.deriveKeyFromPassword(password, params.salt, params.encryptionType, params.encryptionSettings);
 
     // Check if the current password is correct
     const isValid = await dbContext.verifyUnlockKey(unlockKeyBase64);

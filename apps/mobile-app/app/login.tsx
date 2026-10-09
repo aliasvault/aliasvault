@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -12,7 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import { LocalAuthError } from '@/utils/types/errors/LocalAuthError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -371,14 +368,7 @@ export default function LoginScreen() : React.ReactNode {
     try {
       const initiateLoginResponse = await srpUtil.initiateLogin(SrpAuthService.normalizeUsername(credentials.username));
 
-      const unlockKey = await EncryptionUtility.deriveKeyFromPassword(
-        credentials.password,
-        initiateLoginResponse.salt,
-        initiateLoginResponse.encryptionType,
-        initiateLoginResponse.encryptionSettings
-      );
-
-      const unlockKeyBase64 = Buffer.from(unlockKey).toString('base64');
+      const unlockKeyBase64 = await NativeVaultManager.deriveKeyFromPassword(credentials.password, initiateLoginResponse.salt, initiateLoginResponse.encryptionType, initiateLoginResponse.encryptionSettings);
       const passwordCredentials = await SrpAuthService.loginCredentials(unlockKeyBase64, initiateLoginResponse, credentials.username);
 
       setLoginStatus(t('auth.validatingCredentials'));

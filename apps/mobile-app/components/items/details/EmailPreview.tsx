@@ -12,7 +12,7 @@ import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
 import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 

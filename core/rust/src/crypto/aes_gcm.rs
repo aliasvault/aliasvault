@@ -31,7 +31,20 @@ pub fn symmetric_encrypt_bytes_with_aad(plaintext: &[u8], key_base64: &str, aad:
 
 /// Encrypt bytes bound to `aad`, which decryption must present as-is. Returns the raw `IV | ciphertext | tag`.
 pub fn symmetric_encrypt_raw_with_aad(plaintext: &[u8], key_base64: &str, aad: &[u8]) -> VaultResult<Vec<u8>> {
-    let cipher = cipher_for(key_base64)?;
+    encrypt_with_cipher(&cipher_for(key_base64)?, plaintext, aad)
+}
+
+/// Encrypt bytes with a raw 32-byte key and no associated data. Returns the raw `IV | ciphertext | tag`.
+pub fn symmetric_encrypt_with_raw_key(plaintext: &[u8], key: &[u8]) -> VaultResult<Vec<u8>> {
+    encrypt_with_cipher(&cipher_from_bytes(key)?, plaintext, &[])
+}
+
+/// Decrypt raw `IV | ciphertext | tag` bytes with a raw 32-byte key and no associated data.
+pub fn symmetric_decrypt_with_raw_key(iv_and_ciphertext: &[u8], key: &[u8]) -> VaultResult<Vec<u8>> {
+    decrypt_with_cipher(&cipher_from_bytes(key)?, iv_and_ciphertext, &[])
+}
+
+fn encrypt_with_cipher(cipher: &Aes256Gcm, plaintext: &[u8], aad: &[u8]) -> VaultResult<Vec<u8>> {
     let mut iv = [0u8; IV_LENGTH];
     fill_random(&mut iv);
 
@@ -52,10 +65,13 @@ pub fn symmetric_decrypt_bytes(iv_and_ciphertext: &[u8], key_base64: &str) -> Va
 
 /// Decrypt `IV | ciphertext | tag` bytes that were encrypted bound to `aad`.
 pub fn symmetric_decrypt_bytes_with_aad(iv_and_ciphertext: &[u8], key_base64: &str, aad: &[u8]) -> VaultResult<Vec<u8>> {
+    decrypt_with_cipher(&cipher_for(key_base64)?, iv_and_ciphertext, aad)
+}
+
+fn decrypt_with_cipher(cipher: &Aes256Gcm, iv_and_ciphertext: &[u8], aad: &[u8]) -> VaultResult<Vec<u8>> {
     if iv_and_ciphertext.len() < IV_LENGTH {
         return Err(VaultError::General("AES-GCM ciphertext is too short".to_string()));
     }
-    let cipher = cipher_for(key_base64)?;
     let (iv, ciphertext) = iv_and_ciphertext.split_at(IV_LENGTH);
     cipher
         .decrypt(Nonce::from_slice(iv), Payload { msg: ciphertext, aad })
@@ -97,11 +113,14 @@ pub fn symmetric_decrypt_with_aad(base64_ciphertext: &str, key_base64: &str, aad
 }
 
 fn cipher_for(key_base64: &str) -> VaultResult<Aes256Gcm> {
-    let key = Zeroizing::new(base64_decode(key_base64)?);
+    cipher_from_bytes(&Zeroizing::new(base64_decode(key_base64)?))
+}
+
+fn cipher_from_bytes(key: &[u8]) -> VaultResult<Aes256Gcm> {
     if key.len() != KEY_LENGTH {
         return Err(VaultError::General(format!("AES-GCM key must be {} bytes, got {}", KEY_LENGTH, key.len())));
     }
-    Ok(Aes256Gcm::new_from_slice(&key[..]).expect("key length checked above"))
+    Ok(Aes256Gcm::new_from_slice(key).expect("key length checked above"))
 }
 
 #[cfg(test)]

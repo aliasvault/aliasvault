@@ -12,12 +12,12 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
 export { AutofillMatchingMode } from './RustCoreTypes';
-export type { CodecBlobEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecTableData, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment } from './RustCoreTypes';
+export type { CodecBlobEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecTableData, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, PinFailure } from './RustCoreTypes';
 
 /**
  * The host's Rust core binding.
@@ -172,6 +172,41 @@ export async function decodeEmailSource(source: Uint8Array): Promise<Uint8Array>
  */
 export async function extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array> {
   return rustCore().extractEmailAttachment(source, index, detachedBody);
+}
+
+/**
+ * A fresh random salt for a new PIN wrap.
+ */
+export async function pinGenerateSalt(): Promise<Uint8Array> {
+  return rustCore().pinGenerateSalt();
+}
+
+/**
+ * Encrypt `secret` with a key derived from the PIN and salt, as `IV | ciphertext | tag`.
+ */
+export async function pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array> {
+  return rustCore().pinEncrypt(pin, salt, secret);
+}
+
+/**
+ * Decrypt a PIN wrap. Rejects for a wrong PIN.
+ */
+export async function pinDecrypt(pin: string, salt: Uint8Array, encrypted: Uint8Array): Promise<Uint8Array> {
+  return rustCore().pinDecrypt(pin, salt, encrypted);
+}
+
+/**
+ * Whether a stored failed-attempt count means the PIN is locked.
+ */
+export async function pinIsLocked(failedAttempts: number): Promise<boolean> {
+  return rustCore().pinIsLocked(failedAttempts);
+}
+
+/**
+ * The counter state after one more failed PIN attempt on top of the stored count.
+ */
+export async function pinRegisterFailure(failedAttempts: number): Promise<PinFailure> {
+  return rustCore().pinRegisterFailure(failedAttempts);
 }
 
 /**

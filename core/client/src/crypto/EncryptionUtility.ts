@@ -1,5 +1,5 @@
 import { devWarn } from '../platform/Logger';
-import { argon2DeriveKey, parseEmailSource, type ParsedEmailAttachment } from '../rust/RustCore';
+import { argon2DeriveKey, parseEmailSource, rustCore, type ParsedEmailAttachment } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
 
@@ -22,6 +22,14 @@ export type DecryptedEmail = {
   /** The decrypted source bytes. */
   sourceBytes: Uint8Array | null;
 };
+
+/**
+ * Whether the host has WebCrypto. Hosts without it (the mobile app) run AES-GCM and the email key unwrap in the Rust
+ * core, which writes the same `IV | ciphertext | tag` format; the web hosts keep WebCrypto for its speed on large blobs.
+ */
+function hasWebCrypto(): boolean {
+  return typeof crypto !== 'undefined' && crypto.subtle !== undefined;
+}
 
 /**
  * Utility class for encryption operations including:
@@ -56,6 +64,10 @@ export class EncryptionUtility {
       return plaintext;
     }
 
+    if (!hasWebCrypto()) {
+      return bytesToBase64(await rustCore().symmetricEncryptBytes(new TextEncoder().encode(plaintext), base64Key));
+    }
+
     const key = await crypto.subtle.importKey(
       "raw",
       base64ToBytes(base64Key),
@@ -88,6 +100,10 @@ export class EncryptionUtility {
    * Encrypts raw bytes using AES-GCM symmetric encryption.
    */
   public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
+    if (!hasWebCrypto()) {
+      return bytesToBase64(await rustCore().symmetricEncryptBytes(plaintextBytes, base64Key));
+    }
+
     const key = await crypto.subtle.importKey(
       "raw",
       base64ToBytes(base64Key),
@@ -123,6 +139,10 @@ export class EncryptionUtility {
       return base64Ciphertext;
     }
 
+    if (!hasWebCrypto()) {
+      return rustCore().symmetricDecrypt(base64Ciphertext, base64Key);
+    }
+
     const key = await crypto.subtle.importKey(
       "raw",
       base64ToBytes(base64Key),
@@ -154,6 +174,10 @@ export class EncryptionUtility {
   public static async symmetricDecryptBytes(encryptedBytes: Uint8Array, base64Key: string): Promise<Uint8Array> {
     if (!encryptedBytes || encryptedBytes.length === 0) {
       return encryptedBytes;
+    }
+
+    if (!hasWebCrypto()) {
+      return rustCore().symmetricDecryptBytes(encryptedBytes, base64Key);
     }
 
     const key = await crypto.subtle.importKey(
@@ -323,6 +347,10 @@ export class EncryptionUtility {
    */
   private static async resolveEmailSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
     const match = EncryptionUtility.resolveEmailDecryptionKey(decryptionKeys, publicKeys, encryptionKeys);
+    if (!hasWebCrypto()) {
+      return bytesToBase64(await rustCore().rsaDecrypt(match.encryptedSymmetricKey, match.encryptionKey.PrivateKey));
+    }
+
     const privateKey = await EncryptionUtility.getPrivateKeyObject(match.encryptionKey);
     const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(match.encryptedSymmetricKey, privateKey);
 

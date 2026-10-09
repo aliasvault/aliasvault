@@ -26,6 +26,15 @@ function base64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString('base64');
 }
 
+/**
+ * Reject a core function that mobile JavaScript never calls because the native layer (Swift/Kotlin) runs it.
+ */
+function notImplementedOnMobile(name: string, reason: string): Promise<never> {
+  return Promise.reject(new Error(`${name} is not implemented on mobile: ${reason}`));
+}
+
+const PIN_IS_NATIVE = 'PIN unlock runs in the native VaultStore';
+
 /*
  * The client core's Rust binding on mobile: the uniffi Swift/Kotlin bindings, reached through the one generic
  * `NativeVaultManager.rustCall` method. Swift and Kotlin hold a case per function and no logic. Functions that take a
@@ -58,6 +67,17 @@ export const nativeRustCore: IRustCore = {
   decodeEmailSource: (source) => callForBytes('decodeEmailSource', base64(source)),
   extractEmailAttachment: (source, index, detachedBody) => callForBytes('extractEmailAttachment', base64(source), index, detachedBody ? base64(detachedBody) : null),
 
+  symmetricEncryptBytes: (plaintext, keyBase64) => callForBytes('symmetricEncryptBytes', base64(plaintext), keyBase64),
+  symmetricDecryptBytes: (encrypted, keyBase64) => callForBytes('symmetricDecryptBytes', base64(encrypted), keyBase64),
+  symmetricDecrypt: (base64Ciphertext, keyBase64) => call('symmetricDecrypt', base64Ciphertext, keyBase64),
+  rsaDecrypt: (base64Ciphertext, privateKeyJwk) => callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk),
+
+  pinGenerateSalt: () => notImplementedOnMobile('pinGenerateSalt', PIN_IS_NATIVE),
+  pinEncrypt: () => notImplementedOnMobile('pinEncrypt', PIN_IS_NATIVE),
+  pinDecrypt: () => notImplementedOnMobile('pinDecrypt', PIN_IS_NATIVE),
+  pinIsLocked: () => notImplementedOnMobile('pinIsLocked', PIN_IS_NATIVE),
+  pinRegisterFailure: () => notImplementedOnMobile('pinRegisterFailure', PIN_IS_NATIVE),
+
   argon2DeriveKey: (password, salt, encryptionSettings) => callForBytes('argon2DeriveKey', password, salt, encryptionSettings),
   deriveSrpPasswordHash: (unlockKeyBase64, encryptionType) => call('deriveSrpPasswordHash', unlockKeyBase64, encryptionType),
   openAccountKeyChain: (storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey) => call('openAccountKeyChain', storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey),
@@ -80,12 +100,6 @@ export const nativeRustCore: IRustCore = {
   vaultCodecPackPayload: (payloadJson) => callForBytes('vaultCodecPackPayload', payloadJson),
   vaultCodecUnpackPayload: (plainBytes) => call('vaultCodecUnpackPayload', base64(plainBytes)),
 
-  createVaultSyncSession: () => Promise.reject(new Error('The vault sync engine is driven natively on mobile and has no JavaScript session.')),
+  createVaultSyncSession: () => notImplementedOnMobile('createVaultSyncSession', 'the vault sync engine is driven natively'),
 };
 
-/**
- * RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key. Mobile only.
- */
-export function rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array> {
-  return callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk);
-}

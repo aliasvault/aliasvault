@@ -941,13 +941,6 @@ class VaultStore(
     }
 
     /**
-     * Get failed PIN attempts count.
-     */
-    fun getPinFailedAttempts(): Int {
-        return pin.getPinFailedAttempts()
-    }
-
-    /**
      * Setup PIN unlock.
      */
     @Throws(Exception::class)

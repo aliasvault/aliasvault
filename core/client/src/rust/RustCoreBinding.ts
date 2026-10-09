@@ -1,4 +1,4 @@
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -44,6 +44,17 @@ export interface IRustCore {
   parseEmailSource(source: Uint8Array): Promise<ParsedEmail>;
   decodeEmailSource(source: Uint8Array): Promise<Uint8Array>;
   extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array>;
+
+  symmetricEncryptBytes(plaintext: Uint8Array, keyBase64: string): Promise<Uint8Array>;
+  symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
+  symmetricDecrypt(base64Ciphertext: string, keyBase64: string): Promise<string>;
+  rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array>;
+
+  pinGenerateSalt(): Promise<Uint8Array>;
+  pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array>;
+  pinDecrypt(pin: string, salt: Uint8Array, encrypted: Uint8Array): Promise<Uint8Array>;
+  pinIsLocked(failedAttempts: number): Promise<boolean>;
+  pinRegisterFailure(failedAttempts: number): Promise<PinFailure>;
 
   argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array>;
   deriveSrpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string>;

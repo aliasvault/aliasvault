@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 
+import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons } from '@expo/vector-icons';
 import { Paths } from 'expo-file-system';
@@ -12,7 +13,6 @@ import { WebView, type WebViewNavigation } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
-import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 import { getFileForFilename } from '@/utils/FileUtility';
 import { itemRoute } from '@/utils/ItemRoute';
