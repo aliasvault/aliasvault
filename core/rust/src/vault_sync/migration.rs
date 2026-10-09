@@ -8,7 +8,7 @@ use super::errors::{Failure, SyncError, SyncResult};
 use super::push::{self, PushStatus, WriteKind};
 use super::state::{self, Ctx};
 use super::types::{FullSyncResult, MigrateManifestResult, MigrationKind, MigrationStatusResult};
-use super::{keys, legacy, pull};
+use super::{http, keys, legacy, pull};
 
 /// Where the local vault's schema stands against the current one.
 pub(crate) async fn schema_state(ctx: &mut Ctx) -> SyncResult<SchemaState> {
@@ -75,6 +75,7 @@ pub(crate) async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
 pub(crate) async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     let migrated: SyncResult<bool> = async {
         if !keys::has_cached_key_chain(&ctx.host).await? {
+            ensure_server_ready(ctx).await?;
             return legacy::upgrade_account_to_manifest_v1(ctx).await;
         }
         migrate_schema(ctx).await
@@ -87,6 +88,14 @@ pub(crate) async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
             MigrateManifestResult { failure: (&error).into(), ..Default::default() }
         }
     }
+}
+
+/// Refuse the one-time account upgrade before it touches the local vault unless the server is reachable and serves the v2 API.
+async fn ensure_server_ready(ctx: &Ctx) -> SyncResult<()> {
+    if http::get_status(&ctx.host).await?.server_version == http::SERVER_UNREACHABLE_VERSION {
+        return Err(SyncError::Network("the server is unreachable; the migration needs it".to_string()));
+    }
+    Ok(())
 }
 
 /// The permanent migration: rebuild a stale local schema onto the current one and push it. Returns whether the

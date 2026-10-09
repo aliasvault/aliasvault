@@ -14,7 +14,7 @@ object AppInfo {
      * tells the user to update it. Raise it when a client starts to depend on an endpoint or a response shape that
      * older servers lack.
      */
-    const val MIN_SERVER_VERSION = "0.12.0-dev"
+    const val MIN_SERVER_VERSION = "0.31.0-alpha"
 
     /**
      * The default AliasVault web client URL.

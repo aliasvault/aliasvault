@@ -10,7 +10,7 @@ public enum AppInfo {
     /// The minimum supported AliasVault server (API) version. A client refuses to work against an older server and
     /// tells the user to update it. Raise it when a client starts to depend on an endpoint or a response shape that
     /// older servers lack.
-    public static let minServerVersion = "0.12.0-dev"
+    public static let minServerVersion = "0.31.0-alpha"
 
     /// The default AliasVault web client URL.
     public static let defaultClientUrl = "https://app.aliasvault.com"

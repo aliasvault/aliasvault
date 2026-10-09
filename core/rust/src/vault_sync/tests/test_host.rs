@@ -328,7 +328,7 @@ pub fn request_json(operation: &str, key: &str, dirty: bool, mutation_sequence: 
         "mutationSequence": mutation_sequence,
         "dirtyScopes": if dirty { vec!["Main"] } else { vec![] },
         "privateEmailDomains": ["private.io"],
-        "minServerVersion": "0.12.0-dev",
+        "minServerVersion": "0.31.0-alpha",
     })
 }
 
