@@ -1,7 +1,7 @@
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import { decryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { clearEmailKeyCache } from '@aliasvault/client/email/EmailDecryption';
 import { syncErrorMessage, toSyncErrorDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -245,7 +245,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // Reflect locks from other windows.
   useEffect(() => {
     return vaultStateEvents.onVaultLocked(() => {
-      EncryptionUtility.clearRsaPrivateKeyCache();
+      clearEmailKeyCache();
       setSqliteClient(null);
       setDbAvailable(false);
     });
@@ -395,7 +395,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Clear database and remove from background worker, called when logging out.
    */
   const clearDatabase = useCallback(() : void => {
-    EncryptionUtility.clearRsaPrivateKeyCache();
+    clearEmailKeyCache();
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);

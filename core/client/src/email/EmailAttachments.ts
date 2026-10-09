@@ -1,5 +1,6 @@
-import EncryptionUtility from '../crypto/EncryptionUtility';
 import { extractEmailAttachment } from '../rust/RustCore';
+
+import { decryptEmailAttachment } from './EmailDecryption';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { EncryptionKey } from '@aliasvault/models/vault';
@@ -19,7 +20,7 @@ export async function getEmailAttachmentBytes(webApi: Pick<WebApiService, 'downl
   let detachedBody: Uint8Array | undefined;
   if (partIndex !== null) {
     const encryptedPart = await webApi.downloadBlob(`Email/${email.id}/parts/${partIndex}`);
-    detachedBody = await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys);
+    detachedBody = await decryptEmailAttachment(encryptedPart, email, encryptionKeys);
   }
   return extractEmailAttachment(sourceBytes, index, detachedBody);
 }

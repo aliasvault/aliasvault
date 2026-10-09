@@ -1,6 +1,6 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
@@ -171,7 +171,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
 
               if (allMails) {
                 // Loop through all emails and decrypt them locally
-                const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
+                const decryptedEmails: MailboxEmail[] = await decryptEmailList(
                   allMails,
                   data.publicKeys,
                   dbContext.sqliteClient!.encryptionKeys.getAll()

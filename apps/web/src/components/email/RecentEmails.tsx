@@ -1,6 +1,6 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -78,7 +78,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
       } else if (isAliasVault && dbContext.sqliteClient) {
         const mailbox = await webApi.get<Mailbox>(`EmailBox/${emailAddress}`);
         setOwnerNotice(aliasOwnerNotice(emailAddress, mailbox, manifestId, dbContext.sqliteClient.getPersonalManifestId(), dbContext.sqliteClient.folders.getAll()));
-        const decrypted = await EncryptionUtility.decryptEmailList(mailbox.mails, mailbox.publicKeys, dbContext.sqliteClient.encryptionKeys.getAll());
+        const decrypted = await decryptEmailList(mailbox.mails, mailbox.publicKeys, dbContext.sqliteClient.encryptionKeys.getAll());
         setMailboxEmails(decrypted);
         setError('');
       }

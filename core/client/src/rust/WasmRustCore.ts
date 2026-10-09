@@ -69,9 +69,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     decodeEmailSource: (source): Promise<Uint8Array> => ready(() => core.decodeEmailSource(source)),
     extractEmailAttachment: (source, index, detachedBody): Promise<Uint8Array> => ready(() => core.extractEmailAttachment(source, index, detachedBody)),
 
-    symmetricEncryptBytes: (plaintext, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricEncryptBytes(plaintext, keyBase64)),
-    symmetricDecryptBytes: (encrypted, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricDecryptBytes(encrypted, keyBase64)),
     symmetricDecrypt: (base64Ciphertext, keyBase64): Promise<string> => ready(() => core.symmetricDecrypt(base64Ciphertext, keyBase64)),
+    symmetricDecryptBytes: (encrypted, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricDecryptBytes(encrypted, keyBase64)),
     rsaDecrypt: (base64Ciphertext, privateKeyJwk): Promise<Uint8Array> => ready(() => core.rsaDecrypt(base64Ciphertext, privateKeyJwk)),
 
     /*

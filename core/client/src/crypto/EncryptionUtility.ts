@@ -1,35 +1,6 @@
-import { devWarn } from '../platform/Logger';
-import { argon2DeriveKey, parseEmailSource, rustCore, type ParsedEmailAttachment } from '../rust/RustCore';
+import { argon2DeriveKey } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
-
-import type { EncryptionKey } from '@aliasvault/models/vault';
-import type { Email, EmailDecryptionKey, MailboxEmail } from '@aliasvault/models/webapi';
-
-/**
- * A decrypted email. Its metadata (subject, sender) is decrypted from the individually encrypted fields, while
- * the bodies and attachments are derived from the raw RFC 822 source.
- */
-export type DecryptedEmail = {
-  /** The email with its metadata fields decrypted. */
-  email: Email;
-  /** The html body parsed out of the source, null when the message has no html part. */
-  htmlBody: string | null;
-  /** The plain text body parsed out of the source, null when the message has no text part. */
-  textBody: string | null;
-  /** The attachments contained in the source, in the index order `extractEmailAttachment` expects. */
-  attachments: ParsedEmailAttachment[];
-  /** The decrypted source bytes. */
-  sourceBytes: Uint8Array | null;
-};
-
-/**
- * Whether the host has WebCrypto. Hosts without it (the mobile app) run AES-GCM and the email key unwrap in the Rust
- * core, which writes the same `IV | ciphertext | tag` format; the web hosts keep WebCrypto for its speed on large blobs.
- */
-function hasWebCrypto(): boolean {
-  return typeof crypto !== 'undefined' && crypto.subtle !== undefined;
-}
 
 /**
  * Utility class for encryption operations including:
@@ -38,8 +9,6 @@ function hasWebCrypto(): boolean {
  * - RSA-OAEP asymmetric encryption/decryption
  */
 export class EncryptionUtility {
-  private static rsaPrivateKeyCache = new Map<string, Promise<CryptoKey>>();
-
   /**
    * Derives a key from a password using Argon2Id
    */
@@ -62,10 +31,6 @@ export class EncryptionUtility {
   public static async symmetricEncrypt(plaintext: string, base64Key: string): Promise<string> {
     if (!plaintext) {
       return plaintext;
-    }
-
-    if (!hasWebCrypto()) {
-      return bytesToBase64(await rustCore().symmetricEncryptBytes(new TextEncoder().encode(plaintext), base64Key));
     }
 
     const key = await crypto.subtle.importKey(
@@ -100,10 +65,6 @@ export class EncryptionUtility {
    * Encrypts raw bytes using AES-GCM symmetric encryption.
    */
   public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
-    if (!hasWebCrypto()) {
-      return bytesToBase64(await rustCore().symmetricEncryptBytes(plaintextBytes, base64Key));
-    }
-
     const key = await crypto.subtle.importKey(
       "raw",
       base64ToBytes(base64Key),
@@ -139,10 +100,6 @@ export class EncryptionUtility {
       return base64Ciphertext;
     }
 
-    if (!hasWebCrypto()) {
-      return rustCore().symmetricDecrypt(base64Ciphertext, base64Key);
-    }
-
     const key = await crypto.subtle.importKey(
       "raw",
       base64ToBytes(base64Key),
@@ -174,10 +131,6 @@ export class EncryptionUtility {
   public static async symmetricDecryptBytes(encryptedBytes: Uint8Array, base64Key: string): Promise<Uint8Array> {
     if (!encryptedBytes || encryptedBytes.length === 0) {
       return encryptedBytes;
-    }
-
-    if (!hasWebCrypto()) {
-      return rustCore().symmetricDecryptBytes(encryptedBytes, base64Key);
     }
 
     const key = await crypto.subtle.importKey(
@@ -280,13 +233,6 @@ export class EncryptionUtility {
   }
 
   /**
-   * Clears cached RSA private keys when the in-memory vault is locked or reset.
-   */
-  public static clearRsaPrivateKeyCache(): void {
-    EncryptionUtility.rsaPrivateKeyCache.clear();
-  }
-
-  /**
    * Imports an RSA-OAEP private key as non-extractable.
    */
   private static async importPrivateKey(privateKey: string): Promise<CryptoKey> {
@@ -300,157 +246,6 @@ export class EncryptionUtility {
       false,
       ["decrypt"]
     );
-  }
-
-  /**
-   * Returns the cached non-extractable private key matching an email encryption public key.
-   */
-  private static async getPrivateKeyObject(encryptionKey: EncryptionKey): Promise<CryptoKey> {
-    const cachedPrivateKey = EncryptionUtility.rsaPrivateKeyCache.get(encryptionKey.PublicKey);
-
-    if (cachedPrivateKey) {
-      return await cachedPrivateKey;
-    }
-
-    const privateKey = EncryptionUtility.importPrivateKey(encryptionKey.PrivateKey).catch(error => {
-      EncryptionUtility.rsaPrivateKeyCache.delete(encryptionKey.PublicKey);
-      throw error;
-    });
-
-    EncryptionUtility.rsaPrivateKeyCache.set(encryptionKey.PublicKey, privateKey);
-    return await privateKey;
-  }
-
-  /**
-   * Finds the decryption key of an email's symmetric key that one of the locally held keypairs can open. An email
-   * carries one decryption key per manifest keypair the caller holds. It names its public key by index into the
-   * publicKeys table that the API sends once per response.
-   */
-  private static resolveEmailDecryptionKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): { encryptionKey: EncryptionKey, encryptedSymmetricKey: string } {
-    for (const decryptionKey of decryptionKeys) {
-      const publicKey = publicKeys[decryptionKey.keyIndex];
-      if (!publicKey) {
-        continue;
-      }
-
-      const key = encryptionKeys.find(k => k.PublicKey === publicKey);
-      if (key) {
-        return { encryptionKey: key, encryptedSymmetricKey: decryptionKey.encryptedSymmetricKey };
-      }
-    }
-
-    throw new Error('Encryption key not found');
-  }
-
-  /**
-   * Decrypts the symmetric key an email's contents are encrypted with, as base64.
-   */
-  private static async resolveEmailSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
-    const match = EncryptionUtility.resolveEmailDecryptionKey(decryptionKeys, publicKeys, encryptionKeys);
-    if (!hasWebCrypto()) {
-      return bytesToBase64(await rustCore().rsaDecrypt(match.encryptedSymmetricKey, match.encryptionKey.PrivateKey));
-    }
-
-    const privateKey = await EncryptionUtility.getPrivateKeyObject(match.encryptionKey);
-    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(match.encryptedSymmetricKey, privateKey);
-
-    return bytesToBase64(symmetricKey);
-  }
-
-  /**
-   * Decrypts an individual email based on the provided public/private key pairs.
-   */
-  public static async decryptEmail(email: Email, encryptionKeys: EncryptionKey[]): Promise<DecryptedEmail> {
-    try {
-      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
-
-      const decryptedEmail = { ...email };
-      decryptedEmail.subject = await EncryptionUtility.symmetricDecrypt(email.subject, symmetricKeyBase64);
-      decryptedEmail.fromDisplay = await EncryptionUtility.symmetricDecrypt(email.fromDisplay, symmetricKeyBase64);
-      decryptedEmail.fromDomain = await EncryptionUtility.symmetricDecrypt(email.fromDomain, symmetricKeyBase64);
-      decryptedEmail.fromLocal = await EncryptionUtility.symmetricDecrypt(email.fromLocal, symmetricKeyBase64);
-
-      const sourceBytes = email.messageSource ? await EncryptionUtility.symmetricDecryptBytes(base64ToBytes(email.messageSource), symmetricKeyBase64) : null;
-      decryptedEmail.messageSource = '';
-
-      let htmlBody: string | null = null;
-      let textBody: string | null = null;
-      let attachments: ParsedEmailAttachment[] = [];
-
-      if (sourceBytes) {
-        try {
-          const parsed = await parseEmailSource(sourceBytes);
-          htmlBody = parsed.htmlBody;
-          textBody = parsed.textBody;
-          attachments = parsed.attachments;
-        } catch (err) {
-          // A parse failure costs the bodies, not the email: the raw source view renders without the parser.
-          devWarn(`[Email] Could not parse the source of email ${email.id}:`, err);
-        }
-      }
-
-      return { email: decryptedEmail, htmlBody, textBody, attachments, sourceBytes };
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
-    }
-  }
-
-  /**
-   * Decrypts a list of emails based on the provided public/private key pairs. The publicKeys table is the one the
-   * API sent alongside the emails; each email's decryption keys reference it by index.
-   *
-   * Emails that cannot be decrypted are skipped rather than failing the batch. The server only serves mail the
-   * caller holds a key for, so this should not happen but we handle it gracefully to prevent one unreadable record
-   * from breaking the whole list view.
-   */
-  public static async decryptEmailList(
-    emails: MailboxEmail[],
-    publicKeys: string[],
-    encryptionKeys: EncryptionKey[]
-  ): Promise<MailboxEmail[]> {
-    const results = await Promise.all(emails.map(async email => {
-      try {
-        const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, publicKeys, encryptionKeys);
-
-        // Create a new object to avoid mutating the original
-        const decryptedEmail = { ...email };
-
-        // Decrypt all email fields
-        decryptedEmail.subject = await EncryptionUtility.symmetricDecrypt(email.subject, symmetricKeyBase64);
-        decryptedEmail.fromDisplay = await EncryptionUtility.symmetricDecrypt(email.fromDisplay, symmetricKeyBase64);
-        decryptedEmail.fromDomain = await EncryptionUtility.symmetricDecrypt(email.fromDomain, symmetricKeyBase64);
-        decryptedEmail.fromLocal = await EncryptionUtility.symmetricDecrypt(email.fromLocal, symmetricKeyBase64);
-
-        if (email.messagePreview) {
-          decryptedEmail.messagePreview = await EncryptionUtility.symmetricDecrypt(email.messagePreview, symmetricKeyBase64);
-        }
-
-        return decryptedEmail;
-      } catch (err) {
-        devWarn(`[Email] Skipping email ${email.id}, it could not be decrypted:`, err);
-        return null;
-      }
-    }));
-
-    return results.filter((email): email is MailboxEmail => email !== null);
-  }
-
-  /**
-   * Decrypts an attachment and returns the decrypted content as Uint8Array (raw bytes).
-   */
-  public static async decryptAttachment(
-    encryptedBytes: Uint8Array,
-    email: Email,
-    encryptionKeys: EncryptionKey[]
-  ): Promise<Uint8Array> {
-    try {
-      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
-
-      // Decrypt the attachment using raw bytes
-      return await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, symmetricKeyBase64);
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to decrypt attachment');
-    }
   }
 }
 

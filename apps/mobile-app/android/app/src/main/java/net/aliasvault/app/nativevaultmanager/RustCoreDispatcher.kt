@@ -37,7 +37,6 @@ import uniffi.aliasvault_core.srpGenerateSalt
 import uniffi.aliasvault_core.srpVerifySession
 import uniffi.aliasvault_core.symmetricDecrypt
 import uniffi.aliasvault_core.symmetricDecryptBytes
-import uniffi.aliasvault_core.symmetricEncryptBytes
 import uniffi.aliasvault_core.vaultCodecCanonicalizeFromSqlite
 import uniffi.aliasvault_core.vaultCodecGenerateManifestSalt
 import uniffi.aliasvault_core.vaultCodecLogoContentHash
@@ -86,7 +85,6 @@ object RustCoreDispatcher {
             "decodeEmailSource" -> json(decodeEmailSource(args.bytes(0)))
             "extractEmailAttachment" -> json(extractEmailAttachment(args.bytes(0), args.uint(1), args.optionalBytes(2)))
             "rsaDecrypt" -> json(rsaDecrypt(args.string(0), args.string(1)))
-            "symmetricEncryptBytes" -> json(symmetricEncryptBytes(args.bytes(0), args.string(1)))
             "symmetricDecrypt" -> json(symmetricDecrypt(args.string(0), args.string(1)))
             "symmetricDecryptBytes" -> json(symmetricDecryptBytes(args.bytes(0), args.string(1)))
 

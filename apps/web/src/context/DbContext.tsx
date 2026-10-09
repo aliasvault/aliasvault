@@ -1,6 +1,6 @@
 import { AppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { clearEmailKeyCache } from '@aliasvault/client/email/EmailDecryption';
 import { getPlatform } from '@aliasvault/client/platform';
 import { syncErrorMessage, toSyncErrorDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -146,7 +146,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Drop the in-memory database, called when logging out or locking.
    */
   const clearDatabase = useCallback((): void => {
-    EncryptionUtility.clearRsaPrivateKeyCache();
+    clearEmailKeyCache();
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);

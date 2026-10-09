@@ -12,7 +12,7 @@ import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
 import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -204,7 +204,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
 
               if (allMails) {
                 // Loop through all emails and decrypt them locally
-                const decryptedEmails = await EncryptionUtility.decryptEmailList(
+                const decryptedEmails = await decryptEmailList(
                   allMails,
                   data.publicKeys,
                   encryptionKeys

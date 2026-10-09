@@ -45,9 +45,8 @@ export interface IRustCore {
   decodeEmailSource(source: Uint8Array): Promise<Uint8Array>;
   extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array>;
 
-  symmetricEncryptBytes(plaintext: Uint8Array, keyBase64: string): Promise<Uint8Array>;
-  symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
   symmetricDecrypt(base64Ciphertext: string, keyBase64: string): Promise<string>;
+  symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
   rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array>;
 
   pinGenerateSalt(): Promise<Uint8Array>;

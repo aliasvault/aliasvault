@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptEmail, decryptEmailAttachment, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons } from '@expo/vector-icons';
 import { Paths } from 'expo-file-system';
@@ -84,7 +84,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
 
       // Decrypt email locally using public/private key pairs
       const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
-      const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
+      const decryptedEmail = await decryptEmail(response, encryptionKeys);
       const { sourceBytes, ...parsedEmail } = decryptedEmail;
       sourceBytesRef.current = sourceBytes;
       setDecrypted({ ...parsedEmail, hasSource: sourceBytes !== null });
@@ -187,7 +187,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
 
       const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
       const encryptedPart = attachment.detached ? await webApi.downloadBlob(`Email/${email.id}/parts/${attachment.partIndex}`) : null;
-      const detachedBody = encryptedPart ? await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys) : undefined;
+      const detachedBody = encryptedPart ? await decryptEmailAttachment(encryptedPart, email, encryptionKeys) : undefined;
       const decryptedBytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
 
       const tempFile = getFileForFilename(Paths.cache, attachment.filename);

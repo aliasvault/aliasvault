@@ -1,5 +1,5 @@
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
+import { decryptEmail } from '@aliasvault/client/email/EmailDecryption';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { decodeEmailSource } from '@aliasvault/client/rust/RustCore';
 
@@ -82,7 +82,7 @@ export async function loadSpamOkEmail(emailPrefix: string, emailId: number): Pro
  */
 export async function loadAliasVaultEmail(webApi: WebApiService, sqliteClient: SqliteClient, emailId: number): Promise<EmailViewModel> {
   const email = await webApi.get<Email>(`Email/${emailId}`);
-  const decrypted = await EncryptionUtility.decryptEmail(email, sqliteClient.encryptionKeys.getAll());
+  const decrypted = await decryptEmail(email, sqliteClient.encryptionKeys.getAll());
   return {
     id: decrypted.email.id,
     subject: decrypted.email.subject,

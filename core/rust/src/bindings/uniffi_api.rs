@@ -186,22 +186,16 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
     crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
 }
 
-/// AES-256-GCM encrypt bytes with a base64 key. Returns `IV | ciphertext | tag`.
+/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
 #[uniffi::export]
-pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
-    crate::crypto::symmetric_encrypt_raw_with_aad(&plaintext, &key_base64, &[])
+pub fn symmetric_decrypt(base64_ciphertext: String, key_base64: String) -> Result<String, VaultError> {
+    crate::crypto::symmetric_decrypt(&base64_ciphertext, &key_base64)
 }
 
 /// AES-256-GCM decrypt `IV | ciphertext | tag` bytes with a base64 key.
 #[uniffi::export]
 pub fn symmetric_decrypt_bytes(encrypted: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
     crate::crypto::symmetric_decrypt_bytes(&encrypted, &key_base64)
-}
-
-/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
-#[uniffi::export]
-pub fn symmetric_decrypt(base64_ciphertext: String, key_base64: String) -> Result<String, VaultError> {
-    crate::crypto::symmetric_decrypt(&base64_ciphertext, &key_base64)
 }
 
 /// A fresh random salt for a new PIN wrap.

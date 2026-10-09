@@ -1,5 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { getPlatform } from '@aliasvault/client/platform';
 import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -128,7 +128,7 @@ const EmailsHome: React.FC = () => {
     try {
       const data = await webApi.get<InboxResponse>(`EmailBox?page=${page}&pageSize=${pageSize}`);
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
-      const decrypted: MailboxEmail[] = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
+      const decrypted: MailboxEmail[] = await decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
       const lookup = getItemLookup();
 
       const emails = decrypted.map((email): MailListEntry => {

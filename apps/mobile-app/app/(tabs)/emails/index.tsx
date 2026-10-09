@@ -1,4 +1,4 @@
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +71,7 @@ export default function EmailsScreen() : React.ReactNode {
         const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
 
         // Decrypt emails locally using public/private key pairs
-        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
+        const decryptedEmails = await decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
         if (reset) {
           setEmails(decryptedEmails);
@@ -122,7 +122,7 @@ export default function EmailsScreen() : React.ReactNode {
 
       // Decrypt emails locally
       const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
-      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
+      const decryptedEmails = await decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
       // Append to existing emails
       setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);

@@ -198,22 +198,16 @@ pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &st
     crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
 }
 
-/// AES-256-GCM encrypt bytes with a base64 key. Returns `IV | ciphertext | tag`.
-#[wasm_bindgen(js_name = symmetricEncryptBytes)]
-pub fn symmetric_encrypt_bytes_js(plaintext: &[u8], key_base64: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::symmetric_encrypt_raw_with_aad(plaintext, key_base64, &[]).map_err(js_err)
+/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
+#[wasm_bindgen(js_name = symmetricDecrypt)]
+pub fn symmetric_decrypt_js(base64_ciphertext: &str, key_base64: &str) -> Result<String, JsValue> {
+    crate::crypto::symmetric_decrypt(base64_ciphertext, key_base64).map_err(js_err)
 }
 
 /// AES-256-GCM decrypt `IV | ciphertext | tag` bytes with a base64 key.
 #[wasm_bindgen(js_name = symmetricDecryptBytes)]
 pub fn symmetric_decrypt_bytes_js(encrypted: &[u8], key_base64: &str) -> Result<Vec<u8>, JsValue> {
     crate::crypto::symmetric_decrypt_bytes(encrypted, key_base64).map_err(js_err)
-}
-
-/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
-#[wasm_bindgen(js_name = symmetricDecrypt)]
-pub fn symmetric_decrypt_js(base64_ciphertext: &str, key_base64: &str) -> Result<String, JsValue> {
-    crate::crypto::symmetric_decrypt(base64_ciphertext, key_base64).map_err(js_err)
 }
 
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.

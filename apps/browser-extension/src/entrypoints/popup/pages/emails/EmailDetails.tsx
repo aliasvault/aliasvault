@@ -1,5 +1,5 @@
-import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
+import { decryptEmail, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
 import { sanitizeEmailHtml } from '@aliasvault/client/email/EmailHtmlSanitizer';
 import { decodeEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
@@ -89,7 +89,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
         const response = await webApi.get<Email>(`Email/${id}`);
         const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
-        const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
+        const decryptedEmail = await decryptEmail(response, encryptionKeys);
 
         setDecrypted(decryptedEmail);
 

@@ -1,4 +1,4 @@
-import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -74,7 +74,7 @@ const EmailsList: React.FC = () => {
         const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
 
         // Decrypt emails locally using public/private key pairs.
-        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
+        const decryptedEmails = await decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
         if (reset) {
           setEmails(decryptedEmails);
@@ -111,7 +111,7 @@ const EmailsList: React.FC = () => {
 
       // Decrypt emails locally
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
-      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
+      const decryptedEmails = await decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
       // Append to existing emails
       setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);
