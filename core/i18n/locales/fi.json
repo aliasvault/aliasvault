@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Tilisi on poistettu käytöstä. Jos uskot tämän olevan virhe, ota yhteyttä tukeen.",
     "ACCOUNT_LOCKED": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi. Yritä myöhemmin uudelleen.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Tili poistettu.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Sähköpostien lataamisen yrittäessä tapahtui virhe. Yritä muokata ja tallentaa tunnistetietomerkintä synkronoidaksesi tietokannan ja yritä sitten uudelleen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Nykyinen valittu sähköpostiosoite on jo käytössä. Vaihda sähköpostiosoite muokkaamalla tätä tunnistetietoa.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Sisäinen palvelinvirhe.",
     "INVALID_AUTHENTICATOR_CODE": "Virheellinen tunnistautumiskoodi. Yritä uudelleen.",
     "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Yritä uudelleen.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Asettaminen",
-      "termsAndConditionsStepTitle": "AliasVaultin käyttö",
-      "termsStep": {
-        "agreementCheckboxLabel": "Olen lukenut ja hyväksynyt käyttöehdot",
-        "pleaseReadAndAgree": "Lue ja hyväksy seuraavat ehdot ennen jatkamista.",
-        "termsContent": "AliasVault on suunniteltu parantamaan verkkoturvallisuuttasi ja suojaamaan yksityisyyttäsi. AliasVaultin avulla voit luoda yksilöllisiä identiteettejä ja sähköpostialiaksia eri verkkotileillesi, mikä auttaa sinua hallitsemaan henkilötietojasi ja vähentämään identiteettivarkauksien riskiä.\n\nKäyttämällä AliasVaultia hyväksyt seuraavat ehdot:\n\n1. Et käytä AliasVaultia mihinkään laittomiin tarkoituksiin, mukaan lukien, mutta ei rajoittuen, petoksiin, identiteettivarkauksiin tai oikeiden henkilöiden henkilöllisyyden anastamiseen.\n\n2. Olet vastuussa tilisi ja AliasVaultin kautta luotujen aliasten luottamuksellisuuden ylläpitämisestä.\n\n3. AliasVault pidättää oikeuden lopettaa tilisi, jos epäilemme näiden ehtojen väärinkäyttöä tai rikkomista.\n\n4. Ymmärrät, että vaikka AliasVault parantaa yksityisyyttäsi, mikään järjestelmä ei ole täysin erehtymätön, ja käytät palvelua omalla vastuullasi."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-avustaja",
         "enterUsernameInstructions": "Syötä käyttäjänimi, jota haluat käyttää. Tämä voi olla sähköpostiosoitteesi tai mikä tahansa yksilöllinen nimi, jota haluat käyttää.",
-        "greatNowLetsSetupUsername": "Hienoa! Asetetaan nyt käyttäjänimesi AliasVaultille.",
         "rememberUsernameNote": "Muista: Tätä käytät sisäänkirjautumiseen myöhemmin, joten varmista, että muistat sen!",
         "serverCommunicationError": "AliasVault-palvelimeen yhteydessä tapahtui virhe.",
         "usernamePlaceholder": "Syötä haluamasi käyttäjänimi tai sähköposti",
-        "validatingUsernameMessage": "Varmistetaan käyttäjänimi..."
+        "validatingUsernameMessage": "Varmistetaan käyttäjänimi...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Valitse käyttäjänimi"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "Sähköpostit",
     "to": "Vastaanottaja:",
-    "toColumn": "Vastaanottaja",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "Vastaanottaja"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Odottamaton virhe sähköpostien lataamisen aikana. Yritä myöhemmin uudelleen.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Virhe ladattaessa tietoja",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Are you sure?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Leikepöytä-asetukset",
     "contextMenuDescription": "Oikea-napsauta syöttökenttiä päästäksesi AliasVaultin vaihtoehtoihin",
     "contextMenuSettings": "Kontekstivalikon asetukset",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Syötä tarkistuskoodi",
         "verifyAndEnableButton": "Tarkista ja ota käyttöön"
       },
-      "pageDescription": "Määritä tietoturva-asetuksia.",
-      "pageTitle": "Tietoturva-asetukset",
       "passkeyUnlock": {
         "disableButton": "Poista todennusavaimella avaaminen käytöstä",
         "disabledDescription": "Oletuksena AliasVault-sivun tai -välilehden lataaminen uudelleen edellyttää, että syötät pääsalasanan uudestaan. Salasanalla voit avata holvisi välittömästi. Kun käytössä, pääsalasanasi on paikallisesti salattu todennnusavaimen PRF-laajennuksen avulla. Huomautus: todennusavain toimii vain nykyiselle laitteelle ja selaimelle, jotka otat sen käyttöön.",
@@ -1565,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Lisää kaksivaiheinen todennuskoodi",
     "addTotpCodeModalTitle": "Lisää 2FA TOTP -koodi",
+    "algorithm": "Algorithm",
     "closeFormButton": "Sulje lomake",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "Oletko varma, että haluat poistaa tämän TOTP-koodin?",
     "deleteCodeTitle": "Poista TOTP-koodi",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "deleteTotpCodeTitle": "Delete 2FA Code",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Virheellinen salatun avaimen muoto.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "nameOptional": "Nimi (valinnainen)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Tallenna nähdäksesi koodi",
     "scanQrCode": "Scan QR Code",
     "secretKey": "Sala-avain",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "checkingVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Salatun tietokannan haku epäonnistui",
-      "passwordChangeRequiresOnline": "Salasanan vaihto vaatii internetyhteyden. Yritä uudelleen, kun olet verkossa.",
-      "usernameNotFound": "Käyttäjänimeä ei löytynyt"
-    },
     "mergingVault": "Yhdistetään holvin muutoksia...",
     "savingChangesToVault": "Tallennetaan muutokset holviin",
     "syncingUpdatedVault": "Synkronoidaan päivitettyä holvia",
-    "syncingVault": "Synkronoidaan holvia",
-    "uploadingVaultToServer": "Ladataan ulospäin holvi palvelimelle"
+    "syncingVault": "Synkronoidaan holvia"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Vaihda tummaan tilaan",
       "enableLightMode": "Vaihda vaaleaan tilaan",
-      "logOut": "Kirjaudu ulos",
-      "openMenuLabel": "Avaa valikko"
+      "logOut": "Kirjaudu ulos"
     },
     "welcome": {
       "createFirstIdentityButton": "Luo ensimmäinen identiteettisi",
