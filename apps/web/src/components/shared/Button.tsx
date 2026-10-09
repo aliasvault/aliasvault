@@ -25,7 +25,10 @@ type ButtonProps = {
 };
 
 /** Base classes shared by every button-styled element. */
-export const BUTTON_BASE_CLASSES = 'items-center justify-center gap-2 text-center font-medium rounded-lg focus:outline-none focus:ring-4';
+export const BUTTON_BASE_CLASSES = 'max-w-full items-center justify-center gap-2 text-center font-medium rounded-lg focus:outline-none focus:ring-4';
+
+/** Display class of a button: `inline-block` (never `inline`) so a label that wraps keeps one solid box. */
+export const getButtonDisplayClass = (display: 'inline' | 'flex'): string => display === 'flex' ? 'flex' : 'inline-block';
 
 /**
  * The padding and text size of a button size.
@@ -81,7 +84,7 @@ export const ButtonLabel: React.FC<{ children: React.ReactNode; arrow?: ButtonAr
  * Generic button.
  */
 const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', size = 'md', additionalClasses = '', display = 'inline', id, arrow }) => {
-  const classes = `${display} ${BUTTON_BASE_CLASSES} ${getButtonSizeClasses(size)} ${isDisabled ? DISABLED_CLASSES : getButtonColorClasses(color)} ${additionalClasses}`.trim();
+  const classes = `${getButtonDisplayClass(display)} ${BUTTON_BASE_CLASSES} ${getButtonSizeClasses(size)} ${isDisabled ? DISABLED_CLASSES : getButtonColorClasses(color)} ${additionalClasses}`.trim();
 
   return (
     <button type={type} id={id} onClick={isDisabled ? undefined : onClick} disabled={isDisabled} className={classes}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { BUTTON_BASE_CLASSES, type ButtonColor, getButtonColorClasses, getButtonSizeClasses } from '@/components/shared/Button';
+import { BUTTON_BASE_CLASSES, type ButtonColor, getButtonColorClasses, getButtonDisplayClass, getButtonSizeClasses } from '@/components/shared/Button';
 import Icon, { type IconProps } from '@/components/shared/Icon';
 
 type LinkButtonProps = {
@@ -19,7 +19,7 @@ type LinkButtonProps = {
  * A link styled as a button.
  */
 const LinkButton: React.FC<LinkButtonProps> = ({ href, text, smallText = '', icon, color = 'primary', additionalClasses = '' }) => (
-  <Link to={href} className={`${icon ? 'flex' : 'inline'} ${BUTTON_BASE_CLASSES} ${getButtonSizeClasses('md')} ${getButtonColorClasses(color)} ${additionalClasses}`.trim()}>
+  <Link to={href} className={`${getButtonDisplayClass(icon ? 'flex' : 'inline')} ${BUTTON_BASE_CLASSES} ${getButtonSizeClasses('md')} ${getButtonColorClasses(color)} ${additionalClasses}`.trim()}>
     {icon ? (
       <>
         <Icon name={icon} className="w-[18px] h-[18px]" />
