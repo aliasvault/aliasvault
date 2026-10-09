@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Din konto er blevet deaktiveret. Hvis du mener, at dette er en fejl, bedes du kontakte support.",
     "ACCOUNT_LOCKED": "Kontoen er midlertidigt låst på grund af for mange mislykkede forsøg. Prøv venligst igen senere.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontoen er blevet slettet.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Der opstod en fejl under forsøg på at indlæse e-mails. Prøv at redigere og gemme posten for at synkronisere databasen, og prøv derefter igen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Den valgte e-mailadresse er allerede i brug. Skift venligst e-mailadressen ved at redigere denne post.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Intern serverfejl.",
     "INVALID_AUTHENTICATOR_CODE": "Ugyldig godkendelseskode. Prøv venligst igen.",
     "INVALID_RECOVERY_CODE": "Ugyldig gendannelseskode. Prøv venligst igen.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "Nye konti kan kun oprettes med et invitationslink. Spørg serveradministratoren om en invitation.",
       "registrationDisabledTitle": "Lukket for brugerregistrering",
       "setupStepTitle": "Opsætning",
-      "termsAndConditionsStepTitle": "Brug Af AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Jeg har læst og accepterer vilkårene og betingelserne",
-        "pleaseReadAndAgree": "Læs og accepter venligst følgende vilkår og betingelser, før du fortsætter.",
-        "termsContent": "AliasVault er designet til at forbedre din online sikkerhed og beskytte dit privatliv. Med AliasVault kan du oprette unikke identiteter og e-mail-aliaser til dine forskellige online-konti, hvilket hjælper dig med at bevare kontrollen over dine personlige oplysninger og reducere risikoen for identitetstyveri.\n\nVed at bruge AliasVault accepterer du følgende vilkår:\n\n1. Du må ikke bruge AliasVault til ulovlige formål, herunder men ikke begrænset til svindel, identitetstyveri eller udgivelse for at være rigtige personer.\n2. Du er ansvarlig for at opretholde fortroligheden af din konto og eventuelle aliaser oprettet via AliasVault.\n3. AliasVault forbeholder sig retten til at opsige din konto, hvis vi har mistanke om misbrug eller overtrædelse af disse vilkår.\n4. Du er indforstået med, at selvom AliasVault forbedrer dit privatliv, er intet system fuldstændig fejlfrit, og du bruger tjenesten på eget ansvar."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
         "enterUsernameInstructions": "Indtast venligst det brugernavn, du ønsker at bruge. Dette kan være din e-mailadresse eller et unikt navn efter eget valg.",
-        "greatNowLetsSetupUsername": "Godt! Lad os nu opsætte dit brugernavn til AliasVault.",
         "rememberUsernameNote": "Husk: Det er dette navn, du skal bruge til at logge ind senere, så sørg for at vælge noget, du kan huske!",
         "serverCommunicationError": "Der opstod en fejl under kommunikationen med AliasVault-serveren.",
         "usernamePlaceholder": "Indtast dit ønskede brugernavn eller e-mail",
-        "validatingUsernameMessage": "Validerer brugernavn..."
+        "validatingUsernameMessage": "Validerer brugernavn...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Vælg brugernavn"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "serverOutdated": "AliasVault-serveren skal opdateres for at arbejde med denne version af AliasVault. Kontakt support, hvis du har brug for hjælp.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "unexpectedErrorContactSupport": "En uventet fejl opstod. Prøv igen, og kontakt support, hvis problemet fortsætter.",
@@ -424,8 +420,7 @@
     },
     "title": "E-mails",
     "to": "Til:",
-    "toColumn": "Til",
-    "updateClientForFormattedView": "Denne e-mail kræver en nyere app-version for at vise den korrekt. Opdatér venligst din app."
+    "toColumn": "Til"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Der opstod en uventet fejl under indlæsning af e-mails. Prøv igen senere.",
     "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe, skal du redigere elementet og trykke på mappe-ikonet i navnefeltet.",
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Er du sikker?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Kun Lokal Udklipsholder",
     "clipboardLocalOnlyDescription": "Behold kopierede legitimationsoplysninger på denne enhed i stedet for at synkronisere dem med dine andre Apple-enheder via Universal Udklipsholder.",
     "clipboardLocalOnlyDisabledWarning": "Med dette fra kan kopierede legitimationsoplysninger synkronisere til dine andre Apple-enheder (Mac, iPad osv.) via Universal Udklipsholder.",
-    "clipboardSettings": "Indstillinger for udklipsholder",
     "contextMenuDescription": "Højreklik på inputfelter for at få adgang til AliasVault-funktioner",
     "contextMenuSettings": "Indstillinger for kontekstmenu",
     "copyTotpOnFill": "Kopier TOTP kode ved autofyld",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Indtast bekræftelseskode",
         "verifyAndEnableButton": "Bekræft og aktiver"
       },
-      "pageDescription": "Konfigurer sikkerhedsindstillinger.",
-      "pageTitle": "Sikkerhedsindstillinger",
       "passkeyUnlock": {
         "disableButton": "Deaktiver oplåsning med passkey",
         "disabledDescription": "Som standard kræver genindlæsning af AliasVault-siden eller fanen, at du indtaster din hovedadgangskode igen. Med en passkey kan du låse din boks op øjeblikkeligt. Når det er aktiveret, bliver din hovedadgangskode krypteret lokalt ved hjælp af passkey'ens PRF-udvidelse. Bemærk: passkey'en vil kun fungere på den aktuelle enhed og browser, hvor du aktiverer den.",
@@ -1565,12 +1559,14 @@
     "addName": "Tilføj et navn (valgfrit)",
     "addTotpCodeDescription": "Tilføj en to-faktor-godkendelseskode",
     "addTotpCodeModalTitle": "Tilføj 2FA TOTP-kode",
+    "algorithm": "Algorithm",
     "closeFormButton": "Luk formular",
     "defaultName": "Godkender",
     "deleteCodeConfirmation": "Er du sikker på, at du vil slette denne TOTP-kode?",
     "deleteCodeTitle": "Slet TOTP-kode",
     "deleteTotpCodeConfirmation": "Er du sikker på, at du vil slette 2FA koden \"{{name}}\"?",
     "deleteTotpCodeTitle": "Slet 2FA Kode",
+    "digits": "Digits",
     "enterManually": "Indtast hemmelig nøgle",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
     "secretKey": "Hemmelig nøgle (Secret Key)",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Tjekker for opdateringer til boks",
     "checkingVaultUpdates": "Tjekker opdateringer til boks",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Kunne ikke hente krypteret database",
-      "passwordChangeRequiresOnline": "Ændring af adgangskode kræver en internetforbindelse. Prøv venligst igen, når du er online.",
-      "usernameNotFound": "Brugernavn ikke fundet"
-    },
     "mergingVault": "Fletter ændringer i boks...",
     "savingChangesToVault": "Gemmer ændringer i boks",
     "syncingUpdatedVault": "Synkroniserer opdateret boks",
-    "syncingVault": "Synkroniserer boks",
-    "uploadingVaultToServer": "Uploader boks til server"
+    "syncingVault": "Synkroniserer boks"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Skift til mørkt tema",
       "enableLightMode": "Skift til lyst tema",
-      "logOut": "Log ud",
-      "openMenuLabel": "Åbn menu"
+      "logOut": "Log ud"
     },
     "welcome": {
       "createFirstIdentityButton": "Opret din første identitet",
