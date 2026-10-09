@@ -1,5 +1,5 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { fromStandardFormat } from '@aliasvault/client/utilities/DateFormatter';
+import { fromStandardFormat } from '@aliasvault/client/utilities/DateHelpers';
 import { TRASH_RETENTION_DEFAULT_DAYS } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';

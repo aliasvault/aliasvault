@@ -1,11 +1,11 @@
 package net.aliasvault.app.vaultstore
 
+import net.aliasvault.app.vaultstore.mappers.PasskeyWithItem
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo
+import net.aliasvault.app.vaultstore.repositories.PasskeyAndItem
 import net.aliasvault.app.vaultstore.repositories.PasskeyRepository
-import net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo
-import net.aliasvault.app.vaultstore.repositories.PasskeyWithItem
 import java.util.UUID
 
 /**
@@ -33,14 +33,14 @@ class VaultPasskey(
      * Get all passkeys for an item.
      */
     fun getPasskeysForItem(itemId: UUID, manifestId: String): List<Passkey> {
-        return passkeyRepository.getForItem(itemId, manifestId)
+        return passkeyRepository.getByItemId(itemId, manifestId)
     }
 
     /**
      * Get all passkeys for a specific relying party identifier (RP ID).
      */
     fun getPasskeysForRpId(rpId: String): List<Passkey> {
-        return passkeyRepository.getForRpId(rpId)
+        return passkeyRepository.getByRpId(rpId)
     }
 
     /**
@@ -51,8 +51,8 @@ class VaultPasskey(
         rpId: String,
         userName: String? = null,
         userId: ByteArray? = null,
-    ): List<PasskeyWithCredentialInfo> {
-        return passkeyRepository.getWithCredentialInfo(rpId, userName, userId)
+    ): List<PasskeyWithItem> {
+        return passkeyRepository.getWithItem(rpId, userName, userId)
     }
 
     /**
@@ -77,7 +77,7 @@ class VaultPasskey(
      * This is much more efficient than calling getPasskeysForItem() for each item.
      * Uses a JOIN to get passkeys and their items in one database query.
      */
-    fun getAllPasskeysWithItems(): List<PasskeyWithItem> {
+    fun getAllPasskeysWithItems(): List<PasskeyAndItem> {
         return passkeyRepository.getAllWithItems()
     }
 

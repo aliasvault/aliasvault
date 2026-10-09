@@ -86,6 +86,7 @@ export type EngineHttpResponse = {
 
 /**
  * Service class for interacting with the web API.
+ * Other platform implementations: WebApiService.swift (iOS), WebApiService.kt (Android).
  */
 export class WebApiService {
   /**

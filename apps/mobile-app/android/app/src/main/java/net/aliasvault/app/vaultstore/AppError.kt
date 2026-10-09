@@ -5,7 +5,7 @@ package net.aliasvault.app.vaultstore
  * These error codes are language-independent and can be properly handled by the client.
  *
  * This is a Kotlin port of the iOS Swift implementation:
- * - Reference: apps/mobile-app/ios/VaultStoreKit/Enums/AppErrorCodes.swift
+ * - Reference: apps/mobile-app/ios/VaultStoreKit/Enums/AppError.swift
  *
  * IMPORTANT: Keep all implementations synchronized. Changes to the public interface must be
  * reflected in all ports. Error types and codes should remain consistent.

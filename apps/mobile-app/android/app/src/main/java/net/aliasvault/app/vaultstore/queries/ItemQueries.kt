@@ -81,13 +81,6 @@ object ItemQueries {
     """
 
     /**
-     * Get the database version from the __EFMigrationsHistory table.
-     */
-    const val GET_DATABASE_VERSION = """
-        SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 1
-    """
-
-    /**
      * Get folder data for building folder paths, one tree per manifest.
      */
     const val GET_ALL_FOLDERS = """

@@ -63,7 +63,7 @@ public struct PasskeyQueries {
         """
 
     /// Get passkeys with item info for a specific rpId.
-    public static let getWithItemInfoByRpId = """
+    public static let getWithItemByRpId = """
         SELECT
         \(columns),
           i.Name as ServiceName,

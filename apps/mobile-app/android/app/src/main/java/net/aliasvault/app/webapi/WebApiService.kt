@@ -31,6 +31,7 @@ data class WebApiResponse(
 /**
  * Native Kotlin WebAPI service for making HTTP requests to the AliasVault server.
  * This service handles authentication, token refresh, and all HTTP operations.
+ * Other platform implementations: WebApiService.ts (core/client), WebApiService.swift (iOS).
  */
 class WebApiService(private val context: Context) {
     companion object {

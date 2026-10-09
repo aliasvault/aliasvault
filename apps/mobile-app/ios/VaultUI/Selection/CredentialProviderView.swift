@@ -250,7 +250,7 @@ private struct AutofillCredentialCardWithSelection: View {
             if isChoosingTextToInsert {
                 // Generate TOTP code if available
                 if let totp = credential.totp {
-                    totpCode = TotpGenerator.generateCode(secret: totp.secretKey,
+                    totpCode = TotpUtility.generateTotpCode(secret: totp.secretKey,
                                                           period: totp.period,
                                                           digits: totp.digits,
                                                           algorithm: totp.algorithm)

@@ -25,7 +25,7 @@
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		B2E3CEC9AABDA3497BFE65B7 /* libPods-VaultStoreKitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9AD944E3A0F270C797F5DD /* libPods-VaultStoreKitTests.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		CE26D68F2DA7FCD2006DC04D /* VaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE26D68C2DA7FCD2006DC04D /* VaultManager.swift */; };
+		CE26D68F2DA7FCD2006DC04D /* NativeVaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE26D68C2DA7FCD2006DC04D /* NativeVaultManager.swift */; };
 		CE3AE2B12DC7ACDE00E7745E /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = CE3AE2B02DC7ACD700E7745E /* .swiftlint.yml */; };
 		CE48FCEC2DBE939A00E5E3D6 /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
 		CE48FD372DBE95EB00E5E3D6 /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
@@ -236,7 +236,7 @@
 		C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultUI.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C87FA54AAFE121325F22CDDE /* Pods-PreviewHost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PreviewHost.debug.xcconfig"; path = "Target Support Files/Pods-PreviewHost/Pods-PreviewHost.debug.xcconfig"; sourceTree = "<group>"; };
 		C9F10947D429671B08FE934C /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CE26D68C2DA7FCD2006DC04D /* VaultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManager.swift; sourceTree = "<group>"; };
+		CE26D68C2DA7FCD2006DC04D /* NativeVaultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeVaultManager.swift; sourceTree = "<group>"; };
 		CE3AE2B02DC7ACD700E7745E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AliasVault.icon; sourceTree = "<group>"; };
 		CE77825D2EA1822400A75E6F /* VaultUtils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultUtils.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -594,7 +594,7 @@
 		CE9A58F92DBA97D500CB0A4C /* NativeVaultManager */ = {
 			isa = PBXGroup;
 			children = (
-				CE26D68C2DA7FCD2006DC04D /* VaultManager.swift */,
+				CE26D68C2DA7FCD2006DC04D /* NativeVaultManager.swift */,
 				CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */,
 				CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */,
 				CE9A5B662DBAE42B00CB0A4C /* README.md */,
@@ -1317,7 +1317,7 @@
 				CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */,
 				CED3AB3E2E70CF8700F3FDED /* SceneDelegate.swift in Sources */,
 				CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */,
-				CE26D68F2DA7FCD2006DC04D /* VaultManager.swift in Sources */,
+				CE26D68F2DA7FCD2006DC04D /* NativeVaultManager.swift in Sources */,
 				CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
 				E8FD7000523F4549908941A2 /* noop-file.swift in Sources */,

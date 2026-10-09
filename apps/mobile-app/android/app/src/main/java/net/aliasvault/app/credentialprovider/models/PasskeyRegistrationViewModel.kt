@@ -1,8 +1,8 @@
 package net.aliasvault.app.credentialprovider.models
 
 import androidx.lifecycle.ViewModel
+import net.aliasvault.app.vaultstore.mappers.PasskeyWithItem
 import net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo
-import net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo
 import java.util.UUID
 
 /**
@@ -37,13 +37,13 @@ class PasskeyRegistrationViewModel : ViewModel() {
     var userId: ByteArray? = null
 
     /** List of existing passkeys for the relying party (can be replaced). */
-    var existingPasskeys: List<PasskeyWithCredentialInfo> = emptyList()
+    var existingPasskeys: List<PasskeyWithItem> = emptyList()
 
     /** List of existing Items without passkeys (can have passkey merged into them). */
     var existingItemsWithoutPasskey: List<ItemWithCredentialInfo> = emptyList()
 
     /** The passkey selected to be replaced, if any. */
-    var selectedPasskeyToReplace: PasskeyWithCredentialInfo? = null
+    var selectedPasskeyToReplace: PasskeyWithItem? = null
 
     /** The Item selected to add passkey to (merge), if any. */
     var selectedItemToMerge: ItemWithCredentialInfo? = null
@@ -67,7 +67,7 @@ class PasskeyRegistrationViewModel : ViewModel() {
     /**
      * Called when the user selects to replace an existing passkey.
      */
-    fun onReplaceSelected(passkeyInfo: PasskeyWithCredentialInfo) {
+    fun onReplaceSelected(passkeyInfo: PasskeyWithItem) {
         isReplaceMode = true
         isMergeMode = false
         selectedPasskeyToReplace = passkeyInfo
@@ -87,7 +87,7 @@ class PasskeyRegistrationViewModel : ViewModel() {
     /**
      * Get a passkey by its ID from the existing passkeys list.
      */
-    fun getPasskeyById(id: UUID): PasskeyWithCredentialInfo? {
+    fun getPasskeyById(id: UUID): PasskeyWithItem? {
         return existingPasskeys.firstOrNull { it.passkey.id == id }
     }
 

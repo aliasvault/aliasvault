@@ -21,7 +21,7 @@ internal object LegacyKeyConversion {
     /**
      * Re-encrypt the PIN with the Account Key when it still protected an unlock key.
      */
-    fun convertPinKey(pin: VaultPin, pinValue: String, pinKey: String, accountKey: String) {
+    fun convertLegacyPinKey(pin: VaultPin, pinValue: String, pinKey: String, accountKey: String) {
         if (accountKey == pinKey) {
             return
         }
@@ -35,7 +35,7 @@ internal object LegacyKeyConversion {
     /**
      * Store the Account Key in the keystore when it still held an unlock key.
      */
-    fun convertKeystoreKey(keystoreProvider: KeystoreProvider, keystoreKey: ByteArray, accountKey: ByteArray) {
+    fun convertLegacyKeystoreKey(keystoreProvider: KeystoreProvider, keystoreKey: ByteArray, accountKey: ByteArray) {
         if (accountKey.contentEquals(keystoreKey)) {
             return
         }

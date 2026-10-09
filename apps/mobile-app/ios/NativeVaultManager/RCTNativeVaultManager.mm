@@ -7,7 +7,7 @@
 
 /**
  * This objective-c class is used as a bridge to allow React Native to interact with the underlying
- * Swift VaultManager class and communicates with the VaultStore that is used by both React Native
+ * Swift NativeVaultManager class and communicates with the VaultStore that is used by both React Native
  * and the native iOS Autofill extension.
  *
  * This class should implement all methods defined in the specs/NativeVaultManager.ts TurboModule.
@@ -15,7 +15,7 @@
  * update the spec which generates the interface this class implements.
  */
 @implementation RCTNativeVaultManager {
-    VaultManager *vaultManager;
+    NativeVaultManager *vaultManager;
 }
 
 + (NSString *)moduleName {
@@ -24,7 +24,7 @@
 
 - (id) init {
    if (self = [super init]) {
-    vaultManager = [VaultManager new];
+    vaultManager = [NativeVaultManager new];
    }
    return self;
 }

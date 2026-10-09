@@ -20,6 +20,7 @@ import java.net.SocketTimeoutException
  * The engine owns the sync algorithm and emits commands (HTTP, state, SQLite, vault storage); this class carries
  * each one out and feeds the response back until the engine reports `done`. See the `vault_sync` module in
  * `core/rust` for the command and response contract.
+ * Other platform implementations: VaultSyncEngine.ts (core/client), VaultSyncEngine.swift (iOS).
  */
 class VaultSyncEngine(
     private val vaultStore: VaultStore,

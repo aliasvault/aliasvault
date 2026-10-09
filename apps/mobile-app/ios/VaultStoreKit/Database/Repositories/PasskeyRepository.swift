@@ -5,6 +5,7 @@ import VaultUtils
 
 /// Repository for Passkey CRUD operations.
 /// Handles fetching, creating, updating, and deleting passkeys.
+/// Other platform implementations: PasskeyRepository.ts (core/client), PasskeyRepository.kt (Android).
 public class PasskeyRepository: BaseRepository {
 
     // MARK: - Read Operations
@@ -56,11 +57,11 @@ public class PasskeyRepository: BaseRepository {
     ///   - rpId: The relying party identifier (domain)
     ///   - userName: Optional username to filter by
     ///   - userId: Optional user handle to filter by
-    /// - Returns: Array of PasskeyWithItemInfo objects
-    public func getWithItemInfo(forRpId rpId: String, userName: String? = nil, userId: Data? = nil) throws -> [PasskeyWithItemInfo] {
-        let results = try client.executeQuery(PasskeyQueries.getWithItemInfoByRpId, params: [rpId])
-        let rows = results.compactMap { PasskeyWithItemInfoRow(from: $0) }
-        var mappedResults = PasskeyMapper.mapRowsWithItemInfo(rows)
+    /// - Returns: Array of PasskeyWithItem objects
+    public func getWithItem(forRpId rpId: String, userName: String? = nil, userId: Data? = nil) throws -> [PasskeyWithItem] {
+        let results = try client.executeQuery(PasskeyQueries.getWithItemByRpId, params: [rpId])
+        let rows = results.compactMap { PasskeyWithItemRow(from: $0) }
+        var mappedResults = PasskeyMapper.mapRowsWithItem(rows)
 
         // Apply optional filters
         if let userName = userName {

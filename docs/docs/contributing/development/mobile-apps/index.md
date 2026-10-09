@@ -8,9 +8,9 @@ React Native. Standard Expo workflow applies (`npx expo run:ios` /
 `run:android`); this section only covers the AliasVault-specific pieces. See also
 the platform notes for [Android](android.md) and [iOS](ios/index.md).
 
-## Native Turbo Module: VaultManager
+## Native Turbo Module: NativeVaultManager
 
-The app implements its native `VaultManager` as a React Native
+The app implements its native `NativeVaultManager` as a React Native
 [Turbo Module](https://reactnative.dev/docs/the-new-architecture/pillars-turbo-modules),
 so the vault and encryption key can be stored on the native side using low-level
 secure keychain storage.

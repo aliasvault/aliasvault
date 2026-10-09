@@ -38,6 +38,7 @@ import org.json.JSONObject
  * This class implements the NativeVaultManagerSpec React Native interface and then calls the
  * VaultStore class to perform the actual operations.
  *
+ * Other platform implementations: NativeVaultManager.swift (iOS), spec in specs/NativeVaultManager.ts.
  * @param reactContext The React context
  */
 @Suppress("TooManyFunctions") // Required by React Native TurboModule interface
@@ -184,7 +185,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     @ReactMethod
     override fun getVaultMetadata(promise: Promise) {
         try {
-            val metadata = vaultStore.getMetadata()
+            val metadata = vaultStore.getVaultMetadata()
             promise.resolve(metadata)
         } catch (e: Exception) {
             Log.e(TAG, "Error getting vault metadata", e)

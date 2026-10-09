@@ -66,7 +66,7 @@ public struct PasskeyRow {
 }
 
 /// Row structure for passkey with item info (joined query).
-public struct PasskeyWithItemInfoRow {
+public struct PasskeyWithItemRow {
     public let passkeyRow: PasskeyRow
     public let serviceName: String?
     public let username: String?
@@ -86,7 +86,7 @@ public struct PasskeyWithItemInfoRow {
 }
 
 /// Result type for passkey with item info.
-public struct PasskeyWithItemInfo {
+public struct PasskeyWithItem {
     public let passkey: Passkey
     public let serviceName: String?
     public let username: String?
@@ -152,15 +152,15 @@ public struct PasskeyMapper {
         return rows.compactMap { mapRow($0) }
     }
 
-    /// Map a passkey with item info row to PasskeyWithItemInfo.
+    /// Map a passkey with item info row to PasskeyWithItem.
     /// - Parameter row: The joined row from the database
-    /// - Returns: PasskeyWithItemInfo or nil if mapping fails
-    public static func mapRowWithItemInfo(_ row: PasskeyWithItemInfoRow) -> PasskeyWithItemInfo? {
+    /// - Returns: PasskeyWithItem or nil if mapping fails
+    public static func mapRowWithItem(_ row: PasskeyWithItemRow) -> PasskeyWithItem? {
         guard let passkey = mapRow(row.passkeyRow) else {
             return nil
         }
 
-        return PasskeyWithItemInfo(
+        return PasskeyWithItem(
             passkey: passkey,
             serviceName: row.serviceName,
             username: row.username,
@@ -168,10 +168,10 @@ public struct PasskeyMapper {
         )
     }
 
-    /// Map multiple joined rows to PasskeyWithItemInfo objects.
+    /// Map multiple joined rows to PasskeyWithItem objects.
     /// - Parameter rows: Array of joined rows
-    /// - Returns: Array of PasskeyWithItemInfo objects
-    public static func mapRowsWithItemInfo(_ rows: [PasskeyWithItemInfoRow]) -> [PasskeyWithItemInfo] {
-        return rows.compactMap { mapRowWithItemInfo($0) }
+    /// - Returns: Array of PasskeyWithItem objects
+    public static func mapRowsWithItem(_ rows: [PasskeyWithItemRow]) -> [PasskeyWithItem] {
+        return rows.compactMap { mapRowWithItem($0) }
     }
 }

@@ -10,7 +10,7 @@ public enum TotpClipboard {
     public static func copyCodeIfEnabled(totp: TotpCode?) {
         guard AutofillSettings.shouldCopyTotpOnFill,
               let totp = totp, !totp.secretKey.isEmpty,
-              let code = TotpGenerator.generateCode(secret: totp.secretKey,
+              let code = TotpUtility.generateTotpCode(secret: totp.secretKey,
                                                     period: totp.period,
                                                     digits: totp.digits,
                                                     algorithm: totp.algorithm),

@@ -71,6 +71,7 @@ public struct ProcessedField {
 
 /// Mapper class for processing database field rows into ItemField objects.
 /// Handles both system fields (with FieldKey) and custom fields (with FieldDefinitionId).
+/// Other platform implementations: FieldMapper.ts (core/client), FieldMapper.kt (Android).
 public struct FieldMapper {
     /// Process raw field rows from database into a map of scoped item key (see `scopedKey`) -> [ItemField].
     /// Handles system vs custom fields. Multi-value fields (like URLs) create separate ItemField entries

@@ -27,11 +27,11 @@ import net.aliasvault.app.exceptions.PasskeyOperationException
 import net.aliasvault.app.exceptions.VaultOperationException
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.mappers.PasskeyWithItem
 import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
 import net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo
-import net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONObject
 import java.util.Date
@@ -79,7 +79,7 @@ class PasskeyFormFragment : Fragment() {
 
     private var isReplace: Boolean = false
     private var isMerge: Boolean = false
-    private var passkeyToReplace: PasskeyWithCredentialInfo? = null
+    private var passkeyToReplace: PasskeyWithItem? = null
     private var itemToMerge: ItemWithCredentialInfo? = null
 
     // UI elements
@@ -455,7 +455,7 @@ class PasskeyFormFragment : Fragment() {
     /**
      * Replace an existing passkey flow.
      */
-    private suspend fun replacePasskeyFlow(displayName: String, passkeyToReplace: PasskeyWithCredentialInfo) = withContext(Dispatchers.IO) {
+    private suspend fun replacePasskeyFlow(displayName: String, passkeyToReplace: PasskeyWithItem) = withContext(Dispatchers.IO) {
         try {
             // Step 1: Sync vault before replacing passkey to ensure we have latest data
             withContext(Dispatchers.Main) {

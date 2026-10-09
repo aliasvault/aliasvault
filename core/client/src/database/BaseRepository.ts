@@ -1,6 +1,6 @@
 import { multiManifestRendering } from '../sharing/MultiManifestRendering';
 import { DEFAULT_VAULT_MUTATION_SCOPE } from '../sync/VaultMutationScope';
-import * as dateFormatter from '../utilities/DateFormatter';
+import * as dateFormatter from '../utilities/DateHelpers';
 
 import { runAsync } from './DbOp';
 import { FolderQueries } from './queries/FolderQueries';

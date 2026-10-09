@@ -490,6 +490,7 @@ class EngineRun {
 
 /**
  * Run one engine operation.
+ * Other platform implementations: VaultSyncEngine.swift (iOS), VaultSyncEngine.kt (Android).
  * @param host - the host
  * @param request - the request
  * @param webApi - the API the HTTP commands run on

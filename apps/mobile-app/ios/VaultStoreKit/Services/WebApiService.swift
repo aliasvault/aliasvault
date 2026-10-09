@@ -4,6 +4,7 @@ import VaultUtils
 /**
  * Native Swift WebAPI service for making HTTP requests to the AliasVault server.
  * This service handles authentication, token refresh, and all HTTP operations.
+ * Other platform implementations: WebApiService.ts (core/client), WebApiService.kt (Android).
  */
 public class WebApiService {
     private let vaultStore = VaultStore.shared

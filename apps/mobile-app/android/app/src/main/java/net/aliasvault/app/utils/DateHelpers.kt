@@ -17,6 +17,7 @@ import java.util.TimeZone
  * - Consistent precision with milliseconds for accurate sorting/comparison
  * - Readable space separator instead of 'T'
  * - Lexicographic sorting works correctly
+ * Other platform implementations: DateHelpers.ts (core/client), DateHelpers.swift (iOS).
  */
 object DateHelpers {
     private const val TAG = "DateHelpers"
@@ -25,11 +26,6 @@ object DateHelpers {
      * Standard date format for database storage: "yyyy-MM-dd HH:mm:ss.SSS" (23 characters).
      */
     private const val STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
-
-    /**
-     * Birth date format (no milliseconds, time set to 00:00:00): "yyyy-MM-dd 00:00:00" (19 characters).
-     */
-    private const val BIRTH_DATE_FORMAT = "yyyy-MM-dd 00:00:00"
 
     /**
      * Format a Date to the standard format string: "yyyy-MM-dd HH:mm:ss.SSS" (23 characters).
@@ -50,19 +46,6 @@ object DateHelpers {
      */
     fun now(): String {
         return toStandardFormat(Date())
-    }
-
-    /**
-     * Format a Date to the birth date format (no milliseconds, time set to 00:00:00).
-     * Format: "yyyy-MM-dd 00:00:00" (19 characters).
-     *
-     * @param date The Date to format
-     * @return Formatted date string in format "yyyy-MM-dd 00:00:00"
-     */
-    fun toBirthDateFormat(date: Date): String {
-        val formatter = SimpleDateFormat(BIRTH_DATE_FORMAT, Locale.US)
-        formatter.timeZone = TimeZone.getTimeZone("UTC")
-        return formatter.format(date)
     }
 
     /**

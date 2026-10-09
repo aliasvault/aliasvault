@@ -2,6 +2,7 @@ import Foundation
 import VaultModels
 
 /// Repository for reading items and appending field values.
+/// Other platform implementations: ItemRepository.ts (core/client), ItemRepository.kt (Android).
 public class ItemRepository: BaseRepository {
 
     // MARK: - Read Operations

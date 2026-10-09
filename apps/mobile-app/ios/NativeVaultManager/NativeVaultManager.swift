@@ -14,9 +14,10 @@ import StoreKit
  * This class is used as a bridge to allow React Native to interact with the VaultStoreKit class.
  * The VaultStore class is implemented in Swift and used by both React Native and the native iOS
  * Autofill extension.
+ * Other platform implementations: NativeVaultManager.kt (Android), spec in specs/NativeVaultManager.ts.
  */
-@objc(VaultManager)
-public class VaultManager: NSObject {
+@objc(NativeVaultManager)
+public class NativeVaultManager: NSObject {
     private let vaultStore = VaultStore.shared
     private let webApiService = WebApiService()
 
@@ -446,7 +447,7 @@ public class VaultManager: NSObject {
                                       localOnly: Bool,
                                       resolver resolve: @escaping RCTPromiseResolveBlock,
                                       rejecter reject: @escaping RCTPromiseRejectBlock) {
-        NSLog("VaultManager: Copying to clipboard with expiration of %.0f seconds, localOnly: %@", expirationSeconds, localOnly ? "true" : "false")
+        NSLog("NativeVaultManager: Copying to clipboard with expiration of %.0f seconds, localOnly: %@", expirationSeconds, localOnly ? "true" : "false")
 
         DispatchQueue.main.async {
             if expirationSeconds > 0 {
@@ -466,11 +467,11 @@ public class VaultManager: NSObject {
                     options: options
                 )
 
-                NSLog("VaultManager: Text copied to clipboard with expiration at %@", expirationDate.description)
+                NSLog("NativeVaultManager: Text copied to clipboard with expiration at %@", expirationDate.description)
             } else {
                 // No expiration, just copy normally
                 UIPasteboard.general.string = text
-                NSLog("VaultManager: Text copied to clipboard without expiration")
+                NSLog("NativeVaultManager: Text copied to clipboard without expiration")
             }
             resolve(nil)
         }
@@ -491,7 +492,7 @@ public class VaultManager: NSObject {
                     resolve(nil)
                 }
             } catch {
-                print("VaultManager: Failed to register credential identities: \(error)")
+                print("NativeVaultManager: Failed to register credential identities: \(error)")
                 await MainActor.run {
                     reject("CREDENTIAL_REGISTRATION_ERROR", "Failed to register credential identities: \(error.localizedDescription)", error)
                 }
@@ -504,14 +505,14 @@ public class VaultManager: NSObject {
                                    rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
-                print("VaultManager: Removing all credential identities from iOS store")
+                print("NativeVaultManager: Removing all credential identities from iOS store")
                 try await CredentialIdentityStore.shared.removeAllCredentialIdentities()
                 await MainActor.run {
-                    print("VaultManager: Successfully removed all credential identities")
+                    print("NativeVaultManager: Successfully removed all credential identities")
                     resolve(nil)
                 }
             } catch {
-                print("VaultManager: Failed to remove credential identities: \(error)")
+                print("NativeVaultManager: Failed to remove credential identities: \(error)")
                 await MainActor.run {
                     reject("CREDENTIAL_REMOVAL_ERROR", "Failed to remove credential identities: \(error.localizedDescription)", error)
                 }
@@ -910,19 +911,6 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func getPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        resolve(vaultStore.getPinFailedAttempts())
-    }
-
-    @objc
-    func resetPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
-                               rejecter reject: @escaping RCTPromiseRejectBlock) {
-        vaultStore.resetPinFailedAttempts()
-        resolve(nil)
-    }
-
-    @objc
     func removeAndDisablePin(_ resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
@@ -938,7 +926,7 @@ public class VaultManager: NSObject {
                         rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
-                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                reject("INTERNAL_ERROR", "NativeVaultManager instance deallocated", nil)
                 return
             }
 
@@ -953,7 +941,7 @@ public class VaultManager: NSObject {
                 pinLength: self.vaultStore.getPinLength(),
                 unlockHandler: { [weak self] pin in
                     guard let self = self else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "NativeVaultManager instance deallocated"])
                     }
 
                     // Unlock vault with PIN
@@ -1018,7 +1006,7 @@ public class VaultManager: NSObject {
                                        rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
-                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                reject("INTERNAL_ERROR", "NativeVaultManager instance deallocated", nil)
                 return
             }
 
@@ -1038,12 +1026,12 @@ public class VaultManager: NSObject {
                 customButtonText: customButtonText,
                 unlockHandler: { [weak self] password in
                     guard let self = self else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "NativeVaultManager instance deallocated"])
                     }
 
                     // Verify password and get the unlock key
                     guard let unlockKeyBase64 = self.vaultStore.verifyPassword(password) else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
                     // Open the session in memory only
@@ -1075,7 +1063,7 @@ public class VaultManager: NSObject {
                     }
 
                     // Throw to stop further processing in ViewModel
-                    throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Max attempts reached"])
+                    throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Max attempts reached"])
                 }
             )
 
@@ -1093,7 +1081,7 @@ public class VaultManager: NSObject {
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
-                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                reject("INTERNAL_ERROR", "NativeVaultManager instance deallocated", nil)
                 return
             }
 
@@ -1107,7 +1095,7 @@ public class VaultManager: NSObject {
             let viewModel = PinSetupViewModel(
                 setupHandler: { [weak self] pin in
                     guard let self = self else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "NativeVaultManager instance deallocated"])
                     }
 
                     // Setup PIN (vault must be unlocked - encryption key is retrieved from memory)
@@ -1271,7 +1259,7 @@ public class VaultManager: NSObject {
 
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else {
-                    reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                    reject("INTERNAL_ERROR", "NativeVaultManager instance deallocated", nil)
                     semaphore.signal()
                     return
                 }
@@ -1293,7 +1281,7 @@ public class VaultManager: NSObject {
                     customSubtitle: customSubtitle,
                     unlockHandler: { [weak self] pin in
                         guard let self = self else {
-                            throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                            throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "NativeVaultManager instance deallocated"])
                         }
 
                         // Unlock vault with PIN (just validates, doesn't store in memory)
@@ -1363,7 +1351,7 @@ public class VaultManager: NSObject {
         // Show password unlock
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
-                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                reject("INTERNAL_ERROR", "NativeVaultManager instance deallocated", nil)
                 return
             }
 
@@ -1384,12 +1372,12 @@ public class VaultManager: NSObject {
                 customButtonText: customButtonText,
                 unlockHandler: { [weak self] password in
                     guard let self = self else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "NativeVaultManager instance deallocated"])
                     }
 
                     // Verify password and get the unlock key
                     guard let unlockKeyBase64 = try self.vaultStore.verifyPassword(password) else {
-                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
+                        throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
                     try self.vaultStore.storeAccountKeyInMemory(base64Key: unlockKeyBase64)
@@ -1450,7 +1438,7 @@ public class VaultManager: NSObject {
 
     @objc
     static func moduleName() -> String! {
-        return "VaultManager"
+        return "NativeVaultManager"
     }
 
     // MARK: - Client core bridge

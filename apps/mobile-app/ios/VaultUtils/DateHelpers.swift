@@ -11,6 +11,7 @@ import Foundation
  * - Consistent precision with milliseconds for accurate sorting/comparison
  * - Readable space separator instead of 'T'
  * - Lexicographic sorting works correctly
+ * Other platform implementations: DateHelpers.ts (core/client), DateHelpers.kt (Android).
  */
 public class DateHelpers {
     /// Date formatter for a given pattern.
@@ -24,7 +25,6 @@ public class DateHelpers {
 
     private static let standardFormatter = makeFormatter("yyyy-MM-dd HH:mm:ss.SSS")
     private static let withoutMillisFormatter = makeFormatter("yyyy-MM-dd HH:mm:ss")
-    private static let birthDateFormatter = makeFormatter("yyyy-MM-dd 00:00:00")
     private static let isoFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -40,12 +40,6 @@ public class DateHelpers {
     /// Format the current UTC time to the standard format string.
     public static func now() -> String {
         return toStandardFormat(Date())
-    }
-
-    /// Format a Date to the birth date format (no milliseconds, time set to 00:00:00).
-    /// Format: "yyyy-MM-dd 00:00:00" (19 characters).
-    public static func toBirthDateFormat(_ date: Date) -> String {
-        return birthDateFormatter.string(from: date)
     }
 
     /// Parse a date string to a Date object for use in queries.

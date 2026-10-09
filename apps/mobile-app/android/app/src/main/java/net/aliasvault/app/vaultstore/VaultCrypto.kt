@@ -298,7 +298,7 @@ class VaultCrypto(
                         try {
                             val keystoreKey = Base64.decode(result, Base64.NO_WRAP)
                             openSession(keystoreKey)
-                            accountKey?.let { LegacyKeyConversion.convertKeystoreKey(keystoreProvider, keystoreKey, it) }
+                            accountKey?.let { LegacyKeyConversion.convertLegacyKeystoreKey(keystoreProvider, keystoreKey, it) }
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
                         } catch (e: AppError) {
                             Log.e(TAG, "The Account Key from the keystore does not open the account key chain", e)

@@ -41,7 +41,7 @@ object TotpClipboard {
      */
     fun copyCodeForItem(context: Context, store: VaultStore, itemId: String, manifestId: String) {
         val totp = store.getTotpForItem(itemId, manifestId) ?: return
-        val code = TotpGenerator.generateCode(
+        val code = TotpUtility.generateTotpCode(
             secret = totp.secretKey,
             period = totp.period,
             digits = totp.digits,

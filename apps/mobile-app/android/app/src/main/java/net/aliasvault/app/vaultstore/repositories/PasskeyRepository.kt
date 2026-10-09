@@ -4,6 +4,11 @@ import android.util.Log
 import net.aliasvault.app.autofill.utils.RustItemMatcher
 import net.aliasvault.app.utils.DateHelpers
 import net.aliasvault.app.vaultstore.VaultDatabase
+import net.aliasvault.app.vaultstore.mappers.ItemMapper
+import net.aliasvault.app.vaultstore.mappers.PasskeyMapper
+import net.aliasvault.app.vaultstore.mappers.PasskeyRow
+import net.aliasvault.app.vaultstore.mappers.PasskeyWithItem
+import net.aliasvault.app.vaultstore.mappers.PasskeyWithItemRow
 import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.Passkey
@@ -12,13 +17,12 @@ import net.aliasvault.app.vaultstore.queries.LogoQueries
 import net.aliasvault.app.vaultstore.queries.PasskeyQueries
 import uniffi.aliasvault_core.faviconSourceKey
 import uniffi.aliasvault_core.vaultCodecLogoIdFor
-import java.util.Calendar
 import java.util.Date
-import java.util.TimeZone
 import java.util.UUID
 
 /**
  * Repository for Passkey operations on Items.
+ * Other platform implementations: PasskeyRepository.ts (core/client), PasskeyRepository.swift (iOS).
  */
 class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     companion object {
@@ -32,16 +36,6 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
          */
         private const val LOGIN_URL_WEIGHT = 5
         private const val LOGIN_USERNAME_WEIGHT = 15
-
-        private val MIN_DATE: Date = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-            set(Calendar.YEAR, 1)
-            set(Calendar.MONTH, Calendar.JANUARY)
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
     }
 
     /**
@@ -74,7 +68,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param manifestId The manifest the item belongs to
      * @return List of Passkey objects
      */
-    fun getForItem(itemId: UUID, manifestId: String): List<Passkey> {
+    fun getByItemId(itemId: UUID, manifestId: String): List<Passkey> {
         val results = executeQuery(PasskeyQueries.GET_BY_ITEM_ID, arrayOf(itemId.toString().lowercase(), manifestId))
         return results.mapNotNull { parsePasskeyRow(it) }
     }
@@ -84,7 +78,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param rpId The relying party identifier
      * @return List of Passkey objects
      */
-    fun getForRpId(rpId: String): List<Passkey> {
+    fun getByRpId(rpId: String): List<Passkey> {
         val results = executeQuery(PasskeyQueries.GET_BY_RP_ID, arrayOf(rpId))
         return results.mapNotNull { parsePasskeyRow(it) }
     }
@@ -274,30 +268,21 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param rpId The relying party identifier.
      * @param userName Optional username to filter by.
      * @param userId Optional user ID bytes to filter by.
-     * @return List of PasskeyWithCredentialInfo objects.
+     * @return List of PasskeyAndItem objects.
      */
-    fun getWithCredentialInfo(
+    fun getWithItem(
         rpId: String,
         userName: String? = null,
         userId: ByteArray? = null,
-    ): List<PasskeyWithCredentialInfo> {
+    ): List<PasskeyWithItem> {
         if (!database.isOpen()) return emptyList()
 
-        return executeQuery(PasskeyQueries.GET_BY_RP_ID, arrayOf(rpId)).mapNotNull { row ->
-            val passkey = parsePasskeyRow(row) ?: return@mapNotNull null
-            val itemUsername = row["Username"] as? String
-
+        val rows = executeQuery(PasskeyQueries.GET_BY_RP_ID, arrayOf(rpId)).mapNotNull { PasskeyWithItemRow.fromRow(it) }
+        return PasskeyMapper.mapRowsWithItem(rows).filter { entry ->
             // Filter by username or userId if provided
-            val usernameMatches = userName == null || itemUsername == userName
-            val userIdMatches = userId == null || passkey.userHandle == null || userId.contentEquals(passkey.userHandle)
-            if (!usernameMatches || !userIdMatches) return@mapNotNull null
-
-            PasskeyWithCredentialInfo(
-                passkey = passkey,
-                serviceName = row["ServiceName"] as? String,
-                username = itemUsername,
-                email = row["Email"] as? String,
-            )
+            val usernameMatches = userName == null || entry.username == userName
+            val userIdMatches = userId == null || entry.passkey.userHandle == null || userId.contentEquals(entry.passkey.userHandle)
+            usernameMatches && userIdMatches
         }
     }
 
@@ -322,8 +307,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                 val manifestId = row["ManifestId"] as? String
                 if (itemIdString == null || manifestId == null) continue
                 val itemId = UUID.fromString(itemIdString)
-                val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
-                val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
+                val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: ItemMapper.MIN_DATE
+                val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: ItemMapper.MIN_DATE
                 val urls = (row["Urls"] as? String)?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
 
                 results.add(
@@ -377,21 +362,21 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
 
     /**
      * Get all passkeys with their associated items in a single query.
-     * This is much more efficient than calling getForItem() for each item.
+     * This is much more efficient than calling getByItemId() for each item.
      *
-     * @return List of PasskeyWithItem objects.
+     * @return List of PasskeyAndItem objects.
      */
-    fun getAllWithItems(): List<PasskeyWithItem> {
+    fun getAllWithItems(): List<PasskeyAndItem> {
         if (!database.isOpen()) return emptyList()
 
-        val results = mutableListOf<PasskeyWithItem>()
+        val results = mutableListOf<PasskeyAndItem>()
         for (row in executeQuery(PasskeyQueries.GET_ALL_WITH_ITEMS, emptyArray())) {
             try {
                 val passkey = parsePasskeyRow(row)
                 val manifestId = passkey?.manifestId
                 if (passkey == null || manifestId == null) continue
-                val itemCreatedAt = DateHelpers.parseDateString(row["ItemCreatedAt"] as? String) ?: MIN_DATE
-                val itemUpdatedAt = DateHelpers.parseDateString(row["ItemUpdatedAt"] as? String) ?: MIN_DATE
+                val itemCreatedAt = DateHelpers.parseDateString(row["ItemCreatedAt"] as? String) ?: ItemMapper.MIN_DATE
+                val itemUpdatedAt = DateHelpers.parseDateString(row["ItemUpdatedAt"] as? String) ?: ItemMapper.MIN_DATE
 
                 // Create a minimal Item object with the data we have
                 val item = Item(
@@ -410,7 +395,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                     updatedAt = itemUpdatedAt,
                 )
 
-                results.add(PasskeyWithItem(passkey, item))
+                results.add(PasskeyAndItem(passkey, item))
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing passkey with item row", e)
             }
@@ -520,66 +505,12 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     /**
      * Parse a passkey row from database query results.
      */
-    @Suppress("ReturnCount") // Early returns improve readability for parsing logic
     private fun parsePasskeyRow(row: Map<String, Any?>): Passkey? {
-        return try {
-            val idString = row["Id"] as? String ?: return null
-            val itemIdString = row["ItemId"] as? String ?: return null
-            val manifestId = row["ManifestId"] as? String ?: return null
-            val rpId = row["RpId"] as? String ?: return null
-            val userHandle = row["UserHandle"] as? ByteArray
-            val publicKeyString = row["PublicKey"] as? String ?: return null
-            val privateKeyString = row["PrivateKey"] as? String ?: return null
-            val prfKey = row["PrfKey"] as? ByteArray
-            val displayName = row["DisplayName"] as? String ?: return null
-            val additionalData = row["AdditionalData"] as? ByteArray
-            val createdAtString = row["CreatedAt"] as? String ?: return null
-            val updatedAtString = row["UpdatedAt"] as? String ?: return null
-            val isDeleted = (row["IsDeleted"] as? Long) == 1L
-
-            Passkey(
-                id = UUID.fromString(idString),
-                parentItemId = UUID.fromString(itemIdString),
-                manifestId = manifestId,
-                rpId = rpId,
-                userHandle = userHandle,
-                userName = null,
-                publicKey = publicKeyString.toByteArray(Charsets.UTF_8),
-                privateKey = privateKeyString.toByteArray(Charsets.UTF_8),
-                prfKey = prfKey,
-                displayName = displayName,
-                additionalData = additionalData,
-                createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE,
-                updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE,
-                isDeleted = isDeleted,
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing passkey row", e)
-            null
-        }
+        return PasskeyRow.fromRow(row)?.let { PasskeyMapper.mapRow(it) }
     }
 }
 
 // MARK: - Data Classes
-
-/**
- * Data class to hold passkey with item info.
- *
- * @property passkey The passkey.
- * @property serviceName The service name from the item.
- * @property username The username from the item.
- * @property email The email from the item, used as display fallback when there is no username.
- */
-data class PasskeyWithCredentialInfo(
-    val passkey: Passkey,
-    val serviceName: String?,
-    val username: String?,
-    val email: String? = null,
-) {
-    /** The account identifier to display: the username, or the email when no username is set. */
-    val accountLabel: String?
-        get() = username?.takeIf { it.isNotBlank() } ?: email?.takeIf { it.isNotBlank() }
-}
 
 /**
  * Data class to hold passkey with its associated item.
@@ -587,7 +518,7 @@ data class PasskeyWithCredentialInfo(
  * @property passkey The passkey.
  * @property item The item this passkey belongs to.
  */
-data class PasskeyWithItem(
+data class PasskeyAndItem(
     val passkey: Passkey,
     val item: Item,
 )

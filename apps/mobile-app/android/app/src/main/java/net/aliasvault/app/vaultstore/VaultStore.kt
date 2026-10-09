@@ -565,8 +565,8 @@ class VaultStore(
     /**
      * Get the metadata.
      */
-    fun getMetadata(): String {
-        return metadata.getMetadata()
+    fun getVaultMetadata(): String {
+        return metadata.getVaultMetadata()
     }
 
     /**
@@ -821,14 +821,14 @@ class VaultStore(
         rpId: String,
         userName: String? = null,
         userId: ByteArray? = null,
-    ): List<net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo> {
+    ): List<net.aliasvault.app.vaultstore.mappers.PasskeyWithItem> {
         return passkey.getPasskeysWithCredentialInfo(rpId, userName, userId)
     }
 
     /**
      * Get all passkeys with their associated items in a single query.
      */
-    fun getAllPasskeysWithItems(): List<net.aliasvault.app.vaultstore.repositories.PasskeyWithItem> {
+    fun getAllPasskeysWithItems(): List<net.aliasvault.app.vaultstore.repositories.PasskeyAndItem> {
         return passkey.getAllPasskeysWithItems()
     }
 
@@ -965,7 +965,7 @@ class VaultStore(
 
         val accountKey = crypto.openAccountKeyChain(android.util.Base64.decode(key, android.util.Base64.NO_WRAP)).accountKey
         val accountKeyBase64 = android.util.Base64.encodeToString(accountKey, android.util.Base64.NO_WRAP)
-        LegacyKeyConversion.convertPinKey(pin, pinValue, key, accountKeyBase64)
+        LegacyKeyConversion.convertLegacyPinKey(pin, pinValue, key, accountKeyBase64)
         return accountKeyBase64
     }
 

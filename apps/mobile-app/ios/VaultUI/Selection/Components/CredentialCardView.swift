@@ -107,7 +107,7 @@ public struct AutofillCredentialCard: View {
 
             if credential.hasTotp,
                let totp = credential.totp,
-               let code = TotpGenerator.generateCode(secret: totp.secretKey,
+               let code = TotpUtility.generateTotpCode(secret: totp.secretKey,
                                                      period: totp.period,
                                                      digits: totp.digits,
                                                      algorithm: totp.algorithm),

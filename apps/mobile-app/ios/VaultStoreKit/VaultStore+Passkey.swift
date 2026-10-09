@@ -41,8 +41,8 @@ extension VaultStore {
      * Get passkeys with item info for a specific rpId and optionally username
      * Used for finding existing passkeys that might be replaced during registration
      */
-    public func getPasskeysWithCredentialInfo(forRpId rpId: String, userName: String? = nil, userId: Data? = nil) throws -> [PasskeyWithItemInfo] {
-        return try passkeyRepository.getWithItemInfo(forRpId: rpId, userName: userName, userId: userId)
+    public func getPasskeysWithCredentialInfo(forRpId rpId: String, userName: String? = nil, userId: Data? = nil) throws -> [PasskeyWithItem] {
+        return try passkeyRepository.getWithItem(forRpId: rpId, userName: userName, userId: userId)
     }
 
     /**

@@ -11,6 +11,7 @@
 
 /**
  * Formats a Date to the standard format string: "yyyy-MM-dd HH:mm:ss.fff" (23 characters).
+ * Other platform implementations: DateHelpers.swift (iOS), DateHelpers.kt (Android).
  * @param date - The Date to format
  * @returns Formatted date-time string in format "yyyy-MM-dd HH:mm:ss.fff"
  */

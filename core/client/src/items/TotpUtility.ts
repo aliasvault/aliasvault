@@ -5,6 +5,7 @@ import { logExpected } from '../utilities/Diagnostics';
 
 /**
  * The RFC 6238 parameters a TOTP code was created with, as stored on the vault row.
+ * Other platform implementations: TotpUtility.swift (iOS), TotpUtility.kt (Android).
  */
 export type TotpParameters = {
   /** HMAC algorithm: "SHA1", "SHA256" or "SHA512". */

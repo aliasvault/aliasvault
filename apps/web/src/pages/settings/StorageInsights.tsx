@@ -1,5 +1,5 @@
 import { BulkFaviconService } from '@aliasvault/client/items/BulkFaviconService';
-import { fromStandardFormat } from '@aliasvault/client/utilities/DateFormatter';
+import { fromStandardFormat } from '@aliasvault/client/utilities/DateHelpers';
 import { LogoKinds } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';

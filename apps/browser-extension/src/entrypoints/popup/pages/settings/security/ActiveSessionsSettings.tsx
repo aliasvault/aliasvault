@@ -1,4 +1,4 @@
-import { toLocalDisplayFormat } from '@aliasvault/client/utilities/DateFormatter';
+import { toLocalDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 

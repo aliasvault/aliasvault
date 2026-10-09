@@ -38,6 +38,7 @@ type StoredFieldValue = {
 /**
  * Repository for Item CRUD operations.
  * Handles items, field values, field definitions, and field history.
+ * Other platform implementations: ItemRepository.swift (iOS), ItemRepository.kt (Android), reads only.
  */
 export class ItemRepository extends BaseRepository {
   /**

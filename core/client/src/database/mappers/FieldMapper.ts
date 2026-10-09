@@ -40,6 +40,7 @@ export type ProcessedField = {
 /**
  * Mapper class for processing database field rows into ItemField objects.
  * Handles both system fields (with FieldKey) and custom fields (with FieldDefinitionId).
+ * Other platform implementations: FieldMapper.swift (iOS), FieldMapper.kt (Android).
  */
 export class FieldMapper {
   /**

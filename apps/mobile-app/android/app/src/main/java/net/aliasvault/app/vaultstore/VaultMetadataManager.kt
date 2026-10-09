@@ -30,7 +30,7 @@ class VaultMetadataManager(
     /**
      * Get the metadata from the storage provider.
      */
-    fun getMetadata(): String {
+    fun getVaultMetadata(): String {
         return storageProvider.getMetadata()
     }
 
@@ -284,7 +284,7 @@ class VaultMetadataManager(
      * Get the vault metadata object.
      */
     fun getVaultMetadataObject(): VaultMetadata? {
-        val metadataJson = getMetadata()
+        val metadataJson = getVaultMetadata()
         if (metadataJson.isBlank()) {
             return null
         }

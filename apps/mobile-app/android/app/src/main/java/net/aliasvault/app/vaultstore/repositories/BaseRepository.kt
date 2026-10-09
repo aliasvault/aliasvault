@@ -7,6 +7,13 @@ import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import java.util.UUID
 
 /**
+ * The grouping key of a manifest-scoped row, for joining rows of one query to rows of another in memory.
+ */
+fun scopedKey(manifestId: String, id: String): String {
+    return "${manifestId.lowercase()}${id.lowercase()}"
+}
+
+/**
  * Base repository class with common database operations.
  */
 open class BaseRepository(
@@ -20,13 +27,6 @@ open class BaseRepository(
      */
     protected fun writeManifestId(): String {
         return database.getPersonalManifestId() ?: throw AppError.ManifestNotRecorded()
-    }
-
-    /**
-     * The grouping key of a manifest-scoped row, for joining rows of one query to rows of another in memory.
-     */
-    protected fun scopedKey(manifestId: String, id: String): String {
-        return "${manifestId.lowercase()}${id.lowercase()}"
     }
 
     // MARK: - Transaction Helpers
