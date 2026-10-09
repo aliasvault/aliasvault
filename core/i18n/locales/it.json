@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Il tuo account è stato disabilitato. Se ritieni che questo sia un errore, contatta il supporto.",
     "ACCOUNT_LOCKED": "Account temporaneamente bloccato a causa di troppi tentativi falliti. Riprova più tardi.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Account eliminato con successo.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Si è verificato un errore durante il caricamento delle email. Modifica e salva le credenziali per sincronizzare il database, poi riprova.",
-    "CLAIM_DOES_NOT_MATCH_USER": "L'indirizzo email scelto è già in uso. Cambia l'indirizzo modificando queste credenziali.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Errore interno del server.",
     "INVALID_AUTHENTICATOR_CODE": "Codice di autenticazione non valido. Riprova.",
     "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Per favore riprova.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "I nuovi account possono essere creati solo con un link di invito. Puoi richiederlo all'amministratore del server.",
       "registrationDisabledTitle": "La registrazione dell'utente è disabilitata.",
       "setupStepTitle": "Configurazione",
-      "termsAndConditionsStepTitle": "Uso Di Aliasvault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Ho letto e accetto i Termini e le Condizioni",
-        "pleaseReadAndAgree": "Si prega di leggere e accettare i seguenti termini e condizioni prima di procedere.",
-        "termsContent": "AliasVault è progettato per migliorare la tua sicurezza online e proteggere la tua privacy. Con AliasVault, puoi creare identità uniche e alias email per i tuoi vari account online, aiutandoti a mantenere il controllo sulle tue informazioni personali e a ridurre il rischio di furto di identità.\n\nUtilizzando AliasVault, accetti i seguenti termini:\n\n1. Non utilizzerai AliasVault per scopi illeciti, inclusi ma non limitati a frodi, furto di identità o impersonazione di individui reali.\n\n2. Sei responsabile del mantenimento della riservatezza del tuo account e degli eventuali alias creati tramite AliasVault.\n\n3. AliasVault si riserva il diritto di chiudere il tuo account se sospettiamo qualsiasi abuso o violazione di questi termini.\n\n4. Comprendi che, mentre AliasVault migliora la tua privacy, nessun sistema è completamente a prova di errore e utilizzi il servizio a tuo rischio."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Assistente AliasVault",
         "enterUsernameInstructions": "Inserisci un nome utente che desideri usare. Questo può essere il tuo indirizzo email o qualsiasi nome univoco che preferisci.",
-        "greatNowLetsSetupUsername": "Ottimo! Ora impostiamo la tua password principale per AliasVault.",
         "rememberUsernameNote": "Ricorda: Questo è quello che userai per accedere più tardi, quindi assicurati che sia qualcosa che ricorderai!",
         "serverCommunicationError": "Si è verificato un errore durante la comunicazione con il server AliasVault.",
         "usernamePlaceholder": "Inserisci il tuo nome utente o email desiderati",
-        "validatingUsernameMessage": "Convalida nome utente..."
+        "validatingUsernameMessage": "Convalida nome utente...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Scegli nome utente"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
-      "serverOutdated": "Il server AliasVault deve essere aggiornato per funzionare con questa versione. Se hai bisogno di aiuto, contatta il supporto.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
       "unexpectedErrorContactSupport": "Si è verificato un errore imprevisto. Riprova o contatta l'assistenza se il problema persiste.",
@@ -424,8 +420,7 @@
     },
     "title": "Email",
     "to": "A:",
-    "toColumn": "A",
-    "updateClientForFormattedView": "Questa email richiede una nuova versione dell'app per essere visualizzata correttamente. Si prega di aggiornare l'app."
+    "toColumn": "A"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Si è verificato un errore imprevisto durante il caricamento delle email. Riprova più tardi.",
     "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
     "errorLoadingItems": "Errore durante il caricamento degli elementi",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Sei sicuro?"
     },
@@ -883,7 +880,7 @@
     "trash": {
       "confirmDeleteMessage": "Questa azione non può essere annullata. L'oggetto verrà rimosso definitivamente dalla tua cassaforte.",
       "confirmDeleteTitle": "Eliminare definitivamente l'elemento?",
-      "confirmEmptyAllMessage": "Questo eliminerà definitivamente gli elementi {{count}} . Questa azione non può essere annullata.",
+      "confirmEmptyAllMessage": "Questo eliminerà definitivamente {{count}} elementi. Questa azione non può essere annullata.",
       "confirmEmptyAllTitle": "Vuoi svuotare il cestino?",
       "daysRemaining": "Eliminato permanentemente in {{days}} giorni",
       "deleteFailed": "Eliminazione dell'elemento fallita.",
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Solo Appunti Locali",
     "clipboardLocalOnlyDescription": "Mantieni le credenziali copiate su questo dispositivo invece di sincronizzarle con gli altri dispositivi Apple tramite Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "Con questo disattivato, le credenziali copiate potranno essere sincronizzare con gli altri dispositivi Apple (Mac, iPad, ecc.) tramite Universal Clipboard.",
-    "clipboardSettings": "Impostazioni Appunti",
     "contextMenuDescription": "Click destro sui campi di input per accedere alle opzioni di AliasVault",
     "contextMenuSettings": "Preferenze menu contestuale",
     "copyTotpOnFill": "Copia il codice TOTP con il riempimento automatico",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Inserisci il codice di verifica",
         "verifyAndEnableButton": "Verifica e Abilita"
       },
-      "pageDescription": "Configura le impostazioni di sicurezza.",
-      "pageTitle": "Impostazioni sicurezza",
       "passkeyUnlock": {
         "disableButton": "Disabilita Sblocco con Passkey",
         "disabledDescription": "Per impostazione predefinita, ricaricare la pagina di AliasVault o la scheda richiede di inserire nuovamente la password principale. Con una passkey, è possibile sbloccare immediatamente la cassaforte. Se abilitata, la tua password principale viene crittografata localmente usando l'estensione PRF della passkey. Nota: la passkey funzionerà solo per il dispositivo e il browser attuali su cui è attivato.",
@@ -1565,12 +1559,14 @@
     "addName": "Aggiungi un nome (opzionale)",
     "addTotpCodeDescription": "Aggiungi un codice di autenticazione a due fattori",
     "addTotpCodeModalTitle": "Aggiungi Codice TOTP 2FA",
+    "algorithm": "Algorithm",
     "closeFormButton": "Chiudi il modulo",
     "defaultName": "Autenticazione",
     "deleteCodeConfirmation": "Sei sicuro di voler eliminare questo codice TOTP?",
     "deleteCodeTitle": "Elimina codice TOTP",
     "deleteTotpCodeConfirmation": "Sei sicuro di voler eliminare il codice 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Elimina Il Codice 2FA",
+    "digits": "Digits",
     "enterManually": "Inserisci la chiave segreta",
     "errors": {
       "invalidSecretKey": "Formato chiave segreta non valido.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "nameOptional": "Nome (facoltativo)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Salva per visualizzare il codice",
     "scanQrCode": "Scansiona il Codice QR",
     "secretKey": "Chiave segreta",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Controllo aggiornamenti cassaforte",
     "checkingVaultUpdates": "Verifica aggiornamenti cassaforte",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Recupero del database crittografato non riuscito",
-      "passwordChangeRequiresOnline": "La modifica della password richiede una connessione internet. Per favore riprova quando sei online.",
-      "usernameNotFound": "Nome utente non trovato"
-    },
     "mergingVault": "Sincronizzzazione modifiche della cassaforte...",
     "savingChangesToVault": "Salvataggio modifiche cassaforte",
     "syncingUpdatedVault": "Sincronizzazione cassaforte aggiornata",
-    "syncingVault": "Sincronizzazione cassaforte",
-    "uploadingVaultToServer": "Caricamento cassaforte sul server"
+    "syncingVault": "Sincronizzazione cassaforte"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Passa al tema scuro",
       "enableLightMode": "Passa al tema chiaro",
-      "logOut": "Esci",
-      "openMenuLabel": "Apri menu"
+      "logOut": "Esci"
     },
     "welcome": {
       "createFirstIdentityButton": "Crea la Tua Prima Identità",
