@@ -38,6 +38,8 @@ updates:
           time: "09:00"
           interval: "weekly"
       ignore:
+          - dependency-name: "*"
+            update-types: ["version-update:semver-major"]
           # eslint 10 is unusable here: eslint-plugin-import peers on `<=9` and has no
           # v10-compatible release. Drop this once eslint-plugin-import supports v10.
           - dependency-name: "eslint"

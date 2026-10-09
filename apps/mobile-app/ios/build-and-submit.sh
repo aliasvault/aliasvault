@@ -198,7 +198,8 @@ METADATA_PATH="$REPO_ROOT/fastlane/metadata/ios"
 # screenshots) stays managed in App Store Connect and is left untouched.
 # ------------------------------------------
 TMP_METADATA_DIR=$(mktemp -d)
-trap 'rm -rf "$TMP_METADATA_DIR"' EXIT
+TMP_SCREENSHOTS_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_METADATA_DIR" "$TMP_SCREENSHOTS_DIR"' EXIT
 
 RELEASE_NOTES_FOUND=false
 for LOCALE_DIR in "$METADATA_PATH"/*/; do
@@ -213,16 +214,19 @@ done
 
 if [ "$RELEASE_NOTES_FOUND" = true ]; then
   echo "📝 Prefilling 'What's New in This Version' from changelogs/${BUILD}.txt"
-  DELIVER_METADATA_ARGS=(--metadata_path "$TMP_METADATA_DIR" --app_version "$VERSION" --force)
+  DELIVER_METADATA_ARGS=(--app_version "$VERSION" --force)
 else
   echo "⚠️  No changelog found for build ${BUILD}; uploading without release notes."
   echo "    Add one at: $METADATA_PATH/en-US/changelogs/${BUILD}.txt"
   DELIVER_METADATA_ARGS=(--skip_metadata)
 fi
 
+# Always pass both paths: deliver validates its default ./fastlane dirs even when skipping, and the repo root's fastlane/metadata holds per-app folders.
 fastlane deliver \
   --ipa "$IPA_PATH" \
   --skip_screenshots \
+  --metadata_path "$TMP_METADATA_DIR" \
+  --screenshots_path "$TMP_SCREENSHOTS_DIR" \
   "${DELIVER_METADATA_ARGS[@]}" \
   --api_key_path "$API_KEY_PATH" \
   --run_precheck_before_submit=false
