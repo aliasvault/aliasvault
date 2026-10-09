@@ -1628,11 +1628,6 @@
   "vault": {
     "checkingForVaultUpdates": "Checking for vault updates",
     "checkingVaultUpdates": "Checking vault updates",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Failed to get encrypted database",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "usernameNotFound": "Username not found"
-    },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Saving changes to vault",
     "syncingUpdatedVault": "Syncing updated vault",
