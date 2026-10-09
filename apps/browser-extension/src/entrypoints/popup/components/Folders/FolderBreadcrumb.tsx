@@ -113,16 +113,16 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
   const rootLabelText = rootLabel ?? t('items.title');
 
   return (
-    <div className="mb-3 flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 overflow-x-auto">
+    <div className="mb-3 -ml-1.5 flex items-center gap-0.5 text-sm text-gray-600 dark:text-gray-400 overflow-x-auto">
       {isOnRootPage ? (
-        <span className="text-gray-900 dark:text-white font-medium flex-shrink-0 flex items-center gap-1">
+        <span className="px-1.5 py-0.5 text-gray-900 dark:text-white font-medium flex-shrink-0 flex items-center gap-1">
           <Icon name="home" className="w-4 h-4" />
           {rootLabelText}
         </span>
       ) : (
         <button
           onClick={() => handleBreadcrumbClick(rootPath)}
-          className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex-shrink-0 flex items-center gap-1"
+          className="rounded-md px-1.5 py-0.5 hover:text-gray-900 hover:bg-gray-200 focus-visible:outline-none focus-visible:text-gray-900 focus-visible:bg-gray-200 dark:hover:text-white dark:hover:bg-gray-700 dark:focus-visible:text-white dark:focus-visible:bg-gray-700 transition-colors flex-shrink-0 flex items-center gap-1"
         >
           <Icon name="home" className="w-4 h-4" />
           {rootLabelText}
@@ -136,7 +136,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
             <Icon name="chevron-right" className="w-4 h-4 flex-shrink-0" />
             <button
               onClick={() => handleBreadcrumbClick(crumbPath)}
-              className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate"
+              className="rounded-md px-1.5 py-0.5 hover:text-gray-900 hover:bg-gray-200 focus-visible:outline-none focus-visible:text-gray-900 focus-visible:bg-gray-200 dark:hover:text-white dark:hover:bg-gray-700 dark:focus-visible:text-white dark:focus-visible:bg-gray-700 transition-colors truncate"
               title={crumb.name}
             >
               {crumb.name}
