@@ -306,9 +306,14 @@ get_core_client_version() {
     grep "\"version\": " "$REPO_ROOT/core/client/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
-# Function to extract version from core i18n package.json
-get_core_i18n_version() {
-    grep "\"version\": " "$REPO_ROOT/core/i18n/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+# Function to extract the version from a package.json, by path relative to the repository root
+get_package_json_version() {
+    grep "\"version\": " "$REPO_ROOT/$1/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+}
+
+# Function to list the distinct iOS MARKETING_VERSIONs over all targets (embedded frameworks included), comma separated
+get_ios_all_targets_version() {
+    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" | sed 's/.*= //' | tr -d ';' | sort -u | paste -sd, -
 }
 
 # Function to extract version from web app package.json
@@ -328,7 +333,12 @@ android_version=$(get_android_version)
 safari_version=$(get_safari_version)
 rust_core_version=$(get_rust_core_version)
 core_client_version=$(get_core_client_version)
-core_i18n_version=$(get_core_i18n_version)
+core_i18n_version=$(get_package_json_version core/i18n)
+core_models_version=$(get_package_json_version core/models)
+core_vault_version=$(get_package_json_version core/vault)
+mobile_package_version=$(get_package_json_version apps/mobile-app)
+admin_package_version=$(get_package_json_version apps/server/AliasVault.Admin)
+ios_targets_version=$(get_ios_all_targets_version)
 web_app_version=$(get_web_app_version)
 
 # Versions and display names per project (parallel lists, since macOS ships bash 3.2 without associative arrays)
@@ -345,6 +355,11 @@ version_values=(
     "$rust_core_version"
     "$core_client_version"
     "$core_i18n_version"
+    "$core_models_version"
+    "$core_vault_version"
+    "$mobile_package_version"
+    "$admin_package_version"
+    "$ios_targets_version"
     "$web_app_version"
 )
 display_names=(
@@ -360,6 +375,11 @@ display_names=(
     "Rust Core"
     "Core Client (package.json)"
     "Core i18n (package.json)"
+    "Core Models (package.json)"
+    "Core Vault (package.json)"
+    "Mobile App (package.json)"
+    "Admin (package.json)"
+    "iOS (all targets)"
     "Web App (package.json)"
 )
 
@@ -656,6 +676,20 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     echo -e "${BLUE}Updating docs package-lock.json version...${RESET}"
     sed -i '' '/"name": "aliasvault-docs"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/docs/package-lock.json"
 
+    # Update mobile app package.json + package-lock.json version (plain semver; the app version itself lives in app.json)
+    echo -e "${BLUE}Updating mobile app package.json version...${RESET}"
+    update_version "$REPO_ROOT/apps/mobile-app/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+    sed -i '' '/"name": "aliasvault-mobile-app"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/mobile-app/package-lock.json"
+
+    # Update admin package.json + package-lock.json version (Tailwind build tooling only)
+    echo -e "${BLUE}Updating admin package.json version...${RESET}"
+    update_version "$REPO_ROOT/apps/server/AliasVault.Admin/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+    sed -i '' '/"name": "aliasvault.admin"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/server/AliasVault.Admin/package-lock.json"
+
     # Update browser extension ExtensionPlatform.ts version
     echo -e "${BLUE}Updating browser extension ExtensionPlatform.ts version...${RESET}"
     update_version "$REPO_ROOT/apps/browser-extension/src/platform/ExtensionPlatform.ts" \
@@ -671,10 +705,10 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$display_version\","
 
-    # Update iOS app version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
+    # Update iOS version on every target, the embedded frameworks included (Apple doesn't accept stage suffixes in MARKETING_VERSION)
     echo -e "${BLUE}Updating iOS app version...${RESET}"
     update_version "$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
-        "MARKETING_VERSION = [0-9]\+\.[0-9]\+\.[0-9]\+[^;]*;" \
+        "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
 
     # Update Android app version
@@ -689,40 +723,20 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
 
-    # Update core client package.json version (without suffix: npm requires plain semver
-    # and this package is consumed via a file: link, never published).
-    echo -e "${BLUE}Updating core client package.json version...${RESET}"
-    update_version "$REPO_ROOT/core/client/package.json" \
-        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
-        "\"version\": \"$version\","
-
-    # Update core client package-lock.json. The project version appears twice (the root
-    # object and the "" package entry), each on the line directly after a
-    # `"name": "@aliasvault/client"` line. Anchoring on that name leaves the dependency
-    # "version" lines untouched (same approach as the docs package-lock.json above).
-    echo -e "${BLUE}Updating core client package-lock.json version...${RESET}"
-    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/client/package-lock.json"
-
-    # The browser extension and mobile app link core/client via file:, which embeds the version into their lockfiles.
-    echo -e "${BLUE}Updating browser extension package-lock.json core client version...${RESET}"
-    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
-    echo -e "${BLUE}Updating mobile app package-lock.json core client version...${RESET}"
-    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/mobile-app/package-lock.json"
-    echo -e "${BLUE}Updating web app package-lock.json core client version...${RESET}"
-    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/web/package-lock.json"
-
-    # Update core i18n package.json + package-lock.json version (plain semver, consumed via file: links only)
-    echo -e "${BLUE}Updating core i18n package.json version...${RESET}"
-    update_version "$REPO_ROOT/core/i18n/package.json" \
-        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
-        "\"version\": \"$version\","
-    echo -e "${BLUE}Updating core i18n package-lock.json version...${RESET}"
-    sed -i '' '/"name": "@aliasvault\/i18n"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/i18n/package-lock.json"
-
-    # The apps and core/client link core/i18n via file:, which embeds its version into their lockfiles.
-    for lockfile in apps/browser-extension apps/mobile-app apps/web core/client; do
-        echo -e "${BLUE}Updating $lockfile/package-lock.json core i18n version...${RESET}"
-        sed -i '' '/"name": "@aliasvault\/i18n"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/$lockfile/package-lock.json"
+    # Update the core packages (plain semver: they are consumed via file: links, never published). Each lockfile
+    # holds a package's version on the line directly after its `"name"` line: twice in its own lockfile (root object
+    # and "" entry) and once in every lockfile that links it. Anchoring on the name leaves dependency versions untouched.
+    for core_package in client i18n models vault; do
+        echo -e "${BLUE}Updating core $core_package package.json version...${RESET}"
+        update_version "$REPO_ROOT/core/$core_package/package.json" \
+            "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+            "\"version\": \"$version\","
+        lockfiles="apps/browser-extension apps/mobile-app apps/web core/client"
+        [[ "$core_package" != "client" ]] && lockfiles="core/$core_package $lockfiles"
+        for lockfile in $lockfiles; do
+            echo -e "${BLUE}Updating $lockfile/package-lock.json core $core_package version...${RESET}"
+            sed -i '' '/"name": "@aliasvault\/'"$core_package"'"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/$lockfile/package-lock.json"
+        done
     done
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
