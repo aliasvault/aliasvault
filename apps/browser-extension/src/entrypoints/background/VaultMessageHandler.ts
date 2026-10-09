@@ -785,8 +785,13 @@ export function handleGetVaultMigrationStatus(): Promise<VaultMigrationKind> {
 /**
  * Upgrade local manifest-v1 storage model to the current schema (if needed) and push it.
  */
-export function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
-  return vaultSync.migrateVaultManifest();
+export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
+  const result = await vaultSync.migrateVaultManifest();
+  if (result.success && !result.pushed) {
+    // The migrated vault stays dirty; sync it now instead of at the next unrelated trigger.
+    void handleFullVaultSync().catch(error => logFailure('Background sync after the vault migration failed', error));
+  }
+  return result;
 }
 
 /**

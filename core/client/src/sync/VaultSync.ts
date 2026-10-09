@@ -125,6 +125,12 @@ export function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVa
  */
 export class VaultSync {
   /**
+   * The engine run in flight. Runs queue behind it: two runs against the same stored vault overwrite each other's
+   * stores and dirty flag.
+   */
+  private queue: Promise<unknown> = Promise.resolve();
+
+  /**
    * Create the wrapper.
    * @param host - how the engine reaches the local vault and the at-rest blob
    * @param openVault - the open local vault, for the checks that precede an operation
@@ -254,11 +260,15 @@ export class VaultSync {
    * @param options - what the caller asks beyond what the engine decides
    * @param overrides - what one operation sets on the request itself: the unlock key resolveVaultKey runs on, or the target of a sharing operation
    */
-  private async run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing'>> = {}): Promise<T> {
-    const request = { ...await buildVaultSyncRequest(operation, options), ...overrides };
-    const result = await runVaultSyncEngine<T>(this.host, request, this.webApi);
-    await this.persistSyncResult(result);
-    return result;
+  private run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing'>> = {}): Promise<T> {
+    const run = this.queue.then(async () => {
+      const request = { ...await buildVaultSyncRequest(operation, options), ...overrides };
+      const result = await runVaultSyncEngine<T>(this.host, request, this.webApi);
+      await this.persistSyncResult(result);
+      return result;
+    });
+    this.queue = run.catch(() => undefined);
+    return run;
   }
 
   /**

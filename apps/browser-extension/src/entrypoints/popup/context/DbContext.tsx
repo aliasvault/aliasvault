@@ -231,6 +231,10 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return onMessage('VAULT_SYNC_PHASE', ({ data }) => {
       setIsSyncing(data.phase === 'pull');
       setIsUploading(data.phase === 'push');
+      if (data.phase === 'idle') {
+        // A background sync may have cleared the dirty flag this popup shows.
+        void hasUnsyncedUserChangesInStorage().then(setHasUnsyncedUserChanges);
+      }
     });
   }, []);
 
