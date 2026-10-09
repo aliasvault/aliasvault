@@ -17,6 +17,7 @@ export function ThemedScrollView({
   style,
   lightColor,
   darkColor,
+  contentContainerStyle,
   keyboardShouldPersistTaps = 'handled',
   ...otherProps
 }: ThemedScrollViewProps): React.ReactNode {
@@ -28,7 +29,7 @@ export function ThemedScrollView({
   return (
     <ScrollView
       style={[styles.container, { paddingTop: paddingTop }, style]}
-      contentContainerStyle={{ paddingBottom: paddingBottom }}
+      contentContainerStyle={[{ paddingBottom: paddingBottom }, contentContainerStyle]}
       scrollIndicatorInsets={{ bottom: paddingBottom }}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       {...otherProps}

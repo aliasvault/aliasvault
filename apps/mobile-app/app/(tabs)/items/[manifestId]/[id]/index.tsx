@@ -307,6 +307,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
   return (
     <ThemedContainer>
       <ThemedScrollView
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -369,6 +370,9 @@ const styles = StyleSheet.create({
   logo: {
     height: 48,
     width: 48,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   serviceName: {
     fontSize: 24,
