@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "A fiókja letiltásra került. Ha úgy gondolja, hogy indokolatlan volt, vegye fel a kapcsolatot az ügyfélszolgálattal.",
     "ACCOUNT_LOCKED": "A fiók ideiglenesen zárolásra került a túl sok sikertelen próbálkozás miatt. Kérem próbálja meg később.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "A fiók sikeresen törlésre került.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Hiba lépett fel az e-mailek betöltése során. Próbálja meg szerkeszteni majd menteni a bejegyzéseket az adatbázis szinkronizáláshoz, majd próbálkozzon újra.",
-    "CLAIM_DOES_NOT_MATCH_USER": "A kiválasztott e-mail cím már használatban van. Változtassa meg az e-mail a bejegyzések módosításával.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Belső szerver hiba.",
     "INVALID_AUTHENTICATOR_CODE": "Helytelen hitelesítő kód. Kérem próbálja meg újra.",
     "INVALID_RECOVERY_CODE": "Helytelen helyreállító kód. Kérem, próbálja meg újra.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Beállítás",
-      "termsAndConditionsStepTitle": "Az AliasVault használatával",
-      "termsStep": {
-        "agreementCheckboxLabel": "Elolvastam és elfogadom az Általános Szerződési Feltételeket",
-        "pleaseReadAndAgree": "Kérem olvassa el a következő Általános Szerződési Feltételeket a folytatáshoz.",
-        "termsContent": "Az AliasVault célja az internetes biztonság és adatvédelem megerősítése. Az AliasVault segítségével egyéni azonosítókat és e-mail alias-okat tud létrehozni internetes fiókjaihoz, ezzel elősegítve, hogy ne kerüljenek személyes adatai illetéktelen kezekbe.\n\nAz AliasVault használatával belegyezik a következőkbe:\n\n1. Nem használja az AliasVault-ot illegális tevékenységre, mint csalás, mások személyazonosságának ellopása, más létező személyként való megszemélyesítés.\n\n2. Felelős fiókja titkosságának fenntartásáért, ezáltal minden AliasVault-on keresztül létrehozott alias-ért is.\n\n3. Az AliasVault fenntartja a jogot a fiók törlésére, ha úgy véli a feltételek megszegésre kerültek.\n\n4. Elfogadja, hogy habár az AliasVault jelentősen növeli biztonságát és adatvédelmét, semmilyen rendszer sem feltörhetetlen, emiatt saját felelősségre használja azt."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault asszisztens",
         "enterUsernameInstructions": "Please enter a username you'd like to use. This can be your email address or any unique name you prefer.",
-        "greatNowLetsSetupUsername": "Kitűnő! Most állítsa be felhasználónevét az AliasVault-hoz.",
         "rememberUsernameNote": "Figyelem: Később ezzel fog bejelentkezni, ezért úgy válassza meg, hogy biztosan emlékezzen rá!",
         "serverCommunicationError": "Hiba lépett fel az AliasVault szerverrel való kommunikáció során.",
         "usernamePlaceholder": "Adja meg a kívánt felhasználónevet és e-mailt",
-        "validatingUsernameMessage": "Felhasználónév ellenőrzése..."
+        "validatingUsernameMessage": "Felhasználónév ellenőrzése...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Felhasználónév választás"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Kérem, jelentkezzen be újra biztonsági okokból.",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem, próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "serverNotAvailable": "Az AliasVault szerver nem elérhető. Kérem próbálkozzon újra később, és forduljon az ügyfélszolgálathoz ha továbbra is fennáll a hiba.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
       "syncConflictMaxRetries": "Többszöri próbálkozást követően sem szinkronizálható a széf. Kérem, próbálja meg később újra.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "E-mailek",
     "to": "Címzett:",
-    "toColumn": "Címzett:",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "Címzett:"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Váratlan hiba lépett fel az e-mailek betöltése során. Kérem próbálkozzon újra később.",
     "emptyFolderHint": "Ez a mappa üres. Ahhoz, hogy elemeket helyezzen a mappába, szerkessze az elemet, majd koppintson a mappa ikonra a név mezőnél.",
     "errorLoadingItems": "Hiba az elemek betöltése során",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Biztos ebben?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Csak helyi vágólap",
     "clipboardLocalOnlyDescription": "Maradjanak a másolt bejegyzések az eszközön, és nem szinkronizálódjanak a többi Apple eszközre az Univerzális Vágólap segítségével.",
     "clipboardLocalOnlyDisabledWarning": "Ha ez kikapcsolja, a másolt bejegyzések szinkronizálhatóak lesznek a többi Apple eszközével (Mac, iPad, stb.) Univerzális Vágólapon.",
-    "clipboardSettings": "Vágólap beállítások",
     "contextMenuDescription": "Kattintson jobb egér gombbal a mezőre az AliasVault beállításokhoz",
     "contextMenuSettings": "Kontextus menü beállítások",
     "copyTotpOnFill": "TOTP kód másolása kitöltéskor",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Ellenőrző kód megadása",
         "verifyAndEnableButton": "Ellenőrzés és bekapcsolás"
       },
-      "pageDescription": "Biztonsági beállítások konfigurálása.",
-      "pageTitle": "Biztonsági beállítások",
       "passkeyUnlock": {
         "disableButton": "Azonosítókulcsos feloldás kikapcsolása",
         "disabledDescription": "Alapból az AliasVault oldal újratöltése újból kéri a mester jelszó megadását. Az azonosítókulcs segítségével azonnal fel tudja azt oldani. Ha bekapcsolásra kerül, a mester jelszava lokálisan titkosításra kerül az azonosítókulcs PRF bővítményével. Megjegyzés: Az azonosítókulcs csak a jelenlegi eszközés fog működni, azon belül is csak abban a böngészőben ahol engedélyezi.",
@@ -1565,12 +1559,14 @@
     "addName": "Név hozzáadása (tetszőleges)",
     "addTotpCodeDescription": "Kétlépcsős hitelesítő kód hozzáadása",
     "addTotpCodeModalTitle": "2FA TOTP kód hozzáadása",
+    "algorithm": "Algorithm",
     "closeFormButton": "Űrlap bezárása",
     "defaultName": "Hitelesítő",
     "deleteCodeConfirmation": "Biztosan ki akarja törölni ezt a TOTP kódot?",
     "deleteCodeTitle": "TOTP kód törlése",
     "deleteTotpCodeConfirmation": "Biztosan ki akarja törölni a \"{{name}}\" kétlépcsős kódját?",
     "deleteTotpCodeTitle": "Kétlépcsős kód törlése",
+    "digits": "Digits",
     "enterManually": "Titkos kulcs magadása",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "nameOptional": "Név (nem kötelező)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
     "secretKey": "Titkos kulcs",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Széf frissülések ellenőrzése",
     "checkingVaultUpdates": "Széf frissülések ellenőrzése",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Adatbázis titkosítása sikertelen",
-      "passwordChangeRequiresOnline": "A jelszó változtatás internet kapcsolat szükséges. Kérem, próbálja újra ha már online.",
-      "usernameNotFound": "Felhasználónév nem található"
-    },
     "mergingVault": "Széf módosítások összefésülése...",
     "savingChangesToVault": "Változások mentése a széfbe",
     "syncingUpdatedVault": "Frissült széf szinkronizálása",
-    "syncingVault": "Széf szinkronizálása",
-    "uploadingVaultToServer": "Széf feltöltése a szerverre"
+    "syncingVault": "Széf szinkronizálása"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BÉTA",
       "enableDarkMode": "Váltás sötét módra",
       "enableLightMode": "Váltás világos módra",
-      "logOut": "Kijelentkezés",
-      "openMenuLabel": "Menü megnyitása"
+      "logOut": "Kijelentkezés"
     },
     "welcome": {
       "createFirstIdentityButton": "Hozza létre első személyazonosságát",
