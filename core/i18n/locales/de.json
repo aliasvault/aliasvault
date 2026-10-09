@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Dein Konto wurde deaktiviert. Wenn Du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support.",
     "ACCOUNT_LOCKED": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt. Bitte versuche es später erneut.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Konto erfolgreich gelöscht.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere das Element, um die Datenbank zu synchronisieren und versuche es dann erneut.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Die aktuell gewählte E-Mail-Adresse wird bereits verwendet. Bitte ändere die E-Mail-Adresse, indem Du diese Zugangsdaten bearbeitest.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Interner Server Fehler.",
     "INVALID_AUTHENTICATOR_CODE": "Ungültiger Sicherheits-Code. Bitte versuche es erneut.",
     "INVALID_RECOVERY_CODE": "Ungültiger Wiederherstellungscode. Bitte versuche es erneut.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "Neue Konten können nur mit einem Einladungslink erstellt werden. Frage den Server-Administrator nach einer Einladung.",
       "registrationDisabledTitle": "Benutzerregistrierung ist deaktiviert",
       "setupStepTitle": "Einrichtung",
-      "termsAndConditionsStepTitle": "Nutzung von AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Ich habe die Nutzungsbedingungen gelesen und akzeptiere sie",
-        "pleaseReadAndAgree": "Lies Dir bitte die untenstehenden Nutzungsbedingungen durch und stimme ihnen zu, um fortzufahren.",
-        "termsContent": "AliasVault hilft Dir, Deine Online-Sicherheit zu stärken und Deine Privatsphäre zu wahren. Mit AliasVault kannst Du individuelle Identitäten und E-Mail-Aliase für Deine Online-Konten anlegen, um Deine persönlichen Daten zu schützen und das Risiko von Identitätsdiebstahl zu minimieren.\n\nIndem Du AliasVault nutzt, stimmst Du den folgenden Bedingungen zu:\n\n1. Du darfst AliasVault nicht für rechtswidrige Aktivitäten nutzen – darunter fallen z. B. Betrug, Identitätsdiebstahl oder das Nachahmen echter Personen.\n\n2. Du trägst die Verantwortung dafür, Dein Konto sowie alle Aliase, die Du über AliasVault erstellst, sicher und vertraulich zu halten.\n\n3. AliasVault kann Dein Konto sperren, wenn ein Verstoß gegen diese Regeln vermutet wird oder der Dienst missbraucht wird.\n\n4. Dir ist bewusst, dass AliasVault Deine Privatsphäre zwar verbessert, aber kein System absolut sicher ist – die Nutzung erfolgt auf eigenes Risiko."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-Assistent",
         "enterUsernameInstructions": "Bitte gib einen Benutzernamen ein, den Du verwenden möchtest. Das kann Deine E-Mail-Adresse oder ein anderer einzigartiger Name sein.",
-        "greatNowLetsSetupUsername": "Großartig! Lass uns jetzt Deinen Nutzernamen für AliasVault festlegen.",
         "rememberUsernameNote": "Denke daran: Damit wirst Du Dich später anmelden, also wähle etwas, das Du Dir gut merken kannst!",
         "serverCommunicationError": "Bei der Kommunikation mit dem AliasVault-Server ist ein Fehler aufgetreten.",
         "usernamePlaceholder": "Gib Deinen gewünschten Benutzernamen oder E-Mail-Adresse ein",
-        "validatingUsernameMessage": "Der Benutzername wird überprüft..."
+        "validatingUsernameMessage": "Der Benutzername wird überprüft...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Wähle Deinen Benutzernamen"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
       "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "serverNotAvailable": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-      "serverOutdated": "Der AliasVault-Server muss aktualisiert werden, um mit dieser Version von AliasVault zu funktionieren. Bitte kontaktiere den Support, wenn Du Hilfe benötigst.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
       "syncConflictMaxRetries": "Tresor konnte trotz mehrmaliger Versuche nicht synchronisiert werden. Bitte versuche es später erneut.",
       "unexpectedErrorContactSupport": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut oder kontaktiere den Support, falls das Problem bestehen bleibt.",
@@ -424,8 +420,7 @@
     },
     "title": "E-Mails",
     "to": "An:",
-    "toColumn": "An",
-    "updateClientForFormattedView": "Diese E-Mail erfordert eine neuere App-Version, um sie korrekt anzuzeigen. Bitte aktualisiere Deine App."
+    "toColumn": "An"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Beim Laden der E-Mails ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.",
     "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
     "errorLoadingItems": "Fehler beim Laden der Daten",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Bist du sicher?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Nur lokale Zwischenablage",
     "clipboardLocalOnlyDescription": "Behalte kopierte Anmeldedaten auf diesem Gerät, anstatt sie über die allgemeine Zwischenablage mit Deinen anderen Apple-Geräten zu synchronisieren.",
     "clipboardLocalOnlyDisabledWarning": "Damit können kopierte Anmeldedaten mit Deinen anderen Apple-Geräten (Mac, iPad, etc.) über die allgemeine Zwischenablage synchronisiert werden.",
-    "clipboardSettings": "Zwischenablage-Einstellungen",
     "contextMenuDescription": "Rechtsklicke auf Eingabefelder, um auf AliasVault-Optionen zuzugreifen",
     "contextMenuSettings": "Kontextmenü-Einstellungen",
     "copyTotpOnFill": "TOTP-Code bei Autofill kopieren",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Bestätigungscode eingeben",
         "verifyAndEnableButton": "Überprüfen und aktivieren"
       },
-      "pageDescription": "Sicherheitseinstellungen ändern.",
-      "pageTitle": "Sicherheitseinstellungen",
       "passkeyUnlock": {
         "disableButton": "Passkey-Entsperrung deaktivieren",
         "disabledDescription": "Standardmäßig musst Du beim Neuladen der AliasVault-Seite oder des Tabs Dein Master-Passwort erneut eingeben. Mit einem Passkey kannst Du Deinen Tresor sofort entsperren. Wenn aktiviert, wird Dein Master-Passwort lokal mit der PRF-Erweiterung des Passkeys verschlüsselt. Hinweis: Der Passkey funktioniert nur für das aktuelle Gerät und den aktuellen Browser, auf dem Du ihn aktivierst.",
@@ -1565,12 +1559,14 @@
     "addName": "Name hinzufügen (optional)",
     "addTotpCodeDescription": "Zwei-Faktor-Authentifizierungscode hinzufügen",
     "addTotpCodeModalTitle": "2FA-TOTP-Code hinzufügen",
+    "algorithm": "Algorithm",
     "closeFormButton": "Formular schließen",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "Bist du sicher, dass du diesen TOTP-Code löschen möchtest?",
     "deleteCodeTitle": "TOTP-Code löschen",
     "deleteTotpCodeConfirmation": "Bist du sicher, dass du den 2FA-Code \"{{name}}\" löschen willst?",
     "deleteTotpCodeTitle": "Lösche 2FA-Code",
+    "digits": "Digits",
     "enterManually": "Geheimen Schlüssel eingeben",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "nameOptional": "Name (optional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "scanQrCode": "QR-Code scannen",
     "secretKey": "Secret-Key",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Prüfe auf Tresor-Änderungen",
     "checkingVaultUpdates": "Prüfe auf Tresor-Updates",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Fehler beim Abrufen der verschlüsselten Datenbank",
-      "passwordChangeRequiresOnline": "Passwortänderung erfordert eine Internetverbindung. Bitte versuchen Sie es erneut wenn Sie online sind.",
-      "usernameNotFound": "Benutzername nicht gefunden"
-    },
     "mergingVault": "Tresor Änderungen zusammenführen...",
     "savingChangesToVault": "Änderungen werden gespeichert",
     "syncingUpdatedVault": "Geänderter Tresor-Inhalt wird synchronisiert",
-    "syncingVault": "Tresor wird synchronisiert",
-    "uploadingVaultToServer": "Tresor wird auf den Server hochgeladen"
+    "syncingVault": "Tresor wird synchronisiert"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Zum dunklen Design wechseln",
       "enableLightMode": "Zum hellen Design wechseln",
-      "logOut": "Abmelden",
-      "openMenuLabel": "Menü öffnen"
+      "logOut": "Abmelden"
     },
     "welcome": {
       "createFirstIdentityButton": "Erstelle Deine erste Identität",
