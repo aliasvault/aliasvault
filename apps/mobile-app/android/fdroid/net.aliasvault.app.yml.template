@@ -42,7 +42,6 @@ Builds:
       - apps/mobile-app/node_modules/react-native-screens/android/build.gradle
       - apps/mobile-app/node_modules/react-native-edge-to-edge/android/build.gradle
       - apps/mobile-app/node_modules/react-native-webview/android/build.gradle
-      - apps/mobile-app/node_modules/react-native-aes-gcm-crypto/android/build.gradle
       - apps/mobile-app/node_modules/react-native-context-menu-view/android/build.gradle
       - apps/mobile-app/node_modules/react-native-get-random-values/android/build.gradle
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
