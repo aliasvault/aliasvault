@@ -2,7 +2,8 @@
  * The Rust core bound to its WebAssembly build, for hosts with a WebAssembly runtime.
  */
 /* eslint-disable jsdoc/require-jsdoc */
-import initWasm, * as core from '../../wasm/aliasvault_core.js';
+import initWasm, * as core from '#wasm/aliasvault_core.js';
+
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';

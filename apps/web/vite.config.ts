@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
 import { minify } from 'html-minifier-terser';
-import { defineConfig, type Plugin } from 'vite';
+import { defaultClientConditions, defineConfig, type Plugin } from 'vite';
 
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
 const LOCALES_DIR = path.join(CORE_DIR, 'i18n/locales');
@@ -40,7 +40,7 @@ function loadingProgress(): Plugin {
     name: 'loading-progress',
     transformIndexHtml(_html, context) {
       if (!context.bundle) {
-        const wasmFile = path.join(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm');
+        const wasmFile = path.join(CORE_DIR, 'client/wasm-web/aliasvault_core_bg.wasm');
         const devAssets = [{ url: `/@fs${wasmFile}`, size: statSync(wasmFile).size, wasm: true }];
         return [{ tag: 'script', children: `window.__loadingAssets=${JSON.stringify(devAssets)};${EARLY_LOAD_SCRIPT}`, injectTo: 'head-prepend' }];
       }
@@ -118,6 +118,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, 'src'),
     },
+    // Resolve the WASM imports of core/client to the size-optimized web build.
+    conditions: ['aliasvault-web', ...defaultClientConditions],
   },
   server: {
     port: 3000,

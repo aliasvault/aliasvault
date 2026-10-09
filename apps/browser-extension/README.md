@@ -30,7 +30,7 @@ npm run build:safari
 ```
 
 ### Rebuild the Rust WASM module (optional)
-`core/client/wasm` holds the prebuilt WASM module that the extension bundles, and the builds above use it
+`core/client/wasm-extension` holds the prebuilt WASM module that the extension bundles, and the builds above use it
 as is. To rebuild it from the Rust sources in `core/rust`, install the [Rust toolchain](https://rustup.rs)
 and run:
 

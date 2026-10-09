@@ -1,7 +1,7 @@
 /**
  * The SQLite engine backed by the Rust core's bundled SQLite.
  */
-import * as core from '../../wasm/aliasvault_core.js';
+import * as core from '#wasm/aliasvault_core.js';
 
 import type { ISqliteDatabase, ISqliteEngine, SqliteValue } from '../platform/SqliteEngine';
 import type { IRustCore } from '../rust/RustCoreBinding';

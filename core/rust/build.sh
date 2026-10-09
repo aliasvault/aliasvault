@@ -21,7 +21,7 @@ IOS_DIR="$DIST_DIR/ios"
 ANDROID_DIR="$DIST_DIR/android"
 
 # Target directories in consumer apps
-BROWSER_EXT_DIST="$SCRIPT_DIR/../client/wasm"
+WASM_DIST_ROOT="$SCRIPT_DIR/../client"  # gets wasm-web or wasm-extension
 IOS_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/ios/RustCoreFramework/RustCore"
 ANDROID_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/android/app/src/main/jniLibs"
 
@@ -76,7 +76,7 @@ echo -e "  Rust version: ${GREEN}$RUST_VERSION${NC}"
 
 # Build mode selection
 BUILD_ALL=false
-BROWSER_TARGET=""  # "web" or "browser-extension": both write core/client/wasm, so one per run
+BROWSER_TARGETS=""  # "web" and/or "browser-extension", each written to its own core/client/wasm-* directory
 BUILD_IOS=false
 BUILD_ANDROID=false
 INCREMENTAL=false
@@ -86,11 +86,7 @@ FORCE_BUILD=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --web|--browser-extension)
-            if [ -n "$BROWSER_TARGET" ] && [ "$BROWSER_TARGET" != "${1#--}" ]; then
-                echo -e "${RED}Error: --web and --browser-extension share one output directory, build one at a time${NC}"
-                exit 1
-            fi
-            BROWSER_TARGET="${1#--}"
+            [[ " $BROWSER_TARGETS " == *" ${1#--} "* ]] || BROWSER_TARGETS="$BROWSER_TARGETS ${1#--}"
             shift
             ;;
         --browser)
@@ -106,7 +102,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --all)
-            BROWSER_TARGET="${BROWSER_TARGET:-web}"
+            BROWSER_TARGETS="${BROWSER_TARGETS:-web}"
             BUILD_IOS=true
             BUILD_ANDROID=true
             shift
@@ -146,7 +142,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # If no targets specified, show help
-if [ -z "$BROWSER_TARGET" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
+if [ -z "$BROWSER_TARGETS" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
     echo "No target specified. Use --help for usage."
     echo ""
     echo "Quick start:"
@@ -161,13 +157,14 @@ fi
 # Browser Build (WASM): web app (size-optimized `release`) or browser extension (speed-optimized `extension`)
 # ============================================
 build_browser() {
+    local target="$1"
     local profile_args=(--release)
-    if [ "$BROWSER_TARGET" = "browser-extension" ]; then
+    if [ "$target" = "browser-extension" ]; then
         profile_args=(--profile extension)
     fi
 
     echo ""
-    echo -e "${BLUE}Building WASM for $BROWSER_TARGET (${profile_args[*]})...${NC}"
+    echo -e "${BLUE}Building WASM for $target (${profile_args[*]})...${NC}"
 
     local start_time=$(date +%s)
 
@@ -217,17 +214,19 @@ build_browser() {
 # Distribution
 # ============================================
 distribute_browser() {
+    local dist_dir="$WASM_DIST_ROOT/wasm-${1#browser-}"
+
     echo ""
-    echo -e "${BLUE}Distributing to the client core package (core/client/wasm)...${NC}"
+    echo -e "${BLUE}Distributing to the client core package (core/client/$(basename "$dist_dir"))...${NC}"
 
     if [ -d "$WASM_DIR" ] && [ -n "$(ls -A "$WASM_DIR" 2>/dev/null)" ]; then
-        rm -rf "$BROWSER_EXT_DIST"
-        mkdir -p "$BROWSER_EXT_DIST"
-        cp "$WASM_DIR"/aliasvault_core* "$BROWSER_EXT_DIST/"
-        cp "$WASM_DIR"/package.json "$BROWSER_EXT_DIST/"
+        rm -rf "$dist_dir"
+        mkdir -p "$dist_dir"
+        cp "$WASM_DIR"/aliasvault_core* "$dist_dir/"
+        cp "$WASM_DIR"/package.json "$dist_dir/"
 
         # Create README
-        cat > "$BROWSER_EXT_DIST/README.md" << 'README_EOF'
+        cat > "$dist_dir/README.md" << 'README_EOF'
 # Rust Core WASM Module
 
 Auto-generated from `/core/rust`. Do not edit manually.
@@ -241,8 +240,8 @@ cd /core/rust
 ```
 README_EOF
 
-        echo -e "${GREEN}Distributed to: $BROWSER_EXT_DIST${NC}"
-        ls -lh "$BROWSER_EXT_DIST/"
+        echo -e "${GREEN}Distributed to: $dist_dir${NC}"
+        ls -lh "$dist_dir/"
     fi
 }
 
@@ -629,10 +628,10 @@ distribute_android() {
 # ============================================
 TOTAL_START=$(date +%s)
 
-if [ -n "$BROWSER_TARGET" ]; then
-    build_browser
-    distribute_browser
-fi
+for browser_target in $BROWSER_TARGETS; do
+    build_browser "$browser_target"
+    distribute_browser "$browser_target"
+done
 
 if $BUILD_IOS; then
     IOS_BUILD_SKIPPED=false

@@ -446,7 +446,8 @@ core/rust/dist/
 core/rust/target/
 
 # Browser WASM for web app and extension (built by: cd core/rust && ./build.sh --web or --browser-extension)
-core/client/wasm
+core/client/wasm-web
+core/client/wasm-extension
 
 # Docker compose local overrides
 docker-compose.override.yml

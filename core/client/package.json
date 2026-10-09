@@ -9,8 +9,17 @@
         ".": "./src/index.ts",
         "./platform": "./src/platform/index.ts",
         "./database": "./src/database/index.ts",
-        "./wasm/*": "./wasm/*",
+        "./wasm/*": {
+            "aliasvault-web": "./wasm-web/*",
+            "aliasvault-extension": "./wasm-extension/*"
+        },
         "./*": "./src/*.ts"
+    },
+    "imports": {
+        "#wasm/*": {
+            "aliasvault-web": "./wasm-web/*",
+            "aliasvault-extension": "./wasm-extension/*"
+        }
     },
     "scripts": {
         "compile": "tsc --noEmit",

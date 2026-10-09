@@ -4,7 +4,7 @@
  * Import this module for its side effect from any helper that touches the core.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,7 +14,16 @@ import { createInMemoryPlatform } from '@aliasvault/client/platform/InMemoryPlat
 import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 
 const clientCoreDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../core/client');
-const rustCore = createWasmRustCore(async (): Promise<BufferSource> => readFileSync(path.join(clientCoreDir, 'wasm/aliasvault_core_bg.wasm')));
+
+/*
+ * Playwright resolves the `#wasm/*` glue code through the `paths` of core/client/tsconfig.json, so read the binary from the
+ * first build that exists in that same order.
+ */
+const wasmDir = ['wasm-extension', 'wasm-web'].map((dir) => path.join(clientCoreDir, dir)).find((dir) => existsSync(dir));
+if (!wasmDir) {
+  throw new Error('No Rust core WASM build in core/client, run `npm run build:rust` first.');
+}
+const rustCore = createWasmRustCore(async (): Promise<BufferSource> => readFileSync(path.join(wasmDir, 'aliasvault_core_bg.wasm')));
 
 setPlatform(createInMemoryPlatform({
   rustCore,

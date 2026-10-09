@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "#wasm/*": ["./wasm-extension/*", "./wasm-web/*"]
+    }
   },
-  "include": ["src/**/*.ts", "wasm/*.d.ts"]
+  "include": ["src/**/*.ts"]
 }

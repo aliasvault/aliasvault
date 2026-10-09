@@ -5,7 +5,7 @@ set -u  # Treat unset variables as errors
 
 # Build mode selection
 BUILD_ALL=false
-BROWSER_TARGET=""  # "web" or "browser-extension": both write core/client/wasm, so one per run
+BROWSER_TARGETS=""  # "web" and/or "browser-extension"
 BUILD_IOS=false
 BUILD_ANDROID=false
 BUILD_COMMON=true  # Always build TypeScript utils, models, and vault
@@ -14,11 +14,7 @@ BUILD_COMMON=true  # Always build TypeScript utils, models, and vault
 while [[ $# -gt 0 ]]; do
     case $1 in
         --web|--browser-extension)
-            if [ -n "$BROWSER_TARGET" ] && [ "$BROWSER_TARGET" != "${1#--}" ]; then
-                echo "Error: --web and --browser-extension share one output directory, build one at a time"
-                exit 1
-            fi
-            BROWSER_TARGET="${1#--}"
+            [[ " $BROWSER_TARGETS " == *" ${1#--} "* ]] || BROWSER_TARGETS="$BROWSER_TARGETS ${1#--}"
             shift
             ;;
         --browser)
@@ -34,7 +30,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --all)
-            BROWSER_TARGET="${BROWSER_TARGET:-web}"
+            BROWSER_TARGETS="${BROWSER_TARGETS:-web}"
             BUILD_ANDROID=true
             # Note: iOS excluded from --all as it requires macOS/Xcode (use --ios explicitly)
             shift
@@ -64,9 +60,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # If no targets specified, build cross-platform targets (iOS excluded - requires macOS)
-if [ -z "$BROWSER_TARGET" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
+if [ -z "$BROWSER_TARGETS" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
     echo "No target specified, building cross-platform targets..."
-    BROWSER_TARGET="web"
+    BROWSER_TARGETS="web"
     BUILD_ANDROID=true
 fi
 
@@ -96,7 +92,7 @@ if $BUILD_COMMON; then
 fi
 
 # Rust core build (required when any platform target is specified)
-if [ -n "$BROWSER_TARGET" ] || $BUILD_IOS || $BUILD_ANDROID; then
+if [ -n "$BROWSER_TARGETS" ] || $BUILD_IOS || $BUILD_ANDROID; then
     cd ./rust
 
     if ! command -v rustc &> /dev/null; then
@@ -104,7 +100,7 @@ if [ -n "$BROWSER_TARGET" ] || $BUILD_IOS || $BUILD_ANDROID; then
         echo "   Install Rust from https://rustup.rs"
         echo ""
         echo "   Requested targets require Rust:"
-        [ -n "$BROWSER_TARGET" ] && echo "     - Browser/WASM ($BROWSER_TARGET)"
+        [ -n "$BROWSER_TARGETS" ] && echo "     - Browser/WASM ($(echo $BROWSER_TARGETS))"
         $BUILD_IOS && echo "     - iOS"
         $BUILD_ANDROID && echo "     - Android"
         exit 1
@@ -122,10 +118,10 @@ if [ -n "$BROWSER_TARGET" ] || $BUILD_IOS || $BUILD_ANDROID; then
         ./build.sh --ios
     fi
 
-    if [ -n "$BROWSER_TARGET" ]; then
-        echo "  → Building for Browser/WASM ($BROWSER_TARGET)..."
-        ./build.sh --"$BROWSER_TARGET"
-    fi
+    for browser_target in $BROWSER_TARGETS; do
+        echo "  → Building for Browser/WASM ($browser_target)..."
+        ./build.sh --"$browser_target"
+    done
 
     echo "✅ Rust core built"
 

@@ -4,6 +4,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import importPlugin from "eslint-plugin-import";
+import { defaultConditionNames } from "eslint-import-resolver-typescript";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import globals from 'globals';
 
@@ -141,6 +142,7 @@ export default [
             'import/resolver': {
                 typescript: {
                 project: './tsconfig.json',
+                conditionNames: ['aliasvault-web', ...defaultConditionNames],
                 },
             },
             react: {

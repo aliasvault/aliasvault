@@ -2,7 +2,7 @@
  * The Rust passkey authenticator (core/rust/src/passkey) for hosts that run the core as WebAssembly. It is kept off
  * IRustCore because only the browser extension acts as an authenticator; the mobile apps call it natively.
  */
-import * as core from '../../wasm/aliasvault_core.js';
+import * as core from '#wasm/aliasvault_core.js';
 
 import { rustCore } from './RustCore';
 

@@ -98,9 +98,11 @@ runs:
     - name: Verify core library distribution
       if: steps.resolve.outputs.wasm == 'true'
       shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
       run: |
-        if [ ! -f "core/client/wasm/aliasvault_core_bg.wasm" ]; then
-          echo "Error: Rust WASM files not found in core/client/wasm"
+        if [ ! -f "core/client/wasm-${TARGET#browser-}/aliasvault_core_bg.wasm" ]; then
+          echo "Error: Rust WASM files not found in core/client/wasm-${TARGET#browser-}"
           exit 1
         fi
         echo "Core library distribution verified"

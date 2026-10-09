@@ -397,7 +397,7 @@ run_tests() {
     echo -e "\n${BLUE}== Running tests${RESET} (logs in $LOG_DIR)"
     if [ "$BUILD_CORE" = true ]; then
         local targets=""
-        eco_enabled npm && targets="$targets --browser-extension"
+        eco_enabled npm && targets="$targets --browser-extension --web"
         eco_enabled gradle && targets="$targets --android"
         eco_enabled cocoapods && [ "$(uname)" = "Darwin" ] && targets="$targets --ios"
         if [ -n "$targets" ]; then
@@ -405,8 +405,8 @@ run_tests() {
             # shellcheck disable=SC2086
             step "core: build-and-distribute.sh$targets" core ./build-and-distribute.sh $targets
         fi
-    elif eco_enabled npm && [ ! -f "$REPO_ROOT/core/client/wasm/aliasvault_core.js" ]; then
-        echo -e "  ${YELLOW}!${RESET} core/client/wasm is missing, the app builds and tests need it: rerun with --build-core"
+    elif eco_enabled npm && { [ ! -f "$REPO_ROOT/core/client/wasm-extension/aliasvault_core.js" ] || [ ! -f "$REPO_ROOT/core/client/wasm-web/aliasvault_core.js" ]; }; then
+        echo -e "  ${YELLOW}!${RESET} core/client/wasm-extension or wasm-web is missing, the app builds and tests need both: rerun with --build-core"
     fi
     run_phase test
     echo -e "\n${BLUE}== Test results${RESET}$TEST_RESULTS"

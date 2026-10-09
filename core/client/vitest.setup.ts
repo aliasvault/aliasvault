@@ -9,7 +9,7 @@ import { createWasmRustCore } from './src/rust/WasmRustCore';
 /*
  * Registers a Node-backed platform for the unit tests.
  */
-const rustCore = createWasmRustCore(async (): Promise<BufferSource> => readFileSync(path.join(import.meta.dirname, 'wasm/aliasvault_core_bg.wasm')));
+const rustCore = createWasmRustCore(async (): Promise<BufferSource> => readFileSync(path.join(process.env.ALIASVAULT_WASM_DIR ?? '', 'aliasvault_core_bg.wasm')));
 setPlatform(createInMemoryPlatform({
   rustCore,
   sqlite: createRustSqliteEngine(rustCore),

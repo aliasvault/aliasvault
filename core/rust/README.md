@@ -73,8 +73,8 @@ The host entry points: `wasm` (wasm-bindgen, browser) and `uniffi_api` (UniFFI, 
 
 Only the web app (fetched on page load) builds with the size-optimized `release` profile. The browser extension
 (`extension` profile), iOS and Android (`mobile` profile) build with `opt-level = 3`, which
-trades a few megabytes for faster sync, since those ship as a one time download. Both WASM builds write to `core/client/wasm`, so locally the
-apps run whichever was built last. Every build bundles SQLite behind
+trades a few megabytes for faster sync, since those ship as a one time download. The web build is written to `core/client/wasm-web` and the
+extension build to `core/client/wasm-extension`, and each app resolves its own through a package condition. Every build bundles SQLite behind
 `SqliteMemoryDatabase`, which hosts every client's vault database in memory.
 (`brew install llvm`), which `build.sh` finds on its own.
 

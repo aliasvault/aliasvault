@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { defineConfig, type WxtUnimportOptions } from 'wxt';
-import type { FilterPattern, Plugin } from 'vite';
+import { defaultClientConditions, type FilterPattern, type Plugin } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 /**
@@ -115,6 +116,18 @@ export default defineConfig({
   srcDir: 'src',
   outDir: 'dist',
   vite: () => ({
+    // Resolve the `#wasm/*` import of core/client to the speed-optimized extension build.
+    resolve: {
+      conditions: ['aliasvault-extension', ...defaultClientConditions],
+    },
+    // WXT imports the entrypoints at build time through its own `inline` environment.
+    environments: {
+      inline: {
+        resolve: {
+          conditions: ['aliasvault-extension'],
+        },
+      },
+    },
     // Allow to serve files from the shared core directory
     server: {
       fs: {
@@ -134,7 +147,7 @@ export default defineConfig({
       viteStaticCopy({
         targets: [
           {
-            src: path.resolve(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm'),
+            src: path.resolve(CORE_DIR, 'client/wasm-extension/aliasvault_core_bg.wasm'),
             dest: 'src'
           }
         ]
@@ -143,6 +156,10 @@ export default defineConfig({
   }),
   hooks: {
     'zip:sources:done': (_wxt, zipPath): void => {
+      // The README is excluded from the archive itself, so a build from inside the archive has nothing to add.
+      if (!existsSync(SOURCES_README)) {
+        return;
+      }
       try {
         execFileSync('zip', ['-jq', zipPath, SOURCES_README]);
       } catch (error) {
@@ -169,6 +186,7 @@ export default defineConfig({
       '**/dist/**',
       '**/.wxt/**',
       'core/rust/target/**',
+      'core/client/wasm-web/**',
       'apps/browser-extension/build-assets/safari-xcode/build/**',
       '**/xcuserdata/**',
       'apps/browser-extension/playwright-report/**',

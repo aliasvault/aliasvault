@@ -3,6 +3,7 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": false,
+    "customConditions": ["aliasvault-extension"]
   }
 }

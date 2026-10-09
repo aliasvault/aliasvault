@@ -10,9 +10,11 @@ which also holds the server and mobile app sources that are not needed to build 
 | --- | --- |
 | `apps/browser-extension` | The browser extension itself (WXT, React, TypeScript) |
 | `core/client` | Shared client logic, linked as a `file:` dependency |
+| `core/i18n` | Shared translations, linked as a `file:` dependency |
 | `core/models` | Shared data models, linked as a `file:` dependency |
 | `core/vault` | Shared vault schema definitions, linked as a `file:` dependency |
 | `core/rust` | Rust sources of the WebAssembly module that the extension bundles |
+| `core/scripts` | Install helper that `npm install` runs to install the dependencies of the linked packages |
 
 ## How to build
 
@@ -32,6 +34,6 @@ Full instructions are in `apps/browser-extension/README.md`.
 
 ## WebAssembly module
 
-`core/client/wasm` holds the prebuilt WebAssembly module that the extension bundles, and the build above
+`core/client/wasm-extension` holds the prebuilt WebAssembly module that the extension bundles, and the build above
 uses it as is. To rebuild it from the Rust sources in `core/rust`, install the Rust toolchain
 (https://rustup.rs) and run `npm run build:rust` from `apps/browser-extension`.
