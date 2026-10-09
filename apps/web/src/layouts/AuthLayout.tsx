@@ -16,7 +16,7 @@ const AuthLayout: React.FC = () => {
   const showPreferences = path.includes('/user/login') || path.includes('/user/forgot-password') || path.endsWith('/');
 
   return (
-    <div className="flex flex-col items-center justify-center px-6 pt-8 pb-8 mx-auto md:h-screen pt:mt-0 relative">
+    <div className="flex flex-col items-center justify-center px-6 pt-8 pb-20 mx-auto min-h-dvh relative">
       {showPreferences && (
         <div className="absolute top-4 right-4 z-10">
           <AuthPreferences />

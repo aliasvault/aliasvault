@@ -503,8 +503,14 @@ const ItemAddEditForm: React.FC = () => {
         )}
         customActions={(
           <>
-            <Button color="success" onClick={() => void save()}>{t('items.saveItem')}</Button>
-            <Button color="danger" onClick={cancel}>{t('common.cancel')}</Button>
+            <Button color="success" display="flex" onClick={() => void save()}>
+              <Icon name="check" className="w-[18px] h-[18px]" />
+              <span className="sr-only md:not-sr-only">{t('items.saveItem')}</span>
+            </Button>
+            <Button color="outline" display="flex" onClick={cancel}>
+              <Icon name="x" className="w-[18px] h-[18px]" />
+              <span className="sr-only md:not-sr-only">{t('common.cancel')}</span>
+            </Button>
           </>
         )}
       />
@@ -736,8 +742,14 @@ const ItemAddEditForm: React.FC = () => {
           </form>
 
           <StickyActionBar>
-            <Button color="success" onClick={() => void save()}>{t('items.saveItem')}</Button>
-            <Button color="danger" onClick={cancel}>{t('common.cancel')}</Button>
+            <Button color="success" display="flex" onClick={() => void save()}>
+              <Icon name="check" className="w-[18px] h-[18px]" />
+              <span>{t('items.saveItem')}</span>
+            </Button>
+            <Button color="outline" display="flex" onClick={cancel}>
+              <Icon name="x" className="w-[18px] h-[18px]" />
+              <span>{t('common.cancel')}</span>
+            </Button>
           </StickyActionBar>
         </PageContent>
       )}

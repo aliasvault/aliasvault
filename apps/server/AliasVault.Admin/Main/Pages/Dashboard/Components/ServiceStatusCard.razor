@@ -173,20 +173,20 @@
     };
 
     /// <summary>
-    /// Outline icon for a status level: check, cross, exclamation, info or question mark.
+    /// Icon for a status level: check, cross, exclamation, info or question mark.
     /// </summary>
     private static RenderFragment StatusIcon(StatusLevel level) => __builder =>
     {
         switch (level)
         {
             case StatusLevel.Ok:
-                <UiIcon Icon="UiIcons.CheckCircle" class="w-6 h-6 shrink-0 text-green-600 dark:text-green-400" />
+                <UiIcon Icon="UiIcons.Check" class="w-6 h-6 shrink-0 text-green-600 dark:text-green-400" />
                 break;
             case StatusLevel.Warning:
                 <UiIcon Icon="UiIcons.Exclamation" class="w-6 h-6 shrink-0 text-yellow-600 dark:text-yellow-400" />
                 break;
             case StatusLevel.Error:
-                <UiIcon Icon="UiIcons.XCircle" class="w-6 h-6 shrink-0 text-red-600 dark:text-red-400" />
+                <UiIcon Icon="UiIcons.X" class="w-6 h-6 shrink-0 text-red-600 dark:text-red-400" />
                 break;
             case StatusLevel.Info:
                 <UiIcon Icon="UiIcons.InformationCircle" class="w-6 h-6 shrink-0 text-blue-600 dark:text-blue-400" />

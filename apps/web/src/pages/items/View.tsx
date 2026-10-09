@@ -182,10 +182,10 @@ const ItemView: React.FC = () => {
         customActions={(
           <>
             <RefreshButton onClick={refreshVault} buttonText={t('common.refresh')} iconOnly />
-            <LinkButton smallText={t('common.edit')} text={t('items.editItem')} href={itemRoute(item, true)} color="primary" />
-            <Button color="danger" onClick={() => setShowDeleteModal(true)}>
-              <span className="md:hidden">{t('common.delete')}</span>
-              <span className="hidden md:inline">{t('items.deleteItem')}</span>
+            <LinkButton icon="pencil" text={t('items.editItem')} href={itemRoute(item, true)} color="primary" />
+            <Button color="danger" display="flex" onClick={() => setShowDeleteModal(true)}>
+              <Icon name="trash" className="w-[18px] h-[18px]" />
+              <span className="sr-only md:not-sr-only">{t('items.deleteItem')}</span>
             </Button>
           </>
         )}

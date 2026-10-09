@@ -33,7 +33,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ breadcrumbItems = [], title, de
             </div>
           ) : <H1>{title}</H1>)}
           {customActions && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap shrink-0 items-center gap-2">
               {customActions}
             </div>
           )}

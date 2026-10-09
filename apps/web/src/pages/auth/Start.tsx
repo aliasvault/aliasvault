@@ -43,7 +43,7 @@ const Start: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col items-center justify-center px-6 pt-8 pb-8 mx-auto md:h-screen pt:mt-0 relative">
+      <div className="flex flex-col items-center justify-center px-6 pt-8 pb-20 mx-auto min-h-dvh relative">
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row bg-gray-100 dark:bg-gray-900">
           <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
             <div className="text-white text-4xl font-bold">

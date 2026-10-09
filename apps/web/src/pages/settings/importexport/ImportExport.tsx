@@ -223,43 +223,43 @@ const ImportExport: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('importExport.exportSectionDescription')}</p>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border-2 border-amber-300 dark:border-amber-500/40 rounded-lg bg-amber-50 dark:bg-amber-500/10">
-              <div className="flex-1 min-w-0 mr-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-2 border-amber-300 dark:border-amber-500/40 rounded-lg bg-amber-50 dark:bg-amber-500/10">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t('importExport.exportAvexTitle')}</h4>
                   <span className="px-1.5 py-0.5 text-xs font-medium text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-500/20 rounded">{t('importExport.recommendedLabel')}</span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportAvexDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Avex)}>{t('importExport.exportAvexButton')}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Avex)} additionalClasses="w-full sm:w-auto shrink-0">{t('importExport.exportAvexButton')}</Button>
             </div>
 
-            <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div className="flex-1 min-w-0 mr-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportAvuxTitle')}</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportAvuxDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Avux)}>{t('importExport.exportAvuxButton')}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Avux)} additionalClasses="w-full sm:w-auto shrink-0">{t('importExport.exportAvuxButton')}</Button>
             </div>
 
-            <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div className="flex-1 min-w-0 mr-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportCsvTitle')}</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportCsvDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Csv)}>{t('importExport.exportCsvButton')}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Csv)} additionalClasses="w-full sm:w-auto shrink-0">{t('importExport.exportCsvButton')}</Button>
             </div>
 
             {isDebugBuild && (
-              <div className="flex items-center justify-between p-3 border-2 border-dashed border-yellow-400 dark:border-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
-                <div className="flex-1 min-w-0 mr-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border-2 border-dashed border-yellow-400 dark:border-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Export raw SQLite</h4>
                     <span className="px-1.5 py-0.5 text-xs font-medium text-yellow-800 dark:text-yellow-200 bg-yellow-200 dark:bg-yellow-800 rounded">DEBUG</span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">Downloads the unencrypted SQLite vault file as-is. Anyone with the file can read everything.</p>
                 </div>
-                <Button onClick={exportVaultSqlite}>Download .sqlite</Button>
+                <Button onClick={exportVaultSqlite} additionalClasses="w-full sm:w-auto shrink-0">Download .sqlite</Button>
               </div>
             )}
           </div>
