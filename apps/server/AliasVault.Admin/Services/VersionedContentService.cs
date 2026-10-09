@@ -7,6 +7,7 @@
 
 namespace AliasVault.Admin.Services;
 
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 /// <summary>
@@ -14,7 +15,7 @@ using System.Security.Cryptography;
 /// </summary>
 public class VersionedContentService
 {
-    private readonly Dictionary<string, string> _hashCache = new();
+    private readonly ConcurrentDictionary<string, string> _hashCache = new();
     private readonly string _webRootPath;
 
     /// <summary>
@@ -34,13 +35,7 @@ public class VersionedContentService
     /// <returns>Path with version suffix added.</returns>
     public string GetVersionedPath(string contentPath)
     {
-        if (!_hashCache.TryGetValue(contentPath, out var version))
-        {
-            var serverPath = Path.Combine(_webRootPath, contentPath.TrimStart('/'));
-            version = GetVersionHashFrom(serverPath);
-            _hashCache[contentPath] = version;
-        }
-
+        var version = _hashCache.GetOrAdd(contentPath, path => GetVersionHashFrom(Path.Combine(_webRootPath, path.TrimStart('/'))));
         return $"{contentPath}?v={version}";
     }
 
