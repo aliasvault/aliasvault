@@ -1,4 +1,4 @@
-//! The vault's SQLite through the host.
+//! The vault's SQLite: the local vault through the host, the staging database in-process.
 
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ use super::session::Host;
 use super::types::{Ack, Command, Db, DbRows, LogLevel};
 use super::legacy;
 use crate::common::encoding::uuid_from_bytes;
-use crate::sqlite_host::SqlStatement;
+use crate::sqlite_host::{MemoryDatabase, SqlStatement};
 use crate::common::timestamp::{now_iso_utc, now_vault_datetime};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
 use crate::vault_codec::{is_skip_table, manifest_scoped_tables, CodecRecord, CodecTableData, MaterializedTables};
@@ -23,28 +23,31 @@ const INSERT_BATCH_ROWS: usize = 400;
 const TABLE_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnName FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table' ORDER BY m.name, p.cid";
 
 pub(crate) async fn query(host: &Host, db: Db, sql: &str, params: Vec<Value>) -> SyncResult<Vec<Row>> {
-    let response: DbRows = host.call(Command::DbQuery { db, sql: sql.to_string(), params }).await?;
-    Ok(response.rows)
+    match db {
+        Db::Local => Ok(host.call::<DbRows>(Command::DbQuery { sql: sql.to_string(), params }).await?.rows),
+        Db::Staging => host.with_staging(|staging| staging.query(sql, &params)),
+    }
 }
 
 pub(crate) async fn exec(host: &Host, db: Db, statements: Vec<SqlStatement>) -> SyncResult<()> {
     if statements.is_empty() {
         return Ok(());
     }
-    host.call::<Ack>(Command::DbExec { db, statements }).await?;
-    Ok(())
-}
-
-/// Open the staging database fresh with the current schema.
-pub(crate) async fn open_staging(host: &Host) -> SyncResult<()> {
-    host.call::<Ack>(Command::DbOpen { db: Db::Staging }).await?;
-    Ok(())
+    match db {
+        Db::Local => host.call::<Ack>(Command::DbExec { statements }).await.map(|_| ()),
+        Db::Staging => host.with_staging(|staging| staging.exec(&statements)),
+    }
 }
 
 /// Serialize a database to SQLite bytes.
 pub(crate) async fn export(host: &Host, db: Db) -> SyncResult<Vec<u8>> {
-    let (_, bytes) = host.call_with_bytes::<Ack>(Command::DbExport { db }, None).await?;
-    bytes.ok_or_else(|| SyncError::Other("host returned no database bytes".to_string()))
+    match db {
+        Db::Local => {
+            let (_, bytes) = host.call_with_bytes::<Ack>(Command::DbExport, None).await?;
+            bytes.ok_or_else(|| SyncError::Other("host returned no database bytes".to_string()))
+        }
+        Db::Staging => host.with_staging(MemoryDatabase::export),
+    }
 }
 
 /// A cell as text: strings as they are, null as empty, anything else in its JSON form.
@@ -204,7 +207,7 @@ pub(crate) async fn insert_materialized(host: &Host, materialized: &Materialized
 /// A failed insert into the fresh staging database is a row the schema refuses (the vault data), not a storage failure.
 fn rows_rejected(table: &str, error: SyncError) -> SyncError {
     match error {
-        SyncError::Host { message, .. } => SyncError::VaultDataRejected(format!("table {}: {}", table, message)),
+        SyncError::Staging(message) => SyncError::VaultDataRejected(format!("table {}: {}", table, message)),
         other => other,
     }
 }

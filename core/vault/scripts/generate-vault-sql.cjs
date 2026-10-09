@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 /**
  * Writes the complete vault schema from the TypeScript source to a .sql file that the Rust core embeds,
- * so the native apps open a vault on the latest schema through SqliteMemoryDatabase.withLatestSchema().
  */
 
 const fs = require('fs');

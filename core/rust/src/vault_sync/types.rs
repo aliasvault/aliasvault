@@ -226,14 +226,13 @@ pub enum HttpMethod {
     Delete,
 }
 
-/// The databases a command may address.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+/// The databases the engine reads and writes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Db {
-    /// The vault the host has open.
+    /// The vault the host has open, reached through the `db*` commands.
     Local,
-    /// A throwaway database the engine opens for one step and discards: it materializes a pulled vault into it
-    /// before that becomes the new local vault, and probes the current client schema by opening a fresh one.
+    /// A throwaway database the engine keeps in-process: it materializes a pulled vault into it before that
+    /// becomes the new local vault, and probes the current client schema by opening a fresh one.
     Staging,
 }
 
@@ -273,15 +272,13 @@ pub enum Command {
     StateSet { key: String, value: Value },
     /// Delete an engine-owned persisted value; response [`Ack`].
     StateRemove { key: String },
-    /// Open the staging database fresh with the current client schema applied; response [`Ack`].
-    DbOpen { db: Db },
-    /// Run a SELECT; response [`DbRows`].
-    DbQuery { db: Db, sql: String, params: Vec<Value> },
-    /// Run statements inside one transaction; response [`Ack`]. A `{ "__b64": ... }` parameter binds a BLOB.
-    DbExec { db: Db, statements: Vec<SqlStatement> },
-    /// Serialize a database; response [`Ack`], with the SQLite file handed back as raw bytes through
+    /// Run a SELECT on the local vault; response [`DbRows`].
+    DbQuery { sql: String, params: Vec<Value> },
+    /// Run statements on the local vault inside one transaction; response [`Ack`]. A `{ "__b64": ... }` parameter binds a BLOB.
+    DbExec { statements: Vec<SqlStatement> },
+    /// Serialize the local vault; response [`Ack`], with the SQLite file handed back as raw bytes through
     /// `SyncSession::resume` (never base64 inside the JSON).
-    DbExport { db: Db },
+    DbExport,
     /// Persist the at-rest vault blob; response [`StoreOutcome`].
     VaultStore {
         encrypted_blob: String,
@@ -311,10 +308,9 @@ impl Command {
             Command::StateGet { .. } => "stateGet",
             Command::StateSet { .. } => "stateSet",
             Command::StateRemove { .. } => "stateRemove",
-            Command::DbOpen { .. } => "dbOpen",
             Command::DbQuery { .. } => "dbQuery",
             Command::DbExec { .. } => "dbExec",
-            Command::DbExport { .. } => "dbExport",
+            Command::DbExport => "dbExport",
             Command::VaultStore { .. } => "vaultStore",
             Command::VaultLoad => "vaultLoad",
             Command::MarkClean { .. } => "markClean",

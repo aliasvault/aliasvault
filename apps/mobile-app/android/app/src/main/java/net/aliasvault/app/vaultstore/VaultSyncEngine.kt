@@ -9,7 +9,6 @@ import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONArray
 import org.json.JSONObject
-import uniffi.aliasvault_core.SqliteMemoryDatabase
 import uniffi.aliasvault_core.VaultSyncSession
 import java.net.SocketTimeoutException
 
@@ -37,9 +36,6 @@ class VaultSyncEngine(
         /** Engine state key that lives in the native store instead (the login writes it there), routed on read and write. */
         private const val DERIVATION_PARAMS_STATE_KEY = "encryptionKeyDerivationParams"
     }
-
-    /** The engine staging database used for internal sync and merge operations. */
-    private var staging: SqliteMemoryDatabase? = null
 
     /** Whether the live vault was written to since the last store went through. */
     private var localMutated = false
@@ -73,7 +69,6 @@ class VaultSyncEngine(
                 log.engine { session.resume(responseJson, bytes) }
             }
         } finally {
-            closeStaging()
             discardLocalDatabaseIfNeeded()
             session.destroy()
             log.finish(success, storageProvider)
@@ -120,7 +115,7 @@ class VaultSyncEngine(
             return Pair(handle(kind, command), null)
         }
         return try {
-            Pair(JSONObject(), exportDatabase(command.optString("db")))
+            Pair(JSONObject(), vaultStore.database.export())
         } catch (e: Exception) {
             Pair(errorResponse(kind, e), null)
         }
@@ -139,20 +134,13 @@ class VaultSyncEngine(
                     setState(command.optString("key"), null)
                     JSONObject()
                 }
-                "dbOpen" -> {
-                    openStaging()
-                    JSONObject()
-                }
                 "dbQuery" -> {
                     val params = (command.optJSONArray("params") ?: JSONArray()).toString()
-                    JSONObject().put("rows", JSONArray(database(command.optString("db")).query(command.optString("sql"), params)))
+                    JSONObject().put("rows", JSONArray(vaultStore.database.connection().query(command.optString("sql"), params)))
                 }
                 "dbExec" -> {
-                    val name = command.optString("db")
-                    database(name).exec((command.optJSONArray("statements") ?: JSONArray()).toString())
-                    if (name == "local") {
-                        localMutated = true
-                    }
+                    vaultStore.database.connection().exec((command.optJSONArray("statements") ?: JSONArray()).toString())
+                    localMutated = true
                     JSONObject()
                 }
                 "vaultStore" -> storeVault(command)
@@ -170,15 +158,6 @@ class VaultSyncEngine(
         } catch (e: Exception) {
             errorResponse(kind, e)
         }
-    }
-
-    /**
-     * Serialize a database to SQLite bytes.
-     */
-    private fun exportDatabase(name: String): ByteArray = when (name) {
-        "local" -> vaultStore.database.export()
-        "staging" -> stagingDatabase().export()
-        else -> error("Unknown database $name")
     }
 
     /**
@@ -302,27 +281,6 @@ class VaultSyncEngine(
     // endregion
 
     // region SQLite
-
-    private fun database(name: String): SqliteMemoryDatabase = when (name) {
-        "local" -> vaultStore.database.connection()
-        "staging" -> stagingDatabase()
-        else -> error("Unknown database $name")
-    }
-
-    private fun stagingDatabase(): SqliteMemoryDatabase = staging ?: error("The staging database is not open")
-
-    /**
-     * Open the staging database in memory.
-     */
-    private fun openStaging() {
-        closeStaging()
-        staging = SqliteMemoryDatabase.withLatestSchema()
-    }
-
-    private fun closeStaging() {
-        staging?.destroy()
-        staging = null
-    }
 
     /**
      * Reload the stored vault when the run left changes in the live database that no store persisted, so the

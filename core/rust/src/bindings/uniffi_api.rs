@@ -376,12 +376,6 @@ impl SqliteMemoryDatabase {
         Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::from_bytes(&bytes)? }))
     }
 
-    /// Open an empty database on the latest vault schema, foreign keys off.
-    #[uniffi::constructor]
-    pub fn with_latest_schema() -> Result<std::sync::Arc<Self>, VaultError> {
-        Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::with_latest_schema()? }))
-    }
-
     /// Run a SQL script without parameters.
     pub fn execute_batch(&self, sql: String) -> Result<(), VaultError> {
         self.inner.execute_batch(&sql)

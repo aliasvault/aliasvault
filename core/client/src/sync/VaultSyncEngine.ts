@@ -3,8 +3,6 @@
  * against the host. The per-operation wrappers that call this live in VaultSync.
  */
 
-import { VaultSqlGenerator } from '@aliasvault/vault';
-
 import { NetworkError } from '../api/errors/NetworkError';
 import { RequestTimeoutError } from '../api/errors/RequestTimeoutError';
 import { WebApiService } from '../api/WebApiService';
@@ -177,10 +175,9 @@ type EngineCommand =
   | { kind: 'stateGet'; key: string }
   | { kind: 'stateSet'; key: string; value: JsonValue }
   | { kind: 'stateRemove'; key: string }
-  | { kind: 'dbOpen'; db: string }
-  | { kind: 'dbQuery'; db: string; sql: string; params: JsonValue[] }
-  | { kind: 'dbExec'; db: string; statements: EngineSqlStatement[] }
-  | { kind: 'dbExport'; db: string }
+  | { kind: 'dbQuery'; sql: string; params: JsonValue[] }
+  | { kind: 'dbExec'; statements: EngineSqlStatement[] }
+  | { kind: 'dbExport' }
   | { kind: 'vaultStore'; encryptedBlob: string; markDirty: boolean; encryptionKey?: string; expectedMutationSeq?: number; revision?: number }
   | { kind: 'vaultLoad' }
   | { kind: 'markClean'; mutationSeqAtStart: number }
@@ -189,10 +186,6 @@ type EngineCommand =
 
 /** The host's response to one command: the JSON, plus the raw bytes of a `dbExport` or a binary `http` response. */
 type HostResponse = { json: JsonValue; bytes: Uint8Array | null };
-
-/** The database names a command may address. */
-const DB_LOCAL = 'local';
-const DB_STAGING = 'staging';
 
 /**
  * A cell as the engine binds it: `{ __b64 }` binds a BLOB, booleans bind as integers, objects as their JSON.
@@ -255,28 +248,6 @@ function stateKey(key: string): StorageKey {
   return `local:${key}` as StorageKey;
 }
 
-/** The SQLite bytes of a fresh database on the current client schema. */
-let freshSchemaBytes: Promise<Uint8Array> | null = null;
-
-/**
- * A fresh database on the current client schema.
- */
-async function openFreshSchemaDatabase(): Promise<ISqliteDatabase> {
-  freshSchemaBytes ??= (async (): Promise<Uint8Array> => {
-    const db = await getPlatform().sqlite.open();
-    try {
-      db.exec(new VaultSqlGenerator().getCompleteSchemaSql());
-      return db.export();
-    } finally {
-      db.close();
-    }
-  })().catch((error: unknown) => {
-    freshSchemaBytes = null;
-    throw error;
-  });
-  return getPlatform().sqlite.open(await freshSchemaBytes);
-}
-
 /**
  * Current time in milliseconds.
  */
@@ -288,8 +259,6 @@ function now(): number {
  * Carries out one engine run's commands.
  */
 class EngineRun {
-  private staging: ISqliteDatabase | null = null;
-
   /** The open local vault. */
   private local: ISqliteDatabase | null = null;
 
@@ -345,11 +314,9 @@ class EngineRun {
   }
 
   /**
-   * Release the staging database.
+   * End the run, discarding local changes no store persisted.
    */
   public close(): void {
-    this.staging?.close();
-    this.staging = null;
     if (this.localMutated) {
       this.host.discardLocalDatabase?.();
     }
@@ -369,21 +336,16 @@ class EngineRun {
       case 'stateRemove':
         await getPlatform().storage.remove(stateKey(command.key));
         return {};
-      case 'dbOpen':
-        await this.openStaging();
-        return {};
       case 'dbQuery': {
-        const rows = (await this.database(command.db)).query(command.sql, command.params.map(toBindValue));
+        const rows = (await this.database()).query(command.sql, command.params.map(toBindValue));
         return { rows: rows.map(row => Object.fromEntries(Object.entries(row).map(([column, value]) => [column, toJsonCell(value)]))) };
       }
       case 'dbExec':
-        execInTransaction(await this.database(command.db), command.statements);
-        if (command.db === DB_LOCAL) {
-          this.localMutated = true;
-        }
+        execInTransaction(await this.database(), command.statements);
+        this.localMutated = true;
         return {};
       case 'dbExport':
-        return (await this.database(command.db)).export();
+        return (await this.database()).export();
       case 'vaultStore':
         return this.storeVault(command);
       case 'vaultLoad':
@@ -436,37 +398,11 @@ class EngineRun {
   }
 
   /**
-   * The database a command addresses.
-   * @param name - `local` or `staging`
+   * The local vault the `db*` commands address.
    */
-  private async database(name: string): Promise<ISqliteDatabase> {
-    if (name === DB_LOCAL) {
-      this.local ??= await this.host.localDatabase();
-      return this.local;
-    }
-    if (name === DB_STAGING) {
-      if (!this.staging) {
-        throw new Error('The staging database is not open');
-      }
-      return this.staging;
-    }
-    throw new Error(`Unknown database ${name}`);
-  }
-
-  /**
-   * Open a fresh staging database.
-   */
-  private async openStaging(): Promise<void> {
-    this.staging?.close();
-    this.staging = null;
-    const db = await openFreshSchemaDatabase();
-    try {
-      db.exec('PRAGMA foreign_keys = OFF');
-    } catch (error) {
-      db.close();
-      throw error;
-    }
-    this.staging = db;
+  private async database(): Promise<ISqliteDatabase> {
+    this.local ??= await this.host.localDatabase();
+    return this.local;
   }
 
   /**

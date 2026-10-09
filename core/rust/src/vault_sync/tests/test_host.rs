@@ -12,7 +12,7 @@ use crate::sqlite_host::{self, SqlStatement};
 use crate::vault_codec::{self, CodecTableData};
 use crate::vault_sync::session::SyncSession;
 use crate::vault_sync::state;
-use crate::vault_sync::types::{Command, Db};
+use crate::vault_sync::types::Command;
 
 pub const USERNAME: &str = "tester";
 
@@ -29,7 +29,6 @@ pub type Responder = Box<dyn Fn(&str, &str, Option<&Value>) -> Option<(u16, Valu
 
 pub struct TestHost {
     pub local: Connection,
-    pub staging: Option<Connection>,
     pub state: HashMap<String, Value>,
     pub vault_blob: Option<String>,
     /// The key the stored vault is encrypted under; the session key `sync` and `run` hand to the engine.
@@ -97,7 +96,6 @@ impl TestHost {
     pub fn new(vault_key: &str) -> Self {
         Self {
             local: open_schema_db(),
-            staging: None,
             state: HashMap::new(),
             vault_blob: None,
             vault_key: vault_key.to_string(),
@@ -223,25 +221,21 @@ impl TestHost {
                     self.state.remove(&key);
                     json!({})
                 }
-                Command::DbOpen { .. } => {
-                    self.staging = Some(open_schema_db());
-                    json!({})
-                }
-                Command::DbQuery { db, .. } | Command::DbExec { db, .. } | Command::DbExport { db } if db == Db::Local && self.vault_blob.is_none() => {
+                Command::DbQuery { .. } | Command::DbExec { .. } | Command::DbExport if self.vault_blob.is_none() => {
                     // Like the app hosts: without a stored vault there is no local database to open.
                     json!({ "error": "Vault not available" })
                 }
-                Command::DbQuery { db, sql, params } => match query(self.db(db), &sql, &params) {
+                Command::DbQuery { sql, params } => match query(&self.local, &sql, &params) {
                     Ok(rows) => json!({ "rows": rows }),
                     Err(error) => json!({ "error": format!("{} ({})", error, sql) }),
                 },
-                Command::DbExec { db, statements } => match exec(self.db(db), &statements) {
+                Command::DbExec { statements } => match exec(&self.local, &statements) {
                     Ok(()) => json!({}),
                     Err(error) => json!({ "error": error }),
                 },
-                Command::DbExport { db } => {
+                Command::DbExport => {
                     // The SQLite file travels as raw bytes, outside the JSON.
-                    let bytes = self.db(db).serialize(MAIN_DB).unwrap().to_vec();
+                    let bytes = self.local.serialize(MAIN_DB).unwrap().to_vec();
                     session.resume("{}", Some(bytes)).unwrap();
                     continue;
                 }
@@ -289,13 +283,6 @@ impl TestHost {
         self.vault_blob = Some(encrypted_blob.to_string());
         let bytes = state::decrypt_vault_blob(encrypted_blob, &self.vault_key).expect("stored blob decrypts with the vault key");
         self.local = open_from_bytes(&bytes);
-    }
-
-    fn db(&mut self, db: Db) -> &Connection {
-        match db {
-            Db::Local => &self.local,
-            Db::Staging => self.staging.as_ref().expect("staging database opened"),
-        }
     }
 
     /*

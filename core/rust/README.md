@@ -30,7 +30,7 @@ real SQLite host per device (`tests/test_host.rs`).
 
 ### sqlite_host
 An in-memory SQLite database (`SqliteMemoryDatabase`) that hosts every client's vault, so no platform
-needs its own SQLite build or writes plaintext to disk.
+needs its own SQLite build.
 
 ### credential_matcher
 Priority-based credential filtering for autofill. Root domains come from an embedded copy of the 
@@ -75,9 +75,7 @@ Only the web app (fetched on page load) builds with the size-optimized `release`
 (`extension` profile), iOS and Android (`mobile` profile) build with `opt-level = 3`, which
 trades a few megabytes for faster sync, since those ship as a one time download. Both WASM builds write to `core/client/wasm`, so locally the
 apps run whichever was built last. Every build bundles SQLite behind
-`SqliteMemoryDatabase`, which hosts every client's vault database in
-memory (the sync engine's staging database included), so all clients run one SQLite build and the phones never
-write plaintext to disk. On wasm32 that SQLite is compiled by clang (sqlite-wasm-rs); macOS needs Homebrew LLVM
+`SqliteMemoryDatabase`, which hosts every client's vault database in memory.
 (`brew install llvm`), which `build.sh` finds on its own.
 
 ## Testing

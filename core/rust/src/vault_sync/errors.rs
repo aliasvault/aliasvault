@@ -51,7 +51,7 @@ pub enum ErrorCode {
     /// The host failed a write command (state, database, at-rest blob, dirty flag).
     #[serde(rename = "E-602")]
     StorageWriteFailed,
-    /// The host could not open the staging database.
+    /// The engine's staging database failed.
     #[serde(rename = "E-603")]
     DatabaseInitFailed,
     #[serde(rename = "E-701")]
@@ -156,6 +156,9 @@ pub enum SyncError {
     /// LEGACY: the manifest migration cannot run before the sqlite-blob upgrade chain.
     #[error("The vault has to walk the legacy upgrade chain first")]
     LegacyUpgradePending,
+    /// The engine's in-process staging database failed.
+    #[error("Staging database failed: {0}")]
+    Staging(String),
     /// The host reported a failure for a command (named by its wire tag, `dbExec`).
     #[error("Host command {command} failed: {message}")]
     Host { command: &'static str, message: String },
@@ -210,6 +213,7 @@ impl SyncError {
             SyncError::ResyncLimitReached => Failure::Coded(ErrorCode::MergeConflict),
             SyncError::UploadRejected(_) | SyncError::MissingBlobs(_) => Failure::Coded(ErrorCode::UploadFailed),
             SyncError::LegacyUpgradePending => Failure::Coded(ErrorCode::MigrationCheckFailed),
+            SyncError::Staging(_) => Failure::Coded(ErrorCode::DatabaseInitFailed),
             SyncError::Host { command, .. } => Failure::Coded(storage_error_code(command)),
             SyncError::Json(_) => Failure::Coded(ErrorCode::SyncResponseInvalid),
             SyncError::Core(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
@@ -221,7 +225,6 @@ impl SyncError {
 /// The client error code a host failure of the named command maps to.
 fn storage_error_code(command: &str) -> ErrorCode {
     match command {
-        "dbOpen" => ErrorCode::DatabaseInitFailed,
         "stateGet" | "dbQuery" | "dbExport" | "vaultLoad" => ErrorCode::StorageReadFailed,
         "stateSet" | "stateRemove" | "dbExec" | "vaultStore" | "markClean" => ErrorCode::StorageWriteFailed,
         _ => ErrorCode::UnknownError,
@@ -244,7 +247,7 @@ mod tests {
         assert_eq!(SyncError::KeyOutOfSync.failure(), Failure::Coded(ErrorCode::KeyOutOfSync));
         assert_eq!(serde_json::to_string(&LogoutReason::PasswordChanged).unwrap(), "\"passwordChanged\"");
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
-        assert_eq!(SyncError::Host { command: "dbOpen", message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
+        assert_eq!(SyncError::Staging(String::new()).failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
         assert_eq!(SyncError::Host { command: "dbExec", message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
     }
 

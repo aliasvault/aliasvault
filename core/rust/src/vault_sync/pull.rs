@@ -355,7 +355,7 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
     }
 
     // Use a fresh staging database for every materialize.
-    db::open_staging(&ctx.host).await?;
+    ctx.host.open_staging()?;
     db::insert_materialized(&ctx.host, &materialized, &schema.columns, blob_map).await?;
 
     // Names are not part of a manifest: the ones the vault already shows are kept, the ones this run opened win.

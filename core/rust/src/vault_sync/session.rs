@@ -12,6 +12,7 @@ use super::engine;
 use super::errors::{SyncError, SyncResult};
 use super::types::{Ack, Command, LogLevel, SyncRequest};
 use crate::common::error::{VaultError, VaultResult};
+use crate::sqlite_host::MemoryDatabase;
 
 /// The exchange point between the engine's future and the host.
 #[derive(Default)]
@@ -24,15 +25,31 @@ pub(crate) struct Slot {
     pub response_bytes: Option<Vec<u8>>,
 }
 
-/// The engine's handle to the host.
+/// The engine's handle to the host, plus the staging database the engine keeps for itself.
 #[derive(Clone)]
 pub(crate) struct Host {
     slot: Arc<Mutex<Slot>>,
+    staging: Arc<Mutex<Option<MemoryDatabase>>>,
 }
 
 impl Host {
     pub fn new(slot: Arc<Mutex<Slot>>) -> Self {
-        Self { slot }
+        Self { slot, staging: Arc::new(Mutex::new(None)) }
+    }
+
+    /// Replace the staging database with a fresh one on the latest vault schema.
+    pub fn open_staging(&self) -> SyncResult<()> {
+        let mut staging = self.staging.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        *staging = None;
+        *staging = Some(MemoryDatabase::with_latest_schema().map_err(|e| SyncError::Staging(e.to_string()))?);
+        Ok(())
+    }
+
+    /// Run `f` on the open staging database.
+    pub fn with_staging<R>(&self, f: impl FnOnce(&MemoryDatabase) -> VaultResult<R>) -> SyncResult<R> {
+        let staging = self.staging.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        let db = staging.as_ref().ok_or_else(|| SyncError::Other("the staging database is not open".to_string()))?;
+        f(db).map_err(|e| SyncError::Staging(e.to_string()))
     }
 
     /// Send a command and wait for the host's typed response. A `{ "error": ... }` response becomes an error.

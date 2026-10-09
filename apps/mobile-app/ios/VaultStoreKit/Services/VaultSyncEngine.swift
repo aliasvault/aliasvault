@@ -26,8 +26,6 @@ public final class VaultSyncEngine {
 
     private let vaultStore: VaultStore
     private let webApiService: WebApiService
-    /// The engine's staging database, held in the Rust core's memory.
-    private var staging: SqliteMemoryDatabase?
     /// Whether the live vault was written to since the last store went through.
     private var localMutated = false
     private var runLog = VaultSyncRunLog(operation: "")
@@ -35,10 +33,6 @@ public final class VaultSyncEngine {
     public init(vaultStore: VaultStore, webApiService: WebApiService) {
         self.vaultStore = vaultStore
         self.webApiService = webApiService
-    }
-
-    deinit {
-        closeStaging()
     }
 
     /// Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`, or a
@@ -49,7 +43,6 @@ public final class VaultSyncEngine {
         var finalResult: [String: Any]?
         let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey, sharing: sharing))
         defer {
-            closeStaging()
             discardLocalDatabaseIfNeeded()
             log.finish(result: finalResult, userDefaults: vaultStore.userDefaults)
         }
@@ -120,7 +113,7 @@ public final class VaultSyncEngine {
             return (await handle(kind: kind, command: command), nil)
         }
         do {
-            return ([:], try exportDatabase(named: command["db"] as? String ?? ""))
+            return ([:], try vaultStore.exportDatabase())
         } catch {
             return (Self.errorResponse(error), nil)
         }
@@ -137,19 +130,12 @@ public final class VaultSyncEngine {
             case "stateRemove":
                 setState(nil, forKey: command["key"] as? String ?? "")
                 return [:]
-            case "dbOpen":
-                try openStaging()
-                return [:]
             case "dbQuery":
-                let db = try database(named: command["db"] as? String ?? "")
-                let rowsJson = try db.query(sql: command["sql"] as? String ?? "", paramsJson: try Self.serializeJson(command["params"] ?? []))
+                let rowsJson = try localDatabase().query(sql: command["sql"] as? String ?? "", paramsJson: try Self.serializeJson(command["params"] ?? []))
                 return ["rows": try Self.parseJsonArray(rowsJson)]
             case "dbExec":
-                let name = command["db"] as? String ?? ""
-                try database(named: name).exec(statementsJson: try Self.serializeJson(command["statements"] ?? []))
-                if name == "local" {
-                    localMutated = true
-                }
+                try localDatabase().exec(statementsJson: try Self.serializeJson(command["statements"] ?? []))
+                localMutated = true
                 return [:]
             case "vaultStore":
                 return try storeVault(command)
@@ -166,18 +152,6 @@ public final class VaultSyncEngine {
             }
         } catch {
             return Self.errorResponse(error)
-        }
-    }
-
-    /// Serialize a database to SQLite bytes.
-    private func exportDatabase(named name: String) throws -> Data {
-        switch name {
-        case "local":
-            return try vaultStore.exportDatabase()
-        case "staging":
-            return try database(named: "staging").export()
-        default:
-            throw AppError.unknownError(message: "Unknown database \(name)")
         }
     }
 
@@ -299,31 +273,12 @@ public final class VaultSyncEngine {
 
     // MARK: - SQLite
 
-    private func database(named name: String) throws -> SqliteMemoryDatabase {
-        switch name {
-        case "local":
-            guard let connection = vaultStore.dbConnection else {
-                throw AppError.unknownError(message: "The vault is not unlocked")
-            }
-            return connection
-        case "staging":
-            guard let staging = staging else {
-                throw AppError.unknownError(message: "The staging database is not open")
-            }
-            return staging
-        default:
-            throw AppError.unknownError(message: "Unknown database \(name)")
+    /// The live vault database the `db*` commands address.
+    private func localDatabase() throws -> SqliteMemoryDatabase {
+        guard let connection = vaultStore.dbConnection else {
+            throw AppError.unknownError(message: "The vault is not unlocked")
         }
-    }
-
-    /// Open a fresh staging database in memory with the current client schema.
-    private func openStaging() throws {
-        closeStaging()
-        staging = try SqliteMemoryDatabase.withLatestSchema()
-    }
-
-    private func closeStaging() {
-        staging = nil
+        return connection
     }
 
     /// Reload the stored vault when the run left changes in the live database that no store persisted, so the
