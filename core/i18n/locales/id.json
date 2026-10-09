@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Akun Anda telah dinonaktifkan. Jika Anda yakin ini adalah kesalahan, silakan hubungi layanan pelanggan.",
     "ACCOUNT_LOCKED": "Akun Anda sementara terkunci karena terlalu banyak percobaan masuk yang gagal. Silakan coba lagi nanti.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Akun berhasil dihapus.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Terjadi kesalahan saat mencoba memuat email. Silakan coba edit dan simpan entri kredensial untuk menyinkronkan database, lalu coba lagi.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Alamat email yang dipilih saat ini sudah digunakan. Silakan ubah alamat email dengan mengedit kredensial ini.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Kesalahan server internal.",
     "INVALID_AUTHENTICATOR_CODE": "Kode otentikasi tidak valid. Silakan coba lagi.",
     "INVALID_RECOVERY_CODE": "Kode pemulihan tidak valid. Silakan coba lagi.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Pengaturan",
-      "termsAndConditionsStepTitle": "Gunakan AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Saya telah membaca dan menyetujui Syarat dan Ketentuan",
-        "pleaseReadAndAgree": "Harap baca dan setujui syarat dan ketentuan berikut ini sebelum melanjutkan.",
-        "termsContent": "AliasVault dirancang untuk meningkatkan keamanan online Anda dan melindungi privasi Anda. Dengan AliasVault, Anda dapat membuat identitas unik dan alias email untuk berbagai akun online Anda, sehingga membantu Anda mempertahankan kendali atas informasi pribadi Anda serta mengurangi risiko pencurian identitas.\n\nDengan menggunakan AliasVault, Anda menyetujui ketentuan berikut:\n\n1. Anda tidak akan menggunakan AliasVault untuk tujuan ilegal apa pun, termasuk namun tidak terbatas pada penipuan, pencurian identitas, atau menyamar sebagai individu yang sebenarnya.\n\n2. Anda bertanggung jawab untuk menjaga kerahasiaan akun Anda dan alias apa pun yang dibuat melalui AliasVault.\n\n3. AliasVault berhak untuk menghentikan akun Anda jika kami mencurigai adanya penyalahgunaan atau pelanggaran terhadap ketentuan ini.\n\n4. Anda memahami bahwa meskipun AliasVault meningkatkan privasi Anda, tidak ada sistem yang sepenuhnya bebas dari celah, dan Anda menggunakan layanan ini dengan risiko Anda sendiri."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Asisten AliasVault",
         "enterUsernameInstructions": "Silakan masukkan nama pengguna yang ingin Anda gunakan. Nama pengguna ini bisa berupa alamat email Anda atau nama unik apa pun yang Anda inginkan.",
-        "greatNowLetsSetupUsername": "Bagus! Sekarang, mari kita atur nama pengguna Anda untuk AliasVault.",
         "rememberUsernameNote": "Ingat: Ini yang akan kamu gunakan untuk masuk nanti, jadi pastikan kamu bisa mengingatnya!",
         "serverCommunicationError": "Terjadi kesalahan saat berkomunikasi dengan server AliasVault.",
         "usernamePlaceholder": "Masukkan nama pengguna atau alamat email yang Anda inginkan",
-        "validatingUsernameMessage": "Memvalidasi nama pengguna..."
+        "validatingUsernameMessage": "Memvalidasi nama pengguna...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Pilih Nama Pengguna"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Kata sandi Anda telah berubah sejak terakhir kali Anda masuk. Silakan masuk kembali untuk alasan keamanan.",
       "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
       "serverNotAvailable": "Server AliasVault sedang tidak tersedia. Silakan coba lagi nanti atau hubungi bagian dukungan jika masalah ini masih berlanjut.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sesi Anda telah berakhir. Harap masuk kembali.",
       "syncConflictMaxRetries": "Tidak dapat menyinkronkan vault setelah beberapa kali mencoba. Silakan coba lagi nanti.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "Email",
     "to": "Kepada:",
-    "toColumn": "Kepada",
-    "updateClientForFormattedView": "Email ini memerlukan versi aplikasi yang lebih baru agar dapat ditampilkan dengan benar. Silakan perbarui aplikasi Anda."
+    "toColumn": "Kepada"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Terjadi kesalahan yang tidak terduga saat memuat email. Silakan coba lagi nanti.",
     "emptyFolderHint": "Folder ini kosong. Untuk memindahkan item ke folder ini, edit item tersebut dan ketuk ikon folder di kolom nama.",
     "errorLoadingItems": "Kesalahan dalam memuat data",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Apa kamu yakin?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Hanya Clipboard Lokal",
     "clipboardLocalOnlyDescription": "Simpan kredensial yang telah disalin di perangkat ini, alih-alih menyinkronkannya ke perangkat Apple Anda yang lain melalui Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "Jika fitur ini dinonaktifkan, kredensial yang disalin dapat disinkronkan ke perangkat Apple Anda yang lain (Mac, iPad, dll.) melalui Universal Clipboard.",
-    "clipboardSettings": "Pengaturan papan klip",
     "contextMenuDescription": "Klik kanan pada kolom input untuk mengakses opsi AliasVault",
     "contextMenuSettings": "Pengaturan menu konteks",
     "copyTotpOnFill": "Salin kode TOTP saat pengisian otomatis",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Masukkan kode verifikasi",
         "verifyAndEnableButton": "Verifikasi dan Aktifkan"
       },
-      "pageDescription": "Konfigurasikan pengaturan keamanan.",
-      "pageTitle": "Pengaturan keamanan",
       "passkeyUnlock": {
         "disableButton": "Nonaktifkan Pembukaan dengan Kode Akses",
         "disabledDescription": "Secara default, saat memuat ulang halaman atau tab AliasVault, Anda harus memasukkan kata sandi utama Anda lagi. Dengan passkey, Anda dapat membuka kunci vault Anda secara instan. Saat diaktifkan, kata sandi utama Anda akan dienkripsi secara lokal menggunakan ekstensi PRF dari passkey tersebut. Catatan: passkey hanya akan berfungsi pada perangkat dan peramban yang sedang Anda gunakan saat mengaktifkannya.",
@@ -1565,12 +1559,14 @@
     "addName": "Tambahkan nama (opsional)",
     "addTotpCodeDescription": "Tambahkan kode otentikasi dua faktor",
     "addTotpCodeModalTitle": "Tambahkan Kode TOTP 2FA",
+    "algorithm": "Algorithm",
     "closeFormButton": "Tutup formulir",
     "defaultName": "Autentikator",
     "deleteCodeConfirmation": "Apakah Anda yakin ingin menghapus kode TOTP ini?",
     "deleteCodeTitle": "Hapus kode TOTP",
     "deleteTotpCodeConfirmation": "Apakah Anda yakin ingin menghapus kode 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Hapus Kode 2FA",
+    "digits": "Digits",
     "enterManually": "Masukkan secret key",
     "errors": {
       "invalidSecretKey": "Format kunci rahasia tidak valid.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan otentikasi dua faktor.",
     "nameOptional": "Nama (opsional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Simpan untuk melihat kode",
     "scanQrCode": "Pindai Kode QR",
     "secretKey": "Kunci rahasia",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Memeriksa pembaruan brankas",
     "checkingVaultUpdates": "Memeriksa pembaruan brankas",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Gagal mendapatkan database terenkripsi",
-      "passwordChangeRequiresOnline": "Perubahan kata sandi memerlukan koneksi internet. Silakan coba lagi saat online.",
-      "usernameNotFound": "Nama pengguna tidak ditemukan"
-    },
     "mergingVault": "Menggabungkan perubahan pada brankas...",
     "savingChangesToVault": "Menyimpan perubahan ke brankas",
     "syncingUpdatedVault": "Menyinkronkan brankas terbaru",
-    "syncingVault": "Menyinkronkan brankas",
-    "uploadingVaultToServer": "Mengunggah brankas ke server"
+    "syncingVault": "Menyinkronkan brankas"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Beralih ke mode gelap",
       "enableLightMode": "Beralih ke mode terang",
-      "logOut": "Keluar",
-      "openMenuLabel": "Buka menu"
+      "logOut": "Keluar"
     },
     "welcome": {
       "createFirstIdentityButton": "Buat identitas pertama Anda",
