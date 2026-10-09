@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Ваш обліковий запис вимкнено. Якщо ви вважаєте, що це помилка, зверніться до служби підтримки.",
     "ACCOUNT_LOCKED": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб. Будь ласка, спробуйте пізніше.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Обліковий запис успішно видалено.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Під час спроби завантажити електронні листи сталася помилка. Спробуйте відредагувати та зберегти запис облікових даних, щоб синхронізувати базу даних, а потім повторіть спробу.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Поточна обрана адреса електронної пошти вже використовується. Будь ласка, змініть адресу електронної пошти, відредагувавши ці облікові дані.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Внутрішня помилка сервера.",
     "INVALID_AUTHENTICATOR_CODE": "Недійсний код автентифікатора. Будь ласка, спробуйте ще раз.",
     "INVALID_RECOVERY_CODE": "Недійсний код відновлення. Будь ласка, спробуйте ще раз.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Установити",
-      "termsAndConditionsStepTitle": "Використання AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Я прочитав і згоден з правилами та умовами",
-        "pleaseReadAndAgree": "Перш ніж продовжити, прочитайте та погодьтеся з наведеними нижче умовами.",
-        "termsContent": "AliasVault призначений для підвищення вашої онлайн-безпеки та захисту вашої конфіденційності. За допомогою AliasVault ви можете створювати унікальні ідентифікатори та псевдоніми електронної пошти для різних онлайн-акаунтів, що допоможе вам зберегти контроль над особистою інформацією та зменшити ризик викрадення особистих даних.\n\nВикористовуючи AliasVault, ви погоджуєтеся з такими умовами:\n\n1. Ви не будете використовувати AliasVault для будь-яких незаконних цілей, зокрема для шахрайства, крадіжки особистих даних або видавання себе за реальних осіб.\n\n2. Ви несете відповідальність за збереження конфіденційності вашого облікового запису та будь-яких псевдонімів, створених за допомогою AliasVault.\n\n3. AliasVault залишає за собою право припинити дію вашого облікового запису, якщо ми підозрюємо будь-яке зловживання або порушення цих умов.\n\n4. Ви розумієте, що, хоча AliasVault підвищує рівень вашої конфіденційності, жодна система не є повністю надійною, і ви використовуєте цю послугу на власний ризик."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Помічник AliasVault",
         "enterUsernameInstructions": "Будь ласка, введіть ім'я користувача, яке ви хочете використовувати. Це може бути ваша адреса електронної пошти або будь-яке унікальне ім'я.",
-        "greatNowLetsSetupUsername": "Чудово! Тепер налаштуймо ваше ім’я користувача для AliasVault.",
         "rememberUsernameNote": "Пам’ятайте: це те, що ви використовуватимете для входу пізніше, тому переконайтеся, що ви це запам’ятаєте!",
         "serverCommunicationError": "Під час обміну інформацією з сервером AliasVault сталася помилка.",
         "usernamePlaceholder": "Введіть бажане ім'я користувача або електронну адресу",
-        "validatingUsernameMessage": "Перевірка імені користувача..."
+        "validatingUsernameMessage": "Перевірка імені користувача...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Оберіть ім'я користувача"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "Електронні листи",
     "to": "До:",
-    "toColumn": "До",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "До"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Під час завантаження електронних листів сталася неочікувана помилка. Спробуйте ще раз пізніше.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Помилка завантаження об'єктів",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Are you sure?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Параметри буфера обміну",
     "contextMenuDescription": "Натисніть правою кнопкою миші на поля введення, щоб отримати доступ до параметрів AliasVault",
     "contextMenuSettings": "Налаштування контекстного меню",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Введіть код підтвердження",
         "verifyAndEnableButton": "Перевірити та увімкнути"
       },
-      "pageDescription": "Configure security settings.",
-      "pageTitle": "Налаштування безпеки",
       "passkeyUnlock": {
         "disableButton": "Вимкнути розблокування кодом доступу",
         "disabledDescription": "За замовчуванням, перезавантаження сторінки або вкладки AliasVault вимагає повторного введення головного пароля. За допомогою ключа доступу ви можете миттєво розблокувати своє сховище. Після ввімкнення головний пароль шифрується локально за допомогою розширення PRF ключа доступу. Примітка: ключ доступу працюватиме лише на тому пристрої та в тому браузері, на якому його ввімкнено.",
@@ -1565,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Додати двофакторний код автентифікації",
     "addTotpCodeModalTitle": "Додати код двофакторного коду TOTP",
+    "algorithm": "Algorithm",
     "closeFormButton": "Закрити форму",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "Ви впевнені, що хочете видалити цей код TOTP?",
     "deleteCodeTitle": "Видалити код TOTP",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "deleteTotpCodeTitle": "Delete 2FA Code",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Ім'я (необов'язково)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Зберегти для перегляду коду",
     "scanQrCode": "Scan QR Code",
     "secretKey": "Секретний ключ",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Перевірка оновлень сховища",
     "checkingVaultUpdates": "Перевірка оновлень сховища",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Не вдалося отримати зашифровану базу даних",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "usernameNotFound": "Ім'я користувача не знайдено"
-    },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Збереження змін у сховищі",
     "syncingUpdatedVault": "Синхронізація оновленого сховища",
-    "syncingVault": "Синхронізація сховища",
-    "uploadingVaultToServer": "Завантаження сховища на сервер"
+    "syncingVault": "Синхронізація сховища"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "БЕТА",
       "enableDarkMode": "Перемкнути у темний режим",
       "enableLightMode": "Перемкнути у світлий режим",
-      "logOut": "Вийти",
-      "openMenuLabel": "Відкрити меню"
+      "logOut": "Вийти"
     },
     "welcome": {
       "createFirstIdentityButton": "Create Your First Identity",
