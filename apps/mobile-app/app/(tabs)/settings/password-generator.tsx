@@ -1,4 +1,5 @@
 import { useFocusEffect } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
@@ -25,6 +26,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   const dbContext = useDb();
   const { showAlert } = useDialog();
   const { executeVaultMutation } = useVaultMutate();
+  const headerHeight = useHeaderHeight();
 
   const [settings, setSettings] = useState<PasswordSettings | null>(null);
   // Increments each time settings are (re)loaded so the panel remounts with fresh initial values.
@@ -102,7 +104,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? headerHeight : 0} style={styles.keyboardAvoidingView}>
       <ThemedContainer>
         <ThemedScrollView>
           <ThemedText style={styles.descriptionText}>

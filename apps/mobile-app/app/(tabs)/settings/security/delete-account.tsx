@@ -1,5 +1,6 @@
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { router } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
@@ -28,6 +29,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
   const { username, verifyPassword, logout } = useApp();
   const { t } = useTranslation();
   const { showAlert, showConfirm } = useDialog();
+  const headerHeight = useHeaderHeight();
 
   const [confirmUsername, setConfirmUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -217,6 +219,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
       {isLoading && <LoadingOverlay status={loadingStatus ?? ''} />}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'android' ? headerHeight : 0}
         style={styles.keyboardAvoidingView}
       >
         <ThemedContainer>

@@ -3,6 +3,7 @@ import { IncorrectPasswordError, PasswordChangedElsewhereError } from '@aliasvau
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
@@ -35,6 +36,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
   const { executeVaultPasswordChange, syncStatus } = useVaultMutate();
   const { t } = useTranslation();
   const { showAlert } = useDialog();
+  const headerHeight = useHeaderHeight();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -169,6 +171,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
       )}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'android' ? headerHeight : 0}
         style={styles.keyboardAvoidingView}
       >
         <ThemedContainer testID="change-password-screen">
