@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Ditt konto har inaktiverats. Om du tror att detta är ett misstag, kontakta support.",
     "ACCOUNT_LOCKED": "Kontot är tillfälligt låst på grund av för många misslyckade försök. Försök igen senare.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontot har raderats.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna posten.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Internt serverfel.",
     "INVALID_AUTHENTICATOR_CODE": "Ogiltig autentiseringskod. Försök igen.",
     "INVALID_RECOVERY_CODE": "Ogiltig återställningskod. Försök igen.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
-      "termsAndConditionsStepTitle": "Användning av AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Jag har läst och godkänner användarvillkoren",
-        "pleaseReadAndAgree": "Läs och godkänn följande regler och villkor innan du fortsätter.",
-        "termsContent": "AliasVault är utformat för att förbättra din onlinesäkerhet och skydda din integritet. Med AliasVault, kan du skapa unika identiteter och e-postalias för dina olika online-konton, vilket hjälper dig att behålla kontrollen över dina personuppgifter och minska risken för identitetsstöld.\n\nGenom att använda AliasVault, godkänner du följande villkor:\n\n1. Du kommer inte att använda AliasVault för olagliga ändamål, inkluderat men inte begränsat till bedrägeri, identitetsstöld eller att utge dig för att vara verkliga individer.\n\n2. Du är ansvarig för att upprätthålla konfidentialiteten för ditt konto och eventuella alias som skapats genom AliasVault.\n\n3. AliasVault förbehåller sig rätten att avsluta ditt konto om vi misstänker missbruk eller brott mot dessa villkor.\n\n4. Du förstår att medan AliasVault förbättrar din integritet är inget system helt felfritt och du använder tjänsten på egen risk."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
         "enterUsernameInstructions": "Ange ett användarnamn som du vill använda. Detta kan vara din e-postadress eller något unikt namn du föredrar.",
-        "greatNowLetsSetupUsername": "Bra! Låt oss nu konfigurera ditt användarnamn för AliasVault.",
         "rememberUsernameNote": "Kom ihåg: Detta är vad du använder för att logga in senare, så se till att det är något du kommer ihåg!",
         "serverCommunicationError": "Ett fel uppstod vid kommunikation med AliasVault-servern.",
         "usernamePlaceholder": "Ange önskat användarnamn eller e-postadress",
-        "validatingUsernameMessage": "Validerar användarnamn..."
+        "validatingUsernameMessage": "Validerar användarnamn...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Välj användarnamn"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta support om problemet kvarstår.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -424,8 +420,7 @@
     },
     "title": "E-post",
     "to": "Till:",
-    "toColumn": "Till",
-    "updateClientForFormattedView": "Denna e-post kräver en nyare app-version för att visas korrekt. Vänligen uppdatera din app."
+    "toColumn": "Till"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Ett oväntat fel inträffade när e-postmeddelanden laddades. Försök igen senare.",
     "emptyFolderHint": "Mappen är tom. För att flytta objekt till den här mappen, redigera objektet och tryck på mappikonen i namnfältet.",
     "errorLoadingItems": "Fel vid laddning av objekt",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Är du säker?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Endast lokalt urklipp",
     "clipboardLocalOnlyDescription": "Behåll kopierade uppgifter på den här enheten istället för att synkronisera dem till dina andra Apple-enheter via Universella urklipp.",
     "clipboardLocalOnlyDisabledWarning": "Med detta av kan kopierade uppgifter synkroniseras till dina övriga Apple enheter (Mac, iPad, osv.) via Universella urklipp.",
-    "clipboardSettings": "Urklippsinställningar",
     "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault-alternativ",
     "contextMenuSettings": "Inställningar för snabbmenyn",
     "copyTotpOnFill": "Kopiera TOTP kod med autofyll.",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Ange verifieringskod",
         "verifyAndEnableButton": "Verifiera och Aktivera"
       },
-      "pageDescription": "Konfigurera säkerhetsinställningar.",
-      "pageTitle": "Säkerhetsinställningar",
       "passkeyUnlock": {
         "disableButton": "Inaktivera Passkey upplåsning",
         "disabledDescription": "Som standard måste du ange ditt huvudlösenord igen när du laddar om AliasVault-sidan eller fliken. Med en passkey kan du låsa upp valvet direkt. När funktionen är aktiverad krypteras ditt huvudlösenord lokalt med passkeyns PRF-tillägg.\nObs: Passkeyn fungerar endast på den enhet och i den webbläsare där du aktiverade den.",
@@ -1565,12 +1559,14 @@
     "addName": "Lägg till ett namn (valfritt)",
     "addTotpCodeDescription": "Lägg till en tvåfaktorsautentiseringskod",
     "addTotpCodeModalTitle": "Lägg till 2FA TOTP-kod",
+    "algorithm": "Algorithm",
     "closeFormButton": "Stäng formulär",
     "defaultName": "Autentiserare",
     "deleteCodeConfirmation": "Är du säker på att du vill radera denna TOTP-kod?",
     "deleteCodeTitle": "Radera TOTP-kod",
     "deleteTotpCodeConfirmation": "Är du säker på att du vill radera 2FA-koden\"{{name}}\"?",
     "deleteTotpCodeTitle": "Radera 2FA-kod",
+    "digits": "Digits",
     "enterManually": "Ange hemlig nyckel",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "nameOptional": "Namn (valfritt)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Spara för att visa kod",
     "scanQrCode": "Skanna QR-kod",
     "secretKey": "Hemlig nyckel",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Söker efter valvuppdateringar",
     "checkingVaultUpdates": "Söker efter valvuppdateringar",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Det gick inte att hämta krypterad databas",
-      "passwordChangeRequiresOnline": "Lösenordsbyte kräver en internetanslutning. Försök igen när du är online.",
-      "usernameNotFound": "Användarnamnet hittades inte"
-    },
     "mergingVault": "Sammanfogar valvförändringar...",
     "savingChangesToVault": "Sparar ändringar till valv",
     "syncingUpdatedVault": "Synkroniserar uppdaterat valv",
-    "syncingVault": "Synkroniserar valv",
-    "uploadingVaultToServer": "Laddar upp valv till server"
+    "syncingVault": "Synkroniserar valv"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Byt till mörkt läge",
       "enableLightMode": "Byt till ljust läge",
-      "logOut": "Logga ut",
-      "openMenuLabel": "Öppna meny"
+      "logOut": "Logga ut"
     },
     "welcome": {
       "createFirstIdentityButton": "Skapa din första identitet",
