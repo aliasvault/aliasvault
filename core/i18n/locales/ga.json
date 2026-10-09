@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "Tá do chuntas díchumasaithe. Má chreideann tú gur botún é seo, déan teagmháil leis an bhfoireann tacaíochta.",
     "ACCOUNT_LOCKED": "Tá an cuntas faoi ghlas go sealadach mar gheall ar an iomarca iarrachtaí nár éirigh leo. Déan iarracht arís ar ball.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Scriosadh an cuntas go rathúil.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht an iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Tá an seoladh ríomhphoist atá roghnaithe faoi láthair in úsáid cheana féin. Athraigh an seoladh ríomhphoist tríd an dintiúir seo a chur in eagar.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Earráid inmheánach freastalaí.",
     "INVALID_AUTHENTICATOR_CODE": "Cód fíordheimhnitheora neamhbhailí. Déan iarracht arís.",
     "INVALID_RECOVERY_CODE": "Cód aisghabhála neamhbhailí. Déan iarracht arís.",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "Ní féidir cuntais nua a chruthú ach le nasc cuireadh. Iarr cuireadh ar riarthóir an fhreastalaí.",
       "registrationDisabledTitle": "Tá clárú úsáideoirí díchumasaithe",
       "setupStepTitle": "Socrú",
-      "termsAndConditionsStepTitle": "Ag Úsáid AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Léigh mé na Téarmaí agus Coinníollacha agus aontaím leo",
-        "pleaseReadAndAgree": "Léigh na téarmaí agus coinníollacha seo a leanas agus aontaigh leo sula leanann tú ar aghaidh.",
-        "termsContent": "Tá AliasVault deartha chun do shlándáil ar líne a fheabhsú agus do phríobháideacht a chosaint. Le AliasVault, is féidir leat céannachtaí uathúla agus leasainmneacha ríomhphoist a chruthú do do chuntais éagsúla ar líne, rud a chabhraíonn leat smacht a choinneáil ar do chuid faisnéise pearsanta agus an baol goid aitheantais a laghdú.\n\nTrí AliasVault a úsáid, aontaíonn tú leis na téarmaí seo a leanas:\n\n1. Ní úsáidfidh tú AliasVault chun aon chríocha mídhleathacha, lena n-áirítear ach gan a bheith teoranta dóibh calaois, goid aitheantais, nó ligean ort gur daoine fíor iad.\n\n2. Tá tú freagrach as rúndacht do chuntais agus aon leasainmneacha a cruthaíodh trí AliasVault a choinneáil.\n\n3. Forchoimeádann AliasVault an ceart do chuntas a fhoirceannadh má tá amhras orainn faoi aon mhí-úsáid nó sárú ar na téarmaí seo.\n\n4. Tuigeann tú, cé go bhfeabhsaíonn AliasVault do phríobháideacht, nach bhfuil aon chóras go hiomlán neamhdhíobhálach, agus go n-úsáideann tú an tseirbhís ar do phriacal féin."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Cúntóir AliasVault",
         "enterUsernameInstructions": "Cuir isteach ainm úsáideora ar mhaith leat a úsáid. Is féidir leat é seo a bheith mar do sheoladh ríomhphoist nó aon ainm uathúil is fearr leat.",
-        "greatNowLetsSetupUsername": "Go hiontach! Anois, socraímis d'ainm úsáideora le haghaidh AliasVault.",
         "rememberUsernameNote": "Cuimhnigh: Seo an rud a úsáidfidh tú chun logáil isteach níos déanaí, mar sin déan cinnte gur rud é a chuimhneoidh tú!",
         "serverCommunicationError": "Tharla earráid le linn cumarsáide leis an bhfreastalaí AliasVault.",
         "usernamePlaceholder": "Cuir isteach d'ainm úsáideora nó do sheoladh ríomhphoist atá uait",
-        "validatingUsernameMessage": "Ag bailíochtú ainm úsáideora..."
+        "validatingUsernameMessage": "Ag bailíochtú ainm úsáideora...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Roghnaigh Ainm Úsáideora"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "Tá do phasfhocal athraithe ó logáil tú isteach an uair dheireanach. Logáil isteach arís ar chúiseanna slándála.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
-      "serverOutdated": "Caithfear freastalaí AliasVault a nuashonrú chun oibriú leis an leagan seo de AliasVault. Déan teagmháil leis an tacaíocht má theastaíonn cabhair uait.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
       "syncConflictMaxRetries": "Níorbh fhéidir an cruinneachán a shioncrónú tar éis roinnt iarrachtaí. Déan iarracht arís ar ball.",
       "unexpectedErrorContactSupport": "Tharla earráid gan choinne. Déan iarracht arís, le do thoil, agus déan teagmháil leis an tacaíocht má leanann an fhadhb ar aghaidh.",
@@ -424,8 +420,7 @@
     },
     "title": "Ríomhphoist",
     "to": "Chuig:",
-    "toColumn": "Chuig",
-    "updateClientForFormattedView": "Éilíonn an ríomhphost seo leagan níos nuaí den aip le go dtaispeánfar i gceart é. Nuashonraigh d'aip le do thoil."
+    "toColumn": "Chuig"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus tapáil deilbhín an fhillteáin sa réimse ainm.",
     "errorLoadingItems": "Earráid ag luchtú míreanna",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "An bhfuil tú cinnte?"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Gearrthaisce Áitiúil Amháin",
     "clipboardLocalOnlyDescription": "Coinnigh dintiúir chóipeáilte ar an ngléas seo in ionad iad a shioncronú le do ghléasanna Apple eile tríd an Ghearrthaisce Uilíoch.",
     "clipboardLocalOnlyDisabledWarning": "Agus é seo múchta, is féidir dintiúir chóipeáilte a shioncronú le do ghléasanna Apple eile (Mac, iPad, srl.) tríd an Ghearrthaisce Uilíoch.",
-    "clipboardSettings": "Socruithe gearrthaisce",
     "contextMenuDescription": "Deaschliceáil ar réimsí ionchuir chun rochtain a fháil ar roghanna AliasVault",
     "contextMenuSettings": "Socruithe Roghchláir Comhthéacs",
     "copyTotpOnFill": "Cóipeáil cód TOTP ar uathlíonadh",
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Cuir isteach cód fíorúcháin",
         "verifyAndEnableButton": "Fíoraigh agus Cumasaigh"
       },
-      "pageDescription": "Cumraigh socruithe slándála.",
-      "pageTitle": "Socruithe slándála",
       "passkeyUnlock": {
         "disableButton": "Díchumasaigh Díghlasáil Eochrach Pas",
         "disabledDescription": "De réir réamhshocraithe, ní mór duit do phasfhocal máistir a iontráil arís chun leathanach nó cluaisín AliasVault a athlódáil. Le pasfhocal, is féidir leat do chruinneachán a dhíghlasáil láithreach. Nuair a bhíonn sé cumasaithe, déantar do phasfhocal máistir a chriptiú go háitiúil ag baint úsáide as síneadh PRF an phasfhocal. Tabhair faoi deara: ní oibreoidh an pasfhocal ach don fheiste agus don bhrabhsálaí reatha ar a gcumasaíonn tú é.",
@@ -1565,12 +1559,14 @@
     "addName": "Cuir ainm leis (roghnach)",
     "addTotpCodeDescription": "Cuir cód fíordheimhnitheora dhá fhachtóir leis",
     "addTotpCodeModalTitle": "Cuir Cód 2FA TOTP leis",
+    "algorithm": "Algorithm",
     "closeFormButton": "Dún an fhoirm",
     "defaultName": "Fíordheimhnitheoir",
     "deleteCodeConfirmation": "An bhfuil tú cinnte gur mian leat an cód TOTP seo a scriosadh?",
     "deleteCodeTitle": "Scrios cód TOTP",
     "deleteTotpCodeConfirmation": "An bhfuil tú cinnte gur mhaith leat an cód 2FA \"{{name}}\" a scriosadh?",
     "deleteTotpCodeTitle": "Scrios Cód 2FA",
+    "digits": "Digits",
     "enterManually": "Cuir isteach eochair rúnda",
     "errors": {
       "invalidSecretKey": "Formáid eochair rúnda neamhbhailí.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Cuir isteach an eochair rúnda a thaispeánann an láithreán gréasáin áit ar mhaith leat fíordheimhniú dhá fhachtóir a chur leis.",
     "nameOptional": "Ainm (roghnach)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Sábháil chun an cód a fheiceáil",
     "scanQrCode": "Scanáil Cód QR",
     "secretKey": "Eochair Rúnda",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Ag seiceáil le haghaidh nuashonruithe cruinneacháin",
     "checkingVaultUpdates": "Ag seiceáil nuashonruithe cruinneacháin",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Theip ar an mbunachar sonraí criptithe a fháil",
-      "passwordChangeRequiresOnline": "Éilíonn athrú pasfhocail nasc idirlín. Déan iarracht arís agus tú ar líne.",
-      "usernameNotFound": "Ainm úsáideora gan aimsiú"
-    },
     "mergingVault": "Ag cumasc athruithe ar an chruinneachán...",
     "savingChangesToVault": "Sábháil athruithe chuig an gcruinneog",
     "syncingUpdatedVault": "Ag sioncrónú an tseomra cruinneacháin nuashonraithe",
-    "syncingVault": "Ag sioncrónú cruinneacháin",
-    "uploadingVaultToServer": "Ag uaslódáil cruinneacháin chuig an bhfreastalaí"
+    "syncingVault": "Ag sioncrónú cruinneacháin"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "BÉITE",
       "enableDarkMode": "Athraigh go mód dorcha",
       "enableLightMode": "Athraigh go mód solais",
-      "logOut": "Logáil amach",
-      "openMenuLabel": "Oscail an roghchlár"
+      "logOut": "Logáil amach"
     },
     "welcome": {
       "createFirstIdentityButton": "Cruthaigh Do Chéad Céannacht",
