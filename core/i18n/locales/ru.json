@@ -3,13 +3,14 @@
     "ACCOUNT_BLOCKED": "Ваш аккаунт был отключён. Если вы считаете, что это ошибка, обратитесь в поддержку.",
     "ACCOUNT_LOCKED": "Учетная запись временно заблокирована из-за слишком большого количества неудачных попыток. Пожалуйста, повторите попытку позже.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Аккаунт успешно удалён.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "При попытке загрузить электронные письма произошла ошибка. Пожалуйста, попробуйте отредактировать и сохранить данные для синхронизации базы данных, затем повторите попытку.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Текущий выбранный адрес электронной почты уже используется. Пожалуйста, измените адрес электронной почты, отредактировав эти учетные данные.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Внутренняя ошибка сервера.",
     "INVALID_AUTHENTICATOR_CODE": "Неверный код аутентификатора. Пожалуйста, попробуйте снова.",
     "INVALID_RECOVERY_CODE": "Неверный код восстановления. Пожалуйста, попробуйте снова.",
     "INVALID_REFRESH_TOKEN": "Недопустимый токен обновления.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Ссылка-приглашение недействительна, устарела или уже использована. Запросите новую ссылку у администратора.",
     "PASSWORD_MISMATCH": "Указанный пароль не совпадает с вашим текущим паролем.",
     "PENDING_MIGRATIONS": "Есть незавершённые миграции. Запустите 'dotnet ef database update', чтобы применить их.",
     "PUBLIC_REGISTRATION_DISABLED": "Регистрация новых аккаунтов на этом сервере отключена. Пожалуйста, свяжитесь с администратором.",
@@ -71,10 +72,10 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Вложение успешно удалено.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "Файл {{filename}} пуст.",
     "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
     "openExpandedWindow": "Открыть расширенное окно",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Не удалось загрузить файл: {{error}}",
     "uploadSuccess": "Файлы успешно загружены.",
     "uploading": "Загрузка..."
   },
@@ -134,11 +135,11 @@
     "mobileUnlock": {
       "scanQrCodeDescription": "Отсканируйте QR‑код в приложении AliasVault, чтобы войти и разблокировать хранилище."
     },
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Введите это число, когда приложение запросит его.",
     "noAccountYet": "Нет аккаунта?",
     "passwordAttemptsWarning": "Неверный пароль. Вы выйдете из системы, если введете его неправильно еще {{remainingAttempts}} раз.",
     "passwordPlaceholder": "Введите пароль",
-    "pinInput": "PIN input",
+    "pinInput": "Ввод PIN-кода",
     "register": {
       "passwordLabel": "Ваш пароль",
       "passwordPlaceholder": "••••••••",
@@ -162,23 +163,18 @@
         "welcomeMessage": "Отлично! Теперь давайте настроим ваш мастер-пароль для AliasVault."
       },
       "passwordStepTitle": "Установить пароль",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "Создать аккаунт можно только по ссылке-приглашению. Обратитесь к администратору сервера для получения приглашения.",
+      "registrationDisabledTitle": "Регистрация пользователей отключена",
       "setupStepTitle": "Настройка",
-      "termsAndConditionsStepTitle": "Использование AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Я ознакомился с пользовательским соглашением и согласен с ним",
-        "pleaseReadAndAgree": "Пожалуйста, прочтите и согласитесь со следующими положениями и условиями, прежде чем продолжить.",
-        "termsContent": "AliasVault разработан для повышения вашей онлайн-безопасности и защиты вашей конфиденциальности. С помощью AliasVault вы можете создавать уникальные личности и псевдонимы электронной почты для своих различных онлайн-аккаунтов, что поможет вам сохранить контроль над вашей личной информацией и снизить риск кражи личных данных.\n\nИспользуя AliasVault, вы соглашаетесь со следующими условиями:\n\n1. Вы не будете использовать AliasVault в каких-либо незаконных целях, включая, помимо прочего, мошенничество, кражу личных данных или выдачу себя за реальных людей.\n\n2. Вы несете ответственность за сохранение конфиденциальности вашей учетной записи и любых псевдонимов, созданных с помощью AliasVault.\n\n3. AliasVault оставляет за собой право закрыть вашу учетную запись, если мы заподозрим какое-либо неправильное использование или нарушение настоящих условий.\n\n4. Вы понимаете, что, хотя AliasVault повышает уровень вашей конфиденциальности, ни одна система не является полностью надежной, и вы используете сервис на свой страх и риск."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Ассистент AliasVault",
         "enterUsernameInstructions": "Пожалуйста, введите имя пользователя, которое вы хотели бы использовать. Это может быть адрес вашей электронной почты или любое другое уникальное имя, которое вы предпочитаете.",
-        "greatNowLetsSetupUsername": "Отлично! Теперь давайте настроим ваше имя пользователя для AliasVault.",
         "rememberUsernameNote": "Помните: это то, что вы будете использовать для входа в систему позже, поэтому убедитесь, что вы это запомните!",
         "serverCommunicationError": "Во время связи с сервером AliasVault произошла ошибка.",
         "usernamePlaceholder": "Введите желаемое имя пользователя или адрес электронной почты",
-        "validatingUsernameMessage": "Проверка имени пользователя..."
+        "validatingUsernameMessage": "Проверка имени пользователя...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Выберите имя пользователя"
     },
@@ -221,7 +217,7 @@
     "attachmentDownloadFailed": "Не удалось загрузить вложение",
     "attachments": "Вложения",
     "back": "Назад",
-    "backspace": "Backspace",
+    "backspace": "Удалить",
     "cancel": "Отмена",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистить буфер обмена"
@@ -255,36 +251,36 @@
     "errorGeneric": "Произошла ошибка. Попробуйте ещё раз.",
     "errorPasswordMismatch": "Пароли не совпадают.",
     "errors": {
-      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
-      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "backgroundUnresponsive": "Фоновый процесс расширения не отвечает. Закройте и снова откройте расширение или перезапустите браузер, если проблема сохраняется.",
+      "clientNotSupported": "Сервер больше не поддерживает эту версию AliasVault. Обновите приложение до последней версии.",
+      "clientOutdated": "Эта версия AliasVault не может открыть хранилище, так как оно было обновлено в более новой версии. Обновите AliasVault, чтобы продолжить.",
+      "contactSupportAt": "Обратитесь в службу поддержки: {{email}}.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Пароль верный, но не удалось расшифровать ключи шифрования хранилища. Обратитесь в службу поддержки.",
       "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
+      "mobileLoginRequestDeclined": "Запрос на вход был отклонен на мобильном устройстве.",
       "mobileLoginRequestExpired": "Истекло время ожидания входа. Перезагрузите страницу и повторите попытку.",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Срок действия сессии истек. Войдите снова.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "Произошла непредвиденная ошибка. Повторите попытку или обратитесь в службу поддержки, если проблема не исчезнет.",
       "unknownError": "Произошла неизвестная ошибка.",
       "unknownErrorTryAgain": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
-      "updateRequiredTitle": "Update required",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "updateRequiredTitle": "Требуется обновление",
+      "vaultDataUnreadable": "Не удалось прочитать данные хранилища, поэтому доступ к ним сейчас ограничен. Обратитесь в службу поддержки.",
       "vaultIsLocked": "Хранилище заблокировано",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadError": "При загрузке хранилища произошла ошибка. Скопируйте сведения об ошибке ниже и обратитесь в службу поддержки.",
+      "vaultLoadErrorTitle": "Не удалось загрузить хранилище",
       "vaultNotAvailable": "Хранилище недоступно",
       "vaultSyncTimeout": "Тайм-аут синхронизации. Возможно, хранилище слишком велико или интернет-соединение нестабильно. Попробуйте еще раз.",
       "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
       "wrongPassword": "Неверный пароль. Пожалуйста, повторите попытку."
     },
     "generate": "Сгенерировать",
-    "help": "Help",
+    "help": "Помощь",
     "hide": "Скрыть",
     "hideDetails": "Скрыть подробности",
     "hidePassword": "Скрыть пароль",
@@ -308,7 +304,7 @@
     "ok": "ОК",
     "openInNewWindow": "Открыть в новом окне",
     "or": "или",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Навигация по страницам",
     "passkeys": "Ключи доступа",
     "password": "Пароль",
     "passwordStrength": {
@@ -319,8 +315,8 @@
       "veryWeak": "Очень низкая",
       "weak": "Низкая"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Назад",
+    "qrCode": "QR-код",
     "recentEmails": "Последние письма",
     "refresh": "Обновить",
     "remove": "Удалить",
@@ -337,9 +333,9 @@
     "syncVaultData": "Синхронизировать хранилище",
     "syncingChanges": "Синхронизация изменений...",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
-    "unavailable": "Unavailable",
+    "unavailable": "Недоступно",
     "undo": "Отменить",
-    "updateApp": "Update app",
+    "updateApp": "Обновить приложение",
     "use": "Использовать",
     "username": "Логин",
     "vaultSaveError": "Не удалось сохранить изменения в хранилище. Попробуйте еще раз.",
@@ -424,8 +420,7 @@
     },
     "title": "Письма",
     "to": "К:",
-    "toColumn": "К",
-    "updateClientForFormattedView": "Для корректного отображения этого письма нужна новая версия приложения. Обновите приложение."
+    "toColumn": "К"
   },
   "fieldLabels": {
     "alias": {
@@ -558,7 +553,7 @@
       "roboformInstructionsPart1": "Чтобы импортировать пароли из RoboForm, вам нужно экспортировать их в CSV-файл. Для этого откройте RoboForm и перейдите в меню \"RoboForm\" > \"Настройки\" > \"Аккаунт и данные\" > \"Экспорт\", после чего выберите формат CSV",
       "strongboxDescription": "Импорт паролей из Strongbox",
       "strongboxInstructionsPart1": "Чтобы импортировать хранилище Strongbox, сначала экспортируйте его в CSV‑файл. Для этого откройте меню «Файл» и выберите «Экспортировать базу данных» (CSV).",
-      "template": "template",
+      "template": "шаблон",
       "uploadInstructions": "После экспорта файла вы можете загрузить его ниже."
     }
   },
@@ -616,8 +611,8 @@
     "addNewItem": "Добавление элемента",
     "allItemsInFolders": "Все ваши элементы организованы по папкам. Выберите папку выше, чтобы просмотреть учетные данные, или воспользуйтесь поиском для поиска конкретных элементов.",
     "allItemsInFoldersClick": "Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Не удалось прочитать вложение.",
+    "attachmentUnavailable": "Данные вложения недоступны",
     "autofillLinkExisting": {
       "confirmMessage": "Вы уверены, что хотите связать \"{{url}}\" с этой записью?",
       "confirmTitle": "Связать с этой записью?",
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "При загрузке писем произошла непредвиденная ошибка. Пожалуйста, повторите попытку позже.",
     "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда записи, перейдите в режим редактирования записи и нажмите на иконку папки в поле имени.",
     "errorLoadingItems": "Ошибка загрузки записей",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Вы уверены?"
     },
@@ -727,13 +724,13 @@
       "selectFolder": "Выбрать папку"
     },
     "fullName": "Полное имя",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "С вложениями",
+    "hasPasskey": "С ключом доступа",
+    "hasTotp": "С кодом 2FA",
     "history": "История",
     "home": {
       "alphabeticalOption": "По алфавиту",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Создайте первую запись в хранилище вручную.",
       "emptyFolderMessage": "Эта папка пуста.",
       "failedToCreateFolder": "Не удалось создать папку.",
       "failedToDeleteFolder": "Не удалось удалить папку.",
@@ -764,28 +761,28 @@
     "loginCredentials": "Данные для авторизации",
     "logo": {
       "builtin": {
-        "bank": "Banking",
-        "dev": "Development",
-        "game": "Games",
-        "health": "Health",
-        "mail": "Mail",
-        "media": "Media",
-        "shopping": "Shopping",
-        "social": "Social",
-        "travel": "Travel",
-        "work": "Work"
+        "bank": "Банки",
+        "dev": "Разработка",
+        "game": "Игры",
+        "health": "Здоровье",
+        "mail": "Почта",
+        "media": "Медиа",
+        "shopping": "Покупки",
+        "social": "Соцсети",
+        "travel": "Путешествия",
+        "work": "Работа"
       },
-      "builtinLogos": "Icon library",
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceFavicon": "From {{domain}}",
-      "sourceNone": "No icon"
+      "builtinLogos": "Каталог иконок",
+      "chooseLogo": "Выбрать иконку",
+      "currentLogo": "Текущая иконка",
+      "fetchFromWebsite": "Загрузить иконку с сайта",
+      "refetchFromWebsite": "Обновить иконку с сайта",
+      "sourceBuiltin": "Стандартная иконка",
+      "sourceCustom": "Своя иконка",
+      "sourceFavicon": "С сайта {{domain}}",
+      "sourceNone": "Без иконки"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Нет вложений.",
     "noEmailsYet": "Писем пока не поступало.",
     "noHistoryAvailable": "История пока пуста",
     "noItemsFound": "Ничего не найдено. Создайте запись, чтобы начать работу. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
@@ -1097,7 +1094,7 @@
     "useBrowserPasskey": "Использовать ключ доступа из браузера﻿"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Безопасность аккаунта",
     "activeOnAllSites": "Активен на всех сайтах (если не отключен ниже)",
     "advancedOptions": "Дополнительные параметры",
     "androidAutofillSettings": {
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "Только локальный буфер",
     "clipboardLocalOnlyDescription": "Хранить данные только на этом устройстве, не передавая их в «Универсальный буфер обмена» Apple.",
     "clipboardLocalOnlyDisabledWarning": "Когда эта функция выключена, скопированные данные могут синхронизироваться с другими вашими устройствами Apple через «Универсальный буфер обмена».",
-    "clipboardSettings": "Настройки буфера обмена",
     "contextMenuDescription": "Щелкните правой кнопкой мыши на полях ввода, чтобы получить доступ к параметрам AliasVault",
     "contextMenuSettings": "Настройки контекстного меню",
     "copyTotpOnFill": "Копировать TOTP-код при автозаполнении",
@@ -1225,8 +1221,8 @@
     "globalSettings": "Глобальные настройки",
     "groups": {
       "autofill": "Автозаполнение",
-      "general": "General",
-      "generators": "Generators"
+      "general": "Основные",
+      "generators": "Генераторы"
     },
     "identityGenerator": "Генератор личности",
     "identityGeneratorSettings": {
@@ -1281,14 +1277,14 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
-        "codeMismatch": "The number does not match. The login request was declined.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "approve": "Подтвердить вход",
+        "codeMismatch": "Число не совпадает. Запрос на вход отклонен.",
+        "confirmMessage": "Другое устройство запрашивает вход в ваш аккаунт и получит полный доступ к хранилищу. Продолжайте, только если вы сами начали этот вход.",
         "confirmSubtitle": "Авторизуйтесь повторно, чтобы подтвердить вход на другом устройстве.",
         "confirmTitle": "Подтвердите запрос на вход",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "openedFromLink": "Продолжайте, только если вы сами отсканировали этот QR-код камерой. Если вы перешли по ссылке или кнопке, отклоните запрос.",
         "requestExpired": "Срок действия запроса на вход истек. Пожалуйста, сгенерируйте новый QR-код.",
-        "selectCode": "Tap the number shown on the other device",
+        "selectCode": "Выберите число, показанное на другом устройстве",
         "successDescription": "Вход на удаленном устройстве выполнен успешно."
       },
       "scanningMessage": "Отсканируйте QR‑код AliasVault",
@@ -1358,7 +1354,7 @@
         "confirmNewPassword": "Подтвердите новый пароль",
         "currentPassword": "Текущий пароль",
         "currentPasswordIncorrect": "Текущий пароль неверен",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Смена мастер-пароля завершит сеансы на остальных устройствах. Потребуется войти снова с новым паролем.",
         "enterCurrentPassword": "Введите текущий пароль",
         "enterNewPassword": "Введите новый пароль",
         "failedToChange": "Не удалось сменить пароль. Пожалуйста, попробуйте снова.",
@@ -1368,7 +1364,7 @@
         "initiatingChange": "Начинается изменение пароля...",
         "newPassword": "Новый пароль",
         "passwordChangedSuccessfully": "Пароль успешно изменен",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "Пароль должен содержать от {{minLength}} символов.",
         "passwordsDoNotMatch": "Новые пароли не совпадают",
         "userNotAuthenticated": "Пользователь не авторизован"
       },
@@ -1419,8 +1415,6 @@
         "verificationCodePlaceholder": "Введите код подтверждения",
         "verifyAndEnableButton": "Подтвердить и включить"
       },
-      "pageDescription": "Задайте свои настройки безопасности.",
-      "pageTitle": "Настройки безопасности",
       "passkeyUnlock": {
         "disableButton": "Отключить разблокировку ключом",
         "disabledDescription": "По умолчанию при перезагрузке страницы или вкладки AliasVault требуется повторный ввод мастер-пароля. С помощью ключа доступа вы можете мгновенно разблокировать свое хранилище. Когда эта функция включена, ваш мастер-пароль шифруется локально с помощью расширения PRF ключа доступа. Примечание: ключ доступа будет работать только на том устройстве и в том браузере, на которых вы его активировали.",
@@ -1443,7 +1437,7 @@
       "twoFactor": {
         "disabledMessage": "Двухфакторная аутентификация сейчас отключена. Чтобы повысить безопасность вашего аккаунта, мы рекомендуем включить её.",
         "enabledMessage": "Двухфакторная аутентификация сейчас включена.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Хранилище защищено только мастер-паролем. Рекомендуем включить двухфакторную аутентификацию для усиления безопасности аккаунта."
       }
     },
     "selectLanguage": "Выбрать язык",
@@ -1451,8 +1445,8 @@
     "serverConfigurationDescription": "Настройте URL-адрес сервера AliasVault для самостоятельно размещенных экземпляров",
     "serverUrl": "URL-адрес сервера",
     "serverVersion": "Версия сервера",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Сессии и логи",
+    "sessionsAndLogsDescription": "Просматривайте активные сеансы и недавние попытки входа.",
     "siteSpecificSettings": "Настройки для конкретного сайта",
     "storageInsights": {
       "breadcrumbTitle": "Анализ памяти",
@@ -1467,7 +1461,7 @@
       "deleteAllLogosButton": "Удалить все значки",
       "deleteAllLogosConfirmMessage": "Удалить все значки из хранилища и очистить значки записей? Вы сможете загрузить их заново позже. Продолжить?",
       "deleteAllLogosConfirmTitle": "Удалить все значки?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Удалены логотипы записей: {{count}} шт.",
       "itemsWithAttachmentsLabel": "Записи с вложениями",
       "itemsWithLogosLabel": "Записи со значками",
       "logoManagementDescription": "Значки загружаются с сайтов, сохраненных в ваших записях. Вы можете удалить их, чтобы освободить место, или обновить, чтобы загрузить более качественные версии.",
@@ -1477,9 +1471,9 @@
       "redownloadAllLogosButton": "Обновить все значки",
       "redownloadAllLogosConfirmMessage": "Обновить значки для всех записей с URL-адресом? Текущие логотипы будут заменены. Это может занять некоторое время в зависимости от размера хранилища. Продолжить?",
       "redownloadAllLogosConfirmTitle": "Обновить все значки?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Обновлен логотип у записей: {{count}} шт.",
+      "serverTotalDescription": "Точный размер зашифрованного хранилища на сервере, включая вложения и логотипы.",
+      "serverTotalTitle": "Размер хранилища на сервере",
       "topAttachmentsDescription": "10 самых тяжелых вложений. Удалите вложение, если оно вам больше не нужно, для экономии места.",
       "topAttachmentsTitle": "Тяжелые вложения",
       "topLogosDescription": "10 самых частых логотипов. Записи с одинаковым доменом используют один и тот же значок.",
@@ -1554,10 +1548,10 @@
     "syncing": "Синхронизация...",
     "tapToRetry": "Повторить синхронизацию",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Если проблема сохраняется, свяжитесь с поддержкой.",
+      "notCompatible": "Версия этого хранилища несовместима с вашим приложением.",
+      "title": "Версия хранилища не поддерживается",
+      "updateInstructions": "Установите последнюю версию AliasVault, перезагрузите страницу и попробуйте снова."
     }
   },
   "totp": {
@@ -1565,12 +1559,14 @@
     "addName": "Название (необязательно)",
     "addTotpCodeDescription": "Добавить двухфакторный код аутентификации",
     "addTotpCodeModalTitle": "Добавить TOTP 2FA код",
+    "algorithm": "Algorithm",
     "closeFormButton": "Закрыть форму",
     "defaultName": "Аутентификатор",
     "deleteCodeConfirmation": "Вы уверены, что хотите удалить этот TOTP код?",
     "deleteCodeTitle": "Удалить TOTP код",
     "deleteTotpCodeConfirmation": "Вы уверены, что хотите удалить 2FA-код для \"{{name}}\"?",
     "deleteTotpCodeTitle": "Удаление 2FA-кода",
+    "digits": "Digits",
     "enterManually": "Введите ключ доступа",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа.",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "nameOptional": "Имя (необязательно)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Сохранить для просмотра кода",
     "scanQrCode": "Отсканировать QR-код",
     "secretKey": "Секретный ключ",
@@ -1598,7 +1596,7 @@
     },
     "newVersion": "Доступна новая версия:",
     "noDescriptionAvailable": "Описание для этой версии недоступно.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "otherDevicesWarning": "Для работы с хранилищем обновите AliasVault на других устройствах до версии {{version}} или новее. Устаревшие приложения и расширения выйдут из аккаунта и запросят обновление.",
     "startUpgradeButton": "Начать процесс обновления",
     "status": {
       "applyingDatabaseMigrations": "Применение перемещения базы данных...",
@@ -1607,8 +1605,8 @@
       "preparingUpgrade": "Подготовка обновления..."
     },
     "subtitle": "AliasVault обновился, и ваше хранилище необходимо обновить. Это займет всего несколько секунд.",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
-    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Хранилище готово к работе. Не забудьте обновить AliasVault и на других устройствах.",
+    "successTitle": "Хранилище обновлено",
     "title": "Обновить хранилище",
     "upgrade": "Обновить",
     "upgradeDescription": "AliasVault был обновлён. Для продолжения необходимо обновить ваше хранилище. Это займёт всего несколько секунд.",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Проверка наличия обновлений в хранилище",
     "checkingVaultUpdates": "Проверка обновлений хранилища",
-    "errors": {
-      "failedToGetEncryptedDatabase": "Не удалось получить зашифрованную базу данных",
-      "passwordChangeRequiresOnline": "Для смены пароля требуется подключение к интернету. Повторите попытку, когда будете в сети.",
-      "usernameNotFound": "Имя пользователя не найдено"
-    },
     "mergingVault": "Объединение изменений в хранилище...",
     "savingChangesToVault": "Сохранение изменений в хранилище",
     "syncingUpdatedVault": "Синхронизация обновленного хранилища",
-    "syncingVault": "Синхронизация хранилища",
-    "uploadingVaultToServer": "Загрузка хранилища на сервер"
+    "syncingVault": "Синхронизация хранилища"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "Бета",
       "enableDarkMode": "Переключить на темную тему",
       "enableLightMode": "Переключить на светлую тему",
-      "logOut": "Выйти",
-      "openMenuLabel": "Открыть меню"
+      "logOut": "Выйти"
     },
     "welcome": {
       "createFirstIdentityButton": "Создать первую личность",
