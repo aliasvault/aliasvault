@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { SettingsGroup, SettingsRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -21,6 +22,8 @@ const SecuritySettings: React.FC = () => {
         <PageTitle>{t('settings.accountSecurity')}</PageTitle>
         <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.description')}</p>
       </div>
+
+      {dbContext.isOffline && <AlertMessage type="warning" message={offlineReason} />}
 
       <SettingsGroup>
         <SettingsRow

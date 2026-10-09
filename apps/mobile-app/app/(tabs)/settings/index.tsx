@@ -407,6 +407,20 @@ export default function SettingsScreen() : React.ReactNode {
         <TitleContainer title={t('common.settings')} onLogoPress={registerTap} />
         <View style={styles.accountSection}>
           <UsernameDisplay />
+          <View style={styles.separator} />
+          <TouchableOpacity
+            testID="qr-scanner-link"
+            style={styles.settingItem}
+            onPress={() => navigate(() => router.push('/(tabs)/settings/qr-scanner'))}
+          >
+            <View style={styles.settingItemIcon}>
+              <Ionicons name="qr-code-outline" size={20} color={colors.text} />
+            </View>
+            <View style={styles.settingItemContent}>
+              <ThemedText style={styles.settingItemText}>{t('settings.qrScanner.scanningMessage')}</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </View>
+          </TouchableOpacity>
           {hasCapability(CapabilityKeys.VaultSharing) && (
             <>
               <View style={styles.separator} />
@@ -429,20 +443,6 @@ export default function SettingsScreen() : React.ReactNode {
               </TouchableOpacity>
             </>
           )}
-          <View style={styles.separator} />
-          <TouchableOpacity
-            testID="qr-scanner-link"
-            style={styles.settingItem}
-            onPress={() => navigate(() => router.push('/(tabs)/settings/qr-scanner'))}
-          >
-            <View style={styles.settingItemIcon}>
-              <Ionicons name="qr-code-outline" size={20} color={colors.text} />
-            </View>
-            <View style={styles.settingItemContent}>
-              <ThemedText style={styles.settingItemText}>{t('settings.qrScanner.scanningMessage')}</ThemedText>
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-            </View>
-          </TouchableOpacity>
         </View>
 
         <ThemedText style={styles.groupTitle}>{t('settings.groups.autofill')}</ThemedText>
