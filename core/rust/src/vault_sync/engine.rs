@@ -125,12 +125,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
 
     // A hierarchy another device created since this legacy login shows up as a revision change, so it is checked here.
     if needs_pull || ctx.is_dirty {
-        match keys::ensure_key_chain_accepted(ctx).await {
-            Err(SyncError::KeyOutOfSync) => return Ok(Flow::Done(logout(LogoutReason::PasswordChanged))),
-            other => {
-                other?;
-            }
-        }
+        keys::ensure_key_chain_accepted(ctx).await?;
     }
     announce_phase(ctx, needs_pull, ctx.is_dirty).await;
 

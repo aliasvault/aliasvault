@@ -377,6 +377,18 @@ fn password_changed_elsewhere_requires_logout() {
 }
 
 #[test]
+fn a_write_the_server_refuses_for_a_missing_key_chain_requires_logout() {
+    let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
+    s.host.responders.insert(0, Box::new(|m, p, _| if m == "POST" && p == "Vault" { Some((400, json!({ "code": "VAULT_KEY_NOT_FOUND", "statusCode": 400 }))) } else { None }));
+
+    s.host.edit(|db| insert_item(db, ITEM_B, "Local item"));
+    let result = s.host.sync();
+
+    assert_eq!(result["requiresLogout"], true, "{}", result);
+    assert_eq!(result["logoutReason"], "passwordChanged");
+}
+
+#[test]
 fn status_check_reports_newer_server_state_without_touching_the_vault() {
     let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
     s.publish(8);

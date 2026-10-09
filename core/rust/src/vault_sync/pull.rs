@@ -426,6 +426,7 @@ async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String>
     if !keys::grant_signature_verifies(dto, &public_key, &algorithm, &encrypted_vek) {
         return Err(SyncError::ServerVaultUnreadable(format!("the grant on shared manifest {} carries no valid signature, refusing to assemble", dto.manifest_id)));
     }
-    let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or_else(|| SyncError::Snapshot(format!("this session holds no account private key that opens the grant on shared manifest {}, refusing to assemble", dto.manifest_id)))?;
+    // Sanity check: no key this session holds opens the grant, so the session is behind the server.
+    let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or(SyncError::KeyOutOfSync)?;
     keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
 }

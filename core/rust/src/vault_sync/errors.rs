@@ -201,12 +201,14 @@ impl SyncError {
             SyncError::Timeout(_) => Failure::Coded(ErrorCode::UploadTimeout),
             SyncError::ServerUpdateRequired => Failure::Coded(ErrorCode::ServerUpdateRequired),
             SyncError::PayloadTooLarge => Failure::Coded(ErrorCode::UploadTooLarge),
+            // The server holds no key chain for this session: only a re-login recovers.
+            SyncError::Http { code: Some(code), .. } if code == "VAULT_KEY_NOT_FOUND" => Failure::Logout(LogoutReason::PasswordChanged),
             SyncError::Http { .. } => Failure::Coded(ErrorCode::SyncServerError),
             SyncError::VaultLocked => Failure::Coded(ErrorCode::VaultLocked),
             SyncError::VaultDecryptFailed(_) => Failure::Coded(ErrorCode::VaultDecryptFailed),
             SyncError::UnlockKeyRejected => Failure::Coded(ErrorCode::UnlockKeyRejected),
             SyncError::KeyChainUnreadable(_) => Failure::Coded(ErrorCode::KeyChainUnreadable),
-            SyncError::KeyOutOfSync => Failure::Coded(ErrorCode::KeyOutOfSync),
+            SyncError::KeyOutOfSync => Failure::Logout(LogoutReason::PasswordChanged),
             SyncError::ServerVaultUnreadable(_) => Failure::Coded(ErrorCode::SyncVaultDecryptFailed),
             SyncError::Snapshot(_) => Failure::Coded(ErrorCode::SyncVaultFetchFailed),
             SyncError::VaultDataRejected(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
@@ -244,7 +246,7 @@ mod tests {
         assert_eq!(SyncError::VaultDecryptFailed(String::new()).failure(), Failure::Coded(ErrorCode::VaultDecryptFailed));
         assert_eq!(SyncError::UnlockKeyRejected.failure(), Failure::Coded(ErrorCode::UnlockKeyRejected));
         assert_eq!(SyncError::KeyChainUnreadable(String::new()).failure(), Failure::Coded(ErrorCode::KeyChainUnreadable));
-        assert_eq!(SyncError::KeyOutOfSync.failure(), Failure::Coded(ErrorCode::KeyOutOfSync));
+        assert_eq!(SyncError::KeyOutOfSync.failure(), Failure::Logout(LogoutReason::PasswordChanged));
         assert_eq!(serde_json::to_string(&LogoutReason::PasswordChanged).unwrap(), "\"passwordChanged\"");
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
         assert_eq!(SyncError::Staging(String::new()).failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));

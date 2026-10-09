@@ -75,6 +75,10 @@ export class VaultKeyService {
     }
 
     if (!result.vaultKey) {
+      // Sanity check: a server without the key chain this device holds is behind the session.
+      if (await VaultKeyService.hasLocalVaultKey()) {
+        throw new Error(formatErrorWithCode('The server holds no key chain for this account', AppErrorCode.KEY_OUT_OF_SYNC));
+      }
       await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, StorageKeys.SIGNING_PUBLIC_KEY, StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY]);
       return unlockKeyBase64;
     }

@@ -1,3 +1,4 @@
+import { AppErrorCode, getAppErrorCode, getErrorTranslationKey } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
@@ -83,6 +84,9 @@ async function failureResult(context: string, err: unknown, options?: AuthErrorO
   }
   if (err instanceof ClientUpgradeRequiredError) {
     return { status: 'logout', reasonKey: 'common.errors.clientNotSupported' };
+  }
+  if (getAppErrorCode(err) === AppErrorCode.KEY_OUT_OF_SYNC) {
+    return { status: 'logout', reasonKey: getErrorTranslationKey(AppErrorCode.KEY_OUT_OF_SYNC) };
   }
 
   logFailure(context, err);

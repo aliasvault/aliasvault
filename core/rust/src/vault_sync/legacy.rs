@@ -25,6 +25,10 @@ pub(crate) const STORAGE_FORMAT_SQLITE_BLOB: &str = "sqlite-blob";
 /// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 fingerprints
 /// are reset, and the personal manifest id is recorded for the migration push.
 pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> SyncResult<PulledVault> {
+    // Sanity check: a server that serves a sqlite-blob vault to a device holding a key chain is behind the session.
+    if keys::has_cached_key_chain(&ctx.host).await? {
+        return Err(SyncError::KeyOutOfSync);
+    }
     state::remove(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS).await?;
     let revision = snapshot.legacy_revision.unwrap_or(0);
     let mut manifest_revisions = HashMap::new();
