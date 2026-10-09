@@ -3,8 +3,9 @@
     "ACCOUNT_BLOCKED": "您的账户已被停用。若您认为此操作有误，请联系支持人员。",
     "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定，请稍后重试。",
     "ACCOUNT_SUCCESSFULLY_DELETED": "账户已成功删除。",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "尝试加载邮件时出错。请尝试编辑并保存凭据条目以同步数据库，然后重试。",
-    "CLAIM_DOES_NOT_MATCH_USER": "当前选择的邮箱地址已被使用。请通过编辑此凭据来更改邮箱地址。",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "服务器内部错误。",
     "INVALID_AUTHENTICATOR_CODE": "验证码无效，请重试。",
     "INVALID_RECOVERY_CODE": "恢复码无效，请重试。",
@@ -165,20 +166,15 @@
       "registrationDisabledMessage": "新账户只能通过邀请链接创建。请向服务器管理员索取邀请。",
       "registrationDisabledTitle": "用户注册已禁用",
       "setupStepTitle": "设置",
-      "termsAndConditionsStepTitle": "使用 AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "我已阅读并同意条款和条件",
-        "pleaseReadAndAgree": "在继续之前，请阅读并同意以下条款和条件。",
-        "termsContent": "AliasVault 旨在增强您的在线安全并保护您的隐私。借助 AliasVault，您可以为各种在线账户创建独立的身份和邮件别名，从而帮助您掌控个人信息并降低身份被盗的风险。\n\n使用 AliasVault 即表示您同意以下条款：\n\n1. 您不得将 AliasVault 用于任何非法目的，包括但不限于欺诈、窃取身份或冒充他人。\n\n2. 您有责任维护您的账户以及通过 AliasVault 创建的任何别名的机密性。\n\n3. 如果我们怀疑您滥用或违反了这些条款，AliasVault 保留终止您账户的权利。\n\n4. 您理解，尽管 AliasVault 可以增强您的隐私，但没有任何系统是绝对万无一失的，您需自行承担使用本服务的风险。"
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault 助手",
         "enterUsernameInstructions": "请输入您想使用的用户名，可以是您的邮箱地址或任何您喜欢的独特名称。",
-        "greatNowLetsSetupUsername": "太棒了！现在让我们设置您的 AliasVault 用户名。",
         "rememberUsernameNote": "记住：这是您以后登录时要使用的用户名，所以确保是您能记住的内容！",
         "serverCommunicationError": "与 AliasVault 服务器通信时发生错误。",
         "usernamePlaceholder": "输入您想使用的用户名或邮件",
-        "validatingUsernameMessage": "正在验证用户名…"
+        "validatingUsernameMessage": "正在验证用户名…",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "选择用户名"
     },
@@ -267,7 +263,7 @@
       "passwordChanged": "您的密码已更改过，出于安全考虑，请重新登录。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "serverNotAvailable": "AliasVault 服务器不可用。请稍后重试，若问题持续请联系支持人员。",
-      "serverOutdated": "AliasVault 服务器需要更新才能与此版本的 AliasVault 兼容。如果您需要帮助，请联系支持人员。",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
       "unexpectedErrorContactSupport": "发生意外错误。请重试，如果问题仍然存在，请联系支持人员。",
@@ -424,8 +420,7 @@
     },
     "title": "邮件",
     "to": "收件人：",
-    "toColumn": "收件人",
-    "updateClientForFormattedView": "此邮件需要使用较新版本的应用才能正常显示。请更新您的应用。"
+    "toColumn": "收件人"
   },
   "fieldLabels": {
     "alias": {
@@ -690,6 +685,8 @@
     "emailUnexpectedError": "加载邮件时发生意外错误，请稍后重试。",
     "emptyFolderHint": "此文件夹为空。要将项目移动到此文件夹，请编辑该项目，然后点击名称字段中的文件夹图标。",
     "errorLoadingItems": "加载项目时出错",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "您确定吗？"
     },
@@ -1179,7 +1176,6 @@
     "clipboardLocalOnly": "仅本地剪贴板",
     "clipboardLocalOnlyDescription": "将复制的凭据保留在此设备上，而不是通过通用剪贴板将其同步到您的其他 Apple 设备。",
     "clipboardLocalOnlyDisabledWarning": "关闭后，复制的凭据可以通过通用剪贴板同步到您其他的 Apple 设备（Mac、iPad 等）。",
-    "clipboardSettings": "剪贴板设置",
     "contextMenuDescription": "右键点击文本输入框即可访问 AliasVault 选项",
     "contextMenuSettings": "上下文菜单设置",
     "copyTotpOnFill": "复制 TOTP 验证码到自动填充",
@@ -1212,7 +1208,7 @@
       "clipboardClearSecondsDescription": "复制密码或其他敏感数据后自动清除剪贴板内容。",
       "clipboardClearSecondsLabel": "复制后自动清除剪贴板",
       "defaultEmailDomainDescription": "设置创建新凭据时将使用的默认邮件域名。",
-      "defaultEmailDomainDescriptionNote": "提醒：通过私有域名接收的邮件采用端到端加密，仅您本人可阅读；而通过公共域名接收的邮件，任何知晓该收件邮箱地址的人均可查阅。",
+      "defaultEmailDomainDescriptionNote": "注意：通过私有域名收到的电子邮件采用端到端加密，仅您本人可阅读；而通过公共域名收到的电子邮件，任何知晓收件电子邮件地址的人都可以阅读。",
       "defaultEmailDomainLabel": "默认邮件域名",
       "defaultEmailDomainLearnMore": "了解更多关于差异的信息",
       "emailSettingsTitle": "邮件设置",
@@ -1323,12 +1319,12 @@
       "activeSessions": {
         "actionColumn": "操作",
         "expires": "过期时间",
-        "failedToLoad": "加载活跃会话失败",
+        "failedToLoad": "加载活动会话失败",
         "failedToRevoke": "撤销会话失败",
-        "headerText": "以下是您的账户当前登录或有活跃会话的设备列表。您可以在此处从任意会话中退出登录。",
-        "lastActive": "最后活跃时间",
-        "noSessions": "无活跃会话",
-        "noSessionsMessage": "未找到活跃会话。",
+        "headerText": "以下是您的账户当前登录或有活动会话的设备列表。您可以在此处从任意会话中退出登录。",
+        "lastActive": "最后活动时间",
+        "noSessions": "无活动会话",
+        "noSessionsMessage": "未找到活动会话。",
         "revoke": "撤销",
         "revokeConfirmation": "确定要注销此会话吗？这将使您从所选设备中退出登录。",
         "revokeExceptionMessage": "注销会话失败：{{error}}。",
@@ -1343,7 +1339,7 @@
         "eventTypeColumn": "事件类型",
         "failed": "失败",
         "failedToLoad": "加载认证日志失败",
-        "headerText": "以下是您的账户最近登录尝试的概览。",
+        "headerText": "以下是您的账户最近登录尝试的概况。",
         "ipAddress": "IP 地址",
         "noLogs": "未找到认证日志",
         "noLogsMessage": "未找到认证日志。",
@@ -1354,20 +1350,20 @@
       "changeMasterPassword": "更改主密码",
       "changePassword": {
         "changePassword": "更改密码",
-        "changingPasswordMessage": "正在修改密码…",
+        "changingPasswordMessage": "正在更改密码…",
         "confirmNewPassword": "确认新密码",
         "currentPassword": "当前密码",
         "currentPasswordIncorrect": "当前密码不正确",
         "description": "更改主密码后，您将从其他设备上退出登录，需要使用新密码重新登录。",
         "enterCurrentPassword": "输入当前密码",
         "enterNewPassword": "输入新密码",
-        "failedToChange": "修改密码失败。请重试。",
-        "failedToChangePassword": "密码修改失败。请刷新页面后重试。",
+        "failedToChange": "密码更改失败。请重试。",
+        "failedToChangePassword": "密码更改失败。请刷新页面后重试。",
         "fillAllFields": "请填写所有字段",
-        "headerText": "修改主密码也会更改密码库加密密钥。建议定期修改主密码以保证密码库安全。",
-        "initiatingChange": "开始修改密码…",
+        "headerText": "更改主密码也会更改密码库加密密钥。建议定期更改主密码以保证密码库安全。",
+        "initiatingChange": "开始更改密码…",
         "newPassword": "新密码",
-        "passwordChangedSuccessfully": "密码修改成功",
+        "passwordChangedSuccessfully": "密码更改成功",
         "passwordTooShort": "密码必须至少包含 {{minLength}} 个字符。",
         "passwordsDoNotMatch": "新密码不匹配",
         "userNotAuthenticated": "用户未经认证"
@@ -1380,7 +1376,7 @@
         "deleteAccount": "删除账户",
         "deleteMyAccount": "删除我的账户",
         "deletingAccount": "正在删除账户…",
-        "deletionIrreversibleNote": "账户删除操作不可撤销且无法恢复。点击下方按钮将立即永久删除您的账户。",
+        "deletionIrreversibleNote": "账户删除操作不可逆，无法撤销。点击下方按钮将立即永久删除您的账户。",
         "enterPassword": "输入密码",
         "enterUsername": "输入您的用户名以继续",
         "errorProcessingRequest": "处理请求时发生错误。",
@@ -1389,7 +1385,7 @@
         "headerText": "删除您的账户将立即且永久删除所有数据。",
         "initiatingDeletion": "开始删除账户",
         "irreversibleWarning": "账户删除操作不可逆且无法被撤销，点击下方按钮将立即且永久删除您的账户。",
-        "permanentActionWarning": "警告：此操作不可撤销且为永久性操作。您所有的数据都将被永久删除。",
+        "permanentActionWarning": "警告：此操作不可撤销，您的所有数据都将被永久删除。",
         "usernameDoesNotMatch": "用户名不匹配",
         "usernameMismatchDescription": "您输入的用户名与当前用户名不匹配。请重试。",
         "verifyingWithServer": "与服务器验证中",
@@ -1411,16 +1407,14 @@
         "twoFactorNotEnabled": "尚未启用两步验证（2FA）。"
       },
       "enable2fa": {
-        "failedToEnable2Fa": "启用两步验证（2FA）失败。",
-        "pageDescription": "启用两步验证（2FA）可提高您密码库的安全性。",
-        "pageTitle": "启用两步验证（2FA）",
+        "failedToEnable2Fa": "启用两步验证失败。",
+        "pageDescription": "启用两步验证可提高您密码库的安全性。",
+        "pageTitle": "启用两步验证",
         "qrCodeInstructions": "使用您的身份验证器应用扫描此二维码，或手动输入以下密钥：",
         "twoFactorEnabledSuccess": "两步验证已成功启用。下次登录时，您需要输入两步验证码。",
         "verificationCodePlaceholder": "输入验证码",
         "verifyAndEnableButton": "验证并启用"
       },
-      "pageDescription": "配置安全设置。",
-      "pageTitle": "安全设置",
       "passkeyUnlock": {
         "disableButton": "禁用通行密钥解锁",
         "disabledDescription": "默认情况下，重新加载 AliasVault 页面或标签页需要您重新输入主密码。使用通行密钥，您可以即刻解锁密码库。启用后，您的主密码将使用通行密钥的 PRF 扩展进行本地加密。注意：通行密钥仅适用于您启用它的当前设备和浏览器。",
@@ -1441,8 +1435,8 @@
         "warningTitle": "将这些恢复代码存放在安全的地方。"
       },
       "twoFactor": {
-        "disabledMessage": "两步验证（2FA）当前已禁用。为提高您的账户安全性，建议您启用此功能。",
-        "enabledMessage": "两步验证（2FA）当前已启用。",
+        "disabledMessage": "两步验证当前已禁用。为提高您的账户安全性，建议您启用此功能。",
+        "enabledMessage": "两步验证当前已启用。",
         "notEnabledWarning": "您的密码库目前仅可通过主密码访问。我们建议您启用两步验证，以提高账户安全性。"
       }
     },
@@ -1512,7 +1506,7 @@
     },
     "vaultUnlock": "密码库解锁方式",
     "vaultUnlockSettings": {
-      "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
+      "biometricDisabledMessage": "AliasVault 的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricEnabled": "{{biometric}} 现已成功启用",
       "biometricHelp": "使用生物识别解锁您的密码库，经由 {{keystore}} 加密。",
       "biometricNotAvailable": "{{biometric}} 不可用",
@@ -1525,7 +1519,7 @@
       "featureRequiresPasscode": "此功能需要在您的设备上启用密码。",
       "keystoreAndroid": "Android 密钥库",
       "keystoreIOS": "iOS 钥匙串",
-      "passwordHelp": "重新输入完整主密码以解锁密码库。这始终作为备用选项启用。",
+      "passwordHelp": "重新输入完整主密码以解锁密码库。这始终作为回退选项启用。",
       "pin": "PIN 码",
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
       "pinDisabled": "PIN 解锁已禁用",
@@ -1565,12 +1559,14 @@
     "addName": "添加名称（可选）",
     "addTotpCodeDescription": "添加两步验证码",
     "addTotpCodeModalTitle": "添加两步验证 TOTP 码",
+    "algorithm": "Algorithm",
     "closeFormButton": "关闭表单",
     "defaultName": "身份验证器",
     "deleteCodeConfirmation": "您确定要删除此 TOTP 验证码吗？",
     "deleteCodeTitle": "删除 TOTP 验证码",
     "deleteTotpCodeConfirmation": "您确定要删除两步验证码“{{name}}”吗？",
     "deleteTotpCodeTitle": "删除两步验证码",
+    "digits": "Digits",
     "enterManually": "输入密钥",
     "errors": {
       "invalidSecretKey": "密钥格式无效。",
@@ -1578,6 +1574,8 @@
     },
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "nameOptional": "名称（可选）",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "保存以查看验证码",
     "scanQrCode": "扫描二维码",
     "secretKey": "密钥",
@@ -1630,16 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "检查密码库更新中",
     "checkingVaultUpdates": "检查密码库更新",
-    "errors": {
-      "failedToGetEncryptedDatabase": "获取加密数据库失败",
-      "passwordChangeRequiresOnline": "更改密码需要联网，请联网后重试。",
-      "usernameNotFound": "未找到用户名"
-    },
     "mergingVault": "正在合并密码库更改...",
     "savingChangesToVault": "正在保存对密码库的更改",
     "syncingUpdatedVault": "同步更新后的密码库",
-    "syncingVault": "正在同步密码库",
-    "uploadingVaultToServer": "正在将密码库上传到服务器"
+    "syncingVault": "正在同步密码库"
   },
   "web": {
     "footer": {
@@ -1653,8 +1645,7 @@
       "betaLabel": "测试版",
       "enableDarkMode": "切换到深色模式",
       "enableLightMode": "切换到浅色模式",
-      "logOut": "退出登录",
-      "openMenuLabel": "打开菜单"
+      "logOut": "退出登录"
     },
     "welcome": {
       "createFirstIdentityButton": "创建您的首个身份",
