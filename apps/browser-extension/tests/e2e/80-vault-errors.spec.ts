@@ -12,7 +12,7 @@ import type { Page } from '@playwright/test';
 const SERVER_NOT_AVAILABLE_MESSAGE = 'The AliasVault server is not available.';
 
 /**
- * Check the login page shows the copyable vault error report with the given code.
+ * Check the login page shows the copyable vault error report with the given code and the engine's technical detail.
  */
 async function expectVaultErrorReport(popup: Page, code: string, detail: string): Promise<void> {
   const report = popup.locator('#vault-error-report');
@@ -27,12 +27,12 @@ async function expectVaultErrorReport(popup: Page, code: string, detail: string)
 }
 
 /**
- * Check the popup shows the sync failure dialog with the materialize error and its code.
+ * Check the popup shows the sync failure dialog with the materialize error code, without the engine's technical detail.
  */
 async function expectSyncFailedDialog(popup: Page): Promise<void> {
   await expect(popup.getByRole('heading', { name: 'Sync failed' })).toBeVisible({ timeout: Timeouts.LONG });
   await expect(popup.getByText('(Code: E-508)')).toBeVisible();
-  await expect(popup.getByText('NOT NULL constraint failed')).toBeVisible();
+  await expect(popup.getByText('NOT NULL constraint failed')).toHaveCount(0);
   await expect(popup.getByText(SERVER_NOT_AVAILABLE_MESSAGE)).toHaveCount(0);
 }
 

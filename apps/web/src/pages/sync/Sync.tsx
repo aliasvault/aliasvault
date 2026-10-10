@@ -1,6 +1,6 @@
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
+import { syncErrorMessage, syncErrorReport } from '@aliasvault/client/sync/SyncErrorMessage';
 import { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { VaultSqlGenerator, type VaultVersion } from '@aliasvault/vault';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -101,7 +101,7 @@ const Sync: React.FC = () => {
         // A local schema rebuild is invisible to the user and runs unattended.
         const result = await vaultStore.migrateVaultManifest();
         if (!result.success) {
-          setErrorDetails(syncErrorMessage(result, t) ?? null);
+          setErrorDetails(syncErrorReport(result, t) ?? null);
           setStatus('decryption-failed');
           return;
         }
@@ -156,7 +156,7 @@ const Sync: React.FC = () => {
           return;
         }
         if (!result.success) {
-          setErrorDetails(syncErrorMessage(result, t) ?? null);
+          setErrorDetails(syncErrorReport(result, t) ?? null);
           setStatus('decryption-failed');
           return;
         }

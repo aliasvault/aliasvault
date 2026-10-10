@@ -4,7 +4,7 @@ import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcess
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
+import { syncErrorMessage, syncErrorReportDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -84,7 +84,7 @@ const Login: React.FC = () => {
       throw new ServerUpdateRequiredError();
     }
     if (!result.success) {
-      throw new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result, t) ?? t('common.errors.unknownError')));
+      throw new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result, t) ?? t('common.errors.unknownError')), syncErrorReportDetail(result));
     }
 
     await dbContext.loadStoredDatabase();
@@ -148,7 +148,7 @@ const Login: React.FC = () => {
         return;
       case 'vaultPullFailed':
         // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
-        setVaultError(new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result.sync, t) ?? t('common.errors.unknownError'))));
+        setVaultError(new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result.sync, t) ?? t('common.errors.unknownError')), syncErrorReportDetail(result.sync)));
         return;
       case 'logout':
         setError(result.message ?? t(result.reasonKey ?? 'common.errors.unknownError'));

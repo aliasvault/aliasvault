@@ -36,6 +36,7 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
       `Extension: ${AppInfo.VERSION}`,
       `Browser: ${navigator.userAgent}`,
       `Error: ${error.message || t('common.errors.unknownError')}`,
+      ...(error.detail ? [`Detail: ${error.detail}`] : []),
       '',
       'Stack trace:',
       error.stack ?? 'No stack trace available',

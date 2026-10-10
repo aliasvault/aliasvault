@@ -34,3 +34,26 @@ export function syncErrorMessage(detail: SyncErrorDetail, t: (key: string) => st
   }
   return detail.error;
 }
+
+/**
+ * The engine's technical detail that {@link syncErrorMessage} leaves out, for a copyable error report.
+ * @param detail - the sync outcome
+ */
+export function syncErrorReportDetail(detail: SyncErrorDetail): string | undefined {
+  if (detail.logoutReason || !detail.errorCode || !detail.error) {
+    return undefined;
+  }
+  const code = isErrorCode(detail.errorCode) ? detail.errorCode : AppErrorCode.UNKNOWN_ERROR;
+  return hasOwnErrorMessage(code) ? detail.error : undefined;
+}
+
+/**
+ * The copyable report for a failed sync: the message, followed by the engine's technical detail on its own line.
+ * @param detail - the sync outcome
+ * @param t - the renderer's translation function
+ */
+export function syncErrorReport(detail: SyncErrorDetail, t: (key: string) => string): string | undefined {
+  const message = syncErrorMessage(detail, t);
+  const technicalDetail = syncErrorReportDetail(detail);
+  return message && technicalDetail ? `${message}\n${technicalDetail}` : message;
+}

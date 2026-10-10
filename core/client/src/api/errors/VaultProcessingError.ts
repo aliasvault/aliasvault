@@ -10,17 +10,22 @@ export class VaultProcessingError extends Error {
   /** The original error that caused this failure (kept for logging / inspection). */
   public readonly originalError: unknown;
 
+  /** Technical detail for the copyable report only, not shown in the message. */
+  public readonly detail?: string;
+
   /**
    * Creates a new instance of VaultProcessingError.
    * @param source - a short identifier of the flow that failed (included in the copyable report).
    * @param originalError - the underlying error whose message + stack are preserved.
+   * @param detail - technical detail for the copyable report only.
    */
-  public constructor(source: string, originalError: unknown) {
+  public constructor(source: string, originalError: unknown, detail?: string) {
     const causeMessage = originalError instanceof Error ? originalError.message : String(originalError);
     super(causeMessage);
     this.name = 'VaultProcessingError';
     this.source = source;
     this.originalError = originalError;
+    this.detail = detail;
 
     // Preserve the original stack so the copyable report points at the real failure site, not this wrapper.
     if (originalError instanceof Error && originalError.stack) {
