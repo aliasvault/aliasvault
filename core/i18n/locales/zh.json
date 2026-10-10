@@ -3,7 +3,7 @@
     "ACCOUNT_BLOCKED": "您的账户已被停用。若您认为此操作有误，请联系支持人员。",
     "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定，请稍后重试。",
     "ACCOUNT_SUCCESSFULLY_DELETED": "账户已成功删除。",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
+    "ALIAS_LIMIT_REACHED": "您已达到创建新电子邮件别名的上限。请稍后再试，或在需要更多别名时联系支持人员。",
     "CLAIM_DOES_NOT_EXIST": "尝试加载邮件时出错。请尝试编辑并保存凭据条目以同步数据库，然后重试。",
     "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "服务器内部错误。",
