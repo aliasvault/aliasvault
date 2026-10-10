@@ -17,10 +17,6 @@ while [[ $# -gt 0 ]]; do
             [[ " $BROWSER_TARGETS " == *" ${1#--} "* ]] || BROWSER_TARGETS="$BROWSER_TARGETS ${1#--}"
             shift
             ;;
-        --browser)
-            echo "Error: --browser was split into --web (size-optimized) and --browser-extension (speed-optimized)"
-            exit 1
-            ;;
         --ios)
             BUILD_IOS=true
             shift

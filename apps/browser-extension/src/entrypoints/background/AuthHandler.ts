@@ -94,23 +94,28 @@ async function failureResult(context: string, err: unknown, options?: AuthErrorO
 }
 
 /**
- * Check the server status before an unlock. Returns whether the server is reachable, or the logout this client needs.
+ * Check the server status before an unlock. Returns whether the unlock can go online and whether the server is unreachable,
+ * or the logout this client needs. A server that predates the v2 API is reachable but unlocks locally, so the upgrade
+ * page can tell the user it needs updating.
  */
-async function checkServerStatus(webApi: WebApiService): Promise<{ online: boolean } | { logout: BackgroundAuthResult }> {
+async function checkServerStatus(webApi: WebApiService): Promise<{ online: boolean; offline: boolean } | { logout: BackgroundAuthResult }> {
   try {
     const status = await webApi.getStatus();
     if (status.serverVersion === '0.0.0') {
-      return { online: false };
+      return { online: false, offline: true };
     }
 
     const statusError = webApi.validateStatusResponse(status);
     if (statusError !== null) {
       return { logout: { status: 'logout', reasonKey: logoutReasonKey(statusError) } };
     }
-    return { online: true };
+    return { online: true, offline: false };
   } catch (err) {
     if (err instanceof ClientUpgradeRequiredError) {
       return { logout: { status: 'logout', reasonKey: 'common.errors.clientNotSupported' } };
+    }
+    if (err instanceof ServerUpdateRequiredError) {
+      return { online: false, offline: false };
     }
 
     // Any other error is an auth failure: the server is reachable but the session is gone.
@@ -167,11 +172,11 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
         accountKey = await VaultKeyService.verifyUnlockKey(unlockKey);
       }
 
-      await storeAccountKey(accountKey, !status.online, true);
+      await storeAccountKey(accountKey, status.offline, true);
       await resetFailedAttempts();
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
       await LocalPreferencesService.setLastUsedUnlockMethod('password');
-      return { status: 'success', offline: !status.online };
+      return { status: 'success', offline: status.offline };
     } catch (err) {
       const message = await describeAuthError(err, { uncodedIsWrongPassword: true });
       if (message.wrongPassword) {
@@ -199,9 +204,9 @@ export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAu
         return status.logout;
       }
 
-      await storeAccountKey(accountKey, !status.online, true);
+      await storeAccountKey(accountKey, status.offline, true);
       await LocalPreferencesService.setLastUsedUnlockMethod('pin');
-      return { status: 'success', offline: !status.online };
+      return { status: 'success', offline: status.offline };
     } catch (err) {
       if (err instanceof PinLockedError) {
         return { status: 'pinFailed', reason: 'locked' };

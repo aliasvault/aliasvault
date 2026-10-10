@@ -11,6 +11,7 @@ import { logFailure } from './errors/ExpectedFailure';
 import { NetworkError } from './errors/NetworkError';
 import { PayloadTooLargeError } from './errors/PayloadTooLargeError';
 import { RequestTimeoutError } from './errors/RequestTimeoutError';
+import { ServerUpdateRequiredError } from './errors/ServerUpdateRequiredError';
 import { logoutEventEmitter } from './LogoutEventEmitter';
 
 import type { LogoutReason } from '../sync/VaultSyncEngine';
@@ -391,8 +392,9 @@ export class WebApiService {
 
   /**
    * Calls the status endpoint to check if the auth tokens are still valid, app is supported and the vault is up to date.
-   * Returns offline indicator (serverVersion: '0.0.0') for network failures and server errors (5xx, 404, etc.).
-   * Auth errors (ApiAuthError) are re-thrown to be handled appropriately (e.g., trigger logout).
+   * Returns offline indicator (serverVersion: '0.0.0') for network failures and server errors (5xx, etc.).
+   * Auth errors (ApiAuthError) are re-thrown to be handled appropriately (e.g., trigger logout), and an uncoded 404
+   * (a server that predates the v2 API) throws {@link ServerUpdateRequiredError}, like the Rust sync engine.
    */
   public async getStatus(): Promise<StatusResponseV2> {
     try {
@@ -418,6 +420,9 @@ export class WebApiService {
       // Server refused this client version.
       if (error instanceof ClientUpgradeRequiredError) {
         throw error;
+      }
+      if (error instanceof ApiRequestError && error.statusCode === 404 && !error.apiErrorCode) {
+        throw new ServerUpdateRequiredError();
       }
       return {
         clientVersionSupported: true,

@@ -1,4 +1,4 @@
-import { AppErrorCode, extractErrorCode, formatErrorWithCode, getErrorTranslationKey } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, extractErrorCode, formatErrorWithCode, getErrorTranslationKey, hasOwnErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutationScope';
@@ -121,7 +121,7 @@ export default function UpgradeScreen() : React.ReactNode {
   /**
    * Show a failed step on the consent screen, where the same button retries. Failures that end the session log out instead.
    * @param code - the error code
-   * @param detail - the technical detail, shown under the translated message when it adds something
+   * @param detail - the technical detail, shown under the translated message only for a code without a message of its own
    */
   const failStep = useCallback(async (code: AppErrorCode, detail: string | null): Promise<void> => {
     const message = formatErrorWithCode(t(getErrorTranslationKey(code)), code);
@@ -130,7 +130,7 @@ export default function UpgradeScreen() : React.ReactNode {
       return;
     }
     setError(message);
-    setErrorDetail(detail && detail !== message ? detail : null);
+    setErrorDetail(detail && detail !== message && !hasOwnErrorMessage(code) ? detail : null);
     setStage('consent');
   }, [app, t]);
 

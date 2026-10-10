@@ -1,4 +1,4 @@
-import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '../api/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, hasOwnErrorMessage, isErrorCode } from '../api/errors/AppErrorCodes';
 
 import { hasSyncError, logoutReasonKey, type SyncErrorDetail } from './VaultSync';
 
@@ -18,7 +18,8 @@ export function toSyncErrorDetail(value: unknown): SyncErrorDetail | null {
 }
 
 /**
- * The message to show for a failed sync, or undefined when the outcome names no failure.
+ * The message to show for a failed sync, or undefined when the outcome names no failure. The engine's technical
+ * detail is only appended to a code that has no message of its own.
  * @param detail - the sync outcome
  * @param t - the renderer's translation function
  */
@@ -29,7 +30,7 @@ export function syncErrorMessage(detail: SyncErrorDetail, t: (key: string) => st
   if (detail.errorCode) {
     const code = isErrorCode(detail.errorCode) ? detail.errorCode : AppErrorCode.UNKNOWN_ERROR;
     const message = formatErrorWithCode(t(getErrorTranslationKey(code)), code);
-    return detail.error ? `${message}\n${detail.error}` : message;
+    return detail.error && !hasOwnErrorMessage(code) ? `${message}\n${detail.error}` : message;
   }
   return detail.error;
 }

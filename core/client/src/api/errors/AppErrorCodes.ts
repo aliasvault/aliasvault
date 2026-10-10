@@ -208,6 +208,14 @@ export function getErrorTranslationKey(code: AppErrorCode): TranslationKey {
 }
 
 /**
+ * Whether the code has a message of its own instead of the generic "unexpected error" message.
+ * @param code - the error code
+ */
+export function hasOwnErrorMessage(code: AppErrorCode): boolean {
+  return ERROR_TRANSLATION_KEYS[code] !== undefined;
+}
+
+/**
  * The translated message for an error that carries a code, with the code appended, or null when it carries none.
  *
  * @param err - The error (can be Error, string, or unknown)

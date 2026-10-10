@@ -1,4 +1,5 @@
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
@@ -120,6 +121,16 @@ const Unlock: React.FC = () => {
         setIsInitialLoading(false);
         await app.logout(t('common.errors.clientNotSupported'));
         return { online: false, error: 'clientVersionNotSupported' };
+      }
+
+      /**
+       * The server is not compatible with this client (e.g. has not been updated to include V2 API required for manifest-v1 migration).
+       * Disable offline mode and let the main app UI explain the issue.
+       */
+      if (err instanceof ServerUpdateRequiredError) {
+        setIsInitialLoading(false);
+        await dbContext.setIsOffline(false);
+        return { online: false, error: null };
       }
 
       /**
