@@ -9,7 +9,7 @@ export const Colors = {
     ...SharedColors.light,
     white: '#ffffff',
     errorBackground: '#f8d7da',
-    errorBorder: '#f8d7da',
+    errorBorder: '#f1aeb5',
     errorText: '#842029',
     tint: SharedColors.light.primary,
     tabIconDefault: SharedColors.light.icon,
