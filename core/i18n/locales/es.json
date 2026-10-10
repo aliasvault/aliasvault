@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Tu cuenta ha sido desactivada. Si crees que esto es un error, ponte en contacto con soporte.",
     "ACCOUNT_LOCKED": "Cuenta bloqueada temporalmente debido a demasiados intentos fallidos. Por favor, inténtalo de nuevo.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Cuenta eliminada con éxito.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Ocurrió un error mientras se trataba de cargar los correos electrónicos. Por favor, intenta editar y guardar la entrada de credenciales para sincronizar la base de datos y vuelve a intentarlo.",
-    "CLAIM_DOES_NOT_MATCH_USER": "La dirección de correo electrónico elegida actualmente ya está en uso. Por favor, cambia la dirección de correo electrónico editando esta credencial.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Error interno del servidor.",
     "INVALID_AUTHENTICATOR_CODE": "Código de autenticación inválido. Por favor, inténtalo de nuevo.",
     "INVALID_RECOVERY_CODE": "Código de recuperación inválido. Por favor, inténtalo de nuevo.",
     "INVALID_REFRESH_TOKEN": "Token de actualización inválido.",
+    "INVITE_CODE_INVALID": "Este enlace de invitación no es válido, ha caducado o ya se ha utilizado. Solicite uno nuevo al administrador.",
     "PASSWORD_MISMATCH": "La contraseña proporcionada no coincide con tu contraseña actual.",
     "PENDING_MIGRATIONS": "Hay migraciones pendientes. Ejecuta 'dotnet ef database update' para aplicarlas.",
     "PUBLIC_REGISTRATION_DISABLED": "El registro de nuevas cuentas está actualmente deshabilitado en este servidor. Por favor, contacta con el administrador.",
     "REFRESH_TOKEN_REQUIRED": "Se requiere actualizar el token.",
     "REGISTRATION_FAILED": "No se pudo crear la cuenta. Por favor, inténtalo de nuevo en unos minutos. Si el problema persiste, ponte en contacto con soporte.",
+    "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtalo de nuevo.",
     "USERNAME_ALREADY_IN_USE": "El nombre de usuario ya está en uso.",
     "USERNAME_AVAILABLE": "El nombre de usuario está disponible.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nombre de usuario no puede estar vacío o en blanco.",
@@ -69,19 +72,18 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Adjunto eliminado correctamente.",
+    "fileEmpty": "{{filename}} está vacío.",
     "firefoxExpandRequired": "Para subir archivos, utiliza la ventana ampliada.",
     "openExpandedWindow": "Abrir ventana ampliada",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Error al subir el archivo: {{error}}",
     "uploadSuccess": "Archivos subidos con éxito.",
     "uploading": "Subiendo..."
   },
   "auth": {
     "authCode": "Código de autenticación",
     "authCodeNote": "Nota: si no tienes acceso a tu dispositivo de autenticación, puedes restablecer tu 2FA con un código de recuperación iniciando sesión a través del sitio web.",
-    "autoCloseUnlockPopup": "Autocerrar en futuros inicios de sesión",
     "biometricPrompt": "¿Quieres usar {{biometric}} para desbloquear tu bóveda?",
     "browseVault": "Navegar el contenido de la bóveda",
-    "closePopup": "Cerrar esta ventana emergente",
     "confirmLogout": "¿Realmente quieres cerrar la sesión? Necesitas volver a iniciar sesión con tu contraseña maestra para acceder a tu bóveda.",
     "connectingTo": "Conectando con",
     "createNewVault": "Crear nueva bóveda",
@@ -95,8 +97,7 @@
       "httpError": "Error HTTP: {{status}}",
       "networkError": "Falló la solicitud de red. Comprueba tu conexión a internet e inténtalo de nuevo.",
       "networkErrorSelfHosted": "Falló la solicitud de red. Comprueba tu conexión de red y la disponibilidad del servidor. Para instancias autoalojadas, asegúrate de tener un certificado SSL válido. Los certificados autofirmados no son compatibles con dispositivos móviles por razones de seguridad.",
-      "serverErrorSelfHosted": "No se pudo acceder a la API. Para instancias autoalojadas, por favor verifica que el endpoint de la API es accesible navegando por él en un navegador: debería mostrar 'OK'.",
-      "sessionExpired": "Tu sesión ha caducado. Por favor, inicia sesión de nuevo."
+      "serverErrorSelfHosted": "No se pudo acceder a la API. Para instancias autoalojadas, por favor verifica que el endpoint de la API es accesible navegando por él en un navegador: debería mostrar 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Si has cambiado recientemente tu contraseña y tienes dificultades para iniciar sesión con tu nueva contraseña, ten en cuenta que el administrador del servidor puede recuperar una copia de seguridad anterior de tu bóveda para ayudarte. Si éste es el caso, ponte en contacto con el administrador del servidor.",
@@ -138,7 +139,7 @@
     "noAccountYet": "¿Sin cuenta todavía?",
     "passwordAttemptsWarning": "Contraseña incorrecta. Se cerrará la sesión si introduces la contraseña incorrecta {{remainingAttempts}} más veces.",
     "passwordPlaceholder": "Introduce tu contraseña",
-    "pinInput": "PIN input",
+    "pinInput": "Introducción del PIN",
     "register": {
       "passwordLabel": "Tu contraseña",
       "passwordPlaceholder": "••••••••",
@@ -162,21 +163,18 @@
         "welcomeMessage": "¡Genial! Ahora, vamos a configurar tu contraseña maestra para AliasVault."
       },
       "passwordStepTitle": "Establecer contraseña",
+      "registrationDisabledMessage": "Las cuentas nuevas solo se pueden crear mediante un enlace de invitación. Solicite una invitación al administrador del servidor.",
+      "registrationDisabledTitle": "El registro de usuarios está desactivado",
       "setupStepTitle": "Configuración",
-      "termsAndConditionsStepTitle": "Usando AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "He leído y acepto los Términos y Condiciones",
-        "pleaseReadAndAgree": "Por favor, lee y acepte los siguientes términos y condiciones antes de continuar.",
-        "termsContent": "AliasVault está diseñado para mejorar tu seguridad en línea y proteger tu privacidad. Con AliasVault, puedes crear identidades únicas y alias de correo electrónico para tus diversas cuentas en línea, lo que te ayuda a mantener el control sobre tu información personal y reducir el riesgo de robo de identidad.\n\nAl utilizar AliasVault, tú aceptas los siguientes términos:\n\n1. No utilizarás AliasVault para ningún fin ilegal, incluyendo, entre otros, el fraude, el robo de identidad o la suplantación de personas reales.\n\n2. Tú eres responsable de mantener la confidencialidad de tu cuenta y de cualquier alias creado a través de AliasVault.\n\n3. AliasVault se reserva el derecho de cancelar tu cuenta si sospechamos de cualquier uso indebido o violación de estos términos.\n\n4. Tú entiendes que, aunque AliasVault mejora tu privacidad, ningún sistema es completamente infalible y utilizas el servicio bajo tu propia responsabilidad."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Asistente de AliasVault",
         "enterUsernameInstructions": "Por favor, introduce un nombre de usuario que te gustaría usar. Este puede ser tu dirección email o cualquier nombre único que prefieras.",
-        "greatNowLetsSetupUsername": "¡Genial! Ahora, vamos a configurar tu nombre de usuario para AliasVault.",
         "rememberUsernameNote": "Recuerda: ¡Esto es lo que usarás para iniciar sesión más tarde, así que asegúrate de que es algo que recordarás!",
         "serverCommunicationError": "Se ha producido un error durante la comunicación con el servidor AliasVault.",
         "usernamePlaceholder": "Introduce tu nombre de usuario o email",
-        "validatingUsernameMessage": "Validando nombre de usuario..."
+        "validatingUsernameMessage": "Validando nombre de usuario...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Elige nombre de usuario"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "La conexión con los servidores de AliasVault ha fallado. Inténtalo de nuevo (más tarde).",
       "enterMasterPasswordDescription": "Introduce tu contraseña maestra para desbloquear tu bóveda.",
-      "incorrectPasswordError": "La contraseña es incorrecta. Por favor, intenta introducir tu contraseña de nuevo, o cierra sesión e inicia sesión nuevamente.",
       "loggingInWithWebAuthn": "Iniciando sesión con llave de acceso...",
       "quickUnlockDescription": "Desbloquea rápidamente tu bóveda usando tu llave de acceso. O inicia sesión con tu contraseña como habitualmente.",
-      "sessionTimedOutError": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo.",
       "unlockButton": "Desbloquear",
       "unlockWithMobileButton": "Desbloquear con la aplicación móvil",
       "unlockWithWebAuthn": "Desbloquear con llave",
       "webAuthnNotSupportedError": "Tu navegador actual no soporta la extensión WebAuthn PRF. Por favor, inténtalo de nuevo con tu contraseña."
     },
-    "unlockSuccessDescription": "Ahora puedes utilizar el autocompletado en los formularios de inicio de sesión en tu navegador.",
-    "unlockSuccessTitle": "Tu bóveda se ha desbloqueado correctamente",
     "unlockTitle": "Desbloquear tu Bóveda",
     "unlockVault": "Desbloquear bóveda",
     "unlockWithBiometric": "Desbloquear con {{biometric}}",
@@ -223,9 +217,8 @@
     "attachmentDownloadFailed": "Error al descargar el archivo adjunto",
     "attachments": "Archivos adjuntos",
     "back": "Atrás",
-    "backspace": "Backspace",
+    "backspace": "Borrar el último dígito",
     "cancel": "Cancelar",
-    "clientVersionUnsupported": "Esta versión de la aplicación ya no es compatible con el servidor. Por favor, actualiza la página para cargar la última versión.",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpiar portapapeles"
     },
@@ -259,35 +252,35 @@
     "errorPasswordMismatch": "Las contraseñas no coinciden.",
     "errors": {
       "backgroundUnresponsive": "El servicio de extensión en segundo plano no responde. Por favor, cierra y vuelve a abrir la extensión o reinicia tu navegador si el problema persiste.",
-      "browserExtensionOutdated": "Esta extensión del navegador está desactualizada y no se puede utilizar para acceder a esta bóveda. Por favor, actualiza esta extensión del navegador para continuar.",
-      "clientVersionNotSupported": "Esta versión de la extensión del navegador AliasVault ya no es compatible con el servidor. Por favor, actualiza la extensión de tu navegador a la última versión.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "clientNotSupported": "El servidor ya no admite esta versión de AliasVault. Por favor, actualiza a la última versión.",
+      "clientOutdated": "Esta versión de AliasVault no puede abrir tu bóveda porque ha sido sustituida por una versión más reciente. Por favor, actualiza AliasVault para continuar.",
+      "contactSupportAt": "Ponte en contacto con el servicio de asistencia en {{email}}.",
       "invalidCode": "Por favor, introduce un código de autenticación de 6 dígitos válido.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Tu contraseña es correcta, pero no se han podido abrir las claves de cifrado de tu bóveda. Ponte en contacto con el servicio de asistencia.",
       "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo.",
       "mobileLoginRequestDeclined": "La solicitud de acceso fue rechazada en tu dispositivo móvil.",
       "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelve a cargar la página e inténtalo de nuevo.",
       "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
       "serverError": "No se pudo acceder al servidor AliasVault. Por favor, inténtalo de nuevo más tarde o ponte en contacto con el soporte si el problema persiste.",
       "serverNotAvailable": "El servidor AliasVault no está disponible. Por favor, inténtalo de nuevo más tarde o ponte en contacto con el soporte técnico si el problema persiste.",
-      "serverVersionNotSupported": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder usar esta extensión del navegador. Ponte en contacto con el soporte si necesita ayuda.",
-      "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacta con el administrador del servidor si necesitas ayuda.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Tu sesión ha caducado. Por favor, inicia sesión de nuevo.",
       "syncConflictMaxRetries": "No se pudo sincronizar la bóveda después de múltiples intentos. Inténtalo de nuevo más tarde.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "Se ha producido un error inesperado. Inténtalo de nuevo y ponte en contacto con el servicio de asistencia si el problema persiste.",
       "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtalo de nuevo.",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "updateRequiredTitle": "Se requiere una actualización",
+      "vaultDataUnreadable": "No se han podido leer los datos de tu bóveda, por lo que no es posible acceder a ellos en este momento. Ponte en contacto con el servicio de asistencia.",
       "vaultIsLocked": "La bóveda está bloqueada",
       "vaultLoadError": "Algo salió mal al cargar tu bóveda. Por favor, copia los detalles de error a continuación y ponte en contacto con soporte para obtener ayuda.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "No se ha podido cargar tu bóveda",
       "vaultNotAvailable": "Bóveda no disponible",
       "vaultSyncTimeout": "Se ha agotado el tiempo de sincronización de la bóveda. Esto puede suceder cuando la bóveda es grande o la conexión a Internet es lenta. Por favor, inténtalo de nuevo.",
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor la acepte. Intenta eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelve a intentarlo.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtalo de nuevo."
     },
     "generate": "Generar",
-    "help": "Help",
+    "help": "Ayuda",
     "hide": "Esconder",
     "hideDetails": "Ocultar detalles",
     "hidePassword": "Ocultar contraseña",
@@ -311,7 +304,7 @@
     "ok": "Aceptar",
     "openInNewWindow": "Abrir en una ventana nueva",
     "or": "o",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Navegación por la página",
     "passkeys": "Llaves de acceso",
     "password": "Contraseña",
     "passwordStrength": {
@@ -322,8 +315,8 @@
       "veryWeak": "Continúa",
       "weak": "Mejorando"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Página anterior",
+    "qrCode": "Código QR",
     "recentEmails": "Correos recientes",
     "refresh": "Refrescar",
     "remove": "Eliminar",
@@ -340,8 +333,9 @@
     "syncVaultData": "Sincronizar datos de bóveda",
     "syncingChanges": "Sincronizando cambios...",
     "twoFactorAuthentication": "Autenticación de doble factor",
-    "unavailable": "Unavailable",
+    "unavailable": "No disponible",
     "undo": "Deshacer",
+    "updateApp": "Actualizar la aplicación",
     "use": "Usar",
     "username": "Nombre de usuario",
     "vaultSaveError": "Error al guardar los cambios en la bóveda. Por favor, inténtalo de nuevo.",
@@ -426,8 +420,7 @@
     },
     "title": "Correos electrónicos",
     "to": "Para:",
-    "toColumn": "Para",
-    "updateClientForFormattedView": "Este correo electrónico requiere una nueva versión de la aplicación para mostrarla correctamente. Por favor, actualiza tu aplicación."
+    "toColumn": "Para"
   },
   "fieldLabels": {
     "alias": {
@@ -560,7 +553,7 @@
       "roboformInstructionsPart1": "Para importar tus contraseñas de RoboForm, necesitas exportarlas como un archivo CSV. Puede hacerlo abriendo RoboForm, yendo al menú 'RoboForm' > 'Opciones' > 'Cuenta y datos' > 'Exportar' y seleccionando el formato CSV.",
       "strongboxDescription": "Importar contraseñas de Strongbox",
       "strongboxInstructionsPart1": "Para importar la bóveda de Strongbox, necesita exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar base de datos' (a CSV).",
-      "template": "template",
+      "template": "plantilla",
       "uploadInstructions": "Una vez que haya exportado el archivo, puedes subirlo a continuación."
     }
   },
@@ -618,8 +611,8 @@
     "addNewItem": "Añadir nuevo elemento",
     "allItemsInFolders": "Todos tus elementos están organizados en carpetas. Haz clic en una carpeta para ver tus credenciales o utiliza la búsqueda para encontrar elementos específicos.",
     "allItemsInFoldersClick": "Todos tus elementos están organizados en carpetas. Haz clic en una carpeta para ver tus credenciales o utiliza la búsqueda para encontrar elementos específicos.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "No se ha podido leer el archivo adjunto.",
+    "attachmentUnavailable": "No hay datos disponibles sobre el archivo adjunto",
     "autofillLinkExisting": {
       "confirmMessage": "¿Realmente deseass vincular \"{{url}}\" a esta credencial?",
       "confirmTitle": "¿Enlace a la credencial?",
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "Se ha producido un error inesperado al cargar los correos electrónicos. Por favor, inténtalo de nuevo más tarde.",
     "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edita el elemento y pulse el icono de la carpeta en el campo nombre.",
     "errorLoadingItems": "Error al cargar elementos",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "¿Está seguro?"
     },
@@ -729,14 +724,13 @@
       "selectFolder": "Seleccionar Carpeta"
     },
     "fullName": "Nombre completo",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "Tiene archivos adjuntos",
+    "hasPasskey": "Tiene clave de acceso",
+    "hasTotp": "Tiene un código de autenticación de dos factores",
     "history": "Historial",
     "home": {
       "alphabeticalOption": "Alfabético",
-      "buttonLocationText": "botón en la esquina superior derecha.",
-      "createFirstItemText": "Crea tu primer elemento usando el",
+      "createFirstItemManuallyText": "Cree manualmente su primer elemento de la bóveda.",
       "emptyFolderMessage": "Esta carpeta está vacía.",
       "failedToCreateFolder": "Error al crear la carpeta.",
       "failedToDeleteFolder": "Error al eliminar carpeta.",
@@ -746,8 +740,6 @@
       "importButtonText": "Importar desde KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Si previamente utilizaste un gestor de contraseñas diferente, puedes importar tus elementos de él.",
       "loadingMore": "Cargando más...",
-      "newAliasButtonText": "\"+ Nuevo alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Aún no hay elementos",
       "pageDescription": "Encuentre todos tus elementos a continuación.",
       "sortOrderLabel": "Orden",
@@ -769,16 +761,16 @@
     "loginCredentials": "Credenciales de acceso",
     "logo": {
       "builtin": {
-        "Bank": "Banca",
-        "Dev": "Desarrollo",
-        "Game": "Juegos",
-        "Health": "Salud",
-        "Mail": "Correo",
-        "Media": "Media",
-        "Shopping": "Compras",
-        "Social": "Social",
-        "Travel": "Viajes",
-        "Work": "Trabajo"
+        "bank": "Banca",
+        "dev": "Desarrollo",
+        "game": "Juegos",
+        "health": "Salud",
+        "mail": "Correo",
+        "media": "Media",
+        "shopping": "Compras",
+        "social": "Social",
+        "travel": "Viajes",
+        "work": "Trabajo"
       },
       "builtinLogos": "Biblioteca de iconos",
       "chooseLogo": "Seleccionar icono",
@@ -790,7 +782,7 @@
       "sourceFavicon": "De {{domain}}",
       "sourceNone": "Sin icono"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "No hay archivos adjuntos disponibles.",
     "noEmailsYet": "No se han recibido correos todavía.",
     "noHistoryAvailable": "Sin historial disponible",
     "noItemsFound": "No se han encontrado elementos. Crea uno para empezar. Consejo: también puedes iniciar sesión en la aplicación web de AliasVault para importar credenciales de otros gestores de contraseñas.",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Creando nuevo alias...",
       "namePlaceholderCard": "Ej. Mastercard",
       "namePlaceholderNote": "Ej: Detalles del pasaporte",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nuevo",
       "typeCard": "Tarjeta",
       "typeLogin": "Iniciar sesión"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Selecciona el texto a insertar en el campo de entrada resaltado",
     "serverUnavailableMessage": "El servidor no está disponible actualmente. Inténtalo de nuevo más tarde.",
     "serverUnavailableTitle": "Servidor no disponible",
-    "serverVersionNotSupportedContactAdmin": "La versión del servidor está desactualizada. Por favor, contacta con tu administrador para actualizar el servidor.",
-    "serverVersionNotSupportedMessage": "La versión del servidor está desactualizada. Por favor, actualiza tu servidor a la última versión.",
     "serverVersionNotSupportedTitle": "Actualización del servidor necesaria",
     "sessionExpiredMessage": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo.",
     "sessionExpiredTitle": "Sesión expirada",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "esta credencial",
     "usernameCopied": "Usuario copiado",
     "usernamePrefix": "Usuario: ",
-    "versionNotSupportedMessage": "La versión de tu aplicación ya no es compatible. Por favor, actualiza a la última versión.",
     "versionNotSupportedTitle": "Actualización requerida",
     "viewDetails": "Ver detalles",
     "website": "Sitio Web"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Usar llave de acceso del navegador"
   },
   "settings": {
+    "accountSecurity": "Seguridad de la cuenta",
     "activeOnAllSites": "Activo en todos los sitios (a menos que se deshabilite debajo)",
     "advancedOptions": "Opciones Avanzadas",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Solo portapapeles locales",
     "clipboardLocalOnlyDescription": "Mantén las credenciales copiadas en este dispositivo en lugar de sincronizarlas con tus otros dispositivos Apple a través del Portapapeles Universal.",
     "clipboardLocalOnlyDisabledWarning": "Con esto desactivado, las credenciales copiadas pueden sincronizarse a tus otros dispositivos Apple (Mac, iPad, etc.) a través del Portapapeles Universal.",
-    "clipboardSettings": "Ajustes del portapapeles",
     "contextMenuDescription": "Haz clic derecho en los campos de entrada para acceder a las opciones de AliasVault",
     "contextMenuSettings": "Ajustes del menú contextual",
     "copyTotpOnFill": "Copiar código TOTP al autorrellenar",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Establecer el rango de edad por defecto para generar nuevas identidades. Esto afecta a la fecha de nacimiento asignada a la identidad generada.",
       "aliasGenerationGenderDescription": "Establecer la preferencia de género por defecto para generar nuevas identidades.",
       "aliasGenerationLanguageDescription": "Establece el idioma por defecto que se utilizará al generar nuevas identidades.",
-      "aliasSettingsTitle": "Configuración del Generador de Identidades",
       "appLanguageDescription": "Establezca el idioma de la interfaz de la aplicación.",
       "appLanguageTitle": "Idioma de la aplicación",
       "autoEmailRefreshLabel": "Actualiza automáticamente el contenido de los correos cuando lleguen nuevos",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Dominios públicos"
     },
     "globalSettings": "Ajustes globales",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generadores"
+    },
     "identityGenerator": "Generador de identidad",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Establecer el rango de edad para generar nuevas identidades.",
@@ -1285,7 +1277,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Aprobar el inicio de sesión",
         "codeMismatch": "El número no coincide. La solicitud de acceso fue rechazada.",
         "confirmMessage": "Otro dispositivo está pidiendo iniciar sesión con tu cuenta. Obtendrá acceso completo a tu bóveda. Sólo continúa si iniciaste este inicio de sesión.",
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Error al desactivar la autenticación de dos factores.",
         "pageDescription": "Desactivar la autenticación de doble factor significa que sólo podrás iniciar sesión con tu contraseña.",
         "pageTitle": "Desactivar la autenticación de doble factor",
-        "statusMessage": "La autenticación de doble factor está activada. Desactívala para poder acceder a tu bóveda con tu contraseña únicamente.",
         "twoFactorDisabledSuccess": "La autenticación de doble factor se ha desactivado correctamente.",
-        "twoFactorNotEnabled": "La autenticación de dos factores no está activada.",
-        "warningMessage": "Nota: después de desactivar la autenticación de dos factores, cualquier aplicación de autenticación configurada dejará de funcionar. Cuando quiera volver a habilitar la autenticación de doble factor, tendrá que configurar la(s) aplicación(es) de autenticación de nuevo."
+        "twoFactorNotEnabled": "La autenticación de dos factores no está activada."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Error al habilitar la autenticación de dos factores.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Introduce el código de verificación",
         "verifyAndEnableButton": "Verificar y Habilitar"
       },
-      "pageDescription": "Configurar ajustes de seguridad.",
-      "pageTitle": "Ajustes de seguridad",
       "passkeyUnlock": {
         "disableButton": "Desactivar el desbloqueo con llave de acceso",
         "disabledDescription": "Por defecto, recargar la página o pestaña de AliasVault requiere que vuelva a introducir tu contraseña maestra. Con una llave de acceso, puedes desbloquear la bóveda al instante. Cuando está habilitada, tu contraseña maestra se cifrará localmente usando la extensión PRF de la contraseña. Nota: la llave de acceso sólo funcionará para el dispositivo actual y el navegador en el que la active.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "La autenticación de doble factor está actualmente deshabilitada. Para mejorar la seguridad de tu cuenta le aconsejamos habilitarla.",
-        "enabledMessage": "La autenticación de doble factor está habilitada actualmente."
+        "enabledMessage": "La autenticación de doble factor está habilitada actualmente.",
+        "notEnabledWarning": "Actualmente, solo se puede acceder a tu bóveda mediante tu contraseña maestra. Te recomendamos que actives la autenticación de dos factores para mejorar la seguridad de tu cuenta."
       }
     },
     "selectLanguage": "Seleccionar idioma",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "Configurar la URL del servidor AliasVault para instancias self-hosted",
     "serverUrl": "URL del servidor",
     "serverVersion": "Versión del servidor",
+    "sessionsAndLogs": "Sesiones y registros",
+    "sessionsAndLogsDescription": "Comprueba en qué dispositivos has iniciado sesión y revisa los intentos de inicio de sesión recientes.",
     "siteSpecificSettings": "Ajustes específicos del sitio",
     "storageInsights": {
       "breadcrumbTitle": "Almacenamiento",
@@ -1470,7 +1461,7 @@
       "deleteAllLogosButton": "Borrar todos los logos",
       "deleteAllLogosConfirmMessage": "Esto elimina todos los logotipos almacenados de tu bóveda y elimina el logotipo en cada credencial. Puede volver a descargarlos en cualquier momento. ¿Desea continuar?",
       "deleteAllLogosConfirmTitle": "¿Borrar todos los logos?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Se ha eliminado el logotipo de {{count}} elementos.",
       "itemsWithAttachmentsLabel": "Elementos con archivos adjuntos",
       "itemsWithLogosLabel": "Elementos con un logo",
       "logoManagementDescription": "Los Logos se obtienen del favicon del sitio web de cada artículo. Puede eliminar cada logotipo para recuperar espacio, o volver a descargarlos para recoger versiones mejoradas.",
@@ -1480,9 +1471,9 @@
       "redownloadAllLogosButton": "Volver a descargar todos los logos",
       "redownloadAllLogosConfirmMessage": "Esto recupera el favicon para cada credencial que tiene una URL del sitio web, reemplazando el logotipo existente. Dependiendo del tamaño de tu bóveda esto puede tardar un tiempo. ¿Continuar?",
       "redownloadAllLogosConfirmTitle": "¿Volver a descargar todos los logos?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Se ha actualizado el logotipo de {{count}} elementos.",
+      "serverTotalDescription": "El tamaño exacto de tu bóveda cifrada tal y como está almacenada en el servidor, incluidos los archivos adjuntos y los logotipos.",
+      "serverTotalTitle": "Tamaño de la bóveda en el servidor",
       "topAttachmentsDescription": "Top 10 archivos adjuntos más grandes. Elimina el archivo adjunto si ya no lo necesita.",
       "topAttachmentsTitle": "Adjuntos más grandes",
       "topLogosDescription": "Los 10 mejores logotipos de servicio. Logos son reutilizados para objetos con el mismo dominio.",
@@ -1557,10 +1548,10 @@
     "syncing": "Sincronizando...",
     "tapToRetry": "Toca para reintentar sincronizar",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Si el problema persiste, ponte en contacto con nuestro equipo de asistencia para que te ayuden.",
+      "notCompatible": "La versión de esta bóveda no es compatible con tu cliente.",
+      "title": "Versión de bóveda no soportada",
+      "updateInstructions": "Por favor, actualiza a la última versión de AliasVault, actualiza esta página e inténtalo de nuevo."
     }
   },
   "totp": {
@@ -1568,12 +1559,14 @@
     "addName": "Añadir un nombre (opcional)",
     "addTotpCodeDescription": "Añadir un código de autenticación de doble factor",
     "addTotpCodeModalTitle": "Añadir código TOTP 2FA",
+    "algorithm": "Algorithm",
     "closeFormButton": "Cerrar formulario",
     "defaultName": "Autentificador",
     "deleteCodeConfirmation": "¿Realmente deseas eliminar este código TOTP?",
     "deleteCodeTitle": "Eliminar código TOTP",
     "deleteTotpCodeConfirmation": "¿Realmente deseas eliminar el código 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Eliminar código 2FA",
+    "digits": "Digits",
     "enterManually": "Introduce la clave secreta",
     "errors": {
       "invalidSecretKey": "Formato de clave secreta inválida.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Introduce la clave secreta mostrada por el sitio web donde deseas añadir autenticación de dos factores.",
     "nameOptional": "Nombre (Opcional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Guardar para ver el código",
     "scanQrCode": "Escanear código QR",
     "secretKey": "Clave secreta",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Comprobando actualizaciones de bóveda",
     "checkingVaultUpdates": "Comprobando actualizaciones de bóveda",
-    "errors": {
-      "appOutdated": "Esta aplicación está desactualizada y no se puede utilizar para acceder a esta versión (nueva) de la bóveda. Por favor, actualiza la aplicación AliasVault para continuar.",
-      "failedToGetEncryptedDatabase": "Error al obtener la base de datos cifrada",
-      "passwordChangeRequiresOnline": "El cambio de contraseña requiere una conexión a Internet. Por favor, inténtalo de nuevo estando en línea.",
-      "serverVersionNotSupported": "El servidor AliasVault necesita ser actualizado a una nueva versión para poder usar esta aplicación móvil. Contacta con soporte si necesita ayuda.",
-      "usernameNotFound": "Nombre de usuario no encontrado",
-      "vaultOutdated": "Tu bóveda está desactualizada. Por favor, inicia sesión en el sitio web de AliasVault y sigue los pasos.",
-      "versionNotSupported": "El servidor ya no admite esta versión de la aplicación móvil AliasVault. Por favor, actualiza tu aplicación a la última versión."
-    },
     "mergingVault": "Combinando cambios en la bóveda...",
     "savingChangesToVault": "Guardando cambios en la bóveda",
     "syncingUpdatedVault": "Sincronizando bóveda actualizada",
-    "syncingVault": "Sincronizando bóveda",
-    "uploadingVaultToServer": "Subiendo bóveda al servidor"
+    "syncingVault": "Sincronizando bóveda"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Cambiar a tema oscuro",
       "enableLightMode": "Cambiar a tema claro",
-      "logOut": "Cerrar sesión",
-      "openMenuLabel": "Abrir menú"
+      "logOut": "Cerrar sesión"
     },
     "welcome": {
       "createFirstIdentityButton": "Crea tu primera identidad",

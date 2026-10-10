@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Sua conta foi desabilitada. Se você acredita que isto foi um erro, por favor, entre em contato com o suporte.",
     "ACCOUNT_LOCKED": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Conta excluída com sucesso.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, tente editar e salvar a credencial para sincronizar com o banco de dados, e tente novamente.",
-    "CLAIM_DOES_NOT_MATCH_USER": "O e-mail escolhido já está em uso. Por favor, altere o endereço de e-mail editando esta credencial.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Erro intero do servidor.",
     "INVALID_AUTHENTICATOR_CODE": "Código de autenticação inválido. Por favor, tente novamente.",
     "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor, tente novamente.",
     "INVALID_REFRESH_TOKEN": "Token de atualização inválido.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "A senha digitada não corresponde à sua senha atual.",
     "PENDING_MIGRATIONS": "Existem migrações pendentes. Por favor, rode a 'atualização de banco de dados ef dotnet' para aplicá-las.",
     "PUBLIC_REGISTRATION_DISABLED": "Registro de novas contas está atualmente desabilitado neste servidor. Por favor, entre em contato com o administrador.",
     "REFRESH_TOKEN_REQUIRED": "Token de atualização é obrigatório.",
     "REGISTRATION_FAILED": "Não foi possível criar a conta. Por favor, tente novamente em alguns minutos. Caso o problema continue, por favor, entre em contato com o suporte.",
+    "UNKNOWN_ERROR": "Ocorreu um erro. Por favor, tente novamente.",
     "USERNAME_ALREADY_IN_USE": "Nome de usuário já está em uso.",
     "USERNAME_AVAILABLE": "Nome de usuário está disponível.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nome de usuário não pode estar vazio ou em branco.",
@@ -69,6 +72,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Anexo excluído com sucesso.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Para fazer o upload dr arquivos, use a tela expandida.",
     "openExpandedWindow": "Abrir Tela Expandida",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +82,8 @@
   "auth": {
     "authCode": "Código de Autenticação",
     "authCodeNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
-    "autoCloseUnlockPopup": "Fechar automaticamente nos próximos acessos",
     "biometricPrompt": "Gostaria de utilizar {{biometric}} para desbloquear seu cofre?",
     "browseVault": "Navegar por conteúdo do cofre",
-    "closePopup": "Fechar este pop-up",
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
     "connectingTo": "Conectando à",
     "createNewVault": "Criar novo cofre",
@@ -95,8 +97,7 @@
       "httpError": "Erro HTTP: {{status}}",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
       "networkErrorSelfHosted": "Conexão falhou. Verifique sua conexão com a rede e a disponibilidade do servidor. Para instâncias self-hosted, por favor confirme que possue um certificado SSL válido instalado. Certificados self-signed não são suportados em celulares por questões de segurança.",
-      "serverErrorSelfHosted": "Não foi possível conectar à API. Para instâncias self-hosted, por favor verifique se os endpoints da API podem ser chamados através de um navegador. Ele deve mostrar 'OK'.",
-      "sessionExpired": "Sua sessão expirou. Por favor faça login novamente."
+      "serverErrorSelfHosted": "Não foi possível conectar à API. Para instâncias self-hosted, por favor verifique se os endpoints da API podem ser chamados através de um navegador. Ele deve mostrar 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login com sua nova senha, por favor, note que o administrador do servidor pode recuperar um backup do seu cofre para você. Se este for o caso, por favor, entre em contato com o administrador do servidor.",
@@ -162,21 +163,18 @@
         "welcomeMessage": "Ótimo! Agora, vamos configurar sua senha mestre para o AliasVault."
       },
       "passwordStepTitle": "Definir Senha",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Configuração",
-      "termsAndConditionsStepTitle": "Utilizando AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Eu li e aceito os Termos e Condições",
-        "pleaseReadAndAgree": "Por favor, leia e aceite os seguintes termos e condições antes de continuar.",
-        "termsContent": "AliasVault foi designado para aumentar sua segurança e proteger sua privacidade. Com o AliasVault, você pode criar identidades únicas e aliases de e-mail para suas diversas contas online, te ajudando a manter controle sobre suas informações pessoais e reduzir o risco de roubo de identidade.\n\nUsando o AliasVault, você aceita os seguintes termos:\n\n1. Você não utilizará o AliasVault para nenhum ato ilícito, incluindo mas não limitando à fraudes, roubo de identidade, ou se passar por outros indivíduos.\n\n2. Você é responsável por manter a confidencialidade da sua conta e quaisquer aliases criados através do AliasVault.\n\n3. O AliasVault reserva o direito de finalizar sua conta se suspeitarmos de qualquer uso incorreto ou violações destes termos.\n\n4. Você entende que enquanto o AliasVault aumenta sua privacidade, nenhum sistema é completamente infalível, e você utiliza o serviço por sua conta e risco."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Assistente AliasVault",
         "enterUsernameInstructions": "Por favor, digite o nome de usuário que você quer utilizar. Pode ser o seu endereço de e-mail ou qualquer nome único que você preferir.",
-        "greatNowLetsSetupUsername": "Ótimo! Agora, vamos configurar seu nome de usuário para o AliasVault.",
         "rememberUsernameNote": "Lembre-se: Isto será utilizado quando você fizer login mais tarde, então tenha certeza que é algo que você se lembrará!",
         "serverCommunicationError": "Ocorreu um erro durante a comunicação com o servidor do AliasVault.",
         "usernamePlaceholder": "Digite seu nome de usuário ou e-mail",
-        "validatingUsernameMessage": "Validando nome de usuário..."
+        "validatingUsernameMessage": "Validando nome de usuário...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Escolher Nome de Usuário"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "A conexão com os servidores do AliasVault falhou. Por favor, tente novamente (mais tarde).",
       "enterMasterPasswordDescription": "Digite sua senha mestre para desbloquear o cofre.",
-      "incorrectPasswordError": "A senha está incorreta. Por favor, tente digitar sua senha novamente, ou saia e faça login novamente.",
       "loggingInWithWebAuthn": "Fazendo login com passkey...",
       "quickUnlockDescription": "Desbloqueie seu cofre rapidamente utilizando sua passkey. Ou faça login com sua senha como alternativa.",
-      "sessionTimedOutError": "Sua sessão expirou. Por favor, faça login novamente.",
       "unlockButton": "Desbloquear",
       "unlockWithMobileButton": "Desbloquear com Dispositivo Móvel",
       "unlockWithWebAuthn": "Desbloquear com Passkey",
       "webAuthnNotSupportedError": "Seu navegador atual não tem suporte à extensão WebAuthn PRF. Por favor, faça login com sua senha."
     },
-    "unlockSuccessDescription": "Agora você pode utilizar o preenchimento automático nos formulários de login no seu navegador.",
-    "unlockSuccessTitle": "O seu cofre foi desbloqueado com sucesso",
     "unlockTitle": "Desbloquear Seu Cofre",
     "unlockVault": "Desbloquear cofre",
     "unlockWithBiometric": "Desbloquear com {{biometric}}",
@@ -225,7 +219,6 @@
     "back": "Voltar",
     "backspace": "Backspace",
     "cancel": "Cancelar",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpar área de transferência"
     },
@@ -259,8 +252,8 @@
     "errorPasswordMismatch": "Senhas não são iguais.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Esta extensão do navegador está desatualizada e não pode ser utilizada para acessar este cofre. Por favor, atualize esta extensão para continuar.",
-      "clientVersionNotSupported": "Esta versão da extensão AliasVault para o navegador não é mais suportada pelo servidor. Por favor, atualize sua extensão para a última versão.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +263,13 @@
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "serverVersionNotSupported": "O servidor AliasVault precisa ser atualizado para uma nova versão para poder utilizar esta extensão de navegador. Por favor, entre em contato com o suporte caso precise de ajuda.",
-      "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Ocorreu um erro desconhecido.",
       "unknownErrorTryAgain": "Ocorreu um erro. Por favor, tente novamente.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "O cofre está bloqueado",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +335,7 @@
     "twoFactorAuthentication": "Autenticação de Dois Fatores",
     "unavailable": "Unavailable",
     "undo": "Desfazer",
+    "updateApp": "Update app",
     "use": "Utilizar",
     "username": "Usuário",
     "vaultSaveError": "Falha ao salvar as alterações ao cofre. Por favor, ente novamente.",
@@ -426,8 +420,7 @@
     },
     "title": "E-mails",
     "to": "Para:",
-    "toColumn": "Para",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "Para"
   },
   "fieldLabels": {
     "alias": {
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
     "errorLoadingItems": "Erro ao carregar itens",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Têm certeza?"
     },
@@ -735,8 +730,7 @@
     "history": "Histórico",
     "home": {
       "alphabeticalOption": "Em Ordem Alfabética",
-      "buttonLocationText": "botão no canto superior direito.",
-      "createFirstItemText": "Crie seu primeiro item usando",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Esta pasta está vazia.",
       "failedToCreateFolder": "Falha ao criar pasta.",
       "failedToDeleteFolder": "Falha ao excluir pasta.",
@@ -746,8 +740,6 @@
       "importButtonText": "Importar do KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Se você usou um gerenciador de senhas diferente anteriormente, você pode importar seus itens dele.",
       "loadingMore": "Carregando mais...",
-      "newAliasButtonText": "\" + Novo Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Nenhum item ainda",
       "pageDescription": "Encontre todos os seus itens abaixo.",
       "sortOrderLabel": "Ordenação",
@@ -769,16 +761,16 @@
     "loginCredentials": "Crednciais de login",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Criando novo alias...",
       "namePlaceholderCard": "Ex.: Mastercard",
       "namePlaceholderNote": "Ex.: Detalhes do Passaporte",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Novo",
       "typeCard": "Cartão",
       "typeLogin": "Login"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Selecione o texto para inserir no campo selecionado",
     "serverUnavailableMessage": "O servidor esta indisponível no momento. Por favor, tente novamente mais tarde.",
     "serverUnavailableTitle": "Servidor Indisponível",
-    "serverVersionNotSupportedContactAdmin": "A versão do servidor está desatualizada. Por favor, entre em contato com seu administrador para atualizar o servidor.",
-    "serverVersionNotSupportedMessage": "A versão do servidor está desatualizada. Por favor, atualize seu servidor para a versão mais nova.",
     "serverVersionNotSupportedTitle": "Atualização de Servidor Necessária",
     "sessionExpiredMessage": "Sua sessão expirou. Por favor, faça login novamente.",
     "sessionExpiredTitle": "Sessão Expirada",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "esta credencial",
     "usernameCopied": "Nome de usuário copiado",
     "usernamePrefix": "Nome de Usuário: ",
-    "versionNotSupportedMessage": "A versão do seu aplicativo não tem mais suporte. Por favor, atualize para a versão mais nova.",
     "versionNotSupportedTitle": "Atualização Necessária",
     "viewDetails": "Ver Detalhes",
     "website": "Site"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Utilizar Passkey do Navegador"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Ativado em todos os sites (a menos que esteja desabilitado abaixo)",
     "advancedOptions": "Opções Avançadas",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Apenas área de transferência local",
     "clipboardLocalOnlyDescription": "Mantenha as credenciais copiadas neste dispositivo ao invés de sincronizá-las para seus outros dispositivos Apple através da Área de Transferência Universal.",
     "clipboardLocalOnlyDisabledWarning": "Com esta opção desativada, credenciais copiadas podem ser sincronizadas para seus dispositivos Apple (Mac, iPad, etc.) através da Área de Transferência Universal.",
-    "clipboardSettings": "Configurações da Área de Transferência",
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
     "contextMenuSettings": "Configurações do Menu de Contexto",
     "copyTotpOnFill": "Copiar código de dois fatores ao autopreencher",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Selecione a faixa etária padrão para geração de novas identidades. Isto afeta a data de nascimento associada à identidade gerada.",
       "aliasGenerationGenderDescription": "Configure o gênero padrão que será utilizado para gerar novas identidades.",
       "aliasGenerationLanguageDescription": "Configure o idioma padrão que será utilizado ao gerar novas identidades.",
-      "aliasSettingsTitle": "Configurações do Gerador de Identidades",
       "appLanguageDescription": "Configure o idioma da interface do aplicativo.",
       "appLanguageTitle": "Idioma do Aplicativo",
       "autoEmailRefreshLabel": "Atualização automática de conteúdo de e-mails quando novos e-mails chegarem",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Domínios Públicos"
     },
     "globalSettings": "Configurações Gerais",
+    "groups": {
+      "autofill": "Preenchimento Automático",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Gerador de Identidade",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Falha ao desabilitar autenticação de dois fatores.",
         "pageDescription": "Desabilitar a autenticação de dois fatores significa que você poderá fazer login apenas com sua senha.",
         "pageTitle": "Desabilitar autenticação de dois fatores",
-        "statusMessage": "Autenticação de dois fatores está habilitada. Desabilite-a para acessar seu cofre apenas com a senha.",
         "twoFactorDisabledSuccess": "Autenticação de dois fatores foi desabilitada com sucesso.",
-        "twoFactorNotEnabled": "Autenticação de dois fatores não está habilitada.",
-        "warningMessage": "Por favor, note: após desabilitar a autenticação de dois fatores, qualquer aplicativo(s) configurado(s) irão parar de funcioar. Quando você desejar habilitar a autenticação de dois fatores novamente, você terá que configurar o aplicativo de autenticação novamente."
+        "twoFactorNotEnabled": "Autenticação de dois fatores não está habilitada."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Falha ao habilitar autenticação de dois fatores.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Digite o código de verificação",
         "verifyAndEnableButton": "Verificar e Habilitar"
       },
-      "pageDescription": "Configurar configurações de segurança.",
-      "pageTitle": "Configurações de segurança",
       "passkeyUnlock": {
         "disableButton": "Desabilitar Desbloqueio com Passkey",
         "disabledDescription": "Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente usando a extensão PRF da passkey. Nota: a passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "A autenticação de dois fatores está desativada no momento. Para melhorar a segurança da sua conta, recomendamos que você a habilite.",
-        "enabledMessage": "A autenticação de dois fatores está ativada."
+        "enabledMessage": "A autenticação de dois fatores está ativada.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Selecionar Idioma",
@@ -1456,9 +1445,11 @@
     "serverConfigurationDescription": "Configure o URL do servidor do AliasVault para instâncias self-hosted",
     "serverUrl": "URL do servidor",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Configurações Específicas do Site",
     "storageInsights": {
-      "breadcrumbTitle": "Storage insights",
+      "breadcrumbTitle": "Análise de Armazenamento",
       "breakdownLogosLabel": "Logos",
       "breakdownTitle": "Storage usage breakdown",
       "columnCreated": "Criado",
@@ -1568,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Adicionar um código de autenticação de dois fatores",
     "addTotpCodeModalTitle": "Adicionar código TOTP 2FA",
+    "algorithm": "Algorithm",
     "closeFormButton": "Fechar formulário",
     "defaultName": "Autenticador",
     "deleteCodeConfirmation": "Tem certeza que deseja excluir este código TOTP?",
     "deleteCodeTitle": "Excluir código TOTP",
     "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Excluir Código 2FA",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Salvar para ver o código",
     "scanQrCode": "Escanear Código QR",
     "secretKey": "Chave Secreta",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Verificando atualizações do cofre",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
-    "errors": {
-      "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
-      "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
-      "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online.",
-      "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
-      "usernameNotFound": "Usuário não encontrado",
-      "vaultOutdated": "Seu cofre está desatualizado. Por favor realize login pelo site do AliasVault e siga as instruções.",
-      "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão."
-    },
     "mergingVault": "Integrando mudanças do cofre...",
     "savingChangesToVault": "Salvando mudanças no cofre",
     "syncingUpdatedVault": "Sincronizando cofre atualizado",
-    "syncingVault": "Sincronizando cofre",
-    "uploadingVaultToServer": "Fazendo upload do cofre para o servidor"
+    "syncingVault": "Sincronizando cofre"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Mudar para modo escuro",
       "enableLightMode": "Mudar para modo claro",
-      "logOut": "Sair",
-      "openMenuLabel": "Abrir menu"
+      "logOut": "Sair"
     },
     "welcome": {
       "createFirstIdentityButton": "Criar Primeira Identidade",

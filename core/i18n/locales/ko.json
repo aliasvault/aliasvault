@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "계정이 비활성화되었습니다. 오류라고 생각되시면 지원팀에 문의하세요.",
     "ACCOUNT_LOCKED": "로그인 시도 실패 횟수 초과로 계정이 일시적으로 잠겼습니다. 나중에 다시 시도하세요.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "계정이 성공적으로 삭제되었습니다.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "이메일을 불러오는 중 오류가 발생했습니다. 데이터베이스를 동기화하려면 로그인 항목을 수정한 후 저장하고 다시 시도하세요.",
-    "CLAIM_DOES_NOT_MATCH_USER": "현재 선택한 이메일 주소가 이미 사용 중입니다. 이 로그인 정보를 수정하여 이메일 주소를 변경하세요.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "내부 서버 오류가 발생했습니다.",
     "INVALID_AUTHENTICATOR_CODE": "유효하지 않은 인증기 코드입니다. 다시 시도하세요.",
     "INVALID_RECOVERY_CODE": "유효하지 않은 복구 코드입니다. 다시 시도하세요.",
     "INVALID_REFRESH_TOKEN": "유효하지 않은 새로고침 토큰입니다.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "입력한 비밀번호가 현재 비밀번호와 일치하지 않습니다.",
     "PENDING_MIGRATIONS": "대기 중인 마이그레이션이 있습니다. 적용하려면 'dotnet ef database update'를 실행하세요.",
     "PUBLIC_REGISTRATION_DISABLED": "현재 이 서버에서는 신규 계정 등록이 비활성화되어 있습니다. 관리자에게 문의하세요.",
     "REFRESH_TOKEN_REQUIRED": "리프레시 토큰이 필요합니다.",
     "REGISTRATION_FAILED": "계정을 생성하지 못했습니다. 몇 분 후에 다시 시도하세요. 문제가 지속되면 지원팀에 문의하세요.",
+    "UNKNOWN_ERROR": "알 수 없는 오류가 발생했습니다. 다시 시도하세요.",
     "USERNAME_ALREADY_IN_USE": "이미 사용 중인 사용자 이름입니다.",
     "USERNAME_AVAILABLE": "사용 가능한 사용자 이름입니다.",
     "USERNAME_EMPTY_OR_WHITESPACE": "사용자 이름은 비워 두거나 공백만으로 작성할 수 없습니다.",
@@ -69,6 +72,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "첨부 파일이 성공적으로 삭제되었습니다.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "파일을 업로드하려면 확장 창을 사용하세요.",
     "openExpandedWindow": "확장 창 열기",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +82,8 @@
   "auth": {
     "authCode": "인증 코드",
     "authCodeNote": "참고: 인증기 기기에 접근할 수 없는 경우, 웹사이트에 로그인하여 복구 코드로 2단계 인증을 재설정할 수 있습니다.",
-    "autoCloseUnlockPopup": "이후 로그인 시 자동으로 닫기",
     "biometricPrompt": "보관함 잠금을 해제할 때 {{biometric}}을(를) 사용하시겠습니까?",
     "browseVault": "보관함 내용 찾아보기",
-    "closePopup": "이 팝업 닫기",
     "confirmLogout": "정말 로그아웃하시겠습니까? 보관함에 접근하려면 마스터 비밀번호로 다시 로그인해야 합니다.",
     "connectingTo": "연결 중:",
     "createNewVault": "새 보관함 만들기",
@@ -95,8 +97,7 @@
       "httpError": "HTTP 오류: {{status}}",
       "networkError": "네트워크 요청에 실패했습니다. 인터넷 연결을 확인한 후 다시 시도해 주세요.",
       "networkErrorSelfHosted": "네트워크 요청에 실패했습니다. 네트워크 연결 및 서버 가용성을 확인하세요. 자체 호스팅 인스턴스의 경우 유효한 SSL 인증서가 설치되어 있는지 확인하세요. 보안상의 이유로 모바일 기기에서는 자체 서명된 인증서가 지원되지 않습니다.",
-      "serverErrorSelfHosted": "API에 연결할 수 없습니다. 자체 호스팅 인스턴스의 경우 브라우저에서 해당 API 엔드포인트로 이동하여 접근 가능한지 확인하세요('OK'가 표시되어야 함).",
-      "sessionExpired": "세션이 만료되었습니다. 다시 로그인해 주세요."
+      "serverErrorSelfHosted": "API에 연결할 수 없습니다. 자체 호스팅 인스턴스의 경우 브라우저에서 해당 API 엔드포인트로 이동하여 접근 가능한지 확인하세요('OK'가 표시되어야 함)."
     },
     "forgotPassword": {
       "contactAdministrator": "최근 비밀번호를 변경한 후 새 비밀번호로 로그인하는 데 어려움을 겪고 계시다면, 서버 관리자가 보관함의 이전 백업을 복구하여 도움을 드릴 수 있습니다. 이 경우 서버 관리자에게 문의하세요.",
@@ -162,21 +163,18 @@
         "welcomeMessage": "좋습니다! 이제 AliasVault의 마스터 비밀번호를 설정해 보겠습니다."
       },
       "passwordStepTitle": "비밀번호 설정",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "초기 설정",
-      "termsAndConditionsStepTitle": "AliasVault 사용 안내",
-      "termsStep": {
-        "agreementCheckboxLabel": "이용약관을 읽었으며 이에 동의합니다",
-        "pleaseReadAndAgree": "계속 진행하기 전에 다음 이용약관을 읽고 동의해 주세요.",
-        "termsContent": "AliasVault는 온라인 보안을 강화하고 개인정보를 보호하도록 설계되었습니다. AliasVault를 사용하면 다양한 온라인 계정에 대해 고유한 신원 정보와 이메일 에일리어스를 생성하여 개인정보를 직접 관리하고 명의 도용 위험을 줄일 수 있습니다.\n\nAliasVault를 사용함으로써 귀하는 다음 약관에 동의하게 됩니다:\n\n1. 사기, 명의 도용 또는 실제 인물 사칭을 포함하되 이에 국한되지 않는 일체의 불법적인 목적으로 AliasVault를 사용하지 않습니다.\n\n2. 귀하는 본인의 계정 및 AliasVault를 통해 생성된 모든 에일리어스의 비밀을 유지할 책임이 있습니다.\n\n3. AliasVault는 본 약관의 오용 또는 위반이 의심되는 경우 귀하의 계정을 해지할 수 있는 권리를 보유합니다.\n\n4. 귀하는 AliasVault가 개인정보 보호를 강화하지만 어떤 시스템도 완벽하게 안전할 수는 없으며, 귀하 자신의 책임 하에 본 서비스를 사용함을 이해합니다."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault 도우미",
         "enterUsernameInstructions": "사용할 사용자 이름을 입력하세요. 이메일 주소나 원하는 고유한 이름을 사용할 수 있습니다.",
-        "greatNowLetsSetupUsername": "좋습니다! 이제 AliasVault의 사용자 이름을 설정해 보겠습니다.",
         "rememberUsernameNote": "참고: 나중에 로그인할 때 이 사용자 이름을 사용하므로 꼭 기억할 수 있는 이름으로 설정하세요!",
         "serverCommunicationError": "AliasVault 서버와 통신하는 중 오류가 발생했습니다.",
         "usernamePlaceholder": "원하는 사용자 이름 또는 이메일 입력",
-        "validatingUsernameMessage": "사용자 이름 확인 중..."
+        "validatingUsernameMessage": "사용자 이름 확인 중...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "사용자 이름 선택"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "AliasVault 서버와의 연결에 실패했습니다. 잠시 후 다시 시도하세요.",
       "enterMasterPasswordDescription": "보관함을 잠금 해제하려면 마스터 비밀번호를 입력하세요.",
-      "incorrectPasswordError": "비밀번호가 올바르지 않습니다. 비밀번호를 다시 입력하거나 로그아웃한 후 다시 로그인하세요.",
       "loggingInWithWebAuthn": "패스키로 로그인 중...",
       "quickUnlockDescription": "패스키를 사용하여 보관함을 빠르게 잠금 해제하세요. 또는 대체 수단으로 비밀번호를 사용하여 로그인할 수 있습니다.",
-      "sessionTimedOutError": "세션이 만료되었습니다. 다시 로그인하세요.",
       "unlockButton": "잠금 해제",
       "unlockWithMobileButton": "모바일 앱으로 잠금 해제",
       "unlockWithWebAuthn": "패스키로 잠금 해제",
       "webAuthnNotSupportedError": "현재 브라우저는 WebAuthn PRF 확장을 지원하지 않습니다. 대신 비밀번호로 로그인하세요."
     },
-    "unlockSuccessDescription": "이제 브라우저의 로그인 양식에서 자동 완성을 사용할 수 있습니다.",
-    "unlockSuccessTitle": "보관함이 성공적으로 잠금 해제되었습니다",
     "unlockTitle": "보관함 잠금 해제",
     "unlockVault": "보관함 잠금 해제",
     "unlockWithBiometric": "{{biometric}}(으)로 잠금 해제",
@@ -225,7 +219,6 @@
     "back": "뒤로",
     "backspace": "Backspace",
     "cancel": "취소",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "클립보드 지우기"
     },
@@ -259,8 +252,8 @@
     "errorPasswordMismatch": "비밀번호가 일치하지 않습니다.",
     "errors": {
       "backgroundUnresponsive": "확장 프로그램 백그라운드 서비스가 응답하지 않습니다. 확장 프로그램을 닫았다가 다시 열거나, 문제가 지속되면 브라우저를 다시 시작하세요.",
-      "browserExtensionOutdated": "이 브라우저 확장 프로그램은 이전 버전이므로 이 보관함에 접근할 수 없습니다. 계속하려면 브라우저 확장 프로그램을 업데이트하세요.",
-      "clientVersionNotSupported": "이 버전의 AliasVault 브라우저 확장 프로그램은 더 이상 서버에서 지원되지 않습니다. 브라우저 확장 프로그램을 최신 버전으로 업데이트하세요.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "올바른 6자리 인증 코드를 입력하세요.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +263,13 @@
       "passwordChanged": "마지막 로그인 이후 비밀번호가 변경되었습니다. 보안을 위해 다시 로그인해 주세요.",
       "serverError": "AliasVault 서버에 연결할 수 없습니다. 잠시 후 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
       "serverNotAvailable": "AliasVault 서버를 사용할 수 없습니다. 나중에 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
-      "serverVersionNotSupported": "이 브라우저 확장 프로그램을 사용하려면 AliasVault 서버를 최신 버전으로 업데이트해야 합니다. 도움이 필요하면 지원팀에 문의하세요.",
-      "serverVersionTooOld": "이 기능을 사용하려면 AliasVault 서버를 최신 버전으로 업데이트해야 합니다. 도움이 필요하면 서버 관리자에게 문의하세요.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요.",
       "syncConflictMaxRetries": "여러 번 시도했지만 보관함을 동기화하지 못했습니다. 나중에 다시 시도하세요.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "알 수 없는 오류가 발생했습니다.",
       "unknownErrorTryAgain": "알 수 없는 오류가 발생했습니다. 다시 시도하세요.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "보관함이 잠겨 있습니다",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +335,7 @@
     "twoFactorAuthentication": "2단계 인증",
     "unavailable": "Unavailable",
     "undo": "실행 취소",
+    "updateApp": "Update app",
     "use": "사용",
     "username": "사용자 이름",
     "vaultSaveError": "보관함의 변경 사항을 저장하지 못했습니다. 다시 시도해 주세요.",
@@ -426,8 +420,7 @@
     },
     "title": "이메일",
     "to": "받는 사람:",
-    "toColumn": "받는 사람",
-    "updateClientForFormattedView": "이 이메일을 올바르게 표시하려면 최신 버전의 앱이 필요합니다. 앱을 업데이트하세요."
+    "toColumn": "받는 사람"
   },
   "fieldLabels": {
     "alias": {
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "이메일을 불러오는 중 예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
     "emptyFolderHint": "이 폴더가 비어 있습니다. 이 폴더로 항목을 이동하려면 항목을 수정한 후 이름 필드의 폴더 아이콘을 누르세요.",
     "errorLoadingItems": "항목 불러오기 오류",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "정말 삭제하시겠습니까?"
     },
@@ -735,8 +730,7 @@
     "history": "기록",
     "home": {
       "alphabeticalOption": "이름순",
-      "buttonLocationText": "버튼(오른쪽 상단)을 누르세요.",
-      "createFirstItemText": "첫 번째 항목을 생성하려면",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "이 폴더는 비어 있습니다.",
       "failedToCreateFolder": "폴더를 생성하지 못했습니다.",
       "failedToDeleteFolder": "폴더를 삭제하지 못했습니다.",
@@ -746,8 +740,6 @@
       "importButtonText": "KeePass, Bitwarden, Chrome, Firefox에서 가져오기...",
       "importItemsText": "이전에 다른 비밀번호 관리자를 사용하셨다면 해당 항목들을 가져올 수 있습니다.",
       "loadingMore": "더 불러오는 중...",
-      "newAliasButtonText": "\"+ 새 에일리어스\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "아직 항목이 없습니다",
       "pageDescription": "아래에서 모든 항목을 확인할 수 있습니다.",
       "sortOrderLabel": "정렬 순서",
@@ -769,16 +761,16 @@
     "loginCredentials": "로그인 정보",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "새 에일리어스 생성 중...",
       "namePlaceholderCard": "예: 마스터카드",
       "namePlaceholderNote": "예: 여권 정보",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ 새로 만들기",
       "typeCard": "카드",
       "typeLogin": "로그인"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "포커스된 입력 필드에 삽입할 텍스트를 선택하세요",
     "serverUnavailableMessage": "현재 서버를 사용할 수 없습니다. 나중에 다시 시도하세요.",
     "serverUnavailableTitle": "서버를 사용할 수 없음",
-    "serverVersionNotSupportedContactAdmin": "서버 버전이 오래되었습니다. 관리자에게 문의하여 서버를 업데이트하세요.",
-    "serverVersionNotSupportedMessage": "서버 버전이 오래되었습니다. 서버를 최신 버전으로 업데이트하세요.",
     "serverVersionNotSupportedTitle": "서버 업데이트 필요",
     "sessionExpiredMessage": "세션이 만료되었습니다. 다시 로그인하세요.",
     "sessionExpiredTitle": "세션 만료",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "이 로그인 정보",
     "usernameCopied": "사용자 이름을 복사했습니다",
     "usernamePrefix": "사용자 이름:",
-    "versionNotSupportedMessage": "현재 앱 버전은 더 이상 지원되지 않습니다. 최신 버전으로 업데이트하세요.",
     "versionNotSupportedTitle": "업데이트 필요",
     "viewDetails": "세부 정보 보기",
     "website": "웹사이트"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "브라우저 패스키 사용"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "모든 사이트에서 활성 (아래에서 비활성화된 경우 제외)",
     "advancedOptions": "고급 옵션",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "로컬 클립보드만 사용",
     "clipboardLocalOnlyDescription": "유니버설 클립보드를 통해 다른 Apple 기기와 동기화하지 않고, 복사한 로그인 정보를 이 기기에만 유지합니다.",
     "clipboardLocalOnlyDisabledWarning": "이 옵션을 끄면 복사한 로그인 정보가 유니버설 클립보드를 통해 다른 Apple 기기(Mac, iPad 등)와 동기화될 수 있습니다.",
-    "clipboardSettings": "클립보드 설정",
     "contextMenuDescription": "입력 필드를 마우스 우클릭하여 AliasVault 옵션에 접근하세요",
     "contextMenuSettings": "컨텍스트 메뉴 설정",
     "copyTotpOnFill": "자동 완성 시 TOTP 코드 복사",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "새 신원 정보를 생성할 때 기본 연령대를 설정합니다. 생성된 신원 정보에 할당되는 생년월일에 영향을 줍니다.",
       "aliasGenerationGenderDescription": "새 신원 정보를 생성할 때 선호하는 기본 성별을 설정합니다.",
       "aliasGenerationLanguageDescription": "새 신원 정보를 생성할 때 사용할 기본 언어를 설정합니다.",
-      "aliasSettingsTitle": "신원 정보 생성기 설정",
       "appLanguageDescription": "애플리케이션 인터페이스의 언어를 설정합니다.",
       "appLanguageTitle": "애플리케이션 언어",
       "autoEmailRefreshLabel": "새 이메일이 도착하면 이메일 콘텐츠 자동 새로고침",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "공개 도메인"
     },
     "globalSettings": "전역 설정",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "신원 정보 생성기",
     "identityGeneratorSettings": {
       "ageRangeDescription": "새로운 신원 정보를 생성할 때 적용할 연령대를 설정합니다.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "2단계 인증을 비활성화하지 못했습니다.",
         "pageDescription": "2단계 인증을 비활성화하면 비밀번호만으로 로그인할 수 있게 됩니다.",
         "pageTitle": "2단계 인증 비활성화",
-        "statusMessage": "현재 2단계 인증이 활성화되어 있습니다. 비밀번호만으로 보관함에 접근하려면 이 기능을 비활성화하세요.",
         "twoFactorDisabledSuccess": "2단계 인증이 성공적으로 비활성화되었습니다.",
-        "twoFactorNotEnabled": "2단계 인증이 활성화되어 있지 않습니다.",
-        "warningMessage": "참고: 2단계 인증을 비활성화하면 설정된 모든 인증기 앱의 작동이 중단됩니다. 2단계 인증을 다시 활성화하려면 인증기 앱을 다시 구성해야 합니다."
+        "twoFactorNotEnabled": "2단계 인증이 활성화되어 있지 않습니다."
       },
       "enable2fa": {
         "failedToEnable2Fa": "2단계 인증을 활성화하지 못했습니다.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "인증 코드 입력",
         "verifyAndEnableButton": "확인 및 활성화"
       },
-      "pageDescription": "보안 설정을 구성합니다.",
-      "pageTitle": "보안 설정",
       "passkeyUnlock": {
         "disableButton": "패스키 잠금 해제 비활성화",
         "disabledDescription": "기본적으로 AliasVault 페이지나 탭을 새로고침하면 마스터 비밀번호를 다시 입력해야 합니다. 패스키를 사용하면 보관함을 즉시 잠금 해제할 수 있습니다. 이 기능을 활성화하면 마스터 비밀번호가 패스키의 PRF 확장을 사용하여 로컬에서 암호화됩니다. 참고: 패스키는 기능을 활성화한 현재 기기 및 브라우저에서만 작동합니다.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "2단계 인증이 현재 비활성화되어 있습니다. 계정 보안을 강화하기 위해 활성화하는 것을 권장합니다.",
-        "enabledMessage": "2단계 인증이 현재 활성화되어 있습니다."
+        "enabledMessage": "2단계 인증이 현재 활성화되어 있습니다.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "언어 선택",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "자체 호스팅 인스턴스를 위한 AliasVault 서버 URL을 구성합니다",
     "serverUrl": "서버 URL",
     "serverVersion": "서버 버전",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "사이트별 설정",
     "storageInsights": {
       "breadcrumbTitle": "저장 공간 분석",
@@ -1568,12 +1559,14 @@
     "addName": "이름 추가 (선택 사항)",
     "addTotpCodeDescription": "2단계 인증기 코드 추가",
     "addTotpCodeModalTitle": "2단계 인증 TOTP 코드 추가",
+    "algorithm": "Algorithm",
     "closeFormButton": "양식 닫기",
     "defaultName": "인증기",
     "deleteCodeConfirmation": "이 TOTP 코드를 정말 삭제하시겠습니까?",
     "deleteCodeTitle": "TOTP 코드 삭제",
     "deleteTotpCodeConfirmation": "2단계 인증 코드 \"{{name}}\"을(를) 정말 삭제하시겠습니까?",
     "deleteTotpCodeTitle": "2단계 인증 코드 삭제",
+    "digits": "Digits",
     "enterManually": "비밀 키 직접 입력",
     "errors": {
       "invalidSecretKey": "비밀 키 형식이 올바르지 않습니다.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "2단계 인증을 추가하려는 웹사이트에 표시된 비밀 키를 입력하세요.",
     "nameOptional": "이름 (선택 사항)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "코드를 보려면 저장하세요",
     "scanQrCode": "QR 코드 스캔",
     "secretKey": "보안 비밀 키",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "보관함 업데이트 확인 중",
     "checkingVaultUpdates": "보관함 업데이트 확인 중",
-    "errors": {
-      "appOutdated": "현재 앱 버전이 오래되어 최신 버전의 보관함에 접근할 수 없습니다. 계속하려면 AliasVault 앱을 업데이트하세요.",
-      "failedToGetEncryptedDatabase": "암호화된 데이터베이스를 가져오지 못했습니다.",
-      "passwordChangeRequiresOnline": "비밀번호를 변경하려면 인터넷 연결이 필요합니다. 온라인 상태일 때 다시 시도해 주세요.",
-      "serverVersionNotSupported": "이 모바일 앱을 사용하려면 AliasVault 서버를 최신 버전으로 업데이트해야 합니다. 도움이 필요하면 지원팀에 문의하세요.",
-      "usernameNotFound": "사용자 이름을 찾을 수 없습니다.",
-      "vaultOutdated": "보관함 버전이 만료되었습니다. AliasVault 웹사이트에 로그인하여 안내에 따라 진행하세요.",
-      "versionNotSupported": "현재 버전의 AliasVault 모바일 앱은 더 이상 서버에서 지원되지 않습니다. 앱을 최신 버전으로 업데이트하세요."
-    },
     "mergingVault": "보관함 변경 사항 병합 중...",
     "savingChangesToVault": "보관함 변경 사항 저장 중",
     "syncingUpdatedVault": "업데이트된 보관함 동기화 중",
-    "syncingVault": "보관함 동기화 중",
-    "uploadingVaultToServer": "보관함을 서버에 업로드하는 중"
+    "syncingVault": "보관함 동기화 중"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "베타",
       "enableDarkMode": "다크 모드로 전환",
       "enableLightMode": "라이트 모드로 전환",
-      "logOut": "로그아웃",
-      "openMenuLabel": "메뉴 열기"
+      "logOut": "로그아웃"
     },
     "welcome": {
       "createFirstIdentityButton": "첫 번째 신원 정보 만들기",

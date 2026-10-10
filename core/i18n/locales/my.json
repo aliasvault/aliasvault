@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
     "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
-    "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Internal server error.",
     "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
     "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "The provided password does not match your current password.",
     "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
     "USERNAME_AVAILABLE": "Username is available.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
@@ -69,6 +72,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +82,8 @@
   "auth": {
     "authCode": "အတည်ပြုကုဒ်",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "သင့် လုံခြုံရေးသေတ္တာအား ဖွင့်ရန် {{biometric}} ကိုသုံးလိုပါသလား။",
     "browseVault": "Browse vault contents",
-    "closePopup": "Close this popup",
     "confirmLogout": "လော့ဂ်အောက်ထွက်မည် သေချာပါသလား။ သင့် လုံခြုံရေးအခန်းအား ဝင်ရောက်ရန် မာစတာစကားဝှက်ဖြင့် ပြန်လည်ဝင်ရောက်ရမည်ဖြစ်သည်။",
     "connectingTo": "ချိတ်ဆက်",
     "createNewVault": "လုံခြုံရေးအခန်းသစ် ဖန်တီးမည်",
@@ -95,8 +97,7 @@
       "httpError": "HTTP အမှား: {{status}}",
       "networkError": "Network request failed. Please check your internet connection and try again.",
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
-      "sessionExpired": "Your session has expired. Please login again."
+      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -162,21 +163,18 @@
         "welcomeMessage": "Great! Now, let's set up your master password for AliasVault."
       },
       "passwordStepTitle": "Set Password",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
-      "termsAndConditionsStepTitle": "Using AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "I have read and agree to the Terms and Conditions",
-        "pleaseReadAndAgree": "Please read and agree to the following terms and conditions before proceeding.",
-        "termsContent": "AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.\n\nBy using AliasVault, you agree to the following terms:\n\n1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.\n\n2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.\n\n3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.\n\n4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault Assistant",
         "enterUsernameInstructions": "Please enter a username you'd like to use. This can be your email address or any unique name you prefer.",
-        "greatNowLetsSetupUsername": "Great! Now, let's set up your username for AliasVault.",
         "rememberUsernameNote": "Remember: This is what you'll use to log in later, so make sure it's something you'll remember!",
         "serverCommunicationError": "An error occurred during communication with the AliasVault server.",
         "usernamePlaceholder": "Enter your desired username or email",
-        "validatingUsernameMessage": "Validating username..."
+        "validatingUsernameMessage": "Validating username...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Choose Username"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "Connection with the AliasVault servers failed. Please try again (later).",
       "enterMasterPasswordDescription": "Enter your master password to unlock your vault.",
-      "incorrectPasswordError": "The password is incorrect. Please try entering your password again, or log out and log in again.",
       "loggingInWithWebAuthn": "Logging in with passkey...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "Your session has timed out. Please log in again.",
       "unlockButton": "Unlock",
       "unlockWithMobileButton": "Unlock with Mobile App",
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "Your current browser does not support the WebAuthn PRF extension. Please login with your password instead."
     },
-    "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
-    "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockTitle": "Unlock Your Vault",
     "unlockVault": "လုံခြုံရေးအခန်းအား ဖွင့်ရန်",
     "unlockWithBiometric": "{{biometric}} ဖြင့် ဖွင့်လှစ်ရန်",
@@ -225,7 +219,6 @@
     "back": "နောက်သို့",
     "backspace": "Backspace",
     "cancel": "ပယ်ဖျက်မည်",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Clear Clipboard"
     },
@@ -259,8 +252,8 @@
     "errorPasswordMismatch": "စကားဝှက်များ မတူညီနေပါ။",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
-      "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +263,13 @@
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
       "serverError": "AliasVault ဆာဗာသို့ ချိတ်ဆက်မရနိုင်ပါ။ ကျေးဇူးပြု၍ နောက်တစ်ကြိမ်ထပ်မံကြိုးစားပါ သို့မဟုတ် ပြဿနာ ဆက်လက်ဖြစ်ပေါ်နေပါက ထောက်ပံ့သူအား ဆက်သွယ်ပါ။",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
-      "serverVersionTooOld": "ဤအင်္ဂါရပ်ကိုအသုံးပြုရန် AliasVault ဆာဗာကို ဗားရှင်းအသစ်သို့ အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။ အကူအညီလိုအပ်ပါက ဆာဗာအက်ဒမင်ထံ ဆက်သွယ်ပါ။",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "မသိသော အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်။.",
       "unknownErrorTryAgain": "မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Vault is locked",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +335,7 @@
     "twoFactorAuthentication": "နှစ်ဆင့်ခံ သက်သေခံအထောက်အထား",
     "unavailable": "Unavailable",
     "undo": "Undo",
+    "updateApp": "Update app",
     "use": "အသုံးပြု",
     "username": "အသုံးပြုသူအမည်",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -426,8 +420,7 @@
     },
     "title": "Emails",
     "to": "To:",
-    "toColumn": "To",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "To"
   },
   "fieldLabels": {
     "alias": {
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "An unexpected error occurred while loading emails. Please try again later.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Error loading items",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Are you sure?"
     },
@@ -735,8 +730,7 @@
     "history": "History",
     "home": {
       "alphabeticalOption": "Alphabetical",
-      "buttonLocationText": "button in the top right corner.",
-      "createFirstItemText": "Create your first item using the",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
       "failedToDeleteFolder": "Failed to delete folder.",
@@ -746,8 +740,6 @@
       "importButtonText": "Import from KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "If you previously used a different password manager, you can import your items from it.",
       "loadingMore": "Loading more...",
-      "newAliasButtonText": "\"+ New Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
       "sortOrderLabel": "Sort Order",
@@ -769,16 +761,16 @@
     "loginCredentials": "Login credentials",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Creating new alias...",
       "namePlaceholderCard": "E.g. Mastercard",
       "namePlaceholderNote": "E.g. Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
       "typeLogin": "Login"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "Username: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "ဝဘ်ဆိုက်"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Active on all sites (unless disabled below)",
     "advancedOptions": "Advanced Options",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Clipboard Settings",
     "contextMenuDescription": "Right-click on input fields to access AliasVault options",
     "contextMenuSettings": "Context Menu Settings",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",
       "aliasGenerationLanguageDescription": "Set the default language that will be used when generating new identities.",
-      "aliasSettingsTitle": "Identity Generator Settings",
       "appLanguageDescription": "Set the language for the application interface.",
       "appLanguageTitle": "Application Language",
       "autoEmailRefreshLabel": "Auto refresh emails content when new ones arrive",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Public Domains"
     },
     "globalSettings": "Global Settings",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identity Generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Set the age range for generating new identities.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Failed to disable two-factor authentication.",
         "pageDescription": "Disabling two-factor authentication means you will be able to login with only your password.",
         "pageTitle": "Disable two-factor authentication",
-        "statusMessage": "Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.",
         "twoFactorDisabledSuccess": "Two-factor authentication is now successfully disabled.",
-        "twoFactorNotEnabled": "Two-factor authentication is not enabled.",
-        "warningMessage": "Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again."
+        "twoFactorNotEnabled": "Two-factor authentication is not enabled."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Failed to enable two-factor authentication.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Enter verification code",
         "verifyAndEnableButton": "Verify and Enable"
       },
-      "pageDescription": "Configure security settings.",
-      "pageTitle": "Security settings",
       "passkeyUnlock": {
         "disableButton": "Disable Passkey Unlock",
         "disabledDescription": "By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Two factor authentication is currently disabled. In order to improve your account security we advise you to enable it.",
-        "enabledMessage": "Two factor authentication is currently enabled."
+        "enabledMessage": "Two factor authentication is currently enabled.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Select Language",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
     "serverUrl": "Server URL",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Site-Specific Settings",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
@@ -1568,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Add a two-factor authenticator code",
     "addTotpCodeModalTitle": "Add 2FA TOTP Code",
+    "algorithm": "Algorithm",
     "closeFormButton": "Close form",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "Are you sure you want to delete this TOTP code?",
     "deleteCodeTitle": "Delete TOTP code",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "deleteTotpCodeTitle": "Delete 2FA Code",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Name (optional)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scan QR Code",
     "secretKey": "Secret Key",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Checking for vault updates",
     "checkingVaultUpdates": "Checking vault updates",
-    "errors": {
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "failedToGetEncryptedDatabase": "Failed to get encrypted database",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
-      "usernameNotFound": "အသုံးပြုသူအမည်ကို ရှာမတွေ့ပါ",
-      "vaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
-      "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version."
-    },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Saving changes to vault",
     "syncingUpdatedVault": "Syncing updated vault",
-    "syncingVault": "Syncing vault",
-    "uploadingVaultToServer": "Uploading vault to server"
+    "syncingVault": "Syncing vault"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Switch to dark mode",
       "enableLightMode": "Switch to light mode",
-      "logOut": "Log out",
-      "openMenuLabel": "Open menu"
+      "logOut": "Log out"
     },
     "welcome": {
       "createFirstIdentityButton": "Create Your First Identity",

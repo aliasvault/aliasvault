@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Ваш обліковий запис вимкнено. Якщо ви вважаєте, що це помилка, зверніться до служби підтримки.",
     "ACCOUNT_LOCKED": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб. Будь ласка, спробуйте пізніше.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Обліковий запис успішно видалено.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Під час спроби завантажити електронні листи сталася помилка. Спробуйте відредагувати та зберегти запис облікових даних, щоб синхронізувати базу даних, а потім повторіть спробу.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Поточна обрана адреса електронної пошти вже використовується. Будь ласка, змініть адресу електронної пошти, відредагувавши ці облікові дані.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Внутрішня помилка сервера.",
     "INVALID_AUTHENTICATOR_CODE": "Недійсний код автентифікатора. Будь ласка, спробуйте ще раз.",
     "INVALID_RECOVERY_CODE": "Недійсний код відновлення. Будь ласка, спробуйте ще раз.",
     "INVALID_REFRESH_TOKEN": "Оновлення токена невдале.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Введений пароль не відповідає вашому поточному паролю.",
     "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
     "PUBLIC_REGISTRATION_DISABLED": "Реєстрація нових облікових записів на цьому сервері наразі вимкнена. Будь ласка, зверніться до адміністратора.",
     "REFRESH_TOKEN_REQUIRED": "Необхідне оновлення токена.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
     "USERNAME_ALREADY_IN_USE": "Ім'я користувача вже використовується.",
     "USERNAME_AVAILABLE": "Ім'я користувача доступне.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Ім’я користувача не може бути порожнім або містити пробіли.",
@@ -69,6 +72,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +82,8 @@
   "auth": {
     "authCode": "Код автентифікації",
     "authCodeNote": "Примітка: якщо у вас немає доступу до вашого пристрою автентифікатора, ви можете скинути налаштування 2FA за допомогою коду відновлення, увійшовши через вебсайт.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "Ви хочете використати {{biometric}} для розблокування вашого сховища?",
     "browseVault": "Переглянути вміст сховища",
-    "closePopup": "Закрити цю підказку",
     "confirmLogout": "Ви впевнені, що хочете вийти? Вам потрібно знову увійти, використовуючи свій головний пароль, щоб отримати доступ до свого сховища.",
     "connectingTo": "Підключення до",
     "createNewVault": "Створити нове сховище",
@@ -95,8 +97,7 @@
       "httpError": "Помилка HTTP: {{status}}",
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
       "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
-      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK».",
-      "sessionExpired": "Термін дії вашого сеансу закінчився. Будь ласка, увійдіть знову."
+      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK»."
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
@@ -162,21 +163,18 @@
         "welcomeMessage": "Чудово! Тепер налаштуймо ваш головний пароль для AliasVault."
       },
       "passwordStepTitle": "Встановіть пароль",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Установити",
-      "termsAndConditionsStepTitle": "Використання AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Я прочитав і згоден з правилами та умовами",
-        "pleaseReadAndAgree": "Перш ніж продовжити, прочитайте та погодьтеся з наведеними нижче умовами.",
-        "termsContent": "AliasVault призначений для підвищення вашої онлайн-безпеки та захисту вашої конфіденційності. За допомогою AliasVault ви можете створювати унікальні ідентифікатори та псевдоніми електронної пошти для різних онлайн-акаунтів, що допоможе вам зберегти контроль над особистою інформацією та зменшити ризик викрадення особистих даних.\n\nВикористовуючи AliasVault, ви погоджуєтеся з такими умовами:\n\n1. Ви не будете використовувати AliasVault для будь-яких незаконних цілей, зокрема для шахрайства, крадіжки особистих даних або видавання себе за реальних осіб.\n\n2. Ви несете відповідальність за збереження конфіденційності вашого облікового запису та будь-яких псевдонімів, створених за допомогою AliasVault.\n\n3. AliasVault залишає за собою право припинити дію вашого облікового запису, якщо ми підозрюємо будь-яке зловживання або порушення цих умов.\n\n4. Ви розумієте, що, хоча AliasVault підвищує рівень вашої конфіденційності, жодна система не є повністю надійною, і ви використовуєте цю послугу на власний ризик."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Помічник AliasVault",
         "enterUsernameInstructions": "Будь ласка, введіть ім'я користувача, яке ви хочете використовувати. Це може бути ваша адреса електронної пошти або будь-яке унікальне ім'я.",
-        "greatNowLetsSetupUsername": "Чудово! Тепер налаштуймо ваше ім’я користувача для AliasVault.",
         "rememberUsernameNote": "Пам’ятайте: це те, що ви використовуватимете для входу пізніше, тому переконайтеся, що ви це запам’ятаєте!",
         "serverCommunicationError": "Під час обміну інформацією з сервером AliasVault сталася помилка.",
         "usernamePlaceholder": "Введіть бажане ім'я користувача або електронну адресу",
-        "validatingUsernameMessage": "Перевірка імені користувача..."
+        "validatingUsernameMessage": "Перевірка імені користувача...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Оберіть ім'я користувача"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "Не вдалося з’єднатися із серверами AliasVault. Спробуйте ще раз (пізніше).",
       "enterMasterPasswordDescription": "Введіть свій головний пароль, щоб розблокувати сховище.",
-      "incorrectPasswordError": "Пароль неправильний. Будь ласка, спробуйте ввести пароль ще раз або вийдіть і знову ввійдіть.",
       "loggingInWithWebAuthn": "Вхід за допомогою ключа доступу...",
       "quickUnlockDescription": "Швидко розблокуйте своє сховище за допомогою ключа доступу. Або увійдіть, використовуючи пароль як резервний варіант.",
-      "sessionTimedOutError": "Ваш сеанс вичерпано. Будь ласка, увійдіть знову.",
       "unlockButton": "Розблокувати",
       "unlockWithMobileButton": "Розблокувати за допомогою мобільного додатку",
       "unlockWithWebAuthn": "Розблокувати за допомогою ключа доступу",
       "webAuthnNotSupportedError": "Ваш поточний браузер не підтримує розширення WebAuthn PRF. Будь ласка, увійдіть, використовуючи свій пароль."
     },
-    "unlockSuccessDescription": "Тепер ви можете використовувати автозаповнення форм входу у вашому браузері.",
-    "unlockSuccessTitle": "Ваше сховище успішно розблоковано",
     "unlockTitle": "Розблокувати своє сховище",
     "unlockVault": "Розблокувати Vault",
     "unlockWithBiometric": "Unlock with {{biometric}}",
@@ -225,7 +219,6 @@
     "back": "Назад",
     "backspace": "Backspace",
     "cancel": "Скасувати",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистити буфер обміну"
     },
@@ -259,8 +252,8 @@
     "errorPasswordMismatch": "Паролі не збігаються.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Це розширення браузера застаріло, і його не можна використовувати для доступу до цього сховища. Щоб продовжити, оновіть це розширення браузера.",
-      "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +263,13 @@
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
-      "serverVersionNotSupported": "Щоб використовувати це розширення браузера, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "serverVersionTooOld": "Щоб скористатися цією функцією, потрібно оновити сервер AliasVault до нової версії. Якщо вам потрібна допомога, будь ласка, зверніться до адміністратора сервера.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Сталася невідома помилка.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Сховище заблоковано",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +335,7 @@
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "unavailable": "Unavailable",
     "undo": "Скасувати",
+    "updateApp": "Update app",
     "use": "Використовувати",
     "username": "Ім'я користувача",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -426,8 +420,7 @@
     },
     "title": "Електронні листи",
     "to": "До:",
-    "toColumn": "До",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app."
+    "toColumn": "До"
   },
   "fieldLabels": {
     "alias": {
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "Під час завантаження електронних листів сталася неочікувана помилка. Спробуйте ще раз пізніше.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Помилка завантаження об'єктів",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Are you sure?"
     },
@@ -735,8 +730,7 @@
     "history": "History",
     "home": {
       "alphabeticalOption": "Alphabetical",
-      "buttonLocationText": "button in the top right corner.",
-      "createFirstItemText": "Create your first item using the",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
       "failedToDeleteFolder": "Failed to delete folder.",
@@ -746,8 +740,6 @@
       "importButtonText": "Import from KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "If you previously used a different password manager, you can import your items from it.",
       "loadingMore": "Loading more...",
-      "newAliasButtonText": "\"+ Новий псевдонім\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
       "sortOrderLabel": "Sort Order",
@@ -769,16 +761,16 @@
     "loginCredentials": "Облікові дані для входу",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Створення нового псевдоніму...",
       "namePlaceholderCard": "E.g. Mastercard",
       "namePlaceholderNote": "E.g. Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
       "typeLogin": "Увійти"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Виберіть текст, який потрібно вставити в поле введення",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Ім'я користувача скопійовано",
     "usernamePrefix": "Ім'я користувача: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "Переглянути подробиці",
     "website": "Вебсайт"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Активно на всіх сайтах (якщо не вимкнено нижче)",
     "advancedOptions": "Додаткові параметри",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Параметри буфера обміну",
     "contextMenuDescription": "Натисніть правою кнопкою миші на поля введення, щоб отримати доступ до параметрів AliasVault",
     "contextMenuSettings": "Налаштування контекстного меню",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",
       "aliasGenerationLanguageDescription": "Set the default language that will be used when generating new identities.",
-      "aliasSettingsTitle": "Identity Generator Settings",
       "appLanguageDescription": "Set the language for the application interface.",
       "appLanguageTitle": "Application Language",
       "autoEmailRefreshLabel": "Auto refresh emails content when new ones arrive",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Public Domains"
     },
     "globalSettings": "Глобальні налаштування",
+    "groups": {
+      "autofill": "Автозаповнення",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Генератор ідентифікаційних даних",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Встановіть віковий діапазон для створення нових ідентифікаційних даних.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Не вдалося вимкнути двофакторну автентифікацію.",
         "pageDescription": "Вимкнення двофакторної автентифікації означає, що ви зможете входити в систему, використовуючи лише свій пароль.",
         "pageTitle": "Вимкнути двофакторну автентифікацію",
-        "statusMessage": "Двофакторну автентифікацію наразі ввімкнено. Вимкніть її, щоб мати доступ до свого сховища лише за паролем.",
         "twoFactorDisabledSuccess": "Двофакторну автентифікацію успішно вимкнено.",
-        "twoFactorNotEnabled": "Двофакторна автентифікація не ввімкнена.",
-        "warningMessage": "Зверніть увагу: після вимкнення двофакторної автентифікації будь-які налаштовані програми-автентифікатори перестануть працювати. Якщо ви захочете знову ввімкнути двофакторну автентифікацію, вам доведеться знову налаштувати програми-автентифікатори."
+        "twoFactorNotEnabled": "Двофакторна автентифікація не ввімкнена."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Не вдалося ввімкнути двофакторну автентифікацію.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Введіть код підтвердження",
         "verifyAndEnableButton": "Перевірити та увімкнути"
       },
-      "pageDescription": "Configure security settings.",
-      "pageTitle": "Налаштування безпеки",
       "passkeyUnlock": {
         "disableButton": "Вимкнути розблокування кодом доступу",
         "disabledDescription": "За замовчуванням, перезавантаження сторінки або вкладки AliasVault вимагає повторного введення головного пароля. За допомогою ключа доступу ви можете миттєво розблокувати своє сховище. Після ввімкнення головний пароль шифрується локально за допомогою розширення PRF ключа доступу. Примітка: ключ доступу працюватиме лише на тому пристрої та в тому браузері, на якому його ввімкнено.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Двофакторну автентифікацію наразі вимкнено. Щоб покращити безпеку вашого облікового запису, радимо вам її ввімкнути.",
-        "enabledMessage": "Двофакторна автентифікація наразі ввімкнена."
+        "enabledMessage": "Двофакторна автентифікація наразі ввімкнена.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Виберіть мову",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "Налаштування URL-адреси сервера AliasVault для самостійно розміщених екземплярів",
     "serverUrl": "URL-адреса сервера",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Налаштування, специфічні для сайту",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
@@ -1568,12 +1559,14 @@
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Додати двофакторний код автентифікації",
     "addTotpCodeModalTitle": "Додати код двофакторного коду TOTP",
+    "algorithm": "Algorithm",
     "closeFormButton": "Закрити форму",
     "defaultName": "Authenticator",
     "deleteCodeConfirmation": "Ви впевнені, що хочете видалити цей код TOTP?",
     "deleteCodeTitle": "Видалити код TOTP",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "deleteTotpCodeTitle": "Delete 2FA Code",
+    "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Ім'я (необов'язково)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Зберегти для перегляду коду",
     "scanQrCode": "Scan QR Code",
     "secretKey": "Секретний ключ",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Перевірка оновлень сховища",
     "checkingVaultUpdates": "Перевірка оновлень сховища",
-    "errors": {
-      "appOutdated": "Ця програма застаріла і не може бути використана для доступу до цієї (новіші) версії сховища. Будь ласка, оновіть додаток AliasVault для продовження.",
-      "failedToGetEncryptedDatabase": "Не вдалося отримати зашифровану базу даних",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "usernameNotFound": "Ім'я користувача не знайдено",
-      "vaultOutdated": "Ваше сховище застаріло. Будь ласка, увійдіть на вебсайт AliasVault та виконайте наведені нижче дії.",
-      "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії."
-    },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Збереження змін у сховищі",
     "syncingUpdatedVault": "Синхронізація оновленого сховища",
-    "syncingVault": "Синхронізація сховища",
-    "uploadingVaultToServer": "Завантаження сховища на сервер"
+    "syncingVault": "Синхронізація сховища"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "БЕТА",
       "enableDarkMode": "Перемкнути у темний режим",
       "enableLightMode": "Перемкнути у світлий режим",
-      "logOut": "Вийти",
-      "openMenuLabel": "Відкрити меню"
+      "logOut": "Вийти"
     },
     "welcome": {
       "createFirstIdentityButton": "Create Your First Identity",

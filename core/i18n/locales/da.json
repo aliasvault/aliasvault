@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Din konto er blevet deaktiveret. Hvis du mener, at dette er en fejl, bedes du kontakte support.",
     "ACCOUNT_LOCKED": "Kontoen er midlertidigt låst på grund af for mange mislykkede forsøg. Prøv venligst igen senere.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontoen er blevet slettet.",
+    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
     "CLAIM_DOES_NOT_EXIST": "Der opstod en fejl under forsøg på at indlæse e-mails. Prøv at redigere og gemme posten for at synkronisere databasen, og prøv derefter igen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Den valgte e-mailadresse er allerede i brug. Skift venligst e-mailadressen ved at redigere denne post.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Intern serverfejl.",
     "INVALID_AUTHENTICATOR_CODE": "Ugyldig godkendelseskode. Prøv venligst igen.",
     "INVALID_RECOVERY_CODE": "Ugyldig gendannelseskode. Prøv venligst igen.",
     "INVALID_REFRESH_TOKEN": "Ugyldigt refresh-token.",
+    "INVITE_CODE_INVALID": "Dette invitationslink er ugyldigt, er udløbet eller er allerede blevet brugt. Bed administratoren om et nyt.",
     "PASSWORD_MISMATCH": "Den angivne adgangskode matcher ikke din nuværende adgangskode.",
     "PENDING_MIGRATIONS": "Der er udestående migreringer. Kør venligst 'dotnet ef database update' for at anvende dem.",
     "PUBLIC_REGISTRATION_DISABLED": "Ny brugeroprettelse er i øjeblikket deaktiveret på denne server. Kontakt venligst administratoren.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token er påkrævet.",
     "REGISTRATION_FAILED": "Kunne ikke oprette kontoen. Prøv igen om et par minutter. Hvis dette problem fortsætter, kontakt venligst support.",
+    "UNKNOWN_ERROR": "Der opstod en ukendt fejl. Prøv venligst igen.",
     "USERNAME_ALREADY_IN_USE": "Brugernavnet er allerede i brug.",
     "USERNAME_AVAILABLE": "Brugernavnet er ledigt.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Brugernavn kan ikke være tomt eller bestå af mellemrum.",
@@ -69,19 +72,18 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Vedhæftet fil slettet korrekt.",
+    "fileEmpty": "{{filename}} er tomt.",
     "firefoxExpandRequired": "Brug det udvidede vindue for at uploade filer.",
     "openExpandedWindow": "Åbn udvidet vindue",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Fejl ved upload af fil: {{error}}",
     "uploadSuccess": "Filer blev uploadet korrekt.",
     "uploading": "Uploader..."
   },
   "auth": {
     "authCode": "Autentificeringskode",
     "authCodeNote": "Bemærk: Hvis du ikke har adgang til din autentificeringsenhed, kan du nulstille din 2FA med en gendannelseskode ved at logge ind via hjemmesiden.",
-    "autoCloseUnlockPopup": "Luk automatisk ved fremtidige log in",
     "biometricPrompt": "Vil du bruge {{biometric}} til at låse din boks op?",
     "browseVault": "Gennemse boksens indhold",
-    "closePopup": "Luk denne popup",
     "confirmLogout": "Er du sikker på, at du vil logge ud? Du skal logge ind igen med din master-adgangskode for at få adgang til din boks.",
     "connectingTo": "Forbinder til",
     "createNewVault": "Opret ny boks",
@@ -95,8 +97,7 @@
       "httpError": "HTTP-fejl: {{status}}",
       "networkError": "Netværksanmodning mislykkedes. Tjek venligst din internetforbindelse og prøv igen.",
       "networkErrorSelfHosted": "Netværksanmodning mislykkedes. Tjek din netværksforbindelse og serverens tilgængelighed. For selvhostede instanser skal du sikre dig, at du har installeret et gyldigt SSL-certifikat. Selvsignerede certifikater understøttes ikke på mobile enheder af sikkerhedsmæssige årsager.",
-      "serverErrorSelfHosted": "Kunne ikke få forbindelse til API'en. For selvhostede instanser skal du kontrollere, at API-endpointet er tilgængeligt ved at besøge det i en browser: det bør vise 'OK'.",
-      "sessionExpired": "Din session er udløbet. Log venligst ind igen."
+      "serverErrorSelfHosted": "Kunne ikke få forbindelse til API'en. For selvhostede instanser skal du kontrollere, at API-endpointet er tilgængeligt ved at besøge det i en browser: det bør vise 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Hvis du for nylig har ændret din adgangskode og oplever problemer med at logge ind med din nye adgangskode, skal du være opmærksom på, at serveradministratoren muligvis kan gendanne en tidligere backup af din boks (vault) for at hjælpe dig. Hvis dette er tilfældet, bedes du kontakte serveradministratoren.",
@@ -138,7 +139,7 @@
     "noAccountYet": "Har du endnu ikke en konto?",
     "passwordAttemptsWarning": "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode {{remainingAttempts}} flere gange.",
     "passwordPlaceholder": "Indtast din adgangskode",
-    "pinInput": "PIN input",
+    "pinInput": "PIN indtastning",
     "register": {
       "passwordLabel": "Din adgangskode",
       "passwordPlaceholder": "••••••••",
@@ -162,21 +163,18 @@
         "welcomeMessage": "Fantastisk! Lad os nu oprette din hovedadgangskode til AliasVault."
       },
       "passwordStepTitle": "Vælg Adgangskode",
+      "registrationDisabledMessage": "Nye konti kan kun oprettes med et invitationslink. Spørg serveradministratoren om en invitation.",
+      "registrationDisabledTitle": "Lukket for brugerregistrering",
       "setupStepTitle": "Opsætning",
-      "termsAndConditionsStepTitle": "Brug Af AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Jeg har læst og accepterer vilkårene og betingelserne",
-        "pleaseReadAndAgree": "Læs og accepter venligst følgende vilkår og betingelser, før du fortsætter.",
-        "termsContent": "AliasVault er designet til at forbedre din online sikkerhed og beskytte dit privatliv. Med AliasVault kan du oprette unikke identiteter og e-mail-aliaser til dine forskellige online-konti, hvilket hjælper dig med at bevare kontrollen over dine personlige oplysninger og reducere risikoen for identitetstyveri.\n\nVed at bruge AliasVault accepterer du følgende vilkår:\n\n1. Du må ikke bruge AliasVault til ulovlige formål, herunder men ikke begrænset til svindel, identitetstyveri eller udgivelse for at være rigtige personer.\n2. Du er ansvarlig for at opretholde fortroligheden af din konto og eventuelle aliaser oprettet via AliasVault.\n3. AliasVault forbeholder sig retten til at opsige din konto, hvis vi har mistanke om misbrug eller overtrædelse af disse vilkår.\n4. Du er indforstået med, at selvom AliasVault forbedrer dit privatliv, er intet system fuldstændig fejlfrit, og du bruger tjenesten på eget ansvar."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
         "enterUsernameInstructions": "Indtast venligst det brugernavn, du ønsker at bruge. Dette kan være din e-mailadresse eller et unikt navn efter eget valg.",
-        "greatNowLetsSetupUsername": "Godt! Lad os nu opsætte dit brugernavn til AliasVault.",
         "rememberUsernameNote": "Husk: Det er dette navn, du skal bruge til at logge ind senere, så sørg for at vælge noget, du kan huske!",
         "serverCommunicationError": "Der opstod en fejl under kommunikationen med AliasVault-serveren.",
         "usernamePlaceholder": "Indtast dit ønskede brugernavn eller e-mail",
-        "validatingUsernameMessage": "Validerer brugernavn..."
+        "validatingUsernameMessage": "Validerer brugernavn...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Vælg brugernavn"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "Forbindelsen til AliasVault-serverne mislykkedes. Prøv venligst igen (senere).",
       "enterMasterPasswordDescription": "Indtast din hovedadgangskode for at låse din boks op.",
-      "incorrectPasswordError": "Adgangskoden er forkert. Prøv venligst at indtaste din adgangskode igen, eller log ud og log ind igen.",
       "loggingInWithWebAuthn": "Logger ind med adgangsnøgle...",
       "quickUnlockDescription": "Lås hurtigt din boks op ved hjælp af din adgangsnøgle. Eller log ind med din adgangskode som fallback.",
-      "sessionTimedOutError": "Din session er udløbet. Log venligst ind igen.",
       "unlockButton": "Lås op",
       "unlockWithMobileButton": "Lås op med mobil-app",
       "unlockWithWebAuthn": "Lås op med adgangsnøgle",
       "webAuthnNotSupportedError": "Din nuværende browser understøtter ikke WebAuthn PRF-udvidelsen. Log venligst ind med din adgangskode i stedet."
     },
-    "unlockSuccessDescription": "Du kan nu bruge autofyld i login-formularer i din browser.",
-    "unlockSuccessTitle": "Din boks er oplåst",
     "unlockTitle": "Lås Din Boks op",
     "unlockVault": "Lås boks op",
     "unlockWithBiometric": "Lås op med {{biometric}}",
@@ -223,9 +217,8 @@
     "attachmentDownloadFailed": "Kunne ikke downloade vedhæftet fil",
     "attachments": "Vedhæftede filer",
     "back": "Tilbage",
-    "backspace": "Backspace",
+    "backspace": "Slet tegn",
     "cancel": "Annuller",
-    "clientVersionUnsupported": "Denne version af appen understøttes ikke længere af serveren. Opdater venligst siden for at indlæse den seneste version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Ryd udklipsholder"
     },
@@ -259,35 +252,35 @@
     "errorPasswordMismatch": "Adgangskoderne er ikke ens.",
     "errors": {
       "backgroundUnresponsive": "Baggrundstjenesten for udvidelsen svarer ikke. Luk og genåbn udvidelsen, eller genstart din browser, hvis problemet fortsætter.",
-      "browserExtensionOutdated": "Denne browserudvidelse er forældet og kan ikke bruges til at få adgang til denne boks. Opdater venligst browserudvidelsen for at fortsætte.",
-      "clientVersionNotSupported": "Denne version af AliasVault-browserudvidelsen understøttes ikke længere af serveren. Opdater venligst din browserudvidelse til den nyeste version.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "clientNotSupported": "Denne version af AliasVault understøttes ikke længere af serveren. Opdatér venligst til den seneste version.",
+      "clientOutdated": "Denne version af AliasVault kan ikke åbne din boks, da den blev opgraderet af en nyere version. Opdater AliasVault for at fortsætte.",
+      "contactSupportAt": "Kontakt support på {{email}}.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Din adgangskode er korrekt, men krypteringsnøglerne til din boks kunne ikke åbnes. Kontakt venligst support.",
       "mergeFailed": "Kunne ikke flette ændringer i boks. Prøv venligst igen.",
       "mobileLoginRequestDeclined": "Login-anmodningen blev afvist på din mobilenhed.",
       "mobileLoginRequestExpired": "Anmodning om mobil-logon udløb. Genindlæs siden og prøv igen.",
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "serverVersionNotSupported": "AliasVault-serveren skal opdateres til en nyere version for at kunne bruge denne browserudvidelse. Kontakt venligst support, hvis du har brug for hjælp.",
-      "serverVersionTooOld": "AliasVault-serveren skal opdateres til en nyere version for at bruge denne funktion. Kontakt venligst serveradministratoren, hvis du har brug for hjælp.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "En uventet fejl opstod. Prøv igen, og kontakt support, hvis problemet fortsætter.",
       "unknownError": "Der opstod en ukendt fejl.",
       "unknownErrorTryAgain": "Der opstod en ukendt fejl. Prøv venligst igen.",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "updateRequiredTitle": "Opdatering nødvendig",
+      "vaultDataUnreadable": "Din boks data kunne ikke læses, så dine data er ikke tilgængelige i øjeblikket. Kontakt venligst support.",
       "vaultIsLocked": "Boksen er låst",
       "vaultLoadError": "Noget gik galt under indlæsning af din boks. Kopier venligst fejloplysningerne nedenfor og kontakt support for hjælp.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "Din boks kan ikke indlæses",
       "vaultNotAvailable": "Boksen er ikke tilgængelig",
       "vaultSyncTimeout": "Boks synkronisering timeout. Dette kan ske, når boksen er stor eller internetforbindelsen er langsom. Prøv igen.",
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere den. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen."
     },
     "generate": "Generer",
-    "help": "Help",
+    "help": "Hjælp",
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
     "hidePassword": "Skjul adgangskode",
@@ -311,7 +304,7 @@
     "ok": "OK",
     "openInNewWindow": "Åbn i nyt vindue",
     "or": "eller",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Sidenavigation",
     "passkeys": "Passkeys",
     "password": "Adgangskode",
     "passwordStrength": {
@@ -322,8 +315,8 @@
       "veryWeak": "Opret Kpteret Eksport",
       "weak": "Bliv bedre"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Forrige",
+    "qrCode": "QR-kode",
     "recentEmails": "Seneste e-mails",
     "refresh": "Opdater",
     "remove": "Fjern",
@@ -340,8 +333,9 @@
     "syncVaultData": "Synkroniser boksdata",
     "syncingChanges": "Synkroniserer ændringer...",
     "twoFactorAuthentication": "To-faktor-godkendelse",
-    "unavailable": "Unavailable",
+    "unavailable": "Utilgængelig",
     "undo": "Fortryd",
+    "updateApp": "Opdater app",
     "use": "Brug",
     "username": "Brugernavn",
     "vaultSaveError": "Kunne ikke gemme ændringer i boks. Prøv venligst igen.",
@@ -426,8 +420,7 @@
     },
     "title": "E-mails",
     "to": "Til:",
-    "toColumn": "Til",
-    "updateClientForFormattedView": "Denne e-mail kræver en nyere app-version for at vise den korrekt. Opdatér venligst din app."
+    "toColumn": "Til"
   },
   "fieldLabels": {
     "alias": {
@@ -560,7 +553,7 @@
       "roboformInstructionsPart1": "For at importere dine RoboForm-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne RoboForm, gå til menuen 'RoboForm' > 'Indstillinger' > 'Konto & data' > 'Eksportér' og vælge CSV-format.",
       "strongboxDescription": "Importer adgangskoder fra Strongbox",
       "strongboxInstructionsPart1": "For at importere din Strongbox-boks skal du eksportere den som en CSV-fil. Du kan gøre dette ved at gå til menuen 'File' (Fil) og vælge 'Export Database' (Eksportér database) til CSV.",
-      "template": "template",
+      "template": "skabelon",
       "uploadInstructions": "Når du har eksporteret filen, kan du uploade den nedenfor."
     }
   },
@@ -618,8 +611,8 @@
     "addNewItem": "Tilføj nyt element",
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Tryk på en mappe ovenfor for at se dine oplysninger, eller brug søgningen til at finde specifikke elementer.",
     "allItemsInFoldersClick": "Alle dine elementer er organiseret i mapper. Klik på en mappe ovenfor for at se dine oplysninger, eller brug søgefunktionen til at finde specifikke elementer.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Kunne ikke læse bilag.",
+    "attachmentUnavailable": "Bilagsdata utilgængelige",
     "autofillLinkExisting": {
       "confirmMessage": "Er du sikker på, at du vil linke \"{{url}}\" til denne legitimationsoplysning?",
       "confirmTitle": "Link til legitimationsoplysninger?",
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "Der opstod en uventet fejl under indlæsning af e-mails. Prøv igen senere.",
     "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe, skal du redigere elementet og trykke på mappe-ikonet i navnefeltet.",
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
+    "excludedCharsDescription": "Generated passwords will never contain these characters.",
+    "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "Er du sikker?"
     },
@@ -729,14 +724,13 @@
       "selectFolder": "Vælg mappe"
     },
     "fullName": "Fulde navn",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "Har bilag",
+    "hasPasskey": "Har passkey",
+    "hasTotp": "Har 2FA kode",
     "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
-      "buttonLocationText": "knappen i øverste højre hjørne.",
-      "createFirstItemText": "Opret dit første element ved hjælp af",
+      "createFirstItemManuallyText": "Opret dit første boks element manuelt.",
       "emptyFolderMessage": "Denne mappe er tom.",
       "failedToCreateFolder": "Kunne ikke oprette mappe.",
       "failedToDeleteFolder": "Kunne ikke slette mappe.",
@@ -746,8 +740,6 @@
       "importButtonText": "Importer fra KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Hvis du tidligere har brugt en anden adgangskodeadministrator, kan du importere dine elementer fra den.",
       "loadingMore": "Indlæser flere...",
-      "newAliasButtonText": "\"+ Nyt alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Ingen elementer endnu",
       "pageDescription": "Find alle dine elementer nedenfor.",
       "sortOrderLabel": "Sorteringsrækkefølge",
@@ -769,16 +761,16 @@
     "loginCredentials": "Loginoplysninger",
     "logo": {
       "builtin": {
-        "Bank": "Bank",
-        "Dev": "Udvikling",
-        "Game": "Spil",
-        "Health": "Sundhed",
-        "Mail": "Mail",
-        "Media": "Medie",
-        "Shopping": "Indkøb",
-        "Social": "Sociale",
-        "Travel": "Rejser",
-        "Work": "Arbejde"
+        "bank": "Bank",
+        "dev": "Udvikling",
+        "game": "Spil",
+        "health": "Sundhed",
+        "mail": "Mail",
+        "media": "Medie",
+        "shopping": "Indkøb",
+        "social": "Sociale",
+        "travel": "Rejser",
+        "work": "Arbejde"
       },
       "builtinLogos": "Ikon bibliotek",
       "chooseLogo": "Vælg ikon",
@@ -790,7 +782,7 @@
       "sourceFavicon": "Fra {{domain}}",
       "sourceNone": "Ingen ikon"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Ingen tilgængelige bilag.",
     "noEmailsYet": "Ingen e-mails modtaget endnu.",
     "noHistoryAvailable": "Ingen historik tilgængelig",
     "noItemsFound": "Ingen elementer fundet. Opret et for at komme i gang. Tip: Du kan også logge ind på AliasVault-webappen for at importere oplysninger fra andre adgangskodeadministratorer.",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Opretter nyt alias...",
       "namePlaceholderCard": "F.eks. Mastercard",
       "namePlaceholderNote": "F.eks. Pasoplysninger",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Ny",
       "typeCard": "Kort",
       "typeLogin": "Log på"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Vælg den tekst, der skal indsættes i det fokuserede inputfelt",
     "serverUnavailableMessage": "Serveren er i øjeblikket utilgængelig. Prøv igen senere.",
     "serverUnavailableTitle": "Server utilgængelig",
-    "serverVersionNotSupportedContactAdmin": "Server versionen er forældet. Kontakt venligst din administrator for at opdatere serveren.",
-    "serverVersionNotSupportedMessage": "Serverversionen er forældet. Opdater venligst din server til den nyeste version.",
     "serverVersionNotSupportedTitle": "Serveropdatering påkrævet",
     "sessionExpiredMessage": "Din session er udløbet. Log venligst ind igen.",
     "sessionExpiredTitle": "Session udløbet",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "disse legitimationsoplysninger",
     "usernameCopied": "Brugernavn kopieret",
     "usernamePrefix": "Brugernavn: ",
-    "versionNotSupportedMessage": "Din app-version understøttes ikke længere. Opdater venligst til den nyeste version.",
     "versionNotSupportedTitle": "Opdatering påkrævet",
     "viewDetails": "Vis detaljer",
     "website": "Websted"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Brug browser-passkey"
   },
   "settings": {
+    "accountSecurity": "Konto Sikkerhed",
     "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "advancedOptions": "Avancerede indstillinger",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Kun Lokal Udklipsholder",
     "clipboardLocalOnlyDescription": "Behold kopierede legitimationsoplysninger på denne enhed i stedet for at synkronisere dem med dine andre Apple-enheder via Universal Udklipsholder.",
     "clipboardLocalOnlyDisabledWarning": "Med dette fra kan kopierede legitimationsoplysninger synkronisere til dine andre Apple-enheder (Mac, iPad osv.) via Universal Udklipsholder.",
-    "clipboardSettings": "Indstillinger for udklipsholder",
     "contextMenuDescription": "Højreklik på inputfelter for at få adgang til AliasVault-funktioner",
     "contextMenuSettings": "Indstillinger for kontekstmenu",
     "copyTotpOnFill": "Kopier TOTP kode ved autofyld",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
       "aliasGenerationGenderDescription": "Indstil standardpræference for køn ved generering af nye identiteter.",
       "aliasGenerationLanguageDescription": "Indstil det standardsprog, der skal bruges ved generering af nye identiteter.",
-      "aliasSettingsTitle": "Indstillinger for identitetsgenerator",
       "appLanguageDescription": "Indstil sproget for applikationens brugerflade.",
       "appLanguageTitle": "Applikationssprog",
       "autoEmailRefreshLabel": "Opdater automatisk e-mailindhold, når der kommer nye beskeder",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Offentlige domæner"
     },
     "globalSettings": "Globale indstillinger",
+    "groups": {
+      "autofill": "Autofyld",
+      "general": "Generelt",
+      "generators": "Generatorer"
+    },
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Indstil aldersgruppen for generering af nye identiteter.",
@@ -1285,7 +1277,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Godkend log ind",
         "codeMismatch": "Nummeret matcher ikke. Login-anmodningen blev afvist.",
         "confirmMessage": "En anden enhed beder om at logge ind med din konto. Det vil få fuld adgang til din boks. Fortsæt kun, hvis du selv startede dette login.",
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Kunne ikke deaktivere tofaktorautentificering.",
         "pageDescription": "Deaktivering af tofaktorautentificering betyder, at du vil kunne logge ind med kun din adgangskode.",
         "pageTitle": "Deaktiver tofaktorautentificering",
-        "statusMessage": "Tofaktorautentificering er i øjeblikket aktiveret. Deaktiver den for at kunne få adgang til din boks med kun din adgangskode.",
         "twoFactorDisabledSuccess": "Tofaktorautentificering er nu deaktiveret korrekt.",
-        "twoFactorNotEnabled": "Tofaktorautentificering er ikke aktiveret.",
-        "warningMessage": "Bemærk venligst: efter deaktivering af tofaktorautentificering vil alle konfigurerede autentificeringsapps holde op med at fungere. Når du ønsker at genaktivere tofaktorautentificering, skal du konfigurere autentificeringsappsene igen."
+        "twoFactorNotEnabled": "Tofaktorautentificering er ikke aktiveret."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Kunne ikke aktivere to-faktor-godkendelse.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Indtast bekræftelseskode",
         "verifyAndEnableButton": "Bekræft og aktiver"
       },
-      "pageDescription": "Konfigurer sikkerhedsindstillinger.",
-      "pageTitle": "Sikkerhedsindstillinger",
       "passkeyUnlock": {
         "disableButton": "Deaktiver oplåsning med passkey",
         "disabledDescription": "Som standard kræver genindlæsning af AliasVault-siden eller fanen, at du indtaster din hovedadgangskode igen. Med en passkey kan du låse din boks op øjeblikkeligt. Når det er aktiveret, bliver din hovedadgangskode krypteret lokalt ved hjælp af passkey'ens PRF-udvidelse. Bemærk: passkey'en vil kun fungere på den aktuelle enhed og browser, hvor du aktiverer den.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "To-faktor-godkendelse er i øjeblikket deaktiveret. For at forbedre din kontosikkerhed anbefaler vi, at du aktiverer det.",
-        "enabledMessage": "To-faktor-godkendelse er i øjeblikket aktiveret."
+        "enabledMessage": "To-faktor-godkendelse er i øjeblikket aktiveret.",
+        "notEnabledWarning": "Din boks er i øjeblikket kun tilgængelig via din hovedadgangskode. Vi anbefaler, at du aktiverer to-faktor godkendelse for at forbedre din kontosikkerhed."
       }
     },
     "selectLanguage": "Vælg sprog",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "Konfigurer AliasVault server-URL for selv-hostede instanser",
     "serverUrl": "Server-URL",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessioner Og Log filer",
+    "sessionsAndLogsDescription": "Se hvor du er logget ind og se seneste loginforsøg.",
     "siteSpecificSettings": "Webstedsspecifikke indstillinger",
     "storageInsights": {
       "breadcrumbTitle": "Indblik i lagring",
@@ -1470,7 +1461,7 @@
       "deleteAllLogosButton": "Slet alle logoer",
       "deleteAllLogosConfirmMessage": "Dette fjerner alle gemte logo fra din boks og rydder logoet på hver legitimationsoplysninger. Du kan gendownloade dem når som helst. Fortsæt?",
       "deleteAllLogosConfirmTitle": "Slet alle logoer?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Fjernede logo for {{count}} elementer.",
       "itemsWithAttachmentsLabel": "Elementer med vedhæftninger",
       "itemsWithLogosLabel": "Elementer med logo",
       "logoManagementDescription": "Logoer hentes fra favicon af hvert element hjemmeside. Du kan slette hvert logo for at genvinde plads, eller re-downloade dem for at hente forbedrede versioner.",
@@ -1480,9 +1471,9 @@
       "redownloadAllLogosButton": "Genindlæs alle logoer",
       "redownloadAllLogosConfirmMessage": "Dette genindlæser favicon for alle legitimationsoplysninger, der har en hjemmeside URL, erstatter det eksisterende logo. Afhængigt af din boks størrelse kan dette tage et stykke tid. Fortsæt?",
       "redownloadAllLogosConfirmTitle": "Genindlæs alle logoer?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Opdaterede logoet for {{count}} elementer.",
+      "serverTotalDescription": "Den nøjagtige størrelse af din krypterede boks som er gemt på serveren, herunder vedhæftede filer og logoer.",
+      "serverTotalTitle": "Boks størrelse på server",
       "topAttachmentsDescription": "Top 10 største vedhæftede filer. Fjern vedhæftningen, hvis du ikke længere har brug for det.",
       "topAttachmentsTitle": "Største vedhæftede elementer",
       "topLogosDescription": "Top 10 største service logoer. Logoer genbruges for elementer med samme domæne.",
@@ -1557,10 +1548,10 @@
     "syncing": "Synkroniserer...",
     "tapToRetry": "Tryk for at prøve synkronisering igen",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Hvis problemet fortsætter, kontakt vores supportteam for at få hjælp.",
+      "notCompatible": "Versionen af denne boks er ikke kompatibel med din klient.",
+      "title": "Boks version understøttes ikke",
+      "updateInstructions": "Opdater venligst til den seneste version af AliasVault, opdater denne side, og prøv igen."
     }
   },
   "totp": {
@@ -1568,12 +1559,14 @@
     "addName": "Tilføj et navn (valgfrit)",
     "addTotpCodeDescription": "Tilføj en to-faktor-godkendelseskode",
     "addTotpCodeModalTitle": "Tilføj 2FA TOTP-kode",
+    "algorithm": "Algorithm",
     "closeFormButton": "Luk formular",
     "defaultName": "Godkender",
     "deleteCodeConfirmation": "Er du sikker på, at du vil slette denne TOTP-kode?",
     "deleteCodeTitle": "Slet TOTP-kode",
     "deleteTotpCodeConfirmation": "Er du sikker på, at du vil slette 2FA koden \"{{name}}\"?",
     "deleteTotpCodeTitle": "Slet 2FA Kode",
+    "digits": "Digits",
     "enterManually": "Indtast hemmelig nøgle",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
+    "period": "Time step",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
     "secretKey": "Hemmelig nøgle (Secret Key)",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Tjekker for opdateringer til boks",
     "checkingVaultUpdates": "Tjekker opdateringer til boks",
-    "errors": {
-      "appOutdated": "Denne app er forældet og kan ikke bruges til at tilgå denne (nyere) boks-version. Opdater venligst AliasVault-appen for at fortsætte.",
-      "failedToGetEncryptedDatabase": "Kunne ikke hente krypteret database",
-      "passwordChangeRequiresOnline": "Ændring af adgangskode kræver en internetforbindelse. Prøv venligst igen, når du er online.",
-      "serverVersionNotSupported": "AliasVault-serveren skal opdateres til en nyere version for at kunne bruge denne mobilapp. Kontakt venligst support, hvis du har brug for hjælp.",
-      "usernameNotFound": "Brugernavn ikke fundet",
-      "vaultOutdated": "Din boks er forældet. Log venligst ind på AliasVault-hjemmesiden og følg trinene.",
-      "versionNotSupported": "Denne version af AliasVault-mobilappen understøttes ikke længere af serveren. Opdater venligst din app til den nyeste version."
-    },
     "mergingVault": "Fletter ændringer i boks...",
     "savingChangesToVault": "Gemmer ændringer i boks",
     "syncingUpdatedVault": "Synkroniserer opdateret boks",
-    "syncingVault": "Synkroniserer boks",
-    "uploadingVaultToServer": "Uploader boks til server"
+    "syncingVault": "Synkroniserer boks"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "BETA",
       "enableDarkMode": "Skift til mørkt tema",
       "enableLightMode": "Skift til lyst tema",
-      "logOut": "Log ud",
-      "openMenuLabel": "Åbn menu"
+      "logOut": "Log ud"
     },
     "welcome": {
       "createFirstIdentityButton": "Opret din første identitet",

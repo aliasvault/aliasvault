@@ -3,17 +3,20 @@
     "ACCOUNT_BLOCKED": "Tá do chuntas díchumasaithe. Má chreideann tú gur botún é seo, déan teagmháil leis an bhfoireann tacaíochta.",
     "ACCOUNT_LOCKED": "Tá an cuntas faoi ghlas go sealadach mar gheall ar an iomarca iarrachtaí nár éirigh leo. Déan iarracht arís ar ball.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Scriosadh an cuntas go rathúil.",
+    "ALIAS_LIMIT_REACHED": "Tá an teorainn maidir le hailiasanna ríomhphoist nua a chruthú bainte amach agat. Déan iarracht arís níos déanaí, le do thoil, nó déan teagmháil leis an tacaíocht má theastaíonn tuilleadh uait.",
     "CLAIM_DOES_NOT_EXIST": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht an iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Tá an seoladh ríomhphoist atá roghnaithe faoi láthair in úsáid cheana féin. Athraigh an seoladh ríomhphoist tríd an dintiúir seo a chur in eagar.",
+    "CLAIM_TAKEN": "Tá an seoladh ríomhphoist seo in úsáid ag cuntas eile cheana féin. Cuir an mhír seo in eagar agus roghnaigh seoladh ríomhphoist eile.",
     "INTERNAL_SERVER_ERROR": "Earráid inmheánach freastalaí.",
     "INVALID_AUTHENTICATOR_CODE": "Cód fíordheimhnitheora neamhbhailí. Déan iarracht arís.",
     "INVALID_RECOVERY_CODE": "Cód aisghabhála neamhbhailí. Déan iarracht arís.",
     "INVALID_REFRESH_TOKEN": "Comhartha athnuachana neamhbhailí.",
+    "INVITE_CODE_INVALID": "Tá an nasc cuireadh seo neamhbhailí, imithe in éag nó úsáidte cheana féin. Iarr ceann nua ar an riarthóir, le do thoil.",
     "PASSWORD_MISMATCH": "Ní hionann an focal faire a cuireadh ar fáil agus do phasfhocal reatha.",
     "PENDING_MIGRATIONS": "Tá imirce ar feitheamh ann. Rith 'dotnet ef database update' le cur i bhfeidhm iad.",
     "PUBLIC_REGISTRATION_DISABLED": "Tá clárú cuntais nua díchumasaithe ar an bhfreastalaí seo faoi láthair. Téigh i dteagmháil leis an riarthóir le do thoil.",
     "REFRESH_TOKEN_REQUIRED": "Tá comhartha athnuachana ag teastáil.",
     "REGISTRATION_FAILED": "Níorbh fhéidir an cuntas a chruthú. Déan iarracht arís i gceann cúpla nóiméad. Má leanann an fhadhb seo, déan teagmháil leis an bhfoireann tacaíochta.",
+    "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
     "USERNAME_ALREADY_IN_USE": "Tá an t-ainm úsáideora in úsáid cheana féin.",
     "USERNAME_AVAILABLE": "Tá ainm úsáideora ar fáil.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Ní féidir ainm úsáideora a bheith folamh ná spás bán.",
@@ -69,19 +72,18 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "D'éirigh leis an gceangaltán a scriosadh.",
+    "fileEmpty": "Tá {{filename}} folamh.",
     "firefoxExpandRequired": "Chun comhaid a uaslódáil, bain úsáid as an bhfuinneog leathnaithe.",
     "openExpandedWindow": "Oscail Fuinneog Leathnaithe",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Earráid agus an comhad á uaslódáil: {{error}}",
     "uploadSuccess": "D'éirigh le huaslódáil comhaid.",
     "uploading": "Á uaslódáil..."
   },
   "auth": {
     "authCode": "Cód Fíordheimhnithe",
     "authCodeNote": "Tabhair faoi deara: mura bhfuil rochtain agat ar do ghléas fíordheimhnitheora, is féidir leat do 2FA a athshocrú le cód aisghabhála trí logáil isteach tríd an suíomh Gréasáin.",
-    "autoCloseUnlockPopup": "Dúnadh go huathoibríoch ar logáil isteach amach anseo",
     "biometricPrompt": "Ar mhaith leat {{biometric}} a úsáid chun do chruinneachán a dhíghlasáil?",
     "browseVault": "Brabhsáil inneachar cruinneachán",
-    "closePopup": "Dún an phreabfhuinneog seo",
     "confirmLogout": "An bhfuil tú cinnte gur mian leat logáil amach? Ní mór duit logáil isteach arís le do phríomhfhocal faire chun rochtain a fháil ar do stóras.",
     "connectingTo": "Ag nascadh le",
     "createNewVault": "Cruthaigh cruinneachán nua",
@@ -95,8 +97,7 @@
       "httpError": "Earráid HTTP: {{status}}",
       "networkError": "Theip ar an iarratas líonra. Seiceáil do nasc idirlín agus déan iarracht eile.",
       "networkErrorSelfHosted": "Theip ar an iarratas líonra. Seiceáil do nasc líonra agus infhaighteacht do fhreastalaí. I gcás cásanna féinóstáilte, cinntigh go bhfuil teastas SSL bailí suiteáilte agat. Ní thacaítear le teastais féinshínithe ar ghléasanna soghluaiste ar chúiseanna slándála.",
-      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air.",
-      "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil."
+      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air."
     },
     "forgotPassword": {
       "contactAdministrator": "Má d’athraigh tú do phasfhocal le déanaí agus má tá deacrachtaí agat síniú isteach le do phasfhocal nua, tabhair faoi deara go mb’fhéidir go mbeidh riarthóir an fhreastalaí in ann cúltaca níos luaithe de do chruinneachán a aisghabháil chun cabhrú leat. Más amhlaidh atá, déan teagmháil le riarthóir an fhreastalaí.",
@@ -138,7 +139,7 @@
     "noAccountYet": "Gan cuntas fós?",
     "passwordAttemptsWarning": "Focal faire mícheart. Logálfar amach thú má chuireann tú isteach an pasfhocal mícheart {{remainingAttempts}} níos mó uaireanta.",
     "passwordPlaceholder": "Cuir isteach do phasfhocal",
-    "pinInput": "PIN input",
+    "pinInput": "Ionchur PIN",
     "register": {
       "passwordLabel": "Do phasfhocal",
       "passwordPlaceholder": "••••••••",
@@ -162,21 +163,18 @@
         "welcomeMessage": "Go hiontach! Anois, socraímis do phríomhfhocal faire le haghaidh AliasVault."
       },
       "passwordStepTitle": "Socraigh Pasfhocal",
+      "registrationDisabledMessage": "Ní féidir cuntais nua a chruthú ach le nasc cuireadh. Iarr cuireadh ar riarthóir an fhreastalaí.",
+      "registrationDisabledTitle": "Tá clárú úsáideoirí díchumasaithe",
       "setupStepTitle": "Socrú",
-      "termsAndConditionsStepTitle": "Ag Úsáid AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "Léigh mé na Téarmaí agus Coinníollacha agus aontaím leo",
-        "pleaseReadAndAgree": "Léigh na téarmaí agus coinníollacha seo a leanas agus aontaigh leo sula leanann tú ar aghaidh.",
-        "termsContent": "Tá AliasVault deartha chun do shlándáil ar líne a fheabhsú agus do phríobháideacht a chosaint. Le AliasVault, is féidir leat céannachtaí uathúla agus leasainmneacha ríomhphoist a chruthú do do chuntais éagsúla ar líne, rud a chabhraíonn leat smacht a choinneáil ar do chuid faisnéise pearsanta agus an baol goid aitheantais a laghdú.\n\nTrí AliasVault a úsáid, aontaíonn tú leis na téarmaí seo a leanas:\n\n1. Ní úsáidfidh tú AliasVault chun aon chríocha mídhleathacha, lena n-áirítear ach gan a bheith teoranta dóibh calaois, goid aitheantais, nó ligean ort gur daoine fíor iad.\n\n2. Tá tú freagrach as rúndacht do chuntais agus aon leasainmneacha a cruthaíodh trí AliasVault a choinneáil.\n\n3. Forchoimeádann AliasVault an ceart do chuntas a fhoirceannadh má tá amhras orainn faoi aon mhí-úsáid nó sárú ar na téarmaí seo.\n\n4. Tuigeann tú, cé go bhfeabhsaíonn AliasVault do phríobháideacht, nach bhfuil aon chóras go hiomlán neamhdhíobhálach, agus go n-úsáideann tú an tseirbhís ar do phriacal féin."
-      },
+      "termsAgreementLabel": "Tá na <termsLink>Téarmaí agus Coinníollacha</termsLink> léite agam agus aontaím leo",
       "usernameStep": {
         "assistantAvatarAlt": "Cúntóir AliasVault",
         "enterUsernameInstructions": "Cuir isteach ainm úsáideora ar mhaith leat a úsáid. Is féidir leat é seo a bheith mar do sheoladh ríomhphoist nó aon ainm uathúil is fearr leat.",
-        "greatNowLetsSetupUsername": "Go hiontach! Anois, socraímis d'ainm úsáideora le haghaidh AliasVault.",
         "rememberUsernameNote": "Cuimhnigh: Seo an rud a úsáidfidh tú chun logáil isteach níos déanaí, mar sin déan cinnte gur rud é a chuimhneoidh tú!",
         "serverCommunicationError": "Tharla earráid le linn cumarsáide leis an bhfreastalaí AliasVault.",
         "usernamePlaceholder": "Cuir isteach d'ainm úsáideora nó do sheoladh ríomhphoist atá uait",
-        "validatingUsernameMessage": "Ag bailíochtú ainm úsáideora..."
+        "validatingUsernameMessage": "Ag bailíochtú ainm úsáideora...",
+        "welcomeMessage": "Fáilte! Cuirimis tús leis trí ainm úsáideora a roghnú do do chuntas."
       },
       "usernameStepTitle": "Roghnaigh Ainm Úsáideora"
     },
@@ -192,17 +190,13 @@
     "unlockPage": {
       "connectionFailedError": "Theip ar an nasc leis na freastalaithe AliasVault. Déan iarracht arís (níos déanaí).",
       "enterMasterPasswordDescription": "Cuir isteach do phasfhocal máistir chun do chruinneachán a dhíghlasáil.",
-      "incorrectPasswordError": "Tá an focal faire mícheart. Déan iarracht do phasfhocal a iontráil arís, nó logáil amach agus logáil isteach arís.",
       "loggingInWithWebAuthn": "Ag logáil isteach le pasfhocal...",
       "quickUnlockDescription": "Díghlasáil do chruinneachán go tapa ag baint úsáide as do phasfhocal. Nó logáil isteach le do phasfhocal mar rogha eile.",
-      "sessionTimedOutError": "Tá an t-am caite ag do sheisiún. Logáil isteach arís le do thoil.",
       "unlockButton": "Díghlasáil",
       "unlockWithMobileButton": "Díghlasáil le Aip Shoghluaiste",
       "unlockWithWebAuthn": "Díghlasáil le heochair phas",
       "webAuthnNotSupportedError": "Ní thacaíonn do bhrabhsálaí reatha leis an síneadh WebAuthn PRF. Logáil isteach le do phasfhocal ina ionad."
     },
-    "unlockSuccessDescription": "Is féidir leat foirmeacha logála isteach uathoibríoch a úsáid i do bhrabhsálaí anois.",
-    "unlockSuccessTitle": "Díghlasáiltear do chruinneachán go rathúil",
     "unlockTitle": "Díghlasáil Do Cruinneog",
     "unlockVault": "Díghlasáil an Cruinneachán",
     "unlockWithBiometric": "Díghlasáil le {{biometric}}",
@@ -223,9 +217,8 @@
     "attachmentDownloadFailed": "Theip ar an gceangaltán a íoslódáil",
     "attachments": "Ceangaltáin",
     "back": "Ar ais",
-    "backspace": "Backspace",
+    "backspace": "Cúlspás",
     "cancel": "Cealaigh",
-    "clientVersionUnsupported": "Ní thacaíonn an freastalaí leis an leagan seo den aip a thuilleadh. Athnuaigh an leathanach le do thoil chun an leagan is déanaí a luchtú.",
     "clipboardCountdown": {
       "clearClipboardButton": "Glan an Ghearrthaisce"
     },
@@ -259,35 +252,35 @@
     "errorPasswordMismatch": "Ní hionann na pasfhocail.",
     "errors": {
       "backgroundUnresponsive": "Níl seirbhís chúlra na síntíne ag freagairt. Dún agus athoscail an tsíntíne, le do thoil, nó athtosaigh do bhrabhsálaí má leanann an fhadhb ar aghaidh.",
-      "browserExtensionOutdated": "Tá an síneadh brabhsálaí seo as dáta agus ní féidir é a úsáid chun rochtain a fháil ar an ngloine seo. Nuashonraigh an síneadh brabhsálaí seo le leanúint ar aghaidh.",
-      "clientVersionNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo den síneadh brabhsálaí AliasVault a thuilleadh. Nuashonraigh do shíneadh brabhsálaí go dtí an leagan is déanaí.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "clientNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo de AliasVault a thuilleadh. Déan nuashonrú go dtí an leagan is déanaí, le do thoil.",
+      "clientOutdated": "Ní féidir leis an leagan seo de AliasVault do stór a oscailt toisc gur uasghrádaigh leagan níos nuaí é. Déan AliasVault a nuashonrú le do thoil chun leanúint ar aghaidh.",
+      "contactSupportAt": "Déan teagmháil leis an tacaíocht ag {{email}}.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Tá do phasfhocal ceart, ach níorbh fhéidir eochracha criptithe do stórais a oscailt. Déan teagmháil leis an tacaíocht, le do thoil.",
       "mergeFailed": "Theip ar athruithe an chruinnithe a chumasc. Déan iarracht arís.",
       "mobileLoginRequestDeclined": "Diúltaíodh don iarratas logála isteach ar do ghléas soghluaiste.",
       "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís.",
       "passwordChanged": "Tá do phasfhocal athraithe ó logáil tú isteach an uair dheireanach. Logáil isteach arís ar chúiseanna slándála.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
-      "serverVersionNotSupported": "Ní mór freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an síneadh brabhsálaí seo a úsáid. Téigh i dteagmháil leis an bhfoireann tacaíochta más gá cabhair duit.",
-      "serverVersionTooOld": "Ní mór an freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an ghné seo a úsáid. Téigh i dteagmháil le riarthóir an fhreastalaí más gá duit cabhair.",
+      "serverOutdated": "Caithfear freastalaí AliasVault a nuashonrú chun oibriú leis an leagan seo de AliasVault. Déan iarracht arís níos déanaí, le do thoil. Má úsáideann tú freastalaí féin-óstáilte, déan teagmháil le riarthóir do fhreastalaí, le do thoil.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
       "syncConflictMaxRetries": "Níorbh fhéidir an cruinneachán a shioncrónú tar éis roinnt iarrachtaí. Déan iarracht arís ar ball.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "Tharla earráid gan choinne. Déan iarracht arís, le do thoil, agus déan teagmháil leis an tacaíocht má leanann an fhadhb ar aghaidh.",
       "unknownError": "Tharla earráid anaithnid.",
       "unknownErrorTryAgain": "Tharla earráid anaithnid. Déan iarracht arís.",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "updateRequiredTitle": "Tá nuashonrú ag teastáil",
+      "vaultDataUnreadable": "Níorbh fhéidir sonraí do stóir a léamh, mar sin níl rochtain ar do chuid sonraí faoi láthair. Déan teagmháil leis an tacaíocht, le do thoil.",
       "vaultIsLocked": "Tá an cruinneachán faoi ghlas",
       "vaultLoadError": "Tharla earráid agus do stór á luchtú. Cóipeáil sonraí na hearráide thíos le do thoil agus déan teagmháil leis an tacaíocht chun cabhair a fháil.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "Níorbh fhéidir do stór a luchtú",
       "vaultNotAvailable": "Níl an cruinneachán ar fáil",
       "vaultSyncTimeout": "Chuaigh an t-am isteach ar shioncrónú an tseomra cruinneacháin. Is féidir leis seo tarlú nuair a bhíonn an seomra cruinneacháin mór nó nuair a bhíonn an nasc idirlín mall. Déan iarracht arís.",
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís."
     },
     "generate": "Gin",
-    "help": "Help",
+    "help": "Cabhair",
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
     "hidePassword": "Folaigh pasfhocal",
@@ -311,7 +304,7 @@
     "ok": "Ceart go leor",
     "openInNewWindow": "Oscail i bhfuinneog nua",
     "or": "nó",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Nascleanúint leathanaigh",
     "passkeys": "Eochracha pas",
     "password": "Pasfhocal",
     "passwordStrength": {
@@ -322,8 +315,8 @@
       "veryWeak": "Lean ort",
       "weak": "Ag dul i bhfeabhas"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Roimhe seo",
+    "qrCode": "Cód QR",
     "recentEmails": "Ríomhphoist le déanaí",
     "refresh": "Athnuachan",
     "remove": "Bain",
@@ -340,8 +333,9 @@
     "syncVaultData": "Sioncrónaigh sonraí cruinneacháin",
     "syncingChanges": "Ag sioncrónú athruithe...",
     "twoFactorAuthentication": "Fíordheimhniú dhá fhachtóir",
-    "unavailable": "Unavailable",
+    "unavailable": "Gan a bheith ar fáil",
     "undo": "Cuir ar ceal",
+    "updateApp": "Nuashonraigh an aip",
     "use": "Úsáid",
     "username": "Ainm úsáideora",
     "vaultSaveError": "Theip ar athruithe a shábháil sa chruinneachán. Déan iarracht arís.",
@@ -426,8 +420,7 @@
     },
     "title": "Ríomhphoist",
     "to": "Chuig:",
-    "toColumn": "Chuig",
-    "updateClientForFormattedView": "Éilíonn an ríomhphost seo leagan níos nuaí den aip le go dtaispeánfar i gceart é. Nuashonraigh d'aip le do thoil."
+    "toColumn": "Chuig"
   },
   "fieldLabels": {
     "alias": {
@@ -560,7 +553,7 @@
       "roboformInstructionsPart1": "Chun do phasfhocail RoboForm a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí RoboForm a oscailt, dul go dtí roghchlár 'RoboForm' > 'Roghanna' > 'Cuntas & Sonraí' > 'Easpórtáil' agus formáid CSV a roghnú.",
       "strongboxDescription": "Pasfhocail a allmhairiú ó Strongbox",
       "strongboxInstructionsPart1": "Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.",
-      "template": "template",
+      "template": "teimpléad",
       "uploadInstructions": "Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos."
     }
   },
@@ -618,8 +611,8 @@
     "addNewItem": "Cuir mír nua leis",
     "allItemsInFolders": "Tá do chuid míreanna go léir eagraithe i bhfillteáin. Tapáil fillteán thuas chun do chuid dintiúir a fheiceáil, nó bain úsáid as an gcuardach chun míreanna sonracha a aimsiú.",
     "allItemsInFoldersClick": "Tá do chuid míreanna go léir eagraithe i bhfillteáin. Cliceáil ar fhillteán thuas chun do chuid dintiúir a fheiceáil, nó bain úsáid as an gcuardach chun míreanna sonracha a aimsiú.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Níorbh fhéidir an ceangaltán a léamh.",
+    "attachmentUnavailable": "Sonraí an cheangaltáin gan a bheith ar fáil",
     "autofillLinkExisting": {
       "confirmMessage": "An bhfuil tú cinnte gur mian leat \"{{url}}\" a nascadh leis an dintiúir seo?",
       "confirmTitle": "Nasc leis an dintiúir?",
@@ -692,6 +685,8 @@
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus tapáil deilbhín an fhillteáin sa réimse ainm.",
     "errorLoadingItems": "Earráid ag luchtú míreanna",
+    "excludedCharsDescription": "Ní bheidh na carachtair seo sna pasfhocail a ghintear riamh.",
+    "excludedCharsLabel": "Eisigh carachtair",
     "fieldHistory": {
       "deleteConfirm": "An bhfuil tú cinnte?"
     },
@@ -729,14 +724,13 @@
       "selectFolder": "Roghnaigh Fillteán"
     },
     "fullName": "Ainm Iomlán",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "Tá ceangaltáin leis",
+    "hasPasskey": "Tá eochair rochtana aige/aici",
+    "hasTotp": "Tá cód 2FA aige/aici",
     "history": "Féach ar an stair",
     "home": {
       "alphabeticalOption": "In ord aibítre",
-      "buttonLocationText": "cnaipe sa chúinne uachtarach ar dheis.",
-      "createFirstItemText": "Cruthaigh do chéad mhír ag baint úsáide as an",
+      "createFirstItemManuallyText": "Cruthaigh do chéad mhír sa stór de láimh.",
       "emptyFolderMessage": "Tá an fillteán seo folamh.",
       "failedToCreateFolder": "Theip ar fhillteán a chruthú.",
       "failedToDeleteFolder": "Theip ar an bhfillteán a scriosadh.",
@@ -746,8 +740,6 @@
       "importButtonText": "Iompórtáil ó KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Má d'úsáid tú bainisteoir pasfhocal difriúil roimhe seo, is féidir leat do mhíreanna a allmhairiú uaidh.",
       "loadingMore": "Ag lódáil níos mó...",
-      "newAliasButtonText": "\"+ Alias Nua\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Gan aon mhíreanna fós",
       "pageDescription": "Aimsigh do chuid míreanna go léir thíos.",
       "sortOrderLabel": "Ord Sórtála",
@@ -769,16 +761,16 @@
     "loginCredentials": "Dintiúir logála isteach",
     "logo": {
       "builtin": {
-        "Bank": "Baincéireacht",
-        "Dev": "Forbairt",
-        "Game": "Cluichí",
-        "Health": "Sláinte",
-        "Mail": "Post",
-        "Media": "Meáin",
-        "Shopping": "Siopadóireacht",
-        "Social": "Sóisialta",
-        "Travel": "Taisteal",
-        "Work": "Obair"
+        "bank": "Baincéireacht",
+        "dev": "Forbairt",
+        "game": "Cluichí",
+        "health": "Sláinte",
+        "mail": "Post",
+        "media": "Meáin",
+        "shopping": "Siopadóireacht",
+        "social": "Sóisialta",
+        "travel": "Taisteal",
+        "work": "Obair"
       },
       "builtinLogos": "Leabharlann deilbhíní",
       "chooseLogo": "Roghnaigh deilbhín",
@@ -790,7 +782,7 @@
       "sourceFavicon": "Ó {{domain}}",
       "sourceNone": "Gan deilbhín"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Níl aon cheangaltán ar fáil.",
     "noEmailsYet": "Níl aon ríomhphoist faighte fós.",
     "noHistoryAvailable": "Níl aon stair ar fáil",
     "noItemsFound": "Níor aimsíodh aon mhír. Cruthaigh ceann le tosú. Leid: is féidir leat logáil isteach san aip ghréasáin AliasVault freisin chun dintiúir a allmhairiú ó bhainisteoirí pasfhocal eile.",
@@ -829,7 +821,6 @@
       "creatingNewAliasMessage": "Ag cruthú leasainm nua...",
       "namePlaceholderCard": "M.sh. Mastercard",
       "namePlaceholderNote": "M.sh. Sonraí Pas",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nua",
       "typeCard": "Cárta",
       "typeLogin": "Logáil Isteach"
@@ -1049,8 +1040,6 @@
     "selectTextToInsertMessage": "Roghnaigh an téacs le cur isteach sa réimse ionchuir atá dírithe",
     "serverUnavailableMessage": "Níl an freastalaí ar fáil faoi láthair. Bain triail eile as ar ball.",
     "serverUnavailableTitle": "Níl an freastalaí ar fáil",
-    "serverVersionNotSupportedContactAdmin": "Tá leagan an fhreastalaí as dáta. Déan teagmháil le do riarthóir chun an freastalaí a nuashonrú.",
-    "serverVersionNotSupportedMessage": "Tá leagan an fhreastalaí as dáta. Nuashonraigh do fhreastalaí go dtí an leagan is déanaí.",
     "serverVersionNotSupportedTitle": "Nuashonrú Freastalaí ag Teastáil",
     "sessionExpiredMessage": "Tá do sheisiún imithe in éag. Sínigh isteach arís le do thoil.",
     "sessionExpiredTitle": "Seisiún in éag",
@@ -1059,7 +1048,6 @@
     "untitledCredential": "an dintiúir seo",
     "usernameCopied": "Ainm úsáideora cóipeáilte",
     "usernamePrefix": "Ainm úsáideora: ",
-    "versionNotSupportedMessage": "Ní thacaítear le do leagan aip a thuilleadh. Nuashonraigh go dtí an leagan is déanaí le do thoil.",
     "versionNotSupportedTitle": "Nuashonrú ag Teastáil",
     "viewDetails": "Féach Sonraí",
     "website": "Suíomh Gréasáin"
@@ -1106,6 +1094,7 @@
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
   },
   "settings": {
+    "accountSecurity": "Slándáil Cuntais",
     "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
     "androidAutofillSettings": {
@@ -1187,7 +1176,6 @@
     "clipboardLocalOnly": "Gearrthaisce Áitiúil Amháin",
     "clipboardLocalOnlyDescription": "Coinnigh dintiúir chóipeáilte ar an ngléas seo in ionad iad a shioncronú le do ghléasanna Apple eile tríd an Ghearrthaisce Uilíoch.",
     "clipboardLocalOnlyDisabledWarning": "Agus é seo múchta, is féidir dintiúir chóipeáilte a shioncronú le do ghléasanna Apple eile (Mac, iPad, srl.) tríd an Ghearrthaisce Uilíoch.",
-    "clipboardSettings": "Socruithe gearrthaisce",
     "contextMenuDescription": "Deaschliceáil ar réimsí ionchuir chun rochtain a fháil ar roghanna AliasVault",
     "contextMenuSettings": "Socruithe Roghchláir Comhthéacs",
     "copyTotpOnFill": "Cóipeáil cód TOTP ar uathlíonadh",
@@ -1213,7 +1201,6 @@
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
       "aliasGenerationGenderDescription": "Socraigh an tosaíocht inscne réamhshocraithe chun féiniúlachtaí nua a ghiniúint.",
       "aliasGenerationLanguageDescription": "Socraigh an teanga réamhshocraithe a úsáidfear agus féiniúlachtaí nua á nginiúint.",
-      "aliasSettingsTitle": "Socruithe Gineadóra Aitheantais",
       "appLanguageDescription": "Socraigh an teanga le haghaidh comhéadan an fheidhmchláir.",
       "appLanguageTitle": "Teanga Feidhmchláir",
       "autoEmailRefreshLabel": "Athnuachan uathoibríoch ar ábhar ríomhphoist nuair a thagann cinn nua",
@@ -1232,6 +1219,11 @@
       "publicDomainsLabel": "Fearainn Phoiblí"
     },
     "globalSettings": "Socruithe Domhanda",
+    "groups": {
+      "autofill": "Uathlíonadh",
+      "general": "Ginearálta",
+      "generators": "Gineadóirí"
+    },
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Socraigh an raon aoise chun céannachtaí nua a ghiniúint.",
@@ -1285,7 +1277,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Ceadaigh an logáil isteach",
         "codeMismatch": "Ní hionann na huimhreacha. Diúltaíodh don iarratas logála isteach.",
         "confirmMessage": "Tá gléas eile ag iarraidh logáil isteach le do chuntas. Gheobhaidh sé rochtain iomlán ar do stór. Ná lean ar aghaidh ach amháin má chuir tú féin tús leis an logáil isteach seo.",
         "confirmSubtitle": "Athfhíordheimhnigh chun logáil isteach ar ghléas eile a cheadú.",
@@ -1411,10 +1403,8 @@
         "failedToDisable2Fa": "Theip ar fhíordheimhniú dhá fhachtóir a dhíchumasú.",
         "pageDescription": "Má dhíchumasaítear fíordheimhniú dhá fhachtóir beidh tú in ann logáil isteach le do phasfhocal amháin.",
         "pageTitle": "Díchumasaigh fíordheimhniú dhá fhachtóir",
-        "statusMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair. Díchumasaigh é ionas go mbeidh tú in ann do chruinneog a rochtain le do phasfhocal amháin.",
         "twoFactorDisabledSuccess": "Díchumasaíodh fíordheimhniú dhá-fhachtóir anois.",
-        "twoFactorNotEnabled": "Níl fíordheimhniú dhá fhachtóir cumasaithe.",
-        "warningMessage": "Tabhair faoi deara le do thoil: tar éis fíordheimhniú dhá fhachtóir a dhíchumasú, ní bheidh aon aip(anna) fíordheimhneora cumraithe ag obair. Nuair is mian leat fíordheimhniú dhá fhachtóir a athchumasú beidh ort an aip(anna) fíordheimhnitheora a chumrú arís."
+        "twoFactorNotEnabled": "Níl fíordheimhniú dhá fhachtóir cumasaithe."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Theip ar fhíordheimhniú dhá fhachtóir a chumasú.",
@@ -1425,8 +1415,6 @@
         "verificationCodePlaceholder": "Cuir isteach cód fíorúcháin",
         "verifyAndEnableButton": "Fíoraigh agus Cumasaigh"
       },
-      "pageDescription": "Cumraigh socruithe slándála.",
-      "pageTitle": "Socruithe slándála",
       "passkeyUnlock": {
         "disableButton": "Díchumasaigh Díghlasáil Eochrach Pas",
         "disabledDescription": "De réir réamhshocraithe, ní mór duit do phasfhocal máistir a iontráil arís chun leathanach nó cluaisín AliasVault a athlódáil. Le pasfhocal, is féidir leat do chruinneachán a dhíghlasáil láithreach. Nuair a bhíonn sé cumasaithe, déantar do phasfhocal máistir a chriptiú go háitiúil ag baint úsáide as síneadh PRF an phasfhocal. Tabhair faoi deara: ní oibreoidh an pasfhocal ach don fheiste agus don bhrabhsálaí reatha ar a gcumasaíonn tú é.",
@@ -1448,7 +1436,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tá fíordheimhniú dhá fhachtóir díchumasaithe faoi láthair. Chun slándáil do chuntais a fheabhsú, molaimid duit é a chumasú.",
-        "enabledMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair."
+        "enabledMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair.",
+        "notEnabledWarning": "Ní féidir rochtain a fháil ar do chiste faoi láthair ach amháin trí do phríomhfhocal faire a úsáid. Molaimid duit fíordheimhniú dhá fhachtóir a chumasú chun slándáil do chuntais a fheabhsú."
       }
     },
     "selectLanguage": "Roghnaigh Teanga",
@@ -1456,6 +1445,8 @@
     "serverConfigurationDescription": "Cumraigh URL an fhreastalaí AliasVault le haghaidh cásanna féin-óstáilte",
     "serverUrl": "URL an fhreastalaí",
     "serverVersion": "Leagan an fhreastalaí",
+    "sessionsAndLogs": "Seisiúin & Logaí",
+    "sessionsAndLogsDescription": "Féach cá bhfuil tú logáilte isteach agus déan athbhreithniú ar iarrachtaí logála isteach le déanaí.",
     "siteSpecificSettings": "Socruithe Sonracha don Suíomh",
     "storageInsights": {
       "breadcrumbTitle": "Léargais stórála",
@@ -1470,7 +1461,7 @@
       "deleteAllLogosButton": "Scrios na lógónna go léir",
       "deleteAllLogosConfirmMessage": "Baintear gach lógó stóráilte as do chruinneachán leis seo agus glantar an lógó ar gach dintiúir. Is féidir leat iad a ath-íoslódáil am ar bith. Ar mhaith leat leanúint ar aghaidh?",
       "deleteAllLogosConfirmTitle": "Scrios gach lógó?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Baineadh lógó {{count}} mír.",
       "itemsWithAttachmentsLabel": "Míreanna le ceangaltáin",
       "itemsWithLogosLabel": "Míreanna le lógó",
       "logoManagementDescription": "Faightear lógónna ó favicon shuíomh gréasáin gach míre. Is féidir leat gach lógó a scriosadh chun spás a fháil ar ais, nó iad a ath-íoslódáil chun leaganacha feabhsaithe a fháil.",
@@ -1480,9 +1471,9 @@
       "redownloadAllLogosButton": "Ath-íoslódáil na lógónna go léir",
       "redownloadAllLogosConfirmMessage": "Athghabhann sé seo an favicon do gach dintiúr a bhfuil URL láithreáin ghréasáin aige, ag cur an lógó atá ann cheana in ionad. Ag brath ar mhéid do chruinnithe, d'fhéadfadh sé seo tamall a thógáil. Lean ar aghaidh?",
       "redownloadAllLogosConfirmTitle": "Ath-íoslódáil na lógónna go léir?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Nuashonraíodh lógó {{count}} mír.",
+      "serverTotalDescription": "Méid cruinn do stóir chriptithe mar atá sé stóráilte ar an bhfreastalaí, lena n-áirítear ceangaltáin agus lógónna.",
+      "serverTotalTitle": "Méid an stórais ar an bhfreastalaí",
       "topAttachmentsDescription": "Na 10 gceangaltán comhaid is mó. Bain an ceangaltán mura bhfuil sé de dhíth ort a thuilleadh.",
       "topAttachmentsTitle": "Na ceangaltáin is mó",
       "topLogosDescription": "Na 10 lógó seirbhíse is mó. Athúsáidtear lógónna le haghaidh míreanna leis an bhfearann ​​​​céanna.",
@@ -1557,10 +1548,10 @@
     "syncing": "Ag sioncrónú...",
     "tapToRetry": "Tapáil chun iarracht eile a dhéanamh sioncrónú",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Má leanann an fhadhb ar aghaidh, déan teagmháil lenár bhfoireann tacaíochta chun cabhair a fháil.",
+      "notCompatible": "Níl leagan an stórais seo comhoiriúnach le do chliant.",
+      "title": "Ní thacaítear leis an leagan den stór",
+      "updateInstructions": "Déan nuashonrú go dtí an leagan is déanaí de AliasVault, athnuaigh an leathanach seo, agus bain triail as arís."
     }
   },
   "totp": {
@@ -1568,12 +1559,14 @@
     "addName": "Cuir ainm leis (roghnach)",
     "addTotpCodeDescription": "Cuir cód fíordheimhnitheora dhá fhachtóir leis",
     "addTotpCodeModalTitle": "Cuir Cód 2FA TOTP leis",
+    "algorithm": "Algartam",
     "closeFormButton": "Dún an fhoirm",
     "defaultName": "Fíordheimhnitheoir",
     "deleteCodeConfirmation": "An bhfuil tú cinnte gur mian leat an cód TOTP seo a scriosadh?",
     "deleteCodeTitle": "Scrios cód TOTP",
     "deleteTotpCodeConfirmation": "An bhfuil tú cinnte gur mhaith leat an cód 2FA \"{{name}}\" a scriosadh?",
     "deleteTotpCodeTitle": "Scrios Cód 2FA",
+    "digits": "Digití",
     "enterManually": "Cuir isteach eochair rúnda",
     "errors": {
       "invalidSecretKey": "Formáid eochair rúnda neamhbhailí.",
@@ -1581,6 +1574,8 @@
     },
     "instructions": "Cuir isteach an eochair rúnda a thaispeánann an láithreán gréasáin áit ar mhaith leat fíordheimhniú dhá fhachtóir a chur leis.",
     "nameOptional": "Ainm (roghnach)",
+    "parameterSummary": "{{algorithm}} · {{digits}} digití · {{period}}s",
+    "period": "Céim ama",
     "saveToViewCode": "Sábháil chun an cód a fheiceáil",
     "scanQrCode": "Scanáil Cód QR",
     "secretKey": "Eochair Rúnda",
@@ -1633,20 +1628,10 @@
   "vault": {
     "checkingForVaultUpdates": "Ag seiceáil le haghaidh nuashonruithe cruinneacháin",
     "checkingVaultUpdates": "Ag seiceáil nuashonruithe cruinneacháin",
-    "errors": {
-      "appOutdated": "Tá an aip seo as dáta agus ní féidir í a úsáid chun rochtain a fháil ar an leagan (níos nua) seo den chruinneachán. Nuashonraigh an aip AliasVault le leanúint ar aghaidh.",
-      "failedToGetEncryptedDatabase": "Theip ar an mbunachar sonraí criptithe a fháil",
-      "passwordChangeRequiresOnline": "Éilíonn athrú pasfhocail nasc idirlín. Déan iarracht arís agus tú ar líne.",
-      "serverVersionNotSupported": "Ní mór freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an aip shoghluaiste seo a úsáid. Téigh i dteagmháil leis an bhfoireann tacaíochta más gá cabhair duit.",
-      "usernameNotFound": "Ainm úsáideora gan aimsiú",
-      "vaultOutdated": "Tá do chruinneachán as dáta. Logáil isteach ar shuíomh gréasáin AliasVault agus lean na céimeanna.",
-      "versionNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo den aip shoghluaiste AliasVault a thuilleadh. Nuashonraigh d'aip go dtí an leagan is déanaí."
-    },
     "mergingVault": "Ag cumasc athruithe ar an chruinneachán...",
     "savingChangesToVault": "Sábháil athruithe chuig an gcruinneog",
     "syncingUpdatedVault": "Ag sioncrónú an tseomra cruinneacháin nuashonraithe",
-    "syncingVault": "Ag sioncrónú cruinneacháin",
-    "uploadingVaultToServer": "Ag uaslódáil cruinneacháin chuig an bhfreastalaí"
+    "syncingVault": "Ag sioncrónú cruinneacháin"
   },
   "web": {
     "footer": {
@@ -1660,8 +1645,7 @@
       "betaLabel": "BÉITE",
       "enableDarkMode": "Athraigh go mód dorcha",
       "enableLightMode": "Athraigh go mód solais",
-      "logOut": "Logáil amach",
-      "openMenuLabel": "Oscail an roghchlár"
+      "logOut": "Logáil amach"
     },
     "welcome": {
       "createFirstIdentityButton": "Cruthaigh Do Chéad Céannacht",
