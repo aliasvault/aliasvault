@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 
+import { previousFieldValues } from '@aliasvault/client/utilities/FieldHistory';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { ItemField } from '@aliasvault/models/vault';
 import { FieldTypes } from '@aliasvault/models/vault';
@@ -72,24 +73,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false 
         try {
           const history = await dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: itemManifestId }, field.FieldKey);
 
-          if (history.length > 1) {
-            // Multiple history records - always show icon
-            setHistoryCount(history.length);
-          } else if (history.length === 1) {
-            // Single history record - check if value differs from current
-            const currentValues = Array.isArray(field.Value) ? field.Value : [field.Value];
-            const currentValueJson = JSON.stringify(currentValues.filter(v => v && v.trim() !== ''));
-            const historyValueJson = history[0].ValueSnapshot;
-
-            // Only show icon if history value differs from current value
-            if (currentValueJson !== historyValueJson) {
-              setHistoryCount(1);
-            } else {
-              setHistoryCount(0);
-            }
-          } else {
-            setHistoryCount(0);
-          }
+          setHistoryCount(previousFieldValues(history, field.Value).length);
         } catch (error) {
           console.error('[FieldBlock] Error checking history:', error);
         }
@@ -248,6 +232,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false 
       item={{ Id: itemId, ManifestId: itemManifestId }}
       fieldKey={field.FieldKey}
       fieldLabel={label}
+      currentValue={field.Value}
       fieldType={field.FieldType}
       isHidden={field.IsHidden}
     />

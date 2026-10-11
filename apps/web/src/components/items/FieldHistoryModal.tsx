@@ -1,3 +1,4 @@
+import { parseValueSnapshot, previousFieldValues } from '@aliasvault/client/utilities/FieldHistory';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,20 +17,9 @@ type FieldHistoryModalProps = {
   item: ItemRef;
   fieldKey: string;
   fieldLabel: string;
+  currentValue: string | string[];
   isHidden: boolean;
   onClose: () => void;
-};
-
-/**
- * The values in a history snapshot, or the raw snapshot when it is not a JSON list.
- */
-const parseValueSnapshot = (snapshot: string): string[] => {
-  try {
-    const values: unknown = JSON.parse(snapshot);
-    return Array.isArray(values) ? values.map(String) : [snapshot];
-  } catch {
-    return [snapshot];
-  }
 };
 
 /**
@@ -40,7 +30,7 @@ const formatDate = (value: string): string => new Date(value).toLocaleString('en
 /**
  * Modal listing the past values of a field.
  */
-const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, fieldLabel, isHidden, onClose }) => {
+const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, fieldLabel, currentValue, isHidden, onClose }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { executeVaultMutationInBackground } = useVaultMutate();
@@ -53,9 +43,9 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
    */
   const loadHistory = useCallback((): void => {
     setIsLoading(true);
-    setRecords(dbContext.sqliteClient?.items.getFieldHistory({ Id: item.Id, ManifestId: item.ManifestId }, fieldKey) ?? []);
+    setRecords(previousFieldValues(dbContext.sqliteClient?.items.getFieldHistory({ Id: item.Id, ManifestId: item.ManifestId }, fieldKey) ?? [], currentValue));
     setIsLoading(false);
-  }, [dbContext.sqliteClient, fieldKey, item.Id, item.ManifestId]);
+  }, [dbContext.sqliteClient, fieldKey, item.Id, item.ManifestId, currentValue]);
 
   useEffect(() => loadHistory(), [loadHistory]);
 

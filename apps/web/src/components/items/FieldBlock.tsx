@@ -1,3 +1,4 @@
+import { previousFieldValues } from '@aliasvault/client/utilities/FieldHistory';
 import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -84,13 +85,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
       return;
     }
     const records = dbContext.sqliteClient.items.getFieldHistory({ Id: item.Id, ManifestId: item.ManifestId }, field.FieldKey);
-    if (records.length > 1) {
-      setHistoryCount(records.length);
-    } else if (records.length === 1) {
-      setHistoryCount(records[0].ValueSnapshot !== JSON.stringify([field.Value].filter(v => v.trim().length > 0)) ? 1 : 0);
-    } else {
-      setHistoryCount(0);
-    }
+    setHistoryCount(previousFieldValues(records, field.Value).length);
   }, [dbContext.sqliteClient, field.EnableHistory, field.FieldKey, field.Value, item.Id, item.ManifestId, showHistoryModal]);
 
   const labelElement = (
@@ -149,7 +144,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
     <>
       {renderField()}
       {showHistoryModal && (
-        <FieldHistoryModal item={item} fieldKey={field.FieldKey} fieldLabel={label} isHidden={field.FieldType === FieldTypes.Password || field.FieldType === FieldTypes.Hidden} onClose={() => setShowHistoryModal(false)} />
+        <FieldHistoryModal item={item} fieldKey={field.FieldKey} fieldLabel={label} currentValue={field.Value} isHidden={field.FieldType === FieldTypes.Password || field.FieldType === FieldTypes.Hidden} onClose={() => setShowHistoryModal(false)} />
       )}
     </>
   );

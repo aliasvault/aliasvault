@@ -1,3 +1,4 @@
+import { previousFieldValues } from '@aliasvault/client/utilities/FieldHistory';
 import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -113,24 +114,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, manifestId, hide
       try {
         const history = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, field.FieldKey);
 
-        if (history.length > 1) {
-          // Multiple history records - always show icon
-          setHistoryCount(history.length);
-        } else if (history.length === 1) {
-          // Single history record - check if value differs from current
-          const currentValues = Array.isArray(field.Value) ? field.Value : [field.Value];
-          const currentValueJson = JSON.stringify(currentValues.filter(v => v && v.trim() !== ''));
-          const historyValueJson = history[0].ValueSnapshot;
-
-          // Only show icon if history value differs from current value
-          if (currentValueJson !== historyValueJson) {
-            setHistoryCount(1);
-          } else {
-            setHistoryCount(0);
-          }
-        } else {
-          setHistoryCount(0);
-        }
+        setHistoryCount(previousFieldValues(history, field.Value).length);
       } catch (error) {
         logFailure('[FieldBlock] Error checking history', error);
       }
@@ -186,6 +170,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, manifestId, hide
       manifestId={manifestId}
       fieldKey={field.FieldKey}
       fieldLabel={label}
+      currentValue={field.Value}
       fieldType={field.FieldType}
       isHidden={field.IsHidden}
     />

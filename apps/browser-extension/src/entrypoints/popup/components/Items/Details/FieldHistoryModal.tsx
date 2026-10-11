@@ -1,3 +1,4 @@
+import { parseValueSnapshot, previousFieldValues } from '@aliasvault/client/utilities/FieldHistory';
 import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ type FieldHistoryModalProps = {
   manifestId: string;
   fieldKey: string;
   fieldLabel: string;
+  currentValue: string | string[];
   fieldType: FieldType;
   isHidden: boolean;
 }
@@ -36,6 +38,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
   manifestId,
   fieldKey,
   fieldLabel,
+  currentValue,
   fieldType,
   isHidden
 }) => {
@@ -60,13 +63,13 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     try {
       setLoading(true);
       const historyRecords = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, fieldKey);
-      setHistory(historyRecords);
+      setHistory(previousFieldValues(historyRecords, currentValue));
     } catch (error) {
       logFailure('Error loading field history', error);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId, manifestId, fieldKey]);
+  }, [dbContext?.sqliteClient, itemId, manifestId, fieldKey, currentValue]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -90,17 +93,6 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
       });
     } catch {
       return dateString;
-    }
-  };
-
-  /**
-   * Parse a value snapshot into an array of values.
-   */
-  const parseValueSnapshot = (snapshot: string): string[] => {
-    try {
-      return JSON.parse(snapshot);
-    } catch {
-      return [snapshot];
     }
   };
 
