@@ -389,6 +389,9 @@ async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<
     let stored = ctx.store_vault(&pulled.encrypted_vault, pulled.needs_first_write, Some(ctx.mutation_sequence), Some(pulled.personal_revision)).await?;
     if !stored.success {
         ctx.log("[Sync] Mutation detected during sync, re-syncing...").await;
+        ctx.is_dirty = true;
+        ctx.mutation_sequence = stored.mutation_sequence;
+        ctx.request.dirty_scopes.clear();
         return Ok(Some(Flow::Resync { outdated: false }));
     }
     if pulled.needs_first_write {

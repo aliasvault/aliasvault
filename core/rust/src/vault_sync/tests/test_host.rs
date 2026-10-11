@@ -42,6 +42,8 @@ pub struct TestHost {
     pub requests: Vec<RecordedRequest>,
     pub responders: Vec<Responder>,
     pub logs: Vec<String>,
+    /// A local edit the app makes while a sync runs: applied right before the next sync store (one with an expected sequence).
+    pub edit_before_next_sync_store: Option<Box<dyn FnOnce(&Connection)>>,
 }
 
 /// The current client schema.
@@ -107,6 +109,7 @@ impl TestHost {
             requests: Vec::new(),
             responders: Vec::new(),
             logs: Vec::new(),
+            edit_before_next_sync_store: None,
         }
     }
 
@@ -247,6 +250,11 @@ impl TestHost {
                         assert!(found_the_chain, "a vault stored under a new key needs the chain that opens it cached first");
                         self.rekeyed_stores += 1;
                         self.vault_key = key;
+                    }
+                    if expected_mutation_seq.is_some() {
+                        if let Some(change) = self.edit_before_next_sync_store.take() {
+                            self.edit(change);
+                        }
                     }
                     // Like the app hosts: a sync store is refused after a mutation, and either kind may mark the vault dirty.
                     if expected_mutation_seq.is_some_and(|expected| expected != self.mutation_sequence) {

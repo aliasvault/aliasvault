@@ -325,6 +325,24 @@ fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it(
 }
 
 #[test]
+fn a_mutation_during_a_pull_is_merged_by_the_next_round_instead_of_refusing_every_store() {
+    let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
+
+    // Another device adds an item, and this one saves an item while its sync pulls that change.
+    insert_item(&s.db, ITEM_C, "Other device item");
+    s.publish(8);
+    s.host.edit_before_next_sync_store = Some(Box::new(|db| insert_item(db, ITEM_B, "Local item")));
+
+    let result = s.host.sync();
+
+    assert_eq!(result["success"], true, "{}", result);
+    assert_eq!(s.host.item_names(), vec!["Local item", "Other device item", "Server item"]);
+    assert_eq!(s.host.vault_writes().len(), 1, "the merged vault is written once");
+    assert!(!s.host.is_dirty, "the raced change reached the server");
+    s.server.borrow().assert_converged(&s.host);
+}
+
+#[test]
 fn a_write_the_server_keeps_refusing_gives_up_after_three_resyncs() {
     let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
     s.server.borrow_mut().faults.refuse_writes = 10;

@@ -140,10 +140,14 @@ async function expectLegacyItemContent(app: WebApp, item: LegacyVaultItem): Prom
   if (item.passwordHistory) {
     await main.getByRole('button', { name: 'View history' }).click();
     const history = page.locator('#fieldHistoryModal');
-    await expect(history.locator('input')).toHaveCount(item.passwordHistory.length);
-    // Newest first.
+    // Newest first, without the newest record when it holds the current password.
+    const expectedHistory = [...item.passwordHistory].reverse();
+    if (expectedHistory[0] === item.fields.find(field => field.key === 'login.password')?.value) {
+      expectedHistory.shift();
+    }
+    await expect(history.locator('input')).toHaveCount(expectedHistory.length);
     const shown = await history.locator('input').evaluateAll(inputs => inputs.map(input => (input as HTMLInputElement).value));
-    expect(shown).toEqual([...item.passwordHistory].reverse());
+    expect(shown).toEqual(expectedHistory);
     await history.getByRole('button', { name: 'Close' }).click();
     await expect(history).toHaveCount(0);
   }
