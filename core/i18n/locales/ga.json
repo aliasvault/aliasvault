@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Ní bheidh na carachtair seo sna pasfhocail a ghintear riamh.",
     "excludedCharsLabel": "Eisigh carachtair",
     "fieldHistory": {
-      "deleteConfirm": "An bhfuil tú cinnte?"
+      "deleteConfirm": "An bhfuil tú cinnte?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Comhad sábháilte chuig",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Tá ceangaltáin leis",
     "hasPasskey": "Tá eochair rochtana aige/aici",
     "hasTotp": "Tá cód 2FA aige/aici",
-    "history": "Féach ar an stair",
     "home": {
       "alphabeticalOption": "In ord aibítre",
       "createFirstItemManuallyText": "Cruthaigh do chéad mhír sa stór de láimh.",
