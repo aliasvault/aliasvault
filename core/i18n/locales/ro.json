@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Parolele generate nu vor conține niciodată aceste caractere.",
     "excludedCharsLabel": "Exclude caracterele",
     "fieldHistory": {
-      "deleteConfirm": "Ești sigur?"
+      "deleteConfirm": "Ești sigur?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Fișier salvat în",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Are atașamente",
     "hasPasskey": "Are cheie de acces",
     "hasTotp": "Are cod 2FA",
-    "history": "Istoric",
     "home": {
       "alphabeticalOption": "Alfabetic",
       "createFirstItemManuallyText": "Creează manual primul element din seiful tău.",
