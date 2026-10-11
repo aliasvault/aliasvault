@@ -25,6 +25,10 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+var hostStopped = false;
+AppDomain.CurrentDomain.UnhandledException += (_, e) => Console.Error.WriteLine($"[FATAL] Unhandled exception (terminating: {e.IsTerminating}): {e.ExceptionObject}");
+AppDomain.CurrentDomain.ProcessExit += (_, _) => Console.Error.WriteLine($"[EXIT] Process exiting, host stopped normally: {hostStopped}");
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
@@ -182,7 +186,9 @@ using (var scope = app.Services.CreateScope())
     await StartupTasks.SetAdminUser(scope.ServiceProvider);
 }
 
+app.Lifetime.ApplicationStopping.Register(() => Console.Error.WriteLine($"[EXIT] Host stopping requested. Stack:{Environment.NewLine}{Environment.StackTrace}"));
 await app.RunAsync();
+hostStopped = true;
 
 namespace AliasVault.Admin
 {
