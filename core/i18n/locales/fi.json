@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Are you sure?"
+      "deleteConfirm": "Are you sure?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Tiedosto tallennettu kohteeseen",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Has attachments",
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
-    "history": "History",
     "home": {
       "alphabeticalOption": "Aakkosellinen",
       "createFirstItemManuallyText": "Create your first vault item manually.",
