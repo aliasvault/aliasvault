@@ -4,6 +4,13 @@
 
 <LayoutPageTitle>Home</LayoutPageTitle>
 
+@if (ShowTwoFactorWarning)
+{
+    <div class="grid px-4 pt-6 -mb-2 dark:bg-gray-900 [&>:last-child]:mb-0">
+        <AlertMessageWarning Message="Two-factor authentication is not enabled for this admin account. It is recommended to enable it in Account Settings for better security." OnDismiss="DismissTwoFactorWarning" />
+    </div>
+}
+
 <PageHeader
     BreadcrumbItems="@BreadcrumbItems"
     Title="AliasVault Admin"
@@ -29,6 +36,13 @@
 </div>
 
 @code {
+    /// <summary>
+    /// The sessionStorage key that hides the 2FA warning until the browser tab is closed.
+    /// </summary>
+    private const string TwoFactorWarningDismissedKey = "twoFactorWarningDismissed";
+
+    private bool ShowTwoFactorWarning { get; set; }
+
     private ServiceStatusCard? _serviceStatusCard;
     private RecentActiveUsersCard? _recentActiveUsersCard;
     private ActiveUsersCard? _activeUsersCard;
@@ -37,26 +51,29 @@
     private EmailClaimsCard? _emailClaimsCard;
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        // Check if 2FA is enabled. If not, show a one-time warning on the dashboard.
-        if (!UserService.User().TwoFactorEnabled)
-        {
-            GlobalNotificationService.AddWarningMessage("Two-factor authentication is not enabled for this admin account. It is recommended to enable it in Account Settings for better security.", true);
-        }
-    }
-
-    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
         if (firstRender)
         {
+            if (!UserService.User().TwoFactorEnabled)
+            {
+                ShowTwoFactorWarning = await Js.InvokeAsync<string?>("sessionStorage.getItem", TwoFactorWarningDismissedKey) != "true";
+                StateHasChanged();
+            }
+
             await RefreshData();
         }
+    }
+
+    /// <summary>
+    /// Hides the 2FA warning until this browser tab is closed.
+    /// </summary>
+    private async Task DismissTwoFactorWarning()
+    {
+        ShowTwoFactorWarning = false;
+        await Js.InvokeVoidAsync("sessionStorage.setItem", TwoFactorWarningDismissedKey, "true");
     }
 
     /// <summary>

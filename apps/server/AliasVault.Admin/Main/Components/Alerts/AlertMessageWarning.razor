@@ -2,8 +2,14 @@
 
 @if (!string.IsNullOrEmpty(Message))
 {
-    <div class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 border-2 dark:bg-yellow-800 dark:text-white dark:border-yellow-500 dark:border" role="alert">
-        @Message
+    <div class="flex items-center gap-3 p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 border-2 dark:bg-yellow-800 dark:text-white dark:border-yellow-500 dark:border" role="alert">
+        <div class="flex-1">@Message</div>
+        @if (OnDismiss.HasDelegate)
+        {
+            <button type="button" @onclick="OnDismiss" class="-m-1 p-1 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-700" aria-label="Dismiss" title="Dismiss">
+                <UiIcon Icon="UiIcons.X" class="w-4 h-4" />
+            </button>
+        }
     </div>
 }
 
@@ -13,4 +19,10 @@
     /// </summary>
     [Parameter]
     public string Message { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Called when the dismiss button is clicked; the button is only shown when this is set.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
 }
