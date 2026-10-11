@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "정말 삭제하시겠습니까?"
+      "deleteConfirm": "정말 삭제하시겠습니까?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "파일 저장 위치",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Has attachments",
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
-    "history": "기록",
     "home": {
       "alphabeticalOption": "이름순",
       "createFirstItemManuallyText": "Create your first vault item manually.",
