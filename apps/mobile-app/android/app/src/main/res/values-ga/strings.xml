@@ -58,13 +58,13 @@
   <string name="password_changed_title">Athraíodh an Pasfhocal</string>
   <string name="password_changed_message">Athraíodh do phasfhocal. Sínigh isteach arís le do thoil.</string>
   <string name="version_not_supported_title">Nuashonrú ag Teastáil</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Ní thacaíonn an freastalaí leis an leagan seo de AliasVault a thuilleadh. Déan nuashonrú go dtí an leagan is déanaí, le do thoil.</string>
   <string name="server_unavailable_title">Níl an freastalaí ar fáil</string>
   <string name="server_unavailable_message">Níl an freastalaí ar fáil faoi láthair. Bain triail eile as ar ball.</string>
   <string name="network_error_title">Earráid Líonra</string>
   <string name="network_error_message">Tharla earráid líonra. Seiceáil do cheangal agus bain triail eile as.</string>
   <string name="server_version_not_supported_title">Nuashonrú Freastalaí ag Teastáil</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">Caithfear freastalaí AliasVault a nuashonrú chun oibriú leis an leagan seo de AliasVault. Déan iarracht arís níos déanaí, le do thoil. Má úsáideann tú freastalaí féin-óstáilte, déan teagmháil le riarthóir do fhreastalaí, le do thoil.</string>
   <string name="error_unlock_method_required">Cumasaigh fíordheimhniú bithmhéadrach nó PIN sa phríomhaip AliasVault chun leanúint ar aghaidh</string>
   <string name="error_unlock_vault_first">Díghlasáil cruinneachán san aip AliasVault ar dtús</string>
   <string name="error_vault_decrypt_failed">Theip ar dhíchriptiú cruinneachán</string>

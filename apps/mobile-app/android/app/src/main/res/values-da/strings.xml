@@ -58,7 +58,7 @@
   <string name="password_changed_title">Adgangskode ændret</string>
   <string name="password_changed_message">Din adgangskode er blevet ændret. Log venligst ind igen.</string>
   <string name="version_not_supported_title">Opdatering påkrævet</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Denne version af AliasVault understøttes ikke længere af serveren. Opdatér venligst til den seneste version.</string>
   <string name="server_unavailable_title">Server utilgængelig</string>
   <string name="server_unavailable_message">Serveren er i øjeblikket utilgængelig. Prøv igen senere.</string>
   <string name="network_error_title">Netværksfejl</string>

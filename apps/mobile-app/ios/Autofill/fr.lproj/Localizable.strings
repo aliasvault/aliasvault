@@ -22,12 +22,12 @@
 "password_changed_title" = "Mot de passe modifié";
 "password_changed_message" = "Votre mot de passe a été modifié. Veuillez vous reconnecter.";
 "version_not_supported_title" = "Mise à jour requise";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "Cette version d'AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour vers la dernière version.";
 "server_unavailable_title" = "Serveur indisponible";
 "server_unavailable_message" = "Le serveur est actuellement indisponible, veuillez réessayer plus tard.";
 "network_error_title" = "Erreur réseau";
 "network_error_message" = "Une erreur réseau s'est produite. Veuillez vérifier votre connexion et réessayer.";
 "server_version_not_supported_title" = "Mise à jour du serveur requise";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
+"server_version_not_supported_message" = "Le serveur AliasVault doit être mis à jour pour fonctionner avec cette version d'AliasVault. Veuillez réessayer ultérieurement. Si vous utilisez un serveur autohébergé, veuillez contacter l'administrateur de votre serveur.";
 "keychain_error_message" = "Impossible de récupérer la clé de cryptage";
 "no_encryption_key_message" = "Veuillez d'abord déverrouiller le coffre-fort dans l'application AliasVault";

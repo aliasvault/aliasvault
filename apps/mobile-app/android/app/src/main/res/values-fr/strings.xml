@@ -58,13 +58,13 @@
   <string name="password_changed_title">Mot de passe modifié</string>
   <string name="password_changed_message">Votre mot de passe a été modifié. Veuillez vous reconnecter.</string>
   <string name="version_not_supported_title">Mise à jour requise</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Cette version d\'AliasVault n\'est plus prise en charge par le serveur. Veuillez mettre à jour vers la dernière version.</string>
   <string name="server_unavailable_title">Serveur indisponible</string>
   <string name="server_unavailable_message">Le serveur est actuellement indisponible, veuillez réessayer plus tard.</string>
   <string name="network_error_title">Erreur réseau</string>
   <string name="network_error_message">Une erreur réseau s\'est produite. Veuillez vérifier votre connexion et réessayer.</string>
   <string name="server_version_not_supported_title">Mise à jour du serveur requise</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">Le serveur AliasVault doit être mis à jour pour fonctionner avec cette version d\'AliasVault. Veuillez réessayer ultérieurement. Si vous utilisez un serveur autohébergé, veuillez contacter l\'administrateur de votre serveur.</string>
   <string name="error_unlock_method_required">Veuillez activer l\'authentification biométrique ou PIN dans l\'application principale AliasVault pour continuer</string>
   <string name="error_unlock_vault_first">Veuillez d\'abord déverrouiller le coffre-fort dans l\'application AliasVault</string>
   <string name="error_vault_decrypt_failed">Échec du déchiffrement du coffre-fort</string>

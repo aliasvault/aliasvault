@@ -58,13 +58,13 @@
   <string name="password_changed_title">Password Modificata</string>
   <string name="password_changed_message">La tua password è stata cambiata. Accedi di nuovo.</string>
   <string name="version_not_supported_title">Aggiornamento richiesto</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Questa versione di AliasVault non è più supportata dal server. Aggiorna all\'ultima versione.</string>
   <string name="server_unavailable_title">Server Non Disponibile</string>
   <string name="server_unavailable_message">Il server non è al momento disponibile. Riprova più tardi.</string>
   <string name="network_error_title">Errore Di Rete</string>
   <string name="network_error_message">Si è verificato un errore di rete. Controlla la connessione e riprova.</string>
   <string name="server_version_not_supported_title">Aggiornamento Del Server Richiesto</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">Il server AliasVault deve essere aggiornato per funzionare con questa versione. Riprova più tardi. Se utilizzi un server self-hosted, contatta l\'amministratore del server.</string>
   <string name="error_unlock_method_required">Si prega di abilitare l\'autenticazione biometrica o PIN nell\'app principale di AliasVault per continuare</string>
   <string name="error_unlock_vault_first">Si prega di sbloccare prima la cassaforte nell\'app AliasVault</string>
   <string name="error_vault_decrypt_failed">Decifratura della cassaforte non riuscita</string>

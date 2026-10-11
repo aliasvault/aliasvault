@@ -22,7 +22,7 @@
 "password_changed_title" = "Adgangskode ændret";
 "password_changed_message" = "Din adgangskode er blevet ændret. Log venligst ind igen.";
 "version_not_supported_title" = "Opdatering påkrævet";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "Denne version af AliasVault understøttes ikke længere af serveren. Opdatér venligst til den seneste version.";
 "server_unavailable_title" = "Server utilgængelig";
 "server_unavailable_message" = "Serveren er i øjeblikket utilgængelig. Prøv igen senere.";
 "network_error_title" = "Netværksfejl";

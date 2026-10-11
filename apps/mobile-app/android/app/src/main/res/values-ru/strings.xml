@@ -58,7 +58,7 @@
   <string name="password_changed_title">Пароль изменен</string>
   <string name="password_changed_message">Ваш пароль был изменен. Пожалуйста, войдите снова.</string>
   <string name="version_not_supported_title">Требуется обновление</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Сервер больше не поддерживает эту версию AliasVault. Обновите приложение до последней версии.</string>
   <string name="server_unavailable_title">Сервер недоступен</string>
   <string name="server_unavailable_message">Сервер в настоящее время недоступен. Повторите попытку позже.</string>
   <string name="network_error_title">Ошибка сети</string>

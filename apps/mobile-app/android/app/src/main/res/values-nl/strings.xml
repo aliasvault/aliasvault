@@ -18,7 +18,7 @@
   <string name="autofill_open_app">Open de app</string>
   <string name="autofill_vault_locked">Vault vergrendeld</string>
   <string name="biometric_store_key_title">Encryption key opslaan</string>
-  <string name="biometric_store_key_subtitle">Authenticeer om je encryptiesleutel veilig op te slaan in de Android Keystore. Hiermee kun je vervolgens veilig inloggen op je kluis.</string>
+  <string name="biometric_store_key_subtitle">Authenticeer om je encryptiesleutel veilig op te slaan in de Android Keystore. Hiermee kun je vervolgens veilig inloggen op je vault.</string>
   <string name="biometric_unlock_vault_title">Vault ontgrendelen</string>
   <string name="biometric_unlock_vault_subtitle">Verifieer om toegang te krijgen tot je vault</string>
   <string name="passkey_registration_title">Passkey aanmaken</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Wachtwoord gewijzigd</string>
   <string name="password_changed_message">Je wachtwoord is gewijzigd. Log opnieuw in.</string>
   <string name="version_not_supported_title">Update vereist</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Deze versie van AliasVault wordt niet meer ondersteund door de server. Update alsjeblieft naar de nieuwste versie.</string>
   <string name="server_unavailable_title">Server niet beschikbaar</string>
   <string name="server_unavailable_message">De server is momenteel niet beschikbaar. Probeer het later opnieuw.</string>
   <string name="network_error_title">Verbindingsfout</string>
   <string name="network_error_message">Er is een netwerkfout opgetreden. Controleer je verbinding en probeer het opnieuw.</string>
   <string name="server_version_not_supported_title">Server update vereist</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">De AliasVault server moet worden bijgewerkt om met deze versie van AliasVault te werken. Probeer het later opnieuw. Als je een self-hosted server gebruikt, neem dan contact op met je serverbeheerder.</string>
   <string name="error_unlock_method_required">Schakel biometrische ontgrendeling of een pincode in de AliasVault-app in om passkeys te gebruiken</string>
   <string name="error_unlock_vault_first">Ontgrendel eerst de vault in de AliasVault app</string>
   <string name="error_vault_decrypt_failed">Ontsleutelen van vault mislukt</string>

@@ -58,13 +58,13 @@
   <string name="password_changed_title">Passwort geändert</string>
   <string name="password_changed_message">Dein Passwort wurde geändert. Bitte melde Dich erneut an.</string>
   <string name="version_not_supported_title">Aktualisierung erforderlich</string>
-  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
+  <string name="version_not_supported_message">Diese Version von AliasVault wird vom Server nicht mehr unterstützt. Bitte aktualisiere auf die neueste Version.</string>
   <string name="server_unavailable_title">Server nicht erreichbar</string>
   <string name="server_unavailable_message">Der Server ist derzeit nicht erreichbar. Bitte versuche es später erneut.</string>
   <string name="network_error_title">Netzwerkfehler</string>
   <string name="network_error_message">Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfe Deine Verbindung und versuche es erneut.</string>
   <string name="server_version_not_supported_title">Server-Update erforderlich</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">Der AliasVault-Server muss aktualisiert werden, um mit dieser Version von AliasVault zu funktionieren. Bitte versuche es später erneut. Wenn Du einen selbst gehosteten Server verwendest, wende Dich bitte an Deinen Serveradministrator.</string>
   <string name="error_unlock_method_required">Bitte aktiviere die biometrische Authentifizierung oder die PIN-Sperre in der AliasVault-App um fortzufahren.</string>
   <string name="error_unlock_vault_first">Bitte entsperre zuerst den Tresor in der AliasVault-App</string>
   <string name="error_vault_decrypt_failed">Fehler beim Entschlüsseln des Tresors</string>

@@ -22,7 +22,7 @@
 "password_changed_title" = "Contraseña cambiada";
 "password_changed_message" = "Tu contraseña ha sido cambiada. Por favor, inicia sesión de nuevo.";
 "version_not_supported_title" = "Actualización requerida";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "El servidor ya no admite esta versión de AliasVault. Por favor, actualiza a la última versión.";
 "server_unavailable_title" = "Servidor no disponible";
 "server_unavailable_message" = "El servidor no está disponible actualmente. Inténtalo de nuevo más tarde.";
 "network_error_title" = "Error de red";

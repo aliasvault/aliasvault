@@ -13,7 +13,7 @@
 "face_id" = "Face ID (זיהוי פנים)";
 "touch_id" = "Touch ID (זיהוי טביעת אצבע)";
 "vault_syncing" = "הכספת מסתנכרת";
-"creating_passkey" = "Creating passkey";
+"creating_passkey" = "נוצר מפתח גישה";
 "connection_error_title" = "שגיאת חיבור";
 "connection_error_message" = "No connection to the server can be made. Please check your internet connection and try creating the passkey again.";
 "checking_connection" = "החיבור נבדק";
@@ -28,6 +28,6 @@
 "network_error_title" = "שגיאת רשת";
 "network_error_message" = "אירעה שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.";
 "server_version_not_supported_title" = "יש לעדכן את השרת";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
+"server_version_not_supported_message" = "יש לעדכן את שרת AliasVault כדי שיעבוד עם הגרסה הזאת של AliasVault. נא לנסות שוב מאוחר יותר. אם השרת מתארח אצלך, נא ליצור קשר עם הנהלת השרת שלך.";
 "keychain_error_message" = "משיכת מפתח ההצפנה נכשל";
 "no_encryption_key_message" = "נא לשחרר את נעילת הכספת ביישום של AppVault תחילה";

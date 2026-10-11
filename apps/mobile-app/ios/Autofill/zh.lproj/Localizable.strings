@@ -22,12 +22,12 @@
 "password_changed_title" = "密码已更改";
 "password_changed_message" = "您的密码已更改，请重新登录。";
 "version_not_supported_title" = "需要更新";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "此版本的 AliasVault 已不再受服务器支持。请更新至最新版本。";
 "server_unavailable_title" = "服务器不可用";
 "server_unavailable_message" = "服务器目前不可用，请稍后重试。";
 "network_error_title" = "网络错误";
 "network_error_message" = "网络发生错误，请检查您的连接后重试。";
 "server_version_not_supported_title" = "服务器需要更新";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
+"server_version_not_supported_message" = "AliasVault 服务器需要更新，以便与此版本的 AliasVault 兼容。请稍后再试。如果您使用的是自托管服务器，请联系您的服务器管理员。";
 "keychain_error_message" = "检索加密密钥失败";
 "no_encryption_key_message" = "请先在 AliasVault 应用中解锁密码库";

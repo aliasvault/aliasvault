@@ -22,7 +22,7 @@
 "password_changed_title" = "Пароль изменен";
 "password_changed_message" = "Ваш пароль был изменен. Пожалуйста, войдите снова.";
 "version_not_supported_title" = "Требуется обновление";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "Сервер больше не поддерживает эту версию AliasVault. Обновите приложение до последней версии.";
 "server_unavailable_title" = "Сервер недоступен";
 "server_unavailable_message" = "Сервер в настоящее время недоступен. Повторите попытку позже.";
 "network_error_title" = "Ошибка сети";

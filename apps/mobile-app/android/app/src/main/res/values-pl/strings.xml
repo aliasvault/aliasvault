@@ -78,7 +78,7 @@
   <string name="pin_setup_description">Wybierz kod PIN, aby odblokować sejf</string>
   <string name="pin_confirm_title">Potwierdź kod PIN</string>
   <string name="pin_confirm_description">Wprowadź ponownie swój kod PIN, aby potwierdzić</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_mismatch">Kody PIN nie pasują. Spróbuj jeszcze raz.</string>
   <string name="password_unlock_title">Odblokuj sejf</string>
   <string name="password_unlock_subtitle">Wprowadź swoje hasło główne</string>
   <string name="password_unlock_password_hint">Hasło</string>
