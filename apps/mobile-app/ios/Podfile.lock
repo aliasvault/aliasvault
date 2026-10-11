@@ -95,6 +95,29 @@ PODS:
   - ExpoRouter (56.2.21):
     - ExpoModulesCore
     - RNScreens
+  - ExpoScreenOrientation (56.0.5):
+    - ExpoModulesCore
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - ExpoSharing (56.0.24):
     - ExpoModulesCore
   - ExpoSplashScreen (56.0.14):
@@ -2345,6 +2368,7 @@ DEPENDENCIES:
   - ExpoModulesWorklets (from `../node_modules/expo-modules-core`)
   - ExpoModulesWorkletsAdapter (from `../node_modules/expo-modules-core`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
+  - ExpoScreenOrientation (from `../node_modules/expo-screen-orientation/ios`)
   - ExpoSharing (from `../node_modules/expo-sharing/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
@@ -2490,6 +2514,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-modules-core"
   ExpoRouter:
     :path: "../node_modules/expo-router/ios"
+  ExpoScreenOrientation:
+    :path: "../node_modules/expo-screen-orientation/ios"
   ExpoSharing:
     :path: "../node_modules/expo-sharing/ios"
   ExpoSplashScreen:
@@ -2695,6 +2721,7 @@ SPEC CHECKSUMS:
   ExpoModulesWorklets: 706d2511ac0e91743314d8f2e47683a924ae92f3
   ExpoModulesWorkletsAdapter: 72814d068279d4bfe282d1d5f0ff80df7901b946
   ExpoRouter: c760bde5ab55028273ba1ebc5d35505e4570c4b4
+  ExpoScreenOrientation: 75ebc86da7f64e94d34d10a743acbd75f9814dd6
   ExpoSharing: 8e7afd4f35907e7c0a5130c7df59644bb880abdb
   ExpoSplashScreen: 0c06099febe733279021ca62b0b7534005a43c93
   ExpoSymbols: 37e96a38eed3fb50af4b7c86b8a80ed3054a0a01

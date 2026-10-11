@@ -41,6 +41,12 @@
       ],
       "expo-localization",
       [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT_UP"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/adaptive-icon.png",

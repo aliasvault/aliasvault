@@ -3,6 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 internal import Expo
+internal import ExpoScreenOrientation
 import VaultStoreKit
 
 @main
@@ -38,6 +39,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // The window is created and React Native is started in SceneDelegate (UIScene lifecycle).
     return true
+  }
+
+  // MARK: - Orientation
+
+  /// Caps every screen to the expo-screen-orientation lock (portrait unless a screen unlocks it); iPad keeps all orientations.
+  func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+    if UIDevice.current.userInterfaceIdiom == .pad { return .all }
+    let mask = ScreenOrientationRegistry.shared.currentOrientationMask
+    return mask.isEmpty ? .portrait : mask
   }
 
   // MARK: - UIScene

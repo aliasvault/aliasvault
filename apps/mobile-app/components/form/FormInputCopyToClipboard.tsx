@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, Platform, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
@@ -7,10 +8,12 @@ import Toast from 'react-native-toast-message';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 
+import FullscreenValueModal from '@/components/common/FullscreenValueModal';
 import { useClipboardCountdown } from '@/context/ClipboardCountdownContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
@@ -35,6 +38,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   item,
 }) : React.ReactNode => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
   const { activeField, startCountdown, clearCountdown } = useClipboardCountdown();
@@ -113,6 +117,17 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
     }
   };
 
+  /**
+   * Show the value full screen (long press), e.g. to show it to someone else.
+   */
+  const openFullscreen = () : void => {
+    if (!value) {
+      return;
+    }
+    HapticsUtility.impact(Haptics.ImpactFeedbackStyle.Medium);
+    setIsFullscreen(true);
+  };
+
   const isRevealedPassword = type === 'password' && isPasswordVisible;
   const displayValue = type === 'password' && !isPasswordVisible
     ? '•'.repeat(value?.length || 0)
@@ -167,54 +182,60 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   });
 
   return (
-    <TouchableOpacity
-      onPress={copyToClipboard}
-      style={styles.inputContainer}
-    >
-      {isCountingDown && (
-        <Animated.View
-          style={[
-            styles.animatedOverlay,
-            {
-              width: animatedWidth.interpolate({
-                inputRange: [0, 100],
-                outputRange: ['0%', '100%'],
-              }),
-            },
-          ]}
-        />
+    <>
+      <TouchableOpacity
+        onPress={copyToClipboard}
+        onLongPress={openFullscreen}
+        style={styles.inputContainer}
+      >
+        {isCountingDown && (
+          <Animated.View
+            style={[
+              styles.animatedOverlay,
+              {
+                width: animatedWidth.interpolate({
+                  inputRange: [0, 100],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
+        )}
+        <View style={styles.inputContent}>
+          <View style={styles.valueContainer}>
+            {label && (
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>
+                  {label}
+                </Text>
+                {labelSuffix}
+              </View>
+            )}
+            {/* Revealed passwords wrap across lines so long values stay fully readable instead of being truncated. */}
+            <Text style={styles.value} numberOfLines={isRevealedPassword ? 0 : 1} ellipsizeMode="tail" selectable={isRevealedPassword}>
+              {displayValue}
+            </Text>
+          </View>
+          <View style={styles.actions}>
+            {type === 'password' && (
+              <TouchableOpacity
+                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                style={styles.iconButton}
+              >
+                <MaterialIcons
+                  name={isPasswordVisible ? "visibility-off" : "visibility"}
+                  size={20}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+      {isFullscreen && value && (
+        <FullscreenValueModal visible value={value} showCharacters={type === 'password'} onClose={() => setIsFullscreen(false)} />
       )}
-      <View style={styles.inputContent}>
-        <View style={styles.valueContainer}>
-          {label && (
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>
-                {label}
-              </Text>
-              {labelSuffix}
-            </View>
-          )}
-          {/* Revealed passwords wrap across lines so long values stay fully readable instead of being truncated. */}
-          <Text style={styles.value} numberOfLines={isRevealedPassword ? 0 : 1} ellipsizeMode="tail" selectable={isRevealedPassword}>
-            {displayValue}
-          </Text>
-        </View>
-        <View style={styles.actions}>
-          {type === 'password' && (
-            <TouchableOpacity
-              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-              style={styles.iconButton}
-            >
-              <MaterialIcons
-                name={isPasswordVisible ? "visibility-off" : "visibility"}
-                size={20}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+    </>
   );
 };
 
