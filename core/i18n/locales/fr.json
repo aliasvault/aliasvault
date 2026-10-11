@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Les mots de passe générés ne contiendront jamais ces caractères.",
     "excludedCharsLabel": "Exclure les caractères",
     "fieldHistory": {
-      "deleteConfirm": "Êtes-vous sûr ?"
+      "deleteConfirm": "Êtes-vous sûr ?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Fichier enregistré sous",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "A des pièces jointes",
     "hasPasskey": "A une clé d'accès",
     "hasTotp": "A un code 2FA",
-    "history": "Historique",
     "home": {
       "alphabeticalOption": "Ordre alphabétique",
       "createFirstItemManuallyText": "Créez manuellement votre premier élément de coffre.",
