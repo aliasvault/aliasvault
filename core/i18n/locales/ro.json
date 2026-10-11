@@ -689,7 +689,7 @@
     "excludedCharsLabel": "Exclude caracterele",
     "fieldHistory": {
       "deleteConfirm": "Ești sigur?",
-      "title": "{{field}} history"
+      "title": "{{field}} istoric"
     },
     "fileSavedTo": "Fișier salvat în",
     "filters": {
