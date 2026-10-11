@@ -689,7 +689,7 @@
     "excludedCharsLabel": "Tekens uitsluiten",
     "fieldHistory": {
       "deleteConfirm": "Weet je het zeker?",
-      "title": "{{field}} history"
+      "title": "{{field}} geschiedenis"
     },
     "fileSavedTo": "Bestand opgeslagen in",
     "filters": {
