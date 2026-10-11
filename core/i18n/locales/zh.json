@@ -688,7 +688,8 @@
     "excludedCharsDescription": "生成的密码永远不会包含这些字符。",
     "excludedCharsLabel": "排除字符",
     "fieldHistory": {
-      "deleteConfirm": "您确定吗？"
+      "deleteConfirm": "您确定吗？",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "文件已保存至",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "含附件",
     "hasPasskey": "含通行密钥",
     "hasTotp": "含两步验证码",
-    "history": "历史记录",
     "home": {
       "alphabeticalOption": "字母顺序",
       "createFirstItemManuallyText": "手动创建您的第一个密码库项目。",
