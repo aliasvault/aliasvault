@@ -1,0 +1,4 @@
+- New vault data model with faster syncing
+- Add support for custom icons
+- Add password generator excluded characters setting
+- Improve 2FA authenticator with additional options and support for SHA256 TOTP codes

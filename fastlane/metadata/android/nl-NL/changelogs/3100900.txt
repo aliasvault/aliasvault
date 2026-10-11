@@ -1,0 +1,4 @@
+- Nieuw datamodel met verbeterde synchronisatie snelheid
+- Ondersteuning voor aangepaste iconen
+- Wachtwoordgenerator tekens uitsluiten optie toegevoegd
+- Verbeterde 2FA authenticator met meer opties en ondersteuning voor SHA256 TOTP codes
