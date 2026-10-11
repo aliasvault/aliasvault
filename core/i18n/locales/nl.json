@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Gegenereerde wachtwoorden zullen nooit deze tekens bevatten.",
     "excludedCharsLabel": "Tekens uitsluiten",
     "fieldHistory": {
-      "deleteConfirm": "Weet je het zeker?"
+      "deleteConfirm": "Weet je het zeker?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Bestand opgeslagen in",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Met bijlage",
     "hasPasskey": "Met wachtwoord",
     "hasTotp": "Met 2FA code",
-    "history": "Geschiedenis",
     "home": {
       "alphabeticalOption": "Alfabetisch",
       "createFirstItemManuallyText": "Maak je eerste vault item handmatig aan.",
