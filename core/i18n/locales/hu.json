@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Biztos ebben?"
+      "deleteConfirm": "Biztos ebben?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Fájl elmentve ide",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Has attachments",
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
-    "history": "Előzmények",
     "home": {
       "alphabeticalOption": "Betűrendben",
       "createFirstItemManuallyText": "Create your first vault item manually.",
