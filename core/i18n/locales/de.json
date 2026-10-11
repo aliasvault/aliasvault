@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generierte Passwörter werden niemals diese Zeichen enthalten.",
     "excludedCharsLabel": "Ausgeschlossene Zeichen",
     "fieldHistory": {
-      "deleteConfirm": "Bist du sicher?"
+      "deleteConfirm": "Bist du sicher?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Datei gespeichert unter",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Hat Anhänge",
     "hasPasskey": "Hat Passkey",
     "hasTotp": "Hat 2FA-Code",
-    "history": "Historie",
     "home": {
       "alphabeticalOption": "Alphabetisch",
       "createFirstItemManuallyText": "Erstelle Deinen ersten Tresor-Eintrag manuell.",
