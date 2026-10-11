@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Вы уверены?"
+      "deleteConfirm": "Вы уверены?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Файл сохранен в",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "С вложениями",
     "hasPasskey": "С ключом доступа",
     "hasTotp": "С кодом 2FA",
-    "history": "История",
     "home": {
       "alphabeticalOption": "По алфавиту",
       "createFirstItemManuallyText": "Создайте первую запись в хранилище вручную.",
