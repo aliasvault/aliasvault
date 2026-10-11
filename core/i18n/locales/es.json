@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "¿Está seguro?"
+      "deleteConfirm": "¿Está seguro?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Archivo guardado en",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Tiene archivos adjuntos",
     "hasPasskey": "Tiene clave de acceso",
     "hasTotp": "Tiene un código de autenticación de dos factores",
-    "history": "Historial",
     "home": {
       "alphabeticalOption": "Alfabético",
       "createFirstItemManuallyText": "Cree manualmente su primer elemento de la bóveda.",
