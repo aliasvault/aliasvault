@@ -44,7 +44,7 @@ class OriginVerifier {
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
-        // Last refreshed: 2026-09-15
+        // Last refreshed: 2026-10-11
         private val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
@@ -475,11 +475,11 @@ class OriginVerifier {
                 "signatures": [
                   {
                     "build": "release",
-                    "cert_fingerprint_sha256": "C8:A2:E9:BC:CF:59:7C:2F:B6:DC:66:BE:E2:93:FC:13:F2:FC:47:EC:77:BC:6B:2B:0D:52:C1:1F:51:19:2A:B8"
+                    "cert_fingerprint_sha256": "34:DF:0E:7A:9F:1C:F1:89:2E:45:C0:56:B4:97:3C:D8:1C:CF:14:8A:40:50:D1:1A:EA:4A:C5:A6:5F:90:0A:42"
                   },
                   {
-                    "build": "release",
-                    "cert_fingerprint_sha256": "34:DF:0E:7A:9F:1C:F1:89:2E:45:C0:56:B4:97:3C:D8:1C:CF:14:8A:40:50:D1:1A:EA:4A:C5:A6:5F:90:0A:42"
+                    "build": "userdebug",
+                    "cert_fingerprint_sha256": "C8:A2:E9:BC:CF:59:7C:2F:B6:DC:66:BE:E2:93:FC:13:F2:FC:47:EC:77:BC:6B:2B:0D:52:C1:1F:51:19:2A:B8"
                   }
                 ]
               }
@@ -491,11 +491,11 @@ class OriginVerifier {
                 "signatures": [
                   {
                     "build": "release",
-                    "cert_fingerprint_sha256": "C8:A2:E9:BC:CF:59:7C:2F:B6:DC:66:BE:E2:93:FC:13:F2:FC:47:EC:77:BC:6B:2B:0D:52:C1:1F:51:19:2A:B8"
+                    "cert_fingerprint_sha256": "34:DF:0E:7A:9F:1C:F1:89:2E:45:C0:56:B4:97:3C:D8:1C:CF:14:8A:40:50:D1:1A:EA:4A:C5:A6:5F:90:0A:42"
                   },
                   {
-                    "build": "release",
-                    "cert_fingerprint_sha256": "34:DF:0E:7A:9F:1C:F1:89:2E:45:C0:56:B4:97:3C:D8:1C:CF:14:8A:40:50:D1:1A:EA:4A:C5:A6:5F:90:0A:42"
+                    "build": "userdebug",
+                    "cert_fingerprint_sha256": "C8:A2:E9:BC:CF:59:7C:2F:B6:DC:66:BE:E2:93:FC:13:F2:FC:47:EC:77:BC:6B:2B:0D:52:C1:1F:51:19:2A:B8"
                   }
                 ]
               }
