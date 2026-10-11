@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Er du sikker?"
+      "deleteConfirm": "Er du sikker?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "Fil gemt i",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Har bilag",
     "hasPasskey": "Har passkey",
     "hasTotp": "Har 2FA kode",
-    "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
       "createFirstItemManuallyText": "Opret dit første boks element manuelt.",
