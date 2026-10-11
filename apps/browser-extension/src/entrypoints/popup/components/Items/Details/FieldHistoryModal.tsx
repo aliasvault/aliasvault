@@ -121,7 +121,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={`${fieldLabel} ${t('items.history')}`}
+      title={t('items.fieldHistory.title', { field: fieldLabel })}
       maxWidth="max-w-2xl"
       bodyClassName="px-4 pb-4 pt-4 overflow-y-auto max-h-[60vh]"
     >

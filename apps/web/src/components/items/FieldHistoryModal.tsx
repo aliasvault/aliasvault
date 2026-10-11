@@ -78,7 +78,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {t('items.history')} - {fieldLabel}
+            {t('items.fieldHistory.title', { field: fieldLabel })}
           </h2>
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300" title={t('common.close')} aria-label={t('common.close')}>
             <Icon name="x" className="h-6 w-6" />

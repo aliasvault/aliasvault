@@ -346,7 +346,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={`${fieldLabel} ${t('items.history')}`}
+      title={t('items.fieldHistory.title', { field: fieldLabel })}
       scrollable
       maxScrollHeight={400}
       footer={footer}

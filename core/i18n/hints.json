@@ -282,6 +282,7 @@
   "items.excludedCharsDescription": "Help text under the password generator field where the user types characters that must never appear in generated passwords; keep the example characters as-is",
   "items.excludedCharsLabel": "Label of the password generator text field for characters that must never appear in generated passwords",
   "items.fieldHistory.deleteConfirm": "Delete confirmation text",
+  "items.fieldHistory.title": "Title of the field change history dialog. {{field}} is a field name, e.g. 'Username' or a custom field label.",
   "items.folders.deleteModal.deleteFolderAndContentsDescription": "Description for delete folder and contents option. {0} is item count.",
   "items.folders.deleteModal.deleteFolderAndContentsTitle": "Title for delete folder and contents option",
   "items.folders.deleteModal.deleteFolderDescription": "Description for delete folder modal. {0} is the folder name.",
