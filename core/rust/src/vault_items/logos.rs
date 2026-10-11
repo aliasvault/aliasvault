@@ -6,6 +6,7 @@ use super::sql_error;
 use crate::common::error::VaultResult;
 use crate::favicon::favicon_source_key;
 use crate::vault_codec::logo_id_for;
+use crate::vault_model::ids_equal;
 
 const FAVICON: &str = "favicon";
 const FAVICON_MIME_TYPE: &str = "image/x-icon";
@@ -51,7 +52,7 @@ pub(super) fn resolve_logo_id(conn: &Connection, scope: &str, existing_logo_id: 
 pub(super) fn refresh_item_logo(conn: &Connection, item_id: &str, manifest_id: &str, url: &str, logo: Option<&[u8]>, now: &str) -> VaultResult<()> {
     let current: Option<String> = conn.query_row(GET_ITEM_LOGO_ID, params![item_id, manifest_id], |row| row.get(0)).optional().map_err(sql_error)?.flatten();
     let Some(logo_id) = resolve_logo_id(conn, manifest_id, current.as_deref(), url, logo, now)? else { return Ok(()) };
-    if current.as_deref() != Some(logo_id.as_str()) {
+    if !current.as_deref().is_some_and(|current| ids_equal(current, &logo_id)) {
         conn.execute(SET_ITEM_LOGO_ID, params![logo_id, now, item_id, manifest_id]).map_err(sql_error)?;
     }
     Ok(())

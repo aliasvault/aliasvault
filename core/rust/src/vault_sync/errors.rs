@@ -224,12 +224,12 @@ impl SyncError {
     }
 }
 
-/// The client error code a host failure of the named command maps to.
+/// The client error code a host failure of the named command maps to; the error detail names the command.
 fn storage_error_code(command: &str) -> ErrorCode {
     match command {
         "stateGet" | "dbQuery" | "dbExport" | "vaultLoad" => ErrorCode::StorageReadFailed,
         "stateSet" | "stateRemove" | "dbExec" | "vaultStore" | "markClean" => ErrorCode::StorageWriteFailed,
-        _ => ErrorCode::UnknownError,
+        _ => ErrorCode::SyncEngineFailed,
     }
 }
 
@@ -251,6 +251,7 @@ mod tests {
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
         assert_eq!(SyncError::Staging(String::new()).failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
         assert_eq!(SyncError::Host { command: "dbExec", message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
+        assert_eq!(SyncError::Host { command: "vaultKey", message: String::new() }.failure(), Failure::Coded(ErrorCode::SyncEngineFailed));
     }
 
     #[test]

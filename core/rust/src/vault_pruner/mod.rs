@@ -13,7 +13,7 @@ use crate::vault_model::names::{
     DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE,
     LOGO_ID_COL, LOGO_KIND_FAVICON, UPDATED_AT_COL,
 };
-use crate::vault_model::{BLOB_COLUMNS, MANIFEST_ID_COL, SYNCABLE_TABLES};
+use crate::vault_model::{id_key, ids_equal, BLOB_COLUMNS, MANIFEST_ID_COL, SYNCABLE_TABLES};
 
 /// Input for the prune operation.
 #[derive(Debug, Clone)]
@@ -190,12 +190,12 @@ fn sweep_orphan_favicons(
 ) {
     let Some(logos) = records_of(tables, LOGOS_TABLE) else { return };
     let blob_clear = blob_clear_fragment(LOGOS_TABLE);
-    let expired_set: HashSet<(&str, &str)> = expired.iter().map(|(manifest_id, id)| (manifest_id.as_str(), id.as_str())).collect();
+    let expired_set: HashSet<(String, String)> = expired.iter().map(|(manifest_id, id)| (id_key(manifest_id), id_key(id))).collect();
 
-    let referenced_logos: HashSet<(&str, &str)> = items.iter()
+    let referenced_logos: HashSet<(String, String)> = items.iter()
         .filter(|item| !is_deleted(item))
-        .filter(|item| !expired_set.contains(&(manifest_of(item), str_col(item, ID_COL).unwrap_or(""))))
-        .filter_map(|item| str_col(item, LOGO_ID_COL).map(|logo_id| (manifest_of(item), logo_id)))
+        .filter(|item| !expired_set.contains(&(id_key(manifest_of(item)), id_key(str_col(item, ID_COL).unwrap_or("")))))
+        .filter_map(|item| str_col(item, LOGO_ID_COL).map(|logo_id| (id_key(manifest_of(item)), id_key(logo_id))))
         .collect();
 
     for logo in logos.iter().filter(|logo| !is_deleted(logo)) {
@@ -203,7 +203,7 @@ fn sweep_orphan_favicons(
             continue;
         }
         let Some(logo_id) = str_col(logo, ID_COL) else { continue };
-        if referenced_logos.contains(&(manifest_of(logo), logo_id)) {
+        if referenced_logos.contains(&(id_key(manifest_of(logo)), id_key(logo_id))) {
             continue;
         }
         statements.push(SqlStatement {
@@ -233,7 +233,7 @@ fn clear_tombstoned_blobs(tables: &[CodecTableData], now_str: &str, statements: 
 
 /// Count the live records of one manifest that match a foreign key value.
 fn count_related_records(records: &[CodecRecord], manifest_id: &str, fk_column: &str, fk_value: &str) -> u32 {
-    records.iter().filter(|r| manifest_of(r) == manifest_id && str_col(r, fk_column) == Some(fk_value) && !is_deleted(r)).count() as u32
+    records.iter().filter(|r| ids_equal(manifest_of(r), manifest_id) && str_col(r, fk_column).is_some_and(|value| ids_equal(value, fk_value)) && !is_deleted(r)).count() as u32
 }
 
 #[cfg(test)]
