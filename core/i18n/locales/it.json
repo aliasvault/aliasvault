@@ -688,7 +688,8 @@
     "excludedCharsDescription": "Le password generate non conterranno mai questi caratteri.",
     "excludedCharsLabel": "Escludi caratteri",
     "fieldHistory": {
-      "deleteConfirm": "Sei sicuro?"
+      "deleteConfirm": "Sei sicuro?",
+      "title": "{{field}} history"
     },
     "fileSavedTo": "File salvato in",
     "filters": {
@@ -727,7 +728,6 @@
     "hasAttachments": "Ha allegati",
     "hasPasskey": "Ha una passkey",
     "hasTotp": "Ha un codice 2FA",
-    "history": "Cronologia",
     "home": {
       "alphabeticalOption": "Alfabetico",
       "createFirstItemManuallyText": "Crea manualmente il tuo primo elemento nella cassaforte.",
