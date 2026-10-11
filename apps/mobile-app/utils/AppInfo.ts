@@ -9,7 +9,7 @@ export class MobileAppIdentity {
   /**
    * The current mobile app version. This should be updated with each release of the mobile app.
    */
-  public static readonly VERSION = '0.31.0-alpha';
+  public static readonly VERSION = '0.31.0';
 
   /**
    * The client name to use in the X-AliasVault-Client header.

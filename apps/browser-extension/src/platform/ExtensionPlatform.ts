@@ -17,7 +17,7 @@ import { browser, storage } from '#imports';
 /**
  * The current extension version. This should be updated with each release of the extension.
  */
-export const EXTENSION_VERSION = '0.31.0-alpha';
+export const EXTENSION_VERSION = '0.31.0';
 
 /**
  * The client name to use in the X-AliasVault-Client header, detected from the WXT build target.
