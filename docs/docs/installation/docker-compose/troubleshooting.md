@@ -1,6 +1,7 @@
 ---
 sidebar_position: 3
 sidebar_label: "Troubleshooting"
+pagination_next: installation/docs/private-vs-public-email
 ---
 # Troubleshooting
 

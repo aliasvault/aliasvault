@@ -255,6 +255,11 @@ html[data-theme='dark'] {
   background-color: var(--av-menu-expanded-bg);
 }
 
+/* Purposefully hidden from sidebar menu. */
+.menu__list-item.av-sidebar-hidden {
+  display: none;
+}
+
 /* --------------------------------------------------------------- Content -- */
 
 /* Standalone doc pages (Architecture, Help & Support) have no sidebar, so

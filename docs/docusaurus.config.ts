@@ -121,8 +121,8 @@ const config: Config = {
             ],
           },
           {
-            to: '/installation/script/update/',
-            from: ['/installation/update', '/installation/update.html'],
+            to: '/installation/update/',
+            from: ['/installation/update.html'],
           },
           {
             to: '/installation/script/update/v0.22.0',
