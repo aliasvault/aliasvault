@@ -689,7 +689,7 @@
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
       "deleteConfirm": "¿Está seguro?",
-      "title": "{{field}} history"
+      "title": "Historial {{field}}"
     },
     "fileSavedTo": "Archivo guardado en",
     "filters": {
