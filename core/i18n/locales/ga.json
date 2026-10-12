@@ -689,7 +689,7 @@
     "excludedCharsLabel": "Eisigh carachtair",
     "fieldHistory": {
       "deleteConfirm": "An bhfuil tú cinnte?",
-      "title": "{{field}} history"
+      "title": "Stair {{field}}"
     },
     "fileSavedTo": "Comhad sábháilte chuig",
     "filters": {
