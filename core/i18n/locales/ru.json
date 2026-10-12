@@ -3,9 +3,9 @@
     "ACCOUNT_BLOCKED": "Ваш аккаунт был отключён. Если вы считаете, что это ошибка, обратитесь в поддержку.",
     "ACCOUNT_LOCKED": "Учетная запись временно заблокирована из-за слишком большого количества неудачных попыток. Пожалуйста, повторите попытку позже.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Аккаунт успешно удалён.",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
+    "ALIAS_LIMIT_REACHED": "Достигнут лимит создания почтовых псевдонимов. Повторите попытку позже или свяжитесь с поддержкой, если требуется увеличить лимит.",
     "CLAIM_DOES_NOT_EXIST": "При попытке загрузить электронные письма произошла ошибка. Пожалуйста, попробуйте отредактировать и сохранить данные для синхронизации базы данных, затем повторите попытку.",
-    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
+    "CLAIM_TAKEN": "Этот адрес эл. почты уже используется в другом аккаунте. Отредактируйте запись и выберите другой адрес.",
     "INTERNAL_SERVER_ERROR": "Внутренняя ошибка сервера.",
     "INVALID_AUTHENTICATOR_CODE": "Неверный код аутентификатора. Пожалуйста, попробуйте снова.",
     "INVALID_RECOVERY_CODE": "Неверный код восстановления. Пожалуйста, попробуйте снова.",
@@ -166,7 +166,7 @@
       "registrationDisabledMessage": "Создать аккаунт можно только по ссылке-приглашению. Обратитесь к администратору сервера для получения приглашения.",
       "registrationDisabledTitle": "Регистрация пользователей отключена",
       "setupStepTitle": "Настройка",
-      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
+      "termsAgreementLabel": "Я принимаю <termsLink>Условия использования</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Ассистент AliasVault",
         "enterUsernameInstructions": "Пожалуйста, введите имя пользователя, которое вы хотели бы использовать. Это может быть адрес вашей электронной почты или любое другое уникальное имя, которое вы предпочитаете.",
@@ -174,7 +174,7 @@
         "serverCommunicationError": "Во время связи с сервером AliasVault произошла ошибка.",
         "usernamePlaceholder": "Введите желаемое имя пользователя или адрес электронной почты",
         "validatingUsernameMessage": "Проверка имени пользователя...",
-        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
+        "welcomeMessage": "Добро пожаловать! Давайте начнем с выбора имени пользователя."
       },
       "usernameStepTitle": "Выберите имя пользователя"
     },
@@ -263,7 +263,7 @@
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
+      "serverOutdated": "Для работы с этой версией приложения необходимо обновить сервер AliasVault. Повторите попытку позже. Если вы используете собственный сервер, свяжитесь с его администратором.",
       "sessionExpired": "Срок действия сессии истек. Войдите снова.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "unexpectedErrorContactSupport": "Произошла непредвиденная ошибка. Повторите попытку или обратитесь в службу поддержки, если проблема не исчезнет.",
