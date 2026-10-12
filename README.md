@@ -70,7 +70,7 @@ AliasVault is available on:
 
 ## Self-hosting
 > [!NOTE]
-> **Requirements:** 1 vCPU, 1GB RAM, 16GB disk, Docker ≥ 20.10, 64-bit Linux
+> **Requirements:** 1 vCPU, 1GB RAM, 5GB free disk (16GB total recommended), Docker ≥ 20.10, 64-bit Linux
 
 AliasVault can be self-hosted on your own servers using two different installation methods. Both use Docker, but they differ in how much is automated versus how much you manage yourself.
 
