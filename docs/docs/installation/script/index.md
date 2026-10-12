@@ -7,7 +7,7 @@ The following guide will walk you through the steps to install AliasVault on you
 
 :::info[Requirements]
 - 64-bit Linux VM with root access (Ubuntu or RHEL-based recommended)
-- Minimum: 1 vCPU, 1GB RAM, 16GB disk
+- Minimum: 1 vCPU, 1GB RAM, 5GB free disk space (16GB total disk recommended)
 - Docker (CE ≥ 20.10) and Docker Compose (≥ 2.0)
 → Installation guide: [Docker Docs](https://docs.docker.com/engine/install/)
 - Able to forward ports 80, 443 (with optional 25/587 for private email domains)
