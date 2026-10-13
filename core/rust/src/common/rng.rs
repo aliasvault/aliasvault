@@ -8,6 +8,20 @@ pub(crate) fn fill_random(dest: &mut [u8]) {
     getrandom::fill(dest).expect("the OS CSPRNG is unavailable");
 }
 
+/// `len` fresh bytes from the operating system's CSPRNG.
+pub(crate) fn random_bytes(len: usize) -> Vec<u8> {
+    let mut bytes = vec![0u8; len];
+    fill_random(&mut bytes);
+    bytes
+}
+
+/// A fixed-size array of fresh bytes from the operating system's CSPRNG.
+pub(crate) fn random_array<const N: usize>() -> [u8; N] {
+    let mut bytes = [0u8; N];
+    fill_random(&mut bytes);
+    bytes
+}
+
 /// Build the RNG used for generation.
 ///
 /// If `seed` is a valid 64-character hex string (32 bytes), the RNG is deterministically

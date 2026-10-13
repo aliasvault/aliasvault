@@ -268,8 +268,7 @@ mod tests {
     use crate::common::encoding::base64_encode;
 
     fn adversarial() -> Vec<Vec<u8>> {
-        let mut large = vec![0u8; 1024 * 1024];
-        crate::common::rng::fill_random(&mut large);
+        let large = crate::common::rng::random_bytes(1024 * 1024);
         vec![vec![], vec![0x00], vec![0xFF], vec![0x00, 0xFF], vec![0xC3, 0x28, 0xA0], vec![0xED, 0xA0, 0x80, 0xF8], b"QUJD".to_vec(), (0u8..=255).collect(), large]
     }
 

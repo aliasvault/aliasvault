@@ -4,7 +4,7 @@ use serde::Serialize;
 use zeroize::Zeroizing;
 
 use crate::common::error::{VaultError, VaultResult};
-use crate::common::rng::fill_random;
+use crate::common::rng::random_bytes;
 use crate::crypto::aes_gcm::{symmetric_decrypt_with_raw_key, symmetric_encrypt_with_raw_key};
 use crate::crypto::argon2::argon2_derive_key_bytes_from_settings;
 
@@ -32,9 +32,7 @@ pub struct PinFailure {
 
 /// A fresh random salt for a new PIN wrap.
 pub fn pin_generate_salt() -> Vec<u8> {
-    let mut salt = vec![0u8; PIN_SALT_LENGTH];
-    fill_random(&mut salt);
-    salt
+    random_bytes(PIN_SALT_LENGTH)
 }
 
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.

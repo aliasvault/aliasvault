@@ -151,9 +151,7 @@ fn blob(row: &Row<'_>, column: &str) -> rusqlite::Result<Option<Vec<u8>>> {
 
 /// A new lowercase v4 id.
 fn new_id() -> String {
-    let mut bytes = [0u8; 16];
-    crate::common::rng::fill_random(&mut bytes);
-    crate::common::encoding::uuid_from_bytes(bytes, 4)
+    crate::common::encoding::uuid_from_bytes(crate::common::rng::random_array(), 4)
 }
 
 /// The vault error for a failed statement.
