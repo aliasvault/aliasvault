@@ -1,6 +1,7 @@
 //! The sync flow: status check, server-directed changes, then pull (and merge) or push as the revisions decide.
 
 use std::collections::HashMap;
+use secrecy::ExposeSecret;
 
 use serde_json::Value;
 
@@ -331,7 +332,7 @@ async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pu
     for record in records.values_mut() {
         let Some(served) = ctx.served_manifest_names.get(&id_key(&record.manifest_id)).filter(|served| record.encrypted_name.as_ref() != Some(*served)).cloned() else { continue };
         let Some(vek) = keys::open_shared_manifest_vek(ctx, record).await? else { continue };
-        match pull::open_manifest_name(&served, &record.manifest_id, &vek) {
+        match pull::open_manifest_name(&served, &record.manifest_id, vek.expose_secret()) {
             Some(name) => drop(opened.insert(id_key(&record.manifest_id), name)),
             None => ctx.warn(format!("[Sharing] The name of shared manifest {} did not open with its key.", record.manifest_id)).await,
         }
@@ -344,7 +345,7 @@ async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pu
     let key = ctx.encryption_key()?;
     db::apply_manifest_names(&ctx.host, super::types::Db::Local, &opened).await?;
     ctx.persist_local_vault(false).await?;
-    keys::set_shared_manifest_records(ctx, &records, &key).await?;
+    keys::set_shared_manifest_records(ctx, &records, key.expose_secret()).await?;
     ctx.log(format!("[Sharing] Refreshed the name of {} shared manifest(s).", opened.len())).await;
     Ok(true)
 }

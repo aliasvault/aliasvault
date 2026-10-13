@@ -2,6 +2,7 @@
 //! manifest at a time, and materializes the result.
 
 use std::collections::{HashMap, HashSet};
+use secrecy::ExposeSecret;
 
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::SyncResult;
@@ -38,7 +39,7 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         Snapshot::Manifest(snapshot) => snapshot,
     };
 
-    let opened = pull::open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
+    let opened = pull::open_manifests_and_record_sync_state(ctx, &snapshot, vek.expose_secret()).await?;
     let local_side = canonicalize_vault(ctx, None).await?;
     let local_side = match ground_moved_under_canonicalize(&local_side.manifest_records, &opened) {
         None => local_side,
@@ -48,13 +49,13 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         }
     };
 
-    match merge_onto_opened_manifests(ctx, &opened, local_side, &vek).await {
+    match merge_onto_opened_manifests(ctx, &opened, local_side, vek.expose_secret()).await {
         Ok(outcome) => Ok(outcome),
         Err(merge_error) => {
             // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
             ctx.warn(format!("[Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
             let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
-            Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?)))
+            Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, vek.expose_secret())?)))
         }
     }
 }

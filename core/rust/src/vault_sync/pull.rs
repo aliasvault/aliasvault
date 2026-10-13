@@ -2,6 +2,7 @@
 //! referenced blobs and materialize the whole into a fresh SQLite database.
 
 use std::collections::HashMap;
+use secrecy::{ExposeSecret, SecretString};
 
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
@@ -20,7 +21,7 @@ pub(crate) struct ResolvedManifest {
     pub manifest_id: String,
     pub is_personal: bool,
     pub manifest: Manifest,
-    pub vek: String,
+    pub vek: SecretString,
     pub revision: i64,
     pub blob_references: Vec<StoredBlobRef>,
     pub content_fingerprint: String,
@@ -131,10 +132,10 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
     };
 
     ctx.log("[Pull] Decrypting the manifests and reassembling the local SQLite...").await;
-    let opened = open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
+    let opened = open_manifests_and_record_sync_state(ctx, &snapshot, vek.expose_secret()).await?;
     let sqlite_bytes = materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
     ctx.log(format!("[Pull] Materialized SQLite ({} bytes); re-encrypting for local storage...", sqlite_bytes.len())).await;
-    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?))
+    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, vek.expose_secret())?))
 }
 
 /// Open every manifest a snapshot carries, personal first, and record the snapshot as this device's sync state.
@@ -161,9 +162,9 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
         if is_personal {
             let entry = if personal_needs_first_write {
                 ctx.log("[Pull] Personal manifest has no content yet (new account); starting from an empty vault.").await;
-                empty_personal_manifest(ctx, dto, &manifest_key).await?
+                empty_personal_manifest(ctx, dto, manifest_key.expose_secret()).await?
             } else {
-                open_logged_manifest(ctx, dto, &manifest_key, true).await?
+                open_logged_manifest(ctx, dto, manifest_key.expose_secret(), true).await?
             };
             state::set(&ctx.host, state::VAULT_MANIFEST_SALT, &entry.manifest.manifest_salt).await?;
             state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, &entry.manifest_id).await?;
@@ -179,11 +180,11 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
             continue;
         }
 
-        let entry = open_logged_manifest(ctx, dto, &manifest_key, false).await?;
+        let entry = open_logged_manifest(ctx, dto, manifest_key.expose_secret(), false).await?;
         let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant this account can re-open, refusing to assemble", entry.manifest_id)))?;
         let encrypted_name = served_encrypted_name(ctx, &previous_records, &entry.manifest_id);
         if let Some(ciphertext) = &encrypted_name {
-            match open_manifest_name(ciphertext, &entry.manifest_id, &manifest_key) {
+            match open_manifest_name(ciphertext, &entry.manifest_id, manifest_key.expose_secret()) {
                 Some(name) => drop(manifest_names.insert(id_key(&entry.manifest_id), name)),
                 None => ctx.warn(format!("[Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
             }
@@ -260,7 +261,7 @@ pub(crate) async fn commit_revisions(ctx: &Ctx, pulled: &PulledVault) -> SyncRes
 
 /// Open every data bucket a snapshot carries, record the snapshot's bucket revisions.
 async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[ResolvedManifest]) -> SyncResult<(Vec<DataBucket>, HashMap<String, String>, HashMap<String, i64>)> {
-    let key_by_manifest: HashMap<&str, &str> = resolved.iter().map(|m| (m.manifest_id.as_str(), m.vek.as_str())).collect();
+    let key_by_manifest: HashMap<&str, &str> = resolved.iter().map(|m| (m.manifest_id.as_str(), m.vek.expose_secret())).collect();
     let mut buckets = Vec::new();
     let mut fingerprints = HashMap::new();
     let mut revisions = HashMap::new();
@@ -330,7 +331,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> 
             continue;
         };
         let owner = owners[&reference.hash];
-        match blob_keys::decrypt_blob(encrypted, &owner.vek, &owner.manifest_id, &reference.hash) {
+        match blob_keys::decrypt_blob(encrypted, owner.vek.expose_secret(), &owner.manifest_id, &reference.hash) {
             Ok(bytes) => {
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), encrypted.clone());
@@ -379,7 +380,7 @@ fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<
         manifest_id: dto.manifest_id.clone(),
         is_personal,
         manifest,
-        vek: vek.to_string(),
+        vek: SecretString::from(vek),
         revision: dto.revision,
         blob_references: dto.blob_references.clone(),
         content_fingerprint: vault_codec::compute_content_fingerprint(&manifest_json),
@@ -394,11 +395,11 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
     let spec = ManifestSpec { manifest_id: dto.manifest_id.clone(), manifest_salt, name: None };
     let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::common::timestamp::now_iso_utc(), manifests: vec![spec], stamp_unstamped_into: None })?;
     let manifest = canonicalized.manifests.into_iter().next().map(|m| m.manifest).ok_or_else(|| SyncError::Other("canonicalize returned no manifest for the empty vault".to_string()))?;
-    Ok(ResolvedManifest { manifest_id: dto.manifest_id.clone(), is_personal: true, manifest, vek: vek.to_string(), revision: dto.revision, blob_references: Vec::new(), content_fingerprint: String::new() })
+    Ok(ResolvedManifest { manifest_id: dto.manifest_id.clone(), is_personal: true, manifest, vek: SecretString::from(vek), revision: dto.revision, blob_references: Vec::new(), content_fingerprint: String::new() })
 }
 
 /// The key that opens one snapshot manifest.
-async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool) -> SyncResult<String> {
+async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool) -> SyncResult<SecretString> {
     // Only a personal manifest that predates the account key hierarchy has no key type; a shared one always states it.
     let key_type = match dto.key_type.clone() {
         Some(key_type) => key_type,
@@ -409,7 +410,7 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
         if dto.manifest_id != personal_manifest_id {
             return Err(SyncError::Snapshot(format!("manifest {} is unlocked by the account key hierarchy, but this session holds no key for it, refusing to assemble", dto.manifest_id)));
         }
-        return Ok(personal_vek.to_string());
+        return Ok(SecretString::from(personal_vek));
     }
     if key_type != types::KEY_TYPE_GRANT_KEY {
         return Err(SyncError::VaultVersionIncompatible(format!("manifest {} states an unknown key type \"{}\"; update the app", dto.manifest_id, key_type)));
@@ -417,7 +418,7 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
     resolve_granted_vek(ctx, dto).await
 }
 
-async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String> {
+async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<SecretString> {
     let (encrypted_vek, public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant to open it with, refusing to assemble", dto.manifest_id)))?;
     if algorithm != types::ALGORITHM_RSA_OAEP_SHA256 {
         return Err(SyncError::VaultVersionIncompatible(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\"; update the app", dto.manifest_id, algorithm)));
@@ -428,5 +429,5 @@ async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String>
     }
     // Sanity check: no key this session holds opens the grant, so the session is behind the server.
     let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or(SyncError::KeyOutOfSync)?;
-    keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
+    keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, private_key.expose_secret()).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
 }

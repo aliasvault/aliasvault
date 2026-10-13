@@ -2,6 +2,7 @@
 //! operations the upgrade gate drives (`migrationStatus`, `migrateManifest`).
 
 use std::collections::HashMap;
+use secrecy::ExposeSecret;
 
 use super::db::{self, SchemaState};
 use super::errors::{Failure, SyncError, SyncResult};
@@ -126,7 +127,7 @@ pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, stamp_unstamped_into: Op
     let bytes = pull::materialize_to_sqlite(ctx, &manifests, &set.canonicalized.data_buckets, &blob_map, &HashMap::new()).await?;
     ctx.log(format!("[Migration] Migration complete: {} blobs re-embedded, {} bytes.", blob_map.len(), bytes.len())).await;
 
-    let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, &ctx.encryption_key()?)?, true, None, None).await?;
+    let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, (ctx.encryption_key()?).expose_secret())?, true, None, None).await?;
     ctx.mutation_sequence = stored.mutation_sequence;
     ctx.is_dirty = true;
     ctx.vault_changed = true;
