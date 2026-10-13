@@ -222,9 +222,7 @@ fn bind_value(value: &Value, blobs: &HashMap<String, Vec<u8>>) -> Value {
 
 /// A random lowercase UUID v4.
 pub(crate) fn new_id() -> String {
-    let mut bytes = [0u8; 16];
-    crate::common::rng::fill_random(&mut bytes);
-    uuid_from_bytes(bytes, 4)
+    uuid_from_bytes(crate::common::rng::random_array(), 4)
 }
 
 const GET_ACTIVE_PUBLIC_KEY_FOR_MANIFEST: &str = "SELECT x.PublicKey FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";

@@ -1,8 +1,9 @@
-//! SRP (Secure Remote Password) protocol implementation.
+//! SRP-6a (Secure Remote Password), client side only; the server side lives in the .NET API.
 //!
 //! Uses RustCrypto `srp` crate for most operations, except certain places
 //! where the format must stay compatible with the `SecureRemotePassword` .NET package
 //! used by the API server and the `secure-remote-password` library used in the JS test suite.
+//! The tests module carries a server side of the handshake to test the client-server flow locally.
 
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
@@ -10,13 +11,12 @@ use sha2::{Digest, Sha256};
 use std::fmt;
 use srp::client::SrpClient;
 use srp::groups::G_2048;
-use srp::server::SrpServer;
 use srp::utils::{compute_k, compute_u};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
 
 use crate::common::encoding::{hex_decode, hex_encode_upper as bytes_to_hex};
-use crate::common::rng::fill_random;
+use crate::common::rng::random_bytes;
 
 /// Byte length of the 2048-bit group modulus N; all padded values use this size.
 const N_BYTES: usize = 256;
@@ -72,13 +72,6 @@ fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SrpError> {
     hex_decode(hex).ok_or_else(|| SrpError::InvalidHex(format!("malformed hex string of length {}", hex.len())))
 }
 
-/// Generate cryptographically secure random bytes.
-fn generate_random_bytes(len: usize) -> Vec<u8> {
-    let mut bytes = vec![0u8; len];
-    fill_random(&mut bytes);
-    bytes
-}
-
 /// Left-pad bytes with zeros to a specific length.
 fn pad_to_length(bytes: Vec<u8>, target_len: usize) -> Vec<u8> {
     if bytes.len() >= target_len {
@@ -97,7 +90,7 @@ fn to_padded_bytes(value: &BigUint) -> Vec<u8> {
 
 /// A random 32-byte SRP salt as an uppercase hex string.
 pub fn srp_generate_salt() -> String {
-    bytes_to_hex(&generate_random_bytes(32))
+    bytes_to_hex(&random_bytes(32))
 }
 
 /// The SRP private key `x = H(salt | H(identity | ":" | password_hash))` as uppercase hex, from hex inputs.
@@ -129,7 +122,7 @@ pub fn srp_derive_verifier(private_key: &str) -> Result<String, SrpError> {
 pub fn srp_generate_ephemeral() -> SrpEphemeral {
     let client = SrpClient::<Sha256>::new(&G_2048);
 
-    let a = generate_random_bytes(64);
+    let a = random_bytes(64);
     let a_pub = client.compute_public_ephemeral(&a);
 
     SrpEphemeral { public: bytes_to_hex(&pad_to_length(a_pub, N_BYTES)), secret: bytes_to_hex(&a) }
@@ -181,70 +174,6 @@ pub fn srp_verify_session(client_public: &str, client_proof: &str, session_key: 
     Ok(expected_m2.ct_eq(&server_m2_bytes).unwrap_u8() == 1)
 }
 
-// Server side of the handshake.
-
-/// A server ephemeral pair: `B = k*v + g^b mod N` for a random 64-byte secret `b`, from the hex verifier.
-pub fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, SrpError> {
-    let v_bytes = hex_to_bytes(verifier)?;
-
-    let server = SrpServer::<Sha256>::new(&G_2048);
-
-    let b = generate_random_bytes(64);
-    let b_pub = server.compute_public_ephemeral(&b, &v_bytes);
-
-    Ok(SrpEphemeral { public: bytes_to_hex(&pad_to_length(b_pub, N_BYTES)), secret: bytes_to_hex(&b) })
-}
-
-/// The server session (key `K` and proof `M2`) once the client's proof `M1` verifies; `None` when it does not.
-pub fn srp_derive_session_server(
-    server_secret: &str,
-    client_public: &str,
-    salt: &str,
-    identity: &str,
-    verifier: &str,
-    client_proof: &str,
-) -> Result<Option<SrpSession>, SrpError> {
-    let identity = identity.to_lowercase();
-    let b = BigUint::from_bytes_be(&hex_to_bytes(server_secret)?);
-    let a_pub = BigUint::from_bytes_be(&hex_to_bytes(client_public)?);
-    let salt_bytes = hex_to_bytes(salt)?;
-    let v = BigUint::from_bytes_be(&hex_to_bytes(verifier)?);
-    let client_m1 = hex_to_bytes(client_proof)?;
-
-    // Safeguard against malicious A (A mod N must not be 0)
-    if &a_pub % &G_2048.n == BigUint::default() {
-        return Err(SrpError::InvalidParameter("client public ephemeral is invalid".to_string()));
-    }
-
-    let server = SrpServer::<Sha256>::new(&G_2048);
-    let k = compute_k::<Sha256>(&G_2048);
-
-    // B = k*v + g^b mod N
-    let b_pub = server.compute_b_pub(&b, &k, &v);
-
-    let a_pub_bytes = to_padded_bytes(&a_pub);
-    let b_pub_bytes = to_padded_bytes(&b_pub);
-
-    let u = compute_u::<Sha256>(&a_pub_bytes, &b_pub_bytes);
-    if u == BigUint::default() {
-        return Err(SrpError::InvalidParameter("scrambling parameter u is zero".to_string()));
-    }
-
-    // S = (A * v^u)^b mod N
-    let s = server.compute_premaster_secret(&a_pub, &v, &u, &b);
-
-    let key = derive_session_key(&s);
-    let expected_m1 = compute_m1(&a_pub_bytes, &b_pub_bytes, &salt_bytes, &identity, &key);
-
-    if expected_m1.ct_eq(&client_m1).unwrap_u8() != 1 {
-        return Ok(None);
-    }
-
-    let m2 = compute_m2(&a_pub_bytes, &expected_m1, &key);
-
-    Ok(Some(SrpSession { proof: bytes_to_hex(&m2), key: bytes_to_hex(&key) }))
-}
-
 /*
  * Wire format primitives that deviate from the `srp` crate on purpose: the SecureRemotePassword (.NET/JS) format hashes
  * the padded premaster secret into K and uses the RFC 2945 M1, while the crate uses raw S and M1 = H(A|B|S).
@@ -287,6 +216,71 @@ fn compute_m2(a_pub: &[u8], m1: &[u8], key: &[u8]) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use srp::server::SrpServer;
+
+    // Server side of the handshake: lets the tests run a full client/server flow.
+
+    /// A server ephemeral pair: `B = k*v + g^b mod N` for a random 64-byte secret `b`, from the hex verifier.
+    fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, SrpError> {
+        let v_bytes = hex_to_bytes(verifier)?;
+
+        let server = SrpServer::<Sha256>::new(&G_2048);
+
+        let b = random_bytes(64);
+        let b_pub = server.compute_public_ephemeral(&b, &v_bytes);
+
+        Ok(SrpEphemeral { public: bytes_to_hex(&pad_to_length(b_pub, N_BYTES)), secret: bytes_to_hex(&b) })
+    }
+
+    /// The server session (key `K` and proof `M2`) once the client's proof `M1` verifies; `None` when it does not.
+    fn srp_derive_session_server(
+        server_secret: &str,
+        client_public: &str,
+        salt: &str,
+        identity: &str,
+        verifier: &str,
+        client_proof: &str,
+    ) -> Result<Option<SrpSession>, SrpError> {
+        let identity = identity.to_lowercase();
+        let b = BigUint::from_bytes_be(&hex_to_bytes(server_secret)?);
+        let a_pub = BigUint::from_bytes_be(&hex_to_bytes(client_public)?);
+        let salt_bytes = hex_to_bytes(salt)?;
+        let v = BigUint::from_bytes_be(&hex_to_bytes(verifier)?);
+        let client_m1 = hex_to_bytes(client_proof)?;
+
+        // Safeguard against malicious A (A mod N must not be 0)
+        if &a_pub % &G_2048.n == BigUint::default() {
+            return Err(SrpError::InvalidParameter("client public ephemeral is invalid".to_string()));
+        }
+
+        let server = SrpServer::<Sha256>::new(&G_2048);
+        let k = compute_k::<Sha256>(&G_2048);
+
+        // B = k*v + g^b mod N
+        let b_pub = server.compute_b_pub(&b, &k, &v);
+
+        let a_pub_bytes = to_padded_bytes(&a_pub);
+        let b_pub_bytes = to_padded_bytes(&b_pub);
+
+        let u = compute_u::<Sha256>(&a_pub_bytes, &b_pub_bytes);
+        if u == BigUint::default() {
+            return Err(SrpError::InvalidParameter("scrambling parameter u is zero".to_string()));
+        }
+
+        // S = (A * v^u)^b mod N
+        let s = server.compute_premaster_secret(&a_pub, &v, &u, &b);
+
+        let key = derive_session_key(&s);
+        let expected_m1 = compute_m1(&a_pub_bytes, &b_pub_bytes, &salt_bytes, &identity, &key);
+
+        if expected_m1.ct_eq(&client_m1).unwrap_u8() != 1 {
+            return Ok(None);
+        }
+
+        let m2 = compute_m2(&a_pub_bytes, &expected_m1, &key);
+
+        Ok(Some(SrpSession { proof: bytes_to_hex(&m2), key: bytes_to_hex(&key) }))
+    }
 
     /// Test with fixed values for deterministic verification.
     #[test]

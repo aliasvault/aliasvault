@@ -107,11 +107,7 @@ pub fn create_passkey(
     };
     let attestation_object = cbor::map(&[(cbor::text("fmt"), cbor::text(fmt)), (cbor::text("attStmt"), statement), (cbor::text("authData"), cbor::bytes(&authenticator_data))]);
 
-    let prf_secret = enable_prf.then(|| {
-        let mut secret = vec![0u8; 32];
-        crate::common::rng::fill_random(&mut secret);
-        secret
-    });
+    let prf_secret = enable_prf.then(|| crate::common::rng::random_bytes(32));
     let prf_results = prf(prf_secret.as_deref(), prf_inputs);
 
     Ok(PasskeyCreation { attestation_object, authenticator_data, public_key_jwk: key.public_key_jwk, public_key_spki: key.public_key_spki, private_key_jwk: key.private_key_jwk, prf_secret, prf_results })

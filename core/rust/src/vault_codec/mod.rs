@@ -55,9 +55,7 @@ pub fn logo_content_hash(bytes: &[u8]) -> String {
 
 /// Generate a fresh 32-byte per-manifest blob-hashing salt as a lowercase hex string.
 pub fn generate_manifest_salt() -> String {
-    let mut bytes = [0u8; 32];
-    crate::common::rng::fill_random(&mut bytes);
-    hex_encode_lower(&bytes)
+    hex_encode_lower(&crate::common::rng::random_array::<32>())
 }
 
 /// Wrap a payload JSON string in an integrity envelope (`{ schemaVersion, contentHash, payload }`)
