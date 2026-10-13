@@ -12,6 +12,7 @@ using System.Text;
 using AliasServerDb;
 using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
+using AliasVault.Tests.Shared;
 
 /// <summary>
 /// Tests for the EmailEncryption class, covering the source-only storage format (gzipped MessageSourceBytes)
@@ -42,7 +43,7 @@ public class EmailEncryptionTests
             Assert.That(encrypted.DecryptionKeys[0].VaultManifestDeliveryKeyId, Is.EqualTo(deliveryKey.Id));
         });
 
-        var decrypted = EmailEncryption.DecryptEmail(encrypted, RsaEncryptionTests.PrivateKey);
+        var decrypted = TestDecryption.DecryptEmail(encrypted, RsaEncryptionTests.PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(decrypted.MessageSourceBytes![0], Is.EqualTo(0x1f), "Decrypted source should still be gzip-compressed (gzip magic byte 1).");
@@ -77,7 +78,7 @@ public class EmailEncryptionTests
             Assert.That(encrypted.MessageSourceBytes, Is.Null, "MessageSourceBytes should stay null for legacy-shaped emails.");
         });
 
-        var decrypted = EmailEncryption.DecryptEmail(encrypted, RsaEncryptionTests.PrivateKey);
+        var decrypted = TestDecryption.DecryptEmail(encrypted, RsaEncryptionTests.PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(decrypted.MessageSource, Is.EqualTo("Legacy raw source"));

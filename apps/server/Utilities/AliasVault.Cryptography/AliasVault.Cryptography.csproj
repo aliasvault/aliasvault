@@ -31,6 +31,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <InternalsVisibleTo Include="AliasVault.UnitTests" />
+      <InternalsVisibleTo Include="AliasVault.IntegrationTests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\Databases\AliasServerDb\AliasServerDb.csproj" />
       <ProjectReference Include="..\..\Shared\AliasVault.Shared.Server\AliasVault.Shared.Server.csproj" />
     </ItemGroup>

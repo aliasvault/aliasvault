@@ -54,4 +54,8 @@
       <ProjectReference Include="..\..\Utilities\AliasVault.Cryptography\AliasVault.Cryptography.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\Shared\TestDecryption.cs" Link="Shared\TestDecryption.cs" />
+    </ItemGroup>
+
 </Project>

@@ -9,6 +9,7 @@ namespace AliasVault.UnitTests.Utilities;
 
 using System.Text.Json;
 using AliasVault.Cryptography;
+using AliasVault.Tests.Shared;
 
 /// <summary>
 /// Tests for the SrpArgonEncryption class.
@@ -48,7 +49,7 @@ public class RsaEncryptionTests
         // Client-side part:
         // -----------------
         // 4. Decrypt symmetric key with private key.
-        var decryptedSymmetricKey = Encryption.DecryptSymmetricKeyWithRsa(encryptedSymmetricKey, PrivateKey);
+        var decryptedSymmetricKey = TestDecryption.DecryptSymmetricKeyWithRsa(encryptedSymmetricKey, PrivateKey);
 
         // 5. Decrypt email body with symmetric key.
         var decryptedEmailBody = Encryption.SymmetricDecrypt(encryptedEmailBody, decryptedSymmetricKey);
@@ -118,7 +119,7 @@ public class RsaEncryptionTests
         var encryptedKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, PublicKey);
 
         // Assuming you have a method to decrypt with the private key
-        var decryptedKey = Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey);
+        var decryptedKey = TestDecryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey);
 
         Assert.That(decryptedKey, Is.EqualTo(symmetricKey), "Decrypted key should match the original symmetric key.");
     }
@@ -132,9 +133,9 @@ public class RsaEncryptionTests
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
         var encryptedKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, PublicKey, Encryption.MobileLoginPayloadKeyLabel);
 
-        Assert.That(Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, Encryption.MobileLoginPayloadKeyLabel), Is.EqualTo(symmetricKey));
-        Assert.That(() => Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, "aliasvault/v1/other"), Throws.Exception);
-        Assert.That(() => Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Throws.Exception);
+        Assert.That(TestDecryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, Encryption.MobileLoginPayloadKeyLabel), Is.EqualTo(symmetricKey));
+        Assert.That(() => TestDecryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey, "aliasvault/v1/other"), Throws.Exception);
+        Assert.That(() => TestDecryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Throws.Exception);
     }
 
     /// <summary>
@@ -146,7 +147,7 @@ public class RsaEncryptionTests
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
         var encryptedKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, PublicKey, string.Empty);
 
-        Assert.That(Encryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Is.EqualTo(symmetricKey));
+        Assert.That(TestDecryption.DecryptSymmetricKeyWithRsa(encryptedKey, PrivateKey), Is.EqualTo(symmetricKey));
     }
 
     /// <summary>
