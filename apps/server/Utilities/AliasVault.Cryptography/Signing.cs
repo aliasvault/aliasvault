@@ -100,17 +100,6 @@ public static class Signing
     }
 
     /// <summary>
-    /// Whether a value is a base64 Ed25519 public key.
-    /// </summary>
-    /// <param name="publicKeyBase64">The value to check.</param>
-    /// <returns>True when it decodes to a valid public key.</returns>
-    public static bool IsValidPublicKey(string? publicKeyBase64)
-    {
-        var bytes = TryDecode(publicKeyBase64, Ed25519.PublicKeySize);
-        return bytes != null && Ed25519.ValidatePublicKeyFull(bytes, 0);
-    }
-
-    /// <summary>
     /// Whether a base64 signature over a message verifies under a base64 Ed25519 public key.
     /// </summary>
     /// <param name="publicKeyBase64">The signer's public key.</param>
