@@ -398,7 +398,7 @@
       "noEmailBody": "[This email has no body.]"
     },
     "noEmails": "No emails found",
-    "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
+    "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet'e bağlanın.",
     "preview": {
       "selectEmailMessage": "Select an email to view its contents"
     },
