@@ -741,11 +741,10 @@ Do you want to proceed with the revert?"))
 
             await writeContext.AliasVaultUsers.Where(x => x.Id == User!.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
             await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == User!.Id).ExecuteDeleteAsync();
-
-            // Archive what is being replaced so the revert itself can be undone, then restore and consume the entry.
-            writeContext.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(target, now, "admin-revert"));
-            source.RestoreOnto(target, now);
             writeContext.UserUnlockKeysHistory.Remove(source);
+            await writeContext.SaveChangesAsync();
+            await UnlockKeyHistoryPolicy.ArchiveAsync(writeContext, target, UnlockKeyHistoryRetentionDays, now, "admin-revert");
+            source.RestoreOnto(target, now);
 
             await writeContext.SaveChangesAsync();
             await transaction.CommitAsync();

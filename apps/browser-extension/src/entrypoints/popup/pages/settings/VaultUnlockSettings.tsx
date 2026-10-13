@@ -136,7 +136,7 @@ const VaultUnlockSettings: React.FC = () => {
         return;
       }
 
-      /* Setup PIN with the unlock key */
+      /* Setup PIN with the Account Key */
       await setupPin(newPin, accountKey);
 
       /*

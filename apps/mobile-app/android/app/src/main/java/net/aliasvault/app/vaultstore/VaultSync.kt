@@ -105,15 +105,15 @@ class VaultSync(
     /**
      * Resolve the vault key right after login: the account's key chain is opened with the unlock key
      * and cached as-is. The session then opens from that chain like every later unlock, and the session keeps the
-     * Account Key. Returns the vault key (base64).
+     * Account Key.
      */
-    suspend fun resolveVaultKey(webApiService: WebApiService, derivedKeyBase64: String): String {
+    suspend fun resolveVaultKey(webApiService: WebApiService, derivedKeyBase64: String) {
         val result = run("resolveVaultKey", webApiService, encryptionKey = derivedKeyBase64)
         if (!result.optBoolean("success", false)) {
             throw syncError(result)
         }
         vaultStore.storeAccountKey(derivedKeyBase64)
-        return vaultStore.getEncryptionKeyBase64() ?: derivedKeyBase64
+        vaultStore.encryptionKey
     }
 
     /**
