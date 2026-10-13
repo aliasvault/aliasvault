@@ -1,4 +1,4 @@
-import { bytesToBase64 } from '../utilities/Base64';
+import { bytesToBase64Url } from '../utilities/Base64';
 
 /**
  * What the QR code of a mobile login request carries.
@@ -34,7 +34,7 @@ export class MobileLoginProtocol {
    */
   public static async computePublicKeyHash(publicKeyJwk: string): Promise<string> {
     const digest = await MobileLoginProtocol.sha256(publicKeyJwk);
-    return bytesToBase64(digest).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return bytesToBase64Url(digest);
   }
 
   /**

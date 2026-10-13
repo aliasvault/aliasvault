@@ -48,3 +48,22 @@ export function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
   }
   return bytes;
 }
+
+/**
+ * Encode raw bytes as unpadded base64url (RFC 4648 section 5).
+ * @param bytes - the bytes to encode
+ * @returns The base64url representation of the bytes, without `=` padding
+ */
+export function bytesToBase64Url(bytes: Uint8Array): string {
+  return bytesToBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Decode base64url back into raw bytes. Also accepts standard base64, padded or not.
+ * @param base64url - the base64url- or base64-encoded bytes
+ * @returns The decoded bytes
+ */
+export function base64UrlToBytes(base64url: string): Uint8Array<ArrayBuffer> {
+  const base64 = base64url.replace(/=+$/, '').replace(/-/g, '+').replace(/_/g, '/');
+  return base64ToBytes(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '='));
+}

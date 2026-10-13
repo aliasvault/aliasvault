@@ -1,6 +1,7 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { extractDomain, filterItems, AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
+import { base64UrlToBytes, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@aliasvault/models/vault';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -109,7 +110,7 @@ const PasskeyCreate: React.FC = () => {
                    */
                   if (data.publicKey.user?.id && passkey.UserHandle) {
                     try {
-                      const requestUserIdBytes = PasskeyHelper.base64urlToBytes(data.publicKey.user.id);
+                      const requestUserIdBytes = base64UrlToBytes(data.publicKey.user.id);
                       const passkeyUserHandle = passkey.UserHandle instanceof Uint8Array ? passkey.UserHandle : new Uint8Array(passkey.UserHandle);
 
                       // Compare byte arrays
@@ -356,7 +357,7 @@ const PasskeyCreate: React.FC = () => {
             let userHandleBytes: Uint8Array | null = null;
             if (stored.userId) {
               try {
-                userHandleBytes = PasskeyHelper.base64urlToBytes(stored.userId);
+                userHandleBytes = base64UrlToBytes(stored.userId);
               } catch {
                 // If conversion fails, store as null
                 userHandleBytes = null;
@@ -372,7 +373,7 @@ const PasskeyCreate: React.FC = () => {
               PublicKey: JSON.stringify(stored.publicKey),
               PrivateKey: JSON.stringify(stored.privateKey),
               DisplayName: request.publicKey.user.displayName || request.publicKey.user.name || '',
-              PrfKey: stored.prfSecret ? PasskeyHelper.base64urlToBytes(stored.prfSecret) : undefined,
+              PrfKey: stored.prfSecret ? base64UrlToBytes(stored.prfSecret) : undefined,
               AdditionalData: null
             });
           }
@@ -385,7 +386,7 @@ const PasskeyCreate: React.FC = () => {
           let userHandleBytes: Uint8Array | null = null;
           if (stored.userId) {
             try {
-              userHandleBytes = PasskeyHelper.base64urlToBytes(stored.userId);
+              userHandleBytes = base64UrlToBytes(stored.userId);
             } catch {
               // If conversion fails, store as null
               userHandleBytes = null;
@@ -401,7 +402,7 @@ const PasskeyCreate: React.FC = () => {
             PublicKey: JSON.stringify(stored.publicKey),
             PrivateKey: JSON.stringify(stored.privateKey),
             DisplayName: request.publicKey.user.displayName || request.publicKey.user.name || '',
-            PrfKey: stored.prfSecret ? PasskeyHelper.base64urlToBytes(stored.prfSecret) : undefined,
+            PrfKey: stored.prfSecret ? base64UrlToBytes(stored.prfSecret) : undefined,
             AdditionalData: null
           });
         } else {
@@ -430,7 +431,7 @@ const PasskeyCreate: React.FC = () => {
           let userHandleBytes: Uint8Array | null = null;
           if (stored.userId) {
             try {
-              userHandleBytes = PasskeyHelper.base64urlToBytes(stored.userId);
+              userHandleBytes = base64UrlToBytes(stored.userId);
             } catch {
               // If conversion fails, store as null
               userHandleBytes = null;
@@ -446,7 +447,7 @@ const PasskeyCreate: React.FC = () => {
             PublicKey: JSON.stringify(stored.publicKey),
             PrivateKey: JSON.stringify(stored.privateKey),
             DisplayName: request.publicKey.user.displayName || request.publicKey.user.name || '',
-            PrfKey: stored.prfSecret ? PasskeyHelper.base64urlToBytes(stored.prfSecret) : undefined,
+            PrfKey: stored.prfSecret ? base64UrlToBytes(stored.prfSecret) : undefined,
             AdditionalData: null
           });
         }
@@ -459,8 +460,8 @@ const PasskeyCreate: React.FC = () => {
           prf: {
             enabled: true,
             results: prfResults ? {
-              first: PasskeyHelper.bytesToBase64url(new Uint8Array(prfResults.first)),
-              second: prfResults.second ? PasskeyHelper.bytesToBase64url(new Uint8Array(prfResults.second)) : undefined
+              first: bytesToBase64Url(new Uint8Array(prfResults.first)),
+              second: prfResults.second ? bytesToBase64Url(new Uint8Array(prfResults.second)) : undefined
             } : undefined
           }
         };
