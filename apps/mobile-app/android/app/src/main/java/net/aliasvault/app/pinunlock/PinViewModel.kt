@@ -55,11 +55,10 @@ class PinViewModel(
     suspend fun processPin(
         pin: String,
         configuration: PinConfiguration,
-        setupAccountKey: String? = null,
     ): PinResult = withContext(Dispatchers.IO) {
         return@withContext when (configuration.mode) {
             PinMode.UNLOCK -> processUnlock(pin)
-            PinMode.SETUP -> processSetup(pin, configuration, setupAccountKey)
+            PinMode.SETUP -> processSetup(pin, configuration)
         }
     }
 
@@ -93,7 +92,6 @@ class PinViewModel(
     private fun processSetup(
         pin: String,
         configuration: PinConfiguration,
-        setupAccountKey: String?,
     ): PinResult {
         return when (configuration.setupStep) {
             PinSetupStep.ENTER_NEW -> {

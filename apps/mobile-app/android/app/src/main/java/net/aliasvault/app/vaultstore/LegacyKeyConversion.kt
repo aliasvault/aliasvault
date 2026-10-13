@@ -26,7 +26,7 @@ internal object LegacyKeyConversion {
             return
         }
         try {
-            pin.setupPin(pinValue, accountKey)
+            pin.encryptKeyWithPin(Base64.decode(accountKey, Base64.NO_WRAP), pinValue)
         } catch (e: Exception) {
             Log.w(TAG, "Could not re-encrypt the PIN key, will retry on the next PIN unlock", e)
         }

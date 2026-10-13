@@ -16,9 +16,6 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
  * Centralized coordinator for handling vault unlock flow in credential provider activities.
  * This coordinator manages the unlock sequence, deciding whether to use PIN or biometric
  * authentication based on what's enabled.
- *
- * Similar to iOS UnlockCoordinator.swift - provides a clean separation of unlock logic
- * from the main activity flows.
  */
 class UnlockCoordinator(
     private val activity: FragmentActivity,

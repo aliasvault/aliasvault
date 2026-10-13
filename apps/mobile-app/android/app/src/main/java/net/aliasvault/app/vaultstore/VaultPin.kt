@@ -124,17 +124,14 @@ class VaultPin(
     // MARK: - PIN Setup Methods
 
     /**
-     * Setup PIN unlock.
-     * Encrypts the Account Key with the PIN and stores it securely.
+     * Encrypt the Account Key with a key derived from the PIN and keep it in secure storage.
      *
+     * @param accountKey The Account Key to protect
      * @param pin The PIN to set (4+ digits)
-     * @param accountKeyBase64 The base64-encoded Account Key to protect
-     * @throws IllegalArgumentException if PIN format is invalid
      * @throws Exception if encryption or storage fails
      */
     @Throws(Exception::class)
-    fun setupPin(pin: String, accountKeyBase64: String) {
-        val accountKey = Base64.decode(accountKeyBase64, Base64.NO_WRAP)
+    fun encryptKeyWithPin(accountKey: ByteArray, pin: String) {
         val salt = pinGenerateSalt()
         val encryptedKey = pinEncrypt(pin, salt, accountKey)
 
@@ -217,6 +214,11 @@ class VaultPin(
 
             // Remove failed attempts counter from Keystore
             removePinFailedAttemptsFromKeystore()
+
+            // Remove the Keystore key that encrypted both
+            if (keyStore.containsAlias(KEYSTORE_ALIAS_DATA_ENCRYPTION)) {
+                keyStore.deleteEntry(KEYSTORE_ALIAS_DATA_ENCRYPTION)
+            }
 
             // Clear PIN metadata from SharedPreferences
             sharedPreferences.edit().apply {

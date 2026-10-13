@@ -27,30 +27,6 @@ class VaultCrypto(
         private const val BIOMETRICS_AUTH_METHOD = "faceid"
 
         /**
-         * Raw AES-GCM encryption with a caller-supplied key.
-         * Encrypts data using AES-256-GCM with a provided key.
-         */
-        fun encrypt(data: ByteArray, key: ByteArray): ByteArray {
-            require(key.size == 32) { "Encryption key must be 32 bytes (256 bits)" }
-
-            // Generate a random 12-byte nonce (IV)
-            val nonce = ByteArray(12)
-            SecureRandom().nextBytes(nonce)
-
-            // Create cipher
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            val secretKey = SecretKeySpec(key, "AES")
-            val gcmSpec = GCMParameterSpec(128, nonce) // 128-bit auth tag
-
-            // Encrypt
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
-            val ciphertext = cipher.doFinal(data)
-
-            // Return: nonce + ciphertext + tag (tag is included in ciphertext by GCM)
-            return nonce + ciphertext
-        }
-
-        /**
          * Raw AES-GCM decryption with a caller-supplied key.
          * Decrypts data using AES-256-GCM with a provided key.
          */

@@ -3,7 +3,6 @@ import RustCoreFramework
 import UIKit
 import LocalAuthentication
 import CryptoKit
-import CommonCrypto
 import Security
 import VaultModels
 import VaultUtils
