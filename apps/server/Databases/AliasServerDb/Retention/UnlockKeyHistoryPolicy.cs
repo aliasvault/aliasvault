@@ -26,6 +26,38 @@ public static class UnlockKeyHistoryPolicy
     public static int EffectiveRetentionDays(int configuredDays) => Math.Max(configuredDays, 0);
 
     /// <summary>
+    /// Archives an unlock key that is about to be overwritten and prunes older rows of that method to stay within <see cref="MaxRowsPerMethod"/>.
+    /// </summary>
+    /// <param name="context">Database context, inside the caller's transaction; the caller saves the added row.</param>
+    /// <param name="unlockKey">The unlock key as it is before being overwritten.</param>
+    /// <param name="configuredDays">The configured UnlockKeyHistoryRetentionDays value.</param>
+    /// <param name="now">The current time.</param>
+    /// <param name="client">The client (or marker such as "admin-revert") recorded on the archived row.</param>
+    /// <returns>Task.</returns>
+    public static async Task ArchiveAsync(AliasServerDbContext context, UserUnlockKey unlockKey, int configuredDays, DateTime now, string? client)
+    {
+        if (EffectiveRetentionDays(configuredDays) == 0)
+        {
+            return;
+        }
+
+        // Prune first, leaving room for the row added below: the limit counts that row, so one fewer is skipped here.
+        var supersededIds = await context.UserUnlockKeysHistory
+            .Where(x => x.UserId == unlockKey.UserId && x.Type == unlockKey.Type)
+            .OrderByDescending(x => x.ArchivedAt)
+            .Skip(MaxRowsPerMethod - 1)
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        if (supersededIds.Count > 0)
+        {
+            await context.UserUnlockKeysHistory.Where(x => supersededIds.Contains(x.Id)).ExecuteDeleteAsync();
+        }
+
+        context.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(unlockKey, now, client));
+    }
+
+    /// <summary>
     /// Narrows a query to the archived rows that are still within the retention window. Returns an empty query when archiving is off.
     /// </summary>
     /// <param name="query">The query over archived unlock keys.</param>

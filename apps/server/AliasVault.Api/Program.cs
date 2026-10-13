@@ -100,6 +100,7 @@ builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddSingleton<TakenAliasLookupRateLimitService>();
 builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<CapabilityService>();
+builder.Services.AddScoped<TokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRateLimiter(options => RegistrationCheckRateLimit.Configure(options, builder.Environment.IsDevelopment()));
 
