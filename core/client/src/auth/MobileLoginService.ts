@@ -24,13 +24,13 @@ export function isMobileLoginErrorCode(value: unknown): value is MobileLoginErro
 }
 
 /**
- * The decrypted session and unlock key of an approved mobile login.
+ * The decrypted session and Account Key of an approved mobile login.
  */
 export type MobileLoginResult = {
   username: string;
   token: string;
   refreshToken: string;
-  unlockKey: string;
+  accountKey: string;
   salt: string;
   encryptionType: string;
   encryptionSettings: string;
@@ -154,8 +154,8 @@ export class MobileLoginService {
           const privateKey = this.privateKey!;
           this.cleanup();
 
-          // The mobile app encrypted its stored key with our public key.
-          const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey, MobileLoginProtocol.ACCOUNT_KEY_LABEL));
+          // The mobile app encrypted its Account Key with our public key.
+          const accountKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey, MobileLoginProtocol.ACCOUNT_KEY_LABEL));
 
           // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.
           const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey, MobileLoginProtocol.PAYLOAD_KEY_LABEL));
@@ -165,7 +165,7 @@ export class MobileLoginService {
             username: payload.username,
             token: payload.token,
             refreshToken: payload.refreshToken,
-            unlockKey,
+            accountKey,
             salt: payload.salt,
             encryptionType: payload.encryptionType,
             encryptionSettings: payload.encryptionSettings,

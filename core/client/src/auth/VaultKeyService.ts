@@ -61,17 +61,17 @@ export class VaultKeyService {
   /**
    * Right after authentication: fetch the account's key chain from the server, check that the key opens it and
    * cache it for offline unlock.
-   * @param unlockKeyBase64 - the unlock key (the Argon2id output of the master password) or a stored Account Key
+   * @param keyBase64 - the unlock key (the Argon2id output of the master password) or an Account Key
    * @param webApi - the API client to use
    * @returns The Account Key to store for this session.
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
-  public static async refreshKeyChain(unlockKeyBase64: string, webApi?: WebApiService): Promise<string> {
+  public static async refreshKeyChain(keyBase64: string, webApi?: WebApiService): Promise<string> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
 
     if (!result.supported) {
       // Older server: trust the local cache.
-      return VaultKeyService.verifyUnlockKey(unlockKeyBase64);
+      return VaultKeyService.verifyUnlockKey(keyBase64);
     }
 
     if (!result.vaultKey) {
@@ -80,21 +80,21 @@ export class VaultKeyService {
         throw new Error(formatErrorWithCode('The server holds no key chain for this account', AppErrorCode.KEY_OUT_OF_SYNC));
       }
       await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, StorageKeys.SIGNING_PUBLIC_KEY, StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY]);
-      return unlockKeyBase64;
+      return keyBase64;
     }
 
     if (result.vaultKey.algorithm !== VaultKeyAlgorithm.Aes256Gcm) {
       throw new Error(formatErrorWithCode(`Unsupported Account Key algorithm '${result.vaultKey.algorithm}'`, AppErrorCode.VAULT_VERSION_INCOMPATIBLE));
     }
 
-    const keys = await VaultKeyService.openChain(unlockKeyBase64, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
+    const keys = await VaultKeyService.openChain(keyBase64, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
 
     /*
      * A device holding a vault under its unlock key but no chain yet (the account was upgraded on another device) stays
      * a legacy session: its first sync caches the chain and re-encrypts the stored vault under the VEK in one step.
      */
-    if (keys.accountKey !== unlockKeyBase64 && !await VaultKeyService.hasLocalVaultKey() && await getPlatform().storage.get(StorageKeys.ENCRYPTED_VAULT) !== null) {
-      return unlockKeyBase64;
+    if (keys.accountKey !== keyBase64 && !await VaultKeyService.hasLocalVaultKey() && await getPlatform().storage.get(StorageKeys.ENCRYPTED_VAULT) !== null) {
+      return keyBase64;
     }
 
     await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
@@ -103,12 +103,12 @@ export class VaultKeyService {
 
   /**
    * Check offline that a key opens the locally cached chain (an account not yet upgraded has none; its key is the vault key).
-   * @param unlockKeyBase64 - the unlock key derived from the typed password, or a key restored by PIN or WebAuthn
+   * @param keyBase64 - the unlock key derived from the typed password, or an Account Key restored by PIN or WebAuthn
    * @returns The Account Key to store for this session.
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
-  public static async verifyUnlockKey(unlockKeyBase64: string): Promise<string> {
-    return (await VaultKeyService.openKeyChain(unlockKeyBase64)).accountKey;
+  public static async verifyUnlockKey(keyBase64: string): Promise<string> {
+    return (await VaultKeyService.openKeyChain(keyBase64)).accountKey;
   }
 
   /**
@@ -198,10 +198,10 @@ export class VaultKeyService {
   /**
    * Open the locally cached chain with a stored or typed key. Without a cached chain (account not yet upgraded) the
    * unlock key is the vault encryption key.
-   * @param unlockKeyBase64 - the Account Key or an unlock key
+   * @param keyBase64 - the Account Key or an unlock key
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain.
    */
-  public static async openKeyChain(unlockKeyBase64: string): Promise<SessionKeys> {
+  public static async openKeyChain(keyBase64: string): Promise<SessionKeys> {
     const storage = getPlatform().storage;
     const [encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey] = await Promise.all([
       storage.get<string>(StorageKeys.ENCRYPTED_ACCOUNT_KEY),
@@ -209,24 +209,24 @@ export class VaultKeyService {
       storage.get<string>(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY),
     ]);
     if (!encryptedAccountKey) {
-      return { vaultEncryptionKey: unlockKeyBase64, accountPrivateKey: null, accountKey: unlockKeyBase64 };
+      return { vaultEncryptionKey: keyBase64, accountPrivateKey: null, accountKey: keyBase64 };
     }
-    return VaultKeyService.openChain(unlockKeyBase64, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
+    return VaultKeyService.openChain(keyBase64, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
   }
 
   /**
    * Walk a chain with the Account Key or an unlock key (see the Rust `open_account_key_chain`).
-   * @param unlockKeyBase64 - the Account Key or an unlock key
+   * @param keyBase64 - the Account Key or an unlock key
    * @param encryptedAccountKey - the Account Key encrypted with the KEK derived from the unlock key
    * @param encryptedVek - the VEK encrypted with the Account Key
    * @param encryptedAccountPrivateKey - the account private key encrypted with the Account Key, or null when the account has none yet
    */
-  private static async openChain(unlockKeyBase64: string, encryptedAccountKey: string, encryptedVek: string | null, encryptedAccountPrivateKey: string | null): Promise<SessionKeys> {
+  private static async openChain(keyBase64: string, encryptedAccountKey: string, encryptedVek: string | null, encryptedAccountPrivateKey: string | null): Promise<SessionKeys> {
     if (!encryptedVek) {
       throw new Error('Vault key chain is missing the encrypted VEK');
     }
 
-    const opened = await openAccountKeyChain(unlockKeyBase64, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
+    const opened = await openAccountKeyChain(keyBase64, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
     switch (opened.status) {
       case 'opened':
         return { vaultEncryptionKey: opened.vaultEncryptionKey, accountPrivateKey: opened.accountPrivateKey, accountKey: opened.accountKey };

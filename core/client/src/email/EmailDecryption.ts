@@ -10,6 +10,7 @@
  * core compiled to WebAssembly for RSA and for large sources. The mobile app has no WebCrypto and uses the native Rust
  * core (core/rust/src/crypto) instead. Both produce and read the same formats.
  */
+import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { devWarn } from '../platform/Logger';
 import { parseEmailSource, rustCore, type ParsedEmailAttachment } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
@@ -157,12 +158,12 @@ async function unwrapSymmetricKey(encryptedSymmetricKey: string, encryptionKey: 
 
   let privateKey = privateKeyCache.get(encryptionKey.PublicKey);
   if (!privateKey) {
-    privateKey = crypto.subtle.importKey('jwk', JSON.parse(encryptionKey.PrivateKey), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+    privateKey = EncryptionUtility.importPrivateKey(encryptionKey.PrivateKey);
     privateKey.catch(() => privateKeyCache.delete(encryptionKey.PublicKey));
     privateKeyCache.set(encryptionKey.PublicKey, privateKey);
   }
 
-  return bytesToBase64(new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, await privateKey, base64ToBytes(encryptedSymmetricKey))));
+  return bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(encryptedSymmetricKey, await privateKey));
 }
 
 /**
@@ -192,6 +193,5 @@ async function decryptBytes(encrypted: Uint8Array, symmetricKey: string): Promis
     return rustCore().symmetricDecryptBytes(encrypted, symmetricKey);
   }
 
-  const key = await crypto.subtle.importKey('raw', base64ToBytes(symmetricKey), { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: encrypted.slice(0, 12) }, key, encrypted.slice(12)));
+  return EncryptionUtility.symmetricDecryptBytes(encrypted, symmetricKey);
 }
