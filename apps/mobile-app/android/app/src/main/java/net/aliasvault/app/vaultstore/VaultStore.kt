@@ -768,8 +768,8 @@ class VaultStore(
     /**
      * Resolve and store the vault key right after login from the unlock key (see VaultSync.resolveVaultKey).
      */
-    suspend fun resolveVaultKey(webApiService: net.aliasvault.app.webapi.WebApiService, derivedKeyBase64: String): String {
-        return sync.resolveVaultKey(webApiService, derivedKeyBase64)
+    suspend fun resolveVaultKey(webApiService: net.aliasvault.app.webapi.WebApiService, derivedKeyBase64: String) {
+        sync.resolveVaultKey(webApiService, derivedKeyBase64)
     }
 
     /**
@@ -947,11 +947,12 @@ class VaultStore(
     }
 
     /**
-     * Setup PIN unlock.
+     * Setup PIN unlock with the Account Key of the unlocked session (vault must be unlocked).
      */
     @Throws(Exception::class)
-    fun setupPin(pinValue: String, accountKeyBase64: String) {
-        pin.setupPin(pinValue, accountKeyBase64)
+    fun setupPin(pinValue: String) {
+        val accountKey = crypto.accountKey ?: error("Account Key required for PIN setup")
+        pin.encryptKeyWithPin(accountKey, pinValue)
     }
 
     /**
