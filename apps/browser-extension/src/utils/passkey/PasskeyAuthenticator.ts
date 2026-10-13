@@ -1,6 +1,5 @@
 import { passkeyCreate, passkeyGetAssertion, passkeyPickAlgorithm } from '@aliasvault/client/rust/WasmPasskey';
-
-import { PasskeyHelper } from './PasskeyHelper';
+import { base64UrlToBytes, bytesToBase64, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
 
 import type { CreateRequest, GetRequest, StoredPasskeyRecord } from './types';
 import type { PasskeyPrfResults } from '@aliasvault/client/rust/WasmPasskey';
@@ -46,7 +45,7 @@ export class PasskeyAuthenticator {
     const selfAttestationClientDataHash = attestation === 'none' || attestation === 'indirect' ? undefined : await PasskeyAuthenticator.sha256(clientDataJSON);
 
     const prfInputs = opts?.enablePrf && opts.prfInputs
-      ? { first: PasskeyHelper.base64urlToBytes(opts.prfInputs.first), second: opts.prfInputs.second ? PasskeyHelper.base64urlToBytes(opts.prfInputs.second) : undefined }
+      ? { first: base64UrlToBytes(opts.prfInputs.first), second: opts.prfInputs.second ? base64UrlToBytes(opts.prfInputs.second) : undefined }
       : undefined;
 
     const created = await passkeyCreate({
@@ -63,10 +62,10 @@ export class PasskeyAuthenticator {
     if (req.publicKey.user?.id) {
       userIdB64 = typeof req.publicKey.user.id === 'string'
         ? req.publicKey.user.id
-        : PasskeyHelper.arrayBufferToBase64(req.publicKey.user.id);
+        : bytesToBase64(new Uint8Array(req.publicKey.user.id));
     }
 
-    const credentialIdB64u = PasskeyHelper.bytesToBase64url(credentialIdBytes);
+    const credentialIdB64u = bytesToBase64Url(credentialIdBytes);
     const stored: StoredPasskeyRecord = {
       rpId,
       credentialId: credentialIdB64u,
@@ -75,17 +74,17 @@ export class PasskeyAuthenticator {
       userId: userIdB64,
       userName: req.publicKey.user?.name,
       userDisplayName: req.publicKey.user?.displayName,
-      prfSecret: created.prfSecret ? PasskeyHelper.bytesToBase64url(created.prfSecret) : undefined
+      prfSecret: created.prfSecret ? bytesToBase64Url(created.prfSecret) : undefined
     };
 
     const credential = {
       id: credentialIdB64u,
       rawId: credentialIdB64u,
       response: {
-        clientDataJSON: PasskeyHelper.bytesToBase64url(clientDataJSON),
-        attestationObject: PasskeyHelper.bytesToBase64url(created.attestationObject),
-        authenticatorData: PasskeyHelper.bytesToBase64url(created.authenticatorData),
-        publicKey: PasskeyHelper.bytesToBase64url(created.publicKeySpki),
+        clientDataJSON: bytesToBase64Url(clientDataJSON),
+        attestationObject: bytesToBase64Url(created.attestationObject),
+        authenticatorData: bytesToBase64Url(created.authenticatorData),
+        publicKey: bytesToBase64Url(created.publicKeySpki),
         publicKeyAlgorithm: algorithm
       },
       type: 'public-key' as const
@@ -125,15 +124,15 @@ export class PasskeyAuthenticator {
       privateKeyJwk: JSON.stringify(rec.privateKey),
       uvPerformed,
       prfInputs,
-      prfSecret: rec.prfSecret ? PasskeyHelper.base64urlToBytes(rec.prfSecret) : undefined
+      prfSecret: rec.prfSecret ? base64UrlToBytes(rec.prfSecret) : undefined
     });
 
     return {
       id: rec.credentialId,
       rawId: rec.credentialId,
-      clientDataJSON: PasskeyHelper.bytesToBase64url(clientDataJSON),
-      authenticatorData: PasskeyHelper.bytesToBase64url(assertion.authenticatorData),
-      signature: PasskeyHelper.bytesToBase64url(assertion.signature),
+      clientDataJSON: bytesToBase64Url(clientDataJSON),
+      authenticatorData: bytesToBase64Url(assertion.authenticatorData),
+      signature: bytesToBase64Url(assertion.signature),
       userHandle: rec.userId ? rec.userId.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null,
       prfResults: PasskeyAuthenticator.prfResults(assertion.prfResults)
     };
@@ -205,7 +204,7 @@ export class PasskeyAuthenticator {
     if (typeof challenge === 'string') {
       return challenge.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
-    return PasskeyHelper.bytesToBase64url(PasskeyAuthenticator.bytes(challenge));
+    return bytesToBase64Url(PasskeyAuthenticator.bytes(challenge));
   }
 }
 

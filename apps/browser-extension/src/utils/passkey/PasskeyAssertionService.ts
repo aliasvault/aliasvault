@@ -4,6 +4,8 @@
  * Shared helper that turns a stored passkey into a WebAuthn assertion response.
  */
 
+import { base64ToBytes, bytesToBase64, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
+
 import { PasskeyAuthenticator } from './PasskeyAuthenticator';
 import { PasskeyHelper } from './PasskeyHelper';
 
@@ -42,12 +44,7 @@ function parsePrfSalt(input: unknown): Uint8Array {
 
   // Base64 string format
   if (typeof input === 'string') {
-    const decoded = atob(input);
-    const bytes = new Uint8Array(decoded.length);
-    for (let i = 0; i < decoded.length; i++) {
-      bytes[i] = decoded.charCodeAt(i);
-    }
-    return bytes;
+    return base64ToBytes(input);
   }
 
   throw new Error('Unknown PRF input format');
@@ -107,7 +104,7 @@ export async function buildPasskeyAssertion(
   // The PRF secret (hmac-secret) is stored as raw bytes; the authenticator wants base64url.
   let prfSecret: string | undefined;
   if (storedPasskey.PrfKey) {
-    prfSecret = PasskeyHelper.bytesToBase64url(storedPasskey.PrfKey);
+    prfSecret = bytesToBase64Url(new Uint8Array(storedPasskey.PrfKey));
   }
 
   // The user handle is stored as raw bytes; serialize to base64url for the assertion.
@@ -116,7 +113,7 @@ export async function buildPasskeyAssertion(
     const userHandleBytes = storedPasskey.UserHandle instanceof Uint8Array
       ? storedPasskey.UserHandle
       : new Uint8Array(storedPasskey.UserHandle);
-    userIdBase64 = PasskeyHelper.bytesToBase64url(userHandleBytes);
+    userIdBase64 = bytesToBase64Url(userHandleBytes);
   }
 
   const storedRecord: StoredPasskeyRecord = {
@@ -149,10 +146,10 @@ export async function buildPasskeyAssertion(
   let prfResults: { first: string; second?: string } | undefined;
   if (assertion.prfResults) {
     prfResults = {
-      first: PasskeyHelper.arrayBufferToBase64(assertion.prfResults.first)
+      first: bytesToBase64(new Uint8Array(assertion.prfResults.first))
     };
     if (assertion.prfResults.second) {
-      prfResults.second = PasskeyHelper.arrayBufferToBase64(assertion.prfResults.second);
+      prfResults.second = bytesToBase64(new Uint8Array(assertion.prfResults.second));
     }
   }
 
