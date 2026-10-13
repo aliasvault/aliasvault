@@ -56,4 +56,8 @@
         <ProjectReference Include="..\..\Utilities\AliasVault.FaviconExtractor\AliasVault.FaviconExtractor.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\Shared\TestDecryption.cs" Link="Shared\TestDecryption.cs" />
+    </ItemGroup>
+
 </Project>

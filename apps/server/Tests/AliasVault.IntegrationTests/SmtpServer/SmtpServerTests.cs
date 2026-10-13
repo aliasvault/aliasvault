@@ -13,6 +13,7 @@ using System.Text;
 using AliasVault.Cryptography;
 using AliasVault.IntegrationTests.SmtpServer.Helpers;
 using AliasVault.SmtpService.Handlers;
+using AliasVault.Tests.Shared;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
@@ -248,7 +249,7 @@ public class SmtpServerTests
         });
 
         // Decrypt the email and then check all individual fields.
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(processedEmail, Is.Not.Null);
@@ -436,7 +437,7 @@ public class SmtpServerTests
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
 
         // Decrypt the email and then check all individual fields.
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(processedEmail, Is.Not.Null);
@@ -476,7 +477,7 @@ public class SmtpServerTests
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
 
         // Decrypt the email and then check all individual fields.
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(processedEmail, Is.Not.Null);
@@ -528,7 +529,7 @@ public class SmtpServerTests
         });
 
         // Decrypt the email; the decrypted source bytes must differ from the stored (encrypted) bytes.
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         var decryptedSourceBytes = processedEmail.MessageSourceBytes!;
         Assert.Multiple(() =>
         {
@@ -590,7 +591,7 @@ public class SmtpServerTests
         var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Decrypt the email and verify the accented characters survived into the preview.
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         Assert.Multiple(() =>
         {
             Assert.That(processedEmail, Is.Not.Null);
@@ -745,7 +746,7 @@ public class SmtpServerTests
         // The whole point of detaching: the source a client downloads to read the mail no longer carries the payload.
         Assert.That(processedEmail.MessageSourceBytes!.Length, Is.LessThan(attachmentData.Length / 4), "The stored source should no longer carry the attachment payload.");
 
-        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        processedEmail = TestDecryption.DecryptEmail(processedEmail, PrivateKey);
         var sourceBytes = Gunzip(processedEmail.MessageSourceBytes!);
         var messageSource = Encoding.UTF8.GetString(sourceBytes);
         Assert.Multiple(() =>
@@ -806,7 +807,7 @@ public class SmtpServerTests
 
         foreach (var email in emails)
         {
-            var decrypted = EmailEncryption.DecryptEmail(email, PrivateKey);
+            var decrypted = TestDecryption.DecryptEmail(email, PrivateKey);
             var detachedBody = Gunzip(decrypted.Parts.Single().Bytes);
             var spliced = SpliceDetachedPart(Gunzip(decrypted.MessageSourceBytes!), detachedBody);
 
