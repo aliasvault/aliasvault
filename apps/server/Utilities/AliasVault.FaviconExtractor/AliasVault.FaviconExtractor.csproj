@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
       <PackageReference Include="SkiaSharp" Version="4.153.1" />
       <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
       <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
