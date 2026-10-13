@@ -7,6 +7,7 @@
 
 namespace AliasVault.Cryptography;
 
+using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -55,23 +56,6 @@ public static class Encryption
     }
 
     /// <summary>
-    /// Decrypts an encrypted symmetric key using an RSA private key.
-    /// </summary>
-    /// <param name="ciphertext">The encrypted symmetric key as ciphertext.</param>
-    /// <param name="privateKey">The RSA private key in JWK format.</param>
-    /// <returns>The encrypted symmetric key as a base64-encoded string.</returns>
-    public static byte[] DecryptSymmetricKeyWithRsa(string ciphertext, string privateKey)
-    {
-        using var rsa = RSA.Create();
-
-        ImportPrivateKey(rsa, privateKey);
-        var rsaParams = RSAEncryptionPadding.OaepSHA256;
-
-        byte[] cipherBytes = Convert.FromBase64String(ciphertext);
-        return rsa.Decrypt(cipherBytes, rsaParams);
-    }
-
-    /// <summary>
     /// Encrypts a symmetric key using an RSA public key under an OAEP label, which decryption must present as-is.
     /// </summary>
     /// <param name="symmetricKey">The symmetric key to encrypt.</param>
@@ -85,23 +69,6 @@ public static class Encryption
         var oaep = LabelledOaep(label);
         oaep.Init(true, new ParametersWithRandom(key, new SecureRandom()));
         return Convert.ToBase64String(oaep.ProcessBlock(symmetricKey, 0, symmetricKey.Length));
-    }
-
-    /// <summary>
-    /// Decrypts a symmetric key that was encrypted with an RSA public key under an OAEP label.
-    /// </summary>
-    /// <param name="ciphertext">The encrypted symmetric key as base64.</param>
-    /// <param name="privateKey">The RSA private key in JWK format.</param>
-    /// <param name="label">The OAEP label the ciphertext was encrypted under.</param>
-    /// <returns>The decrypted symmetric key.</returns>
-    public static byte[] DecryptSymmetricKeyWithRsa(string ciphertext, string privateKey, string label)
-    {
-        var jwk = JsonSerializer.Deserialize<JsonElement>(privateKey);
-        var key = new RsaPrivateCrtKeyParameters(JwkInteger(jwk, "n"), JwkInteger(jwk, "e"), JwkInteger(jwk, "d"), JwkInteger(jwk, "p"), JwkInteger(jwk, "q"), JwkInteger(jwk, "dp"), JwkInteger(jwk, "dq"), JwkInteger(jwk, "qi"));
-        var oaep = LabelledOaep(label);
-        oaep.Init(false, new ParametersWithRandom(key, new SecureRandom()));
-        var cipherBytes = Convert.FromBase64String(ciphertext);
-        return oaep.ProcessBlock(cipherBytes, 0, cipherBytes.Length);
     }
 
     /// <summary>
@@ -186,7 +153,7 @@ public static class Encryption
     /// </summary>
     /// <param name="label">The OAEP label.</param>
     /// <returns>The OAEP encoding, not yet initialized.</returns>
-    private static OaepEncoding LabelledOaep(string label)
+    internal static OaepEncoding LabelledOaep(string label)
     {
         return new OaepEncoding(new RsaBlindedEngine(), new Sha256Digest(), new Sha256Digest(), Encoding.UTF8.GetBytes(label));
     }
@@ -197,9 +164,19 @@ public static class Encryption
     /// <param name="jwk">The parsed JWK.</param>
     /// <param name="name">The member name.</param>
     /// <returns>The integer.</returns>
-    private static Org.BouncyCastle.Math.BigInteger JwkInteger(JsonElement jwk, string name)
+    internal static Org.BouncyCastle.Math.BigInteger JwkInteger(JsonElement jwk, string name)
     {
-        return new Org.BouncyCastle.Math.BigInteger(1, Base64UrlDecode(jwk.GetProperty(name).GetString()!));
+        return new Org.BouncyCastle.Math.BigInteger(1, JwkBytes(jwk.GetProperty(name).GetString()!));
+    }
+
+    /// <summary>
+    /// Decodes a JWK field: base64url, also accepting the standard alphabet and padding that some older stored keys carry.
+    /// </summary>
+    /// <param name="value">The JWK field value.</param>
+    /// <returns>The decoded bytes.</returns>
+    private static byte[] JwkBytes(string value)
+    {
+        return Base64Url.DecodeFromChars(value.Replace('+', '-').Replace('/', '_').TrimEnd('='));
     }
 
     /// <summary>
@@ -210,8 +187,8 @@ public static class Encryption
     private static void ImportPublicKey(RSA rsa, string jwk)
     {
         var jwkObj = JsonSerializer.Deserialize<JsonElement>(jwk);
-        var n = Base64UrlDecode(jwkObj.GetProperty("n").GetString()!);
-        var e = Base64UrlDecode(jwkObj.GetProperty("e").GetString()!);
+        var n = JwkBytes(jwkObj.GetProperty("n").GetString()!);
+        var e = JwkBytes(jwkObj.GetProperty("e").GetString()!);
 
         var rsaParameters = new RSAParameters
         {
@@ -220,55 +197,5 @@ public static class Encryption
         };
 
         rsa.ImportParameters(rsaParameters);
-    }
-
-    /// <summary>
-    /// Imports a private key from JWK format into an RSA provider.
-    /// </summary>
-    /// <param name="rsa">The RSA provider to import the key into.</param>
-    /// <param name="jwk">The private key in JWK format.</param>
-    private static void ImportPrivateKey(RSA rsa, string jwk)
-    {
-        var jwkObj = JsonSerializer.Deserialize<JsonElement>(jwk);
-        var n = Base64UrlDecode(jwkObj.GetProperty("n").GetString()!);
-        var e = Base64UrlDecode(jwkObj.GetProperty("e").GetString()!);
-        var d = Base64UrlDecode(jwkObj.GetProperty("d").GetString()!);
-        var p = Base64UrlDecode(jwkObj.GetProperty("p").GetString()!);
-        var q = Base64UrlDecode(jwkObj.GetProperty("q").GetString()!);
-        var dp = Base64UrlDecode(jwkObj.GetProperty("dp").GetString()!);
-        var dq = Base64UrlDecode(jwkObj.GetProperty("dq").GetString()!);
-        var qi = Base64UrlDecode(jwkObj.GetProperty("qi").GetString()!);
-
-        var rsaParameters = new RSAParameters
-        {
-            Modulus = n,
-            Exponent = e,
-            D = d,
-            P = p,
-            Q = q,
-            DP = dp,
-            DQ = dq,
-            InverseQ = qi,
-        };
-
-        rsa.ImportParameters(rsaParameters);
-    }
-
-    /// <summary>
-    /// Decodes a Base64Url-encoded string to a byte array.
-    /// </summary>
-    /// <param name="base64Url">The Base64Url-encoded string.</param>
-    /// <returns>The decoded byte array.</returns>
-    private static byte[] Base64UrlDecode(string base64Url)
-    {
-        string padded = base64Url;
-        switch (base64Url.Length % 4)
-        {
-            case 2: padded += "=="; break;
-            case 3: padded += "="; break;
-        }
-
-        string base64 = padded.Replace("-", "+").Replace("_", "/");
-        return Convert.FromBase64String(base64);
     }
 }

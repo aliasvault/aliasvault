@@ -11,7 +11,7 @@ using AliasServerDb;
 using AliasVault.Shared.Models.Enums;
 
 /// <summary>
-/// Helper class for encrypting and decrypting email contents.
+/// Encrypts incoming email contents for the delivery keys of the recipient manifests.
 /// </summary>
 public static class EmailEncryption
 {
@@ -78,76 +78,6 @@ public static class EmailEncryption
                 _ => throw new NotSupportedException($"Delivery key algorithm {deliveryKey.Algorithm} is not supported."),
             };
             email.DecryptionKeys.Add(new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = encryptedSymmetricKey });
-        }
-
-        return email;
-    }
-
-    /// <summary>
-    /// Decrypt the email contents with the user's private key.
-    /// </summary>
-    /// <param name="email">The plain text email object to decrypt.</param>
-    /// <param name="userPrivateKey">The user private encryption key to use for the decryption.</param>
-    /// <returns>Email object with all sensitive fields decrypted.</returns>
-    public static Email DecryptEmail(Email email, string userPrivateKey)
-    {
-        // Decrypt the symmetric key belonging to this private key; with multiple decryption keys the
-        // matching one is found by simply trying each.
-        byte[]? symmetricKey = null;
-        foreach (var decryptionKey in email.DecryptionKeys)
-        {
-            try
-            {
-                symmetricKey = Encryption.DecryptSymmetricKeyWithRsa(decryptionKey.EncryptedSymmetricKey, userPrivateKey);
-                break;
-            }
-            catch (System.Security.Cryptography.CryptographicException)
-            {
-                // The key belongs to another manifest; try the next one.
-            }
-        }
-
-        if (symmetricKey is null)
-        {
-            throw new InvalidOperationException("The email carries no decryption key that the provided private key can open.");
-        }
-
-        // Encrypt all email contents with the symmetric key.
-        if (email.MessageHtml is not null)
-        {
-            email.MessageHtml = Encryption.SymmetricDecrypt(email.MessageHtml, symmetricKey);
-        }
-
-        if (email.MessagePlain is not null)
-        {
-            email.MessagePlain = Encryption.SymmetricDecrypt(email.MessagePlain, symmetricKey);
-        }
-
-        if (email.MessagePreview is not null)
-        {
-            email.MessagePreview = Encryption.SymmetricDecrypt(email.MessagePreview, symmetricKey);
-        }
-
-        if (email.MessageSource is not null)
-        {
-            email.MessageSource = Encryption.SymmetricDecrypt(email.MessageSource, symmetricKey);
-        }
-
-        if (email.MessageSourceBytes is not null)
-        {
-            // Note: the decrypted bytes are the gzip-compressed source; callers must gunzip to get the raw MIME.
-            email.MessageSourceBytes = Encryption.SymmetricDecrypt(email.MessageSourceBytes, symmetricKey);
-        }
-
-        email.Subject = Encryption.SymmetricDecrypt(email.Subject, symmetricKey);
-        email.From = Encryption.SymmetricDecrypt(email.From, symmetricKey);
-        email.FromLocal = Encryption.SymmetricDecrypt(email.FromLocal, symmetricKey);
-        email.FromDomain = Encryption.SymmetricDecrypt(email.FromDomain, symmetricKey);
-
-        // Decrypt the attachment bodies that were detached from the source.
-        foreach (var part in email.Parts)
-        {
-            part.Bytes = Encryption.SymmetricDecrypt(part.Bytes, symmetricKey);
         }
 
         return email;
