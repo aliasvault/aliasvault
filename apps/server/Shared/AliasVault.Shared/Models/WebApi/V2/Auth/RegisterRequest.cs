@@ -123,14 +123,18 @@ public class RegisterRequest
     public string? InviteCode { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the client sent the complete account key hierarchy. A partial one is not usable.
+    /// Returns the account key fields as an <see cref="AccountKeysUpload"/>.
     /// </summary>
-    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedAccountKeyAlgorithm) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey)
-        && !string.IsNullOrEmpty(SigningPublicKey) && !string.IsNullOrEmpty(EncryptedSigningPrivateKey) && !string.IsNullOrEmpty(AccountPublicKeySignature);
-
-    /// <summary>
-    /// Gets a value indicating whether every account key fits its storage column, so an oversized value is a validation error instead of a half-created account.
-    /// </summary>
-    public bool AccountKeysFitStorageLimits => (EncryptedVek?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (EncryptedAccountKey?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxEncryptedPrivateKeyLength
-        && (SigningPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxSigningPublicKeyLength && (EncryptedSigningPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxSigningValueLength && (AccountPublicKeySignature?.Length ?? 0) <= AccountKeysUpload.MaxSigningValueLength;
+    /// <returns>The account key hierarchy of this request.</returns>
+    public AccountKeysUpload ToAccountKeysUpload() => new()
+    {
+        EncryptedAccountKey = EncryptedAccountKey,
+        EncryptedAccountKeyAlgorithm = EncryptedAccountKeyAlgorithm,
+        EncryptedVek = EncryptedVek,
+        AccountPublicKey = AccountPublicKey,
+        EncryptedAccountPrivateKey = EncryptedAccountPrivateKey,
+        SigningPublicKey = SigningPublicKey,
+        EncryptedSigningPrivateKey = EncryptedSigningPrivateKey,
+        AccountPublicKeySignature = AccountPublicKeySignature,
+    };
 }

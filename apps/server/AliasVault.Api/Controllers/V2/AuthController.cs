@@ -7,16 +7,16 @@
 
 namespace AliasVault.Api.Controllers.V2;
 
-using System.IdentityModel.Tokens.Jwt;
+using System.Buffers.Text;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using AliasServerDb;
 using AliasServerDb.Retention;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
+using AliasVault.Api.Services;
 using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
@@ -34,7 +34,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
 using SecureRemotePassword;
 
 /// <summary>
@@ -42,7 +41,6 @@ using SecureRemotePassword;
 /// </summary>
 /// <param name="dbContextFactory">AliasServerDbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
-/// <param name="configuration">IConfiguration instance.</param>
 /// <param name="cache">IMemoryCache instance for persisting SRP values during multistep login process.</param>
 /// <param name="timeProvider">TimeProvider instance.</param>
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
@@ -50,21 +48,12 @@ using SecureRemotePassword;
 /// <param name="settingsService">ServerSettingsService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
 /// <param name="registrationInviteService">RegistrationInviteService instance.</param>
+/// <param name="tokenService">TokenService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService, RegistrationInviteService registrationInviteService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService, RegistrationInviteService registrationInviteService, TokenService tokenService) : ControllerBase
 {
-    /// <summary>
-    /// Access token validity in minutes.
-    /// </summary>
-    private const int AccessTokenValiditySeconds = 600;
-
-    /// <summary>
-    /// Access token claim with the id of the refresh token it was issued with.
-    /// </summary>
-    private const string RefreshTokenIdClaim = "rtid";
-
     /// <summary>
     /// Maximum accepted length of a password salt.
     /// </summary>
@@ -79,21 +68,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Maximum accepted length of the KDF settings JSON.
     /// </summary>
     private const int MaxEncryptionSettingsLength = 255;
-
-    /// <summary>
-    /// Cache prefix for the successor of a rotated refresh token, followed by the user id and the hash of the rotated token.
-    /// </summary>
-    private const string CachePrefixRefreshTokenSuccessor = "RefreshTokenSuccessor_";
-
-    /// <summary>
-    /// How long after a rotation the replaced refresh token still returns the token that replaced it, so concurrent client refreshes do not log the device out.
-    /// </summary>
-    private static readonly TimeSpan RefreshTokenReuseWindow = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Semaphore to prevent concurrent access to the database when generating new tokens for a user.
-    /// </summary>
-    private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
     /// <summary>
     /// Login endpoint used to process login attempt using credentials.
@@ -302,7 +276,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         ClaimsPrincipal principal;
         try
         {
-            principal = GetPrincipalFromToken(tokenModel.Token);
+            principal = TokenService.GetPrincipalFromToken(tokenModel.Token);
         }
         catch (Exception)
         {
@@ -461,7 +435,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the username.
-        var (isValid, apiErrorCode) = await ValidateUsername(model.Username);
+        var (isValid, apiErrorCode) = await tokenService.ValidateUsernameAsync(model.Username);
         if (!isValid)
         {
             return ApiError.Result(apiErrorCode, 400);
@@ -469,19 +443,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Every new account is created on the account-key model, so the client must generate the whole hierarchy up front.
         // Reject an incomplete or oversized one before any row is written, so a rejected attempt leaves no account behind.
-        if (!model.HasCompleteAccountKeys)
+        var accountKeys = model.ToAccountKeysUpload();
+        var accountKeysError = AccountKeyHierarchyHelper.Validate(accountKeys, out var unlockKeyAlgorithm);
+        if (accountKeysError is not null)
         {
-            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
-        }
-
-        if (!model.AccountKeysFitStorageLimits || !RsaPublicKeyValidator.IsValid(model.AccountPublicKey) || !Signing.VerifyAccountPublicKey(model.SigningPublicKey, model.AccountPublicKey, model.AccountPublicKeySignature))
-        {
-            return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
-        }
-
-        if (!VaultKeyAlgorithms.TryParse(model.EncryptedAccountKeyAlgorithm, out var unlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(unlockKeyAlgorithm))
-        {
-            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+            return ApiError.Result(accountKeysError.Value, 400);
         }
 
         if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier) || !IsValidSrpIdentity(model.SrpIdentity))
@@ -553,61 +519,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                 });
 
-                context.UserUnlockKeys.Add(new UserUnlockKey
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = user.Id,
-                    Type = UnlockMethodType.Password,
-                    Algorithm = unlockKeyAlgorithm,
-                    EncryptedAccountKey = model.EncryptedAccountKey!,
-                    Metadata = new VaultKeyMetadata
-                    {
-                        Salt = model.Salt,
-                        SrpVerifier = model.Verifier,
-                        EncryptionType = model.EncryptionType,
-                        EncryptionSettings = model.EncryptionSettings,
-                    }.ToJson(),
-                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                });
-
-                context.UserGrantKeys.Add(new UserGrantKey
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = user.Id,
-                    Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
-                    PublicKey = model.AccountPublicKey!,
-                    EncryptedPrivateKey = model.EncryptedAccountPrivateKey!,
-                    PublicKeySignature = model.AccountPublicKeySignature!,
-                    IsPrimary = true,
-                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                });
-
-                context.UserSigningKeys.Add(new UserSigningKey
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = user.Id,
-                    Algorithm = SigningKeyAlgorithm.Ed25519,
-                    PublicKey = model.SigningPublicKey!,
-                    EncryptedPrivateKey = model.EncryptedSigningPrivateKey!,
-                    IsPrimary = true,
-                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                });
-
-                context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = user.Id,
-                    VaultManifestId = personalManifestId,
-                    Type = ManifestKeyType.AccountKey,
-                    Algorithm = VaultKeyAlgorithm.Aes256Gcm,
-                    EncryptedVek = model.EncryptedVek!,
-                    AccountKeyVersion = 0,
-                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                });
+                var srpCredentials = new VaultKeyMetadata { Salt = model.Salt, SrpVerifier = model.Verifier, EncryptionType = model.EncryptionType, EncryptionSettings = model.EncryptionSettings };
+                AccountKeyHierarchyHelper.AddEntities(context, user.Id, personalManifestId, accountKeys, unlockKeyAlgorithm, srpCredentials, timeProvider.GetUtcNow().UtcDateTime);
 
                 await context.SaveChangesAsync();
             }
@@ -706,7 +619,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var settings = await settingsService.GetAllSettingsAsync();
-        var currentRefreshTokenId = Guid.TryParse(User.FindFirstValue(RefreshTokenIdClaim), out var tokenId) ? tokenId : Guid.Empty;
+        var currentRefreshTokenId = Guid.TryParse(User.FindFirstValue(TokenService.RefreshTokenIdClaim), out var tokenId) ? tokenId : Guid.Empty;
 
         var newMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
         newMetadata.Salt = model.NewPasswordSalt;
@@ -722,7 +635,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await using var writeContext = await dbContextFactory.CreateDbContextAsync();
             await using var transaction = await writeContext.Database.BeginTransactionAsync();
 
-            await ArchiveSupersededUnlockKeyAsync(writeContext, unlockKey, settings.UnlockKeyHistoryRetentionDays, now, ClientHeaderInfo.GetRawValue(Request));
+            await UnlockKeyHistoryPolicy.ArchiveAsync(writeContext, unlockKey, settings.UnlockKeyHistoryRetentionDays, now, ClientHeaderInfo.GetRawValue(Request));
             await writeContext.SaveChangesAsync();
 
             await writeContext.UserUnlockKeys.Where(x => x.Id == unlockKey.Id).ExecuteUpdateAsync(s => s
@@ -784,7 +697,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the username
-        var (isValid, apiErrorCode) = await ValidateUsername(normalizedUsername);
+        var (isValid, apiErrorCode) = await tokenService.ValidateUsernameAsync(normalizedUsername);
 
         if (!isValid)
         {
@@ -890,7 +803,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // The request id travels through the QR code, the poll secret stays with the initiating client. Only its hash is stored.
         var requestId = Guid.NewGuid().ToString("N");
-        var pollSecret = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(32));
+        var pollSecret = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(32));
 
         var loginRequest = new MobileLoginRequest
         {
@@ -1185,39 +1098,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     };
 
     /// <summary>
-    /// Archives the unlock key that is about to be overwritten so it can be reverted to in case of a password change failure.
-    /// Archived rows are pruned automatically on each archive attempt and by TaskRunner daily as well.
-    /// </summary>
-    /// <param name="context">Database context, inside the caller's transaction.</param>
-    /// <param name="unlockKey">The unlock key about to receive new credentials.</param>
-    /// <param name="retentionDays">The configured retention window; 0 switches archiving off.</param>
-    /// <param name="now">The current time.</param>
-    /// <param name="client">The client performing the credential change, recorded on the archived row.</param>
-    /// <returns>Task.</returns>
-    private static async Task ArchiveSupersededUnlockKeyAsync(AliasServerDbContext context, UserUnlockKey unlockKey, int retentionDays, DateTime now, string? client)
-    {
-        if (UnlockKeyHistoryPolicy.EffectiveRetentionDays(retentionDays) == 0)
-        {
-            return;
-        }
-
-        // Prune first, leaving room for the row added below: the limit counts that row, so one fewer is skipped here.
-        var supersededIds = await context.UserUnlockKeysHistory
-            .Where(x => x.UserId == unlockKey.UserId && x.Type == unlockKey.Type)
-            .OrderByDescending(x => x.ArchivedAt)
-            .Skip(UnlockKeyHistoryPolicy.MaxRowsPerMethod - 1)
-            .Select(x => x.Id)
-            .ToListAsync();
-
-        if (supersededIds.Count > 0)
-        {
-            await context.UserUnlockKeysHistory.Where(x => supersededIds.Contains(x.Id)).ExecuteDeleteAsync();
-        }
-
-        context.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(unlockKey, now, client));
-    }
-
-    /// <summary>
     /// Whether a client-supplied SRP salt and verifier are present and within the stored size limits.
     /// </summary>
     /// <param name="salt">The password salt.</param>
@@ -1287,177 +1167,23 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Generate a refresh token for a user. This token is used to request a new access token when the current
-    /// access token expires. The refresh token is long-lived by design.
-    /// </summary>
-    /// <returns>Random string to be used as refresh token.</returns>
-    private static string GenerateRefreshToken()
-    {
-        var randomNumber = new byte[32];
-        using var rng = RandomNumberGenerator.Create();
-
-        rng.GetBytes(randomNumber);
-        return Convert.ToBase64String(randomNumber);
-    }
-
-    /// <summary>
-    /// Cache key under which the successor of a rotated refresh token is kept for the reuse window.
-    /// </summary>
-    /// <param name="user">The owner of the token.</param>
-    /// <param name="rotatedTokenHash">The hash of the token that was rotated away.</param>
-    /// <returns>The cache key.</returns>
-    private static string RefreshTokenSuccessorCacheKey(AliasVaultUser user, string rotatedTokenHash) => $"{CachePrefixRefreshTokenSuccessor}{user.Id}_{rotatedTokenHash}";
-
-    /// <summary>
-    /// Get the JWT key from the container secrets or environment variables.
-    /// </summary>
-    /// <returns>JWT key as string.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown if JWT key cannot be found.</exception>
-    private static string GetJwtKey()
-    {
-        return SecretReader.GetJwtKey();
-    }
-
-    /// <summary>
-    /// Get the principal from a token. This is used to validate the token and extract the user.
-    /// </summary>
-    /// <param name="token">The token as string.</param>
-    /// <returns>Claims principal.</returns>
-    /// <exception cref="SecurityTokenException">Thrown if provided token is invalid.</exception>
-    private static ClaimsPrincipal GetPrincipalFromToken(string token)
-    {
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetJwtKey())),
-
-            // We don't validate the token lifetime here, as we only use it for refresh tokens.
-            ValidateLifetime = false,
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-        {
-            throw new SecurityTokenException("Invalid token");
-        }
-
-        return principal;
-    }
-
-    /// <summary>
-    /// Validates if a given username meets the required criteria.
-    /// </summary>
-    /// <param name="username">The username to validate.</param>
-    /// <returns>A tuple containing a boolean indicating if the username is valid, and an error message if it's invalid.</returns>
-    private async Task<(bool IsValid, ApiErrorCode ApiErrorCode)> ValidateUsername(string username)
-    {
-        const int minimumUsernameLength = 3;
-        const int maximumUsernameLength = 40;
-        const string adminUsername = "admin";
-
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            return (false, ApiErrorCode.USERNAME_EMPTY_OR_WHITESPACE);
-        }
-
-        if (username.Length < minimumUsernameLength)
-        {
-            return (false, ApiErrorCode.USERNAME_TOO_SHORT);
-        }
-
-        if (username.Length > maximumUsernameLength)
-        {
-            return (false, ApiErrorCode.USERNAME_TOO_LONG);
-        }
-
-        // Disallow admin username to prevent conflicts with the default admin user
-        if (string.Equals(username, adminUsername, StringComparison.OrdinalIgnoreCase))
-        {
-            return (false, ApiErrorCode.USERNAME_ALREADY_IN_USE);
-        }
-
-        // Check if username is not taken already
-        var existingUser = await userManager.FindByNameAsync(username);
-        if (existingUser != null)
-        {
-            return (false, ApiErrorCode.USERNAME_ALREADY_IN_USE);
-        }
-
-        // Check if it's a valid email address
-        if (username.Contains('@'))
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(username);
-                return (addr.Address == username, ApiErrorCode.USERNAME_INVALID_EMAIL);
-            }
-            catch
-            {
-                return (false, ApiErrorCode.USERNAME_INVALID_EMAIL);
-            }
-        }
-
-        // If it's not an email, check if it only contains letters and digits
-        if (!username.All(char.IsLetterOrDigit))
-        {
-            return (false, ApiErrorCode.USERNAME_INVALID_CHARACTERS);
-        }
-
-        return (true, ApiErrorCode.USERNAME_AVAILABLE);
-    }
-
-    /// <summary>
-    /// Validates the user and SRP session (password). If the user is not found or the password is invalid an
-    /// action result is returned with the appropriate error message. If everything is valid nothing is returned.
+    /// Validates the user and SRP session (password), then records usage of the proven unlock key.
     /// </summary>
     /// <param name="model">ValidateLoginRequest model.</param>
     /// <returns>User, SrpSession and the proven unlock key if validation succeeded, IActionResult as error on error.</returns>
     private async Task<(AliasVaultUser? User, SrpSession? ServerSession, Guid? UnlockKeyId, IActionResult? Error)> ValidateUserAndPassword(ValidateLoginRequest model)
     {
-        var user = await userManager.FindByNameAsync(model.Username);
-        if (user == null)
+        var result = await tokenService.ValidateUserAndPasswordAsync(model.Username, model.ClientPublicEphemeral, model.ClientSessionProof, model.LoginSessionId);
+        if (result.Error is not null)
         {
-            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return (null, null, null, ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400));
-        }
-
-        // Check if the account is locked out.
-        if (await userManager.IsLockedOutAsync(user))
-        {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthentication, AuthFailureReason.AccountLocked);
-            return (null, null, null, ApiError.Result(ApiErrorCode.ACCOUNT_LOCKED, 400));
-        }
-
-        // Check if the account is blocked.
-        if (user.Blocked)
-        {
-            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.AccountBlocked);
-            return (null, null, null, ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400));
-        }
-
-        // Validate the SRP session (actual password check).
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.Login, model.ClientPublicEphemeral, model.ClientSessionProof, model.LoginSessionId);
-        if (srpResult.Session is null)
-        {
-            if (srpResult.ActiveSessionFound)
-            {
-                // Incorrect password: increment failed login attempts which then locks out
-                // the account when the limit is reached.
-                await userManager.AccessFailedAsync(user);
-            }
-
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, srpResult.FailureReason);
-            return (null, null, null, ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400));
+            return (null, null, null, ApiError.Result(result.Error.Value, 400));
         }
 
         // Record usage of this unlock method for statistics purposes.
-        await AuthHelper.TouchUnlockKeyLastUsedAsync(context, srpResult.UnlockKeyId, timeProvider.GetUtcNow().UtcDateTime);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        await AuthHelper.TouchUnlockKeyLastUsedAsync(context, result.UnlockKeyId, timeProvider.GetUtcNow().UtcDateTime);
 
-        return (user, srpResult.Session, srpResult.UnlockKeyId, null);
+        return (result.User, result.ServerSession, result.UnlockKeyId, null);
     }
 
     /// <summary>
@@ -1496,151 +1222,27 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Generate a Jwt access token for a user. This token is used to authenticate the user for a limited time
-    /// and is short-lived by design. With the separate refresh token, the user can request a new access token
-    /// when this access token expires.
+    /// Issues a new access and refresh token pair, the access token bound to its refresh token id.
     /// </summary>
-    /// <param name="user">The user to generate the Jwt access token for.</param>
-    /// <param name="refreshTokenId">The id of the refresh token issued with this access token.</param>
-    /// <returns>Access token as string.</returns>
-    private string GenerateJwtToken(AliasVaultUser user, Guid refreshTokenId)
-    {
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(RefreshTokenIdClaim, refreshTokenId.ToString()),
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetJwtKey()));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"] ?? string.Empty,
-            audience: configuration["Jwt:Issuer"] ?? string.Empty,
-            claims: claims,
-            expires: timeProvider.GetUtcNow().UtcDateTime.AddSeconds(AccessTokenValiditySeconds),
-            signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    /// <summary>
-    /// Generates a new access and refresh token for a user and persists the refresh token
-    /// to the database.
-    /// </summary>
-    /// <param name="user">The user to generate the tokens for.</param>
+    /// <param name="user">The user to issue the tokens for.</param>
     /// <param name="extendedLifetime">If true, the refresh token will have an extended lifetime (remember me option).</param>
+    /// <returns>TokenModel which includes new access and refresh token.</returns>
     private async Task<TokenModel> GenerateNewTokensForUser(AliasVaultUser user, bool extendedLifetime = false)
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var settings = await settingsService.GetAllSettingsAsync();
-
-        await Semaphore.WaitAsync();
-        try
-        {
-            // Use server settings for refresh token lifetime.
-            var refreshTokenLifetimeHours = extendedLifetime ? settings.RefreshTokenLifetimeLong : settings.RefreshTokenLifetimeShort;
-            var refreshTokenLifetime = TimeSpan.FromHours(refreshTokenLifetimeHours);
-
-            // Return new refresh token.
-            return await GenerateRefreshToken(user, refreshTokenLifetime);
-        }
-        finally
-        {
-            Semaphore.Release();
-        }
+        var tokens = await tokenService.IssueTokensAsync(user, HttpContext, extendedLifetime, includeRefreshTokenIdClaim: true);
+        return new TokenModel { Token = tokens.Token, RefreshToken = tokens.RefreshToken };
     }
 
     /// <summary>
-    /// Generates a new access and refresh token for a user and persists the refresh token
-    /// to the database.
+    /// Rotates a refresh token and issues a new access token bound to the new refresh token id.
     /// </summary>
     /// <param name="user">The user to generate the tokens for.</param>
-    /// <param name="existingTokenValue">The existing token value that is being replaced (optional).</param>
+    /// <param name="existingTokenValue">The existing refresh token value that is being replaced.</param>
     /// <returns>TokenModel which includes new access and refresh token. Returns null if provided refresh token is invalid.</returns>
     private async Task<TokenModel?> GenerateNewTokensForUser(AliasVaultUser user, string existingTokenValue)
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        await Semaphore.WaitAsync();
-
-        try
-        {
-            // Token reuse window: if this token was rotated in the last 30 seconds, hand out the token that replaced it
-            // again, so concurrent refreshes from one client do not log it out. The stored row only has the hash, so the
-            // successor comes from memory and is forgotten when the window closes.
-            var existingTokenHash = RefreshTokenHasher.Hash(existingTokenValue);
-            if (cache.TryGetValue(RefreshTokenSuccessorCacheKey(user, existingTokenHash), out RefreshTokenSuccessor? successor) && successor is not null)
-            {
-                return new TokenModel { Token = GenerateJwtToken(user, successor.Id), RefreshToken = successor.RefreshToken };
-            }
-
-            // Check if the refresh token still exists and is not expired.
-            var existingToken = await context.AliasVaultUserRefreshTokens.FirstOrDefaultAsync(t => t.UserId == user.Id && t.TokenHash == existingTokenHash);
-            if (existingToken == null || existingToken.ExpireDate < timeProvider.GetUtcNow().UtcDateTime)
-            {
-                return null;
-            }
-
-            context.AliasVaultUserRefreshTokens.Remove(existingToken);
-
-            // New refresh token lifetime is the same as the existing one.
-            var existingTokenLifetime = existingToken.ExpireDate - existingToken.CreatedAt;
-
-            // Retrieve new refresh token.
-            var newRefreshToken = await GenerateRefreshToken(user, existingTokenLifetime, existingToken.TokenHash);
-
-            // After successfully retrieving new refresh token, remove the existing one by saving changes.
-            await context.SaveChangesAsync();
-
-            // Return new refresh token.
-            return newRefreshToken;
-        }
-        finally
-        {
-            Semaphore.Release();
-        }
-    }
-
-    /// <summary>
-    /// Generates a new access and refresh token for a user and persists the refresh token
-    /// to the database.
-    /// </summary>
-    /// <param name="user">The user to generate the tokens for.</param>
-    /// <param name="newTokenLifetime">The lifetime of the new token.</param>
-    /// <param name="existingTokenHash">The hash of the existing token that is being replaced (optional).</param>
-    /// <returns>TokenModel which includes new access and refresh token.</returns>
-    private async Task<TokenModel> GenerateRefreshToken(AliasVaultUser user, TimeSpan newTokenLifetime, string? existingTokenHash = null)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var refreshTokenId = Guid.NewGuid();
-        var accessToken = GenerateJwtToken(user, refreshTokenId);
-        var refreshToken = GenerateRefreshToken();
-        var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
-
-        // Add new refresh token.
-        context.AliasVaultUserRefreshTokens.Add(new AliasVaultUserRefreshToken
-        {
-            Id = refreshTokenId,
-            UserId = user.Id,
-            DeviceIdentifier = deviceIdentifier,
-            IpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
-            TokenHash = RefreshTokenHasher.Hash(refreshToken),
-            PreviousTokenHash = existingTokenHash,
-            ExpireDate = timeProvider.GetUtcNow().UtcDateTime.Add(newTokenLifetime),
-            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-        });
-
-        await context.SaveChangesAsync();
-
-        if (existingTokenHash is not null)
-        {
-            cache.Set(RefreshTokenSuccessorCacheKey(user, existingTokenHash), new RefreshTokenSuccessor(refreshTokenId, refreshToken), RefreshTokenReuseWindow);
-        }
-
-        return new TokenModel { Token = accessToken, RefreshToken = refreshToken };
+        var tokens = await tokenService.RotateRefreshTokenAsync(user, existingTokenValue, HttpContext, includeRefreshTokenIdClaim: true);
+        return tokens is null ? null : new TokenModel { Token = tokens.Token, RefreshToken = tokens.RefreshToken };
     }
 
     /// <summary>

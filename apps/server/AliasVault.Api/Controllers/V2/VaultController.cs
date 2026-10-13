@@ -388,19 +388,15 @@ public class VaultController(
                 return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
             }
 
-            if (personalWrite == null || !accountKeys.IsComplete)
+            if (personalWrite == null)
             {
                 return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
             }
 
-            if (!accountKeys.FitsStorageLimits || !RsaPublicKeyValidator.IsValid(accountKeys.AccountPublicKey) || !Signing.VerifyAccountPublicKey(accountKeys.SigningPublicKey, accountKeys.AccountPublicKey, accountKeys.AccountPublicKeySignature))
+            var accountKeysError = AccountKeyHierarchyHelper.Validate(accountKeys, out _);
+            if (accountKeysError is not null)
             {
-                return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
-            }
-
-            if (!VaultKeyAlgorithms.TryParse(accountKeys.EncryptedAccountKeyAlgorithm, out var unlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(unlockKeyAlgorithm))
-            {
-                return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+                return ApiError.Result(accountKeysError.Value, 400);
             }
         }
         else if (personalWrite != null && !hasExistingUnlockKey)
@@ -535,61 +531,9 @@ public class VaultController(
                     // the client re-encrypted the vault under a fresh VEK).
                     if (accountKeys != null)
                     {
-                        context.UserUnlockKeys.Add(new UserUnlockKey
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = user.Id,
-                            Type = UnlockMethodType.Password,
-                            Algorithm = VaultKeyAlgorithms.Parse(accountKeys.EncryptedAccountKeyAlgorithm),
-                            EncryptedAccountKey = accountKeys.EncryptedAccountKey!,
-                            Metadata = new VaultKeyMetadata
-                            {
-                                Salt = row.Salt,
-                                SrpVerifier = row.Verifier,
-                                EncryptionType = row.EncryptionType,
-                                EncryptionSettings = row.EncryptionSettings,
-                            }.ToJson(),
-                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                        });
-
-                        context.UserGrantKeys.Add(new UserGrantKey
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = user.Id,
-                            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
-                            PublicKey = accountKeys.AccountPublicKey!,
-                            EncryptedPrivateKey = accountKeys.EncryptedAccountPrivateKey!,
-                            PublicKeySignature = accountKeys.AccountPublicKeySignature!,
-                            IsPrimary = true,
-                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                        });
-
-                        context.UserSigningKeys.Add(new UserSigningKey
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = user.Id,
-                            Algorithm = SigningKeyAlgorithm.Ed25519,
-                            PublicKey = accountKeys.SigningPublicKey!,
-                            EncryptedPrivateKey = accountKeys.EncryptedSigningPrivateKey!,
-                            IsPrimary = true,
-                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                        });
-
-                        context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = user.Id,
-                            VaultManifestId = row.ManifestId,
-                            Type = ManifestKeyType.AccountKey,
-                            Algorithm = VaultKeyAlgorithm.Aes256Gcm,
-                            EncryptedVek = accountKeys.EncryptedVek!,
-                            AccountKeyVersion = 0,
-                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-                        });
+                        var srpCredentials = new VaultKeyMetadata { Salt = row.Salt, SrpVerifier = row.Verifier, EncryptionType = row.EncryptionType, EncryptionSettings = row.EncryptionSettings };
+                        var unlockKeyAlgorithm = VaultKeyAlgorithms.Parse(accountKeys.EncryptedAccountKeyAlgorithm);
+                        AccountKeyHierarchyHelper.AddEntities(context, user.Id, row.ManifestId, accountKeys, unlockKeyAlgorithm, srpCredentials, timeProvider.GetUtcNow().UtcDateTime);
 
                         row.Salt = null;
                         row.Verifier = null;
