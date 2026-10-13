@@ -1,5 +1,7 @@
 //! Every JSON shape the engine exchanges.
 
+use crate::common::secret::serialize_option;
+use secrecy::SecretString;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -50,14 +52,14 @@ pub struct SharingParams {
 pub struct SyncRequest {
     pub operation: SyncOperation,
     pub username: String,
-    #[serde(default)]
-    pub encryption_key: Option<String>,
+    #[serde(default, serialize_with = "serialize_option")]
+    pub encryption_key: Option<SecretString>,
     #[serde(default)]
     pub account_public_key: Option<String>,
-    #[serde(default)]
-    pub account_private_key: Option<String>,
-    #[serde(default)]
-    pub account_key: Option<String>,
+    #[serde(default, serialize_with = "serialize_option")]
+    pub account_private_key: Option<SecretString>,
+    #[serde(default, serialize_with = "serialize_option")]
+    pub account_key: Option<SecretString>,
     #[serde(default)]
     pub is_dirty: bool,
     #[serde(default)]
@@ -172,8 +174,8 @@ pub struct ResolveVaultKeyResult {
     pub success: bool,
     /// Whether the account has a key chain (false: legacy vault, the migration push creates one).
     pub has_vault_key: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub encryption_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", serialize_with = "serialize_option")]
+    pub encryption_key: Option<SecretString>,
     #[serde(flatten)]
     pub failure: FailureFields,
 }
@@ -283,8 +285,8 @@ pub enum Command {
     VaultStore {
         encrypted_blob: String,
         mark_dirty: bool,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        encryption_key: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none", serialize_with = "serialize_option")]
+        encryption_key: Option<SecretString>,
         #[serde(skip_serializing_if = "Option::is_none")]
         expected_mutation_seq: Option<u64>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -537,10 +539,7 @@ pub struct EmailDomainsDto {
     pub public_email_domain_list: Vec<String>,
 }
 
-pub const KEY_TYPE_ACCOUNT_KEY: &str = "account-key";
-pub const KEY_TYPE_GRANT_KEY: &str = "grant-key";
-pub const ALGORITHM_RSA_OAEP_SHA256: &str = "rsa-oaep-sha256";
-pub const ALGORITHM_AES256_GCM: &str = crate::crypto::key_chain::ACCOUNT_KEY_WRAP_ALGORITHM;
+pub use crate::crypto::tokens::{ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256, KEY_TYPE_ACCOUNT_KEY, KEY_TYPE_GRANT_KEY};
 
 /// One manifest element of `POST v2/Vault`.
 #[derive(Debug, Clone, Serialize)]

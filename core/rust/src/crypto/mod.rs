@@ -8,6 +8,7 @@ pub mod pin;
 pub mod rsa_oaep;
 pub mod signing;
 pub mod srp;
+pub mod tokens;
 
 pub use aes_gcm::{
     generate_key_base64, symmetric_decrypt, symmetric_decrypt_bytes, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt, symmetric_encrypt_bytes, symmetric_encrypt_bytes_with_aad,

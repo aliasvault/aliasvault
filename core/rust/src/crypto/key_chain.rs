@@ -13,14 +13,12 @@ use super::aad;
 use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt_bytes_with_aad, symmetric_encrypt_with_aad};
 use super::rsa_oaep::{generate_rsa_key_pair, validate_rsa_key_pair, RsaKeyPair};
 use super::signing::{self, generate_signing_key_pair};
+use super::tokens::{ALGORITHM_AES256_GCM, ENCRYPTION_TYPE_ARGON2ID, ENCRYPTION_TYPE_ARGON2ID_HKDF};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
 use crate::common::error::VaultResult;
 
-/// The algorithm this build encrypts every Account Key with, as a VaultKeyAlgorithm token.
-pub const ACCOUNT_KEY_WRAP_ALGORITHM: &str = "aes256-gcm";
-
 fn account_key_wrap_algorithm() -> String {
-    ACCOUNT_KEY_WRAP_ALGORITHM.to_string()
+    ALGORITHM_AES256_GCM.to_string()
 }
 
 /// The wrapped halves of an account key hierarchy: what the server stores.
@@ -69,12 +67,6 @@ const KEK_INFO: &[u8] = b"AliasVault KEK v1";
 
 /// HKDF `info` that binds the derived key to its use as the SRP input; changing it breaks every upgraded verifier.
 const SRP_INFO: &[u8] = b"AliasVault SRP v1";
-
-/// The `EncryptionType` of a verifier made from the unlock key itself (accounts created before 0.31.0).
-pub const ENCRYPTION_TYPE_ARGON2ID: &str = "Argon2Id";
-
-/// The `EncryptionType` of a verifier made from the HKDF-derived SRP input: every new account and password change.
-pub const ENCRYPTION_TYPE_ARGON2ID_HKDF: &str = "Argon2IdHkdf";
 
 /// Why an SRP password hash could not be derived.
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
@@ -379,5 +371,18 @@ mod tests {
         assert!(unwrap_key(&blobs.encrypted_vek, &account_key, aad::ACCOUNT_KEY).is_err());
         assert!(open_account_private_key(&blobs.encrypted_account_private_key, &account_key).is_ok());
         assert!(symmetric_decrypt_with_aad(&blobs.encrypted_account_private_key, &account_key, aad::PERSONAL_VEK).is_err());
+    }
+
+    #[test]
+    fn an_account_key_encrypted_under_any_other_label_is_refused() {
+        let unlock_key = generate_key_base64();
+        let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
+        let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
+        let kek = derive_kek_base64(&unlock_key).unwrap();
+        for label in [aad::PERSONAL_VEK, aad::ACCOUNT_PRIVATE_KEY, aad::ACCOUNT_SIGNING_PRIVATE_KEY, aad::MOBILE_LOGIN_ACCOUNT_KEY, aad::MOBILE_LOGIN_PAYLOAD_KEY, b""] {
+            let foreign = wrap_key(&account_key, &kek, label).unwrap();
+            let opened = open_account_key_chain(&unlock_key, &foreign, &hierarchy.account_keys.encrypted_vek, None);
+            assert!(matches!(opened, Err(KeyChainError::UnlockKeyRejected)), "label {:?}", String::from_utf8_lossy(label));
+        }
     }
 }
