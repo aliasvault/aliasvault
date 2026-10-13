@@ -42,6 +42,7 @@ test.describe('70. Sharing', () => {
 
     await test.step('the member accepts the invitation', async () => {
       await member.openFamilySharing();
+      await expect(member.page.getByText(vaultName, { exact: true })).toBeVisible();
       await member.page.getByRole('button', { name: 'Accept' }).click();
       await expect(member.page.getByRole('link', { name: vaultName })).toBeVisible();
       await member.pause();
