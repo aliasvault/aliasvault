@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 
 use rusqlite::{Connection, MAIN_DB};
+use secrecy::ExposeSecret;
 use serde_json::{json, Map, Value};
 
 use super::fake_server::Server;
@@ -249,7 +250,7 @@ impl TestHost {
                         let found_the_chain = self.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY) && self.state.contains_key(state::ENCRYPTED_VEK);
                         assert!(found_the_chain, "a vault stored under a new key needs the chain that opens it cached first");
                         self.rekeyed_stores += 1;
-                        self.vault_key = key;
+                        self.vault_key = key.expose_secret().to_string();
                     }
                     if expected_mutation_seq.is_some() {
                         if let Some(change) = self.edit_before_next_sync_store.take() {

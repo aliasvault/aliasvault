@@ -2,11 +2,15 @@
 
 use std::collections::HashMap;
 
+use zeroize::Zeroizing;
+
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
 use super::http;
+use crate::common::secret::from_zeroizing;
+use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 
 /// Whether this device has the account's key chain cached (the encrypted Account Key).
@@ -56,20 +60,21 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
 
 /// Open a key chain with the unlock key or the stored Account Key: stages the Account Key and the account private key
 /// for this run and returns the VEK, which the caller makes the session key.
-async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<String> {
-    let opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None)?;
-    ctx.account_key = Some(opened.account_key.to_string());
+async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<SecretString> {
+    let mut opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None)?;
+    let account_key = from_zeroizing(std::mem::take(&mut opened.account_key));
+    ctx.account_key = Some(account_key.clone());
     if let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) {
-        match crypto::open_account_private_key(encrypted, &opened.account_key) {
-            Ok(private_key) => ctx.account_private_key = Some(private_key),
+        match crypto::open_account_private_key(encrypted, account_key.expose_secret()) {
+            Ok(private_key) => ctx.account_private_key = Some(SecretString::from(private_key)),
             Err(error) => ctx.warn(format!("[Keys] The cached account private key did not open; shared grants stay closed. {}", error)).await,
         }
     }
-    Ok(opened.vault_encryption_key.to_string())
+    Ok(from_zeroizing(std::mem::take(&mut opened.vault_encryption_key)))
 }
 
 /// Open the chain of a server vault-key response with `unlock_key`, refusing an unknown unlock algorithm first.
-async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<String> {
+async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<SecretString> {
     ensure_known_unlock_algorithm(vault_key)?;
     open_chain(ctx, &vault_key.encrypted_account_key, vault_key.encrypted_vek.as_deref().unwrap_or_default(), vault_key.encrypted_account_private_key.as_deref(), unlock_key).await
 }
@@ -81,7 +86,7 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     ctx.vault_key_probed = true;
     match http::get::<VaultKeyGetResponse>(&ctx.host, http::VAULT_KEY_PASSWORD_ENDPOINT, false).await {
         Ok(VaultKeyGetResponse { vault_key: Some(vault_key) }) if vault_key.encrypted_vek.is_some() => {
-            let vek = open_server_chain(ctx, &vault_key, &unlock_key).await?;
+            let vek = open_server_chain(ctx, &vault_key, unlock_key.expose_secret()).await?;
             ctx.set_encryption_key(vek);
             cache_vault_key_blobs(&ctx.host, &vault_key).await?;
             ctx.log("[Keys] Opened the account's key chain; the session key is the VEK.").await;
@@ -96,7 +101,7 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
             ctx.warn(format!("[Keys] Could not fetch the key chain, opening the cached one: {}", error)).await;
             let (Some(encrypted_account_key), Some(encrypted_vek)) = (state::get::<String>(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY).await?, state::get::<String>(&ctx.host, state::ENCRYPTED_VEK).await?) else { return Ok(false) };
             let encrypted_private_key = state::get::<String>(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY).await?;
-            let vek = open_chain(ctx, &encrypted_account_key, &encrypted_vek, encrypted_private_key.as_deref(), &unlock_key).await?;
+            let vek = open_chain(ctx, &encrypted_account_key, &encrypted_vek, encrypted_private_key.as_deref(), unlock_key.expose_secret()).await?;
             ctx.set_encryption_key(vek);
             Ok(true)
         }
@@ -118,7 +123,7 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
         Some(vault_key) if vault_key.encrypted_vek.is_some() => vault_key,
         _ => return Ok(true),
     };
-    let vek = match open_server_chain(ctx, &vault_key, &session_key).await {
+    let vek = match open_server_chain(ctx, &vault_key, session_key.expose_secret()).await {
         Ok(vek) => vek,
         Err(SyncError::UnlockKeyRejected) => {
             ctx.warn("[Keys] The session key does not open the key hierarchy the server holds; a re-login is needed.").await;
@@ -130,10 +135,10 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
     // The chain is cached before the vault is stored under the VEK: hosts hold the unlock key and derive the vault key from it.
     cache_vault_key_blobs(&ctx.host, &vault_key).await?;
     if let Some(encrypted_vault) = state::load_vault(&ctx.host).await? {
-        let plaintext = state::decrypt_vault_blob(&encrypted_vault, &session_key)?;
-        state::store_vault_with_key(&ctx.host, &state::encrypt_vault_blob(&plaintext, &vek)?, false, None, None, Some(vek.clone())).await?;
+        let plaintext = state::decrypt_vault_blob(&encrypted_vault, session_key.expose_secret())?;
+        state::store_vault_with_key(&ctx.host, &state::encrypt_vault_blob(&plaintext, vek.expose_secret())?, false, None, None, Some(vek.clone())).await?;
     }
-    re_encrypt_shared_manifest_records(ctx, &vek).await?;
+    re_encrypt_shared_manifest_records(ctx, vek.expose_secret()).await?;
     ctx.set_encryption_key(vek);
     ctx.log("[Keys] Another device created the account's key hierarchy; accepted it and swapped the session key to the VEK.").await;
     Ok(true)
@@ -152,13 +157,13 @@ pub(crate) async fn ensure_key_chain_accepted(ctx: &mut Ctx) -> SyncResult<bool>
 
 /// The account signing private key, opened on first use from the cached encrypted copy with the session's Account Key.
 /// None when that key or the cached copy is missing or does not open it.
-pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<String>> {
+pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<SecretString>> {
     if ctx.signing_private_key.is_some() {
         return Ok(ctx.signing_private_key.clone());
     }
     let (Some(account_key), Some(encrypted)) = (ctx.account_key.clone(), state::get::<String>(&ctx.host, state::ENCRYPTED_SIGNING_PRIVATE_KEY).await?) else { return Ok(None) };
-    match crypto::open_account_signing_private_key(&encrypted, &account_key) {
-        Ok(private_key) => ctx.signing_private_key = Some(private_key.to_string()),
+    match crypto::open_account_signing_private_key(&encrypted, account_key.expose_secret()) {
+        Ok(private_key) => ctx.signing_private_key = Some(from_zeroizing(private_key)),
         Err(error) => ctx.warn(format!("[Keys] The cached signing private key did not open; nothing can be signed this run. {}", error)).await,
     }
     Ok(ctx.signing_private_key.clone())
@@ -172,7 +177,7 @@ pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<Stri
 pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<String, SharedManifestDto>> {
     let Some(ciphertext) = state::get::<String>(&ctx.host, state::SHARED_MANIFESTS).await? else { return Ok(HashMap::new()) };
     let Some(key) = &ctx.encryption_key else { return Ok(HashMap::new()) };
-    match crypto::symmetric_decrypt(&ciphertext, key).and_then(|json| serde_json::from_str(&json).map_err(Into::into)) {
+    match crypto::symmetric_decrypt(&ciphertext, key.expose_secret()).and_then(|json| serde_json::from_str(&json).map_err(Into::into)) {
         Ok(records) => Ok(records),
         Err(error) => {
             ctx.warn(format!("[Sharing] The stored shared-manifest key records did not decrypt (re-keyed vault?); treating them as absent. {}", error)).await;
@@ -199,7 +204,7 @@ pub(crate) async fn re_encrypt_shared_manifest_records(ctx: &Ctx, new_key: &str)
 }
 
 /// The private key that opens a grant made out to `public_key`.
-pub(crate) fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Option<String> {
+pub(crate) fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Option<SecretString> {
     if ctx.account_public_key.as_deref() != Some(public_key) {
         return None;
     }
@@ -212,13 +217,13 @@ pub(crate) fn encrypt_manifest_vek(manifest_vek: &str, manifest_id: &str, recipi
 }
 
 /// Decrypt a manifest's VEK from a grant made out to this private key for that manifest.
-pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, private_key_jwk: &str) -> SyncResult<String> {
-    let plaintext = crypto::decrypt_with_private_key_and_label(encrypted_vek, private_key_jwk, &crypto::aad::grant(manifest_id))?;
-    String::from_utf8(plaintext).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
+pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, private_key_jwk: &str) -> SyncResult<SecretString> {
+    let plaintext = Zeroizing::new(crypto::decrypt_with_private_key_and_label(encrypted_vek, private_key_jwk, &crypto::aad::grant(manifest_id))?);
+    std::str::from_utf8(&plaintext).map(SecretString::from).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
 }
 
 /// Unwrap one shared manifest's VEK from the grant this account holds on it.
-pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestDto) -> SyncResult<Option<String>> {
+pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestDto) -> SyncResult<Option<SecretString>> {
     if record.algorithm != ALGORITHM_RSA_OAEP_SHA256 {
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
         return Ok(None);
@@ -227,7 +232,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
         ctx.warn(format!("[Sharing] This session holds no account private key that opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
         return Ok(None);
     };
-    match decrypt_manifest_vek(&record.encrypted_vek, &record.manifest_id, &private_key) {
+    match decrypt_manifest_vek(&record.encrypted_vek, &record.manifest_id, private_key.expose_secret()) {
         Ok(vek) => Ok(Some(vek)),
         Err(error) => {
             ctx.warn(format!("[Sharing] Failed to unwrap the key of manifest {}; leaving it closed. {}", record.manifest_id, error)).await;
@@ -237,7 +242,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
 }
 
 /// The VEK of every shared manifest this account holds a grant on, keyed by manifest id. Unwrapped once per run.
-pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<String, String>> {
+pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<String, SecretString>> {
     if let Some(cached) = ctx.cached_shared_veks() {
         return Ok(cached);
     }

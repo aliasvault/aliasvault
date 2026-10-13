@@ -11,21 +11,22 @@ use super::db;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::types::{Ack, CleanOutcome, Command, Db, LogLevel, StateValue, StoreOutcome, StoredVault, SyncRequest};
+use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 
 /// The mutable state of one engine run.
 pub(crate) struct Ctx {
     pub host: Host,
     pub request: SyncRequest,
-    pub encryption_key: Option<String>,
+    pub encryption_key: Option<SecretString>,
     pub account_public_key: Option<String>,
-    pub account_private_key: Option<String>,
-    pub account_key: Option<String>,
-    pub signing_private_key: Option<String>,
+    pub account_private_key: Option<SecretString>,
+    pub account_key: Option<SecretString>,
+    pub signing_private_key: Option<SecretString>,
     pub is_dirty: bool,
     pub mutation_sequence: u64,
     /// The session key this run switched to; the next vault store hands it to the host.
-    pub new_encryption_key: Option<String>,
+    pub new_encryption_key: Option<SecretString>,
     pub vault_changed: bool,
     pub schema: Option<SchemaInfo>,
     pub vault_key_probed: bool,
@@ -34,7 +35,7 @@ pub(crate) struct Ctx {
     /// The stored vault did not decrypt with the session key, so this run treats it as absent until a store replaces it.
     local_vault_discarded: bool,
     /// The VEK of every shared manifest this account holds a grant on, unwrapped once per run.
-    shared_veks: Mutex<Option<HashMap<String, String>>>,
+    shared_veks: Mutex<Option<HashMap<String, SecretString>>>,
 }
 
 /// What a fresh staging database tells about the current client schema.
@@ -85,12 +86,12 @@ impl Ctx {
     }
 
     /// The session's vault encryption key, or the locked-vault error.
-    pub fn encryption_key(&self) -> SyncResult<String> {
+    pub fn encryption_key(&self) -> SyncResult<SecretString> {
         self.encryption_key.clone().ok_or(SyncError::VaultLocked)
     }
 
     /// Set a new session encryption key; the next vault store hands it to the host.
-    pub fn set_encryption_key(&mut self, key: String) {
+    pub fn set_encryption_key(&mut self, key: SecretString) {
         self.new_encryption_key = Some(key.clone());
         self.encryption_key = Some(key);
     }
@@ -122,7 +123,7 @@ impl Ctx {
     pub async fn persist_local_vault(&mut self, dirty: bool) -> SyncResult<()> {
         let key = self.encryption_key()?;
         let bytes = db::export(&self.host, Db::Local).await?;
-        let stored = self.store_vault(&encrypt_vault_blob(&bytes, &key)?, dirty, None, None).await?;
+        let stored = self.store_vault(&encrypt_vault_blob(&bytes, key.expose_secret())?, dirty, None, None).await?;
         if dirty {
             self.is_dirty = true;
             self.mutation_sequence = stored.mutation_sequence;
@@ -143,12 +144,12 @@ impl Ctx {
     }
 
     /// The shared-manifest keys unwrapped earlier in this run, if any.
-    pub fn cached_shared_veks(&self) -> Option<HashMap<String, String>> {
+    pub fn cached_shared_veks(&self) -> Option<HashMap<String, SecretString>> {
         self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).clone()
     }
 
     /// Remember the unwrapped shared-manifest keys; `None` forgets them (the records changed).
-    pub fn cache_shared_veks(&self, veks: Option<HashMap<String, String>>) {
+    pub fn cache_shared_veks(&self, veks: Option<HashMap<String, SecretString>>) {
         *self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = veks;
     }
 
@@ -222,7 +223,7 @@ pub(crate) async fn load_vault(host: &Host) -> SyncResult<Option<String>> {
 }
 
 /// Persist the at-rest vault blob, telling the host the (new) key it is encrypted under.
-pub(crate) async fn store_vault_with_key(host: &Host, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>, encryption_key: Option<String>) -> SyncResult<StoreOutcome> {
+pub(crate) async fn store_vault_with_key(host: &Host, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>, encryption_key: Option<SecretString>) -> SyncResult<StoreOutcome> {
     host.call(Command::VaultStore { encrypted_blob: encrypted_blob.to_string(), mark_dirty, encryption_key, expected_mutation_seq, revision }).await
 }
 

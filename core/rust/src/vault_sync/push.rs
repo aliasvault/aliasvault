@@ -14,6 +14,7 @@ use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, Bucke
 use super::blob_keys::{self, EncryptedBlob};
 use super::write_set::{self, ManifestRecord, SkipReason};
 use super::{db, http, keys};
+use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
 
@@ -110,7 +111,7 @@ pub(crate) async fn resolve_personal_manifest_id(ctx: &Ctx) -> SyncResult<String
 }
 
 /// The key each writable manifest encrypts with, the personal one under the session key.
-async fn resolve_write_keys(ctx: &Ctx) -> SyncResult<HashMap<String, String>> {
+async fn resolve_write_keys(ctx: &Ctx) -> SyncResult<HashMap<String, SecretString>> {
     let mut keys_by_manifest = keys::open_shared_manifest_veks(ctx).await?;
     keys_by_manifest.insert(resolve_personal_manifest_id(ctx).await?, ctx.encryption_key()?);
     Ok(keys_by_manifest)
@@ -261,12 +262,12 @@ async fn write_whole_vault(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind
     let (status, new_key) = http::with_outdated_server_guard(write_manifests_and_buckets(ctx, cached, kind).await)?;
     if let Some(new_key) = new_key {
         // Migration succeeded: from now on the session key is the VEK, not the password-derived key.
-        keys::re_encrypt_shared_manifest_records(ctx, &new_key).await?;
+        keys::re_encrypt_shared_manifest_records(ctx, new_key.expose_secret()).await?;
         ctx.set_encryption_key(new_key);
     }
 
     // Store the vault again only when it changed or its key did.
-    if vault_rewritten || ctx.encryption_key()? != key_before {
+    if vault_rewritten || ctx.encryption_key()?.expose_secret() != key_before.expose_secret() {
         ctx.persist_local_vault(false).await?;
     }
     Ok((status, vault_rewritten))
@@ -317,7 +318,7 @@ impl PushBaselines {
 struct Candidate<'a> {
     record: &'a ManifestRecord,
     manifest: &'a Manifest,
-    vek: String,
+    vek: SecretString,
     blobs: &'a HashMap<String, BlobEntry>,
     current_revision: i64,
 }
@@ -337,7 +338,7 @@ struct UploadBlobEntry {
     manifest_id: String,
     bytes: Vec<u8>,
     kind: String,
-    vek: String,
+    vek: SecretString,
     from_personal: bool,
 }
 
@@ -369,7 +370,7 @@ impl UploadBlobs {
 /// The freshly generated key hierarchy for one migration push.
 #[derive(zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
 struct LegacyAccountKeyMigration {
-    content_key: String,
+    content_key: SecretString,
 
     /// Ciphertext only, so there is nothing here to wipe.
     #[zeroize(skip)]
@@ -414,7 +415,7 @@ async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad
 
 /// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a
 /// migration push, the new content key the session switches to.
-async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, Option<String>)> {
+async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, Option<SecretString>)> {
     let vek = ctx.encryption_key()?;
 
     let unwritable = find_unwritable_manifests(ctx).await?;
@@ -423,7 +424,7 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
         return Ok((PushStatus::Outdated, None));
     }
 
-    let migration = start_account_key_migration(ctx, &vek, kind).await?;
+    let migration = start_account_key_migration(ctx, vek.expose_secret(), kind).await?;
     let content_key = migration.as_ref().map(|m| m.content_key.clone()).unwrap_or_else(|| vek.clone());
 
     let set = match cached {
@@ -442,15 +443,15 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
     if migration.is_some() {
         refuse_overwrite_without_bytes(&candidates, &blobs)?;
     }
-    let keys_by_manifest: HashMap<String, String> = candidates.iter().map(|c| (c.record.manifest_id.clone(), c.vek.clone())).collect();
+    let keys_by_manifest: HashMap<String, SecretString> = candidates.iter().map(|c| (c.record.manifest_id.clone(), c.vek.clone())).collect();
     let mut written = WrittenFingerprints::default();
     let bucket_writes = encrypt_changed_buckets(ctx, &canonicalized.data_buckets, &keys_by_manifest, &baselines, kind, &mut written).await?;
     // An upgrade push signs with the signing key it creates, which the server stores in the same write.
     let signing_key = match &migration {
-        Some(migration) => Some(migration.signing_private_key.clone()),
+        Some(migration) => Some(SecretString::from(migration.signing_private_key.as_str())),
         None => keys::signing_private_key(ctx).await?,
     };
-    let manifest_writes = encrypt_changed_manifests(ctx, &candidates, &baselines, kind, signing_key.as_deref(), &mut written).await?;
+    let manifest_writes = encrypt_changed_manifests(ctx, &candidates, &baselines, kind, signing_key.as_ref().map(|key| key.expose_secret()), &mut written).await?;
 
     if manifest_writes.is_empty() && bucket_writes.is_empty() {
         ctx.log("[Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.").await;
@@ -487,7 +488,7 @@ async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKin
     let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
     ctx.log("[Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
     Ok(Some(LegacyAccountKeyMigration {
-        content_key: hierarchy.vault_encryption_key.clone(),
+        content_key: SecretString::from(hierarchy.vault_encryption_key.as_str()),
         account_keys: hierarchy.account_keys.clone(),
         account_private_key: hierarchy.account_private_key.clone(),
         signing_private_key: hierarchy.signing_private_key.clone(),
@@ -495,14 +496,14 @@ async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKin
 }
 
 /// Every canonicalized manifest a record exists for, with the key it encrypts under.
-fn collect_candidates<'a>(canonicalized: &'a CanonicalizedVault, records: &'a [ManifestRecord], content_key: &str, baselines: &PushBaselines) -> Vec<Candidate<'a>> {
+fn collect_candidates<'a>(canonicalized: &'a CanonicalizedVault, records: &'a [ManifestRecord], content_key: &SecretString, baselines: &PushBaselines) -> Vec<Candidate<'a>> {
     let record_by_id: HashMap<&str, &ManifestRecord> = records.iter().map(|r| (r.manifest_id.as_str(), r)).collect();
     canonicalized
         .manifests
         .iter()
         .filter_map(|entry| {
             let record = record_by_id.get(entry.manifest.manifest_id.as_str())?;
-            Some(Candidate { record, manifest: &entry.manifest, vek: record.vek.clone().unwrap_or_else(|| content_key.to_string()), blobs: &entry.blobs, current_revision: baselines.manifest_revisions.get(&record.manifest_id).copied().unwrap_or(0) })
+            Some(Candidate { record, manifest: &entry.manifest, vek: record.vek.clone().unwrap_or_else(|| content_key.clone()), blobs: &entry.blobs, current_revision: baselines.manifest_revisions.get(&record.manifest_id).copied().unwrap_or(0) })
         })
         .collect()
 }
@@ -533,7 +534,7 @@ fn refuse_overwrite_without_bytes(candidates: &[Candidate], blobs: &UploadBlobs)
 }
 
 /// Gate, validate, pack and encrypt each changed bucket under the key of the manifest that owns it.
-async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], keys_by_manifest: &HashMap<String, String>, baselines: &PushBaselines, kind: WriteKind, written: &mut WrittenFingerprints) -> SyncResult<Vec<BucketWrite>> {
+async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], keys_by_manifest: &HashMap<String, SecretString>, baselines: &PushBaselines, kind: WriteKind, written: &mut WrittenFingerprints) -> SyncResult<Vec<BucketWrite>> {
     let mut writes = Vec::new();
     for bucket in buckets {
         let label = format!("Data bucket \"{}\" of manifest {}", bucket.category, bucket.manifest_id);
@@ -551,7 +552,7 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], keys_by_mani
         if !validation.ok {
             return Err(SyncError::UploadRejected(vec![format!("{} validation failed: {}. {}", label, validation.failed_rules.join(", "), validation.message).trim().to_string()]));
         }
-        let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key.expose_secret(), &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
         writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), ciphertext: encrypted.ciphertext.into(), ciphertext_hash: encrypted.hash, current_revision: baselines.bucket_revision(bucket) });
         written.insert(fingerprint_key, fingerprint);
     }
@@ -577,7 +578,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             ctx.warn(format!("[Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
             continue;
         }
-        let encrypted = encrypt_payload(ctx, &label, &plaintext, &candidate.vek, &crypto::aad::manifest(&candidate.record.manifest_id)).await?;
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, candidate.vek.expose_secret(), &crypto::aad::manifest(&candidate.record.manifest_id)).await?;
 
         // Publish the public half of this manifest's mail delivery keypair; only admins may publish a shared one.
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
@@ -709,8 +710,8 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
     state::set(&ctx.host, state::SIGNING_PUBLIC_KEY, &blobs.signing_public_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_SIGNING_PRIVATE_KEY, &blobs.encrypted_signing_private_key).await?;
     ctx.account_public_key = Some(blobs.account_public_key.clone());
-    ctx.account_private_key = Some(migration.account_private_key.clone());
-    ctx.signing_private_key = Some(migration.signing_private_key.clone());
+    ctx.account_private_key = Some(migration.account_private_key.as_str().into());
+    ctx.signing_private_key = Some(migration.signing_private_key.as_str().into());
     Ok(())
 }
 
@@ -722,7 +723,7 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
         let mut dtos = Vec::new();
         for hash in hashes {
             let entry = &blobs.entries[&hash];
-            let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek, &manifest_id, &hash)?;
+            let encrypted = blob_keys::encrypt_blob(&entry.bytes, entry.vek.expose_secret(), &manifest_id, &hash)?;
             encrypted_blobs.insert(hash.clone(), encrypted.clone());
             dtos.push(BlobDto { hash, category: entry.kind.clone(), ciphertext: encrypted.encrypted_data.into(), encrypted_blob_key: encrypted.encrypted_blob_key });
         }

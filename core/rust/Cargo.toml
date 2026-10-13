@@ -67,6 +67,8 @@ rand_core06 = { package = "rand_core", version = "0.6", features = ["getrandom"]
 
 # Wipes key material from memory on drop
 zeroize = { version = "1.8", features = ["derive"] }
+# Secret strings: wiped on drop, redacted in Debug, read only via expose_secret()
+secrecy = { version = "0.10", features = ["serde"] }
 
 # gzip for the vault_codec packaged format and stored email sources
 flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }

@@ -8,6 +8,7 @@ use super::{insert_item, legacy_device, server_with_item, state, ITEM_A, PERSONA
 use crate::crypto;
 use crate::vault_codec;
 use crate::vault_sync::types::Command;
+use secrecy::ExposeSecret;
 
 /// Login: the host hands the password-derived key to `resolveVaultKey`; the server's chain opens with it, is
 /// cached for offline unlock, and the VEK comes back as the key to store.
@@ -118,7 +119,7 @@ fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(host.vault_key, vek, "the store carried the VEK, so the host switched to it before opening the blob");
-    assert!(matches!(&host.store_calls[0], Command::VaultStore { encryption_key: Some(key), .. } if *key == vek));
+    assert!(matches!(&host.store_calls[0], Command::VaultStore { encryption_key: Some(key), .. } if key.expose_secret() == vek));
     assert_eq!(host.item_names(), vec!["Server item"]);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);
     assert_eq!(host.state[state::ACCOUNT_PUBLIC_KEY], hierarchy.account_keys.account_public_key);

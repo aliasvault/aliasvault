@@ -1,6 +1,7 @@
 //! The sharing operations that take vault keys: creating a group's shared manifest, updating one and inviting a member to one.
 
 use std::collections::HashMap;
+use secrecy::ExposeSecret;
 
 use serde::{Deserialize, Serialize};
 
@@ -216,7 +217,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
     // A new manifest starts at key version 0.
-    let self_grant_signature = crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&requested_id, 0, &own_user_id(ctx, &group)?, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
+    let self_grant_signature = crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::grant_message(&requested_id, 0, &own_user_id(ctx, &group)?, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
     let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
@@ -243,7 +244,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
             can_administer: true,
         },
     );
-    keys::set_shared_manifest_records(ctx, &records, &key).await?;
+    keys::set_shared_manifest_records(ctx, &records, key.expose_secret()).await?;
 
     let mut revisions: HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
     revisions.insert(manifest_id.clone(), response.revision_number);
@@ -274,14 +275,14 @@ async fn update_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
     // The server decides who may change a shared manifest; it only ever sees the name encrypted.
-    let encrypted_name = pull::encrypt_manifest_name(&name, &record.manifest_id, &manifest_vek)?;
+    let encrypted_name = pull::encrypt_manifest_name(&name, &record.manifest_id, manifest_vek.expose_secret())?;
     http::post_no_content(&ctx.host, &format!("Groups/{}/manifests/{}", target.group_id, record.manifest_id), &UpdateSharedManifestRequest { encrypted_name: Some(&encrypted_name) }).await?;
 
     let mut records = keys::shared_manifest_records(ctx).await?;
     if let Some(held) = records.get_mut(&record.manifest_id) {
         held.encrypted_name = Some(encrypted_name);
     }
-    keys::set_shared_manifest_records(ctx, &records, &key).await?;
+    keys::set_shared_manifest_records(ctx, &records, key.expose_secret()).await?;
 
     // Show the new name right away; every other member fetches it on their next sync.
     if ctx.has_local_vault().await? {
@@ -326,13 +327,13 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     // The name travels encrypted in the invitation, so the recipient sees what they are invited to; one too long to fit is left out.
     let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
     let own_user_id = own_user_id(ctx, &group)?;
-    let encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?;
+    let encrypted_vek = keys::encrypt_manifest_vek(manifest_vek.expose_secret(), &manifest.manifest_id, &recipient_public_key)?;
     let encrypted_name = name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?;
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
         recipient_account_public_key_id: recipient_public_key_id,
-        signature: crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
-        encrypted_name_signature: encrypted_name.as_deref().map(|name| crypto::signing::sign(&signing_key, &crypto::signing::invitation_name_message(&manifest.manifest_id, &own_user_id, &recipient_public_key, name))).transpose()?,
+        signature: crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
+        encrypted_name_signature: encrypted_name.as_deref().map(|name| crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::invitation_name_message(&manifest.manifest_id, &own_user_id, &recipient_public_key, name))).transpose()?,
         encrypted_vek,
         encrypted_name,
     };
