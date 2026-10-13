@@ -693,10 +693,6 @@ video {
   margin-bottom: 1rem;
 }
 
-.-mb-2 {
-  margin-bottom: -0.5rem;
-}
-
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -791,6 +787,10 @@ video {
 
 .mt-8 {
   margin-top: 2rem;
+}
+
+.-mb-2 {
+  margin-bottom: -0.5rem;
 }
 
 .line-clamp-1 {
@@ -1109,16 +1109,16 @@ video {
   gap: 0.5rem;
 }
 
-.gap-3 {
-  gap: 0.75rem;
-}
-
 .gap-4 {
   gap: 1rem;
 }
 
 .gap-6 {
   gap: 1.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
 }
 
 .space-x-1 > :not([hidden]) ~ :not([hidden]) {
@@ -1485,10 +1485,6 @@ video {
   fill: #d68338;
 }
 
-.p-1 {
-  padding: 0.25rem;
-}
-
 .p-2 {
   padding: 0.5rem;
 }
@@ -1511,6 +1507,10 @@ video {
 
 .p-6 {
   padding: 1.5rem;
+}
+
+.p-1 {
+  padding: 0.25rem;
 }
 
 .px-1 {

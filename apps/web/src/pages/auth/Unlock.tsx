@@ -2,12 +2,9 @@ import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
 import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
-import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
 import { logoutReasonKey } from '@aliasvault/client/sync/VaultSync';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -43,7 +40,6 @@ const Unlock: React.FC = () => {
   const webApi = useWebApi();
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
-  const srpUtil = useMemo(() => new SrpLoginService(webApi), [webApi]);
   usePageTitle(t('auth.unlockPage.unlockButton'));
 
   const { skipWebAuthn } = useParams<{ skipWebAuthn?: string }>();
@@ -161,26 +157,13 @@ const Unlock: React.FC = () => {
     setErrors([]);
 
     try {
-      let accountKey: string;
-      if (dbContext.getIsOffline()) {
-        const params = await MasterPasswordService.getStoredDerivationParams();
-        if (!params) {
-          throw new Error(t('auth.unlockPage.connectionFailedError'));
-        }
-        const unlockKey = await SrpAuthService.deriveUnlockKey(password, params.salt, params.encryptionSettings);
-        // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        accountKey = await VaultKeyService.verifyUnlockKey(unlockKey);
-      } else {
-        const loginResponse = await srpUtil.initiateLogin(username);
-        const unlockKey = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
-        await vaultStore.storeUnlockKeyDerivationParams({ salt: loginResponse.salt, encryptionType: loginResponse.encryptionType, encryptionSettings: loginResponse.encryptionSettings });
-        // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
-      }
-
+      // Throws an unlock-key-rejected (E-206) error on a wrong password.
+      const accountKey = await UnlockService.unlockWithPassword(password, { online: !dbContext.getIsOffline(), webApi, username });
       await vaultStore.storeAccountKey(accountKey);
       navigate('/sync', { replace: true });
-    } catch (err) {
+    } catch (caught) {
+      // Offline unlock needs the derivation params of an earlier online login.
+      const err = caught instanceof MissingDerivationParamsError ? new Error(t('auth.unlockPage.connectionFailedError')) : caught;
       console.error('Unlock error:', err);
       if (err instanceof ApiAuthError) {
         navigate('/user/login', { replace: true });
@@ -217,9 +200,7 @@ const Unlock: React.FC = () => {
       await auth.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // Throws an unlock-key-rejected (E-206) error if the key does not open the key chain.
-      const accountKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
-      await vaultStore.storeUnlockKeyDerivationParams({ salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings });
-      await vaultStore.storeAccountKey(accountKey);
+      await UnlockService.completeKeyChainLogin(result.accountKey, result, webApi);
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Mobile unlock error:', err);

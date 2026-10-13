@@ -2,7 +2,7 @@ import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
-import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { UnlockService } from '@aliasvault/client/auth/UnlockService';
 import { getPlatform } from '@aliasvault/client/platform';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +26,6 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { asksForClientUpdate, updateApp } from '@/utils/ClientUpdate';
 import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
-import { vaultStore } from '@/vault/VaultStore';
 
 import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
@@ -117,17 +116,8 @@ const Login: React.FC = () => {
     try {
       await auth.setAuthTokens(SrpAuthService.normalizeUsername(loginUsername), accessToken, refreshToken);
 
-      // Fetch the key chain, check the unlock key opens it and cache it; the vault key is derived from the two on demand.
-      let accountKey: string;
-      try {
-        accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
-      } catch (err) {
-        // Without a usable key chain the session is useless; end it so the error shows on this form.
-        await auth.logout();
-        throw err;
-      }
-      await vaultStore.storeUnlockKeyDerivationParams(params);
-      await vaultStore.storeAccountKey(accountKey);
+      // Fetch the key chain, check the unlock key opens it and cache it; without a usable chain the session is useless, so end it.
+      await UnlockService.completeKeyChainLogin(unlockKey, params, webApi, () => auth.logout());
 
       notifications.clearMessages();
       navigate('/sync', { replace: true });
@@ -157,7 +147,7 @@ const Login: React.FC = () => {
 
     try {
       const params = { salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings };
-      await completeLogin(result.username, result.token, result.refreshToken, result.unlockKey, params);
+      await completeLogin(result.username, result.token, result.refreshToken, result.accountKey, params);
     } catch (err) {
       setErrors(await toErrorMessages(err));
     } finally {

@@ -1,6 +1,5 @@
 import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 
 /**
@@ -10,16 +9,17 @@ import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
  * @throws Error when the check itself cannot run (no stored derivation parameters or key chain).
  */
 export async function verifyMasterPassword(password: string): Promise<boolean> {
-  const params = await MasterPasswordService.getStoredDerivationParams();
-  if (!params || !await VaultKeyService.hasLocalVaultKey()) {
+  if (!await VaultKeyService.hasLocalVaultKey()) {
     throw new Error('No local key chain to verify the master password against');
   }
 
-  const unlockKey = await SrpAuthService.deriveUnlockKey(password, params.salt, params.encryptionSettings);
   try {
-    await VaultKeyService.verifyUnlockKey(unlockKey);
+    await UnlockService.verifyPasswordOffline(password);
     return true;
   } catch (error) {
+    if (error instanceof MissingDerivationParamsError) {
+      throw new Error('No local key chain to verify the master password against');
+    }
     const code = error instanceof Error ? extractErrorCode(error.message) : null;
     if (await VaultKeyService.isWrongUnlockKey(code)) {
       return false;
