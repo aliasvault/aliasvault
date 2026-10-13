@@ -38,8 +38,8 @@ extension VaultStore {
     }
 
     /// Resolve and store the vault key right after login from the password-derived key (see VaultSync.resolveVaultKey).
-    public func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws -> String {
-        return try await sync.resolveVaultKey(using: webApiService, derivedKeyBase64: derivedKeyBase64)
+    public func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws {
+        try await sync.resolveVaultKey(using: webApiService, derivedKeyBase64: derivedKeyBase64)
     }
 
     /// Classify the pending manifest migration (see VaultSync.getVaultMigrationStatus).

@@ -111,7 +111,7 @@ export const StorageKeys = {
 /** Keys that hold auth tokens, ephemeral error state and account-scoped server state. Cleared on any logout. */
 export const AUTH_STORAGE_KEYS: readonly StorageKey[] = CORE_AUTH_STORAGE_KEYS;
 
-/** Keys holding the PIN unlock material: the PIN-encrypted unlock key and the parameters that unwrap it. */
+/** Keys holding the PIN unlock material: the PIN-encrypted Account Key and the parameters that unwrap it. */
 export const PIN_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.PIN_ENABLED,
   StorageKeys.PIN_ENCRYPTED_KEY,
@@ -120,7 +120,7 @@ export const PIN_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.PIN_FAILED_ATTEMPTS,
 ];
 
-/** Keys that must not survive a vault lock: the encryption key plus anything derived from decrypted data. */
+/** Keys that must not survive a vault lock: the Account Key plus anything derived from decrypted data. */
 export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
   ...CORE_VAULT_LOCK_STORAGE_KEYS,
   StorageKeys.PERSISTED_FORM_VALUES,

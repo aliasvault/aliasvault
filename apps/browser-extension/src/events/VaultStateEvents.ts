@@ -6,14 +6,14 @@ type Unsubscribe = () => void;
 type Listener = () => void;
 
 /**
- * Last unlock-key value this window wrote, used to ignore our own
+ * Last Account Key value this window wrote, used to ignore our own
  * storage events. Reset to null whenever the key is removed (any lock), so a
  * subsequent unlock in another window is detected as a foreign write.
  */
 let lastOwnAccountKey: string | null = null;
 
 /**
- * Record an unlock-key value that THIS window is about to write. Must be
+ * Record an Account Key value that THIS window is about to write. Must be
  * called BEFORE the actual write so the storage watcher can skip the
  * resulting self-event. The popup unlock/login flows call this via
  * `DbContext.storeAccountKey`.

@@ -471,7 +471,7 @@ const Unlock: React.FC = () => {
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // The mobile device sends its stored key.
-      const accountKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+      const accountKey = await VaultKeyService.refreshKeyChain(result.accountKey, webApi);
 
       // Store the Account Key and derivation params
       await dbContext.storeAccountKey(accountKey);

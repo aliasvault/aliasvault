@@ -352,7 +352,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Resolve and store the vault key right after login from the unlock key (see VaultStore.resolveVaultKey).
-     * Resolves with the vault key; rejects with the native error code when the chain does not open or the session is gone.
+     * Resolves with no value; rejects with the native error code when the chain does not open or the session is gone.
      * @param base64DerivedKey The password-derived key as base64
      * @param promise The promise to resolve
      */
@@ -360,8 +360,8 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     override fun resolveVaultKey(base64DerivedKey: String, promise: Promise) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val key = vaultStore.resolveVaultKey(webApiService, base64DerivedKey)
-                withContext(Dispatchers.Main) { promise.resolve(key) }
+                vaultStore.resolveVaultKey(webApiService, base64DerivedKey)
+                withContext(Dispatchers.Main) { promise.resolve(null) }
             } catch (e: AppError) {
                 withContext(Dispatchers.Main) { promise.reject(e.code, e.message, e) }
             } catch (e: Exception) {
@@ -1645,9 +1645,8 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Show native PIN setup UI.
-     * Launches the native PinUnlockActivity in setup mode.
-     * Gets the Account Key from memory (vault must be unlocked): the PIN protects that
-     * key, never the vault key.
+     * Launches the native PinUnlockActivity in setup mode once the session is open (vault must be unlocked);
+     * the activity reads the Account Key from the session: the PIN protects that key, never the vault key.
      * @param promise The promise to resolve when setup completes or rejects if cancelled/error.
      */
     @ReactMethod
@@ -1667,7 +1666,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     // Launch PIN setup activity
                     val intent = android.content.Intent(activity, net.aliasvault.app.pinunlock.PinUnlockActivity::class.java)
                     intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_MODE, net.aliasvault.app.pinunlock.PinUnlockActivity.MODE_SETUP)
-                    intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_SETUP_ACCOUNT_KEY, accountKey)
 
                     activity.startActivityForResult(intent, PIN_SETUP_REQUEST_CODE)
                 } catch (e: Exception) {

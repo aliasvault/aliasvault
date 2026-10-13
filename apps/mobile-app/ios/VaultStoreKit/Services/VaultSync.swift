@@ -5,11 +5,7 @@ import VaultUtils
 /// The vault sync wrapper: one method per engine operation, persisting what the engine reported, and the mapping of
 /// its failures into the native error. The driver below it is VaultSyncEngine, which turns the Rust engine's
 /// commands into host actions.
-///
-/// When updating this logic, make sure to update the same logic on the other platforms:
-/// - core/client/src/sync/VaultSync.ts (shared core client for web apps)
-/// - apps/mobile-app/ios/VaultStoreKit/Services/VaultSync.swift (this file)
-/// - apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultSync.kt
+/// Other platform implementations: VaultSync.kt (Android), VaultSync.ts (core/client).
 internal final class VaultSync {
     private let vaultStore: VaultStore
     private var lastRun: Task<Void, Never>?
@@ -77,14 +73,14 @@ internal final class VaultSync {
 
     /// Resolve the vault key right after login: the account's key chain is opened with the unlock key (the password's
     /// Argon2id output) and cached as-is. The session then opens from that chain like every later unlock, and the session
-    /// keeps the Account Key. Returns the vault key (base64).
-    func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws -> String {
+    /// keeps the Account Key. Throws when the vault key does not open from the new session.
+    func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws {
         let result = try await run("resolveVaultKey", using: webApiService, encryptionKey: derivedKeyBase64)
         guard result["success"] as? Bool == true else {
             throw Self.syncError(from: result)
         }
         try vaultStore.storeAccountKey(base64Key: derivedKeyBase64)
-        return try vaultStore.getEncryptionKeyBase64()
+        _ = try vaultStore.getEncryptionKey()
     }
 
     /// Classify the pending manifest migration as the engine sees it: `none`, `schemaRebuild` (runs unattended) or

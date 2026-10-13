@@ -127,15 +127,9 @@ class PinViewModel(
                     return PinResult.Mismatch(context.getString(R.string.pin_mismatch))
                 }
 
-                // Setup the PIN
+                // Setup the PIN with the Account Key of the unlocked session
                 try {
-                    if (setupAccountKey == null) {
-                        return PinResult.Error(
-                            "Account Key required for PIN setup",
-                            shouldClear = false,
-                        )
-                    }
-                    vaultStore.setupPin(pin, setupAccountKey)
+                    vaultStore.setupPin(pin)
                     PinResult.Success(null)
                 } catch (e: Exception) {
                     PinResult.Error(errorMessage(e) ?: "Failed to setup PIN", shouldClear = false)

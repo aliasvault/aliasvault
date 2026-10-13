@@ -149,8 +149,8 @@ public class NativeVaultManager: NSObject {
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
-                let key = try await vaultStore.resolveVaultKey(using: webApiService, derivedKeyBase64: base64DerivedKey)
-                await MainActor.run { resolve(key) }
+                try await vaultStore.resolveVaultKey(using: webApiService, derivedKeyBase64: base64DerivedKey)
+                await MainActor.run { resolve(nil) }
             } catch let vaultError as AppError {
                 await MainActor.run { reject(vaultError.code, vaultError.message, vaultError) }
             } catch {

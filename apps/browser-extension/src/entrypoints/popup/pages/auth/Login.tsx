@@ -354,8 +354,8 @@ const Login: React.FC = () => {
       app.clearGlobalMessage();
       setIsInitialLoading(false);
 
-      // The mobile device sends the unlock key.
-      await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.unlockKey, result);
+      // The mobile device sends its Account Key.
+      await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.accountKey, result);
     } catch (err) {
       await showLoginError('Mobile login error', err);
       hideLoading();
