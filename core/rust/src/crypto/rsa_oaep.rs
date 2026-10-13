@@ -1,13 +1,13 @@
 //! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings compatible with the WebCrypto API.
 
-use rsa::traits::{PrivateKeyParts, PublicKeyParts};
-use rsa::{BigUint, Oaep, RsaPrivateKey, RsaPublicKey};
+use rsa::{Oaep, RsaPrivateKey};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::fmt;
-use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::common::encoding::{base64_decode, base64_encode, base64url_decode, base64url_encode};
+use super::jwk::{rsa_private_from_jwk, rsa_private_to_jwk, rsa_public_from_jwk, rsa_public_to_jwk, JwkUsage};
+use crate::common::encoding::{base64_decode, base64_encode};
 use crate::common::error::{VaultError, VaultResult};
 
 const MODULUS_BITS: usize = 2048;
@@ -26,42 +26,20 @@ impl fmt::Debug for RsaKeyPair {
     }
 }
 
-/// The JWK fields WebCrypto emits for an RSA-OAEP-256 key.
-#[derive(Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
-struct RsaJwk {
-    #[serde(default)]
-    key_ops: Vec<String>,
-    #[serde(default)]
-    ext: bool,
-    #[serde(default)]
-    alg: String,
-    kty: String,
-    n: String,
-    e: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    d: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    p: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    q: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    dp: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    dq: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    qi: Option<String>,
-}
+/// WebCrypto's JWK members for the public and private halves of an RSA-OAEP-256 key.
+const OAEP_PUBLIC: JwkUsage = JwkUsage { key_op: "encrypt", alg: "RSA-OAEP-256" };
+const OAEP_PRIVATE: JwkUsage = JwkUsage { key_op: "decrypt", alg: "RSA-OAEP-256" };
 
 /// Generate a 2048-bit RSA key pair for RSA-OAEP-256 grants.
 pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
     let private = RsaPrivateKey::new(&mut rand_core06::OsRng, MODULUS_BITS).map_err(|e| VaultError::General(format!("RSA key generation failed: {}", e)))?;
     let public = private.to_public_key();
-    Ok(RsaKeyPair { public_key: public_to_jwk(&public)?, private_key: private_to_jwk(&private)? })
+    Ok(RsaKeyPair { public_key: rsa_public_to_jwk(&public, Some(OAEP_PUBLIC))?, private_key: rsa_private_to_jwk(&private, Some(OAEP_PRIVATE))? })
 }
 
 /// Check that a key pair generated elsewhere (WebCrypto) is a valid private key whose public half matches.
 pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
-    if private_from_jwk(&key_pair.private_key)?.to_public_key() != public_from_jwk(&key_pair.public_key)? {
+    if rsa_private_from_jwk(&key_pair.private_key)?.to_public_key() != rsa_public_from_jwk(&key_pair.public_key)? {
         return Err(VaultError::General("RSA public key does not belong to the private key".to_string()));
     }
     Ok(())
@@ -88,13 +66,13 @@ pub fn decrypt_with_private_key_and_label(base64_ciphertext: &str, private_key_j
 }
 
 fn encrypt(plaintext: &[u8], public_key_jwk: &str, padding: Oaep) -> VaultResult<String> {
-    let public = public_from_jwk(public_key_jwk)?;
+    let public = rsa_public_from_jwk(public_key_jwk)?;
     let ciphertext = public.encrypt(&mut rand_core06::OsRng, padding, plaintext).map_err(|e| VaultError::General(format!("RSA-OAEP encryption failed: {}", e)))?;
     Ok(base64_encode(&ciphertext))
 }
 
 fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> VaultResult<Vec<u8>> {
-    let private = private_from_jwk(private_key_jwk)?;
+    let private = rsa_private_from_jwk(private_key_jwk)?;
     let ciphertext = base64_decode(base64_ciphertext)?;
     // Blinded: plain `decrypt` runs the exponentiation on the ciphertext as given, which leaks timing an
     // attacker who can submit chosen ciphertexts turns into key recovery (RUSTSEC-2023-0071, Marvin attack).
@@ -106,78 +84,6 @@ fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> Vau
 /// The `rsa` crate takes the OAEP label as text; every label this crate uses is ASCII.
 fn label_text(label: &[u8]) -> VaultResult<String> {
     String::from_utf8(label.to_vec()).map_err(|_| VaultError::General("RSA-OAEP label must be UTF-8".to_string()))
-}
-
-fn public_from_jwk(jwk: &str) -> VaultResult<RsaPublicKey> {
-    let parsed = parse_jwk(jwk)?;
-    RsaPublicKey::new(field(&parsed.n)?, field(&parsed.e)?).map_err(|e| VaultError::General(format!("Invalid RSA public key: {}", e)))
-}
-
-pub(crate) fn private_from_jwk(jwk: &str) -> VaultResult<RsaPrivateKey> {
-    let parsed = parse_jwk(jwk)?;
-    let d = parsed.d.as_deref().ok_or_else(|| VaultError::General("JWK is not a private key".to_string()))?;
-    let p = parsed.p.as_deref().ok_or_else(|| VaultError::General("JWK private key is missing p".to_string()))?;
-    let q = parsed.q.as_deref().ok_or_else(|| VaultError::General("JWK private key is missing q".to_string()))?;
-    RsaPrivateKey::from_components(field(&parsed.n)?, field(&parsed.e)?, field(d)?, vec![field(p)?, field(q)?])
-        .map_err(|e| VaultError::General(format!("Invalid RSA private key: {}", e)))
-}
-
-fn parse_jwk(jwk: &str) -> VaultResult<RsaJwk> {
-    let parsed: RsaJwk = serde_json::from_str(jwk).map_err(|e| VaultError::General(format!("Invalid RSA JWK: {}", e)))?;
-    if parsed.kty != "RSA" {
-        return Err(VaultError::General(format!("Unsupported JWK key type \"{}\"", parsed.kty)));
-    }
-    Ok(parsed)
-}
-
-fn field(value: &str) -> VaultResult<BigUint> {
-    let bytes = Zeroizing::new(base64url_decode(value).map_err(|_| VaultError::General("Invalid base64url in JWK".to_string()))?);
-    Ok(BigUint::from_bytes_be(&bytes))
-}
-
-fn encode(value: &BigUint) -> String {
-    base64url_encode(&Zeroizing::new(value.to_bytes_be()))
-}
-
-fn public_to_jwk(public: &RsaPublicKey) -> VaultResult<String> {
-    let jwk = RsaJwk {
-        key_ops: vec!["encrypt".to_string()],
-        ext: true,
-        alg: "RSA-OAEP-256".to_string(),
-        kty: "RSA".to_string(),
-        n: encode(public.n()),
-        e: encode(public.e()),
-        d: None,
-        p: None,
-        q: None,
-        dp: None,
-        dq: None,
-        qi: None,
-    };
-    serde_json::to_string(&jwk).map_err(VaultError::from)
-}
-
-fn private_to_jwk(private: &RsaPrivateKey) -> VaultResult<String> {
-    let primes = private.primes();
-    if primes.len() != 2 {
-        return Err(VaultError::General("Only two-prime RSA keys can be exported as JWK".to_string()));
-    }
-    let qinv = private.qinv().ok_or_else(|| VaultError::General("RSA key is missing its CRT coefficient".to_string()))?;
-    let jwk = RsaJwk {
-        key_ops: vec!["decrypt".to_string()],
-        ext: true,
-        alg: "RSA-OAEP-256".to_string(),
-        kty: "RSA".to_string(),
-        n: encode(private.n()),
-        e: encode(private.e()),
-        d: Some(encode(private.d())),
-        p: Some(encode(&primes[0])),
-        q: Some(encode(&primes[1])),
-        dp: private.dp().map(encode),
-        dq: private.dq().map(encode),
-        qi: Some(encode(&qinv.to_biguint().ok_or_else(|| VaultError::General("RSA CRT coefficient is negative".to_string()))?)),
-    };
-    serde_json::to_string(&jwk).map_err(VaultError::from)
 }
 
 #[cfg(test)]

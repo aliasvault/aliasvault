@@ -3,8 +3,8 @@
 use p256::ecdsa::signature::Signer;
 use p256::ecdsa::{Signature, SigningKey};
 use p256::pkcs8::EncodePublicKey;
-use rsa::traits::{PrivateKeyParts, PublicKeyParts};
-use rsa::{BigUint, Pkcs1v15Sign, RsaPrivateKey};
+use rsa::traits::PublicKeyParts;
+use rsa::{Pkcs1v15Sign, RsaPrivateKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
@@ -13,7 +13,7 @@ use super::cbor;
 use super::{ALG_ES256, ALG_RS256};
 use crate::common::encoding::{base64url_decode, base64url_encode};
 use crate::common::error::{VaultError, VaultResult};
-use crate::crypto::rsa_oaep::private_from_jwk;
+use crate::crypto::jwk::{rsa_private_from_jwk, rsa_private_to_jwk, rsa_public_to_jwk};
 
 const RSA_MODULUS_BITS: usize = 2048;
 
@@ -26,7 +26,7 @@ pub(super) struct GeneratedKey {
     pub cose_public_key: Vec<u8>,
 }
 
-/// The JWK of a passkey key, EC or RSA. Unknown members (WebCrypto's `alg`, `ext`, `key_ops`) are ignored on read.
+/// The JWK of an EC passkey key, also read for the `kty` of an RSA one. Unknown members are ignored on read.
 #[derive(Default, Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 struct PasskeyJwk {
     #[serde(default)]
@@ -38,21 +38,7 @@ struct PasskeyJwk {
     #[serde(skip_serializing_if = "Option::is_none")]
     y: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    n: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    e: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     d: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    p: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    q: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    dp: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    dq: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    qi: Option<String>,
 }
 
 /// Generate a key pair for a COSE algorithm the authenticator supports.
@@ -69,7 +55,7 @@ pub(super) fn sign(private_key_jwk: &str, data: &[u8]) -> VaultResult<Vec<u8>> {
     let jwk: PasskeyJwk = serde_json::from_str(private_key_jwk).map_err(|e| VaultError::General(format!("Invalid passkey JWK: {e}")))?;
     match jwk.kty.as_str() {
         "RSA" => {
-            let key = private_from_jwk(private_key_jwk)?;
+            let key = rsa_private_from_jwk(private_key_jwk)?;
             let digest = Sha256::digest(data);
             key.sign(Pkcs1v15Sign::new::<Sha256>(), &digest).map_err(|e| VaultError::General(format!("RS256 signing failed: {e}")))
         }
@@ -106,26 +92,12 @@ fn generate_es256() -> VaultResult<GeneratedKey> {
 
 fn generate_rs256() -> VaultResult<GeneratedKey> {
     let key = RsaPrivateKey::new(&mut rand_core06::OsRng, RSA_MODULUS_BITS).map_err(|e| VaultError::General(format!("RSA key generation failed: {e}")))?;
-    let primes = key.primes();
-    let qinv = key.qinv().and_then(|qinv| qinv.to_biguint()).ok_or_else(|| VaultError::General("RSA key has no CRT coefficient".to_string()))?;
     let (n, e) = (key.n().to_bytes_be(), key.e().to_bytes_be());
-
-    let mut public = PasskeyJwk::default();
-    public.kty = "RSA".into();
-    public.n = Some(base64url_encode(&n));
-    public.e = Some(base64url_encode(&e));
-    let mut private = public.clone();
-    private.d = Some(encode(key.d()));
-    private.p = Some(encode(&primes[0]));
-    private.q = Some(encode(&primes[1]));
-    private.dp = key.dp().map(encode);
-    private.dq = key.dq().map(encode);
-    private.qi = Some(encode(&qinv));
 
     // COSE_Key RSA (RFC 8230): {1: 3 (kty RSA), 3: -257 (alg RS256), -1: n, -2: e}
     let cose_public_key = cbor::map(&[(cbor::int(1), cbor::int(3)), (cbor::int(3), cbor::int(ALG_RS256)), (cbor::int(-1), cbor::bytes(&n)), (cbor::int(-2), cbor::bytes(&e))]);
     let public_key_spki = key.to_public_key().to_public_key_der().map_err(|e| VaultError::General(format!("RSA SPKI encoding failed: {e}")))?.into_vec();
-    Ok(GeneratedKey { public_key_jwk: to_json(&public)?, public_key_spki, private_key_jwk: to_json(&private)?, cose_public_key })
+    Ok(GeneratedKey { public_key_jwk: rsa_public_to_jwk(&key.to_public_key(), None)?, public_key_spki, private_key_jwk: rsa_private_to_jwk(&key, None)?, cose_public_key })
 }
 
 /// The P-256 signing key of a private scalar, left-padded to 32 bytes: some stored JWKs dropped leading zero bytes.
@@ -136,10 +108,6 @@ fn signing_key_from_scalar(d: &[u8]) -> VaultResult<SigningKey> {
     let mut padded = Zeroizing::new([0u8; 32]);
     padded[32 - d.len()..].copy_from_slice(d);
     SigningKey::from_bytes(padded.as_slice().into()).map_err(|_| VaultError::General("Invalid P-256 private key".to_string()))
-}
-
-fn encode(value: &BigUint) -> String {
-    base64url_encode(&Zeroizing::new(value.to_bytes_be()))
 }
 
 fn to_json(jwk: &PasskeyJwk) -> VaultResult<String> {
