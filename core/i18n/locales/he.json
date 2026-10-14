@@ -1025,6 +1025,7 @@
     "passwordCopied": "הסיסמה הועתקה",
     "passwordUnlockError": "אימות הסיסמה נכשל",
     "pinConfirmSubtitle": "נא למלא את הקוד האישי שלך מחדש לאישור",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "קוד אישי שגוי, נותרו {{count}} ניסיונות",
     "pinLockedMaxAttempts": "הקוד האישי ננעל אחרי יותר מדי ניסיונות כושלים",
     "pinMismatch": "הקודים האישיים לא תואמים. נא לנסות שוב.",
