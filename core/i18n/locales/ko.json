@@ -1025,6 +1025,7 @@
     "passwordCopied": "비밀번호를 복사했습니다",
     "passwordUnlockError": "비밀번호를 확인하지 못했습니다",
     "pinConfirmSubtitle": "확인을 위해 PIN을 다시 입력하세요",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Incorrect PIN. {{count}} attempts remaining",
     "pinLockedMaxAttempts": "시도 횟수 초과로 PIN이 잠겼습니다",
     "pinMismatch": "PIN이 일치하지 않습니다. 다시 시도하세요.",
