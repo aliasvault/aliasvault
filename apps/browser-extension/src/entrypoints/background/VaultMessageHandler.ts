@@ -650,8 +650,13 @@ export async function createVaultSqliteClient() : Promise<SqliteClient> {
     return cachedSqliteClient;
   }
 
-  // Decrypt the vault
-  const decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
+  let decryptedVault: Uint8Array;
+  try {
+    decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
+  } catch {
+    // E-203: the stored vault does not decrypt with the session key
+    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED));
+  }
 
   // Initialize the SQLite client with the decrypted vault
   const sqliteClient = new SqliteClient();

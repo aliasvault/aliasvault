@@ -88,6 +88,15 @@ export class VaultKeyService {
     }
 
     const keys = await VaultKeyService.openChain(unlockKeyBase64, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
+
+    /*
+     * A device holding a vault under its unlock key but no chain yet (the account was upgraded on another device) stays
+     * a legacy session: its first sync caches the chain and re-encrypts the stored vault under the VEK in one step.
+     */
+    if (keys.accountKey !== unlockKeyBase64 && !await VaultKeyService.hasLocalVaultKey() && await getPlatform().storage.get(StorageKeys.ENCRYPTED_VAULT) !== null) {
+      return unlockKeyBase64;
+    }
+
     await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
     return keys.accountKey;
   }

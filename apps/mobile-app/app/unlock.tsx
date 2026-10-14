@@ -1,5 +1,6 @@
 import { AppErrorCode, formatErrorWithCode, getAppErrorCode, getErrorTranslationKey } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,6 +32,19 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  */
 async function unlockErrorMessage(err: unknown, t: (key: string) => string): Promise<string> {
   return formatErrorMessage(await describeAuthError(err, { uncodedIsWrongPassword: true }), t);
+}
+
+/**
+ * Log out when the key chain opened but the stored vault did not decrypt; the next login pulls the vault again.
+ * @param err - the thrown error
+ * @returns Whether a logout was started.
+ */
+async function logoutOnUnreadableVault(err: unknown): Promise<boolean> {
+  if (getAppErrorCode(err) !== AppErrorCode.VAULT_DECRYPT_FAILED || await NativeVaultManager.getAccountKeyChain() === null) {
+    return false;
+  }
+  logoutEventEmitter.emit('common.errors.sessionExpired');
+  return true;
 }
 
 /**
@@ -145,6 +159,10 @@ export default function UnlockScreen() : React.ReactNode {
             return;
           }
 
+          if (await logoutOnUnreadableVault(err)) {
+            return;
+          }
+
           // Check if max attempts reached
           if (err && typeof err === 'object' && 'code' in err && err.code === 'MAX_ATTEMPTS_REACHED') {
             // Max attempts reached - vault has been cleared, force logout
@@ -226,6 +244,10 @@ export default function UnlockScreen() : React.ReactNode {
         return;
       }
 
+      if (await logoutOnUnreadableVault(err)) {
+        return;
+      }
+
       // Check if max attempts reached
       if (err && typeof err === 'object' && 'code' in err && err.code === 'MAX_ATTEMPTS_REACHED') {
         // Max attempts reached - vault has been cleared, force logout
@@ -266,8 +288,8 @@ export default function UnlockScreen() : React.ReactNode {
       }
       // Not unlocked means user cancelled - return false but don't show error
       return false;
-    } catch {
-      return false;
+    } catch (err) {
+      return logoutOnUnreadableVault(err);
     }
   }, [dbContext]);
 
@@ -300,6 +322,10 @@ export default function UnlockScreen() : React.ReactNode {
       router.replace('/reinitialize');
     } catch (err) {
       console.error('Biometric retry error:', err);
+
+      if (await logoutOnUnreadableVault(err)) {
+        return;
+      }
 
       // Check if this is a cancellation - don't show error, just allow retry
       const errorCode = getAppErrorCode(err);
