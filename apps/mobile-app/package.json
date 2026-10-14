@@ -1,7 +1,7 @@
 {
   "name": "aliasvault-mobile-app",
   "main": "expo-router/entry",
-  "version": "0.32.0",
+  "version": "0.31.1",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",

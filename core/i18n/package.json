@@ -1,6 +1,6 @@
 {
     "name": "@aliasvault/i18n",
-    "version": "0.32.0",
+    "version": "0.31.1",
     "description": "Translations shared by the AliasVault web app, browser extension and mobile app.",
     "type": "module",
     "private": true,
