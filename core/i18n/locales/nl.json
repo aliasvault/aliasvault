@@ -1025,7 +1025,7 @@
     "passwordCopied": "Wachtwoord gekopieerd",
     "passwordUnlockError": "Verifiëren wachtwoord mislukt",
     "pinConfirmSubtitle": "Voer je pincode opnieuw in om te bevestigen",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Je apparaat heeft niet bevestigd dat het is ontgrendeld. Vergrendel je apparaat, ontgrendel het met je pincode of wachtwoord en probeer het opnieuw.",
     "pinIncorrectAttemptsRemaining": "Onjuiste pincode, {{count}} pogingen resterend",
     "pinLockedMaxAttempts": "Pincode vergrendeld na te veel mislukte pogingen",
     "pinMismatch": "Pincodes komen niet overeen. Probeer het opnieuw.",
