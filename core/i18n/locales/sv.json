@@ -360,7 +360,7 @@
       "title": "Spara till AliasVault?"
     },
     "vaultLocked": "AliasVault är låst.",
-    "vaultUpgradeRequired": "Uppgradering av valv krävs."
+    "vaultUpgradeRequired": "Uppgradering av valvet krävs."
   },
   "emails": {
     "date": "Datum:",
@@ -368,9 +368,9 @@
     "deleteEmail": "Radera e-post",
     "deleteEmailConfirm": "Är du säker på att du vill ta bort detta e-postmeddelande? Denna åtgärd är permanent och kan inte ångras.",
     "emailContent": "E-postinnehåll",
-    "emailDetails": "E-post Detaljer",
-    "emailNotFound": "E-postmeddelande hittades inte",
-    "emptyMessage": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
+    "emailDetails": "E-postdetaljer",
+    "emailNotFound": "E-postmeddelandet hittades inte",
+    "emptyMessage": "Du har inte fått några e-postmeddelanden till dina privata e-postadresser än. När du får ett nytt e-postmeddelande visas det här.",
     "formatHtml": "HTML",
     "formatPlain": "Text",
     "formatSource": "Källa",
