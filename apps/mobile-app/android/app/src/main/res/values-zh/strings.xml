@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">确认 PIN</string>
   <string name="pin_confirm_description">重新输入您的 PIN 以确认</string>
   <string name="pin_mismatch">PIN 不匹配，请重试。</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">解锁密码库</string>
   <string name="password_unlock_subtitle">输入您的主密码</string>
   <string name="password_unlock_password_hint">密码</string>

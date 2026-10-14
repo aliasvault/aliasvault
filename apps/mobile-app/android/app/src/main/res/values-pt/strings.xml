@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Confirmar PIN</string>
   <string name="pin_confirm_description">Digite seu PIN novamente para confirmar</string>
   <string name="pin_mismatch">PINs não correspondem. Por favor, tente novamente.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Desbloquear cofre</string>
   <string name="password_unlock_subtitle">Digite sua senha mestre</string>
   <string name="password_unlock_password_hint">Senha</string>

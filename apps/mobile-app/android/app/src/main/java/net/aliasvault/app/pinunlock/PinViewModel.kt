@@ -1,6 +1,7 @@
 package net.aliasvault.app.pinunlock
 
 import android.content.Context
+import android.security.keystore.UserNotAuthenticatedException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.R
@@ -82,10 +83,7 @@ class PinViewModel(
                 }
             }
         } catch (e: Exception) {
-            PinResult.Error(
-                e.message ?: context.getString(R.string.unknown_error),
-                shouldClear = true,
-            )
+            PinResult.Error(errorMessage(e) ?: context.getString(R.string.unknown_error), shouldClear = true)
         }
     }
 
@@ -140,13 +138,20 @@ class PinViewModel(
                     vaultStore.setupPin(pin, setupAccountKey)
                     PinResult.Success(null)
                 } catch (e: Exception) {
-                    PinResult.Error(
-                        e.message ?: "Failed to setup PIN",
-                        shouldClear = false,
-                    )
+                    PinResult.Error(errorMessage(e) ?: "Failed to setup PIN", shouldClear = false)
                 }
             }
         }
+    }
+
+    /**
+     * The message to show for a PIN error, with a readable one when the Android Keystore refuses its key on a device it sees as locked.
+     */
+    private fun errorMessage(e: Exception): String? {
+        if (generateSequence<Throwable>(e) { it.cause }.any { it is UserNotAuthenticatedException }) {
+            return context.getString(R.string.pin_device_not_unlocked)
+        }
+        return e.message
     }
 
     /**

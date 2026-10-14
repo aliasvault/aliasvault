@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Potwierdź kod PIN</string>
   <string name="pin_confirm_description">Wprowadź ponownie swój kod PIN, aby potwierdzić</string>
   <string name="pin_mismatch">Kody PIN nie pasują. Spróbuj jeszcze raz.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Odblokuj sejf</string>
   <string name="password_unlock_subtitle">Wprowadź swoje hasło główne</string>
   <string name="password_unlock_password_hint">Hasło</string>

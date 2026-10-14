@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Confirmă PIN</string>
   <string name="pin_confirm_description">Reintrodu PIN-ul pentru confirmare</string>
   <string name="pin_mismatch">Codurile PIN nu coincid. Încearcă din nou.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Deblochează seiful</string>
   <string name="password_unlock_subtitle">Introdu parola principală</string>
   <string name="password_unlock_password_hint">Parolă</string>

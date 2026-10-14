@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Konfirmasi PIN</string>
   <string name="pin_confirm_description">Masukkan kembali PIN untuk mengonfirmasi</string>
   <string name="pin_mismatch">PIN tidak cocok. Mohon coba lagi.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Buka Brankas</string>
   <string name="password_unlock_subtitle">Masukkan kata sandi utama Anda</string>
   <string name="password_unlock_password_hint">Kata sandi</string>

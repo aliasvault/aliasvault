@@ -227,6 +227,7 @@
         "pin_confirm_title": "settings.unlockMethod.confirmPin",
         "pin_confirm_description": "native.pinConfirmSubtitle",
         "pin_mismatch": "native.pinMismatch",
+        "pin_device_not_unlocked": "native.pinDeviceNotUnlocked",
         "password_unlock_title": "auth.unlockVault",
         "password_unlock_subtitle": "auth.setup.passwordStep.masterPasswordPlaceholder",
         "password_unlock_password_hint": "common.password",

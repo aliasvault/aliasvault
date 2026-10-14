@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">PIN 확인</string>
   <string name="pin_confirm_description">확인을 위해 PIN을 다시 입력하세요</string>
   <string name="pin_mismatch">PIN이 일치하지 않습니다. 다시 시도하세요.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">보관함 잠금 해제</string>
   <string name="password_unlock_subtitle">마스터 비밀번호 입력</string>
   <string name="password_unlock_password_hint">비밀번호</string>
