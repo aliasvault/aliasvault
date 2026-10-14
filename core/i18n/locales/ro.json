@@ -1025,6 +1025,7 @@
     "passwordCopied": "Parolă copiată",
     "passwordUnlockError": "Verificarea parolei a eșuat",
     "pinConfirmSubtitle": "Reintrodu PIN-ul pentru confirmare",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "PIN incorect. Mai ai {{count}} încercări",
     "pinLockedMaxAttempts": "PIN blocat după prea multe încercări eșuate",
     "pinMismatch": "Codurile PIN nu coincid. Încearcă din nou.",

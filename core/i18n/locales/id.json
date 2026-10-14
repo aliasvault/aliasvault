@@ -1025,6 +1025,7 @@
     "passwordCopied": "Kata sandi tersalin",
     "passwordUnlockError": "Gagal memverifikasi kata sandi",
     "pinConfirmSubtitle": "Masukkan kembali PIN untuk mengonfirmasi",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "PIN salah. Tersisa {{count}} kali percobaan",
     "pinLockedMaxAttempts": "PIN terkunci setelah terlalu banyak upaya yang gagal",
     "pinMismatch": "PIN tidak cocok. Mohon coba lagi.",
