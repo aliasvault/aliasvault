@@ -1025,6 +1025,7 @@
     "passwordCopied": "Adgangskode kopieret",
     "passwordUnlockError": "Kunne ikke bekræfte adgangskode",
     "pinConfirmSubtitle": "Indtast din PIN-kode igen for at bekræfte",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Forkert PIN-kode. {{count}} forsøg tilbage",
     "pinLockedMaxAttempts": "PIN-kode låst efter for mange mislykkede forsøg",
     "pinMismatch": "PIN-koderne stemmer ikke overens. Prøv venligst igen.",
