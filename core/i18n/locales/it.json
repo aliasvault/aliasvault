@@ -1025,7 +1025,7 @@
     "passwordCopied": "Password copiata",
     "passwordUnlockError": "Verifica della password non riuscita",
     "pinConfirmSubtitle": "Reinserisci il tuo PIN per confermare.",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Il dispositivo non ha confermato che è stato sbloccato. Blocca il dispositivo, sbloccarlo con il PIN, la sequenza o la password del dispositivo e riprova.",
     "pinIncorrectAttemptsRemaining": "PIN errato, {{count}} tentativi rimasti",
     "pinLockedMaxAttempts": "PIN bloccato dopo troppi tentativi falliti",
     "pinMismatch": "I PIN non corrispondono. Riprova.",
