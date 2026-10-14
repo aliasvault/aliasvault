@@ -1,0 +1,3 @@
+- Mogelijke inlogproblemen verholpen na het upgraden van je vault op een ander apparaat.
+- Duidelijkere foutmeldingen bij het instellen van een pincode op Android.
+- Vertalingen bijgewerkt.

@@ -1,0 +1,2 @@
+- Fix potential login issues after upgrading your vault on another device.
+- Updated translations
