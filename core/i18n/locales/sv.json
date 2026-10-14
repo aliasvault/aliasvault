@@ -133,47 +133,47 @@
     "masterPassword": "Huvudlösenord",
     "maxAttemptsReached": "För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl.",
     "mobileUnlock": {
-      "scanQrCodeDescription": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv."
+      "scanQrCodeDescription": "Skanna den här QR-koden med AliasVault-mobilappen för att logga in och låsa upp ditt valv."
     },
-    "mobileUnlockVerificationCode": "När appen ber om det, mata in detta nummer.",
+    "mobileUnlockVerificationCode": "När appen ber om det, ange det här numret.",
     "noAccountYet": "Inget konto än?",
-    "passwordAttemptsWarning": "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord {{remainingAttempts}} gång(er) till.",
+    "passwordAttemptsWarning": "Felaktigt lösenord. Antal återstående försök innan du loggas ut: {{remainingAttempts}}.",
     "passwordPlaceholder": "Ange ditt lösenord",
     "pinInput": "PIN Inmatning",
     "register": {
       "passwordLabel": "Ditt lösenord",
       "passwordPlaceholder": "••••••••",
       "registrationErrorMessage": "Ett fel inträffade under registreringen.",
-      "termsAndConditionsLink": "Användarvillkoren",
+      "termsAndConditionsLink": "Användarvillkor",
       "usernameOrEmailLabel": "Ditt användarnamn eller e-postadress"
     },
     "rememberMe": "Förbli inloggad",
     "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv.",
     "setup": {
       "createAccountButton": "Skapa konto",
-      "creatingStepTitle": "Skapa valv",
+      "creatingStepTitle": "Skapar valv",
       "passwordStep": {
         "confirmMasterPasswordLabel": "Bekräfta huvudlösenord",
         "confirmMasterPasswordPlaceholder": "Bekräfta ditt huvudlösenord",
-        "importantNote": "Viktigt: Detta huvudlösenord kommer att användas för att kryptera ditt valv. Det bör vara en lång, komplex sträng som du kan komma ihåg. Om du glömmer detta lösenord kommer dina data bli permanent otillgängliga.",
+        "importantNote": "Viktigt: Detta huvudlösenord kommer att användas för att kryptera ditt valv. Det bör vara en lång, komplex sträng som du kan komma ihåg. Om du glömmer lösenordet kommer du permanent att förlora åtkomsten till dina data.",
         "masterPasswordPlaceholder": "Ange ditt huvudlösenord",
         "securityPoint1": "Ditt huvudlösenord lämnar aldrig din enhet",
         "securityPoint2": "Servern har ingen åtkomst till dina okrypterade data",
         "securityPoint3": "Inte ens serveradministratören kan återställa din åtkomst om du glömmer bort detta lösenord",
         "welcomeMessage": "Bra! Låt oss nu ställa in ditt huvudlösenord för AliasVault."
       },
-      "passwordStepTitle": "Ange lösenord",
+      "passwordStepTitle": "Ställ in lösenord",
       "registrationDisabledMessage": "Nya konton kan endast skapas med en inbjudningslänk. Be serveradministratören om en inbjudan.",
       "registrationDisabledTitle": "Användarregistrering är inaktiverad",
-      "setupStepTitle": "Setup",
+      "setupStepTitle": "Konfiguration",
       "termsAgreementLabel": "Jag har läst och godkänner <termsLink>användarvillkoren</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
-        "enterUsernameInstructions": "Ange ett användarnamn som du vill använda. Detta kan vara din e-postadress eller något unikt namn du föredrar.",
+        "enterUsernameInstructions": "Ange ett användarnamn som du vill använda. Detta kan vara din e-postadress eller ett valfritt unikt namn.",
         "rememberUsernameNote": "Kom ihåg: Detta är vad du använder för att logga in senare, så se till att det är något du kommer ihåg!",
         "serverCommunicationError": "Ett fel uppstod vid kommunikation med AliasVault-servern.",
         "usernamePlaceholder": "Ange önskat användarnamn eller e-postadress",
-        "validatingUsernameMessage": "Validerar användarnamn...",
+        "validatingUsernameMessage": "Kontrollerar användarnamn...",
         "welcomeMessage": "Välkommen! Låt oss börja med att välja ett användarnamn för ditt konto."
       },
       "usernameStepTitle": "Välj användarnamn"
