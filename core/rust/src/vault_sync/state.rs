@@ -31,6 +31,8 @@ pub(crate) struct Ctx {
     pub vault_key_probed: bool,
     pub served_manifest_names: HashMap<String, String>,
     has_local_vault: bool,
+    /// The stored vault did not decrypt with the session key, so this run treats it as absent until a store replaces it.
+    local_vault_discarded: bool,
     /// The VEK of every shared manifest this account holds a grant on, unwrapped once per run.
     shared_veks: Mutex<Option<HashMap<String, String>>>,
 }
@@ -58,18 +60,28 @@ impl Ctx {
             vault_key_probed: false,
             served_manifest_names: HashMap::new(),
             has_local_vault: false,
+            local_vault_discarded: false,
             shared_veks: Mutex::new(None),
             host,
             request,
         }
     }
 
-    /// Whether the host holds an at-rest vault.
+    /// Whether the host holds an at-rest vault this run has not discarded.
     pub async fn has_local_vault(&mut self) -> SyncResult<bool> {
+        if self.local_vault_discarded {
+            return Ok(false);
+        }
         if !self.has_local_vault {
             self.has_local_vault = load_vault(&self.host).await?.is_some();
         }
         Ok(self.has_local_vault)
+    }
+
+    /// Treat the stored vault as absent for the rest of this run; the next successful store replaces it.
+    pub fn discard_local_vault(&mut self) {
+        self.local_vault_discarded = true;
+        self.has_local_vault = false;
     }
 
     /// The session's vault encryption key, or the locked-vault error.
@@ -83,9 +95,26 @@ impl Ctx {
         self.encryption_key = Some(key);
     }
 
-    /// Persist the at-rest vault blob.
-    pub async fn store_vault(&self, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
-        store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.new_encryption_key.clone()).await
+    /// Persist the at-rest vault blob; a successful store replaces a discarded one.
+    pub async fn store_vault(&mut self, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
+        let stored = store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.new_encryption_key.clone()).await?;
+        if stored.success {
+            self.local_vault_discarded = false;
+        }
+        Ok(stored)
+    }
+
+    /// Re-read a failed local database command as `VaultDecryptFailed` when the stored vault does not decrypt with the session key.
+    pub async fn diagnose_local_vault_failure(&self, error: SyncError) -> SyncError {
+        if !matches!(error, SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) {
+            return error;
+        }
+        let (Some(key), Ok(Some(blob))) = (self.encryption_key.as_deref(), load_vault(&self.host).await) else { return error };
+        match decrypt_vault_blob(&blob, key) {
+            Ok(_) => error,
+            Err(decrypt @ SyncError::VaultDecryptFailed(_)) => decrypt,
+            Err(other) => SyncError::VaultDecryptFailed(other.to_string()),
+        }
     }
 
     /// Write the local database as the at-rest vault under the session key. `dirty` records it as a pending change

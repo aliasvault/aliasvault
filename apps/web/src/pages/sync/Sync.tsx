@@ -1,4 +1,6 @@
+import { AppErrorCode, getAppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { syncErrorMessage, syncErrorReport } from '@aliasvault/client/sync/SyncErrorMessage';
 import { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -112,6 +114,12 @@ const Sync: React.FC = () => {
         setStatus('version-unrecognized');
         return;
       }
+      if (getAppErrorCode(error) === AppErrorCode.VAULT_DECRYPT_FAILED && await VaultKeyService.hasLocalVaultKey()) {
+        // The key chain opened but the stored vault does not decrypt; the next login pulls the vault again.
+        await auth.logout({ errorMessage: t('common.errors.sessionExpired') });
+        navigate('/user/login', { replace: true });
+        return;
+      }
       setErrorDetails(error instanceof Error ? error.message : String(error));
       setStatus('decryption-failed');
       return;
@@ -123,7 +131,7 @@ const Sync: React.FC = () => {
     }
 
     await navigateToHome();
-  }, [dbContext, navigateToHome, t]);
+  }, [auth, dbContext, navigate, navigateToHome, t]);
 
   /**
    * Pull the vault when none is stored yet (right after login), then open it.

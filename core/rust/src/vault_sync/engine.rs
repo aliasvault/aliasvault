@@ -94,8 +94,27 @@ async fn full_sync_operation(ctx: &mut Ctx) -> FullSyncResult {
 /// Full vault sync, re-running itself when a mutation raced a store or the server refused a push as outdated.
 pub(crate) async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
     let mut outdated_resyncs = 0u32;
+    let mut dropped_local_vault = false;
     loop {
-        match full_sync_once(ctx).await? {
+        let flow = match full_sync_once(ctx).await {
+            Ok(flow) => flow,
+            Err(error) => {
+                let error = ctx.diagnose_local_vault_failure(error).await;
+                if dropped_local_vault || !matches!(error, SyncError::VaultDecryptFailed(_)) {
+                    return Err(error);
+                }
+                // A stored vault that does not decrypt is useless to every reader, so it is dropped and the server's vault pulled over it, once.
+                ctx.warn(format!("[Sync] The stored vault does not decrypt with the session key; dropping it and pulling the server's vault. {}", error)).await;
+                dropped_local_vault = true;
+                ctx.discard_local_vault();
+                if ctx.is_dirty && state::mark_clean(&ctx.host, ctx.mutation_sequence).await? {
+                    ctx.is_dirty = false;
+                }
+                ctx.request.force_pull = true;
+                continue;
+            }
+        };
+        match flow {
             Flow::Done(result) => return Ok(result),
             Flow::Resync { outdated } => {
                 if outdated {

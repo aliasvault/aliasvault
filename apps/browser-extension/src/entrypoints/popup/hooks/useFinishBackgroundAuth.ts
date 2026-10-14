@@ -1,5 +1,7 @@
+import { AppErrorCode, getAppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +37,11 @@ export function useFinishBackgroundAuth(): (offline: boolean) => Promise<string 
     } catch (err) {
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(err.message);
+        return null;
+      }
+      if (getAppErrorCode(err) === AppErrorCode.VAULT_DECRYPT_FAILED && await VaultKeyService.hasLocalVaultKey()) {
+        // The key chain opened but the stored vault does not decrypt; the next login pulls the vault again.
+        await app.logout(t('common.errors.sessionExpired'));
         return null;
       }
       logFailure('Loading the unlocked vault failed', err);
