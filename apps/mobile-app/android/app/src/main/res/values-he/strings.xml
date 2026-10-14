@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">אישור קוד אישי</string>
   <string name="pin_confirm_description">נא למלא את הקוד האישי שלך מחדש לאישור</string>
   <string name="pin_mismatch">הקודים האישיים לא תואמים. נא לנסות שוב.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">שחרור נעילת כספת</string>
   <string name="password_unlock_subtitle">נא למלא את סיסמת העל שלך</string>
   <string name="password_unlock_password_hint">סיסמה</string>

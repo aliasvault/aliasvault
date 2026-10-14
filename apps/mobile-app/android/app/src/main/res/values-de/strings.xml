@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">PIN bestätigen</string>
   <string name="pin_confirm_description">Zur Bestätigung PIN erneut eingeben</string>
   <string name="pin_mismatch">PINs stimmen nicht überein. Bitte versuche es erneut.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Tresor entsperren</string>
   <string name="password_unlock_subtitle">Gib Dein Master-Passwort ein</string>
   <string name="password_unlock_password_hint">Passwort</string>

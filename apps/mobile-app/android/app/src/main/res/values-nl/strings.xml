@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Bevestig pincode</string>
   <string name="pin_confirm_description">Voer je pincode opnieuw in om te bevestigen</string>
   <string name="pin_mismatch">Pincodes komen niet overeen. Probeer het opnieuw.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Vault ontgrendelen</string>
   <string name="password_unlock_subtitle">Voer je hoofdwachtwoord in</string>
   <string name="password_unlock_password_hint">Wachtwoord</string>

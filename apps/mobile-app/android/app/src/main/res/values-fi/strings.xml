@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Vahvista PIN</string>
   <string name="pin_confirm_description">Syötä PIN-koodi uudelleen vahvistaaksesi</string>
   <string name="pin_mismatch">PIN-koodit eivät täsmää. Yritä uudelleen.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Avaa holvin lukitus</string>
   <string name="password_unlock_subtitle">Syötä pääsalasanasi</string>
   <string name="password_unlock_password_hint">Salasana</string>

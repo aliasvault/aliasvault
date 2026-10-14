@@ -79,6 +79,7 @@
   <string name="pin_confirm_title">Підтвердити ПІН-код</string>
   <string name="pin_confirm_description">Введіть PIN-код ще раз для підтвердження</string>
   <string name="pin_mismatch">PIN-коди не збігаються. Спробуйте ще раз.</string>
+  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
   <string name="password_unlock_title">Розблокувати Vault</string>
   <string name="password_unlock_subtitle">Введіть ваш головний пароль</string>
   <string name="password_unlock_password_hint">Пароль</string>
