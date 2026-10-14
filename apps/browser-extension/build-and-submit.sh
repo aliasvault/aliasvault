@@ -111,7 +111,7 @@ publish_chrome() {
     echo "   Run with build option, or 'npm run zip:chrome' first."
     return 1
   fi
-  for v in CHROME_EXTENSION_ID CHROME_CLIENT_ID CHROME_CLIENT_SECRET CHROME_REFRESH_TOKEN; do
+  for v in CHROME_EXTENSION_ID CHROME_PUBLISHER_ID CHROME_CLIENT_ID CHROME_CLIENT_SECRET CHROME_REFRESH_TOKEN; do
     if [ -z "${!v}" ]; then
       echo "❌ $v is empty in $ENV_FILE"
       return 1
@@ -121,13 +121,9 @@ publish_chrome() {
   echo ""
   echo "📤 Publishing to Chrome Web Store…"
   local chrome_exit=0
-  npx -y chrome-webstore-upload-cli@3 upload \
-    --source "$zip" \
-    --extension-id "$CHROME_EXTENSION_ID" \
-    --client-id "$CHROME_CLIENT_ID" \
-    --client-secret "$CHROME_CLIENT_SECRET" \
-    --refresh-token "$CHROME_REFRESH_TOKEN" \
-    --auto-publish || chrome_exit=$?
+  EXTENSION_ID="$CHROME_EXTENSION_ID" PUBLISHER_ID="$CHROME_PUBLISHER_ID" CLIENT_ID="$CHROME_CLIENT_ID" \
+    CLIENT_SECRET="$CHROME_CLIENT_SECRET" REFRESH_TOKEN="$CHROME_REFRESH_TOKEN" \
+    npx -y chrome-webstore-upload-cli@4 --source "$zip" || chrome_exit=$?
 
   if [ $chrome_exit -ne 0 ]; then
     echo "❌ Chrome upload failed (chrome-webstore-upload-cli exit code $chrome_exit)"
