@@ -1025,6 +1025,7 @@
     "passwordCopied": "Lösenord kopierat",
     "passwordUnlockError": "Kunde inte verifiera lösenord",
     "pinConfirmSubtitle": "Ange din PIN-kod igen för att bekräfta",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Felaktig PIN-kod. {{count}} försök återstår",
     "pinLockedMaxAttempts": "PIN-koden låst efter för många misslyckade försök",
     "pinMismatch": "PIN-koderna matchar inte. Var god försök igen.",
