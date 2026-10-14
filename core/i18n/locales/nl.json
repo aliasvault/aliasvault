@@ -1438,7 +1438,7 @@
       "twoFactor": {
         "disabledMessage": "Tweestapsverificatie is momenteel uitgeschakeld. Om de beveiliging van je account te verbeteren raden wij je aan dit in te schakelen.",
         "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld.",
-        "notEnabledWarning": "Je vault is momenteel alleen toegankelijk via je hoofdwachtwoord. We raden je aan om tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
+        "notEnabledWarning": "Je vault is momenteel toegankelijk met alleen je hoofdwachtwoord. We raden je aan om ook tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
       }
     },
     "selectLanguage": "Selecteer taal",
