@@ -1025,6 +1025,7 @@
     "passwordCopied": "Salasana kopioitu",
     "passwordUnlockError": "Failed to verify password",
     "pinConfirmSubtitle": "Syötä PIN-koodi uudelleen vahvistaaksesi",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Virheellinen PIN, {{count}} yritystä jäljellä",
     "pinLockedMaxAttempts": "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen",
     "pinMismatch": "PIN-koodit eivät täsmää. Yritä uudelleen.",
