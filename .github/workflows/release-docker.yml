@@ -128,50 +128,21 @@ jobs:
           done
           echo "multi_container_exists=${MULTI_EXISTS}" >> $GITHUB_OUTPUT
 
-  # The Client image takes the longest time to build, so we build it in its own job instead of a matrix slot,
-  # as jobs in a matrix are queued at once and picked up in an order we don't control, making the full build run
-  # longer than it needs to be.
-  build-and-push-docker-client:
+  # Head start for the all-in-one build, by far the longest job, so it and not one of the multi-container
+  # images claims a runner first; jobs that queue at once are picked up in an order we don't control.
+  stagger-multi-container:
     needs: [valid-release, detect-version]
-    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
-    runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Build and push Client image
-        uses: ./.github/actions/build-docker-image
-        with:
-          image: client
-          dockerfile: apps/web/Dockerfile
-          title: AliasVault Client
-          description: React web client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          version: ${{ needs.detect-version.outputs.version }}
-          tag_latest: ${{ needs.detect-version.outputs.tag_latest }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          runner_environment: ${{ runner.environment }}
-
-  # Head start for the two heavy builds (Client and all-in-one) so they, and not the cheap images,
-  # claim the runners first.
-  stagger-light-images:
-    needs: [valid-release, detect-version]
-    if: always() && github.repository == 'aliasvault/aliasvault' && inputs.runner == 'self-hosted' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    if: always() && github.repository == 'aliasvault/aliasvault' && inputs.runner == 'self-hosted' && inputs.build_all_in_one && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Let the heavy builds claim a runner first
+      - name: Let the all-in-one build claim a runner first
         run: sleep 60
 
   build-and-push-docker-multi-container:
-    # stagger-light-images is only in "needs" for its ordering effect: this job waits for it to finish
+    # stagger-multi-container is only in "needs" for its ordering effect: this job waits for it to finish
     # regardless of its outcome (the "always()" below), it does not gate whether these images build.
-    # It is skipped entirely on GitHub-hosted runs, which is also fine -- always() ignores that too.
-    needs: [valid-release, detect-version, stagger-light-images]
+    needs: [valid-release, detect-version, stagger-multi-container]
     # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
     if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
@@ -181,16 +152,16 @@ jobs:
     strategy:
       # Don't cancel the other images if one fails.
       fail-fast: false
-      # On GitHub-hosted runners: cap at 1 concurrent runner slot, which together with the separate
-      # Client and all-in-one jobs keeps this workflow to 3 concurrent runners. This frees up the rest
-      # of the CI worker pool for other workflows.
+      # On GitHub-hosted runners: cap at 2 concurrent runner slots, which together with the separate
+      # all-in-one job keeps this workflow to 3 concurrent runners. This frees up the rest of the CI
+      # worker pool for other workflows.
       # On self-hosted: no meaningful cap, the size of our own "docker-build" runner pool is the
       # real limit, so let every image queue and fill whatever runners are free. This is what lets
-      # the pool pick these up the moment the Client or all-in-one job finishes, instead of leaving a
+      # the pool pick these up the moment another image or the all-in-one job finishes, instead of leaving a
       # runner idle. Each runner keeps its own persistent buildx cache, which carries the shared .NET
       # layers from one image to the next. The value is deliberately well above the number of matrix
       # entries so that adding an image never silently turns this into a real cap.
-      max-parallel: ${{ inputs.runner == 'self-hosted' && 32 || 1 }}
+      max-parallel: ${{ inputs.runner == 'self-hosted' && 32 || 2 }}
       matrix:
         include:
           - image: postgres
@@ -201,6 +172,10 @@ jobs:
             dockerfile: apps/server/AliasVault.Api/Dockerfile
             title: AliasVault API
             description: REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
+          - image: client
+            dockerfile: apps/web/Dockerfile
+            title: AliasVault Client
+            description: React web client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: admin
             dockerfile: apps/server/AliasVault.Admin/Dockerfile
             title: AliasVault Admin
