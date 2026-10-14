@@ -1025,6 +1025,7 @@
     "passwordCopied": "Пароль скопирован",
     "passwordUnlockError": "Не удалось проверить пароль",
     "pinConfirmSubtitle": "Введите PIN-код еще раз для подтверждения",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Неверный PIN-код. Осталось попыток: {{count}}",
     "pinLockedMaxAttempts": "ПИН-код заблокирован: слишком много попыток ввода",
     "pinMismatch": "PIN-коды не совпадают. Повторите попытку.",
