@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
+import { useRecordItemCopy } from '@/entrypoints/popup/hooks/useRecordItemCopy';
 import { ClipboardCopyService } from '@/entrypoints/popup/utils/ClipboardCopyService';
 
 import { logExpected } from '@/utils/Diagnostics';
@@ -37,6 +38,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
 }) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
+  const recordItemCopy = useRecordItemCopy();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -60,11 +62,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
       await sendMessage('CLIPBOARD_COPIED');
 
       // Record the use against the item this field belongs to, where one is known.
-      if (itemId && manifestId) {
-        sendMessage('RECORD_ITEM_USAGE', { itemId, manifestId, action: 'copy' }).catch(() => {
-          // Ignore errors
-        });
-      }
+      recordItemCopy(itemId, manifestId);
 
       // Reset copied state after 2 seconds
       setTimeout(() => {

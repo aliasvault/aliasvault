@@ -7,6 +7,11 @@ import { sendMessage, type VaultBlobStoreOptions } from '@/utils/messaging/Exten
 const VAULT_BLOB_CHUNK_CHARS = 8 * 1024 * 1024;
 
 /**
+ * Identifies this extension page in the stores it makes, see VAULT_STORED.
+ */
+export const VAULT_STORE_SOURCE_ID = crypto.randomUUID();
+
+/**
  * Send an encrypted vault blob to the background in chunks and store it there. The last chunk carries the store options.
  * @param vaultBlob - the encrypted vault blob
  * @param options - how the background stores the blob
@@ -21,5 +26,5 @@ export async function storeEncryptedVault(vaultBlob: string, options: VaultBlobS
 
   const lastIndex = chunkCount - 1;
   // A chunk that carries the store options always gets the store result back, never null.
-  return (await sendMessage('STORE_ENCRYPTED_VAULT', { transferId, index: lastIndex, chunk: vaultBlob.slice(lastIndex * VAULT_BLOB_CHUNK_CHARS), commit: options }))!;
+  return (await sendMessage('STORE_ENCRYPTED_VAULT', { transferId, index: lastIndex, chunk: vaultBlob.slice(lastIndex * VAULT_BLOB_CHUNK_CHARS), commit: { ...options, sourceId: VAULT_STORE_SOURCE_ID } }))!;
 }

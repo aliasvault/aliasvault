@@ -738,6 +738,7 @@ export async function handleStoreEncryptedVault(request: {
   markDirty?: boolean;
   expectedMutationSeq?: number;
   scopes?: VaultMutationScope[];
+  sourceId?: string;
 }): Promise<{ success: boolean; mutationSequence: number }> {
   let mutationSequence = await storage.getItem(StorageKeys.MUTATION_SEQUENCE) as number | null ?? 0;
 
@@ -776,6 +777,8 @@ export async function handleStoreEncryptedVault(request: {
   // Clear cache since vault blob changed
   cachedSqliteClient = null;
   cachedVaultBlob = null;
+
+  sendMessage('VAULT_STORED', { sourceId: request.sourceId }).catch(() => {});
 
   return { success: true, mutationSequence };
 }

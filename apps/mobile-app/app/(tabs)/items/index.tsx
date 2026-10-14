@@ -307,10 +307,14 @@ export default function ItemsScreen(): React.ReactNode {
     const itemChangedSub = emitter.addListener('itemChanged', async () => {
       await loadItems();
     });
+    const itemUsedSub = emitter.addListener('itemUsed', async () => {
+      await loadItems();
+    });
 
     return (): void => {
       tabPressSub.remove();
       itemChangedSub.remove();
+      itemUsedSub.remove();
       unsubscribeFocus();
       unsubscribeBlur();
     };

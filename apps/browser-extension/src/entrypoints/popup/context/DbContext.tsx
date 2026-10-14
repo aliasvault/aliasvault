@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { VAULT_STORE_SOURCE_ID } from '@/utils/messaging/VaultBlobTransfer';
 
 import { markOwnAccountKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';
@@ -111,6 +112,10 @@ type DbContextType = {
    * Dismiss the current sync error (clears both React state and persisted storage).
    */
   clearSyncError: () => Promise<void>;
+  /**
+   * Run a write of this window's vault; stores by others are not loaded over it while it runs.
+   */
+  runLocalVaultWrite: <T>(write: () => Promise<T>) => Promise<T>;
 }
 
 const DbContext = createContext<DbContextType | undefined>(undefined);
@@ -125,6 +130,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * SQLite client.
    */
   const [sqliteClient, setSqliteClient] = useState<SqliteClient | null>(null);
+
+  /** Writes of this window still in progress; see runLocalVaultWrite. */
+  const localWritesInFlightRef = useRef(0);
 
   /**
    * Database initialization state. If true, the database has been initialized and the dbAvailable state is correct.
@@ -395,6 +403,30 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     await sendMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', params);
   }, []);
 
+  const runLocalVaultWrite = useCallback(async <T,>(write: () => Promise<T>): Promise<T> => {
+    localWritesInFlightRef.current++;
+    try {
+      return await write();
+    } finally {
+      localWritesInFlightRef.current--;
+    }
+  }, []);
+
+  /**
+   * Reload the loaded vault when the background stores one this window did not write.
+   */
+  useEffect(() => {
+    if (!sqliteClient) {
+      return undefined;
+    }
+    return onMessage('VAULT_STORED', ({ data }) => {
+      if (data.sourceId === VAULT_STORE_SOURCE_ID || localWritesInFlightRef.current > 0) {
+        return;
+      }
+      loadStoredDatabase().catch((error) => logFailure('Reloading the vault after a background write failed', error));
+    });
+  }, [sqliteClient, loadStoredDatabase]);
+
   /**
    * Clear database and remove from background worker, called when logging out.
    */
@@ -433,7 +465,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeAccountKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+    runLocalVaultWrite,
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeAccountKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError, runLocalVaultWrite]);
 
   return (
     <DbContext.Provider value={contextValue}>

@@ -6,6 +6,7 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import emitter from '@/utils/EventEmitter';
 
 /** How long to wait after a copy before pushing, so a burst of copies goes up in one sync. */
 const PUSH_DELAY_MS = 2000;
@@ -25,6 +26,7 @@ export function useRecordItemCopy(): (item?: ItemRef) => void {
     }
     NativeVaultManager.recordItemCopy(item.Id, item.ManifestId)
       .then(() => {
+        emitter.emit('itemUsed');
         if (pendingPush) {
           clearTimeout(pendingPush);
         }

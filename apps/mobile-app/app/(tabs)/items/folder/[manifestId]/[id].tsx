@@ -211,9 +211,13 @@ export default function FolderViewScreen(): React.ReactNode {
     const itemChangedSub = emitter.addListener('itemChanged', async () => {
       await loadItems();
     });
+    const itemUsedSub = emitter.addListener('itemUsed', async () => {
+      await loadItems();
+    });
 
     return (): void => {
       itemChangedSub.remove();
+      itemUsedSub.remove();
     };
   }, [loadItems]);
 

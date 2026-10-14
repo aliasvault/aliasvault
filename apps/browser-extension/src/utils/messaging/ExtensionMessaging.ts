@@ -43,6 +43,7 @@ export type VaultBlobStoreOptions = {
   markDirty?: boolean;
   expectedMutationSeq?: number;
   scopes?: VaultMutationScope[];
+  sourceId?: string;
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -123,6 +124,7 @@ export interface IExtensionMessageProtocol {
   STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
   STORE_SAVE_PROMPT_STATE(data: SavePromptPersistedState): { success: boolean };
   TOGGLE_CONTEXT_MENU(data: any): BoolResponse;
+  VAULT_STORED(data: { sourceId?: string }): void;
   VAULT_SYNC_PHASE(data: { phase: VaultSyncPhase }): void;
   VAULT_UNLOCKED(): void;
   WEBAUTHN_CREATE(data: any): any;

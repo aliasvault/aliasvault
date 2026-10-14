@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
+import { useRecordItemCopy } from '@/entrypoints/popup/hooks/useRecordItemCopy';
 
 import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -38,6 +39,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
   const [currentCodes, setCurrentCodes] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const dbContext = useDb();
+  const recordItemCopy = useRecordItemCopy();
 
   /**
    * Copies a TOTP code to the clipboard.
@@ -54,9 +56,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
        * Record the use against the item. The auto-copy that follows an autofill deliberately does not go
        * through here: that interaction is already counted as an autofill, and would otherwise count twice.
        */
-      sendMessage('RECORD_ITEM_USAGE', { itemId, manifestId, action: 'copy' }).catch(() => {
-        // Ignore errors
-      });
+      recordItemCopy(itemId, manifestId);
 
       // Reset copied state after 2 seconds
       setTimeout(() => {

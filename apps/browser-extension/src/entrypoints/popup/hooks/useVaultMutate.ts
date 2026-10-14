@@ -41,7 +41,7 @@ export function useVaultMutate(): {
    * Atomically increments mutation sequence and marks dirty.
    * @returns The scopes the operation wrote into
    */
-  const saveLocally = useCallback(async (operation: () => Promise<void>): Promise<VaultMutationScope[]> => {
+  const saveLocally = useCallback((operation: () => Promise<void>): Promise<VaultMutationScope[]> => dbContext.runLocalVaultWrite(async () => {
     // Execute the provided operation (e.g. create/update/delete credential)
     await operation();
 
@@ -72,7 +72,7 @@ export function useVaultMutate(): {
     // Refresh the sync state in React
     await dbContext.refreshSyncState();
     return scopes;
-  }, [dbContext]);
+  }), [dbContext]);
 
   /**
    * Start polling to detect when background sync completes.
