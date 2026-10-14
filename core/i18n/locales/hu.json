@@ -1025,6 +1025,7 @@
     "passwordCopied": "Jelszó másolva",
     "passwordUnlockError": "A jelszó ellenőrzése sikertelen",
     "pinConfirmSubtitle": "Adja meg újra PIN kódját a megerősítéshez",
+    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
     "pinIncorrectAttemptsRemaining": "Érvénytelen PIN kód. {{count}} próbálkozás maradt hátra",
     "pinLockedMaxAttempts": "A PIN kódos belépés tiltásra került a túl sok hibás próbálkozás miatt",
     "pinMismatch": "A PIN kódok nem egyeznek. Kérem, próbálja meg újra.",
