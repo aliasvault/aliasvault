@@ -33,6 +33,28 @@ function asciiOnlyJsPlugin(): Plugin {
   };
 }
 
+/**
+ * Removes the default WASM URL from the wasm-bindgen glue, so Vite does not inline the WASM as base64.
+ * Without this the entrypoint will attempt to embed the WASM, causing filesize to grow beyond 5MB limit of Firefox AMO.
+ */
+function stripWasmDefaultUrlPlugin(): Plugin {
+  const glue = /[\\/]wasm-extension[\\/]aliasvault_core\.js$/;
+  const defaultUrl = /new URL\('aliasvault_core_bg\.wasm', import\.meta\.url\)/;
+  return {
+    name: 'aliasvault:strip-wasm-default-url',
+    enforce: 'pre',
+    transform(code, id): string | undefined {
+      if (!glue.test(id.split('?')[0])) {
+        return undefined;
+      }
+      if (!defaultUrl.test(code)) {
+        throw new Error(`Default WASM URL not found in ${id}, update stripWasmDefaultUrlPlugin in wxt.config.ts.`);
+      }
+      return code.replace(defaultUrl, `(() => { throw new Error('The WASM module must be passed to init explicitly.'); })()`);
+    },
+  };
+}
+
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
 
 /*
@@ -105,7 +127,10 @@ export default defineConfig({
       ...(browser === 'firefox' ? {
         browser_specific_settings: {
           gecko: {
-            id: "{a06e3383-fc5f-431d-8405-1c54c2f85971}"
+            id: "{a06e3383-fc5f-431d-8405-1c54c2f85971}",
+            data_collection_permissions: {
+              required: ["none"]
+            }
           }
         }
       } : {})
@@ -144,6 +169,7 @@ export default defineConfig({
     },
     plugins: [
       asciiOnlyJsPlugin(),
+      stripWasmDefaultUrlPlugin(),
       viteStaticCopy({
         targets: [
           {
