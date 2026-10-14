@@ -1,0 +1,3 @@
+- Fix potential login issues after upgrading your vault on another device.
+- Added clearer Android PIN setup error messages.
+- Updated translations.

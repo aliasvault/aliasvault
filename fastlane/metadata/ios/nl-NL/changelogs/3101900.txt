@@ -1,0 +1,2 @@
+- Mogelijke inlogproblemen verholpen na het upgraden van je vault op een ander apparaat.
+- Vertalingen bijgewerkt.
