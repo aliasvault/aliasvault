@@ -92,8 +92,8 @@ android {
         applicationId 'net.aliasvault.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3100100
-        versionName "0.31.0-alpha"
+        versionCode 3200100
+        versionName "0.32.0-alpha"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

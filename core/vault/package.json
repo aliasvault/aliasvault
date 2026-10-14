@@ -1,6 +1,6 @@
 {
     "name": "@aliasvault/vault",
-    "version": "0.31.0",
+    "version": "0.32.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
