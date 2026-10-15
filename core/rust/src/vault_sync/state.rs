@@ -110,8 +110,8 @@ impl Ctx {
         if !matches!(error, SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) {
             return error;
         }
-        let (Some(key), Ok(Some(blob))) = (self.encryption_key.as_deref(), load_vault(&self.host).await) else { return error };
-        match decrypt_vault_blob(&blob, key) {
+        let (Some(key), Ok(Some(blob))) = (self.encryption_key.as_ref(), load_vault(&self.host).await) else { return error };
+        match decrypt_vault_blob(&blob, key.expose_secret()) {
             Ok(_) => error,
             Err(decrypt @ SyncError::VaultDecryptFailed(_)) => decrypt,
             Err(other) => SyncError::VaultDecryptFailed(other.to_string()),
