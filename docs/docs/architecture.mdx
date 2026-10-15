@@ -11,11 +11,11 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 AliasVault implements zero-knowledge encryption where sensitive user data never leaves the client device in unencrypted form. Below is a detailed explanation of how the system secures user data and communications.
 
 **What is Zero-Knowledge in AliasVault**:
-- **Vault Data** (usernames, passwords, notes, passkeys etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
-- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with the public key of the vault the alias belongs to before being saved. Only users with access to that vault can decrypt and read them.
-- **Shared Vaults**: Each shared vault has its own encryption key. When a new member gets access, a copy of that key is encrypted with their public key. Only their private key can unlock that copy. The server stores the encrypted key copies but cannot decrypt them or read the vault's contents.
+- **Vault data** (usernames, passwords, notes, passkeys etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
+- **Email contents**: When emails are received by the server, their contents are immediately encrypted with the public key of the vault the alias belongs to before being saved. Only users with access to that vault can decrypt and read them.
+- **Shared vaults**: Each shared vault has its own encryption key. When a new member gets access, a copy of that key is encrypted with their public key. Only their private key can unlock that copy. The server stores the encrypted key copies but cannot decrypt them or read the vault's contents.
 
-**Where the cryptography runs**: all clients share one Rust core (WebAssembly in the browser, native libraries on iOS and Android) that handles key derivation, key wrapping, signing and SRP. All encryption happens on the device. The server only ever stores and syncs ciphertext and never holds a decryption key.
+**Where the cryptography runs**: all clients share one Rust core (WebAssembly in the browser, native libraries on iOS and Android) that handles key derivation, key wrapping, signing and SRP. All vault encryption and decryption happens on the device, and the server never holds a key that decrypts a vault.
 
 ## Overview diagram
 The diagram below gives an overview of how the security architecture of AliasVault is designed: authentication, vault operations, passkeys and email. The following chapters explain each part in further detail.
@@ -32,19 +32,19 @@ The diagram below gives an overview of how the security architecture of AliasVau
 
 ## Cryptographic algorithms
 
-AliasVault is built exclusively on established cryptographic standards (NIST, IETF RFC and the Password Hashing Competition winner Argon2id). The table below lists each algorithm and where it is used.
+AliasVault is built exclusively on established cryptographic standards published by NIST and the IETF. The table below lists each algorithm and where it is used.
 
 | Algorithm | Used for | Section |
 |---|---|---|
-| [Argon2id](https://en.wikipedia.org/wiki/Argon2) | Deriving keys from the master password, PIN and export password | [1](#1-key-derivation-and-key-hierarchy), [8](#8-unlock-methods-on-the-device) |
+| [Argon2id](https://en.wikipedia.org/wiki/Argon2) | Deriving keys from the master password, PIN and export password | [1](#1-key-derivation-and-key-hierarchy), [8](#8-protecting-keys-on-the-device), [9](#9-vault-exports) |
 | [HKDF-SHA256](https://en.wikipedia.org/wiki/HKDF) | Splitting the unlock key into the SRP input and the KEK | [1](#1-key-derivation-and-key-hierarchy) |
 | [SRP-6a](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol) | Password authentication without sending the password | [2](#2-authentication-process) |
-| [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) | Vault contents, blobs, emails, exports and every key in the hierarchy | [1](#key-hierarchy), [3](#3-vault-operations), [4](#4-email-system-security), [6](#6-login-with-mobile), [8](#8-unlock-methods-on-the-device) |
-| [RSA-OAEP](https://en.wikipedia.org/wiki/Optimal_asymmetric_encryption_padding) (SHA-256) | Email encryption, Login with Mobile, vault sharing | [4](#4-email-system-security), [6](#6-login-with-mobile), [7](#7-vault-sharing) |
-| [Ed25519](https://en.wikipedia.org/wiki/EdDSA#Ed25519) | Signing public keys, grants, delivery keys and invitation names | [1](#key-hierarchy), [4](#4-email-system-security), [7](#7-vault-sharing) |
+| [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) | Vault contents, blobs, emails, exports and every key in the hierarchy | [1](#key-hierarchy), [3](#3-vault-operations), [4](#4-email-system-security), [6](#6-login-with-mobile), [7](#7-vault-sharing), [8](#8-protecting-keys-on-the-device), [9](#9-vault-exports) |
+| [RSA-OAEP](https://en.wikipedia.org/wiki/Optimal_asymmetric_encryption_padding) | Email encryption, Login with Mobile, vault sharing | [4](#4-email-system-security), [6](#6-login-with-mobile), [7](#7-vault-sharing) |
+| [Ed25519](https://en.wikipedia.org/wiki/EdDSA#Ed25519) | Signing public keys, grants and delivery keys | [1](#key-hierarchy), [4](#4-email-system-security), [7](#7-vault-sharing) |
 | [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC) | Blob addresses, passkey PRF, session token (JWT) signing | [2](#2-authentication-process), [3](#3-vault-operations), [5](#5-passkey-authentication) |
-| [SHA-256](https://en.wikipedia.org/wiki/SHA-2) | Integrity checks and key fingerprints | [3](#3-vault-operations), [6](#6-login-with-mobile) |
-| [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) (RFC 6238) | Two-factor authentication | [2](#2-authentication-process) |
+| [SHA-256](https://en.wikipedia.org/wiki/SHA-2) | Integrity checks and key fingerprints | [6](#6-login-with-mobile), [Vault Format and Sync](./vault-format.mdx) |
+| [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) | Two-factor authentication | [2](#2-authentication-process) |
 | [ES256](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm) / [RS256](https://en.wikipedia.org/wiki/PKCS_1) | Passkeys (WebAuthn) | [5](#5-passkey-authentication) |
 
 What each algorithm provides:
@@ -52,181 +52,256 @@ What each algorithm provides:
 - **SRP** lets the server check the password without ever receiving it or anything that decrypts the vault.
 - **AES-256-GCM** is authenticated encryption: a changed or swapped ciphertext fails to decrypt instead of producing wrong data.
 - **RSA-OAEP** encrypts a key for someone else: the key of an incoming email for the vault it belongs to, the Account Key for the device that started a Login with Mobile, and a shared vault key for each member.
-- **Ed25519** signs what a user publishes (their public key, grants, delivery keys and invitation names), so other users can check that it really came from that account.
+- **Ed25519** signs what a user publishes (their public key, grants and delivery keys), binding each of them to the account that published it.
 - **ES256 and RS256** are two signature algorithms supported by the WebAuthn standard, used for passkeys.
 
-## Diagram
-The security architecture diagram below illustrates all encryption and authentication processes used in AliasVault to secure user data and communications.
+## 1. Key derivation and key hierarchy
+Your master password never leaves your device. It unlocks your Account Key, the key that opens all your vaults and that the server only ever stores in encrypted form. When you log in, it is also used to calculate a proof the server can check without knowing the password itself.
 
 <ThemedImage
-  alt="AliasVault Security Architecture Diagram"
+  alt="AliasVault key hierarchy diagram"
   sources={{
-    light: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg'),
-    dark: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-dark.svg'),
+    light: useBaseUrl('/assets/diagrams/security-architecture/key-hierarchy-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/key-hierarchy-dark.svg'),
   }}
 />
 
-You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](pathname:///assets/diagrams/security-architecture/aliasvault-security-architecture.html)
-
-## Key Components and Process Flow
-
-### 1. Key Derivation
 - When a user enters their master password, it remains strictly on the client device
 - The master password is processed through Argon2id (a memory-hard key derivation function) locally
-    - Argon2id parameters used for main vault KEK: 64 MiB memory, 5 iterations, parallelism 1
-    - Argon2id parameters used for encrypted vault exports (`.avex`): 256 MiB memory, 3 iterations, parallelism 1
-- The derived key serves two purposes:
-    - Authentication with the server through the SRP protocol
-    - Local encryption/decryption of vault contents using AES-256-GCM
+    - Argon2id parameters used for the master password: 64 MiB memory, 5 iterations, parallelism 1, salt = the account's random 32-byte SRP salt (created on the client at registration and stored on the server)
+    - The server sends the salt and the account's settings at login; the client refuses settings below a fixed minimum, which prevents a downgrade attack where a server would ask for a weaker key
+- The derived key is the unlock key. It is never used as-is; two keys are derived from it with HKDF-SHA256, each under its own label:
+    - The SRP input (label `AliasVault SRP v1`), for authentication with the server through the SRP protocol
+    - The Key Encryption Key (KEK, label `AliasVault KEK v1`), which decrypts the Account Key
+- The SRP input and the KEK are independent: neither can be calculated from the other, or back to the unlock key and the master password. Even if the value used for login were exposed (e.g. in logs), it would not reveal the key that decrypts the Account Key.
 
-### 2. Authentication Process
-1. SRP (Secure Remote Password) Authentication
-    - Enables secure password-based authentication without transmitting the password
-    - Client and server perform a cryptographic handshake to verify identity
+### Key hierarchy
+Every unlock method (e.g. master password) opens the same Account Key, which unlocks a chain of random keys, all created on the client. Each vault has its own key, so giving a user access to a shared vault does not give them access to your personal vault or to other shared vaults:
 
-2. Two-Factor Authentication (Optional)
-    - If enabled, requires an additional verification step after successful SRP authentication
-    - Uses Time-based One-Time Password (TOTP) protocol
-    - Compatible with standard authenticator apps (e.g., Google Authenticator)
-    - Server only issues the final JWT access token after successful 2FA verification
+| Key | What it is | What it protects | Stored on the server as |
+|---|---|---|---|
+| **KEK** (Key Encryption Key) | Derived from an unlock method; e.g. for the master password, with HKDF-SHA256 from the unlock key (its Argon2id output) | The Account Key | Never stored |
+| **AK** (Account Key) | Random 256-bit key, created at registration | The personal VEK and the private keys of both account keypairs | Encrypted with the KEK, one copy per account unlock method |
+| **VEK** (Vault Encryption Key) | Random 256-bit key, one per vault: the personal vault and any shared vaults have separate keys | The vault contents and its blob keys | Encrypted with the owner's AK (personal vault) or with each member's account public key (shared vault) |
+| **Account encryption keypair** | RSA-2048 keypair, one per user | Private key opens the VEKs of shared vaults this user is a member of | Public key in plaintext (signed with the user's account signing key), private key encrypted with the AK |
+| **Account signing keypair** | Ed25519 keypair, one per user | Signs what the user publishes: their RSA public key, grants and delivery keys | Public key in plaintext, private key encrypted with the AK |
+| **Vault Delivery Keypair** | RSA-2048 keypair, one per vault | Private key opens emails for aliases in that vault | Public key in plaintext, private key stored inside the encrypted vault |
+| **Blob key** | Random 256-bit key, one per blob (content stored separately from the rest of the vault, such as the bytes of an attachment or logo) | That blob's bytes | Encrypted with the VEK of the vault the blob belongs to |
 
-### 3. Vault Operations
-- All vault contents are encrypted/decrypted locally using AES-256-GCM
-- The encryption key is derived from the user's master password
-- Only encrypted data is ever transmitted to or stored on the server
-- The server never has access to the unencrypted vault contents
+**Key vs keypair:** a *key* is a single secret used to encrypt and decrypt (AES-256-GCM). A *keypair* has a public key that can be shared openly to encrypt or verify, and a private key that decrypts or signs and is only stored encrypted.
 
-### 4. Email System Security
+All symmetric encryption in this chain uses AES-256-GCM, all asymmetric encryption uses RSA-OAEP with SHA-256. Every ciphertext is bound to its place with AES-GCM associated data or an RSA-OAEP label ([`aad.rs`](https://github.com/aliasvault/aliasvault/blob/main/core/rust/src/crypto/aad.rs)), so a ciphertext taken from one slot does not decrypt in another and a vault served under another vault's id is refused.
 
-#### Key Generation and Storage
-1. RSA key pair is generated locally on the client
-2. Private key is stored in the encrypted vault
-3. Public key is sent to the server and associated with email claim(s)
+Properties of this hierarchy:
+- **Password change** by default only encrypts the Account Key (AK) again with the new KEK. Vault contents, attachments and shared vault access stay untouched, so nothing has to be re-encrypted or uploaded and shared vault members are not affected. The user's other devices are signed out and log in again with the new password. A full key rotation, which also replaces the Account Key and the keys below it, is a separate opt-in operation, as it re-encrypts every vault and has to reach all devices and shared vault members.
+    - **Undoing a password change**: the previous encrypted Account Key is kept on the server for 7 days, so an administrator can restore the old password when a user cannot log in with the new one. The server cannot decrypt it; a revert only restores the old password.
+- **Unlock methods** (biometrics, PIN, passkey quick unlock, Login with Mobile) store or transfer the Account Key, protected by the device keychain, a PIN-derived key, a passkey PRF key or a one-time RSA key, never the password-derived keys. A password change does not touch them. Every unlock walks the same chain from the Account Key down, so all keys below it always become available together.
+- **Additional unlock methods** can be enabled by encrypting the same Account Key with another KEK, without having to re-encrypt the vault or invalidating existing unlock methods.
 
-#### Email Reception Process
+## 2. Authentication process
+Your master password is never sent to the server, not even when you log in. The server verifies that you know it using the SRP protocol, and checks your second factor when enabled, before it issues session tokens. These tokens give access to your account on the server, but can never decrypt your vaults.
+
+The login flow is shown in the [overview diagram](#overview-diagram).
+
+### SRP login
+- SRP-6a with the 2048-bit group of RFC 5054 and SHA-256; the password itself is never sent
+- The SRP identity is a random per-account id, so a username change does not change the verifier
+- Client and server each prove they derived the same session key; the client checks the server's proof before accepting any token
+
+### Two-factor authentication
+- Optional: when enabled, a TOTP code from a standard authenticator app is required after the SRP step
+- The server only issues session tokens after the code is verified
+
+### Session tokens
+- A short-lived JWT access token and a refresh token. The refresh token is stored hashed on the server, so a database leak does not expose usable tokens, and is rotated on every use, so a copied refresh token stops working once the legitimate client refreshes
+- Tokens grant API access only; they never decrypt anything
+
+## 3. Vault operations
+Your vaults are always encrypted on your device before they are uploaded. Your personal vault and every shared vault are kept as separate units that AliasVault calls *manifests*. The server only receives and stores these manifests in encrypted form and can never read their contents.
+
+<ThemedImage
+  alt="AliasVault vault storage format diagram"
+  sources={{
+    light: useBaseUrl('/assets/diagrams/security-architecture/vault-storage-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/vault-storage-dark.svg'),
+  }}
+/>
+
+- All vault contents are encrypted/decrypted locally on the client using AES-256-GCM; only encrypted data is ever sent to or stored on the server
+- The encryption key is the vault's VEK (see [Key hierarchy](#key-hierarchy)), not the master password itself
+- Each manifest is encrypted with the VEK of its vault and bound to its manifest id, so the server cannot swap one vault's data for another's. Information that changes often, such as settings, is kept in separate *data buckets* that sync on their own, so a small change like a different sort order does not require uploading all items again; how a vault is split into manifests, data buckets and blobs is described in [Vault Format and Sync](./vault-format.mdx).
+- Some content, such as the bytes of attachments and logos, is stored outside the manifest as separate blobs, each encrypted with its own random blob key; the blob key is encrypted with the VEK of the vault the blob belongs to. A blob is addressed by `HMAC-SHA256(manifest salt, plaintext)`, where the manifest salt is a random value that lives inside the encrypted manifest, so the server cannot recognize the same file across vaults while every member of a shared vault computes the same address
+- On the device, the vault is only decrypted in memory while it is unlocked. The copy kept on disk stays encrypted with the VEK, together with the encrypted key hierarchy, so a device can unlock offline
+- The server keeps a limited number of older versions of each manifest and data bucket as a backup against potential client-side data corruption. Blobs never change; a blob is deleted once no kept version refers to it anymore
+
+## 4. Email system security
+Most email providers store your emails in a form they can read themselves. AliasVault encrypts each incoming email in memory as soon as it arrives, with the delivery public key of the vault the alias belongs to, and only writes its content to the database in encrypted form. Only people with access to that vault hold the private key and can read its emails.
+
+<ThemedImage
+  alt="AliasVault email encryption diagram"
+  sources={{
+    light: useBaseUrl('/assets/diagrams/security-architecture/email-encryption-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/email-encryption-dark.svg'),
+  }}
+/>
+
+### Key generation and storage
+1. Every vault (personal or shared) has its own Vault Delivery Keypair (RSA-2048), generated locally on the client
+    - The private key is stored inside that encrypted vault
+    - The public key is sent to the server together with the vault, signed with the publishing user's account signing key; the server only accepts a key signed by a member allowed to publish it
+2. Each alias is registered on the server as an *email claim*, which links the alias to the vault it belongs to
+3. When a member loses access to a shared vault, the Vault Delivery Keypair is replaced, so future emails are encrypted to a new key. Old keypairs are kept in the vault, so emails received before the change stay readable
+
+### Email reception process
 1. When an email is received, the server:
-    - Verifies if the recipient (email address) matches a valid email claim
-    - If no valid claim exists, the email is rejected
-    - If valid, generates a random 256-bit symmetric key
-    - Encrypts the email content using this symmetric key
-    - Encrypts the symmetric key using the recipient's public key
-    - Stores both the encrypted email and encrypted symmetric key
+    - Checks whether the recipient address matches an active email claim
+        - If there is none, the email is rejected
+    - Generates a random 256-bit symmetric key
+    - Encrypts the email content (subject, sender fields, bodies, preview, raw source and attachments) using this symmetric key with AES-256-GCM
+    - Encrypts the symmetric key with the delivery public key of the vault the claim belongs to (RSA-OAEP)
+    - Stores the encrypted email and the encrypted symmetric key
 
-#### Email Retrieval Process
-1. Client retrieves encrypted email and encrypted symmetric key from server
-2. Client uses private key from vault to decrypt the symmetric key
-3. Client uses decrypted symmetric key to decrypt the email contents
+### Email retrieval process
+1. The client retrieves the encrypted email and the encrypted symmetric key
+2. The client decrypts the symmetric key with the delivery private key of the matching vault
+3. The client decrypts the email contents with the symmetric key
 4. All decryption occurs locally on the client device
 
-> Note: The use of a symmetric key for email content encryption and asymmetric encryption for the symmetric key (hybrid encryption) is implemented due to RSA's limitations on encryption string length and for better performance.
+## 5. Passkey authentication
+Your passkeys are stored in your vault and encrypted like the rest of its contents. AliasVault acts as the passkey authenticator (WebAuthn Level 2): it creates each passkey's keypair, keeps the private key in your vault, and only gives websites the public key and signatures. You can use your passkeys in every AliasVault app that supports them.
 
-### 5. Passkey Authentication
+### Virtual authenticator implementation
+- The authenticator logic (key generation, authenticator data, attestation, signatures and PRF) is implemented once in the Rust core and shared by every app
+- Browser extension: intercepts `navigator.credentials` on the page and checks the website against the page's origin (Public Suffix List rule plus WebAuthn Related Origin Requests) before calling the core
+- iOS: credential provider extension (AuthenticationServices) calling the core
+- Android: Credential Manager provider service calling the core
 
-AliasVault includes a virtual passkey authenticator that implements the WebAuthn Level 2 specification, allowing users to securely store and use passkeys for passwordless authentication across websites and services.
+### Passkey registration process
+When a website asks to create a passkey:
+- The client creates a new keypair, ES256 (ECDSA P-256) or RS256 (RSA-2048), whichever comes first in the website's list of accepted algorithms
+- The private key is saved as part of the vault, so it is encrypted and synced like any other vault content
+- The website receives the public key in an attestation object with AliasVault's AAGUID (`a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942`) and the flags UP (user present), AT (attested credential data), BE (backup eligible) and BS (backed up), plus UV when the user was verified
+- The attestation format is "none" or "packed" self-attestation, and the sign count is always 0, as is usual for passkeys that sync between devices
 
-#### Virtual Authenticator Implementation
-1. Platform Support
-    - Browser Extension: Virtual authenticator using Web Crypto API
-    - iOS: Native Swift implementation using CryptoKit
-    - Android: Native Kotlin implementation using AndroidKeyStore
-    - All platforms provide consistent WebAuthn Level 2 compliant behavior
+### Passkey authentication process
+When a website asks to sign in with a passkey:
+- The client takes the passkey from the unlocked vault and signs the website's challenge with its private key
+- Only the signature is sent to the website; the private key never leaves the client
 
-2. Key Management
-    - ES256 (ECDSA P-256) key pairs generated locally on client device
-    - Private keys stored as encrypted entries in the user's vault
-    - Public keys used for WebAuthn authentication with relying parties
-    - All key material encrypted using the same AES-256-GCM vault encryption
+### PRF extension
+- Passkeys support the WebAuthn PRF extension (hmac-secret), which lets a website derive a stable secret from a passkey, for example to encrypt its own data
+- When a website asks for PRF at registration, a random 32-byte secret is created and saved in the vault with the passkey; for each salt the website sends, the client returns `HMAC-SHA256(secret, SHA-256("WebAuthn PRF" || 0x00 || salt))`
 
-#### Passkey Registration Process
-1. When registering a new passkey:
-    - Client generates an ES256 (ECDSA P-256) key pair locally
-    - Private key is encrypted and stored in the user's vault
-    - Public key is sent to the relying party (website/service)
-    - Attestation object created with proper WebAuthn flags:
-        - UP (User Present) - User interaction confirmed
-        - AT (Attested Credential Data) - New credential created
-        - UV (User Verified) - Optional, based on user verification requirement
-        - BE (Backup Eligible) - Credential can be backed up
-        - BS (Backup State) - Credential is backed up in vault
+## 6. Login with Mobile
+You can log in to the web app or browser extension by scanning a QR code with the AliasVault mobile app, without typing your master password. The device you log in on creates a one-time keypair. The mobile app encrypts your Account Key with it and sends it to that device via the server, so only these two devices can read it.
 
-2. Authenticator Data
-    - Uses AliasVault's unique AAGUID (Authenticator Attestation GUID): `a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942`
-    - Sign count always 0 for syncable credentials
-    - Supports both "none" and "packed" self-attestation formats
-    - CBOR/COSE encoding for attestation objects
+<ThemedImage
+  alt="AliasVault login with mobile diagram"
+  sources={{
+    light: useBaseUrl('/assets/diagrams/security-architecture/login-with-mobile-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/login-with-mobile-dark.svg'),
+  }}
+/>
 
-#### Passkey Authentication Process
-1. When authenticating with an existing passkey:
-    - Client retrieves encrypted passkey from vault
-    - Private key decrypted locally using vault encryption key
-    - Client signs authentication challenge using private key
-    - Signature sent to relying party for verification
-    - All cryptographic operations performed client-side
+### What passes through the server
+Two pieces of data travel through the server, both encrypted for the one-time public key of the device you log in on:
+- The Account Key, encrypted by your phone with RSA-OAEP
+- The new session tokens and account details, encrypted by the server with a random AES-256-GCM key, which is itself encrypted with RSA-OAEP
 
-2. Cross-Platform Synchronization
-    - Passkeys automatically sync across all user devices
-    - Encrypted passkey data synchronized through vault sync mechanism
-    - Enables seamless authentication on browser extension, iOS app, and Android app
-    - Maintains zero-knowledge architecture during sync
+### Login flow
 
-#### Additional Capabilities
-1. PRF Extension (hmac-secret)
-    - Supports WebAuthn PRF extension for deriving additional secrets
-    - Enables relying parties to use passkeys for encryption key derivation
-    - PRF secrets stored encrypted in vault alongside passkey data
-    - Implements HMAC-SHA256 for PRF evaluation
-    - PRF is supported via browser extension and iOS (0.24.0+)
-        - Android support is pending due to limited Android API support
-
-### 6. Login with Mobile
-
-AliasVault includes a secure "Login with Mobile" feature that allows users to unlock their vault on web browsers or browser extensions by scanning a QR code with their mobile app. This system provides a convenient authentication method while maintaining zero-knowledge security through end-to-end encryption.
-
-#### Security Architecture
-
-The mobile login system uses a hybrid encryption approach combining RSA asymmetric encryption and AES-256-GCM symmetric encryption to ensure that:
-- The server never has access to the user's decryption key in plaintext
-- Only the authorized client that initiated the request can decrypt the transmitted data
-- No sensitive data persists on the server after retrieval
-
-#### Authentication Flow
-
-1. **Initiation (Browser/Extension Client)**
-   - Client generates an RSA-2048 key pair locally
+1. **Initiation (requesting client: web app or browser extension)**
+   - Client generates a one-time RSA-2048 keypair locally, only for this login request
    - Public key is sent to the server
-   - Server creates a unique request ID and stores the public key
-   - Client generates a QR code containing the request ID
-   - Private key is kept only in memory (never persisted to disk)
+   - Server creates a unique request ID and a poll secret, stores the public key and only a hash of the poll secret
+   - Client generates a QR code containing the request ID and a SHA-256 hash of the public key
+   - Client shows a 2-digit verification code derived from the public key
+   - The one-time private key only exists in memory for the duration of this login request: it is never stored on disk or in a vault
 
-2. **QR Code Scanning (Mobile App)**
+2. **QR code scan (mobile app)**
    - User scans the QR code with their authenticated mobile app
-   - Mobile app retrieves the public key from server
-   - Mobile app encrypts the user's vault decryption key using the RSA public key
-   - Encrypted decryption key is sent to server
-   - Server stores the encrypted decryption key and marks the request as fulfilled
+   - Mobile app retrieves the public key and requester details (browser, OS, IP address) from the server and checks the public key against the hash in the QR code
+   - User picks the verification code shown on the requesting screen out of four options, approves, and confirms with biometrics or PIN
+   - Mobile app encrypts the user's Account Key with the one-time public key generated by the requesting client (RSA-OAEP)
+   - Encrypted Account Key is sent to server
+   - Server temporarily stores the encrypted Account Key and marks the request as fulfilled
 
-3. **Polling and Retrieval (Browser/Extension Client)**
-   - Client polls the server every few seconds
-   - Polling continues for up to 2 minutes (3-minute server-side timeout for buffer)
+3. **Polling and retrieval (requesting client)**
+   - Client polls the server every few seconds with its poll secret
    - When fulfilled, server:
-     - Generates a fresh JWT access token and refresh token for the user
-     - Creates a random 256-bit AES symmetric key
-     - Encrypts the JWT tokens and username using this symmetric key
-     - Encrypts the symmetric key itself using the client's RSA public key
+     - Creates a new session for the user: a JWT access token and refresh token that give the requesting client access to the API, similar to a password login (see [Authentication process](#2-authentication-process))
+     - Creates a random 256-bit symmetric key
+     - Encrypts the JWT tokens, username and the account's Argon2id settings with this symmetric key (AES-256-GCM)
+     - Encrypts the symmetric key itself with the requesting client's one-time public key (RSA-OAEP)
      - Returns all encrypted data in the response
-     - Immediately marks the request as retrieved and clears sensitive data from database
+     - Immediately marks the request as retrieved and deletes the stored one-time public key and encrypted Account Key from the database
 
-4. **Decryption (Browser/Extension Client)**
-   - Client uses its RSA private key to decrypt the symmetric key
-   - Client uses the symmetric key to decrypt the JWT tokens and username
-   - Client uses the RSA private key to decrypt the vault decryption key
-   - Client can now unlock the vault using the decryption key and stores it in memory
-   - RSA private key is immediately purged from memory
+4. **Decryption (requesting client)**
+   - Client decrypts the Account Key and the symmetric key with its one-time private key
+   - Client decrypts the JWT tokens, username and Argon2id settings with the symmetric key
+   - Client unlocks the rest of the key hierarchy with the Account Key, as with a password login
+   - The one-time private key is discarded from memory
 
-#### Security Properties
+### Request binding and lifetime
+- **Bound to the requesting client**: the QR code holds a hash of the one-time public key, which the mobile app checks, so the server cannot swap in a key of its own. The verification code the user picks in the mobile app is derived from the same key, so a request started by someone else is not approved by accident.
+- **Only the requesting client gets the result**: retrieving it requires a poll secret that the server hands only to the requesting client and stores only as a hash. Someone who sees the QR code or has a copy of the database therefore cannot retrieve it.
+- **Short-lived and one-time**: a request must be approved within 3 minutes and retrieved within 1 minute after that, it can be retrieved only once, and expired requests are cleaned up by the server.
 
-- **Zero-Knowledge**: The server never has access to the vault decryption key in plaintext. It only temporarily stores the RSA-encrypted version.
-- **One-Time Use**: Once a mobile login request is retrieved by the client, it cannot be accessed again. The encrypted data is immediately cleared from the database.
-- **Automatic Expiration**: Fulfilled but unretrieved requests are automatically deleted by the server within 24 hours to prevent stale data accumulation.
-- **Man-in-the-Middle Protection**: The encryption scheme ensures that any eavesdroppers cannot intercept the decryption key. Only the local client that started the mobile login request has the private key for decryption.
-- **Short-Lived Requests**: The 3-minute timeout window limits the attack surface for QR code interception.
+## 7. Vault sharing
+You can create a shared vault and invite other people to it, for example a family member. A shared vault is separate from your personal vault and has its own VEK, so members never get access to your personal vault or your master password. Each member receives the shared vault's VEK encrypted for their own account, so the server only stores encrypted copies of it.
+
+<ThemedImage
+  alt="AliasVault vault sharing diagram"
+  sources={{
+    light: useBaseUrl('/assets/diagrams/security-architecture/vault-sharing-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/vault-sharing-dark.svg'),
+  }}
+/>
+
+Shared vaults belong to a *group*, for example a family. A group has admins, who create shared vaults and invite people, and members.
+
+Access to a shared vault is called a *grant*: a copy of the vault's VEK encrypted with one member's account public key, which only that member's account private key can decrypt. Every member, the creator included, has their own grant; the server stores the grants but cannot open them.
+
+### Sharing flow
+1. **Creation**
+   - A group admin creates the shared vault on their client
+   - The client generates a new VEK and a Vault Delivery Keypair for the vault
+   - The admin's own grant is created: the VEK encrypted with the admin's account public key (RSA-OAEP), signed with the admin's account signing key
+   - The vault name is encrypted with the VEK, so only members can read it; the server never sees the name of a shared vault
+
+2. **Invitation**
+   - The admin's client retrieves the invitee's account public key from the server
+   - The shared VEK is encrypted with that public key and the grant is signed; the vault name is also encrypted with that public key, so the invitee can see which vault they are invited to before accepting
+   - The server verifies the signatures and stores the encrypted VEK with the invitation
+
+3. **Acceptance**
+   - When the invitee accepts, the encrypted VEK from the invitation becomes their grant
+   - From the next sync on, the server includes the shared vault (its encrypted manifest and the member's grant) because the grant is active
+   - Their client decrypts the VEK with their account private key, and with it the shared vault, which they can then read and write
+
+4. **Revocation**
+   - Removing a member deletes their grant on the server
+   - The server asks an admin's client to replace the Vault Delivery Keypair, so new emails are no longer encrypted to a key the removed member has seen
+   - The server no longer provides the shared vault to the removed member, so their access is blocked. The vault keeps its VEK, so the remaining members are not affected
+
+### Access and keys
+- **Group membership alone gives no access**: a group itself holds no keys, and being a member of a group does not open its shared vaults. A user only gets access to a shared vault after being invited to that vault and accepting, which gives them their own grant.
+- **Each key has one job**: the account encryption keypair only receives vault keys, and a Vault Delivery Keypair only decrypts email, so a key stored inside a vault never opens anything outside it.
+- **Grants are tied to their vault**: a grant is encrypted under a label that names the vault, so it cannot be used for another vault.
+
+## 8. Protecting keys on the device
+AliasVault gives you offline access to your data: each device keeps an encrypted copy of your vault together with the encrypted key hierarchy, so once it has synced you can unlock your vault without the network. You can unlock with your master password or a quicker method such as biometrics or a PIN; each method protects a copy of your Account Key that is stored only on that device, and the keys below it are then opened from the encrypted key hierarchy.
+
+- **Master password**: the unlock key is derived with Argon2id from the salt and settings cached on the device, the KEK is derived from it with HKDF-SHA256, and the KEK decrypts the Account Key (see [Key derivation and key hierarchy](#1-key-derivation-and-key-hierarchy)).
+- **Biometrics (mobile)**: the Account Key is encrypted with a key held by the device's secure hardware. iOS uses a Keychain item with `kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly` and the `biometryCurrentSet` access control; Android uses an AndroidKeyStore AES-GCM key with `setUserAuthenticationRequired(true)`, `AUTH_BIOMETRIC_STRONG` and `setInvalidatedByBiometricEnrollment(true)`.
+- **PIN (mobile and browser extension)**: the Account Key is encrypted with AES-256-GCM under a key derived from the PIN with Argon2id (random 16-byte salt, 64 MiB, 3 iterations). The wrap and the attempt policy are implemented once in the Rust core; after 4 failed attempts the wrapped key is deleted and PIN unlock is disabled.
+- **Passkey quick unlock (web app)**: the Account Key is encrypted with a key obtained from a passkey's PRF extension and stored in the browser.
+
+Locking the vault removes the decrypted vault and the Account Key from memory; the encrypted vault stays on the device, so the next unlock can work offline. Logging out instead removes all data from the device, including the encrypted vault and key hierarchy, so logging back in requires a connection to the server.
+
+## 9. Vault exports
+The recommended export format is an encrypted `.avex` file, which can be imported into AliasVault again. It contains all vault data, including attachments and logos, encrypted with AES-256-GCM under a key derived with Argon2id from an export password you choose. The salt and Argon2id settings are stored in the file's header, so the password alone is enough to open it again.
+
+AliasVault also offers two unencrypted formats, to export your data and import it somewhere else. Anyone who gets access to these files can read them, so use them with caution and delete them when you no longer need them:
+- **`.avux`**: the same ZIP archive as inside an `.avex` file, without the encryption
+- **CSV**: your items as plain text, for use in other tools
