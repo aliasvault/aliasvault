@@ -12,7 +12,48 @@ AliasVault implements zero-knowledge encryption where sensitive user data never 
 
 **What is Zero-Knowledge in AliasVault**:
 - **Vault Data** (usernames, passwords, notes, passkeys etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
-- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with your public key before being saved. Only you can decrypt and read them with your private key.
+- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with the public key of the vault the alias belongs to before being saved. Only users with access to that vault can decrypt and read them.
+- **Shared Vaults**: Each shared vault has its own encryption key. When a new member gets access, a copy of that key is encrypted with their public key. Only their private key can unlock that copy. The server stores the encrypted key copies but cannot decrypt them or read the vault's contents.
+
+**Where the cryptography runs**: all clients share one Rust core (WebAssembly in the browser, native libraries on iOS and Android) that handles key derivation, key wrapping, signing and SRP. All encryption happens on the device. The server only ever stores and syncs ciphertext and never holds a decryption key.
+
+## Overview diagram
+The diagram below gives an overview of how the security architecture of AliasVault is designed: authentication, vault operations, passkeys and email. The following chapters explain each part in further detail.
+
+<a href={useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture.html')} target="_blank" rel="noopener noreferrer" title="Open full screen">
+  <ThemedImage
+    alt="AliasVault Security Architecture Diagram"
+    sources={{
+      light: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg'),
+      dark: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-dark.svg'),
+    }}
+  />
+</a>
+
+## Cryptographic algorithms
+
+AliasVault is built exclusively on established cryptographic standards (NIST, IETF RFC and the Password Hashing Competition winner Argon2id). The table below lists each algorithm and where it is used.
+
+| Algorithm | Used for | Section |
+|---|---|---|
+| [Argon2id](https://en.wikipedia.org/wiki/Argon2) | Deriving keys from the master password, PIN and export password | [1](#1-key-derivation-and-key-hierarchy), [8](#8-unlock-methods-on-the-device) |
+| [HKDF-SHA256](https://en.wikipedia.org/wiki/HKDF) | Splitting the unlock key into the SRP input and the KEK | [1](#1-key-derivation-and-key-hierarchy) |
+| [SRP-6a](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol) | Password authentication without sending the password | [2](#2-authentication-process) |
+| [AES-256-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) | Vault contents, blobs, emails, exports and every key in the hierarchy | [1](#key-hierarchy), [3](#3-vault-operations), [4](#4-email-system-security), [6](#6-login-with-mobile), [8](#8-unlock-methods-on-the-device) |
+| [RSA-OAEP](https://en.wikipedia.org/wiki/Optimal_asymmetric_encryption_padding) (SHA-256) | Email encryption, Login with Mobile, vault sharing | [4](#4-email-system-security), [6](#6-login-with-mobile), [7](#7-vault-sharing) |
+| [Ed25519](https://en.wikipedia.org/wiki/EdDSA#Ed25519) | Signing public keys, grants, delivery keys and invitation names | [1](#key-hierarchy), [4](#4-email-system-security), [7](#7-vault-sharing) |
+| [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC) | Blob addresses, passkey PRF, session token (JWT) signing | [2](#2-authentication-process), [3](#3-vault-operations), [5](#5-passkey-authentication) |
+| [SHA-256](https://en.wikipedia.org/wiki/SHA-2) | Integrity checks and key fingerprints | [3](#3-vault-operations), [6](#6-login-with-mobile) |
+| [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) (RFC 6238) | Two-factor authentication | [2](#2-authentication-process) |
+| [ES256](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm) / [RS256](https://en.wikipedia.org/wiki/PKCS_1) | Passkeys (WebAuthn) | [5](#5-passkey-authentication) |
+
+What each algorithm provides:
+- **Argon2id** is memory-hard, which makes guessing a master password on GPUs or dedicated hardware expensive.
+- **SRP** lets the server check the password without ever receiving it or anything that decrypts the vault.
+- **AES-256-GCM** is authenticated encryption: a changed or swapped ciphertext fails to decrypt instead of producing wrong data.
+- **RSA-OAEP** encrypts a key for someone else: the key of an incoming email for the vault it belongs to, the Account Key for the device that started a Login with Mobile, and a shared vault key for each member.
+- **Ed25519** signs what a user publishes (their public key, grants, delivery keys and invitation names), so other users can check that it really came from that account.
+- **ES256 and RS256** are two signature algorithms supported by the WebAuthn standard, used for passkeys.
 
 ## Diagram
 The security architecture diagram below illustrates all encryption and authentication processes used in AliasVault to secure user data and communications.
