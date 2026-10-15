@@ -1025,7 +1025,7 @@
     "passwordCopied": "Pasfhocal cóipeáilte",
     "passwordUnlockError": "Theip ar an bpasfhocal a fhíorú",
     "pinConfirmSubtitle": "Ath-iontráil do PIN le deimhniú",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Níor dheimhnigh do ghléas go bhfuil sé díghlasáilte. Glasáil do ghléas, díghlasáil é le PIN, patrún nó pasfhocal do ghléis, agus bain triail as arís.",
     "pinIncorrectAttemptsRemaining": "PIN mícheart. {{count}} iarracht fágtha",
     "pinLockedMaxAttempts": "PIN faoi ghlas tar éis an iomarca iarrachtaí teipthe",
     "pinMismatch": "Ní hionann na PINanna. Déan iarracht arís.",
