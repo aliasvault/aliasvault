@@ -45,9 +45,9 @@ public static class Defaults
     public static string EncryptionSettings { get; } = $"{{\"DegreeOfParallelism\":{Argon2IdDegreeOfParallelism},\"MemorySize\":{Argon2IdMemorySize},\"Iterations\":{Argon2IdIterations}}}";
 
     /*
-     * The lowest Argon2id parameters the server accepts for a new KEK: the pre-0.31.0 defaults, so clients built before
-     * the defaults were raised can still register and change passwords for one more release with the old parameters.
-     * TODO: remove in 0.32.0+ and enforce the current defaults (Argon2Id* above) as the minimum instead.
+     * The lowest Argon2id parameters the server accepts for a new KEK (registration and password change). Every client that
+     * sends the Argon2IdHkdf type uses the 0.31.0 defaults, so they are the minimum. Existing accounts can still have older
+     * parameters until their next password change; the client floor in core/rust/src/crypto/argon2.rs keeps accepting those.
      */
 
     /// <summary>
@@ -58,10 +58,10 @@ public static class Defaults
     /// <summary>
     /// Gets the minimum accepted memory size for Argon2id (in KiB).
     /// </summary>
-    public static int MinimumArgon2IdMemorySize { get; } = 19456;
+    public static int MinimumArgon2IdMemorySize { get; } = 65536;
 
     /// <summary>
     /// Gets the minimum accepted number of iterations for Argon2id.
     /// </summary>
-    public static int MinimumArgon2IdIterations { get; } = 2;
+    public static int MinimumArgon2IdIterations { get; } = 5;
 }
