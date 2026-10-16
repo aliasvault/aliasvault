@@ -378,12 +378,12 @@ public class VaultController(
         var personalWrite = resolved.FirstOrDefault(r => r.Row.OwnerGroupId == user.PersonalGroupId).Write;
 
         // Account-key migration: a legacy vault's first manifest-v1 push includes a newly created Account Key hierarchy, which is accepted exactly once.
-        // Every later personal write must find the stored password unlock key. TODO: remove once legacy accounts are no longer supported.
+        // Every later personal write must find the stored password unlock method. TODO: remove once legacy accounts are no longer supported.
         var accountKeys = model.Migration?.AccountKeys;
-        var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        var hasExistingUnlockMethod = await context.UserUnlockMethods.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (accountKeys != null)
         {
-            if (hasExistingUnlockKey)
+            if (hasExistingUnlockMethod)
             {
                 return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
             }
@@ -399,7 +399,7 @@ public class VaultController(
                 return ApiError.Result(accountKeysError.Value, 400);
             }
         }
-        else if (personalWrite != null && !hasExistingUnlockKey)
+        else if (personalWrite != null && !hasExistingUnlockMethod)
         {
             return ApiError.Result(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400);
         }
@@ -532,8 +532,8 @@ public class VaultController(
                     if (accountKeys != null)
                     {
                         var srpCredentials = new VaultKeyMetadata { Salt = row.Salt, SrpVerifier = row.Verifier, EncryptionType = row.EncryptionType, EncryptionSettings = row.EncryptionSettings };
-                        var unlockKeyAlgorithm = VaultKeyAlgorithms.Parse(accountKeys.EncryptedAccountKeyAlgorithm);
-                        AccountKeyHierarchyHelper.AddEntities(context, user.Id, row.ManifestId, accountKeys, unlockKeyAlgorithm, srpCredentials, timeProvider.GetUtcNow().UtcDateTime);
+                        var accountKeyAlgorithm = VaultKeyAlgorithms.Parse(accountKeys.EncryptedAccountKeyAlgorithm);
+                        AccountKeyHierarchyHelper.AddEntities(context, user.Id, row.ManifestId, accountKeys, accountKeyAlgorithm, srpCredentials, timeProvider.GetUtcNow().UtcDateTime);
 
                         row.Salt = null;
                         row.Verifier = null;
@@ -552,7 +552,7 @@ public class VaultController(
             }
             catch (DbUpdateException) when (accountKeys != null)
             {
-                // A concurrent migration push won the race since the unlock key check above.
+                // A concurrent migration push won the race since the unlock method check above.
                 await tx.RollbackAsync();
                 return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
             }
@@ -652,8 +652,8 @@ public class VaultController(
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
-        // Only allow overwriting the ciphertext if the user has no unlock key yet (as part of one-time legacy migration).
-        if (model.Overwrite && await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
+        // Only allow overwriting the ciphertext if the user has no unlock method yet (as part of one-time legacy migration).
+        if (model.Overwrite && await context.UserUnlockMethods.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
         {
             return ApiError.Result(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400);
         }

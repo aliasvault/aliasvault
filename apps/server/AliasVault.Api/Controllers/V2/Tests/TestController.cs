@@ -374,7 +374,7 @@ public class TestController(
     }
 
     /// <summary>
-    /// Turn an account into one that predates the unlock-key model and holds a legacy (sqlite-blob) vault: the v2 key
+    /// Turn an account into one that predates the unlock-method model and holds a legacy (sqlite-blob) vault: the v2 key
     /// material is removed so login falls back to the salt and verifier on the vault row, and the personal vault is
     /// overwritten with the given one.
     /// Only available in DEBUG builds.
@@ -401,7 +401,7 @@ public class TestController(
 
         await context.AliasVaultUsers.Where(u => u.Id != user.Id && u.SrpIdentity == request.SrpIdentity).ExecuteUpdateAsync(u => u.SetProperty(x => x.SrpIdentity, (string?)null));
         user.SrpIdentity = request.SrpIdentity;
-        context.UserUnlockKeys.RemoveRange(context.UserUnlockKeys.Where(x => x.UserId == user.Id));
+        context.UserUnlockMethods.RemoveRange(context.UserUnlockMethods.Where(x => x.UserId == user.Id));
         context.UserGrantKeys.RemoveRange(context.UserGrantKeys.Where(x => x.UserId == user.Id));
         context.UserSigningKeys.RemoveRange(context.UserSigningKeys.Where(x => x.UserId == user.Id));
         context.VaultManifestAccessKeys.RemoveRange(context.VaultManifestAccessKeys.Where(x => x.UserId == user.Id));

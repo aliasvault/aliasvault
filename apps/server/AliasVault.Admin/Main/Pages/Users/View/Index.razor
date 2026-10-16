@@ -258,7 +258,7 @@ else
                             Allows to revert a password change in case of a failure. Historic records are automatically deleted after the configured Password Revert Window.
                         </p>
 
-                        <PasswordHistoryTable PasswordHistoryList="@PasswordHistoryList" RetentionDays="@UnlockKeyHistoryRetentionDays" OnRevert="@RevertPasswordChangeAsync" />
+                        <PasswordHistoryTable PasswordHistoryList="@PasswordHistoryList" RetentionDays="@UnlockMethodHistoryRetentionDays" OnRevert="@RevertPasswordChangeAsync" />
                     </div>
                 </div>
             </div>
@@ -312,8 +312,8 @@ else
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
     private VaultStorageOverview StorageOverview { get; set; } = new();
-    private List<UserUnlockKeysHistory> PasswordHistoryList { get; set; } = [];
-    private int UnlockKeyHistoryRetentionDays { get; set; }
+    private List<UserUnlockMethodsHistory> PasswordHistoryList { get; set; } = [];
+    private int UnlockMethodHistoryRetentionDays { get; set; }
     private bool HasManifestAccessKeys { get; set; }
     private bool TakesPartInSharing { get; set; }
     private List<AuthLog> AuthLogList { get; set; } = [];
@@ -402,9 +402,9 @@ else
         TakesPartInSharing = await TakesPartInSharingAsync(dbContext, User.Id);
 
         // Load the archived master password credentials that are still inside the retention window.
-        UnlockKeyHistoryRetentionDays = (await SettingsService.GetAllSettingsAsync()).UnlockKeyHistoryRetentionDays;
-        PasswordHistoryList = await UnlockKeyHistoryPolicy
-            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.UserId == User.Id), UnlockKeyHistoryRetentionDays, DateTime.UtcNow)
+        UnlockMethodHistoryRetentionDays = (await SettingsService.GetAllSettingsAsync()).UnlockMethodHistoryRetentionDays;
+        PasswordHistoryList = await UnlockMethodHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockMethodsHistory.Where(x => x.UserId == User.Id), UnlockMethodHistoryRetentionDays, DateTime.UtcNow)
             .OrderByDescending(x => x.ArchivedAt)
             .ToListAsync();
 
@@ -706,14 +706,14 @@ Do you want to proceed with the revert?"))
     /// Restore a previous master password credential to the user's current one.
     /// </summary>
     /// <param name="entry">The archived credential to restore.</param>
-    private async Task RevertPasswordChangeAsync(UserUnlockKeysHistory entry)
+    private async Task RevertPasswordChangeAsync(UserUnlockMethodsHistory entry)
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         var now = DateTime.UtcNow;
 
         // Re-read the row under the retention window to ensure it is still available.
-        var archived = await UnlockKeyHistoryPolicy
-            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.Id == entry.Id && x.UserId == User!.Id), UnlockKeyHistoryRetentionDays, now)
+        var archived = await UnlockMethodHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockMethodsHistory.Where(x => x.Id == entry.Id && x.UserId == User!.Id), UnlockMethodHistoryRetentionDays, now)
             .FirstOrDefaultAsync();
 
         if (archived == null)
@@ -723,8 +723,8 @@ Do you want to proceed with the revert?"))
             return;
         }
 
-        var unlockKey = await dbContext.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == User!.Id && x.Type == archived.Type);
-        if (unlockKey == null)
+        var unlockMethod = await dbContext.UserUnlockMethods.FirstOrDefaultAsync(x => x.UserId == User!.Id && x.Type == archived.Type);
+        if (unlockMethod == null)
         {
             GlobalNotificationService.AddErrorMessage("This user no longer has an unlock method of this type to revert.", true);
             return;
@@ -736,14 +736,14 @@ Do you want to proceed with the revert?"))
             await using var writeContext = await DbContextFactory.CreateDbContextAsync();
             await using var transaction = await writeContext.Database.BeginTransactionAsync();
 
-            var target = await writeContext.UserUnlockKeys.FirstAsync(x => x.Id == unlockKey.Id);
-            var source = await writeContext.UserUnlockKeysHistory.FirstAsync(x => x.Id == archived.Id);
+            var target = await writeContext.UserUnlockMethods.FirstAsync(x => x.Id == unlockMethod.Id);
+            var source = await writeContext.UserUnlockMethodsHistory.FirstAsync(x => x.Id == archived.Id);
 
             await writeContext.AliasVaultUsers.Where(x => x.Id == User!.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
             await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == User!.Id).ExecuteDeleteAsync();
-            writeContext.UserUnlockKeysHistory.Remove(source);
+            writeContext.UserUnlockMethodsHistory.Remove(source);
             await writeContext.SaveChangesAsync();
-            await UnlockKeyHistoryPolicy.ArchiveAsync(writeContext, target, UnlockKeyHistoryRetentionDays, now, "admin-revert");
+            await UnlockMethodHistoryPolicy.ArchiveAsync(writeContext, target, UnlockMethodHistoryRetentionDays, now, "admin-revert");
             source.RestoreOnto(target, now);
 
             await writeContext.SaveChangesAsync();

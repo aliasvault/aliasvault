@@ -134,9 +134,9 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.AuthLogRetentionDays = authDays;
         }
 
-        if (int.TryParse(settings.GetValueOrDefault("UnlockKeyHistoryRetentionDays"), out var unlockKeyHistoryDays))
+        if (int.TryParse(settings.GetValueOrDefault("UnlockMethodHistoryRetentionDays"), out var unlockMethodHistoryDays))
         {
-            model.UnlockKeyHistoryRetentionDays = unlockKeyHistoryDays;
+            model.UnlockMethodHistoryRetentionDays = unlockMethodHistoryDays;
         }
 
         if (int.TryParse(settings.GetValueOrDefault("UnreferencedBlobGraceHours"), out var unreferencedBlobHours))
@@ -230,7 +230,7 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
     {
         await SetSettingAsync("GeneralLogRetentionDays", model.GeneralLogRetentionDays.ToString());
         await SetSettingAsync("AuthLogRetentionDays", model.AuthLogRetentionDays.ToString());
-        await SetSettingAsync("UnlockKeyHistoryRetentionDays", model.UnlockKeyHistoryRetentionDays.ToString());
+        await SetSettingAsync("UnlockMethodHistoryRetentionDays", model.UnlockMethodHistoryRetentionDays.ToString());
         await SetSettingAsync("UnreferencedBlobGraceHours", model.UnreferencedBlobGraceHours.ToString());
         await SetSettingAsync("EmailRetentionDays", model.EmailRetentionDays.ToString());
         await SetSettingAsync("DisabledEmailRetentionDays", model.DisabledEmailRetentionDays.ToString());

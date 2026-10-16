@@ -15,8 +15,8 @@ using SecureRemotePassword;
 /// </summary>
 /// <param name="Session">The derived server session, or null when the proof did not validate.</param>
 /// <param name="ActiveSessionFound">Whether a server ephemeral was still cached, i.e. whether the client actually initiated this exchange.</param>
-/// <param name="UnlockKeyId">The unlock method whose secret was proven, or null for a legacy user that has no unlock key yet.</param>
-public sealed record SrpValidationResult(SrpSession? Session, bool ActiveSessionFound, Guid? UnlockKeyId)
+/// <param name="UnlockMethodId">The unlock method whose secret was proven, or null for a legacy user that has no unlock method yet.</param>
+public sealed record SrpValidationResult(SrpSession? Session, bool ActiveSessionFound, Guid? UnlockMethodId)
 {
     /// <summary>
     /// Gets a value indicating whether the proof was refused unchecked because the account is locked out.

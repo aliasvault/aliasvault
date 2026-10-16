@@ -46,8 +46,8 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
-        var unlockKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == parsedType);
-        if (unlockKey == null)
+        var unlockMethod = await context.UserUnlockMethods.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == parsedType);
+        if (unlockMethod == null)
         {
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
@@ -68,15 +68,15 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             .FirstOrDefaultAsync();
 
         // Get the KEK derivation parameters.
-        var credentials = VaultKeyMetadata.Parse(unlockKey.Metadata).RequireSrpCredentials();
+        var credentials = VaultKeyMetadata.Parse(unlockMethod.Metadata).RequireSrpCredentials();
 
         return Ok(new VaultKeyGetResponse
         {
             VaultKey = new VaultKeyResponse
             {
-                Type = UnlockMethodTypes.ToToken(unlockKey.Type),
-                EncryptedAccountKey = unlockKey.EncryptedAccountKey,
-                Algorithm = VaultKeyAlgorithms.ToToken(unlockKey.Algorithm),
+                Type = UnlockMethodTypes.ToToken(unlockMethod.Type),
+                EncryptedAccountKey = unlockMethod.EncryptedAccountKey,
+                Algorithm = VaultKeyAlgorithms.ToToken(unlockMethod.Algorithm),
                 EncryptedVek = encryptedVek,
                 AccountPublicKey = accountKeypair?.PublicKey,
                 EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,

@@ -66,7 +66,7 @@ public class AliasVaultUser : IdentityUser
     public DateTime? LastActivityDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of vault unlock keys (KEK/VEK model). Empty for users still on the legacy
+    /// Gets or sets the encrypted VEKs this user holds, one per manifest. Empty for users still on the legacy
     /// model where the password-derived key encrypts the vault directly.
     /// </summary>
     public virtual ICollection<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; } = [];
