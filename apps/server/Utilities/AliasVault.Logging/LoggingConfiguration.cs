@@ -40,7 +40,7 @@ public static class LoggingConfiguration
         "AliasVault.TaskRunner.Tasks.LogCleanupTask",
         "AliasVault.TaskRunner.Tasks.RefreshTokenCleanupTask",
         "AliasVault.TaskRunner.Tasks.OrphanedEmailCleanupTask",
-        "AliasVault.TaskRunner.Tasks.UnlockKeyHistoryCleanupTask",
+        "AliasVault.TaskRunner.Tasks.UnlockMethodHistoryCleanupTask",
         "AliasVault.TaskRunner.Tasks.VaultBlobCleanupTask",
 
         // Admin actions

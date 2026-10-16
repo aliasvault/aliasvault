@@ -14,5 +14,5 @@ namespace AliasServerDb;
 /// <param name="Verifier">The SRP verifier the server checks a client's proof against.</param>
 /// <param name="EncryptionType">How the client derives the SRP input from the password: Argon2IdHkdf, or legacy Argon2Id.</param>
 /// <param name="EncryptionSettings">The parameters belonging to the KDF named by <paramref name="EncryptionType"/>.</param>
-/// <param name="UnlockKeyId">The <see cref="UserUnlockKey"/> these credentials came from, or null for a legacy user whose credentials still live on the vault manifest.</param>
-public sealed record UserSrpCredentials(string Salt, string Verifier, string EncryptionType, string EncryptionSettings, Guid? UnlockKeyId = null);
+/// <param name="UnlockMethodId">The <see cref="UserUnlockMethod"/> these credentials came from, or null for a legacy user whose credentials still live on the vault manifest.</param>
+public sealed record UserSrpCredentials(string Salt, string Verifier, string EncryptionType, string EncryptionSettings, Guid? UnlockMethodId = null);

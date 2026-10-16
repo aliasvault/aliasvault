@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="UnlockKeyHistoryPolicyTests.cs" company="aliasvault">
+// <copyright file="UnlockMethodHistoryPolicyTests.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -14,7 +14,7 @@ using AliasVault.Shared.Models.Enums;
 /// <summary>
 /// Tests for the retention rule that determines how long a superseded master password credential stays recoverable.
 /// </summary>
-public class UnlockKeyHistoryPolicyTests
+public class UnlockMethodHistoryPolicyTests
 {
     private DateTime now;
 
@@ -36,9 +36,9 @@ public class UnlockKeyHistoryPolicyTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(UnlockKeyHistoryPolicy.EffectiveRetentionDays(1), Is.EqualTo(1));
-            Assert.That(UnlockKeyHistoryPolicy.EffectiveRetentionDays(7), Is.EqualTo(7));
-            Assert.That(UnlockKeyHistoryPolicy.EffectiveRetentionDays(3650), Is.EqualTo(3650));
+            Assert.That(UnlockMethodHistoryPolicy.EffectiveRetentionDays(1), Is.EqualTo(1));
+            Assert.That(UnlockMethodHistoryPolicy.EffectiveRetentionDays(7), Is.EqualTo(7));
+            Assert.That(UnlockMethodHistoryPolicy.EffectiveRetentionDays(3650), Is.EqualTo(3650));
         });
     }
 
@@ -50,8 +50,8 @@ public class UnlockKeyHistoryPolicyTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(UnlockKeyHistoryPolicy.EffectiveRetentionDays(0), Is.EqualTo(0));
-            Assert.That(UnlockKeyHistoryPolicy.EffectiveRetentionDays(-5), Is.EqualTo(0));
+            Assert.That(UnlockMethodHistoryPolicy.EffectiveRetentionDays(0), Is.EqualTo(0));
+            Assert.That(UnlockMethodHistoryPolicy.EffectiveRetentionDays(-5), Is.EqualTo(0));
         });
     }
 
@@ -61,7 +61,7 @@ public class UnlockKeyHistoryPolicyTests
     [Test]
     public void WithinRetentionExcludesExpiredRows()
     {
-        var rows = new List<UserUnlockKeysHistory>
+        var rows = new List<UserUnlockMethodsHistory>
         {
             CreateRow("fresh", now.AddDays(-1)),
             CreateRow("nearly-expired", now.AddDays(-7).AddHours(1)),
@@ -69,7 +69,7 @@ public class UnlockKeyHistoryPolicyTests
             CreateRow("long-expired", now.AddDays(-90)),
         }.AsQueryable();
 
-        var usable = UnlockKeyHistoryPolicy.WithinRetention(rows, 7, now).Select(x => x.Label).ToList();
+        var usable = UnlockMethodHistoryPolicy.WithinRetention(rows, 7, now).Select(x => x.Label).ToList();
 
         Assert.That(usable, Is.EquivalentTo(new[] { "fresh", "nearly-expired" }));
     }
@@ -81,12 +81,12 @@ public class UnlockKeyHistoryPolicyTests
     [Test]
     public void WithinRetentionReturnsNothingForANegativeWindow()
     {
-        var rows = new List<UserUnlockKeysHistory>
+        var rows = new List<UserUnlockMethodsHistory>
         {
             CreateRow("recent", now.AddMinutes(-5)),
         }.AsQueryable();
 
-        Assert.That(UnlockKeyHistoryPolicy.WithinRetention(rows, -5, now), Is.Empty);
+        Assert.That(UnlockMethodHistoryPolicy.WithinRetention(rows, -5, now), Is.Empty);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class UnlockKeyHistoryPolicyTests
         archived.Metadata = """{"salt":"old-salt","srpVerifier":"old-verifier"}""";
         archived.AccountKeyVersion = 3;
 
-        var live = new UserUnlockKey
+        var live = new UserUnlockMethod
         {
             Id = Guid.NewGuid(),
             UserId = archived.UserId,
@@ -128,12 +128,12 @@ public class UnlockKeyHistoryPolicyTests
     }
 
     /// <summary>
-    /// Test that archiving a live unlock key captures the credentials a revert needs.
+    /// Test that archiving a live unlock method captures the credentials a revert needs.
     /// </summary>
     [Test]
     public void CreateFromCapturesTheSupersededCredentials()
     {
-        var live = new UserUnlockKey
+        var live = new UserUnlockMethod
         {
             Id = Guid.NewGuid(),
             UserId = "user-1",
@@ -146,11 +146,11 @@ public class UnlockKeyHistoryPolicyTests
             UpdatedAt = now.AddDays(-2),
         };
 
-        var archived = UserUnlockKeysHistory.CreateFrom(live, now, "chrome-0.29.0");
+        var archived = UserUnlockMethodsHistory.CreateFrom(live, now, "chrome-0.29.0");
 
         Assert.Multiple(() =>
         {
-            Assert.That(archived.UnlockKeyId, Is.EqualTo(live.Id));
+            Assert.That(archived.UnlockMethodId, Is.EqualTo(live.Id));
             Assert.That(archived.UserId, Is.EqualTo("user-1"));
             Assert.That(archived.Type, Is.EqualTo(UnlockMethodType.Password));
             Assert.That(archived.EncryptedAccountKey, Is.EqualTo("ak-under-old-kek"));
@@ -162,17 +162,17 @@ public class UnlockKeyHistoryPolicyTests
     }
 
     /// <summary>
-    /// Creates an archived unlock key for the tests, labelled so assertions read clearly.
+    /// Creates an archived unlock method for the tests, labelled so assertions read clearly.
     /// </summary>
     /// <param name="label">Label identifying the row in assertions.</param>
     /// <param name="archivedAt">When the row was archived.</param>
-    /// <returns>The archived unlock key.</returns>
-    private static UserUnlockKeysHistory CreateRow(string label, DateTime archivedAt)
+    /// <returns>The archived unlock method.</returns>
+    private static UserUnlockMethodsHistory CreateRow(string label, DateTime archivedAt)
     {
-        return new UserUnlockKeysHistory
+        return new UserUnlockMethodsHistory
         {
             Id = Guid.NewGuid(),
-            UnlockKeyId = Guid.NewGuid(),
+            UnlockMethodId = Guid.NewGuid(),
             UserId = "user-1",
             Type = UnlockMethodType.Password,
             Algorithm = VaultKeyAlgorithm.Aes256Gcm,

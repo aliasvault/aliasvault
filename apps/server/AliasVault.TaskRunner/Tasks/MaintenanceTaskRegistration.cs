@@ -25,7 +25,7 @@ public static class MaintenanceTaskRegistration
         services.AddTransient<IMaintenanceTask, EmailQuotaCleanupTask>();
         services.AddTransient<IMaintenanceTask, DisabledEmailCleanupTask>();
         services.AddTransient<IMaintenanceTask, OrphanedEmailCleanupTask>();
-        services.AddTransient<IMaintenanceTask, UnlockKeyHistoryCleanupTask>();
+        services.AddTransient<IMaintenanceTask, UnlockMethodHistoryCleanupTask>();
         services.AddTransient<IMaintenanceTask, VaultBlobCleanupTask>();
 
         return services;

@@ -21,11 +21,11 @@ public static class AccountKeyHierarchyHelper
     /// Validates an uploaded account key hierarchy, including the signing key's signature over the account public key.
     /// </summary>
     /// <param name="keys">The uploaded keys.</param>
-    /// <param name="unlockKeyAlgorithm">The parsed algorithm of the encrypted Account Key, when valid.</param>
+    /// <param name="accountKeyAlgorithm">The parsed algorithm of the encrypted Account Key, when valid.</param>
     /// <returns>Null when valid, else the error code to answer with.</returns>
-    public static ApiErrorCode? Validate(AccountKeysUpload keys, out VaultKeyAlgorithm unlockKeyAlgorithm)
+    public static ApiErrorCode? Validate(AccountKeysUpload keys, out VaultKeyAlgorithm accountKeyAlgorithm)
     {
-        unlockKeyAlgorithm = default;
+        accountKeyAlgorithm = default;
 
         // Reject an incomplete or oversized hierarchy before any row is written.
         if (!keys.IsComplete || !keys.FitsStorageLimits || !RsaPublicKeyValidator.IsValid(keys.AccountPublicKey))
@@ -38,7 +38,7 @@ public static class AccountKeyHierarchyHelper
             return ApiErrorCode.INVALID_REQUEST;
         }
 
-        if (!VaultKeyAlgorithms.TryParse(keys.EncryptedAccountKeyAlgorithm, out unlockKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(unlockKeyAlgorithm))
+        if (!VaultKeyAlgorithms.TryParse(keys.EncryptedAccountKeyAlgorithm, out accountKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(accountKeyAlgorithm))
         {
             return ApiErrorCode.INVALID_ALGORITHM;
         }
@@ -47,23 +47,23 @@ public static class AccountKeyHierarchyHelper
     }
 
     /// <summary>
-    /// Adds the password unlock key, grant key, signing key and personal manifest access key rows of a validated hierarchy to the context.
+    /// Adds the password unlock method, grant key, signing key and personal manifest access key rows of a validated hierarchy to the context.
     /// </summary>
     /// <param name="context">Database context, inside the caller's unit of work.</param>
     /// <param name="userId">The account owning the keys.</param>
     /// <param name="personalManifestId">The account's personal manifest.</param>
     /// <param name="keys">The keys, already accepted by <see cref="Validate"/>.</param>
-    /// <param name="unlockKeyAlgorithm">The algorithm returned by <see cref="Validate"/>.</param>
-    /// <param name="srpCredentials">The password unlock key's KDF parameters and SRP credentials.</param>
+    /// <param name="accountKeyAlgorithm">The algorithm returned by <see cref="Validate"/>.</param>
+    /// <param name="srpCredentials">The password unlock method's KDF parameters and SRP credentials.</param>
     /// <param name="now">The creation time.</param>
-    public static void AddEntities(AliasServerDbContext context, string userId, Guid personalManifestId, AccountKeysUpload keys, VaultKeyAlgorithm unlockKeyAlgorithm, VaultKeyMetadata srpCredentials, DateTime now)
+    public static void AddEntities(AliasServerDbContext context, string userId, Guid personalManifestId, AccountKeysUpload keys, VaultKeyAlgorithm accountKeyAlgorithm, VaultKeyMetadata srpCredentials, DateTime now)
     {
-        context.UserUnlockKeys.Add(new UserUnlockKey
+        context.UserUnlockMethods.Add(new UserUnlockMethod
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Type = UnlockMethodType.Password,
-            Algorithm = unlockKeyAlgorithm,
+            Algorithm = accountKeyAlgorithm,
             EncryptedAccountKey = keys.EncryptedAccountKey!,
             Metadata = srpCredentials.ToJson(),
             CreatedAt = now,

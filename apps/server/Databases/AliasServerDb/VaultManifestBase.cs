@@ -15,7 +15,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// <para>
 /// The columns the manifest-v1 format no longer uses are nullable so null reads as "not applicable to this revision":
 /// a revision with a null <see cref="VaultBlob"/>/<see cref="Version"/> is manifest-v1, and null SRP columns mean the
-/// login credentials moved to the unlock-key model. Only legacy sqlite-blob revisions carry values there.
+/// login credentials moved to the unlock-method model. Only legacy sqlite-blob revisions carry values there.
 /// </para>
 /// </summary>
 public abstract class VaultManifestBase : IVaultRevision

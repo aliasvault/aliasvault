@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// The per-method specific fields of a <see cref="UserUnlockKey"/> stored in a JSON column.
+/// The per-method specific fields of a <see cref="UserUnlockMethod"/> stored in a JSON column.
 /// </summary>
 public sealed class VaultKeyMetadata
 {
@@ -74,7 +74,7 @@ public sealed class VaultKeyMetadata
     /// <summary>
     /// Helper method to return the SRP credentials and KDF parameters.
     /// </summary>
-    /// <returns>The credentials, without the unlock key id which only the caller that loaded the row knows.</returns>
+    /// <returns>The credentials, without the unlock method id which only the caller that loaded the row knows.</returns>
     public UserSrpCredentials RequireSrpCredentials()
     {
         if (Salt is null || SrpVerifier is null || EncryptionType is null || EncryptionSettings is null)

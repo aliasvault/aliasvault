@@ -272,7 +272,7 @@ public class TokenService(IAliasServerDbContextFactory dbContextFactory, UserMan
             return new LoginProofResult(null, null, null, ApiErrorCode.USER_NOT_FOUND);
         }
 
-        return new LoginProofResult(user, srpResult.Session, srpResult.UnlockKeyId, null);
+        return new LoginProofResult(user, srpResult.Session, srpResult.UnlockMethodId, null);
     }
 
     /// <summary>

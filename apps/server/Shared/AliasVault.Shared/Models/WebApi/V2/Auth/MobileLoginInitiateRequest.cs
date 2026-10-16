@@ -15,7 +15,7 @@ using System.ComponentModel.DataAnnotations;
 public class MobileLoginInitiateRequest
 {
     /// <summary>
-    /// Gets or sets the RSA public key (JWK) of the initiating client, which the mobile app encrypts the unlock key with.
+    /// Gets or sets the RSA public key (JWK) of the initiating client, which the mobile app encrypts the Account Key with.
     /// </summary>
     [Required]
     public required string ClientPublicKey { get; set; }

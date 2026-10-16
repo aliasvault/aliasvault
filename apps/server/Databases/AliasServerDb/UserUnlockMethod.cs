@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="UserUnlockKey.cs" company="aliasvault">
+// <copyright file="UserUnlockMethod.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -14,7 +14,7 @@ using AliasVault.Shared.Models.Enums;
 /// User tied unlock method that a user uses to login to their own account. Every unlock method encrypts the same Account Key,
 /// which is then used to actually decrypt owned manifest's and grant keys.
 /// </summary>
-public class UserUnlockKey
+public class UserUnlockMethod
 {
     /// <summary>
     /// Gets or sets the primary key.

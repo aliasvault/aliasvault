@@ -59,7 +59,7 @@ public class UserSigningKey
 
     /// <summary>
     /// Gets or sets the version of the user's Account Key that <see cref="EncryptedPrivateKey"/> is encrypted with;
-    /// see <see cref="UserUnlockKey.AccountKeyVersion"/>.
+    /// see <see cref="UserUnlockMethod.AccountKeyVersion"/>.
     /// </summary>
     public int AccountKeyVersion { get; set; }
 

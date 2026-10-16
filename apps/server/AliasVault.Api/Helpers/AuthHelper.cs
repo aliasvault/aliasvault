@@ -65,7 +65,7 @@ public static class AuthHelper
     public static string CreateSrpEphemeral(IMemoryCache cache, AliasVaultUser user, SrpPurpose purpose, UserSrpCredentials credentials, string? sessionId = null)
     {
         var ephemeral = Srp.GenerateEphemeralServer(credentials.Verifier);
-        cache.Set(EphemeralCacheKey(purpose, user, sessionId), new CachedEphemeral(ephemeral.Secret, credentials.UnlockKeyId), EphemeralLifetime);
+        cache.Set(EphemeralCacheKey(purpose, user, sessionId), new CachedEphemeral(ephemeral.Secret, credentials.UnlockMethodId), EphemeralLifetime);
         return ephemeral.Public;
     }
 
@@ -103,7 +103,7 @@ public static class AuthHelper
 
         // The proof must answer the unlock method chosen at initiate; if that changed since (legacy account upgraded), the exchange is stale.
         var credentials = await GetUserLatestVaultEncryptionSettingsAsync(context, user);
-        if (credentials.UnlockKeyId != cached.UnlockKeyId)
+        if (credentials.UnlockMethodId != cached.UnlockMethodId)
         {
             cache.Remove(cacheKey);
             return new SrpValidationResult(null, false, null);
@@ -125,7 +125,7 @@ public static class AuthHelper
             cache.Remove(cacheKey);
         }
 
-        return new SrpValidationResult(serverSession, true, credentials.UnlockKeyId);
+        return new SrpValidationResult(serverSession, true, credentials.UnlockMethodId);
     }
 
     /// <summary>
@@ -176,14 +176,14 @@ public static class AuthHelper
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">User object.</param>
-    /// <returns>The credentials the user authenticates with, and the unlock key they came from.</returns>
+    /// <returns>The credentials the user authenticates with, and the unlock method they came from.</returns>
     public static async Task<UserSrpCredentials> GetUserLatestVaultEncryptionSettingsAsync(AliasServerDbContext context, AliasVaultUser user)
     {
         // Get the user's current SRP salt/verifier and key derivation settings for the account-key KEK/VEK model.
-        var passwordKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        var passwordKey = await context.UserUnlockMethods.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (passwordKey is not null)
         {
-            return VaultKeyMetadata.Parse(passwordKey.Metadata).RequireSrpCredentials() with { UnlockKeyId = passwordKey.Id };
+            return VaultKeyMetadata.Parse(passwordKey.Metadata).RequireSrpCredentials() with { UnlockMethodId = passwordKey.Id };
         }
 
         // Get the user's current SRP salt/verifier and key derivation settings for the legacy model.
@@ -192,7 +192,7 @@ public static class AuthHelper
             .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings })
             .FirstAsync();
 
-        // The SRP columns are null once a user moved to the unlock-key model, which the branch above already covers.
+        // The SRP columns are null once a user moved to the unlock-method model, which the branch above already covers.
         return new UserSrpCredentials(latestVault.Salt ?? string.Empty, latestVault.Verifier ?? string.Empty, latestVault.EncryptionType ?? string.Empty, latestVault.EncryptionSettings ?? string.Empty);
     }
 
@@ -201,17 +201,17 @@ public static class AuthHelper
     /// unlock methods a user has enrolled.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="unlockKeyId">The unlock key that was proven, as returned by <see cref="ValidateSrpSessionAsync"/>.</param>
+    /// <param name="unlockMethodId">The unlock method that was proven, as returned by <see cref="ValidateSrpSessionAsync"/>.</param>
     /// <param name="now">The timestamp to record.</param>
     /// <returns>Task.</returns>
-    public static async Task TouchUnlockKeyLastUsedAsync(AliasServerDbContext context, Guid? unlockKeyId, DateTime now)
+    public static async Task TouchUnlockMethodLastUsedAsync(AliasServerDbContext context, Guid? unlockMethodId, DateTime now)
     {
-        if (unlockKeyId is null)
+        if (unlockMethodId is null)
         {
             return;
         }
 
-        await context.UserUnlockKeys.Where(x => x.Id == unlockKeyId.Value).ExecuteUpdateAsync(s => s.SetProperty(x => x.LastUsedAt, now));
+        await context.UserUnlockMethods.Where(x => x.Id == unlockMethodId.Value).ExecuteUpdateAsync(s => s.SetProperty(x => x.LastUsedAt, now));
     }
 
     /// <summary>
@@ -283,7 +283,7 @@ public static class AuthHelper
     /// <summary>
     /// A cached server ephemeral and the unlock method whose verifier it was created for (null for a legacy account).
     /// </summary>
-    private sealed class CachedEphemeral(string secret, Guid? unlockKeyId)
+    private sealed class CachedEphemeral(string secret, Guid? unlockMethodId)
     {
         private int claimed;
 
@@ -293,9 +293,9 @@ public static class AuthHelper
         public string Secret { get; } = secret;
 
         /// <summary>
-        /// Gets the unlock key the verifier came from.
+        /// Gets the unlock method the verifier came from.
         /// </summary>
-        public Guid? UnlockKeyId { get; } = unlockKeyId;
+        public Guid? UnlockMethodId { get; } = unlockMethodId;
 
         /// <summary>
         /// Gets a value indicating whether the exchange has been used up.

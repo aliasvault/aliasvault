@@ -203,14 +203,14 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<CapabilityRule> CapabilityRules { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserUnlockKeys DbSet.
+    /// Gets or sets the UserUnlockMethods DbSet.
     /// </summary>
-    public DbSet<UserUnlockKey> UserUnlockKeys { get; set; }
+    public DbSet<UserUnlockMethod> UserUnlockMethods { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserUnlockKeysHistory DbSet.
+    /// Gets or sets the UserUnlockMethodsHistory DbSet.
     /// </summary>
-    public DbSet<UserUnlockKeysHistory> UserUnlockKeysHistory { get; set; }
+    public DbSet<UserUnlockMethodsHistory> UserUnlockMethodsHistory { get; set; }
 
     /// <summary>
     /// Gets or sets the UserGrantKeys DbSet.
@@ -478,8 +478,8 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.Property(e => e.Tier).HasConversion<string>().HasMaxLength(20);
         });
 
-        // Configure UserUnlockKey: one row per enrolled unlock method, each encrypting the user's Account Key.
-        modelBuilder.Entity<UserUnlockKey>(builder =>
+        // Configure UserUnlockMethod: one row per enrolled unlock method, each encrypting the user's Account Key.
+        modelBuilder.Entity<UserUnlockMethod>(builder =>
         {
             builder.HasOne(e => e.User)
                 .WithMany()
@@ -488,23 +488,23 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             // Label is part of the key so a user can enroll several methods of one type (two hardware keys, say)
             // while methods that must stay single, the password above all, keep it empty and so stay unique per type.
-            builder.HasIndex(e => new { e.UserId, e.Type, e.Label }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
+            builder.HasIndex(e => new { e.UserId, e.Type, e.Label }).IsUnique().HasDatabaseName("UX_UserUnlockMethods_UserId_Type_Label");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
         });
 
-        // Configure UserUnlockKeysHistory: superseded unlock keys, retained briefly so a password change can be reverted.
-        modelBuilder.Entity<UserUnlockKeysHistory>(builder =>
+        // Configure UserUnlockMethodsHistory: superseded unlock methods, retained briefly so a password change can be reverted.
+        modelBuilder.Entity<UserUnlockMethodsHistory>(builder =>
         {
-            builder.ToTable("UserUnlockKeysHistory");
+            builder.ToTable("UserUnlockMethodsHistory");
             builder.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.Type, e.ArchivedAt }).HasDatabaseName("IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt");
-            builder.HasIndex(e => e.ArchivedAt).HasDatabaseName("IX_UserUnlockKeysHistory_ArchivedAt");
+            builder.HasIndex(e => new { e.UserId, e.Type, e.ArchivedAt }).HasDatabaseName("IX_UserUnlockMethodsHistory_UserId_Type_ArchivedAt");
+            builder.HasIndex(e => e.ArchivedAt).HasDatabaseName("IX_UserUnlockMethodsHistory_ArchivedAt");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));

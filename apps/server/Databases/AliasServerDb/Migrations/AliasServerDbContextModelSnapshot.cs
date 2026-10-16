@@ -17,7 +17,7 @@ namespace AliasServerDb.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -1217,7 +1217,7 @@ namespace AliasServerDb.Migrations
                     b.ToTable("UserSigningKeys");
                 });
 
-            modelBuilder.Entity("AliasServerDb.UserUnlockKey", b =>
+            modelBuilder.Entity("AliasServerDb.UserUnlockMethod", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1266,12 +1266,12 @@ namespace AliasServerDb.Migrations
 
                     b.HasIndex("UserId", "Type", "Label")
                         .IsUnique()
-                        .HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
+                        .HasDatabaseName("UX_UserUnlockMethods_UserId_Type_Label");
 
-                    b.ToTable("UserUnlockKeys");
+                    b.ToTable("UserUnlockMethods");
                 });
 
-            modelBuilder.Entity("AliasServerDb.UserUnlockKeysHistory", b =>
+            modelBuilder.Entity("AliasServerDb.UserUnlockMethodsHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1312,7 +1312,7 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<Guid>("UnlockKeyId")
+                    b.Property<Guid>("UnlockMethodId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1326,12 +1326,12 @@ namespace AliasServerDb.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ArchivedAt")
-                        .HasDatabaseName("IX_UserUnlockKeysHistory_ArchivedAt");
+                        .HasDatabaseName("IX_UserUnlockMethodsHistory_ArchivedAt");
 
                     b.HasIndex("UserId", "Type", "ArchivedAt")
-                        .HasDatabaseName("IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt");
+                        .HasDatabaseName("IX_UserUnlockMethodsHistory_UserId_Type_ArchivedAt");
 
-                    b.ToTable("UserUnlockKeysHistory", (string)null);
+                    b.ToTable("UserUnlockMethodsHistory", (string)null);
                 });
 
             modelBuilder.Entity("AliasServerDb.VaultBlobObject", b =>
@@ -2034,7 +2034,7 @@ namespace AliasServerDb.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AliasServerDb.UserUnlockKey", b =>
+            modelBuilder.Entity("AliasServerDb.UserUnlockMethod", b =>
                 {
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany()
@@ -2045,7 +2045,7 @@ namespace AliasServerDb.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AliasServerDb.UserUnlockKeysHistory", b =>
+            modelBuilder.Entity("AliasServerDb.UserUnlockMethodsHistory", b =>
                 {
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany()

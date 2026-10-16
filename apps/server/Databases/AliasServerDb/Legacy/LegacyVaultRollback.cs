@@ -66,8 +66,8 @@ public static class LegacyVaultRollback
             await context.VaultManifestAccessKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
             await context.UserGrantKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
             await context.UserSigningKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
-            await context.UserUnlockKeysHistory.Where(x => x.UserId == userId).ExecuteDeleteAsync();
-            await context.UserUnlockKeys.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+            await context.UserUnlockMethodsHistory.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+            await context.UserUnlockMethods.Where(x => x.UserId == userId).ExecuteDeleteAsync();
 
             // Both the login credentials and the session key change, so every device has to authenticate again.
             await context.AliasVaultUserRefreshTokens.Where(x => x.UserId == userId).ExecuteDeleteAsync();
