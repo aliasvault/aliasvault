@@ -15,7 +15,7 @@
     "PENDING_MIGRATIONS": "May mga mina-migrate pa. Paki-run ang 'dotnet ef database update' para i-apply sila.",
     "PUBLIC_REGISTRATION_DISABLED": "Disabled muna ang registration ng bagong account sa server na ito. Paki-contact ang administrator.",
     "REFRESH_TOKEN_REQUIRED": "Kailangan ng refresh token.",
-    "REGISTRATION_FAILED": "Hindi maka-gawa ng account. Subukan muli makalipas ang ilang minuto. Kung magpapatuloy ang problemang ito, paki-contact ang support.",
+    "REGISTRATION_FAILED": "Hindi maka-gawa ng account. Subukan muli makalipas ang ilang minuto. Kung magpapatuloy pa ang problemang ito, paki-contact ang support.",
     "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
     "USERNAME_ALREADY_IN_USE": "Nagamit na ng username.",
     "USERNAME_AVAILABLE": "Available ang username.",
@@ -64,9 +64,9 @@
     },
     "vaultError": {
       "copyErrorDetails": "Kopyahin ang detalye ng error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "hideDetails": "Hide error details",
-      "showDetails": "Show error details",
+      "description": "Nagka-error habang nilo-load ang iyong vault. Kung magpapatuloy pa ang problemang ito, paki-contact ang support.",
+      "hideDetails": "Itago ang mga detalye ng error",
+      "showDetails": "Ipakita ang mga detalye ng error",
       "title": "Vault Error"
     }
   },
