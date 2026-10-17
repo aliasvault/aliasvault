@@ -1,34 +1,34 @@
 {
   "apiErrors": {
-    "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
-    "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
-    "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
-    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
+    "ACCOUNT_BLOCKED": "Na-disable ang iyong account. Kung sa tingin mo ay isa itong pagkakamali, makipag-ugnayan sa support.",
+    "ACCOUNT_LOCKED": "Pansamantalang naka-lock ang iyong account dahil sa maraming bigong pagtatangka. Subukan muli mamaya.",
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Na-delete na ang account.",
+    "ALIAS_LIMIT_REACHED": "Naabot mo na ang limit sa paggawa ng bagong email aliases. Subukan muli mamaya, o makipag-ugnayan sa support kung kailangan mo pa.",
+    "CLAIM_DOES_NOT_EXIST": "Nagkaroon ng error habang sinusubukang i-load ang mga email. Paki-edit at save ang credential entry para i-synchronize ang database, at subukan muli.",
+    "CLAIM_TAKEN": "Nagamit na ng ibang account ang email address na ito. I-edit ang item na ito at pumili ng ibang email address.",
     "INTERNAL_SERVER_ERROR": "Internal server error.",
-    "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
-    "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
-    "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
-    "PASSWORD_MISMATCH": "The provided password does not match your current password.",
-    "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
-    "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-    "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
-    "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "INVALID_AUTHENTICATOR_CODE": "Maling authenticator code. Subukan muli.",
+    "INVALID_RECOVERY_CODE": "Maling recovery code. Subukan muli.",
+    "INVALID_REFRESH_TOKEN": "Maling refresh token.",
+    "INVITE_CODE_INVALID": "Ang invite link na ito ay mali, nag-expire na, o nagamit na. Humingi ng bago sa administrator.",
+    "PASSWORD_MISMATCH": "Hindi tumutugma ang ibinigay na password sa iyong kasalukuyang password.",
+    "PENDING_MIGRATIONS": "May mga mina-migrate pa. Paki-run ang 'dotnet ef database update' para i-apply sila.",
+    "PUBLIC_REGISTRATION_DISABLED": "Disabled muna ang registration ng bagong account sa server na ito. Paki-contact ang administrator.",
+    "REFRESH_TOKEN_REQUIRED": "Kailangan ng refresh token.",
+    "REGISTRATION_FAILED": "Hindi maka-gawa ng account. Subukan muli makalipas ang ilang minuto. Kung magpapatuloy ang problemang ito, paki-contact ang support.",
     "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
-    "USERNAME_ALREADY_IN_USE": "Username is already in use.",
-    "USERNAME_AVAILABLE": "Username is available.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
-    "USERNAME_INVALID_CHARACTERS": "Username is invalid, can only contain letters or digits.",
-    "USERNAME_INVALID_EMAIL": "Invalid email address.",
-    "USERNAME_MISMATCH": "Username does not match the current user.",
-    "USERNAME_REQUIRED": "Username is required.",
-    "USERNAME_TOO_LONG": "Username too long: cannot be longer than 40 characters.",
-    "USERNAME_TOO_SHORT": "Username too short: must be at least 3 characters long.",
-    "USER_NOT_FOUND": "Invalid username or password. Please try again.",
-    "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again.",
-    "VAULT_NOT_UP_TO_DATE": "Your vault is not up-to-date. Please synchronize your vault and try again."
+    "USERNAME_ALREADY_IN_USE": "Nagamit na ng username.",
+    "USERNAME_AVAILABLE": "Available ang username.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Hindi pwedeng walang laman, o whitespace lang ang laman ng username.",
+    "USERNAME_INVALID_CHARACTERS": "Invalid ang username, letters at numbers lang ang pwede.",
+    "USERNAME_INVALID_EMAIL": "Maling email address.",
+    "USERNAME_MISMATCH": "Hindi tumutugma ang username sa kasalukuyang user.",
+    "USERNAME_REQUIRED": "Kailangan ng username.",
+    "USERNAME_TOO_LONG": "Masyadong mahaba ang username: hindi pwedeng mas mahaba pa sa 40 characters.",
+    "USERNAME_TOO_SHORT": "Masyadong maikli ang username: dapat ay hindi bababa sa 3 characters ang haba.",
+    "USER_NOT_FOUND": "Mali ang username o password. Subukan muli.",
+    "VAULT_ERROR": "Ang local vault ay hindi up-to-date. Paki-synchronize ang iyong vault sa pamamagitan ng pag-refresh sa page at subukan muli.",
+    "VAULT_NOT_UP_TO_DATE": "Ang vault ay hindi up-to-date. Paki-synchronize ang iyong vault at subukan muli."
   },
   "app": {
     "appName": "AliasVault",
@@ -37,33 +37,33 @@
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "customProxyHeadersDescription": "Magdagdag ng mga HTTP header na isasamang ma-send tuwing may hinihingi sa AliasVault server mo. Magagamit ito sa mga self-hosted setup na nasa likod ng reverse proxy na nagche-check ng mga custom header (hal. Pangolin, Cloudflare Access).",
+      "headerName": "Pangalan ng header",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value",
+      "headerValue": "Value ng header",
       "selfHosted": "Self-hosted",
       "title": "API Connection",
-      "version": "Version: {{version}}"
+      "version": "Bersyon: {{version}}"
     },
     "navigation": {
-      "login": "Login",
-      "loginSettings": "Login Settings"
+      "login": "Mag-login",
+      "loginSettings": "Mga login settings"
     },
     "notFound": {
-      "goHome": "Go back to the start",
-      "message": "This page has been moved or deleted.",
-      "title": "Page not found"
+      "goHome": "Bumalik sa simula",
+      "message": "Ang page na ito ay nalipat na o nabura na.",
+      "title": "Hindi matagpuan ang page"
     },
     "reinitialize": {
-      "attemptingToUnlockMessage": "Attempting to unlock.",
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout."
+      "attemptingToUnlockMessage": "Sinusubukang i-unlock.",
+      "vaultAutoLockedMessage": "Kusang na-lock ang vault pagtapos ng timeout."
     },
     "status": {
-      "decryptingVault": "Decrypting vault",
-      "unlockingVault": "Unlocking vault..."
+      "decryptingVault": "Dine-decrypt ang vault",
+      "unlockingVault": "Binubuksan ang vault..."
     },
     "vaultError": {
-      "copyErrorDetails": "Copy error details",
+      "copyErrorDetails": "Kopyahin ang detalye ng error",
       "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
       "hideDetails": "Hide error details",
       "showDetails": "Show error details",
@@ -584,7 +584,7 @@
       "url": "URL"
     },
     "login": {
-      "title": "Login"
+      "title": "Mag-login"
     },
     "note": {
       "title": "Note"
@@ -823,7 +823,7 @@
       "namePlaceholderNote": "E.g. Passport Details",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
-      "typeLogin": "Login"
+      "typeLogin": "Mag-login"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "All items permanently deleted",
