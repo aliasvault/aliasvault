@@ -4,84 +4,60 @@ hide_table_of_contents: true
 ---
 # Self-host Install
 
-AliasVault is self-hosted with Docker. Both methods install the **same
-AliasVault**, they differ only in how much is managed for you versus how much
-fits into infrastructure you already run. Pick the one that matches your setup.
+AliasVault can be self-hosted in two ways. Both use and require Docker, but they differ in how TLS, updates and the surrounding setup are handled. Pick the one that fits your setup.
 
 <div className="av-install-choice">
   <a className="av-install-card av-install-card--featured" href="./script/">
     <span className="av-install-card__badge">Recommended</span>
     <div className="av-install-card__head">
       <div className="av-install-card__icon">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m4 17 6-6-6-6" />
-          <path d="M12 19h8" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </div>
       <div>
         <h3 className="av-install-card__title">Install Script</h3>
-        <div className="av-install-card__meta">~5 min</div>
+        <div className="av-install-card__meta">Multiple containers</div>
       </div>
     </div>
-    <p className="av-install-card__tagline">
-      A fully managed setup. One script spins up multiple containers, handles HTTPS for
-      you, and gives you CLI helpers for updates and maintenance.
-    </p>
+    <p className="av-install-card__tagline">The <code>install.sh</code> script sets up and configures everything for you, including HTTPS, and handles updates and migrations.</p>
     <ul className="av-install-card__list">
-      <li>AliasVault on its own VPS or LXC</li>
+      <li>Runs on its own VPS, VM or LXC</li>
       <li>Automatic HTTPS via Let&apos;s Encrypt</li>
-      <li>Guided updates &amp; migrations</li>
-      <li>Production-ready defaults</li>
+      <li>Guided updates and migrations</li>
     </ul>
-    <p className="av-install-card__bestfor">
-      <strong>Best for</strong> a fresh VM or VPS dedicated to AliasVault.
-    </p>
+    <p className="av-install-card__bestfor"><strong>Best for</strong> a server dedicated to AliasVault.</p>
     <div className="av-install-card__cta">
-      <span className="button button--primary button--lg">
-        Install with script →
-      </span>
+      <span className="button button--primary button--lg">Install with script</span>
     </div>
   </a>
 
   <a className="av-install-card" href="./docker-compose/">
     <div className="av-install-card__head">
       <div className="av-install-card__icon">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="20" height="7" rx="1.5" />
-          <rect x="2" y="14" width="20" height="7" rx="1.5" />
-          <path d="M6 6.5h.01M6 17.5h.01" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
         </svg>
       </div>
       <div>
         <h3 className="av-install-card__title">Docker Compose</h3>
-        <div className="av-install-card__meta">~15 min</div>
+        <div className="av-install-card__meta">Single container</div>
       </div>
     </div>
-    <p className="av-install-card__tagline">
-      A single all-in-one container you can add to your existing Docker stack.
-      You bring your own reverse proxy and TLS, and keep full control.
-    </p>
+    <p className="av-install-card__tagline">One all-in-one container that you add to your existing Docker setup. You provide the reverse proxy and TLS yourself.</p>
     <ul className="av-install-card__list">
-      <li>AliasVault as an all-in-one container on your existing Docker host</li>
-      <li>Best for setups on NAS or when using tools like e.g. Portainer</li>
-      <li>Bring your own TLS (Traefik, Nginx, HAProxy, Caddy…)</li>
-      <li>Updates via <code>docker pull</code> (occasional manual migrations)</li>
+      <li>Fits a NAS, homelab or Portainer setup</li>
+      <li>Works with Traefik, Nginx, Caddy, HAProxy and others</li>
+      <li>Updates via <code>docker compose pull</code></li>
     </ul>
-    <p className="av-install-card__bestfor">
-      <strong>Best for</strong> a NAS or homelab that already runs a reverse proxy and/or other Docker containers.
-    </p>
+    <p className="av-install-card__bestfor"><strong>Best for</strong> a host that already runs a reverse proxy and other containers.</p>
     <div className="av-install-card__cta">
-      <span className="button button--secondary button--outline button--lg">
-        Install with Docker →
-      </span>
+      <span className="button button--secondary button--outline button--lg">Install with Docker Compose</span>
     </div>
   </a>
 </div>
 
 ## Side-by-side comparison
-
-Both methods run the same AliasVault version. They differ mainly in how TLS,
-updates, and the surrounding setup are handled.
 
 <div className="av-compare-wrap">
   <table className="av-compare">
@@ -96,22 +72,22 @@ updates, and the surrounding setup are handled.
       <tr>
         <th scope="row">TLS / HTTPS</th>
         <td>Automatic via Let&apos;s Encrypt</td>
-        <td>Bring your own reverse proxy</td>
+        <td>Your own reverse proxy</td>
       </tr>
       <tr>
         <th scope="row">Updates</th>
-        <td>Guided via <code>install.sh</code></td>
-        <td>Manual <code>docker pull</code> + migrations</td>
+        <td><code>./install.sh update</code></td>
+        <td><code>docker compose pull</code>, sometimes a manual migration</td>
       </tr>
       <tr>
         <th scope="row">Architecture</th>
-        <td>Multiple containers (one per service)</td>
+        <td>One container per service</td>
         <td>Single all-in-one image</td>
       </tr>
       <tr>
         <th scope="row">Reverse proxy</th>
-        <td>Included &amp; configured</td>
-        <td>You provide (Traefik, Nginx, Caddy…)</td>
+        <td>Included and configured</td>
+        <td>You provide it</td>
       </tr>
       <tr>
         <th scope="row">Build from source</th>
@@ -120,26 +96,20 @@ updates, and the surrounding setup are handled.
       </tr>
       <tr>
         <th scope="row">Best for</th>
-        <td>Dedicated VM / VPS</td>
-        <td>Existing homelab / NAS</td>
+        <td>Dedicated VM or VPS</td>
+        <td>Existing homelab or NAS</td>
       </tr>
     </tbody>
   </table>
 </div>
 
-:::tip Not sure yet? You can switch later.
-Both methods use the same Docker bind-mount directories (`/database`, `/certificates`, `/logs`, `/secrets`), so migration is straightforward. Stop or uninstall one method, then follow the installation steps for the other. Your data stays preserved.
+:::tip You can switch later
+Both methods use the same bind-mount directories (`/database`, `/certificates`, `/logs`, `/secrets`), so you can stop one setup and install the other on top of the same data.
 :::
 
-## Frequently Asked Questions {#faq}
+## System requirements
 
-### What are the system requirements?
-**Minimum:**
-- 64-bit Linux OS (Ubuntu or RHEL-based recommended)
-- 1 vCPU, 1 GB RAM, 5 GB free disk space (16 GB total disk recommended)
-- Docker CE (≥ 20.10) and Docker Compose (≥ 2.0)
-
-**Network:**
-- Ports 80 and 443 available
-- Optional: ports 25 and 587 for private email domains
-
+- 64-bit Linux (Ubuntu or RHEL-based recommended)
+- 1 vCPU, 1 GB RAM and 5 GB free disk space (16 GB total disk recommended)
+- Docker CE 20.10 or newer and Docker Compose 2.0 or newer
+- Ports 80 and 443 available, and optionally ports 25 and 587 to receive email on your own domains
