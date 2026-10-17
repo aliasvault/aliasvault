@@ -1025,7 +1025,7 @@
     "passwordCopied": "密码已复制",
     "passwordUnlockError": "密码验证失败",
     "pinConfirmSubtitle": "重新输入您的 PIN 以确认",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "您的设备未确认已解锁。请锁定您的设备，然后使用您的设备 PIN 码、图案或密码解锁设备再试一次。",
     "pinIncorrectAttemptsRemaining": "PIN 错误，剩余 {{count}} 次尝试",
     "pinLockedMaxAttempts": "PIN 因多次尝试失败而被锁定",
     "pinMismatch": "PIN 不匹配，请重试。",

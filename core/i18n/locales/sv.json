@@ -46,7 +46,7 @@
       "version": "Version: {{version}}"
     },
     "navigation": {
-      "login": "Logga in",
+      "login": "Inloggning",
       "loginSettings": "Inloggningsinställningar"
     },
     "notFound": {
@@ -584,7 +584,7 @@
       "url": "Webbadress"
     },
     "login": {
-      "title": "Logga in"
+      "title": "Inloggning"
     },
     "note": {
       "title": "Anteckning"
@@ -823,7 +823,7 @@
       "namePlaceholderNote": "T.ex. Passinformation",
       "newAliasButtonText": "+ Nytt",
       "typeCard": "Kort",
-      "typeLogin": "Logga in"
+      "typeLogin": "Inloggning"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Alla objekt raderades permanent",
@@ -1025,7 +1025,7 @@
     "passwordCopied": "Lösenord kopierat",
     "passwordUnlockError": "Kunde inte verifiera lösenord",
     "pinConfirmSubtitle": "Ange din PIN-kod igen för att bekräfta",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Din enhet har inte bekräftat att den är upplåst. Lås enheten, lås upp den med enhetens PIN-kod, mönster eller lösenord och försök sedan igen.",
     "pinIncorrectAttemptsRemaining": "Felaktig PIN-kod. {{count}} försök återstår",
     "pinLockedMaxAttempts": "PIN-koden låst efter för många misslyckade försök",
     "pinMismatch": "PIN-koderna matchar inte. Var god försök igen.",
