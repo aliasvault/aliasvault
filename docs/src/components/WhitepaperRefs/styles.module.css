@@ -1,0 +1,25 @@
+.refs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  margin-top: 0.2rem;
+  font-size: 0.825rem;
+}
+
+.label {
+  color: var(--ifm-color-emphasis-600);
+}
+
+.ref {
+  font-weight: 500;
+}
+
+.ref:hover {
+  text-decoration: none;
+}
+
+.section {
+  color: var(--ifm-color-emphasis-600);
+  font-variant-numeric: tabular-nums;
+}

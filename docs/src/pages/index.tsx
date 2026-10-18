@@ -136,10 +136,10 @@ const DOC_AREAS: DocArea[] = [
     to: '/installation/mobile-apps/',
   },
   {
-    emoji: '🏗️',
-    title: 'Architecture',
-    description: 'Understand how AliasVault is built and secured.',
-    to: '/architecture/',
+    emoji: '🔐',
+    title: 'Security & Architecture',
+    description: 'How AliasVault protects your data, and the full Security Whitepaper.',
+    to: '/security-architecture/',
   },
 ];
 

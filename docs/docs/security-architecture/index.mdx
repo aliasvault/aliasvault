@@ -1,0 +1,62 @@
+---
+sidebar_label: "Overview"
+title: "AliasVault Security Overview"
+description: "How AliasVault protects your data, in short."
+---
+# Security Overview
+
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+import WhitepaperRefs from '@site/src/components/WhitepaperRefs';
+
+AliasVault is a password and email alias manager with end-to-end encryption: your vaults and the emails your aliases receive are encrypted with keys that only exist on your devices, and the server stores ciphertext it cannot read. This page is the short version. The complete design, the threat model and more can be found in the [Security Whitepaper](../security-whitepaper.mdx).
+
+<a href={useBaseUrl('/assets/diagrams/whitepaper/1-architecture-overview.html')} target="_blank" rel="noopener noreferrer" title="Open full screen">
+  <ThemedImage
+    alt="AliasVault Security Architecture Diagram"
+    sources={{
+      light: useBaseUrl('/assets/diagrams/whitepaper/1-architecture-overview-light.svg'),
+      dark: useBaseUrl('/assets/diagrams/whitepaper/1-architecture-overview-dark.svg'),
+    }}
+  />
+</a>
+
+## How it is secured
+
+<div className="av-separated-list">
+
+1. **Your master password never leaves your device.** Argon2id derives your keys from it on the device, and the SRP protocol proves it to the server without sending it. <WhitepaperRefs refs={[{section: '4', label: 'Key derivation', anchor: '4-key-derivation-and-key-hierarchy'}, {section: '5', label: 'Authentication', anchor: '5-authentication-process'}]} />
+2. **One key hierarchy, created on your device.** The master password unlocks your Account Key, which opens a separate key for every vault and every attachment. The server stores each of these keys only in encrypted form. <WhitepaperRefs refs={[{section: '4.1', label: 'Key hierarchy', anchor: '41-key-hierarchy'}]} />
+3. **Vaults are encrypted before they are uploaded.** Every vault is encrypted with AES-256-GCM and bound to its own id, so the server cannot read it, change it, or swap it for another vault's data. <WhitepaperRefs refs={[{section: '6', label: 'Vault operations', anchor: '6-vault-operations'}]} />
+4. **Emails are encrypted the moment they arrive.** Each incoming email is encrypted in memory with the public key of the vault its alias belongs to, before it is stored. Only members of that vault hold the private key. <WhitepaperRefs refs={[{section: '7', label: 'Email', anchor: '7-email'}]} />
+5. **Passkeys live in your vault.** AliasVault is the authenticator: it creates each passkey on your device, and the private key never leaves it. <WhitepaperRefs refs={[{section: '8', label: 'Passkeys', anchor: '8-passkey-authentication'}]} />
+6. **Login with Mobile moves your key, not your password.** The new device creates a one-time keypair, your phone encrypts the Account Key for it, and the server relays ciphertext it cannot open. <WhitepaperRefs refs={[{section: '9', label: 'Login with Mobile', anchor: '9-login-with-mobile'}]} />
+7. **Shared vaults have their own key.** The key is encrypted for each member separately; membership of a group by itself opens nothing, and your personal vault is never shared. <WhitepaperRefs refs={[{section: '10', label: 'Vault sharing', anchor: '10-vault-sharing'}]} />
+8. **On your device, the vault stays encrypted at rest.** Biometrics, a PIN or a passkey unlock a device-only copy of your Account Key; locking removes the keys from memory. <WhitepaperRefs refs={[{section: '11', label: 'Keys on the device', anchor: '11-protecting-keys-on-the-device'}]} />
+9. **Exports are encrypted too.** The `.avex` export is encrypted under a key derived with Argon2id from an export password of your choice. <WhitepaperRefs refs={[{section: '12', label: 'Vault exports', anchor: '12-vault-exports'}]} />
+10. **One cryptographic core for every app.** The cryptography runs in a shared Rust core that every client embeds. <WhitepaperRefs refs={[{section: '3', label: 'Algorithms', anchor: '3-cryptographic-algorithms'}]} />
+
+</div>
+
+## What the server cannot do
+
+- The server cannot read your vaults or your emails.
+- The server cannot learn your master password or any of your keys.
+- The server cannot change what is in a vault, or move data between vaults or users.
+- The server cannot give anyone access to a vault: only a holder of the vault key can grant access, and every grant is signed.
+
+What the server does store in plaintext, and what an operator can do with it, is listed in the whitepaper: [What the server knows and can do](../security-whitepaper.mdx#24-what-the-server-knows-and-can-do).
+
+## Assumptions and limits
+
+These protections assume you use a device you trust, the official AliasVault apps and a strong master password. Malware on your device can see everything you can see. The full list of assumptions is in [Trust assumptions](../security-whitepaper.mdx#22-trust-assumptions), and the adversaries the design is built against are in [Threat actors](../security-whitepaper.mdx#23-threat-actors).
+
+## Open source and disclosure
+
+The server, every client and the Rust core are open source under AGPL-3.0 in [one repository](https://github.com/aliasvault/aliasvault), and the same apps are used with AliasVault Cloud and with self-hosted servers. To report a vulnerability, see [Audits and Disclosure](./audits-and-disclosure.mdx).
+
+## Where to go next
+
+- [Securing Your Account](./securing-your-account.mdx): what you can do yourself to keep your vaults safe.
+- [Security FAQ](./security-faq.mdx): short answers to common questions.
+- [Security Whitepaper](../security-whitepaper.mdx): the complete design and threat model.

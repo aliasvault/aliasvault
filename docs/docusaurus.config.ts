@@ -46,7 +46,7 @@ const config: Config = {
   baseUrl: '/',
 
   // Emit every internal link and page output with a trailing slash so the
-  // canonical URL is hit directly. Without this, links like /architecture or
+  // canonical URL is hit directly. Without this, links like /security-whitepaper or
   // /installation/script resolve to a directory and the server issues a 301 to
   // add the slash which can remove a custom non 80/443 port from the URL.
   trailingSlash: true,
@@ -102,6 +102,10 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
+          {
+            to: '/security-architecture/',
+            from: ['/architecture', '/architecture.html'],
+          },
           {
             to: '/installation/docker-compose/',
             from: [
@@ -281,10 +285,15 @@ const config: Config = {
           label: 'Self-host Install',
         },
         {
-          type: 'doc',
-          docId: 'architecture',
+          type: 'docSidebar',
+          sidebarId: 'securitySidebar',
           position: 'left',
-          label: 'Architecture',
+          label: 'Security & Architecture',
+        },
+        {
+          to: '/security-whitepaper/',
+          position: 'left',
+          label: 'Whitepaper',
         },
         {
           type: 'docSidebar',
@@ -330,7 +339,8 @@ const config: Config = {
             {label: 'Self-host Install', to: '/installation/'},
             {label: 'Browser Extensions', to: '/installation/browser-extensions/'},
             {label: 'Mobile Apps', to: '/installation/mobile-apps/'},
-            {label: 'Architecture', to: '/architecture/'},
+            {label: 'Security & Architecture', to: '/security-architecture/'},
+            {label: 'Security Whitepaper', to: '/security-whitepaper/'},
           ],
         },
         {

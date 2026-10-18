@@ -4,18 +4,21 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
  * One sidebar per top-level navbar tab (see `navbar.items` in
  * docusaurus.config.ts), instead of a single combined "Documentation" sidebar
  * listing every section at once.
- *
- * The client-app guides (browser extensions, mobile apps) live under
- * `installation/` so they nest as collapsible categories in this sidebar —
- * they're primarily about building/running locally, which is mainly relevant to
- * self-hosters.
- *
- * Ordering and labels within a section come from `_category_.json` files and the
- * `sidebar_position` frontmatter on each page. The single-page sections
- * (Architecture, Help & Support) live at the docs root and are linked directly
- * from the navbar, so they don't need their own sidebar.
  */
 const sidebars: SidebarsConfig = {
+  securitySidebar: [
+    'security-architecture/index',
+    'security-architecture/securing-your-account',
+    'security-architecture/security-faq',
+    'security-architecture/audits-and-disclosure',
+    {
+      type: 'category',
+      label: 'Technical Details',
+      collapsed: true,
+      items: ['security-architecture/vault-format'],
+    },
+    {type: 'link', label: 'Security Whitepaper', href: '/security-whitepaper/'},
+  ],
   installSidebar: [
     {
       type: 'category',

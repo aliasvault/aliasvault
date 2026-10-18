@@ -1,0 +1,353 @@
+<mxfile host="Electron" agent="drawio_gen.py">
+  <diagram name="4-key-hierarchy" id="4-key-hierarchy">
+    <mxGraphModel dx="1951" dy="1351" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="60" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="key-hierarchy-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;spacingTop=2;absoluteArcSize=1;arcSize=36;" value="AliasVault client (web app / browser extension / mobile app): everything in this frame runs on the device" vertex="1">
+          <mxGeometry height="1050" width="1570" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;absoluteArcSize=1;arcSize=24;" value="Account unlock method: master password" vertex="1">
+          <mxGeometry height="980" width="400" x="70" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-3" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Master password (never persisted, never sent)" vertex="1">
+          <mxGeometry height="50" width="300" x="120" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-4" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="Argon2id: 64 MiB, 5 iterations, parallelism 1" vertex="1">
+          <mxGeometry height="60" width="150" x="195" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-6" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Unlock key (32 bytes, app memory only)" vertex="1">
+          <mxGeometry height="50" width="300" x="120" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-7" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="HKDF-SHA256 info = &amp;quot;AliasVault SRP v1&amp;quot;" vertex="1">
+          <mxGeometry height="50" width="170" x="100" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-8" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="HKDF-SHA256 info = &amp;quot;AliasVault KEK v1&amp;quot;" vertex="1">
+          <mxGeometry height="50" width="170" x="285" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-9" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="SRP input (hex)" vertex="1">
+          <mxGeometry height="50" width="170" x="100" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-10" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="KEK: Key Encryption Key &lt;br&gt;(app memory only)" vertex="1">
+          <mxGeometry height="50" width="170" x="285" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-11" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="SRP-6a client (RFC 5054 group 2048, SHA-256)" vertex="1">
+          <mxGeometry height="50" width="170" x="100" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-12" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="SRP proves the password to the server without sending it. The SRP input and the KEK are independent: neither can be calculated from the other, or back to the unlock key." vertex="1">
+          <mxGeometry height="130" width="170" x="290" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-13" edge="1" parent="1" source="key-hierarchy-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-4" value="">
+          <mxGeometry relative="1" x="-0.1364" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-14" edge="1" parent="1" source="key-hierarchy-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-15" edge="1" parent="1" source="key-hierarchy-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.216;exitY=1.016;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="key-hierarchy-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-16" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="370" y="349.6" />
+            </Array>
+            <mxPoint x="370" y="350" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-17" edge="1" parent="1" source="key-hierarchy-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-18" edge="1" parent="1" source="key-hierarchy-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-10" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-19" edge="1" parent="1" source="key-hierarchy-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-11" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;absoluteArcSize=1;arcSize=24;" value="Account Key and what it protects" vertex="1">
+          <mxGeometry height="980" width="520" x="500" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-group-vek" parent="1" style="rounded=1;arcSize=24;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=-2;fontSize=11;fontStyle=1;fillColor=none;dashed=1;strokeColor=light-dark(#888888,#888888);absoluteArcSize=1;" value="Personal vault key (VEK)" vertex="1">
+          <mxGeometry height="215" width="235" x="770" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-group-signing" parent="1" style="rounded=1;arcSize=24;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=-2;fontSize=11;fontStyle=1;fillColor=none;dashed=1;strokeColor=light-dark(#888888,#888888);absoluteArcSize=1;" value="Account signing keypair (Ed25519)" vertex="1">
+          <mxGeometry height="240" width="235" x="770" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-group-rsa" parent="1" style="rounded=1;arcSize=24;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=-2;fontSize=11;fontStyle=1;fillColor=none;dashed=1;strokeColor=light-dark(#888888,#888888);absoluteArcSize=1;" value="Account encryption keypair (RSA-2048)" vertex="1">
+          <mxGeometry height="225" width="235" x="770" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-group-shared" parent="1" style="rounded=1;arcSize=24;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=-2;fontSize=11;fontStyle=1;fillColor=none;dashed=1;strokeColor=light-dark(#888888,#888888);absoluteArcSize=1;" value="Shared vaults: one grant per vault" vertex="1">
+          <mxGeometry height="135" width="490" x="515" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-21" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="AES-256-GCM aad = &amp;quot;aliasvault/v1/account-key&amp;quot;" vertex="1">
+          <mxGeometry height="50" width="200" x="535" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-22" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Account Key (AK): &lt;br&gt;random 256-bit key created at registration" vertex="1">
+          <mxGeometry height="60" width="200" x="535" y="394" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-23" edge="1" parent="1" source="key-hierarchy-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="key-hierarchy-21" value="encrypts">
+          <mxGeometry relative="1" x="-0.1429" y="15" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="480" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-24" edge="1" parent="1" source="key-hierarchy-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-21" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-25" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="Encrypted Account Key (AK)&lt;br&gt;(server: UserUnlockMethod, one row per account unlock method; today the master password)" vertex="1">
+          <mxGeometry height="90" width="200" x="535" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-26" edge="1" parent="1" source="key-hierarchy-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-25" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-27" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Personal vault VEK &lt;br&gt;(random 256-bit)" vertex="1">
+          <mxGeometry height="45" width="200" x="787" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-28" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="AES-256-GCM aad = &amp;quot;aliasvault/v1/vek&amp;quot;" vertex="1">
+          <mxGeometry height="40" width="200" x="787" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-29" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="Encrypted VEK &lt;br&gt;(server: VaultManifestAccessKey)" vertex="1">
+          <mxGeometry height="72" width="200" x="787" y="227" as="geometry" />
+        </mxCell>
+        <mxCell id="ypq86mg9ateFgdhVyAOT-3" edge="1" parent="1" source="key-hierarchy-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-30" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Account RSA-2048 private key (JWK)" vertex="1">
+          <mxGeometry height="45" width="200" x="787" y="593" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-31" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="AES-256-GCM aad = &amp;quot;aliasvault/v1/account-private-key&amp;quot;" vertex="1">
+          <mxGeometry height="40" width="200" x="787" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-32" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="Encrypted private key + plaintext public key (server: UserGrantKey)" vertex="1">
+          <mxGeometry height="82" width="200" x="787" y="702" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-33" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Account Ed25519 signing key &lt;br&gt;(32-byte seed)" vertex="1">
+          <mxGeometry height="45" width="200" x="787" y="343" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-34" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="AES-256-GCM aad = &amp;quot;aliasvault/v1/account-signing-private-key&amp;quot;" vertex="1">
+          <mxGeometry height="50" width="200" x="787" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-35" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="Encrypted signing key + public key + signature over the RSA public key (server: UserSigningKey)" vertex="1">
+          <mxGeometry height="88" width="200" x="787" y="462" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-36" edge="1" parent="1" source="key-hierarchy-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-28" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-37" edge="1" parent="1" source="key-hierarchy-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-29" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-40" edge="1" parent="1" source="key-hierarchy-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-34" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-41" edge="1" parent="1" source="key-hierarchy-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-35" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-42" edge="1" parent="1" source="key-hierarchy-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="key-hierarchy-28" value="encrypts">
+          <mxGeometry relative="1" x="-0.608" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="685" y="370" />
+              <mxPoint x="762" y="370" />
+              <mxPoint x="762" y="195" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-43" edge="1" parent="1" source="key-hierarchy-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="key-hierarchy-31" value="">
+          <mxGeometry relative="1" x="-0.3899" as="geometry">
+            <Array as="points">
+              <mxPoint x="685" y="470" />
+              <mxPoint x="762" y="470" />
+              <mxPoint x="762" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bxflAvL8VEhFoLxBXdQm-2" connectable="0" parent="key-hierarchy-43" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="encrypts" vertex="1">
+          <mxGeometry relative="1" x="-0.5975" y="-1" as="geometry">
+            <mxPoint x="7" y="-17" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-44" edge="1" parent="1" source="key-hierarchy-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.951;exitY=0.519;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" target="key-hierarchy-34" value="">
+          <mxGeometry relative="1" x="0.2698" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bxflAvL8VEhFoLxBXdQm-1" connectable="0" parent="key-hierarchy-44" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="encrypts" vertex="1">
+          <mxGeometry relative="1" x="-0.2698" y="1" as="geometry">
+            <mxPoint x="4" y="-14" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-45" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="A password change re-encrypts only the Account Key under the new KEK; the keys below it stay the same." vertex="1">
+          <mxGeometry height="110" width="200" x="535" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-47" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;absoluteArcSize=1;arcSize=24;" value="Device unlock methods: each keeps its own encrypted Account Key copy on the device only" vertex="1">
+          <mxGeometry height="980" width="530" x="1050" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-48" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Account Key, taken from an unlocked session when the method is set up" vertex="1">
+          <mxGeometry height="40" width="490" x="1070" y="117" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-50" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="Biometrics (mobile): &lt;br&gt;&lt;br&gt;Device keychain / keystore key, biometric-bound, hardware-backed" vertex="1">
+          <mxGeometry height="150" width="150" x="1070" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-51" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="AK encrypted with the device key (app container)" vertex="1">
+          <mxGeometry height="95" width="150" x="1070" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-52" edge="1" parent="1" source="key-hierarchy-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.153;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-50" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-53" edge="1" parent="1" source="key-hierarchy-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-51" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-54" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="PIN (mobile, extension):&lt;br&gt;&lt;br&gt;Argon2id (random 16-byte salt; 64 MiB, 3 iterations), then AES-256-GCM" vertex="1">
+          <mxGeometry height="150" width="150" x="1240" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-55" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="AK encrypted with the PIN key; wiped after 4 failed attempts" vertex="1">
+          <mxGeometry height="95" width="150" x="1240" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-56" edge="1" parent="1" source="key-hierarchy-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-54" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-57" edge="1" parent="1" source="key-hierarchy-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-55" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-58" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="Passkey unlock (web app): &lt;br&gt;&lt;br&gt;Key from the passkey&#39;s PRF extension, then AES-256-GCM" vertex="1">
+          <mxGeometry height="150" width="150" x="1410" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-59" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="AK encrypted with the PRF key (browser local storage)" vertex="1">
+          <mxGeometry height="95" width="150" x="1410" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-60" edge="1" parent="1" source="key-hierarchy-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.847;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-58" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-61" edge="1" parent="1" source="key-hierarchy-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-59" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-66" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="iOS: Keychain item, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, biometryCurrentSet. Android: AndroidKeyStore AES-GCM key, setUserAuthenticationRequired, AUTH_BIOMETRIC_STRONG, setInvalidatedByBiometricEnrollment." vertex="1">
+          <mxGeometry height="60" width="490" x="1070" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-67" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="Every unlock walks the same chain from the Account Key down: VEK, account private key and signing key become available together. Device unlock methods keep working after a password change." vertex="1">
+          <mxGeometry height="70" width="490" x="1070" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-68" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="What the server never sees in plaintext: master password, unlock key, SRP input, KEK, Account Key, VEK, account private key, signing private key." vertex="1">
+          <mxGeometry height="50" width="490" x="1070" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-69" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="While unlocked, the extension and web app keep the Account Key only in session memory (storage.session / in-memory map) and remove it on lock; mobile keeps the vault encrypted on disk and the Account Key behind the keychain or PIN." vertex="1">
+          <mxGeometry height="80" width="490" x="1070" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-70" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;spacingTop=2;absoluteArcSize=1;arcSize=36;" value="AliasVault server (REST API): stores only the encrypted forms above plus the SRP salt and verifier" vertex="1">
+          <mxGeometry height="143" width="1570" x="40" y="1107" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-71" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="SRP salt / verifier (UserSrpCredentials)" vertex="1">
+          <mxGeometry height="70" width="170" x="100" y="1147" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-72" edge="1" parent="1" source="key-hierarchy-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="key-hierarchy-71" value="Login &lt;br&gt;handshake">
+          <mxGeometry relative="1" x="-0.265" y="45" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-73" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="SRP server verification" vertex="1">
+          <mxGeometry height="70" width="170" x="320" y="1147" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-74" edge="1" parent="1" source="key-hierarchy-71" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-73" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-75" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#60a917,#60a917);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#2D7600,#2D7600);" value="Issue JWT access + refresh token" vertex="1">
+          <mxGeometry height="70" width="170" x="740" y="1147" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-76" edge="1" parent="1" source="aDk-n_Pre-Fjtsm59q7s-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="key-hierarchy-75" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-77" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#555555;" value="Key storage: &lt;br&gt;- UserUnlockMethod (encrypted AK + KDF settings, one per account unlock method; device unlock methods keep a copy on the device)&lt;div&gt;- VaultManifestAccessKey (encrypted VEK per manifest)&lt;/div&gt;&lt;div&gt;- UserGrantKey (RSA public key, encrypted private key)&lt;/div&gt;&lt;div&gt;- UserSigningKey (Ed25519 public key + signature over the RSA public key, encrypted private key)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="671.5" x="928.5" y="1142" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-78" parent="1" style="shape=image;aspect=fixed;image=data:image/svg+xml,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1MDAgNTAwIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCA1MDAgNTAwIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJtNDU5Ljg3IDI5NC45NWMwLjAxNjIwNSA1LjQwMDUgMC4wMzI0MSAxMC44MDEtMC4zNTAyMiAxNi44NzMtMS4xMTEgNi4zMzkyLTEuMTk0MSAxMi4xNzMtMi42MzUxIDE3LjY0OS0xMC45MjIgNDEuNTA4LTM2LjczMSA2OS40ODEtNzcuMzUxIDgzLjQwOC03LjIxNTcgMi40NzM5LTE0Ljk3MiAzLjM3MDItMjIuNDc5IDQuOTk1LTIzLjYyOSAwLjA0MjIwNS00Ny4yNTcgMC4xMTQ1My03MC44ODYgMC4xMjAyNy00Ni43NjIgMC4wMTEzMjItOTMuNTIzLTAuMDE0MTYtMTQwLjk1LTAuNDM0MTEtOC41OS0yLjAwMjQtMTYuNzY2LTIuODM1Mi0yNC4zOTgtNS4zMzI2LTIxLjU5NS03LjA2NjYtMzkuNTIzLTE5LjY1Ni01My43MDgtMzcuNTUyLTEwLjIyNy0xMi45MDMtMTcuNTc5LTI3LjE3LTIxLjI4LTQzLjIyMS0xLjQ3NS02LjM5NjctMi40NzExLTEyLjkwNC0zLjY4NTItMTkuMzYxLTAuMDUxODQ5LTUuNzQ3LTAuMTAzNy0xMS40OTQgMC4yNjkxNS0xNy44ODYgNC4xNTktNDIuOTczIDI3LjY4LTcxLjYzOCA2My41NjItOTIuMTUzIDAtMC43MDc2MS0wLjAwMTk2MS0xLjY5ODggMy4xMmUtNCAtMi42OSAwLjAyMjQ4NC05LjgyOTMtMS4zMDcxLTE5Ljg5NCAwLjM1NjY0LTI5LjQzOCAzLjIzOTEtMTguNTc5IDExLjA4LTM1LjI3MiAyMy43NjMtNDkuNzczIDEyLjA5OC0xMy44MzIgMjYuNDU3LTIzLjk4OSA0My42MDktMzAuMDI5IDcuODEzLTIuNzUxMiAxNi4xNC00LjA0MTcgMjQuMjM0LTUuOTk0OCA3LjM5Mi0wLjAyNTczNCAxNC43ODQtMC4wNTE0NiAyMi44MzUgMC4zMjI1MyA0LjE5NTkgMC45NTM5MiA3Ljc5NDYgMS4yNTM4IDExLjI1OCAyLjEwNTMgMTcuMTYgNC4yMTkyIDMyLjI4NyAxMi4xNzYgNDUuNDY5IDI0LjEwNCAyLjI1NTggMi4wNDExIDQuMzcyIDYuNjI0MSA5LjYyMSAzLjg2OCAxNi44MzktOC44NDE5IDM0LjcxOC0xMS41OTcgNTMuNjAzLTguNTk0IDE2Ljc5MSAyLjY2OTkgMzEuNjAyIDkuNDMwOCA0NC4yMzYgMjAuNjM2IDExLjUzMSAxMC4yMjcgMTkuODQgMjIuODQxIDI1LjM5MyAzNy4yMzYgNi4zNDM2IDE2LjQ0NSAxMC4zODkgMzMuMTYzIDYuMDc5OCA0OS4zODkgNy45NTg3IDguOTMyMSAxNS44MDcgMTYuNzA0IDIyLjQyMSAyNS40MTQgOS4xNjIgMTIuMDY1IDE1LjMzIDI1Ljc0NiAxOC4xNDQgNDAuNzc2IDAuOTcwNDYgNS4xODQ4IDEuOTExMSAxMC4zNzUgMi44NjU0IDE1LjU2M20tNzEuNTk3IDcxLjAxMmM1LjU2MTUtNS4yMjg0IDEyLjAwMi05Ljc5ODYgMTYuNTA4LTE1LjgxNyAxMC40NzQtMTMuOTkyIDE0LjMzMy0yOS45MTYgMTEuMjg4LTQ3LjQ0Ni0yLjI0OTYtMTIuOTUtOC4xOTczLTI0LjA3Ni0xNy4yNDMtMzMuMDYzLTEyLjc0Ni0xMi42NjMtMjguODY1LTE4LjYxNC00Ni43ODYtMTguNTY5LTY5LjkxMiAwLjE3NzEyLTEzOS44MiAwLjU2ODMxLTIwOS43NCAwLjk2MTc2LTE1LjkyMiAwLjA4OTU5OS0yOS4xNjggNy40MjA5LTM5LjY4NSAxOC4yOTYtMTQuNDUgMTQuOTQ0LTIwLjQwOCAzMy4zNDMtMTYuNjU1IDU0LjM2OCAyLjI3NjMgMTIuNzU0IDguMjE2NyAyMy43NDggMTcuMTU4IDMyLjY2IDEzLjI5OSAxMy4yNTUgMzAuMDk3IDE4LjY1MyA0OC43MjggMTguNjUxIDU5LjMyMS0wLjAwNTE4OCAxMTguNjQgMC4wNDIzNTggMTc3Ljk2LTAuMDQ2NjAxIDkuNTkxMi0wLjAxNDM3NCAxOS4xODEtMC44NjU4OCAyOC43NzMtMC44ODg1NSAxMC42NDktMC4wMjUxNDYgMTkuOTc4LTMuODI1IDI5LjY4Ny05LjEwNzR6IiBmaWxsPSIjRUVDMTcwIi8+CjxwYXRoIGQ9Im0xNjIuNzcgMjkzYzE1LjY1NCA0LjM4ODMgMjAuNjI3IDIyLjk2NyAxMC4zMDQgMzQuOTgtNS4zMTA0IDYuMTc5NS0xNC44MTcgOC4zMjA4LTI0LjI3OCA1LjA0NzItNy4wNzIzLTIuNDQ3MS0xMi4zMzItMTAuMzYyLTEyLjg3Ni0xNy45MzMtMS4wNDUxLTE0LjU0MiAxMS4wODktMjMuMTc2IDIxLjcwNS0yMy4wNDYgMS41Nzk0IDAuMDE5Mjg3IDMuMTUxNyAwLjYxNTY2IDUuMTQ2MSAwLjk1MTg0eiIgZmlsbD0iI0VFQzE3MCIvPgo8cGF0aCBkPSJtMjI3LjE4IDI5My42NGM3Ljg0OTkgMi4zOTczIDExLjkzOCA4LjIxNDMgMTMuNTI0IDE1LjA3NyAxLjg1OTEgOC4wNDM5LTAuNDQ4MTcgMTUuNzA2LTcuMTU4OCAyMS4xMjEtNi43NjMzIDUuNDU3Mi0xNC40MTcgNi44Nzk0LTIyLjU3OCAzLjE0ODMtOC4yOTcyLTMuNzkzMy0xMi44MzYtMTAuODQ5LTEyLjczNi0xOS40MzggMC4xNjg3LTE0LjQ5NyAxNC4xMy0yNS4zNjggMjguOTQ4LTE5LjkwOHoiIGZpbGw9IiNFRUMxNzAiLz4KPHBhdGggZD0ibTI2MS41NyAzMTkuMDdjLTIuNDk1LTE0LjQxOCA0LjY4NTMtMjIuNjAzIDE0LjU5Ni0yNi4xMDggOS44OTQ1LTMuNDk5NSAyMy4xODEgMy40MzAzIDI2LjI2NyAxMy43NzkgNC42NTA0IDE1LjU5MS03LjE2NTEgMjkuMDY0LTIxLjY2NSAyOC4xNjEtOC41MjU0LTAuNTMwODgtMTcuMjAyLTYuNTA5NC0xOS4xOTgtMTUuODMxeiIgZmlsbD0iI0VFQzE3MCIvPgo8cGF0aCBkPSJtMzM2LjkxIDMzMy40MWMtOS4wMTc1LTQuMjQ5MS0xNS4zMzctMTQuMzQ5LTEzLjgyOS0yMS42ODIgMy4wODI1LTE0Ljk4OSAxMy4zNDEtMjAuMzA0IDIzLjAxOC0xOS41ODUgMTAuNjUzIDAuNzkxNDEgMTcuOTMgNy40MDcgMTkuNzY1IDE3LjU0NyAxLjk1ODggMTAuODI0LTQuMTE3MSAxOS45MzktMTMuNDk0IDIzLjcwMy01LjI3MiAyLjExNjItMTAuMDkxIDEuNTA4Ni0xNS40NiAwLjAxNzg4M3oiIGZpbGw9IiNFRUMxNzAiLz4KPC9zdmc+Cg==;" value="" vertex="1">
+          <mxGeometry x="60" y="1290" height="58" width="58" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-79" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1" value="AliasVault" vertex="1">
+          <mxGeometry x="120" y="1292" height="40" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-80" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="Key hierarchy 0.31.0" vertex="1">
+          <mxGeometry x="120" y="1320" height="30" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-81" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fontSize=16;align=left;verticalAlign=top;fillColor=light-dark(#0050ef,#0050ef);strokeColor=light-dark(#001DBC,#001DBC);fontColor=light-dark(#ffffff,#ffffff);fontStyle=1;spacingLeft=6;spacing=0;resizable=0;" value="Legend" vertex="1">
+          <mxGeometry x="310" y="1289" height="60" width="723" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-82" parent="key-hierarchy-81" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="" vertex="1">
+          <mxGeometry height="30" width="723" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="key-hierarchy-83" parent="key-hierarchy-82" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=light-dark(#432D57,#432D57);overflow=hidden;fillColor=light-dark(#76608a,#76608a);top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=12;align=left;fontColor=light-dark(#ffffff,#ffffff);spacingLeft=10;spacingRight=4;" value="Cryptographic Operations" vertex="1">
+          <mxGeometry height="30" width="163" as="geometry">
+            <mxRectangle height="30" width="163" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-84" parent="key-hierarchy-82" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=light-dark(#006EAF,#006EAF);overflow=hidden;fillColor=light-dark(#1ba1e2,#1ba1e2);top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=12;align=left;fontColor=light-dark(#ffffff,#ffffff);spacingLeft=10;spacingRight=4;" value="Storage Elements" vertex="1">
+          <mxGeometry height="30" width="120" x="163" as="geometry">
+            <mxRectangle height="30" width="120" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-85" parent="key-hierarchy-82" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=light-dark(#B09500,#B09500);overflow=hidden;fillColor=light-dark(#e3c800,#e3c800);top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=12;align=left;fontColor=light-dark(#000000,#000000);spacingLeft=10;spacingRight=4;" value="Keys and Sensitive Data" vertex="1">
+          <mxGeometry height="30" width="170" x="283" as="geometry">
+            <mxRectangle height="30" width="170" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-86" parent="key-hierarchy-82" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=light-dark(#2D7600,#2D7600);overflow=hidden;fillColor=light-dark(#60a917,#60a917);top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=12;align=left;fontColor=light-dark(#ffffff,#ffffff);spacingLeft=10;spacingRight=4;" value="Authentication Steps" vertex="1">
+          <mxGeometry height="30" width="150" x="453" as="geometry">
+            <mxRectangle height="30" width="150" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="key-hierarchy-87" parent="key-hierarchy-82" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=light-dark(#6D1F00,#6D1F00);overflow=hidden;fillColor=light-dark(#a0522d,#a0522d);top=0;left=0;bottom=0;right=0;pointerEvents=1;fontSize=12;align=left;fontColor=light-dark(#ffffff,#ffffff);spacingLeft=10;spacingRight=4;" value="Process step" vertex="1">
+          <mxGeometry height="30" width="120" x="603" as="geometry">
+            <mxRectangle height="30" width="120" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="aDk-n_Pre-Fjtsm59q7s-2" edge="1" parent="1" source="key-hierarchy-73" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="aDk-n_Pre-Fjtsm59q7s-1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="490" y="1182" as="sourcePoint" />
+            <mxPoint x="740" y="1182" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="aDk-n_Pre-Fjtsm59q7s-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#60a917,#60a917);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#2D7600,#2D7600);" value="Optional TOTP 2FA" vertex="1">
+          <mxGeometry height="70" width="170" x="530" y="1147" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-grant-store" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=light-dark(#1ba1e2,#1ba1e2);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#006EAF,#006EAF);container=0;" value="Grant per shared vault: VEK encrypted with the account RSA public key (server: VaultManifestAccessKey)" vertex="1">
+          <mxGeometry height="104" width="160" x="525" y="841" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-grant-decrypt" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=light-dark(#76608a,#76608a);fontColor=light-dark(#ffffff,#ffffff);strokeColor=light-dark(#432D57,#432D57);" value="RSA-OAEP-SHA256 decrypt, label &quot;aliasvault/v1/grant/ {manifestId}&quot;" vertex="1">
+          <mxGeometry height="80" width="145" x="705" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-shared-vek" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Shared vault VEK &lt;br&gt;(one per shared vault)" vertex="1">
+          <mxGeometry height="50" width="145" x="855" y="865" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-vek-protects" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=8;" value="&lt;b&gt;Each VEK&lt;/b&gt; (the personal VEK above, or a shared vault VEK) protects its own vault: the manifest and data buckets, every blob key, and the vault&#39;s delivery private key, which is stored inside the vault. See diagrams 3 and 4." vertex="1">
+          <mxGeometry height="65" width="490" x="515" y="967" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-e-shared" edge="1" parent="1" source="kh-grant-decrypt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="kh-shared-vek" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kh-e-rsa" edge="1" parent="1" source="key-hierarchy-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="kh-grant-decrypt" value="decrypts">
+          <mxGeometry relative="1" x="0.3565" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="997" y="615.5" />
+              <mxPoint x="997" y="810" />
+              <mxPoint x="777.5" y="810" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kh-e-protects" edge="1" parent="1" source="kh-shared-vek" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.555;exitY=1.005;exitDx=0;exitDy=0;entryX=0.857;entryY=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="kh-vek-protects" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ypq86mg9ateFgdhVyAOT-2" edge="1" parent="1" source="key-hierarchy-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="key-hierarchy-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ypq86mg9ateFgdhVyAOT-4" edge="1" parent="1" source="kh-grant-store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.01;entryY=0.535;entryDx=0;entryDy=0;entryPerimeter=0;" target="kh-grant-decrypt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

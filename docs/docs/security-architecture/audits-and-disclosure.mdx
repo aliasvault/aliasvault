@@ -1,0 +1,54 @@
+---
+sidebar_label: "Audits and Disclosure"
+title: "Security Audits and Vulnerability Disclosure"
+description: "How to report a vulnerability in AliasVault, how reports are handled, and the published advisories and audits."
+---
+# Audits and Disclosure
+
+AliasVault is open source, runs a public responsible disclosure program, and publishes security advisories. This page summarizes how to report a vulnerability and what happens next. The authoritative policy is [SECURITY.md](https://github.com/aliasvault/aliasvault/blob/main/SECURITY.md) in the repository.
+
+## Reporting a vulnerability
+
+Email **security@aliasvault.com**. Please do not open a public GitHub issue for a security problem, and do not disclose it publicly before it is resolved.
+
+Include in your report:
+
+1. A description of the issue
+2. Steps to reproduce
+3. The affected component(s)
+4. The security impact: what an attacker could achieve
+5. The prerequisites for exploitation
+6. A suggested remediation (optional)
+
+Before reporting, check the open [GitHub issues](https://github.com/aliasvault/aliasvault/issues), the latest `main` branch and the [known limitations](../security-whitepaper.mdx#13-known-limitations). Issues that are already tracked, fixed on `main` or listed as known limitations count as duplicates.
+
+A machine-readable [security.txt](https://github.com/aliasvault/aliasvault/blob/main/SECURITY.txt) points to the same contact and policy.
+
+## Timeline
+
+| Stage | Target |
+|-------|--------|
+| Acknowledgment | 48 hours |
+| Initial assessment | 7 days |
+| Fix and release | 30 days |
+
+These are targets; complex issues may take longer, in coordination with the reporter. We follow coordinated disclosure and credit reporters (with their permission) when the fix is released.
+
+## How reports are classified
+
+Reports are assessed against the [threat model](../security-whitepaper.mdx#2-threat-model): the core question is whether an issue lets someone decrypt or access vault secrets without the user's authorization. The vulnerability classes, the criteria for a CVE and the full scope are in [SECURITY.md](https://github.com/aliasvault/aliasvault/blob/main/SECURITY.md).
+
+## Supported versions
+
+Security fixes are applied to the latest release only. During the public beta, that is the latest minor release of the current `0.x` line.
+
+## Advisories and credits
+
+- Published vulnerabilities are listed as [GitHub security advisories](https://github.com/aliasvault/aliasvault/security/advisories).
+- Researchers who reported issues are credited on the [responsible disclosure page](https://www.aliasvault.com/responsible-disclosure).
+
+## Independent audits
+
+As of October 2026, preparations for an independent security audit of the cryptographic design and the Rust core are in progress. The report and our response will be published on this page once the audit is complete, which we expect before the end of January 2027.
+
+All code that runs on AliasVault Cloud and on self-hosted servers, every client and the Rust core are in one [public repository](https://github.com/aliasvault/aliasvault) under the AGPL-3.0 license, so anyone can review the implementation. The [Security Whitepaper](../security-whitepaper.mdx) describes the design, and its [implementation map](../security-whitepaper.mdx#appendix-a-implementation-map) points to the code behind each part.
