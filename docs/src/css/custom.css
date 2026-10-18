@@ -33,9 +33,10 @@
   --ifm-spacing-horizontal: 1.75rem;
   --ifm-container-width-xl: 1440px;
 
-  /* Generous, rounded sidebar items. */
-  --ifm-menu-link-padding-vertical: 0.55rem;
-  --ifm-menu-link-padding-horizontal: 0.85rem;
+  /* Compact, rounded sidebar items in a narrower sidebar (Docusaurus default 300px). */
+  --doc-sidebar-width: 220px;
+  --ifm-menu-link-padding-vertical: 0.4rem;
+  --ifm-menu-link-padding-horizontal: 0.75rem;
   --ifm-menu-color-background-active: rgba(244, 149, 65, 0.12);
   --ifm-menu-color-background-hover: rgba(244, 149, 65, 0.08);
 
@@ -219,6 +220,7 @@ html[data-theme='dark'] {
 /* Breathing room around the menu and rounded, app-like items. */
 .menu {
   padding: 1rem 0.75rem !important;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
@@ -282,6 +284,24 @@ article:not(:has(> nav.theme-doc-breadcrumbs)) > .theme-doc-markdown {
 @media (min-width: 1440px) {
   .theme-doc-markdown {
     max-width: 920px;
+  }
+}
+
+/* Next to a sidebar, start the content close to it (aligned with the
+ * breadcrumb) instead of centering it, so wide screens show more of it. */
+@media (min-width: 997px) {
+  .theme-doc-sidebar-container + main > .container {
+    padding-left: 2.5rem;
+    margin-left: 0;
+  }
+
+  .theme-doc-sidebar-container + main .theme-doc-markdown {
+    margin-left: 0;
+  }
+
+  /* Size the content column to the reading column so the TOC follows it. */
+  .theme-doc-sidebar-container + main .row > .col[class*='docItemCol'] {
+    flex: 0 1 auto;
   }
 }
 
@@ -354,27 +374,21 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
   background: var(--av-card-bg);
   color: var(--ifm-color-content);
   text-decoration: none;
-  transition: transform 0.15s ease, border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .av-install-card:hover {
-  transform: translateY(-3px);
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
   color: var(--ifm-color-content);
   text-decoration: none;
 }
 
-/* The recommended option gets a primary-tinted border + a slightly stronger
- * lift so it reads as the default choice. */
+/* The recommended option keeps the primary border so it reads as the default choice. */
 .av-install-card--featured {
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
 }
 
-/* Header row: brand-tinted icon tile next to the title + meta line. Mirrors the
- * marketing site's feature blocks (icon in a soft primary square). */
+/* Header row: icon tile next to the title + meta line. */
 .av-install-card__head {
   display: flex;
   align-items: center;
@@ -382,16 +396,25 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
   margin-bottom: 1.1rem;
 }
 
+/* Same tile as the web app's settings page header (SettingsPageHeader.tsx). */
 .av-install-card__icon {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  color: var(--ifm-color-primary);
-  background: rgba(244, 149, 65, 0.1);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: var(--ifm-color-primary); /* primary-600 */
+}
+
+html[data-theme='dark'] .av-install-card__icon {
+  border-color: #374151;
+  background: #1f2937;
+  color: var(--ifm-color-primary-light); /* primary-400 */
 }
 
 .av-install-card__title {
@@ -480,19 +503,6 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
  * text is truly centered. */
 .av-install-card__cta .button p {
   margin: 0;
-}
-
-/* The CTA pill is a <span>, not the link itself, so its :hover never fires —
- * the whole card is the anchor. Drive the pill's hover look from the card so it
- * still reacts when you point anywhere on the card: both cards use the subtle
- * outline button by default and fill with brand orange on hover. */
-.av-install-card:hover .button--secondary.button--outline {
-  background-color: var(--ifm-color-primary);
-  border-color: var(--ifm-color-primary);
-  /* Same value Infima's own `.button--outline:hover` uses, so card-hover reads
-   * identically to a direct button mouseover (white in light mode, dark in dark
-   * mode) instead of leaving the default dark border-color text. */
-  color: var(--ifm-font-color-base-inverse);
 }
 
 /* ------------------------------------------- Install comparison table -- */
@@ -757,4 +767,16 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
 
 .markdown table thead tr {
   border-bottom: none;
+}
+
+/* A list with a thin rule between its items, e.g. "How it is secured" on the security overview. */
+.av-separated-list > ol > li,
+.av-separated-list > ul > li {
+  margin: 0;
+  padding: 0.8rem 0;
+}
+
+.av-separated-list > ol > li + li,
+.av-separated-list > ul > li + li {
+  border-top: 1px solid var(--av-border);
 }

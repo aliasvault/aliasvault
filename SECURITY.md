@@ -29,7 +29,7 @@ We acknowledge reports within **48 hours**. Please do not publicly disclose issu
 
 # 2. Threat Model
 
-AliasVault is a **zero-knowledge, end-to-end encrypted password and email alias manager**.
+AliasVault is a **zero-knowledge, end-to-end encrypted password and email alias manager**. The full threat model (assets, trust assumptions, adversaries, and what the server knows and can do) is published in the [Security Whitepaper](https://docs.aliasvault.com/security-whitepaper/#2-threat-model). This section is the condensed version that the vulnerability classification below refers to; where the two differ, the whitepaper is authoritative.
 
 > Note: We only request CVEs for vulnerabilities that breach the encryption/access control boundary (defined in Section 2.1). Post-compromise scenarios (issues that assume an attacker has already compromised the user's device, runtime environment, or account through external means) are not considered CVE-worthy, though we may still address them as defense-in-depth improvements.
 
@@ -37,17 +37,45 @@ AliasVault is a **zero-knowledge, end-to-end encrypted password and email alias 
 
 The **primary security boundary** (also referred to as the **encryption/access control boundary**) in AliasVault is the end-to-end encryption and access control layer that protects user secrets. Concretely, this boundary guarantees that only authorized users can decrypt or access their vault secrets.
 
-- Vault data is encrypted client-side using keys derived from the user's master password.
-- The server never has access to plaintext vault data.
+- Vault data and stored email contents are encrypted client-side (email: on the server at the moment of receipt) with keys that only the clients hold; the master password unlocks them and never leaves the device.
+- The server never has access to plaintext vault data or to any key that decrypts it.
 - Network interception, server compromise, or API token leakage **must not** expose decrypted secrets.
 
 A vulnerability is considered a Class 1 security boundary failure if it allows crossing this boundary without the user's informed and specific authorization of the relevant device, session, or security-sensitive operation.
 
 ---
 
-### 2.2 Out-of-Scope: Compromised Devices
+### 2.2 Trust Assumptions
 
-The following represent **device compromise scenarios** and are **outside AliasVault’s primary security boundary**:
+The boundary above holds under the following assumptions.
+
+- **Trusted device and operating system.** The device on which a vault is unlocked is not compromised: no malware with the user's privileges, no hostile root or jailbreak tooling, and the OS keychain, keystore, process isolation and screen lock work as documented. Everything AliasVault decrypts exists on that device, so a compromised device sees what the user sees.
+- **Authentic client code.** The user runs an unmodified AliasVault client from an official channel. The browser extensions and mobile apps are installed once (extension and app stores, F-Droid, GitHub releases) and load no code from the server. The web app is delivered by the server on every load, so for the web app the server operator and the TLS connection are trusted to deliver the published code.
+- **A strong, secret master password.** Argon2id makes guessing expensive, not impossible; anyone holding a copy of the encrypted data can run an offline guessing attack, and no second secret is mixed in.
+- **Sound standard cryptography.** Argon2id, AES-256-GCM, RSA-OAEP, Ed25519, SRP-6a, HKDF and HMAC with SHA-256, and the platform random number generator.
+- **Shared vault members are trusted with that vault.** Removal stops future access through the server; it cannot take back what a member already synced.
+- **TLS protects the transport, but vault confidentiality does not depend on it.** A broken TLS connection exposes session tokens and metadata, not vault contents.
+- **The server operator is trusted at the moment an email arrives.** Incoming email reaches the SMTP service in plaintext and is encrypted in memory before storage; email encryption protects stored email, not email as it arrives.
+
+---
+
+### 2.3 Threat Actors
+
+- A malicious or compromised server, including the operator, an insider, an intruder, or a leaked database or backup: it may read and modify everything it stores and control every API response.
+- A network attacker between client and server.
+- A malicious website visited while the browser extension is installed.
+- Another AliasVault user, including a current or former member of a shared vault.
+- An attacker holding a stolen API session token.
+- An attacker holding a copy of the encrypted data (server database, device storage, backup or export file).
+- A sender of crafted email to an alias.
+
+None of these may obtain decrypted vault or email contents, learn the master password or any key, make a client accept forged or weakened data, or gain access to a vault they were not granted. The whitepaper lists the mechanism for each adversary.
+
+---
+
+### 2.4 Out-of-Scope: Compromised Devices and User Choices
+
+The following represent **device compromise scenarios** and are **outside AliasVault's primary security boundary**:
 
 - Rooted or jailbroken devices
 - Kernel-level or runtime instrumentation (Frida, Xposed, debuggers)
@@ -57,6 +85,8 @@ The following represent **device compromise scenarios** and are **outside AliasV
 - Malware operating with equivalent privileges to the user
 
 AliasVault implements defense-in-depth protections in these areas, but issues that **require these conditions** are classified as **local hardening**, not core security boundary failures.
+
+Also outside the boundary: a weak, reused or disclosed master password; social engineering where the application accurately presents the security-sensitive action and the user approves it (see Section 3.2.2); tampered client builds and compromise of the channels that deliver them; availability (a malicious server can always refuse to serve or delete data); and the limitations listed in the whitepaper, which are known and tracked and do not need to be reported again.
 
 ---
 
@@ -148,6 +178,7 @@ These are not treated as security vulnerabilities.
 ### 3.3.3 Low-Impact Web Findings
 - Missing HTTP headers without exploit path
 - Rate-limit suggestions
+- Username enumeration through registration or the username availability check on a server with public registration enabled
 - Denial-of-service without data compromise
 
 ---

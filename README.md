@@ -96,8 +96,8 @@ For more information about the installation process, manual setup instructions a
 
 - [Documentation website (docs.aliasvault.com) 📚](https://docs.aliasvault.com)
 
-## Security Architecture
-<a href="https://docs.aliasvault.com/architecture"><img alt="AliasVault Security Architecture Diagram" src="docs/static/assets/diagrams/security-architecture/aliasvault-security-architecture-thumb.jpg" width="343"></a>
+## Security
+<a href="https://docs.aliasvault.com/security-whitepaper"><img alt="AliasVault Security Architecture Diagram" src="docs/static/assets/diagrams/whitepaper/1-architecture-overview-thumb.jpg" width="343"></a>
 
 AliasVault takes security seriously and implements various measures to protect your data:
 
@@ -105,9 +105,7 @@ AliasVault takes security seriously and implements various measures to protect y
 - Your master password never leaves your device.
 - Zero-knowledge architecture ensures the server never has access to your unencrypted data
 
-For detailed information about our encryption implementation and security architecture, see the following documents:
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-- [Security Architecture Diagram](https://docs.aliasvault.com/architecture)
+The full security design and threat model are described in the [Security Whitepaper](https://docs.aliasvault.com/security-whitepaper). To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Features & Roadmap
 

@@ -1,0 +1,76 @@
+---
+sidebar_label: "Vault Format and Sync"
+title: "AliasVault Vault Format and Sync"
+description: "How AliasVault stores and syncs vault data."
+---
+# Vault Format and Sync
+
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+A central part of the AliasVault architecture is the canonicalize/materialize model. It is what makes the offline mode possible: a device can keep editing its local copy of a vault without a connection, and when it syncs again, those edits are merged with changes made on other devices instead of overwriting them. This page explains how the model works.
+
+On a device, an unlocked vault is a SQLite database held in memory by the Rust core. On the server, the same vault is a set of encrypted documents. Two functions convert between the two:
+
+- **Canonicalize** turns the local tables into the storage format the server keeps.
+- **Materialize** turns that storage format back into local tables.
+
+Both run on the client, inside the Rust core, so every platform (web app, browser extension, iOS and Android) produces exactly the same output for the same data. Encryption happens after canonicalize and decryption before materialize; the server only ever handles the encrypted result. The implementation lives in `core/rust/src/vault_codec/`.
+
+<a href={useBaseUrl('/assets/diagrams/technical/vault-format.html')} target="_blank" rel="noopener noreferrer" title="Open full screen">
+  <ThemedImage
+    alt="AliasVault vault format diagram: the local projection, the Rust codec and the canonical storage model"
+    sources={{
+      light: useBaseUrl('/assets/diagrams/technical/vault-format-light.svg'),
+      dark: useBaseUrl('/assets/diagrams/technical/vault-format-dark.svg'),
+    }}
+  />
+</a>
+
+## Canonical model and local projection
+
+The stored data model is the canonical form: the manifests, data buckets and blobs described below. Each app keeps a local *projection* of it, built by materialize when a vault is pulled and read back by canonicalize when it is pushed. The two have different jobs:
+
+- **The canonical model is for storage and sync.** It holds the data once, in one fixed shape, so that every device writes the same bytes for the same vault and a content hash tells whether anything changed.
+- **The projection is for querying and editing.** It has indexes, foreign keys, derived ids and one row per value, whatever makes the apps fast. None of that is stored; materialize computes it again on every pull.
+
+Because only the canonical model is stored, the client is free to choose how it materializes a vault. The current apps (the web app, the browser extensions and the mobile apps) all use SQLite, held in memory by the Rust core. A future client-side app may choose a different local format that suits its use case (another database, or plain in-memory data structures). This is fully supported and does not affect the stored format, the sync protocol or the server storage. Changes to the local schema (a new index, a renamed column) also do not change what is stored, and a client that meets tables or columns it does not know keeps them in a local overflow row and writes them back unchanged, so an older client never removes data a newer one added.
+
+The canonical model is kept compact on purpose:
+
+- A row carries only its own columns; ids that can be derived from other columns (single-value field values, field history rows, item-tag links) are left out and derived again on materialize.
+- The bytes of attachments and logos leave the manifest and become blobs, referenced by their salted hash. The manifest stays small no matter how large the attachments are.
+- Data that changes often moves to data buckets with their own revision, so a small, frequent change does not upload the items again. Each bucket is one more document to sync and keep consistent, so data only moves to a bucket when faster syncing of it outweighs this cost.
+- The canonical JSON is gzipped before it is encrypted.
+
+Each manifest, bucket and blob is encrypted as a whole, as one ciphertext, rather than row by row or field by field. The server stores one opaque document per vault and cannot read the items, fields, URLs or folders inside it. The manifest id is part of the associated data of the ciphertext, so a document served under another manifest id is refused.
+
+Alongside the ciphertext, the client sends the server a small amount of metadata: the number of items in the vault, used for operational statistics, and the list of blobs (attachments and logos) the vault references, so the server can store them and clean up blobs that are no longer used. The full list of what the server stores is in the [Security Whitepaper](../security-whitepaper.mdx#24-what-the-server-knows-and-can-do).
+
+## The storage format
+
+A vault is split into the following parts, each encrypted on its own:
+
+| Part | What it holds | Encrypted with |
+|---|---|---|
+| **Manifest** | One per vault (personal or shared): the items, fields, folders, tags, passkeys and other tables of that vault | The VEK of that vault |
+| **Data bucket** | Data that changes often and syncs separately from the manifest, one bucket per category per manifest | The VEK of that vault |
+| **Blob** | The bytes of one attachment or logo | Its own random blob key, which is encrypted with the VEK |
+
+Before encryption, every manifest and data bucket is written as canonical JSON (object keys sorted, ids in lowercase) inside an envelope:
+
+```
+{ schemaVersion, contentHash = SHA-256(canonical payload), payload }
+```
+
+The envelope is compressed with gzip and then encrypted with AES-256-GCM, with the manifest id in the associated data (see the [Security Whitepaper](../security-whitepaper.mdx#41-key-hierarchy)).
+
+## Canonicalize and materialize
+
+When a vault is pushed, *canonicalize* turns the local projection into manifests, data buckets and blobs:
+
+- **Each vault is self-contained.** Every piece of data goes into the manifest of the vault it belongs to. A shared vault gets its own copy of any tag, custom field definition or logo its items use, so members of a shared vault never need, or see, anything from someone's personal vault.
+- **The output is normalized.** Two devices holding the same data write exactly the same bytes.
+- **Attachments and logos become blobs.** Each blob is referenced by a hash salted per vault, so members of a vault compute the same reference while the server cannot recognize the same file across vaults.
+
+When a vault is pulled, *materialize* does the reverse. It refuses a vault written in a newer format than the app can read and asks the user to update, combines every vault the user can open into one local projection, and keeps data it does not recognize so it is written back unchanged.

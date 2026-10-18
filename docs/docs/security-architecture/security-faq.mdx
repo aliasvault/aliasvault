@@ -1,0 +1,78 @@
+---
+sidebar_label: "FAQ"
+title: "Security FAQ"
+description: "Answers to common questions about AliasVault's security."
+---
+# Security FAQ
+
+import WhitepaperRefs from '@site/src/components/WhitepaperRefs';
+
+Short answers to frequently asked questions regarding security.
+
+### Can AliasVault read my passwords?
+No. Your vaults are encrypted on your device before they are uploaded, with keys the server never receives. The server stores ciphertext it cannot decrypt, and this applies to AliasVault Cloud and to self-hosted servers alike. <WhitepaperRefs refs={[{section: '6', label: 'Vault operations', anchor: '6-vault-operations'}]} />
+
+---
+
+### Can AliasVault read my emails?
+No. Each email is encrypted the moment it arrives, with the public key of the vault the alias belongs to, and only members of that vault hold the private key. The server does handle the email in plaintext for the moment it takes to encrypt it, and some metadata (the recipient alias, the time received and the size) stays readable, but email subjects, bodies and attachments are unreadable. <WhitepaperRefs refs={[{section: '7', label: 'Email', anchor: '7-email'}]} />
+
+---
+
+### What happens if the AliasVault server would get compromised?
+Your vaults and stored emails stay protected. The server only holds encrypted data, plus some metadata such as your username and alias addresses, and without your master password that data cannot be decrypted. Password guessing is made deliberately slow, so a strong master password cannot realistically be cracked. As with any online service, someone who stays in control of the server could see new emails as they arrive or tamper with the web app. The browser extensions and mobile apps do not load code from the server, so tampering with the web app does not affect them. <WhitepaperRefs refs={[{section: '2.4', label: 'What the server knows and can do', anchor: '24-what-the-server-knows-and-can-do'}]} />
+
+---
+
+### Is my master password sent to the server when I log in?
+No. AliasVault uses the SRP protocol: your device proves it knows the password without sending it or anything that can decrypt your vault. <WhitepaperRefs refs={[{section: '5', label: 'Authentication process', anchor: '5-authentication-process'}]} />
+
+---
+
+### What if I forget my master password?
+Your vault cannot be recovered. Because the master password never leaves your device, nobody, including AliasVault, can reset it and decrypt your data. It is therefore important to remember your master password and/or store it somewhere safe: it is the most important password you have. <WhitepaperRefs title="Securing your account" path="/security-architecture/securing-your-account/" refs={[{label: 'Master password', anchor: 'master-password'}]} />
+
+---
+
+### What should I do if one of my devices was lost or compromised?
+Sign out that device by revoking its session in the security settings, then change your master password and choose to also rotate your encryption keys (under advanced settings). The rotation replaces the keys that device held, so they no longer open anything written to your vault afterwards. <WhitepaperRefs refs={[{section: '4.2', label: 'Key rotation', anchor: '42-key-rotation'}]} />
+
+---
+
+### Does two-factor authentication improve my vault's encryption?
+No. It protects logging in to your account on the server; your vault is encrypted with keys derived from your master password alone. <WhitepaperRefs title="Securing your account" path="/security-architecture/securing-your-account/" refs={[{label: 'Two-factor authentication', anchor: 'two-factor-authentication'}]} />
+
+---
+
+### Can people in my shared vault see my personal vault?
+No. Every vault has its own encryption key, and members of a shared vault only receive the key of that vault. Your personal vault is never shared. <WhitepaperRefs refs={[{section: '10', label: 'Vault sharing', anchor: '10-vault-sharing'}]} />
+
+---
+
+### If I remove someone from a shared vault, do they lose access?
+Yes. They immediately lose the ability to retrieve the shared vault and its emails from the server, and the next time they sync, the shared vault is removed locally from their devices. Keep in mind that, as with any sharing, they may already have seen or copied the passwords while they were a member, so change the passwords of important accounts if needed. <WhitepaperRefs title="Securing your account" path="/security-architecture/securing-your-account/" refs={[{label: 'Shared vaults', anchor: 'shared-vaults'}]} />
+
+---
+
+### Is a PIN as safe as my master password?
+In the browser extension, not against someone who copies the extension's storage, because the attempt limit only applies inside the extension. On mobile the PIN-protected key is also bound to the device's keychain or keystore. Biometrics on mobile are the stronger quick unlock method. <WhitepaperRefs title="Securing your account" path="/security-architecture/securing-your-account/" refs={[{label: 'Unlock methods on your devices', anchor: 'unlock-methods-on-your-devices'}]} />
+
+---
+
+### Is AliasVault's encryption safe against future quantum computers?
+Your vault contents are encrypted with AES-256-GCM, which is considered safe against quantum computers. Sharing, email and Login with Mobile also use public-key encryption (currently RSA-2048), which a sufficiently powerful quantum computer could break in the future. AliasVault is built so that this algorithm can be replaced while existing data keeps working, and we will switch once a quantum-safe algorithm has matured and is available in well-reviewed libraries. <WhitepaperRefs refs={[{section: '13.8', label: 'Post-quantum', anchor: 'limitation-post-quantum'}]} />
+
+---
+
+### Has AliasVault been audited?
+As of October 2026, preparations for an independent security audit of the cryptographic design and the Rust core are in progress, and the report will be published once the audit is complete, which we expect before the end of January 2027. AliasVault also runs a public responsible disclosure program and is transparent about any issues found and fixed. <WhitepaperRefs title="Audits and disclosure" path="/security-architecture/audits-and-disclosure/" refs={[{label: 'Independent audits', anchor: 'independent-audits'}]} />
+
+---
+
+### Is AliasVault open source?
+Yes. The server, every client and the Rust core are open source under the AGPL-3.0 license in [one repository](https://github.com/aliasvault/aliasvault), and the same apps are used with AliasVault Cloud and with self-hosted servers.
+
+---
+
+### How do I report a security issue?
+Email security@aliasvault.com. <WhitepaperRefs title="Audits and disclosure" path="/security-architecture/audits-and-disclosure/" refs={[{label: 'Reporting a vulnerability', anchor: 'reporting-a-vulnerability'}]} />

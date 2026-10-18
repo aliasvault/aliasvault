@@ -1,0 +1,57 @@
+---
+sidebar_label: "Securing Your Account"
+title: "Securing Your AliasVault Account"
+description: "Practical steps to keep your AliasVault account and vaults safe: master password, two-factor authentication, unlock methods, sessions, sharing and exports."
+---
+# Securing Your Account
+
+import WhitepaperRefs from '@site/src/components/WhitepaperRefs';
+
+AliasVault encrypts your vaults with keys that only exist on your devices, but a few things remain in your hands: the strength of your master password, the devices you unlock on, and what you do with exports. This page lists what you can do yourself to make sure your data stays safe. The reasoning behind each point is in the [Security Whitepaper](../security-whitepaper.mdx).
+
+## Master password
+
+- **Choose a long, unique master password.** AliasVault requires at least 12 characters, but longer is better. Anyone who obtains a copy of your encrypted data (for example a leaked server database or a copy of a device) can try to guess it offline, and a strong password is what makes that infeasible. <WhitepaperRefs refs={[{section: '2.2', label: 'Trust assumptions', anchor: '22-trust-assumptions'}]} />
+- **Never reuse it.** Do not use your master password for any other account or service.
+- **There is no password recovery.** Your master password is never sent to the server, so nobody can reset it for you and recover your data. Store it somewhere safe, such as written down in a secure place at home. If you forget it, the vault cannot be decrypted.
+
+## Two-factor authentication
+
+- **Enable two-factor authentication** with a standard authenticator app. It stops someone who only knows your master password from logging in to your account on the server. <WhitepaperRefs refs={[{section: '5.2', label: 'Two-factor authentication', anchor: '52-two-factor-authentication'}]} />
+- **Store your recovery codes safely.** You need them when you lose access to your authenticator app.
+- **Use it together with a strong master password**.
+
+## Unlock methods on your devices
+
+Each device keeps an encrypted copy of your vault, so you can unlock it offline. How well a device copy is protected depends on the unlock method. <WhitepaperRefs refs={[{section: '11', label: 'Protecting keys on the device', anchor: '11-protecting-keys-on-the-device'}]} />
+
+- **Biometrics (mobile)** uses a key held by the device's secure hardware, which is the strongest quick unlock method.
+- **A PIN** is convenient. In the browser extension, against someone who copies the extension's storage, it is only as strong as the PIN itself: the attempt limit is enforced by the extension and does not apply to a copy. On mobile the PIN-protected key is also bound to the device's keychain or keystore. Prefer biometrics or the master password on devices where this matters. <WhitepaperRefs refs={[{section: '13', label: 'Known limitations', anchor: 'limitation-pin-unlock'}]} />
+- **Lock your vault** when you step away. Locking removes the decrypted vault and its keys from memory.
+- **Log out on a device you no longer use.** Logging out removes all AliasVault data from that device, including the encrypted vault.
+- **Keep your devices secure.** Use a device passcode, install system updates, and do not unlock your vault on a device you do not trust. AliasVault cannot protect data on a device that is compromised while the vault is unlocked. <WhitepaperRefs refs={[{section: '2.5', label: 'Out of scope', anchor: '25-out-of-scope'}]} />
+
+## Sessions and the authentication log
+
+- **Review your active sessions and authentication log** in the security settings. The log shows every login attempt and security-relevant action with its time, IP address, country and device. <WhitepaperRefs refs={[{section: '5.3', label: 'Session tokens', anchor: '53-session-tokens'}]} />
+- **Revoke any session you do not recognize**, and revoke the sessions of a lost or stolen device. If you suspect someone knows your master password, change it as well (see above). If a device was lost or compromised while it held your vault, choose to also rotate your encryption keys (under advanced settings) when you change your master password. <WhitepaperRefs refs={[{section: '4.2', label: 'Key rotation', anchor: '42-key-rotation'}]} />
+
+## Which client you use
+
+- **For the strongest guarantees, use the browser extension or the mobile apps.** They are installed from an official store and do not load code from the server. The web app is loaded from the server each time you open it, like any website, so it relies on the server delivering the published code. <WhitepaperRefs refs={[{section: '2.2', label: 'Trust assumptions', anchor: '22-trust-assumptions'}]} />
+- **Install AliasVault only from official channels:** the browser extension stores, the App Store, Google Play, F-Droid, the [GitHub releases](https://github.com/aliasvault/aliasvault/releases) or the [official downloads website](https://downloads.aliasvault.com/).
+
+## Shared vaults
+
+- **Only invite people you trust with everything in that vault.** A member can read and copy all of its contents. <WhitepaperRefs refs={[{section: '10', label: 'Vault sharing', anchor: '10-vault-sharing'}]} />
+- **Removing a member does not take back what they already synced.** When the contents must be withheld from a former member, create a new shared vault, move the items into it, delete the old one, and change the passwords the member had access to. <WhitepaperRefs refs={[{section: '13', label: 'Known limitations', anchor: 'limitation-shared-member-removal'}]} />
+- Your personal vault is never part of a shared vault, so sharing does not expose it.
+
+## Exports
+
+- **Prefer the encrypted `.avex` format** with a strong, unique export password. <WhitepaperRefs refs={[{section: '12', label: 'Vault exports', anchor: '12-vault-exports'}]} />
+- **Handle unencrypted exports with care.** `.avux` and `.csv` files can be read by anyone who gets access to them. Do not store them in cloud storage or email them, and delete them when you no longer need them.
+
+## Email aliases
+
+- **Be careful with links and attachments in emails.** Anyone can send email to an alias. <WhitepaperRefs refs={[{section: '7.4', label: 'What the server sees', anchor: '74-what-the-server-sees'}]} />

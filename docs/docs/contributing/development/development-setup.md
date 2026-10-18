@@ -15,7 +15,7 @@ Note for Windows users: the AliasVault development tooling is built around Linux
 - **.NET 10 SDK**: https://dotnet.microsoft.com/download/dotnet/10.0
 - **Docker Desktop**
 - **`dotnet-ef`** tools, if you'll touch the database: `dotnet tool install --global dotnet-ef`
-- **Rust** The AliasVault apps depend on the Rust core, which needs to be compiled locally. Install [rustup](https://rustup.rs), then `rustup target add wasm32-unknown-unknown` and `cargo install wasm-pack`. Build the core with `./core/rust/build.sh --web`.
+- **Rust** The AliasVault apps depend on the Rust core, which needs to be compiled locally. Install [rustup](https://rustup.rs), then `rustup target add wasm32-unknown-unknown` and `cargo install wasm-pack`. Build the core with `./core/rust/build.sh --web` for the web app or `./core/rust/build.sh --browser-extension` for the browser extension.
 
 ## Running the apps
 
