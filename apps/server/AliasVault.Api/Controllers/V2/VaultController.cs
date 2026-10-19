@@ -12,8 +12,6 @@ using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
 using AliasVault.Api.Services;
-using AliasVault.Api.Vault;
-using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
@@ -43,33 +41,6 @@ public class VaultController(
     Config config,
     RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
-    /// <summary>
-    /// Retention policy for superseded bucket revisions.
-    /// </summary>
-    private static readonly RetentionPolicy _bucketRetentionPolicy = new()
-    {
-        Rules =
-        [
-            new RevisionRetentionRule { RevisionsToKeep = 3 },
-            new DailyRetentionRule { DaysToKeep = 7 },
-        ],
-    };
-
-    /// <summary>
-    /// Retention policy for superseded manifest revisions.
-    /// </summary>
-    private readonly RetentionPolicy _manifestRetentionPolicy = new()
-    {
-        Rules =
-        [
-            new RevisionRetentionRule { RevisionsToKeep = 3 },
-            new DailyRetentionRule { DaysToKeep = 2 },
-            new WeeklyRetentionRule { WeeksToKeep = 1 },
-            new MonthlyRetentionRule { MonthsToKeep = 1 },
-            new DbVersionRetentionRule { VersionsToKeep = 2 },
-        ],
-    };
-
     /// <summary>
     /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing as a <see cref="BinaryFrame"/>.
     /// </summary>
@@ -155,7 +126,7 @@ public class VaultController(
                 GrantSignature = grant?.GrantSignature,
                 GrantSignerUserId = grant?.GrantSignerUserId,
                 GrantSignerPublicKey = grant?.GrantSignerPublicKey,
-                KeyVersion = grant?.KeyVersion ?? 0,
+                KeyVersion = accessKey?.KeyVersion ?? 0,
             };
         }).ToList();
 
@@ -213,6 +184,7 @@ public class VaultController(
         // How this manifest's VEK reaches the caller.
         var accessKey = (await GetAccessKeysAsync(context, user.Id, [latest.ManifestId])).GetValueOrDefault(latest.ManifestId);
         manifest.KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null;
+        manifest.KeyVersion = accessKey?.KeyVersion ?? 0;
         if (accessKey != null && ManifestKeyTypes.VekTravelsWithManifest(accessKey.Type))
         {
             manifest.EncryptedVek = accessKey.EncryptedVek;
@@ -220,7 +192,6 @@ public class VaultController(
             manifest.GrantSignature = accessKey.GrantSignature;
             manifest.GrantSignerUserId = accessKey.GrantSignerUserId;
             manifest.GrantSignerPublicKey = accessKey.GrantSignerPublicKey;
-            manifest.KeyVersion = accessKey.KeyVersion;
             if (accessKey.UserGrantKeyId != null)
             {
                 manifest.AccountPublicKey = await context.UserGrantKeys.Where(k => k.Id == accessKey.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
@@ -542,7 +513,7 @@ public class VaultController(
                     }
                 }
 
-                await ApplyVaultRetention(context, row, archivedRevision);
+                await VaultRevisionWriter.ApplyManifestRetentionAsync(context, timeProvider.GetUtcNow().UtcDateTime, row, archivedRevision);
                 manifestResults.Add(new ManifestWriteResult { ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
             }
 
@@ -580,7 +551,7 @@ public class VaultController(
                     continue;
                 }
 
-                var rev = await UpsertBucketAsync(context, bucket.ManifestId, bucket.Category, bucketBlob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault((bucket.ManifestId, bucket.Category)));
+                var rev = await VaultRevisionWriter.UpsertBucketAsync(context, timeProvider.GetUtcNow().UtcDateTime, bucket.ManifestId, bucket.Category, bucketBlob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault((bucket.ManifestId, bucket.Category)));
                 newBucketRevisions.Add(new BucketRevision { ManifestId = bucket.ManifestId, Category = bucket.Category, Revision = rev });
             }
 
@@ -596,7 +567,7 @@ public class VaultController(
                 var publishable = await GetAdminAccessSharedManifestIdsAsync(context, user.Id, sharedIds);
                 foreach (var (mw, row) in publishing.Where(r => r.Row.OwnerGroupId == user.PersonalGroupId || publishable.Contains(r.Row.ManifestId)))
                 {
-                    await PublishManifestPublicKeyAsync(context, row.ManifestId, mw.DeliveryPublicKey!, VaultKeyAlgorithms.Parse(mw.DeliveryPublicKeyAlgorithm));
+                    await VaultRevisionWriter.PublishManifestPublicKeyAsync(context, timeProvider.GetUtcNow().UtcDateTime, row.ManifestId, mw.DeliveryPublicKey!, VaultKeyAlgorithms.Parse(mw.DeliveryPublicKeyAlgorithm));
                 }
 
                 // Claim resolution below reads these rows back, so they must be visible to the query.
@@ -707,6 +678,36 @@ public class VaultController(
             .ToListAsync();
 
         return Ok(new MissingBlobsResponse { Missing = hashes.Except(present).ToList() });
+    }
+
+    /// <summary>
+    /// The encrypted blob key of every blob the manifest's current revision references, without the blob bytes. A key
+    /// rotation rewraps these under the new VEK.
+    /// </summary>
+    /// <param name="manifestId">The manifest.</param>
+    /// <returns>The blob keys.</returns>
+    [HttpGet("blob-keys/{manifestId:guid}")]
+    public async Task<IActionResult> GetBlobKeys(Guid manifestId)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+        {
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
+        }
+
+        var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, manifestId);
+        if (ownerGroupId == null)
+        {
+            return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
+        }
+
+        var blobKeys = await context.VaultBlobReferences
+            .Where(r => r.ManifestId == manifestId && context.VaultManifests.Any(m => m.ManifestId == r.ManifestId && m.RevisionNumber == r.RevisionNumber))
+            .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new BlobKeyEntry { Hash = b.Hash, EncryptedBlobKey = b.EncryptedBlobKey })
+            .ToListAsync();
+
+        return Ok(new BlobKeysResponse { BlobKeys = blobKeys });
     }
 
     /// <summary>
@@ -942,70 +943,6 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Writes a new revision of a (manifest, bucket kind): the current row is copied to the history table and then updated in place.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="manifestId">The manifest that owns the bucket.</param>
-    /// <param name="kind">The bucket category.</param>
-    /// <param name="encryptedData">The new encrypted payload as raw ciphertext bytes.</param>
-    /// <param name="ciphertextHash">Storage-layer integrity hash of the payload.</param>
-    /// <param name="currentRevision">The revision the client believes is current, used to seed a first write.</param>
-    /// <param name="existing">The current row, already loaded by the revision gate, or null when none exists yet.</param>
-    /// <returns>The new revision number.</returns>
-    private async Task<long> UpsertBucketAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, byte[] encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
-    {
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-
-        if (existing is null)
-        {
-            var firstRev = (currentRevision ?? 0) + 1;
-            context.VaultDataBuckets.Add(new VaultDataBucket
-            {
-                ManifestId = manifestId,
-                Category = kind,
-                EncryptedData = encryptedData,
-                CiphertextHash = ciphertextHash,
-                RevisionNumber = firstRev,
-                CreatedAt = now,
-                UpdatedAt = now,
-            });
-            return firstRev;
-        }
-
-        // Archive the outgoing revision before overwriting it, exactly as the manifest write path does.
-        var archived = VaultDataBucketsHistory.CreateFrom(existing);
-        context.VaultDataBucketsHistory.Add(archived);
-
-        var newRev = existing.RevisionNumber + 1;
-        existing.EncryptedData = encryptedData;
-        existing.CiphertextHash = ciphertextHash;
-        existing.RevisionNumber = newRev;
-        existing.UpdatedAt = now;
-
-        await ApplyBucketRetentionAsync(context, manifestId, kind, archived);
-        return newRev;
-    }
-
-    /// <summary>
-    /// Prunes superseded revisions of one bucket down to <see cref="_bucketRetentionPolicy"/>.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="manifestId">The manifest that owns the bucket.</param>
-    /// <param name="kind">The bucket category.</param>
-    /// <param name="justArchived">The revision archived by this write, included in the retention window.</param>
-    private async Task ApplyBucketRetentionAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, VaultDataBucketsHistory justArchived)
-    {
-        var history = await context.VaultDataBucketsHistory.Where(x => x.ManifestId == manifestId && x.Category == kind && x.RevisionNumber != justArchived.RevisionNumber).ToListAsync();
-        history.Add(justArchived);
-
-        var toDelete = VaultRetentionManager.ApplyRetention(_bucketRetentionPolicy, history, timeProvider.GetUtcNow().UtcDateTime);
-        if (toDelete.Count > 0)
-        {
-            context.VaultDataBucketsHistory.RemoveRange(toDelete);
-        }
-    }
-
-    /// <summary>
     /// Upserts a batch of encrypted blob objects for a manifest in one round-trip. Existing blobs (same hash) are left
     /// as they are, unless <paramref name="overwrite"/> is set (KEK/VEK migration) in which case their ciphertext is
     /// replaced with the re-encrypted bytes. The caller of this method should call SaveChanges after calling this method.
@@ -1058,53 +995,6 @@ public class VaultController(
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Applies the retention policy to the history revisions of a manifest and removes the pruned revisions and
-    /// their blob references. Runs after the previous current revision has been archived (passed as
-    /// <paramref name="justArchived"/>, still unsaved, null when there was nothing to archive) and the current row
-    /// has been updated in place.
-    /// </summary>
-    private async Task ApplyVaultRetention(AliasServerDbContext context, VaultManifest currentManifest, VaultManifestsHistory? justArchived)
-    {
-        // Load existing history without the (potentially large) blob payload columns; the rules only need metadata.
-        var historyRevisions = await context.VaultManifestsHistory
-            .Where(x => x.ManifestId == currentManifest.ManifestId)
-            .Select(x => new VaultManifestsHistory
-            {
-                ManifestId = x.ManifestId,
-                VaultBlob = null,
-                ManifestBlob = null,
-                StorageFormat = x.StorageFormat,
-                Version = x.Version,
-                RevisionNumber = x.RevisionNumber,
-                FileSize = x.FileSize,
-                CredentialsCount = x.CredentialsCount,
-                EmailClaimsCount = x.EmailClaimsCount,
-                Salt = x.Salt,
-                Verifier = x.Verifier,
-                EncryptionType = x.EncryptionType,
-                EncryptionSettings = x.EncryptionSettings,
-                Client = x.Client,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-            })
-            .ToListAsync();
-        if (justArchived is not null)
-        {
-            historyRevisions.Add(justArchived);
-        }
-
-        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_manifestRetentionPolicy, historyRevisions, timeProvider.GetUtcNow().UtcDateTime, currentManifest);
-        context.VaultManifestsHistory.RemoveRange(revisionsToDelete);
-
-        // Blob references of pruned revisions are deleted explicitly (they only cascade with the whole manifest).
-        var prunedRevisionNumbers = revisionsToDelete.Select(x => x.RevisionNumber).ToList();
-        if (prunedRevisionNumbers.Count > 0)
-        {
-            await context.VaultBlobReferences.Where(r => r.ManifestId == currentManifest.ManifestId && prunedRevisionNumbers.Contains(r.RevisionNumber)).ExecuteDeleteAsync();
-        }
     }
 
     /// <summary>
@@ -1268,54 +1158,5 @@ public class VaultController(
     {
         // The caller's personal group is always in play; the shared manifests add their owning groups on top.
         return rateLimitService.GetRemainingAliasAllowancesAsync(context, sharedGroupIds.Append(caller.PersonalGroupId));
-    }
-
-    /// <summary>
-    /// Publishes <paramref name="newPublicKey"/> as the primary key of a manifest and demotes the previous one.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="vaultManifestId">
-    /// The manifest this key belongs to: the caller's personal manifest for their personal key, a shared manifest
-    /// for its delivery key. Everything here is scoped by it, promoting a shared manifest's key must never demote
-    /// the user's personal key, and rotating the personal key must never demote a shared manifest's delivery key. The key
-    /// carries no user owner at all: it must survive the publishing admin deleting their account, and a later
-    /// admin republishing must land on the same scope rather than a per-user copy.
-    /// </param>
-    /// <param name="newPublicKey">The public key to publish.</param>
-    /// <param name="algorithm">The algorithm of the public key.</param>
-    private async Task PublishManifestPublicKeyAsync(AliasServerDbContext context, Guid vaultManifestId, string newPublicKey, VaultKeyAlgorithm algorithm)
-    {
-        var scope = context.VaultManifestDeliveryKeys.Where(x => x.VaultManifestId == vaultManifestId);
-
-        var exists = await scope.AnyAsync(x => x.IsPrimary && x.PublicKey == newPublicKey);
-        if (exists)
-        {
-            return;
-        }
-
-        var others = await scope.ToListAsync();
-        foreach (var key in others)
-        {
-            key.IsPrimary = false;
-            key.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-        }
-
-        var existingKey = others.FirstOrDefault(x => x.PublicKey == newPublicKey);
-        if (existingKey != null)
-        {
-            existingKey.IsPrimary = true;
-            existingKey.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-            return;
-        }
-
-        context.VaultManifestDeliveryKeys.Add(new VaultManifestDeliveryKey
-        {
-            VaultManifestId = vaultManifestId,
-            Algorithm = algorithm,
-            PublicKey = newPublicKey,
-            IsPrimary = true,
-            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
-        });
     }
 }
