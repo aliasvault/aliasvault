@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Подтвердите ПИН-код﻿",
       "confirmPinDescription": "Повторите ПИН-код для подтверждения",
-      "enterNewPinDescription": "Введите ПИН-код, состоящий как минимум из 6 цифр",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Неверный ПИН-код. Осталось {{attemptsRemaining}} попытки.",
       "incorrectPinSingular": "Неверный ПИН-код. Осталась 1 попытка.",
       "introText": "Выберите способ разблокировки хранилища. Вы можете использовать свой мастер-пароль (он доступен всегда) или установить ПИН-код для быстрого доступа. После 3 неудачных попыток ввода ПИН-кода необходимо будет ввести мастер-пароль.",
