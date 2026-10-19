@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
-      "enterNewPinDescription": "请输入至少 6 位数的 PIN 码",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN 码错误，剩余 {{attemptsRemaining}} 次尝试。",
       "incorrectPinSingular": "PIN 码错误，剩余 1 次尝试。",
       "introText": "选择您解锁密码库的方式。您可以使用主密码（始终可用），也可以设置 PIN 码以便快捷访问。PIN 码输入错误 3 次后，您需要使用主密码。",
