@@ -218,6 +218,7 @@
     "attachments": "Archivos adjuntos",
     "back": "Atrás",
     "backspace": "Borrar el último dígito",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Cancelar",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpiar portapapeles"
@@ -284,6 +285,7 @@
     "hide": "Esconder",
     "hideDetails": "Ocultar detalles",
     "hidePassword": "Ocultar contraseña",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Inicio",
     "loadMore": "Cargar más",
     "loading": "Cargando...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sitios donde el popup de autorrelleno no aparecerá.",
     "enabledForThisSite": "Habilitado para este sitio",
     "exportConfirmTitle": "Exportar bóveda",
-    "exportCsvButton": "Exportar bóveda a archivo CSV",
-    "exportSectionDescription": "Exportar tus datos de bóveda a un archivo CSV. Este archivo puede ser utilizado como copia de seguridad y también puede ser importado a otros gestores de contraseñas.",
     "exportSectionTitle": "Exportar",
     "exportWarning": "Advertencia: Exportando tu bóveda a un archivo no cifrado expondrás todas tus contraseñas e información sensible en texto plano. Solo haz esto en dispositivos de confianza y asegúrate de:\n\n• Almacenar el archivo exportado en una ubicación segura\n• Eliminar el archivo cuando ya no lo necesites\n• Nunca compartir el archivo exportado con otros\n\n¿Realmente deseass continuar con la exportación?",
-    "exporting": "Exportando...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Establecer el rango de edad por defecto para generar nuevas identidades. Esto afecta a la fecha de nacimiento asignada a la identidad generada.",
       "aliasGenerationGenderDescription": "Establecer la preferencia de género por defecto para generar nuevas identidades.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Error al cambiar la contraseña. Por favor, inténtalo de nuevo.",
         "failedToChangePassword": "Error al cambiar la contraseña. Por favor, actualiza la página e inténtalo de nuevo.",
         "fillAllFields": "Por favor, rellene todos los campos",
-        "headerText": "Cambiar tu contraseña maestra también cambia las claves de cifrado de bóveda. Se recomienda cambiar periódicamente tu contraseña maestra para mantener tus bóvedas seguras.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Iniciando cambio de contraseña...",
         "newPassword": "Nueva contraseña",
         "passwordChangedSuccessfully": "Contraseña cambiada con éxito",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "La autenticación de doble factor está habilitada con éxito. En tu próximo inicio de sesión necesitarás introducir tu código 2FA.",
         "verificationCodePlaceholder": "Introduce el código de verificación",
         "verifyAndEnableButton": "Verificar y Habilitar"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Desactivar el desbloqueo con llave de acceso",
