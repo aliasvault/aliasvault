@@ -218,7 +218,7 @@
     "attachments": "Atașamente",
     "back": "Înapoi",
     "backspace": "Spațiu",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Înainte să continui:",
     "cancel": "Anulează",
     "clipboardCountdown": {
       "clearClipboardButton": "Golește clipboardul"
@@ -285,7 +285,7 @@
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
     "hidePassword": "Ascunde parola",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Această acțiune prezintă riscuri ridicate.",
     "home": "Acasă",
     "loadMore": "Încarcă mai multe",
     "loading": "Se încarcă...",
