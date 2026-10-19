@@ -1417,12 +1417,12 @@
       },
       "keyRotation": {
         "acknowledge": "Ich habe meinen Tresor gesichert und mich von meinen anderen Geräten abgemeldet",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "changePasswordAndRotate": "Passwort ändern und Schlüssel rotieren",
+        "optionRotateKeys": "Auch alle Verschlüsselungsschlüssel rotieren",
+        "optionRotateKeysDescription": "Nur erforderlich, wenn Du vermutest, dass Deine Schlüssel enthüllt wurden, zum Beispiel wenn Dein Gerät kompromittiert oder gestohlen wurde. Verschlüsselt Deinen Tresor neu und meldet Dich auf allen anderen Geräte ab.",
+        "riskAfterwards": "Melde Dich danach auf Deinen anderen Geräten an und richte PIN, Passwort oder biometrische Entsperrung erneut ein.",
+        "riskBackup": "Exportiere zuerst ein Backup Deines Tresors (Einstellungen > Import / Export). Eine Schlüsselrotation Operation kann nicht rückgängig gemacht werden.",
+        "riskSignOut": "Lasse Deine anderen Geräte die Synchronisierung beenden und melde Dich dann dort ab. Nicht synchronisierte Änderungen auf Geräten, die angemeldet bleiben, gehen verloren."
       },
       "passkeyUnlock": {
         "disableButton": "Passkey-Entsperrung deaktivieren",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "PIN bestätigen",
       "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "Gebe eine PIN von mindestens 6 Zeichen ein. Buchstaben und Symbole sind erlaubt.",
       "incorrectPin": "Falsche PIN. {{attemptsRemaining}} verbleibende Versuche.",
       "incorrectPinSingular": "Falsche PIN. Ein Versuch übrig.",
       "introText": "Wähle, wie Du Deinen Tresor entsperren möchtest. Du kannst Dein Master-Passwort verwenden (immer verfügbar) oder einen PIN-Code für einen schnelleren Zugriff einrichten. Nach drei fehlgeschlagenen PIN-Versuchen musst Du Dein Master-Passwort verwenden.",
