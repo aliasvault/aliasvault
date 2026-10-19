@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "PIN kód megerősítése",
       "confirmPinDescription": "Adja meg újra PIN kódját a megerősítéshez",
-      "enterNewPinDescription": "Adjon meg egy legalább 6 karakterű PIN kódot",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Hibás PIN kód. Még {{attemptsRemaining}} próbálkozása van hátra.",
       "incorrectPinSingular": "Hibás PIN kód. 1 próbálkozás van hátra.",
       "introText": "Válassza ki, hogyan kívánja feloldani széfjét. Használhatja a mester jelszavát (mindig elérhető) vagy PIN kód a gyorsabb belépés érdekében. Azonban ha háromszor hibásan adja meg a PIN kódját, csak a mester jelszavával tud majd belépni.",
