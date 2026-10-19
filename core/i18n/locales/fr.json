@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmer le code PIN",
       "confirmPinDescription": "Saisissez à nouveau votre code PIN pour confirmer",
-      "enterNewPinDescription": "Entrez un code PIN composé d'au moins 6 chiffres",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Code PIN incorrect, {{attemptsRemaining}} tentatives restantes.",
       "incorrectPinSingular": "Code PIN incorrect. 1 tentative restante.",
       "introText": "Choisissez comment vous voulez déverrouiller votre coffre-fort. Vous pouvez utiliser votre mot de passe principal (toujours disponible) ou configurer un code PIN pour un accès rapide. Après 3 tentatives de PIN échouées, vous devrez utiliser votre mot de passe maître.",
