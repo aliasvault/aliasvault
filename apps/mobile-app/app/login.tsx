@@ -271,6 +271,7 @@ export default function LoginScreen() : React.ReactNode {
         params,
         unlockKeyBase64,
         encryptedAccountKey,
+        /** Derives natively with the password the user logged in with. */
         deriveUnlockKey: (salt, encryptionSettings) => NativeVaultManager.deriveKeyFromPassword(credentials.password, salt, DEFAULT_ENCRYPTION.type, encryptionSettings),
         username: SrpAuthService.normalizeUsername(credentials.username),
       });
