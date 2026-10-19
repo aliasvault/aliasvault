@@ -37,6 +37,7 @@ import uniffi.aliasvault_core.srpGenerateSalt
 import uniffi.aliasvault_core.srpVerifySession
 import uniffi.aliasvault_core.symmetricDecrypt
 import uniffi.aliasvault_core.symmetricDecryptBytes
+import uniffi.aliasvault_core.symmetricEncryptBytes
 import uniffi.aliasvault_core.vaultCodecCanonicalizeFromSqlite
 import uniffi.aliasvault_core.vaultCodecGenerateManifestSalt
 import uniffi.aliasvault_core.vaultCodecLogoContentHash
@@ -87,6 +88,7 @@ object RustCoreDispatcher {
             "rsaDecrypt" -> json(rsaDecrypt(args.string(0), args.string(1)))
             "symmetricDecrypt" -> json(symmetricDecrypt(args.string(0), args.string(1)))
             "symmetricDecryptBytes" -> json(symmetricDecryptBytes(args.bytes(0), args.string(1)))
+            "symmetricEncryptBytes" -> json(symmetricEncryptBytes(args.bytes(0), args.string(1)))
 
             "argon2DeriveKey" -> json(argon2DeriveKey(args.string(0), args.string(1), args.string(2)))
             "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))

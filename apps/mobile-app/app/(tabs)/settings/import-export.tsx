@@ -1,3 +1,6 @@
+import { AvexExportService } from '@aliasvault/client/transfer/export/AvexExportService';
+import { AvuxExportService } from '@aliasvault/client/transfer/export/AvuxExportService';
+import { VAULT_EXPORT_MIME_TYPES, vaultExportFileName, type VaultExportFormat } from '@aliasvault/client/transfer/export/VaultExportFile';
 import { Ionicons } from '@expo/vector-icons';
 import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -10,12 +13,28 @@ import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import { ExportPasswordModal } from '@/components/common/ExportPasswordModal';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+/**
+ * The unlock methods that may confirm an export. Only the master password: an export hands over the whole vault in
+ * one go, so the device unlock (biometrics or PIN) alone is not enough.
+ */
+const EXPORT_AUTH_METHODS = ['password'];
+
+/**
+ * The export options, in the order they are shown.
+ */
+const EXPORT_FORMATS: { format: VaultExportFormat; titleKey: string; descriptionKey: string; buttonKey: string; icon: keyof typeof Ionicons.glyphMap; recommended: boolean }[] = [
+  { format: 'avex', titleKey: 'importExport.exportAvexTitle', descriptionKey: 'importExport.exportAvexDescription', buttonKey: 'importExport.exportAvexButton', icon: 'lock-closed', recommended: true },
+  { format: 'avux', titleKey: 'importExport.exportAvuxTitle', descriptionKey: 'importExport.exportAvuxDescription', buttonKey: 'importExport.exportAvuxButton', icon: 'archive', recommended: false },
+  { format: 'csv', titleKey: 'importExport.exportCsvTitle', descriptionKey: 'importExport.exportCsvDescription', buttonKey: 'importExport.exportCsvButton', icon: 'document-text', recommended: false },
+];
 
 /**
  * Import/Export settings screen.
@@ -27,48 +46,51 @@ export default function ImportExportScreen(): React.ReactNode {
   const dbContext = useDb();
   const { showAlert, showConfirm } = useDialog();
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
 
   /**
-   * Show export confirmation dialog, then password verification.
+   * Confirm the export, verify the master password, then export (or ask for the export password first for .avex).
    */
-  const showExportConfirmation = (): void => {
-    showConfirm(
-      t('settings.exportConfirmTitle'),
-      t('settings.exportWarning'),
-      t('common.confirm'),
-      async () => {
-        try {
-          /*
-           * Request password authentication using native unlock screen
-           * Only allow password method (no biometric or PIN) for sensitive export operation
-           */
-          const authenticated = await VaultUnlockHelper.authenticateForAction(
-            t('settings.exportConfirmTitle'),
-            t('settings.passwordConfirm.exportDescription'),
-            ['password'], // Only allow password authentication
-            t('common.confirm')
-          );
-
-          if (!authenticated) {
-            // User cancelled or authentication failed
-            return;
-          }
-
-          // Password verified, proceed with export
-          await handleExport();
-        } catch (error) {
-          console.error('Authentication error during CSV export:', error);
-          showAlert(t('common.error'), t('common.errors.unknownError'));
+  const startExport = (format: VaultExportFormat): void => {
+    const warning = format === 'avex' ? t('importExport.exportEncryptedWarningMessage') : t('settings.exportWarning');
+    showConfirm(t('settings.exportConfirmTitle'), warning, t('common.confirm'), async () => {
+      try {
+        const authenticated = await VaultUnlockHelper.authenticateForAction(t('settings.exportConfirmTitle'), t('settings.passwordConfirm.exportDescription'), EXPORT_AUTH_METHODS, t('common.confirm'));
+        if (!authenticated) {
+          return;
         }
-      },
-      { confirmStyle: 'destructive' }
-    );
+
+        if (format === 'avex') {
+          setShowExportPasswordModal(true);
+        } else {
+          await runExport(format, null);
+        }
+      } catch (error) {
+        console.error('Authentication error during vault export:', error);
+        showAlert(t('common.error'), t('common.errors.unknownError'));
+      }
+    }, { confirmStyle: 'destructive' });
   };
 
   /**
-   * Handle the CSV export.
+   * The export bytes of a format, read from the vault.
    */
-  const handleExport = async (): Promise<void> => {
+  const buildExport = async (format: VaultExportFormat, exportPassword: string | null): Promise<Uint8Array> => {
+    const sqliteClient = dbContext.sqliteClient;
+    if (!sqliteClient) {
+      throw new Error('Vault is not available');
+    }
+    if (format === 'csv') {
+      return sqliteClient.importExport.exportToCsv();
+    }
+    const avuxBytes = AvuxExportService.exportToAvux(await sqliteClient.importExport.getExportData());
+    return format === 'avux' ? avuxBytes : AvexExportService.encryptToAvex(avuxBytes, exportPassword ?? '');
+  };
+
+  /**
+   * Build the export, write it to a temporary file and hand it to the system share sheet.
+   */
+  const runExport = async (format: VaultExportFormat, exportPassword: string | null): Promise<void> => {
     if (isExporting) {
       return;
     }
@@ -77,14 +99,9 @@ export default function ImportExportScreen(): React.ReactNode {
 
     let file: File | null = null;
     try {
-      const dateStr = new Date().toISOString().split('T')[0];
+      const bytes = await buildExport(format, exportPassword);
 
-      if (!dbContext.sqliteClient) {
-        throw new Error('Vault is not available');
-      }
-      const csvContent = await dbContext.sqliteClient.importExport.exportToCsv();
-
-      const filename = `aliasvault-export-${dateStr}.csv`;
+      const filename = vaultExportFileName(format);
       const exportDir = getExportDirectory();
       if (!exportDir.exists) {
         exportDir.create({ intermediates: true });
@@ -95,14 +112,10 @@ export default function ImportExportScreen(): React.ReactNode {
         file.delete();
       }
       file.create();
-      file.write(csvContent);
+      file.write(bytes);
 
-      // Share the file using the system share dialog
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, {
-          dialogTitle: filename,
-          mimeType: 'text/csv',
-        });
+        await Sharing.shareAsync(file.uri, { dialogTitle: filename, mimeType: VAULT_EXPORT_MIME_TYPES[format] });
       }
     } catch (error) {
       console.error('Export error:', error);
@@ -120,6 +133,14 @@ export default function ImportExportScreen(): React.ReactNode {
     }
   };
 
+  /**
+   * The export password was entered: create the .avex export.
+   */
+  const handleExportPasswordSubmitted = (exportPassword: string): void => {
+    setShowExportPasswordModal(false);
+    void runExport('avex', exportPassword);
+  };
+
   const styles = StyleSheet.create({
     button: {
       alignItems: 'center',
@@ -127,7 +148,6 @@ export default function ImportExportScreen(): React.ReactNode {
       borderRadius: 8,
       flexDirection: 'row',
       justifyContent: 'center',
-      marginVertical: 8,
       paddingHorizontal: 16,
       paddingVertical: 12,
     },
@@ -140,6 +160,35 @@ export default function ImportExportScreen(): React.ReactNode {
       fontWeight: '600',
       marginLeft: 8,
     },
+    exportOption: {
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginTop: 12,
+      padding: 12,
+    },
+    exportOptionDescription: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 20,
+      marginBottom: 12,
+    },
+    exportOptionHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 4,
+    },
+    exportOptionRecommended: {
+      backgroundColor: colors.tertiary + '20',
+      borderColor: colors.tertiary,
+      borderWidth: 2,
+    },
+    exportOptionTitle: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '600',
+    },
     importNote: {
       backgroundColor: colors.tertiary + '20', // Use tertiary color with opacity
       borderRadius: 8,
@@ -151,6 +200,17 @@ export default function ImportExportScreen(): React.ReactNode {
       fontSize: 14,
       lineHeight: 20,
     },
+    recommendedBadge: {
+      backgroundColor: colors.tertiary + '40',
+      borderRadius: 4,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    },
+    recommendedBadgeText: {
+      color: colors.text,
+      fontSize: 12,
+      fontWeight: '600',
+    },
     section: {
       backgroundColor: colors.accentBackground,
       borderRadius: 10,
@@ -161,7 +221,7 @@ export default function ImportExportScreen(): React.ReactNode {
       color: colors.textMuted,
       fontSize: 14,
       lineHeight: 20,
-      marginBottom: 16,
+      marginBottom: 4,
     },
     sectionTitle: {
       color: colors.text,
@@ -174,7 +234,7 @@ export default function ImportExportScreen(): React.ReactNode {
   return (
     <>
       {isExporting && (
-        <LoadingOverlay status={t('settings.exporting')} />
+        <LoadingOverlay status={t('importExport.exportingVaultMessage')} />
       )}
       <ThemedContainer>
         <ThemedScrollView>
@@ -199,25 +259,36 @@ export default function ImportExportScreen(): React.ReactNode {
               {t('settings.exportSectionTitle')}
             </ThemedText>
             <ThemedText style={styles.sectionDescription}>
-              {t('settings.exportSectionDescription')}
+              {t('importExport.exportSectionDescription')}
             </ThemedText>
 
-            <TouchableOpacity
-              style={[styles.button, isExporting && styles.buttonDisabled]}
-              onPress={() => showExportConfirmation()}
-              disabled={isExporting}
-            >
-              <Ionicons name="document-text" size={20} color={colors.primarySurfaceText} />
-              <ThemedText style={styles.buttonText}>
-                {isExporting
-                  ? (t('settings.exporting'))
-                  : (t('settings.exportCsvButton'))
-                }
-              </ThemedText>
-            </TouchableOpacity>
+            {EXPORT_FORMATS.map(option => (
+              <View key={option.format} style={[styles.exportOption, option.recommended && styles.exportOptionRecommended]}>
+                <View style={styles.exportOptionHeader}>
+                  <ThemedText style={styles.exportOptionTitle}>{t(option.titleKey)}</ThemedText>
+                  {option.recommended && (
+                    <View style={styles.recommendedBadge}>
+                      <ThemedText style={styles.recommendedBadgeText}>{t('importExport.recommendedLabel')}</ThemedText>
+                    </View>
+                  )}
+                </View>
+                <ThemedText style={styles.exportOptionDescription}>{t(option.descriptionKey)}</ThemedText>
+                <TouchableOpacity
+                  style={[styles.button, isExporting && styles.buttonDisabled]}
+                  onPress={() => startExport(option.format)}
+                  disabled={isExporting}
+                  testID={`export-${option.format}-button`}
+                >
+                  <Ionicons name={option.icon} size={20} color={colors.primarySurfaceText} />
+                  <ThemedText style={styles.buttonText}>{t(option.buttonKey)}</ThemedText>
+                </TouchableOpacity>
+              </View>
+            ))}
           </View>
         </ThemedScrollView>
       </ThemedContainer>
+
+      <ExportPasswordModal isOpen={showExportPasswordModal} onClose={() => setShowExportPasswordModal(false)} onSubmit={handleExportPasswordSubmitted} />
     </>
   );
 }
