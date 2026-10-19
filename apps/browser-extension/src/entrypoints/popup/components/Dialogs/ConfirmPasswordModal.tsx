@@ -34,7 +34,7 @@ const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) {
       setPassword('');
       setError(null);
       setIsSubmitting(false);

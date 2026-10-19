@@ -19,7 +19,7 @@
 //
 // Test files are numbered by area, in the same ranges as the web app suite, so a range selects one area:
 //   0x app shell                     1x account and authentication    2x items
-//   3x sync and merge                4x email (web only)              5x settings (web only)
+//   3x sync and merge                4x email (web only)              5x settings
 //   6x browser integration           8x vault errors                  9x vault upgrades
 
 import { spawnSync } from "node:child_process";
