@@ -218,7 +218,7 @@
     "attachments": "Ceangaltáin",
     "back": "Ar ais",
     "backspace": "Cúlspás",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Sula leanann tú ar aghaidh:",
     "cancel": "Cealaigh",
     "clipboardCountdown": {
       "clearClipboardButton": "Glan an Ghearrthaisce"
@@ -285,7 +285,7 @@
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
     "hidePassword": "Folaigh pasfhocal",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Is gníomh ardriosca é seo.",
     "home": "Baile",
     "loadMore": "Luchtaigh níos mó",
     "loading": "Ag lódáil...",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Theip ar an bpasfhocal a athrú. Déan iarracht arís.",
         "failedToChangePassword": "Theip ar an bpasfhocal a athrú. Athnuaigh an leathanach agus déan iarracht arís.",
         "fillAllFields": "Líon isteach na réimsí uile le do thoil",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Má athraíonn tú do phríomhfhocal faire, logálfar amach as do ghléasanna eile thú.",
         "initiatingChange": "Ag tosú athrú pasfhocail...",
         "newPassword": "Pasfhocal Nua",
         "passwordChangedSuccessfully": "Athraíodh an focal faire go rathúil",
@@ -1416,13 +1416,13 @@
         "verifyAndEnableButton": "Fíoraigh agus Cumasaigh"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "Tá cúltaca déanta agam de mo stór agus tá mé tar éis logáil amach as mo ghléasanna eile",
+        "changePasswordAndRotate": "Athraigh an focal faire agus rothlaigh na heochracha",
+        "optionRotateKeys": "Rothlaigh gach eochair chriptithe freisin",
+        "optionRotateKeysDescription": "Ní gá é seo ach má tá amhras ort go bhfuil do chuid eochracha nochtaithe – mar shampla, má rinneadh dochar do do ghléas nó má goideadh é. Déantar d’iontas a athchriptiú agus logáiltear amach gach gléas eile.",
+        "riskAfterwards": "Ina dhiaidh sin, logáil isteach arís ar do ghléasanna eile agus socraigh PIN, eochair phas nó díghlasáil bhithmhéadrach arís.",
+        "riskBackup": "Déan cóip chúltaca de do stór a onnmhairiú ar dtús (Socruithe > Iompórtáil / Onnmhairiú). Ní ​​féidir oibríocht rothlaithe eochracha a chealú.",
+        "riskSignOut": "Lig do na gléasanna eile atá agat an sioncronú a chríochnú, agus ansin logáil amach astu. Caillfear athruithe nár sioncronaíodh ar ghléasanna a fhanann logáilte isteach."
       },
       "passkeyUnlock": {
         "disableButton": "Díchumasaigh Díghlasáil Eochrach Pas",
