@@ -218,6 +218,7 @@
     "attachments": "Ceangaltáin",
     "back": "Ar ais",
     "backspace": "Cúlspás",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Cealaigh",
     "clipboardCountdown": {
       "clearClipboardButton": "Glan an Ghearrthaisce"
@@ -284,6 +285,7 @@
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
     "hidePassword": "Folaigh pasfhocal",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Baile",
     "loadMore": "Luchtaigh níos mó",
     "loading": "Ag lódáil...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Suíomhanna nach mbeidh an preabfhuinneog uathlíonta le feiceáil iontu.",
     "enabledForThisSite": "Cumasaithe don suíomh seo",
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
-    "exportCsvButton": "Easpórtáil cruinneachán chuig comhad CSV",
-    "exportSectionDescription": "Easpórtáil do shonraí cruinneacháin chuig comhad CSV. Is féidir an comhad seo a úsáid mar chúltaca agus is féidir é a allmhairiú isteach i mbainisteoirí pasfhocal eile freisin.",
     "exportSectionTitle": "Easpórtáil",
     "exportWarning": "Rabhadh: Má easpórtálann tú do chruinneachán chuig comhad neamhchriptithe, nochtfar do phasfhocail agus d’fhaisnéis íogair go léir i ngnáththéacs. Ná déan é seo ach ar ghléasanna iontaofa agus cinntigh:\n\n• Stóráil an comhad easpórtáilte in áit shábháilte\n• Scrios an comhad nuair nach bhfuil sé de dhíth ort a thuilleadh\n• Ná roinn an comhad easpórtáilte le daoine eile choíche\n\nAn bhfuil tú cinnte gur mian leat leanúint ar aghaidh leis an easpórtáil?",
-    "exporting": "Ag easpórtáil...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
       "aliasGenerationGenderDescription": "Socraigh an tosaíocht inscne réamhshocraithe chun féiniúlachtaí nua a ghiniúint.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Theip ar an bpasfhocal a athrú. Déan iarracht arís.",
         "failedToChangePassword": "Theip ar an bpasfhocal a athrú. Athnuaigh an leathanach agus déan iarracht arís.",
         "fillAllFields": "Líon isteach na réimsí uile le do thoil",
-        "headerText": "Athraíonn athrú do phasfhocal máistir eochracha criptithe an tseomra cruinneacháin freisin. Moltar duit do phasfhocal máistir a athrú go tréimhsiúil chun do sheomraí cruinneacháin a choinneáil slán.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Ag tosú athrú pasfhocail...",
         "newPassword": "Pasfhocal Nua",
         "passwordChangedSuccessfully": "Athraíodh an focal faire go rathúil",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Tá fíordheimhniú dhá-fhachtóir cumasaithe go rathúil anois. Ar an gcéad logáil isteach eile beidh ort do chód 2FA a chur isteach.",
         "verificationCodePlaceholder": "Cuir isteach cód fíorúcháin",
         "verifyAndEnableButton": "Fíoraigh agus Cumasaigh"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Díchumasaigh Díghlasáil Eochrach Pas",
