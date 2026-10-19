@@ -11,7 +11,7 @@ use super::errors::{SyncError, SyncResult};
 use super::frame::{FrameBody, FramePart};
 use super::state::{self, Ctx};
 use super::types::{BlobRef, BucketRevision, BucketWrite, FailureFields, KeyRotationParams, KeyRotationRefusal, KeyRotationResult, ManifestWrite, SharedManifestDto, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
-use super::{db, engine, http, keys, migration, push};
+use super::{db, engine, http, keys, migration, pull, push};
 use crate::crypto;
 use crate::vault_codec;
 use crate::vault_model::ids_equal;
@@ -227,7 +227,9 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
     let mut fingerprints: HashMap<String, String> = HashMap::new();
     let (manifest_plaintext, manifest_fingerprint) = push::fingerprinted(&entry.manifest)?;
     fingerprints.insert(state::fingerprint_manifest_key(personal_manifest_id), manifest_fingerprint);
-    let encrypted_manifest = push::encrypt_payload(ctx, "Personal manifest", &manifest_plaintext, new_vek.expose_secret(), &crypto::aad::manifest(personal_manifest_id)).await?;
+    let manifest_aad = crypto::aad::manifest(personal_manifest_id);
+    let encrypted_manifest = push::encrypt_payload(ctx, "Personal manifest", &manifest_plaintext, new_vek.expose_secret(), &manifest_aad).await?;
+    ensure_reads_back(&encrypted_manifest, new_vek, &manifest_aad, &manifest_plaintext, "the personal manifest")?;
 
     let mut buckets = Vec::new();
     let mut expected_buckets = Vec::new();
@@ -238,7 +240,9 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         }
         let (plaintext, fingerprint) = push::fingerprinted(bucket)?;
         fingerprints.insert(state::fingerprint_bucket_key(personal_manifest_id, &bucket.category), fingerprint);
-        let encrypted = push::encrypt_payload(ctx, &format!("Data bucket \"{}\"", bucket.category), &plaintext, new_vek.expose_secret(), &crypto::aad::bucket(personal_manifest_id, &bucket.category)).await?;
+        let bucket_aad = crypto::aad::bucket(personal_manifest_id, &bucket.category);
+        let encrypted = push::encrypt_payload(ctx, &format!("Data bucket \"{}\"", bucket.category), &plaintext, new_vek.expose_secret(), &bucket_aad).await?;
+        ensure_reads_back(&encrypted, new_vek, &bucket_aad, &plaintext, &format!("data bucket \"{}\"", bucket.category))?;
         let revision = bucket_revisions.get(&state::bucket_revision_key(personal_manifest_id, &bucket.category)).copied().unwrap_or(0);
         buckets.push(BucketWrite { manifest_id: personal_manifest_id.to_string(), category: bucket.category.clone(), ciphertext: encrypted.ciphertext.into(), ciphertext_hash: encrypted.hash, current_revision: revision });
         expected_buckets.push(BucketRevision { manifest_id: personal_manifest_id.to_string(), category: bucket.category.clone(), revision });
@@ -251,6 +255,7 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         let aad = crypto::aad::blob_key(personal_manifest_id, &blob_key.hash);
         let plain = crypto::unwrap_key(&blob_key.encrypted_blob_key, old_vek.expose_secret(), &aad).map_err(|e| SyncError::Other(format!("the key of blob {} does not open with the current vault key: {}", blob_key.hash, e)))?;
         let rewrapped = crypto::wrap_key(&plain, new_vek.expose_secret(), &aad)?;
+        ensure_opens(crypto::unwrap_key(&rewrapped, new_vek.expose_secret(), &aad).is_ok_and(|k| *k == *plain), &format!("the key of blob {}", blob_key.hash))?;
         rewrapped_blob_keys.insert(blob_key.hash.clone(), rewrapped.clone());
         blob_keys.push(BlobKeyWrite { hash: blob_key.hash.clone(), encrypted_blob_key: rewrapped });
     }
@@ -267,11 +272,15 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         let encrypted_vek = keys::encrypt_manifest_vek(shared_vek.expose_secret(), &record.manifest_id, &rotated.account_keys.account_public_key)?;
         let message = crypto::signing::grant_message(&record.manifest_id, record.key_version, &params.user_id, &rotated.account_keys.account_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek);
         let signature = crypto::signing::sign(&rotated.signing_private_key, &message)?;
+        let opens = keys::decrypt_manifest_vek(&encrypted_vek, &record.manifest_id, &rotated.account_private_key).is_ok_and(|v| v.expose_secret() == shared_vek.expose_secret());
+        ensure_opens(opens && crypto::signing::verify(&rotated.account_keys.signing_public_key, &message, &signature), &format!("the grant on shared manifest {}", record.manifest_id))?;
         grants.push(GrantWrite { manifest_id: record.manifest_id.clone(), key_version: record.key_version, encrypted_vek: encrypted_vek.clone(), algorithm: ALGORITHM_RSA_OAEP_SHA256.to_string(), signature });
         record.encrypted_vek = encrypted_vek;
         record.account_public_key = rotated.account_keys.account_public_key.clone();
         record.algorithm = ALGORITHM_RSA_OAEP_SHA256.to_string();
     }
+
+    ensure_key_chain_opens(params, rotated, new_vek, old_vek)?;
 
     let delivery_key_signature = crypto::signing::sign(&rotated.signing_private_key, &crypto::signing::delivery_key_message(personal_manifest_id, delivery_public_key, current_revision))?;
     let mut request = KeyRotationRequest {
@@ -331,6 +340,35 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         "outdated" => Ok(Err(KeyRotationRefusal::ServerStateChanged)),
         other => Err(SyncError::Other(format!("the server answered the rotation with an unknown status \"{}\"", other))),
     }
+}
+
+/// Refuse to send a rotation whose new key chain does not open from the new password down to the VEKs: once the
+/// server applies it, the old password no longer reaches any key, so a broken chain could not be recovered.
+fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, old_vek: &SecretString) -> SyncResult<()> {
+    let blobs = &rotated.account_keys;
+    let account_key = crypto::unwrap_account_key(&blobs.encrypted_account_key, params.new_unlock_key.expose_secret()).ok().filter(|key| **key == rotated.account_key);
+    ensure_opens(account_key.is_some(), "the new Account Key")?;
+    let opens_to = |wrapped: &str, expected: &str| crypto::unwrap_key(wrapped, &rotated.account_key, crypto::aad::PERSONAL_VEK).is_ok_and(|key| *key == expected);
+    ensure_opens(opens_to(&blobs.encrypted_vek, new_vek.expose_secret()), "the new vault key")?;
+    ensure_opens(opens_to(&rotated.retired_encrypted_vek, old_vek.expose_secret()), "the retired vault key")?;
+    ensure_opens(crypto::open_account_private_key(&blobs.encrypted_account_private_key, &rotated.account_key).is_ok_and(|key| key == rotated.account_private_key), "the new account private key")?;
+    ensure_opens(crypto::open_account_signing_private_key(&blobs.encrypted_signing_private_key, &rotated.account_key).is_ok_and(|key| *key == rotated.signing_private_key), "the new signing private key")
+}
+
+/// Refuse to send a payload that does not decrypt back to its plaintext along the path a pull reads it by. Compared as
+/// JSON values: the codec hands the payload back re-serialized, with its keys in another order.
+fn ensure_reads_back(encrypted: &push::EncryptedPayload, key: &SecretString, aad: &[u8], plaintext: &str, what: &str) -> SyncResult<()> {
+    let read = pull::verify_decrypt_unpack(&encrypted.ciphertext, key.expose_secret(), aad, Some(&encrypted.hash), what).ok();
+    let same = read.and_then(|read| serde_json::from_str::<serde_json::Value>(&read).ok()).is_some_and(|read| serde_json::from_str::<serde_json::Value>(plaintext).is_ok_and(|written| read == written));
+    ensure_opens(same, what)
+}
+
+/// Fail the rotation before anything is sent when `what` does not open under the new keys.
+fn ensure_opens(opens: bool, what: &str) -> SyncResult<()> {
+    if opens {
+        return Ok(());
+    }
+    Err(SyncError::Other(format!("The rotation was not sent: {} does not open under the new keys.", what)))
 }
 
 /// Take the new keys over: the cached chain, the derivation parameters, the revisions and fingerprints the server

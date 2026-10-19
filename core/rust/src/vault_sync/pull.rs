@@ -82,7 +82,7 @@ pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<Snapshot> {
 }
 
 /// Verify a ciphertext against the server's hash, decrypt it bound to `aad` and open it via the codec.
-fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], expected_ciphertext_hash: Option<&str>, label: &str) -> SyncResult<String> {
+pub(crate) fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], expected_ciphertext_hash: Option<&str>, label: &str) -> SyncResult<String> {
     if let Some(expected) = expected_ciphertext_hash.filter(|hash| !hash.is_empty()) {
         if vault_codec::compute_ciphertext_hash(ciphertext) != expected {
             return Err(SyncError::ServerVaultUnreadable(format!("{} ciphertext hash mismatch, refusing to load (possible storage corruption)", label)));
