@@ -218,6 +218,7 @@
     "attachments": "Вкладення",
     "back": "Назад",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Скасувати",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистити буфер обміну"
@@ -284,6 +285,7 @@
     "hide": "Hide",
     "hideDetails": "Приховати подробиці",
     "hidePassword": "Приховати пароль",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Головна",
     "loadMore": "Завантажити більше",
     "loading": "Завантаження даних...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "enabledForThisSite": "Увімкнено для цього сайту",
     "exportConfirmTitle": "Експорт сховища",
-    "exportCsvButton": "Експортувати сховище в файл CSV",
-    "exportSectionDescription": "Експортуйте дані свого сховища в файл CSV. Цей файл можна використовувати як резервну копію, а також імпортувати в інші менеджери паролів.",
     "exportSectionTitle": "Експорт",
     "exportWarning": "Попередження: експортування сховища в незашифрований файл призведе до розкриття всіх ваших паролів і конфіденційної інформації у вигляді звичайного тексту. Робіть це лише на надійних пристроях і переконайтеся, що ви:\n\n• Зберігати експортований файл у безпечному місці;\n• Видаляйте файл, коли він вам більше не потрібен;\n• Ніколи не діліться експортованим файлом з іншими.\n\nВи справді бажаєте продовжити експорт?",
-    "exporting": "Експортування...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Не вдалося змінити пароль. Спробуйте ще раз.",
         "failedToChangePassword": "Не вдалося змінити пароль. Оновіть сторінку та спробуйте ще раз.",
         "fillAllFields": "Будь ласка, заповніть всі поля",
-        "headerText": "Зміна головного пароля також змінює ключі шифрування сховища. Рекомендується періодично змінювати головний пароль для забезпечення безпеки сховищ.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Початок зміни пароля...",
         "newPassword": "Новий пароль",
         "passwordChangedSuccessfully": "Пароль успішно змінено",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Двофакторну автентифікацію успішно ввімкнено. Під час наступного входу вам потрібно буде ввести код 2FA.",
         "verificationCodePlaceholder": "Введіть код підтвердження",
         "verifyAndEnableButton": "Перевірити та увімкнути"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Вимкнути розблокування кодом доступу",
