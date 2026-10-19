@@ -59,15 +59,7 @@ public class NavigationService
     /// <param name="forceLoad">Force load true/false.</param>
     public void RedirectTo(string? uri, bool forceLoad = false)
     {
-        uri ??= string.Empty;
-
-        // Prevent open redirects.
-        if (!System.Uri.IsWellFormedUriString(uri, UriKind.Relative))
-        {
-            uri = _navigationManager.ToBaseRelativePath(uri);
-        }
-
-        _navigationManager.NavigateTo(uri, forceLoad);
+        _navigationManager.NavigateTo(ToLocalPath(uri), forceLoad);
     }
 
     /// <summary>
@@ -99,4 +91,54 @@ public class NavigationService
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>
     public Uri ToAbsoluteUri(string relativeUri) => _navigationManager.ToAbsoluteUri(relativeUri);
+
+    /// <summary>
+    /// Whether a path stays inside the app: a single leading slash at most, no backslash and no scheme.
+    /// Scheme-relative targets (//host) and backslash variants (/\host) would be followed to another host by the browser.
+    /// </summary>
+    /// <param name="path">The path to check.</param>
+    /// <returns>True when the path is local.</returns>
+    private static bool IsLocalPath(string path)
+    {
+        if (path.Length == 0)
+        {
+            return true;
+        }
+
+        if (path.Contains('\\'))
+        {
+            return false;
+        }
+
+        if (path[0] == '/')
+        {
+            return path.Length == 1 || path[1] != '/';
+        }
+
+        // Without a leading slash the path is relative to the base URI, unless its first segment carries a scheme.
+        var firstSegmentEnd = path.IndexOfAny(['/', '?', '#']);
+        var firstSegment = firstSegmentEnd < 0 ? path : path[..firstSegmentEnd];
+        return !firstSegment.Contains(':');
+    }
+
+    /// <summary>
+    /// Reduce a redirect target (e.g. a ReturnUrl query parameter) to a path inside this app, so it can never leave it.
+    /// </summary>
+    /// <param name="uri">The requested target.</param>
+    /// <returns>A path relative to the app's base URI, or the base URI itself when the target leaves the app.</returns>
+    private string ToLocalPath(string? uri)
+    {
+        if (string.IsNullOrEmpty(uri))
+        {
+            return string.Empty;
+        }
+
+        // An absolute URI is only followed when it is inside this app.
+        if (uri.StartsWith(_navigationManager.BaseUri, StringComparison.OrdinalIgnoreCase))
+        {
+            uri = _navigationManager.ToBaseRelativePath(uri);
+        }
+
+        return IsLocalPath(uri) ? uri : string.Empty;
+    }
 }
