@@ -42,7 +42,7 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, onClo
     }
   };
 
-  const inputClassName = 'w-full px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white';
+  const inputClassName = 'w-full px-3 py-2 text-sm rounded-md shadow-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white';
 
   return (
     <ModalWrapper isOpen={isOpen} onClose={onClose} title={t('importExport.exportEncryptedPasswordTitle')} maxWidth="max-w-sm">
@@ -73,7 +73,7 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, onClo
             {t('common.cancel')}
           </button>
           <button id="create-encrypted-export-button" type="submit" disabled={!isValid} className="px-4 py-2 text-sm bg-primary-500 text-white rounded hover:bg-primary-600 disabled:opacity-50">
-            {t('importExport.exportPasswordModal.createEncryptedExportButton')}
+            {t('common.create')}
           </button>
         </div>
       </form>
