@@ -42,7 +42,7 @@ class PinViewModel(
                     mode = PinMode.SETUP,
                     title = customTitle ?: context.getString(R.string.pin_setup_title),
                     subtitle = customSubtitle ?: context.getString(R.string.pin_setup_description),
-                    pinLength = null, // Allow any length from 4-8
+                    pinLength = null, // Allow any length from 6-8
                     setupStep = PinSetupStep.ENTER_NEW,
                 )
             }
@@ -96,9 +96,9 @@ class PinViewModel(
         return when (configuration.setupStep) {
             PinSetupStep.ENTER_NEW -> {
                 // Validate PIN length
-                if (pin.length < 4) {
+                if (pin.length < 6) {
                     return PinResult.Error(
-                        "PIN must be at least 4 digits",
+                        "PIN must be at least 6 digits",
                         shouldClear = false,
                     )
                 }

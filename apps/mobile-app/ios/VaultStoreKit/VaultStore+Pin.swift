@@ -41,7 +41,7 @@ extension VaultStore {
     /// The encryption key is retrieved internally and never exposed to React Native layer
     ///
     /// - Parameters:
-    ///   - pin: The PIN to set (4+ digits)
+    ///   - pin: The PIN to set (6+ digits; older 4-digit PINs are still accepted when re-encrypted)
     /// - Throws: Error if PIN is invalid, vault not unlocked, encryption fails, or keystore unavailable
     public func setupPin(_ pin: String) throws {
         // Check if keystore is available (device passcode must be set)

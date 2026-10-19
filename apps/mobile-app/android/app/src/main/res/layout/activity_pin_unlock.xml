@@ -81,7 +81,7 @@
         android:id="@+id/pinTextView"
         android:layout_width="wrap_content"
         android:layout_height="44dp"
-        android:text="----"
+        android:text="------"
         android:textSize="38sp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary"

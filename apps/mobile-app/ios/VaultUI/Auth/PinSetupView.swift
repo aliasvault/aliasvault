@@ -78,7 +78,7 @@ public struct PinSetupView: View {
                         .padding(.bottom, 20)
                     } else {
                         // Enter new step: show bullet points for variable length
-                        Text(viewModel.pin.isEmpty ? "----" : String(repeating: "•", count: viewModel.pin.count))
+                        Text(viewModel.pin.isEmpty ? "------" : String(repeating: "•", count: viewModel.pin.count))
                             .font(.system(size: 38, weight: .semibold))
                             .foregroundColor(colors.text)
                             .kerning(6)

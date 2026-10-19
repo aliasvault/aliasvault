@@ -127,7 +127,7 @@ class VaultPin(
      * Encrypt the Account Key with a key derived from the PIN and keep it in secure storage.
      *
      * @param accountKey The Account Key to protect
-     * @param pin The PIN to set (4+ digits)
+     * @param pin The PIN to set (6+ digits; older 4-digit PINs are still accepted when re-encrypted)
      * @throws Exception if encryption or storage fails
      */
     @Throws(Exception::class)
