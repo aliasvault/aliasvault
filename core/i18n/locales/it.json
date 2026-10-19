@@ -218,7 +218,7 @@
     "attachments": "Allegati",
     "back": "Indietro",
     "backspace": "Backspace",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Prima di continuare:",
     "cancel": "Annulla",
     "clipboardCountdown": {
       "clearClipboardButton": "Cancella appunti"
@@ -285,7 +285,7 @@
     "hide": "Nascondi",
     "hideDetails": "Nascondi dettagli",
     "hidePassword": "Nascondi password",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Questa è un'azione ad alto rischio.",
     "home": "Home",
     "loadMore": "Carica altro",
     "loading": "Caricamento...",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Cambio password fallito. Riprova.",
         "failedToChangePassword": "Impossibile cambiare la password. Si prega di aggiornare la pagina e riprovare.",
         "fillAllFields": "Per favore compila tutti i campi",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Cambiare la tua password principale effettuerà la disconnessione dai tuoi altri dispositivi.",
         "initiatingChange": "Inizio cambio password...",
         "newPassword": "Nuova password",
         "passwordChangedSuccessfully": "Password cambiata con successo",
@@ -1416,13 +1416,13 @@
         "verifyAndEnableButton": "Verifica e Abilita"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "Ho eseguito il backup della mia cassaforte ed effettuato la disconnessione dai miei altri dispositivi",
+        "changePasswordAndRotate": "Cambia la password e ruota le chiavi",
+        "optionRotateKeys": "Ruota anche tutte le chiavi di cifratura",
+        "optionRotateKeysDescription": "Necessario solo se si sospetta che le chiavi siano state esposte, ad esempio se il dispositivo è stato compromesso o rubato. Ri-crittografa la cassaforte e firma tutti gli altri dispositivi.",
+        "riskAfterwards": "Successivamente, accedi di nuovo sugli altri dispositivi e imposta nuovamente il PIN, la chiave di accesso o lo sblocco biometrico.",
+        "riskBackup": "Esporta prima un backup della tua cassaforte (Impostazioni > Importa / Esporta). Non è possibile annullare un'operazione di rotazione dei delle chiavi.",
+        "riskSignOut": "Lascia terminare la sincronizzazione degli altri dispositivi, quindi effettua la disconnessione da questi. Le modifiche non sincronizzate sui dispositivi che rimangono connessi sono perse."
       },
       "passkeyUnlock": {
         "disableButton": "Disabilita Sblocco con Passkey",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Conferma PIN",
       "confirmPinDescription": "Inserisci di nuovo il tuo PIN per confermare",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "Inserisci un PIN di almeno 6 caratteri. Sono ammessi lettere e simboli.",
       "incorrectPin": "PIN errato. {{attemptsRemaining}} tentativi rimanenti.",
       "incorrectPinSingular": "Pin non corretto. 1 tentativo rimanente.",
       "introText": "Scegli come sbloccare la cassaforte. Puoi usare la tua password principale (sempre disponibile) o impostare un codice PIN per un accesso più veloce. Dopo 3 tentativi di PIN falliti, è necessario utilizzare la password principale.",
