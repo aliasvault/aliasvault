@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bekræft PIN-kode",
       "confirmPinDescription": "Indtast din PIN-kode igen for at bekræfte",
-      "enterNewPinDescription": "Indtast en PIN-kode på mindst 6 cifre",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Forkert PIN-kode. {{attemptsRemaining}} forsøg tilbage.",
       "incorrectPinSingular": "Forkert PIN-kode. 1 forsøg tilbage.",
       "introText": "Vælg hvordan du vil låse din boks op. Du kan bruge din hovedadgangskode (altid tilgængelig) eller opsætte en PIN-kode for hurtigere adgang. Efter 3 mislykkede PIN-forsøg skal du bruge din hovedadgangskode.",
