@@ -218,6 +218,7 @@
     "attachments": "צרופות",
     "back": "חזרה",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "ביטול",
     "clipboardCountdown": {
       "clearClipboardButton": "פינוי לוח הגזירים"
@@ -284,6 +285,7 @@
     "hide": "הסתרה",
     "hideDetails": "הסתרת פרטים",
     "hidePassword": "הסתרת סיסמה",
+    "highRiskAction": "This is a high-risk action.",
     "home": "בית",
     "loadMore": "לטעון עוד",
     "loading": "בטעינה…",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "enabledForThisSite": "פעיל לאתר הזה",
     "exportConfirmTitle": "ייצוא כספת",
-    "exportCsvButton": "ייצוא כספת לקובץ CSV",
-    "exportSectionDescription": "ייצוא נתוני הכספת שלך לקובץ CSV. אפשר להשתמש בקובץ הזה כגיבוי וגם לייבא אותו למנהלי סיסמאות אחרים.",
     "exportSectionTitle": "ייצוא",
     "exportWarning": "אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מכשירים מהימנים וגם לוודא:\n\n• שאחסנת את הקובץ המיוצר במקום בטוח\n• שמחקת את הקובץ אם אין בו צורך עוד\n • לעולם לא לשתף את הקובץ המיוצא עם אחרים\n\nלהמשיך בייצוא?",
-    "exporting": "מתבצע ייצוא…",
     "general": {
       "aliasGenerationAgeRangeDescription": "הגדרת טווח הגילים כברירת המחדל ליצירת זהויות חדשות. ההגדרות הזאת משפיעה על תאריך הלידה שמוקצית לזהות שנוצרת.",
       "aliasGenerationGenderDescription": "להגדיר את אפשרויות המגדר ליצירת זהויות חדשות כברירת מחדל.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "החלפת הסיסמה נכשלה. נא לנסות שוב.",
         "failedToChangePassword": "החלפת הסיסמה נכשלה. נא לרענן את העמוד ולנסות שוב.",
         "fillAllFields": "נא למלא את כל השדות",
-        "headerText": "החלפת סיסמת העל שלך מחליפה גם את מפתחות ההצפנה של הכספת. מומלץ לשנות את סיסמת העל שלך באופן תדיר כדי לשמור על הכספת שלך מאובטחת.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "מתבצעת יזימת החלפת סיסמה…",
         "newPassword": "סיסמה חדשה",
         "passwordChangedSuccessfully": "הסיסמה הוחלפה בהצלחה",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "אימות דו־שלבי הופעל בהצלחה. בכניסה הבאה שלך למערכת תופיע בקשה לקוד האימות הדו־שלבי שלך.",
         "verificationCodePlaceholder": "נא למלא קוד אימות",
         "verifyAndEnableButton": "לאמת ולהפעיל"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Disable Passkey Unlock",
