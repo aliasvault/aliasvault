@@ -1,7 +1,8 @@
 /**
- * Category 50: Settings (requires API)
+ * Category 50: Settings (requires API; 50.4 also the SMTP service, e.g. `./scripts/dev.sh smtp`)
  */
 import { test, expect, type WebApp } from '../fixtures';
+import { requireSmtp, sendMail } from '../helpers/smtp';
 import { getKeyState } from '../helpers/test-api';
 
 import type { Locator } from '@playwright/test';
@@ -201,6 +202,81 @@ test.describe('50. Settings', () => {
       expect(after.manifestKeyVersion).toBe(before.manifestKeyVersion + 1);
       expect(after.activeSessions).toBe(1);
       await app.pause();
+    });
+  });
+
+  test('50.4 should receive mail with the new delivery keypair after a rotation and still read older mail', async ({ app, apiUrl, testUser }) => {
+    await requireSmtp();
+    const { page } = app;
+    const id = Math.random().toString(36).substring(2, 10);
+    const address = `e2e_${id}@example.tld`;
+    // Short, as the email list truncates long subjects.
+    const subjectBefore = `Before ${id}`;
+    const subjectAfter = `After ${id}`;
+
+    /**
+     * Send a test mail to the alias; the SMTP service answers 550 when the vault has no published delivery key.
+     */
+    const sendTo = (subject: string): Promise<void> => sendMail({
+      from: 'sender@example.com',
+      to: address,
+      subject,
+      text: 'This is a test email plain.',
+      html: '<html><body><p>Test email around a key rotation.</p></body></html>',
+    });
+
+    /**
+     * Open the emails page and expect a mail, decrypted, in the list (the page renders a mobile and a desktop list).
+     */
+    const expectEmailListed = async (subject: string): Promise<void> => {
+      await page.getByRole('link', { name: 'Emails', exact: true }).first().click();
+      await expect(page).toHaveURL(/\/emails$/);
+      await expect(async () => {
+        await page.getByRole('button', { name: 'Refresh' }).click();
+        await expect(page.getByText(subject).filter({ visible: true }).first()).toBeVisible({ timeout: 2000 });
+      }).toPass();
+    };
+
+    await app.login(testUser.username, testUser.password);
+
+    await test.step('an alias receives mail under the original delivery keypair', async () => {
+      await page.locator('#topBarQuickCreateButton').click();
+      await page.locator('#serviceName').fill('Mail test');
+      await page.locator('#quickIdentitySubmit').click();
+      await page.getByRole('button', { name: 'Email', exact: true }).click();
+      await page.locator('#email').fill(address);
+      await app.saveItemButton().click();
+      await expect(page.getByText('Item created successfully')).toBeVisible();
+      await app.expectItemView('Mail test');
+
+      await sendTo(subjectBefore);
+      await page.locator('#recent-email-refresh').click();
+      await expect(page.getByText(subjectBefore)).toBeVisible();
+    });
+
+    const before = await getKeyState(apiUrl, testUser.username);
+    expect(before.deliveryPublicKey).toBeTruthy();
+
+    await test.step('the password is changed with the keys rotated', async () => {
+      await prepareKeyRotation(app, testUser.password, ROTATED_PASSWORD);
+      await rotateButton(app).click();
+      await expect(page.getByText(ROTATION_SUCCESS_MESSAGE)).toBeVisible();
+    });
+
+    await test.step('the server published a new delivery public key', async () => {
+      const after = await getKeyState(apiUrl, testUser.username);
+      expect(after.deliveryPublicKey).toBeTruthy();
+      expect(after.deliveryPublicKey).not.toBe(before.deliveryPublicKey);
+    });
+
+    await test.step('mail sent after the rotation is encrypted with the new delivery key and decrypts', async () => {
+      await sendTo(subjectAfter);
+      await expectEmailListed(subjectAfter);
+      await app.pause();
+    });
+
+    await test.step('mail received before the rotation still decrypts with the previous delivery key', async () => {
+      await expect(page.getByText(subjectBefore).filter({ visible: true }).first()).toBeVisible();
     });
   });
 });

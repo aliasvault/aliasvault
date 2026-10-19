@@ -223,6 +223,7 @@ export type KeyState = {
   personalVekVersions: number[];
   accountPublicKey: string;
   signingPublicKey: string;
+  deliveryPublicKey: string | null;
   activeSessions: number;
 };
 
