@@ -218,6 +218,7 @@
     "attachments": "Anhänge",
     "back": "Zurück",
     "backspace": "Löschen",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Abbrechen",
     "clipboardCountdown": {
       "clearClipboardButton": "Zwischenablage leeren"
@@ -284,6 +285,7 @@
     "hide": "Ausblenden",
     "hideDetails": "Details ausblenden",
     "hidePassword": "Passwort ausblenden",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Startseite",
     "loadMore": "Mehr laden",
     "loading": "Lade...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Webseiten, wo das Autofill-Popup nicht angezeigt wird.",
     "enabledForThisSite": "Für diese Seite aktiviert",
     "exportConfirmTitle": "Tresor exportieren",
-    "exportCsvButton": "Tresor als CSV-Datei exportieren",
-    "exportSectionDescription": "Exportiere Deinen Tresor in eine CSV-Datei. Diese Datei kann als Sicherung verwendet werden und kann auch in andere Passwort-Manager importiert werden.",
     "exportSectionTitle": "Exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
-    "exporting": "Wird exportiert...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Lege die standardmäßige Altersspanne für die Erstellung neuer Identitäten fest. Dies betrifft das Geburtsdatum der Identität.",
       "aliasGenerationGenderDescription": "Lege die Geschlechtspräferenz für die Erstellung neuer Identitäten fest.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Passwortänderung fehlgeschlagen. Bitte versuche es erneut.",
         "failedToChangePassword": "Das Ändern des Passworts ist fehlgeschlagen. Bitte aktualisiere die Seite und versuche es erneut.",
         "fillAllFields": "Bitte fülle alle Felder aus",
-        "headerText": "Änderst Du Dein Master-Passwort, ändern sich die Schlüssel zur Verschlüsselung Deines Tresors ebenfalls. Um Deinen Tresor bestmöglich zu schützen, solltest Du Dein Master-Passwort regelmäßig ändern.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Passwortänderung wird initiiert...",
         "newPassword": "Neues Passwort",
         "passwordChangedSuccessfully": "Dein Passwort wurde erfolgreich geändert.",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Die Zwei-Faktor-Authentifizierung wurde erfolgreich aktiviert. Bei Deiner nächsten Anmeldung musst Du Deinen 2FA-Code eingeben.",
         "verificationCodePlaceholder": "Bestätigungscode eingeben",
         "verifyAndEnableButton": "Überprüfen und aktivieren"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Passkey-Entsperrung deaktivieren",
