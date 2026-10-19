@@ -91,7 +91,7 @@ The last column names the mechanism and the section that describes it.
 **What the server can do:**
 
 - Deny service, delete data and block accounts ([2.5](#25-out-of-scope)), and serve an older version of a vault, which clients do not detect ([13.3](#limitation-rollback)).
-- Through the admin portal: see the metadata above, disable a user's two-factor authentication, block or delete an account, and within the retention period (7 days by default) revert a password change by restoring the previous encrypted Account Key, which it cannot read.
+- Through the admin portal: see the metadata above, disable a user's two-factor authentication, and block or delete an account. Within 7 days by default, it can also undo a password change made without a key rotation ([4.1](#41-key-hierarchy)).
 - Present a public key and signing key of its own choosing when a client looks up another user's key for a sharing invitation ([13.2](#limitation-server-provided-keys)).
 - Serve modified web app code ([2.2](#22-trust-assumptions)).
 - Read an incoming email at the moment it arrives ([2.2](#22-trust-assumptions)), and deliver an email of its own making to any alias.
@@ -173,7 +173,7 @@ All symmetric encryption in this chain uses AES-256-GCM, all asymmetric encrypti
 
 Properties of this hierarchy:
 - **Password change** only encrypts the Account Key (AK) again with the new KEK. Vault contents, attachments and shared vault access stay unchanged, so nothing has to be re-encrypted or uploaded and shared vault members are not affected. The user's other devices are signed out and log in again with the new password. The user can choose to also replace the keys themselves ([4.2](#42-key-rotation)).
-    - **Undoing a password change**: the previous encrypted Account Key is kept on the server for 7 days, so an administrator can restore the old password when a user cannot log in with the new one. The server cannot decrypt it; a revert only restores the old password, signs out all sessions of the account and is written to the server log. A revert is refused once the keys have been rotated after that password change. The server operator sets the retention period, and 0 turns it off.
+    - **Undoing a password change**: the previous encrypted Account Key is kept on the server for 7 days, so an administrator can restore the old password when a user cannot log in with the new one. The server cannot decrypt it; a revert only restores the old password, signs out all sessions of the account and is written to the server log. The server operator sets the retention period, and 0 turns it off. The exception is a password change with a key rotation, which cannot be undone, as the rotation deletes these previous encrypted Account Keys.
 - **Device unlock methods** (biometrics, PIN, passkey quick unlock) keep their own encrypted copy of the Account Key on the device only, protected by the device keychain, a PIN-derived key or a passkey PRF key, never the password-derived keys. Login with Mobile hands the Account Key over once, encrypted with a one-time RSA key. They keep working after a password change and are set up again after a key rotation. Every unlock walks the same chain from the Account Key down, so all keys below it always become available together.
 - **Additional account unlock methods** can be enabled by encrypting the same Account Key with another KEK, without having to re-encrypt the vault or invalidating existing unlock methods.
 
@@ -181,11 +181,12 @@ Properties of this hierarchy:
 When you change your master password, you can choose to also replace all encryption keys of your account. Without it, a password change keeps the keys ([4.1](#41-key-hierarchy)).
 
 - **Replaced**: the Account Key, the personal VEK, both account keypairs and the personal vault's Vault Delivery Keypair, all created on the client. The new signing key is signed with the old one.
-- **Re-encrypted**: the personal vault and its blob keys with the new VEK, and every grant the user holds for the new account public key. The previous VEK is kept, encrypted with the new Account Key.
+- **Re-encrypted**: the personal vault and its blob keys with the new VEK, and every grant the user holds for the new account public key.
 - **Unchanged**: blob bytes, shared vault VEKs and received emails, whose old delivery keypair stays in the vault.
+- **Deleted**: the previous personal VEK, the older revisions of the personal vault with the blobs only they refer to, the password history and the old account encryption keypair, as they can only be opened with the old keys. The old signing public keys stay, so the chain of signing keys can be followed.
 - **All or nothing**: the server applies the rotation in one transaction and refuses it when a blob key or grant is missing or the vault changed in the meantime.
-- **Other devices**: a rotation only starts when no other session is active. Devices still on the old keys are signed out, device unlock methods have to be set up again, and pending invitations to the user are closed.
-- **Scope**: the old keys cannot decrypt anything written to the personal vault after the rotation. Older vault revisions, received emails and shared vaults stay under their existing keys ([13.1](#limitation-shared-member-removal)).
+- **Other devices**: their sessions are revoked, and a device still on the old keys is signed out on its next sync. Device unlock methods have to be set up again, and pending invitations to the user are closed.
+- **Scope**: the old keys cannot decrypt anything written to the personal vault after the rotation. Received emails and shared vaults stay under their existing keys ([13.1](#limitation-shared-member-removal)).
 
 ## 5. Authentication process
 Your master password is never sent to the server. Instead, during login, client and server authenticate each other with the SRP protocol: the client proves it holds the key derived from your password, and the server proves it holds the matching verifier, without either side sending its secret. When two-factor authentication is enabled, the server also checks a TOTP code before it issues API session tokens. These tokens give access to your account on the server, but can never decrypt your vaults.
@@ -238,7 +239,7 @@ Your vaults are always encrypted on your device before they are uploaded. Each v
 - Each manifest is encrypted with the VEK of its vault and bound to its manifest id, so the server cannot swap one vault's data for another's. Data that changes often, such as UI settings and usage statistics, is kept in separate *data buckets* that sync on their own, so a small change like a different sort order does not require uploading all items again; how a vault is split into manifests, data buckets and blobs is described in [Vault Format and Sync](./security-architecture/vault-format.mdx#the-storage-format).
 - Some content, such as the bytes of attachments and logos, is stored outside the manifest as separate blobs, each encrypted with its own random blob key; the blob key is encrypted with the VEK of the vault the blob belongs to. A blob is addressed by `HMAC-SHA256(manifest salt, plaintext)`, where the manifest salt is a random value that lives inside the encrypted manifest, so the server cannot recognize the same file across vaults while every member of a shared vault computes the same address
 - On the device, the vault is only decrypted in memory while it is unlocked. The copy kept on disk stays encrypted with the VEK, together with the encrypted key hierarchy, so a device can unlock offline
-- The server keeps a limited number of older versions of each manifest and data bucket as a backup against potential client-side data corruption. Blobs never change; a blob is deleted once no kept version refers to it anymore
+- The server keeps a limited number of older versions of each manifest and data bucket as a backup against potential client-side data corruption; a key rotation deletes the personal vault's older versions ([4.2](#42-key-rotation)). Blobs never change; a blob is deleted once no kept version refers to it anymore
 
 ## 7. Email
 AliasVault encrypts each incoming email in memory as soon as it arrives, with the delivery public key of the vault the alias belongs to, and only writes its content to the database in encrypted form. Only people with access to that vault hold the private key and can read its emails.
@@ -490,7 +491,7 @@ Where each part of this document lives in the repository, for reviewers.
 | SRP client and server | `core/rust/src/crypto/srp.rs`, `apps/server/Utilities/AliasVault.Cryptography/Srp.cs`, `apps/server/AliasVault.Api/Controllers/V2/AuthController.cs` |
 | RSA-OAEP and JWK handling | `core/rust/src/crypto/rsa_oaep.rs`, `core/rust/src/crypto/jwk.rs` |
 | Ed25519 signing and verification | `core/rust/src/crypto/signing.rs`, `apps/server/Utilities/AliasVault.Cryptography/Signing.cs` |
-| Key rotation | `core/rust/src/crypto/key_chain.rs`, `core/rust/src/vault_sync/rotation.rs`, `apps/server/AliasVault.Api/Controllers/V2/KeyRotationController.cs` |
+| Key rotation | `core/rust/src/crypto/key_chain.rs`, `core/rust/src/crypto/signing.rs`, `core/rust/src/vault_sync/rotation.rs`, `apps/server/AliasVault.Api/Controllers/V2/KeyRotationController.cs` |
 | PIN encryption and attempt policy | `core/rust/src/crypto/pin.rs` |
 | Vault format: canonicalize, materialize, integrity | `core/rust/src/vault_codec/` |
 | Sync engine: pull, push, grants, sharing, delivery keys | `core/rust/src/vault_sync/` |

@@ -14,6 +14,7 @@ AliasVault encrypts your vaults with keys that only exist on your devices, but a
 - **Choose a long, unique master password.** AliasVault requires at least 12 characters, but longer is better. Anyone who obtains a copy of your encrypted data (for example a leaked server database or a copy of a device) can try to guess it offline, and a strong password is what makes that infeasible. <WhitepaperRefs refs={[{section: '2.2', label: 'Trust assumptions', anchor: '22-trust-assumptions'}]} />
 - **Never reuse it.** Do not use your master password for any other account or service.
 - **There is no password recovery.** Your master password is never sent to the server, so nobody can reset it for you and recover your data. Store it somewhere safe, such as written down in a secure place at home. If you forget it, the vault cannot be decrypted.
+- **If your master password was exposed, change it and rotate your encryption keys.** Enable the key rotation option under the advanced settings when you change your master password. A password change alone keeps your encryption keys, so someone who knew the old password and obtained a copy of your encrypted keys before the change could still decrypt your vault; a key rotation replaces those keys and signs out all your other devices. <WhitepaperRefs refs={[{section: '4.2', label: 'Key rotation', anchor: '42-key-rotation'}]} />
 
 ## Two-factor authentication
 
@@ -34,7 +35,7 @@ Each device keeps an encrypted copy of your vault, so you can unlock it offline.
 ## Sessions and the authentication log
 
 - **Review your active sessions and authentication log** in the security settings. The log shows every login attempt and security-relevant action with its time, IP address, country and device. <WhitepaperRefs refs={[{section: '5.3', label: 'Session tokens', anchor: '53-session-tokens'}]} />
-- **Revoke any session you do not recognize**, and revoke the sessions of a lost or stolen device. If you suspect someone knows your master password, change it as well (see above). If a device was lost or compromised while it held your vault, choose to also rotate your encryption keys (under advanced settings) when you change your master password. <WhitepaperRefs refs={[{section: '4.2', label: 'Key rotation', anchor: '42-key-rotation'}]} />
+- **Revoke any session you do not recognize**, and revoke the sessions of a lost or stolen device. If you suspect someone knows your master password, or a device was lost or compromised while it held your vault, change your master password and rotate your encryption keys (see [Master password](#master-password)). <WhitepaperRefs refs={[{section: '4.2', label: 'Key rotation', anchor: '42-key-rotation'}]} />
 
 ## Which client you use
 
