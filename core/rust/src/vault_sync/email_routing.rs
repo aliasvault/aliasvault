@@ -61,7 +61,7 @@ pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains:
         covered_manifest_ids: manifests.iter().map(|manifest| manifest.manifest_id.clone()).collect(),
         base_revisions: manifests
             .iter()
-            .map(|manifest| ManifestRevision { manifest_id: manifest.manifest_id.clone(), revision: manifest_revisions.get(&manifest.manifest_id).copied().unwrap_or(0), encrypted_name: None })
+            .map(|manifest| ManifestRevision { manifest_id: manifest.manifest_id.clone(), revision: manifest_revisions.get(&manifest.manifest_id).copied().unwrap_or(0), encrypted_name: None, key_version: 0 })
             .collect(),
     }
 }

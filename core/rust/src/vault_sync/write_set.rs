@@ -58,7 +58,7 @@ mod tests {
     use secrecy::ExposeSecret;
 
     fn held(ids: &[&str]) -> HashMap<String, SharedManifestDto> {
-        ids.iter().map(|id| (id.to_string(), SharedManifestDto { manifest_id: id.to_string(), encrypted_vek: String::new(), account_public_key: String::new(), algorithm: String::new(), salt: format!("salt-{}", id), encrypted_name: None, can_administer: true })).collect()
+        ids.iter().map(|id| (id.to_string(), SharedManifestDto { manifest_id: id.to_string(), encrypted_vek: String::new(), account_public_key: String::new(), algorithm: String::new(), salt: format!("salt-{}", id), encrypted_name: None, can_administer: true, key_version: 0 })).collect()
     }
 
     fn opened(ids: &[&str]) -> HashMap<String, SecretString> {

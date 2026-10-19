@@ -175,7 +175,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
             let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
             let encrypted_name = served_encrypted_name(ctx, &previous_records, &dto.manifest_id);
-            shared_records.insert(dto.manifest_id.clone(), SharedManifestDto { manifest_id: dto.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: vault_codec::generate_manifest_salt(), encrypted_name, can_administer: dto.can_administer });
+            shared_records.insert(dto.manifest_id.clone(), SharedManifestDto { manifest_id: dto.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: vault_codec::generate_manifest_salt(), encrypted_name, can_administer: dto.can_administer, key_version: dto.key_version });
             contentless_revisions.insert(dto.manifest_id.clone(), dto.revision);
             continue;
         }
@@ -189,7 +189,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
                 None => ctx.warn(format!("[Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
             }
         }
-        shared_records.insert(entry.manifest_id.clone(), SharedManifestDto { manifest_id: entry.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: entry.manifest.manifest_salt.clone(), encrypted_name, can_administer: dto.can_administer });
+        shared_records.insert(entry.manifest_id.clone(), SharedManifestDto { manifest_id: entry.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: entry.manifest.manifest_salt.clone(), encrypted_name, can_administer: dto.can_administer, key_version: dto.key_version });
         resolved.push(entry);
     }
     keys::set_shared_manifest_records(ctx, &shared_records, vek).await?;

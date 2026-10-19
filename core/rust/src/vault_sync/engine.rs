@@ -12,7 +12,7 @@ use super::push::{self, CanonicalizedSet, PushStatus, WriteKind};
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{FailureFields, FullSyncResult, LogLevel, ResolveVaultKeyResult, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
-use super::{db, http, keys, migration, sharing};
+use super::{db, http, keys, migration, rotation, sharing};
 use crate::crypto;
 use crate::vault_model::{id_key, ids_equal};
 
@@ -35,6 +35,7 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         SyncOperation::CreateSharedManifest => serde_json::to_value(sharing::create_shared_manifest_operation(&mut ctx).await),
         SyncOperation::InviteToSharedManifest => serde_json::to_value(sharing::invite_to_shared_manifest_operation(&mut ctx).await),
         SyncOperation::UpdateSharedManifest => serde_json::to_value(sharing::update_shared_manifest_operation(&mut ctx).await),
+        SyncOperation::RotateAccountKeys => serde_json::to_value(rotation::rotate_account_keys_operation(&mut ctx).await),
     };
     finish(&ctx, result.unwrap_or(Value::Null))
 }
@@ -279,7 +280,7 @@ fn split_version(version: &str) -> (&str, Option<&str>) {
 }
 
 /// Whether the client has to pull and re-materialize: any manifest or data bucket changed on the server.
-async fn server_state_needs_pull(ctx: &Ctx, status: &StatusResponse) -> SyncResult<bool> {
+pub(crate) async fn server_state_needs_pull(ctx: &Ctx, status: &StatusResponse) -> SyncResult<bool> {
     let server_manifests: HashMap<String, i64> = status.manifest_revisions.iter().map(|m| (m.manifest_id.clone(), m.revision)).collect();
     let server_buckets: HashMap<String, i64> = status.bucket_revisions.iter().map(|b| (state::bucket_revision_key(&b.manifest_id, &b.category), b.revision)).collect();
     let local_manifests: HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
@@ -300,7 +301,7 @@ fn requiring_pull(server: &HashMap<String, i64>, local: &HashMap<String, i64>) -
     server.iter().filter(|(id, revision)| local.get(*id) != Some(revision)).count() + local.keys().filter(|id| !server.contains_key(*id)).count()
 }
 
-async fn assert_salt_unchanged(ctx: &Ctx, server_salt: Option<&str>) -> SyncResult<()> {
+pub(crate) async fn assert_salt_unchanged(ctx: &Ctx, server_salt: Option<&str>) -> SyncResult<()> {
     let stored: Option<Value> = state::get(&ctx.host, state::UNLOCK_KEY_DERIVATION_PARAMS).await?;
     let stored_salt = stored.as_ref().and_then(|params| params.get("salt")).and_then(Value::as_str).map(str::to_string);
     if let (Some(stored), Some(server)) = (stored_salt, server_salt) {

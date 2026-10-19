@@ -30,7 +30,7 @@ pub use aes_gcm::{
 };
 pub use key_chain::{
     create_account_key_hierarchy, create_account_key_hierarchy_with_key_pair, derive_srp_password_hash, open_account_key_chain, open_account_private_key, open_account_signing_private_key,
-    reencrypt_account_key, unwrap_account_key, unwrap_key, wrap_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError, SrpInputError,
+    reencrypt_account_key, rotate_account_keys, unwrap_account_key, unwrap_key, wrap_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError, RotatedAccountKeys, SrpInputError,
 };
 pub use pin::{pin_decrypt, pin_encrypt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
 pub use rsa_oaep::{decrypt_with_private_key, decrypt_with_private_key_and_label, encrypt_with_public_key, encrypt_with_public_key_and_label, generate_rsa_key_pair, RsaKeyPair};

@@ -31,6 +31,28 @@ pub enum SyncOperation {
     InviteToSharedManifest,
     /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
     UpdateSharedManifest,
+    /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
+    RotateAccountKeys,
+}
+
+/// What a key rotation needs from the host: the proof of the current password and the new unlock method, both
+/// derived from the master password on the host, and the new account keypair (WebCrypto generates RSA keys far
+/// faster than wasm).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyRotationParams {
+    pub user_id: String,
+    pub current_client_public_ephemeral: String,
+    pub current_client_session_proof: String,
+    pub account_key_version: i64,
+    pub manifest_key_version: i64,
+    pub new_unlock_key: SecretString,
+    pub new_salt: String,
+    pub new_verifier: String,
+    pub new_encryption_type: String,
+    pub new_encryption_settings: String,
+    pub new_account_public_key: String,
+    pub new_account_private_key: SecretString,
 }
 
 /// What a sharing operation acts on.
@@ -47,18 +69,18 @@ pub struct SharingParams {
 }
 
 /// Sync request.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncRequest {
     pub operation: SyncOperation,
     pub username: String,
-    #[serde(default, serialize_with = "serialize_option")]
+    #[serde(default)]
     pub encryption_key: Option<SecretString>,
     #[serde(default)]
     pub account_public_key: Option<String>,
-    #[serde(default, serialize_with = "serialize_option")]
+    #[serde(default)]
     pub account_private_key: Option<SecretString>,
-    #[serde(default, serialize_with = "serialize_option")]
+    #[serde(default)]
     pub account_key: Option<SecretString>,
     #[serde(default)]
     pub is_dirty: bool,
@@ -75,6 +97,9 @@ pub struct SyncRequest {
     /// The target of a sharing operation; absent for every other operation.
     #[serde(default)]
     pub sharing: Option<SharingParams>,
+    /// What a key rotation works with; absent for every other operation.
+    #[serde(default)]
+    pub key_rotation: Option<KeyRotationParams>,
 }
 
 /// How a failed operation reports itself: a coded error the host translates, or a forced logout.
@@ -192,6 +217,35 @@ pub struct SharingOperationResult {
     pub vault_upgrade_required: bool,
     /// A refusal carries only `failure.api_error_code` (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
     /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
+    #[serde(flatten)]
+    pub failure: FailureFields,
+}
+
+/// Why a key rotation did not run, as the host has words for each.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum KeyRotationRefusal {
+    /// The local vault has changes the server has not seen, or the server holds changes this device has not pulled; sync first.
+    VaultOutOfDate,
+    /// The server state moved on between initiate and the rotation; sync and try again.
+    ServerStateChanged,
+    /// A shared vault's key could not be opened on this device, so its grant could not be rewrapped.
+    SharedVaultKeyUnavailable,
+    /// The vault or the account's key hierarchy has to finish upgrading first.
+    VaultUpgradeRequired,
+}
+
+/// Outcome of a key rotation.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyRotationResult {
+    pub success: bool,
+    #[serde(skip_serializing_if = "Option::is_none", serialize_with = "serialize_option")]
+    pub account_key: Option<SecretString>,
+    #[serde(skip_serializing_if = "Option::is_none", serialize_with = "serialize_option")]
+    pub encryption_key: Option<SecretString>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub refusal: Option<KeyRotationRefusal>,
     #[serde(flatten)]
     pub failure: FailureFields,
 }
@@ -420,6 +474,9 @@ pub struct ManifestRevision {
     pub revision: i64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub encrypted_name: Option<String>,
+    /// Served by the status, never sent with a routing push.
+    #[serde(default, skip_serializing)]
+    pub key_version: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -723,6 +780,8 @@ pub struct VaultKeyResponse {
     pub encrypted_signing_private_key: Option<String>,
     #[serde(default)]
     pub encrypted_vek: Option<String>,
+    #[serde(default)]
+    pub key_version: i64,
 }
 
 /// A shared manifest as this account holds it: the grant on its key plus what the last pull learned about it.
@@ -741,6 +800,8 @@ pub struct SharedManifestDto {
     pub encrypted_name: Option<String>,
     #[serde(default)]
     pub can_administer: bool,
+    #[serde(default)]
+    pub key_version: i64,
 }
 
 #[cfg(test)]

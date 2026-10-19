@@ -392,20 +392,20 @@ fn format_kb(chars: usize) -> String {
 }
 
 /// A payload as JSON text plus its content fingerprint.
-fn fingerprinted<T: serde::Serialize>(payload: &T) -> SyncResult<(String, String)> {
+pub(crate) fn fingerprinted<T: serde::Serialize>(payload: &T) -> SyncResult<(String, String)> {
     let plaintext = serde_json::to_string(payload)?;
     let fingerprint = vault_codec::compute_content_fingerprint(&plaintext);
     Ok((plaintext, fingerprint))
 }
 
 /// A payload packed and encrypted for the write, with the hash the server verifies it by.
-struct EncryptedPayload {
-    ciphertext: Vec<u8>,
-    hash: String,
+pub(crate) struct EncryptedPayload {
+    pub ciphertext: Vec<u8>,
+    pub hash: String,
 }
 
 /// Pack and encrypt a JSON payload under `key` bound to `aad`, logging its size at every stage.
-async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
+pub(crate) async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
     let ciphertext = crypto::symmetric_encrypt_raw_with_aad(&packed, key, aad)?;
     ctx.log(format!("[Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
