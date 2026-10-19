@@ -35,6 +35,7 @@ import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSetti
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
 import FamilySharingSettings from '@/entrypoints/popup/pages/settings/FamilySharingSettings';
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
+import ImportExportSettings from '@/entrypoints/popup/pages/settings/ImportExportSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
 import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/PasswordGeneratorSettings';
@@ -225,6 +226,7 @@ const App: React.FC = () => {
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/import-export', element: <ImportExportSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/family-sharing', element: <RequireCapability capability={CapabilityKeys.VaultSharing}><FamilySharingSettings /></RequireCapability>, showBackButton: true, title: t('common.settings') },
   ], [t]);
 

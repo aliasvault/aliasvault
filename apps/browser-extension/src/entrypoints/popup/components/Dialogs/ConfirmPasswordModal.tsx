@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 
 type ConfirmPasswordModalProps = {
   isOpen: boolean;
@@ -10,10 +11,12 @@ type ConfirmPasswordModalProps = {
   title: string;
   message: string;
   confirmText: string;
+  /** The confirm button color: red for a destructive action (the default), the brand color otherwise. */
+  variant?: 'danger' | 'primary';
 }
 
 /**
- * A reusable confirmation modal for destructive actions that must be confirmed with the user's master password.
+ * A reusable confirmation modal for actions that must be confirmed with the user's master password.
  * The password is handed to the caller for verification; a thrown error is shown inside the modal so the user can retry.
  */
 const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
@@ -22,7 +25,8 @@ const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText
+  confirmText,
+  variant = 'danger'
 }) => {
   const { t } = useTranslation();
   const [password, setPassword] = useState('');
@@ -65,9 +69,14 @@ const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
       maxWidth="max-w-sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="text-gray-500 dark:text-gray-400">
-          {message}
-        </p>
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/30">
+            <Icon name="lock-closed" className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {message}
+          </p>
+        </div>
 
         <div>
           <label htmlFor="confirm-master-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -99,7 +108,7 @@ const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || password.length === 0}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            className={`px-4 py-2 text-sm text-white rounded disabled:opacity-50 ${variant === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-primary-500 hover:bg-primary-600'}`}
           >
             {confirmText}
           </button>

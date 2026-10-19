@@ -1,5 +1,4 @@
-import { EncryptionUtility } from '../../../../crypto/EncryptionUtility';
-import { argon2DeriveKey } from '../../../../rust/RustCore';
+import { argon2DeriveKey, rustCore } from '../../../../rust/RustCore';
 import { bytesToBase64 } from '../../../../utilities/Base64';
 import { AvexConstants } from '../../../export/AvexConstants';
 import { getProperty, isJsonObject, parseJson, readNumber, readObject, readString, requireObject } from '../../readers/JsonReader';
@@ -49,7 +48,7 @@ export class AvexImportService {
     const key = await argon2DeriveKey(exportPassword, header.kdf.salt, JSON.stringify(header.kdf.params));
 
     try {
-      return await EncryptionUtility.symmetricDecryptBytes(encryptedPayload, bytesToBase64(key));
+      return await rustCore().symmetricDecryptBytes(encryptedPayload, bytesToBase64(key));
     } catch (error) {
       throw new AvexDecryptionError(error);
     }

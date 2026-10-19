@@ -6,21 +6,10 @@ import { BaseRepository } from '../BaseRepository';
 import { scopedKey } from '../ItemRef';
 import { AttachmentQueries, FieldDefinitionQueries, FieldHistoryQueries, FieldValueQueries, TotpCodeQueries } from '../queries/ItemQueries';
 
-import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../../transfer/shared/VaultEntities';
+import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity, VaultExportData } from '../../transfer/shared/VaultEntities';
 import type { IDatabaseClient } from '../BaseRepository';
 import type { DbOp } from '../DbOp';
 import type { LogoRepository } from './LogoRepository';
-
-/**
- * Everything a full vault export carries.
- */
-export type VaultExportData = {
-  items: ItemEntity[];
-  folders: FolderEntity[];
-  tags: TagEntity[];
-  itemTags: ItemTagEntity[];
-  fieldDefinitions: FieldDefinitionEntity[];
-};
 
 /**
  * Keep track of what the import already wrote (shared and reused parent objects).

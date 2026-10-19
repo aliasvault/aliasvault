@@ -167,3 +167,14 @@ export type LogoEntity = {
   FetchedAt: Date | null;
   IsDeleted: boolean;
 };
+
+/**
+ * Everything a full vault export carries.
+ */
+export type VaultExportData = {
+  items: ItemEntity[];
+  folders: FolderEntity[];
+  tags: TagEntity[];
+  itemTags: ItemTagEntity[];
+  fieldDefinitions: FieldDefinitionEntity[];
+};

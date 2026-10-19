@@ -2,7 +2,7 @@ import { bytesToBase64 } from '../../utilities/Base64';
 import { createZipArchive, textToZipBytes } from '../shared/ZipArchive';
 
 import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldHistory, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from './AvuxManifest';
-import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../shared/VaultEntities';
+import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity, VaultExportData } from '../shared/VaultEntities';
 
 /** The .avux manifest format version this service writes. */
 export const AVUX_FORMAT_VERSION = '1.0.0';
@@ -14,14 +14,11 @@ export const AVUX_FORMAT_VERSION = '1.0.0';
 export class AvuxExportService {
   /**
    * Export vault data to .avux.
-   * @param items - The items to export
-   * @param folders - The folders to export
-   * @param tags - The tags to export
-   * @param itemTags - The item-tag associations to export
-   * @param fieldDefinitions - The custom field definitions to export
+   * @param data - The vault data to export
    * @returns The .avux ZIP file bytes
    */
-  public static exportToAvux(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[]): Uint8Array {
+  public static exportToAvux(data: VaultExportData): Uint8Array {
+    const { items, folders, tags, itemTags, fieldDefinitions } = data;
     const logos = AvuxExportService.itemLogos(items);
     const manifest = AvuxExportService.createManifest(items, folders, tags, itemTags, fieldDefinitions, logos);
     const attachmentMap = AvuxExportService.extractAttachments(items);

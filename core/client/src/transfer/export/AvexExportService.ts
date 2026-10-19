@@ -1,7 +1,6 @@
-import { EncryptionUtility } from '../../crypto/EncryptionUtility';
 import { AppInfo } from '../../platform/AppInfo';
-import { argon2DeriveKey } from '../../rust/RustCore';
-import { base64ToBytes, bytesToBase64 } from '../../utilities/Base64';
+import { argon2DeriveKey, rustCore } from '../../rust/RustCore';
+import { bytesToBase64 } from '../../utilities/Base64';
 
 import { AvexConstants } from './AvexConstants';
 
@@ -33,7 +32,7 @@ export class AvexExportService {
     const key = await argon2DeriveKey(exportPassword, saltBase64, JSON.stringify(ARGON2_KDF_PARAMS));
 
     // 2. AES-256-GCM over the .avux bytes.
-    const encryptedPayload = base64ToBytes(await EncryptionUtility.symmetricEncryptBytes(avuxBytes, bytesToBase64(key)));
+    const encryptedPayload = await rustCore().symmetricEncryptBytes(avuxBytes, bytesToBase64(key));
 
     // 3. The header.
     const header: AvexHeader = {

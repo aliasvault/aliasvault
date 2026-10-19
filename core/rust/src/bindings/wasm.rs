@@ -210,6 +210,12 @@ pub fn symmetric_decrypt_bytes_js(encrypted: &[u8], key_base64: &str) -> Result<
     crate::crypto::symmetric_decrypt_bytes(encrypted, key_base64).map_err(js_err)
 }
 
+/// AES-256-GCM encrypt bytes with a base64 key (random IV, no AAD) into `IV | ciphertext | tag` bytes.
+#[wasm_bindgen(js_name = symmetricEncryptBytes)]
+pub fn symmetric_encrypt_bytes_js(plaintext: &[u8], key_base64: &str) -> Result<Vec<u8>, JsValue> {
+    crate::crypto::symmetric_encrypt_raw_with_aad(plaintext, key_base64, &[]).map_err(js_err)
+}
+
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[wasm_bindgen(js_name = rsaDecrypt)]
 pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
