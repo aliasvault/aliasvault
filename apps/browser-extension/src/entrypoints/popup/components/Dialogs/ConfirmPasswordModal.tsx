@@ -90,7 +90,7 @@ const ConfirmPasswordModal: React.FC<ConfirmPasswordModalProps> = ({
             value={password}
             onChange={event => setPassword(event.target.value)}
             placeholder={t('auth.passwordPlaceholder')}
-            className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-full px-3 py-2 text-sm rounded-md shadow-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
 
