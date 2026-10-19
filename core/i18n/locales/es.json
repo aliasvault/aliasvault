@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Introduce tu PIN de nuevo para confirmar",
-      "enterNewPinDescription": "Introduce un código PIN que contenga un mínimo de 6 dígitos",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN incorrecto, {{attemptsRemaining}} intentos restantes.",
       "incorrectPinSingular": "PIN incorrecto. 1 intento restante.",
       "introText": "Elige cómo deseas desbloquear tu bóveda. Puede utilizar tu contraseña maestra (siempre disponible) o configurar un código PIN para un acceso más rápido. Después de 3 intentos fallidos de PIN, necesitarás usar tu contraseña maestra.",
