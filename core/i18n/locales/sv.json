@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bekräfta PIN-kod",
       "confirmPinDescription": "Ange din PIN-kod igen för att bekräfta",
-      "enterNewPinDescription": "Ange en PIN-kod som består av minst 6 siffror",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Felaktig PIN-kod. {{attemptsRemaining}} försök återstår.",
       "incorrectPinSingular": "Felaktig PIN-kod. 1 försök återstår.",
       "introText": "Välj hur du vill låsa upp ditt valv. Du kan använda ditt huvudlösenord (alltid tillgängligt) eller ange en PIN-kod för snabbare åtkomst. Efter 3 misslyckade PIN-försök måste du använda ditt huvudlösenord.",
