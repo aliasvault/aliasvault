@@ -191,6 +191,10 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             method.AccountKeyVersion = newAccountKeyVersion;
             method.UpdatedAt = now;
 
+            // Other account unlock methods still hold the old Account Key, so they are deleted (none exist yet besides the password).
+            // TODO: when more unlock methods are added, check this assumption again and update UI warnings if necessary.
+            await writeContext.UserUnlockMethods.Where(x => x.UserId == user.Id && x.Id != method.Id).ExecuteDeleteAsync();
+
             // 2) The personal VEK: the new generation replaces every previous one, as nothing under an older one is kept (see 5).
             writeContext.VaultManifestAccessKeys.RemoveRange(personalAccessKeys);
             writeContext.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
@@ -295,6 +299,10 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 blob.EncryptedBlobKey = rewrappedKeys[blob.Hash];
                 blob.KeyVersion = newKeyVersion;
             }
+
+            // Blobs only older revisions referenced keep a key under the old VEK. Delete them now instead of at the next GC sweep: a
+            // client re-adding the same content would find the hash present, skip the upload and reference a key nobody can open.
+            await writeContext.VaultBlobObjects.Where(b => b.ManifestId == manifest.ManifestId && !referencedHashes.Contains(b.Hash)).ExecuteDeleteAsync();
 
             // 7) Invitations addressed to this account are encrypted for the old public key and cannot be opened anymore.
             var staleInvitations = await writeContext.GroupInvitations.Where(i => i.InviteeUserId == user.Id && i.State == GroupInvitationState.Pending).ToListAsync();
