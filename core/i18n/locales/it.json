@@ -218,6 +218,7 @@
     "attachments": "Allegati",
     "back": "Indietro",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Annulla",
     "clipboardCountdown": {
       "clearClipboardButton": "Cancella appunti"
@@ -284,6 +285,7 @@
     "hide": "Nascondi",
     "hideDetails": "Nascondi dettagli",
     "hidePassword": "Nascondi password",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Home",
     "loadMore": "Carica altro",
     "loading": "Caricamento...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Siti in cui non apparirà il popup di riempimento automatico.",
     "enabledForThisSite": "Abilitato per questo sito",
     "exportConfirmTitle": "Esporta cassaforte",
-    "exportCsvButton": "Esporta la cassaforte in CSV",
-    "exportSectionDescription": "Esporta i dati della tua cassaforte in un file CSV. Questo file può essere usato come backup e può anche essere importato in altri gestori di password.",
     "exportSectionTitle": "Esporta",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
-    "exporting": "Esportazione...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Imposta l'intervallo di età predefinito per generare nuove identità. Ciò influisce sulla data di nascita assegnata all'identità generata.",
       "aliasGenerationGenderDescription": "Imposta la preferenza di genere predefinita per generare nuove identità.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Cambio password fallito. Riprova.",
         "failedToChangePassword": "Impossibile cambiare la password. Si prega di aggiornare la pagina e riprovare.",
         "fillAllFields": "Per favore compila tutti i campi",
-        "headerText": "Cambiare la password principale cambia anche le chiavi di crittografia della cassaforte. È consigliato cambiare la password periodicamente per mantenere le cassaforti sicure.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Inizio cambio password...",
         "newPassword": "Nuova password",
         "passwordChangedSuccessfully": "Password cambiata con successo",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "L'autenticazione a due fattori è ora abilitata con successo. Al tuo prossimo login dovrai inserire il tuo codice 2FA.",
         "verificationCodePlaceholder": "Inserisci il codice di verifica",
         "verifyAndEnableButton": "Verifica e Abilita"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Disabilita Sblocco con Passkey",
