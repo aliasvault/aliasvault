@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Deimhnigh PIN",
       "confirmPinDescription": "Cuir isteach do PIN arís lena dheimhniú",
-      "enterNewPinDescription": "Cuir isteach cód PIN ina bhfuil 6 dhigit ar a laghad",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN mícheart. {{attemptsRemaining}} iarracht fágtha.",
       "incorrectPinSingular": "PIN mícheart. 1 iarracht fágtha.",
       "introText": "Roghnaigh conas is mian leat do cruinneachán a dhíghlasáil. Is féidir leat do mháistirfhocal faire a úsáid (ar fáil i gcónaí) nó cód PIN a shocrú le haghaidh rochtain níos tapúla. Tar éis 3 iarracht UAP theip, beidh ort do mháistirfhocal faire a úsáid.",
