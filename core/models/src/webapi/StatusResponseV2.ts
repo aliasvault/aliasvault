@@ -6,6 +6,8 @@ export type ManifestRevision = {
   revision: number;
   /** The name of a shared manifest, encrypted with the manifest's own key (base64). */
   encryptedName?: string | null;
+  /** The generation of the manifest's VEK its content is encrypted with. */
+  keyVersion?: number;
 }
 
 /**

@@ -23,6 +23,7 @@ export * from './DeleteAccountInitiate';
 export * from './DeleteAccountRequest';
 export * from './PasswordChangeInitiateResponse';
 export * from './PasswordChangeRequest';
+export * from './KeyRotation';
 export * from './VaultPasswordChangeRequest';
 export * from './BadRequestResponse';
 export * from './AuthEventType';

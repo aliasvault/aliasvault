@@ -48,6 +48,11 @@ export enum AuthEventType {
   TwoFactorAuthDisable = 'two-factor-auth-disable',
 
   /**
+   * Represents a rotation of the account's encryption keys, confirmed with the master password.
+   */
+  KeyRotation = 'key-rotation',
+
+  /**
    * Represents a user registration event.
    */
   Register = 'register',
