@@ -91,6 +91,11 @@ chmod +x install.sh
 
 For other installation methods and more detailed steps, please read the [full installation guide](https://docs.aliasvault.com/installation) in the official docs.
 
+## One-click deploy
+
+<a href="https://repocloud.io/details/AliasVault/"><img src="https://d16t0pc4846x52.cloudfront.net/deploylobe.svg" alt="Deploy on RepoCloud" height="42"></a>
+<a href="https://railway.com/deploy/aliasvault-railway"><img src="https://railway.com/button.svg" alt="Deploy on Railway" height="42"></a>
+
 ## Documentation
 For more information about the installation process, manual setup instructions and other topics, please see the official documentation website:
 
