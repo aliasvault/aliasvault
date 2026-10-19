@@ -1363,7 +1363,7 @@
         "failedToChange": "Failed to change password. Please try again.",
         "failedToChangePassword": "Failed to change password. Please refresh the page and try again.",
         "fillAllFields": "Please fill in all fields",
-        "headerText": "Changing your master password signs out your other devices. Your encryption keys stay the same unless you rotate them under the advanced settings.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Initiating password change...",
         "newPassword": "New Password",
         "passwordChangedSuccessfully": "Password changed successfully",
