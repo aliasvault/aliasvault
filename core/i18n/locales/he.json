@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "אישור קוד אישי",
       "confirmPinDescription": "נא למלא את הקוד האישי שלך שוב לאישור",
-      "enterNewPinDescription": "נא למלא קוד אישי שמורכב מ־6 ספרות לפחות",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "קוד אישי שגוי. נותרו {{attemptsRemaining}} ניסיונות.",
       "incorrectPinSingular": "קוד אישי שגוי. נותר עוד ניסיון.",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
