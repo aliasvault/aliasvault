@@ -654,6 +654,7 @@ public class TestController(
             personalVekVersions = await context.VaultManifestAccessKeys.Where(k => k.UserId == user.Id && k.Type == ManifestKeyType.AccountKey && k.VaultManifestId == personalManifestId).OrderBy(k => k.KeyVersion).Select(k => k.KeyVersion).ToListAsync(),
             accountPublicKey = await context.UserGrantKeys.Where(k => k.UserId == user.Id && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync(),
             signingPublicKey = await context.UserSigningKeys.Where(k => k.UserId == user.Id && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync(),
+            deliveryPublicKey = await context.VaultManifestDeliveryKeys.Where(k => k.VaultManifestId == personalManifestId && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync(),
             activeSessions = await context.AliasVaultUserRefreshTokens.CountAsync(t => t.UserId == user.Id),
         });
     }
