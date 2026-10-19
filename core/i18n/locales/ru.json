@@ -218,6 +218,7 @@
     "attachments": "Вложения",
     "back": "Назад",
     "backspace": "Удалить",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Отмена",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистить буфер обмена"
@@ -284,6 +285,7 @@
     "hide": "Скрыть",
     "hideDetails": "Скрыть подробности",
     "hidePassword": "Скрыть пароль",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Главная",
     "loadMore": "Загрузить ещё",
     "loading": "Загрузка...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Сайты, на которых не будет появляться автозаполнение.",
     "enabledForThisSite": "Включено для этого сайта",
     "exportConfirmTitle": "Экспортировать хранилище",
-    "exportCsvButton": "Экспорт хранилища в CSV-файл",
-    "exportSectionDescription": "Экспортируйте данные вашего хранилища в CSV-файл. Этот файл можно использовать как резервную копию или импортировать в другие менеджеры паролей.",
     "exportSectionTitle": "Экспорт",
     "exportWarning": "Предупреждение: Экспорт хранилища в незашифрованный файл приведёт к тому, что все ваши пароли и конфиденциальная информация будут доступны в открытом виде. Делайте это только на доверенных устройствах и убедитесь, что вы:\n\n• Храните экспортированный файл в безопасном месте\n• Удаляете файл, когда он больше не нужен\n• Никогда не передаёте файл другим людям\n\nВы уверены, что хотите продолжить экспорт?",
-    "exporting": "Экспорт...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Установите диапазон возраста по умолчанию для создания новых личностей. Это влияет на дату рождения, назначаемую сгенерированной личности.",
       "aliasGenerationGenderDescription": "Установите предпочтительный пол по умолчанию для генерации новых личностей.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Не удалось сменить пароль. Пожалуйста, попробуйте снова.",
         "failedToChangePassword": "Не удалось сменить пароль. Пожалуйста, обновите страницу и повторите попытку.",
         "fillAllFields": "Пожалуйста, заполните все поля",
-        "headerText": "Смена мастер-пароля также меняет ключи шифрования хранилища. Рекомендуется периодически менять мастер-пароль для обеспечения безопасности ваших данных.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Начинается изменение пароля...",
         "newPassword": "Новый пароль",
         "passwordChangedSuccessfully": "Пароль успешно изменен",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Теперь двухфакторная аутентификация успешно включена. При следующем входе в систему вам необходимо будет ввести свой код 2FA.",
         "verificationCodePlaceholder": "Введите код подтверждения",
         "verifyAndEnableButton": "Подтвердить и включить"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Отключить разблокировку ключом",
