@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "PIN 확인",
       "confirmPinDescription": "확인을 위해 PIN을 다시 입력하세요",
-      "enterNewPinDescription": "최소 6자리 이상의 숫자로 된 PIN 코드를 입력하세요",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN이 올바르지 않습니다. 남은 시도 횟수: {{attemptsRemaining}}회.",
       "incorrectPinSingular": "PIN이 올바르지 않습니다. 남은 시도 횟수: 1회.",
       "introText": "보관함을 잠금 해제할 방법을 선택하세요. 마스터 비밀번호(항상 사용 가능)를 사용하거나 더 빠른 접근을 위해 PIN 코드를 설정할 수 있습니다. PIN 입력을 3회 실패하면 마스터 비밀번호를 사용해야 합니다.",
