@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Potwierdź kod PIN",
       "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-      "enterNewPinDescription": "Wprowadź kod PIN składający się z co najmniej 6 cyfr",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Nieprawidłowy kod PIN. Pozostało {{attemptsRemaining}} prób.",
       "incorrectPinSingular": "Nieprawidłowy kod PIN. Pozostała 1 próba.",
       "introText": "Wybierz sposób odblokowania sejfu. Możesz użyć hasła głównego (zawsze dostępnego) lub skonfigurować kod PIN, aby uzyskać szybszy dostęp. Po 3 nieudanych próbach wprowadzenia kodu PIN konieczne będzie użycie hasła głównego.",
