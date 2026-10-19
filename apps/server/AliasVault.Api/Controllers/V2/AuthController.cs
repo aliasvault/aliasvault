@@ -55,21 +55,6 @@ using SecureRemotePassword;
 public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService, RegistrationInviteService registrationInviteService, TokenService tokenService) : ControllerBase
 {
     /// <summary>
-    /// Maximum accepted length of a password salt.
-    /// </summary>
-    private const int MaxSaltLength = 100;
-
-    /// <summary>
-    /// Maximum accepted length of an SRP verifier.
-    /// </summary>
-    private const int MaxVerifierLength = 1000;
-
-    /// <summary>
-    /// Maximum accepted length of the KDF settings JSON.
-    /// </summary>
-    private const int MaxEncryptionSettingsLength = 255;
-
-    /// <summary>
     /// Login endpoint used to process login attempt using credentials.
     /// </summary>
     /// <param name="model">Login model.</param>
@@ -450,7 +435,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(accountKeysError.Value, 400);
         }
 
-        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier) || !IsValidSrpIdentity(model.SrpIdentity))
+        if (!UnlockMethodParameterValidator.IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !UnlockMethodParameterValidator.WithinSrpCredentialLimits(model.Salt, model.Verifier) || !UnlockMethodParameterValidator.IsValidSrpIdentity(model.SrpIdentity))
         {
             return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
         }
@@ -599,7 +584,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the new KDF parameters and the size of the new credentials.
         var accountKeyFits = !string.IsNullOrEmpty(model.NewEncryptedAccountKey) && model.NewEncryptedAccountKey.Length <= AccountKeysUpload.MaxWrappedKeyLength;
-        if (!IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings) || !WithinSrpCredentialLimits(model.NewPasswordSalt, model.NewPasswordVerifier) || !accountKeyFits)
+        if (!UnlockMethodParameterValidator.IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings) || !UnlockMethodParameterValidator.WithinSrpCredentialLimits(model.NewPasswordSalt, model.NewPasswordVerifier) || !accountKeyFits)
         {
             return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
         }
@@ -630,7 +615,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Archive the superseded unlock method and update the current unlock method with the new credentials in a single transaction.
         var strategy = context.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
+        var changed = await strategy.ExecuteAsync(async () =>
         {
             await using var writeContext = await dbContextFactory.CreateDbContextAsync();
             await using var transaction = await writeContext.Database.BeginTransactionAsync();
@@ -638,11 +623,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await UnlockMethodHistoryPolicy.ArchiveAsync(writeContext, unlockMethod, settings.UnlockMethodHistoryRetentionDays, now, ClientHeaderInfo.GetRawValue(Request));
             await writeContext.SaveChangesAsync();
 
-            await writeContext.UserUnlockMethods.Where(x => x.Id == unlockMethod.Id).ExecuteUpdateAsync(s => s
+            // Only while the Account Key is the one the client re-encrypted: a key rotation committed meanwhile would otherwise be overwritten with the old key.
+            var updated = await writeContext.UserUnlockMethods.Where(x => x.Id == unlockMethod.Id && x.AccountKeyVersion == unlockMethod.AccountKeyVersion).ExecuteUpdateAsync(s => s
                 .SetProperty(x => x.Metadata, newMetadataJson)
                 .SetProperty(x => x.EncryptedAccountKey, model.NewEncryptedAccountKey)
                 .SetProperty(x => x.Algorithm, newAccountKeyAlgorithm)
                 .SetProperty(x => x.UpdatedAt, now));
+            if (updated == 0)
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
 
             // Update the password last changed at timestamp for user.
             await writeContext.AliasVaultUsers.Where(x => x.Id == user.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
@@ -650,7 +641,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Revoke every session except the caller's own refresh token; an access token without that claim keeps none.
             await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.Id != currentRefreshTokenId).ExecuteDeleteAsync();
             await transaction.CommitAsync();
+            return true;
         });
+
+        if (!changed)
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, AuthFailureReason.InvalidPassword);
+            return ApiError.Result(ApiErrorCode.PASSWORD_MISMATCH, 400);
+        }
 
         user.PasswordChangedAt = now;
 
@@ -1098,75 +1096,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     };
 
     /// <summary>
-    /// Whether a client-supplied SRP salt and verifier are present and within the stored size limits.
-    /// </summary>
-    /// <param name="salt">The password salt.</param>
-    /// <param name="verifier">The SRP verifier.</param>
-    /// <returns>True when both values may be stored.</returns>
-    private static bool WithinSrpCredentialLimits(string? salt, string? verifier)
-    {
-        return !string.IsNullOrEmpty(salt) && salt.Length <= MaxSaltLength && !string.IsNullOrEmpty(verifier) && verifier.Length <= MaxVerifierLength;
-    }
-
-    /// <summary>
-    /// Whether a client-chosen SRP identity is a GUID, which is what every client creates at registration.
-    /// </summary>
-    /// <param name="srpIdentity">The SRP identity.</param>
-    /// <returns>True when the identity may be stored.</returns>
-    private static bool IsValidSrpIdentity(string? srpIdentity) => Guid.TryParseExact(srpIdentity, "D", out _);
-
-    /// <summary>
-    /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the accepted minimum.
-    /// </summary>
-    /// <param name="encryptionType">The KDF type.</param>
-    /// <param name="encryptionSettings">The KDF settings JSON.</param>
-    /// <returns>True when the parameters are safe to store and advertise at the next login.</returns>
-    private static bool IsValidKekDerivationParams(string encryptionType, string encryptionSettings)
-    {
-        if (encryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(encryptionSettings) || encryptionSettings.Length > MaxEncryptionSettingsLength)
-        {
-            return false;
-        }
-
-        try
-        {
-            using var settings = JsonDocument.Parse(encryptionSettings);
-            if (!settings.RootElement.TryGetProperty("DegreeOfParallelism", out var parallelism) || !parallelism.TryGetInt32(out var parallelismValue))
-            {
-                return false;
-            }
-
-            if (!settings.RootElement.TryGetProperty("MemorySize", out var memorySize) || !memorySize.TryGetInt32(out var memorySizeValue))
-            {
-                return false;
-            }
-
-            if (!settings.RootElement.TryGetProperty("Iterations", out var iterations) || !iterations.TryGetInt32(out var iterationsValue))
-            {
-                return false;
-            }
-
-            // Check if any parameter is less than the allowed minimum, return false.
-            if (parallelismValue < Defaults.MinimumArgon2IdDegreeOfParallelism || memorySizeValue < Defaults.MinimumArgon2IdMemorySize || iterationsValue < Defaults.MinimumArgon2IdIterations)
-            {
-                return false;
-            }
-
-            // Check if any parameter exceeds the allowed maximum, return false.
-            if (parallelismValue > 16 || memorySizeValue > 2097152 || iterationsValue > 32)
-            {
-                return false;
-            }
-
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Validates the user and SRP session (password), then records usage of the proven unlock method.
     /// </summary>
     /// <param name="model">ValidateLoginRequest model.</param>
@@ -1200,7 +1129,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
          * row) is skipped on purpose: v1 clients can still sign in to it and only know the legacy verifier.
          */
         var upgrade = model.LegacyVerifierUpgrade;
-        if (unlockMethodId is null || upgrade is null || upgrade.EncryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(upgrade.SrpVerifier) || upgrade.SrpVerifier.Length > MaxVerifierLength)
+        if (unlockMethodId is null || upgrade is null || upgrade.EncryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(upgrade.SrpVerifier) || upgrade.SrpVerifier.Length > UnlockMethodParameterValidator.MaxVerifierLength)
         {
             return;
         }
