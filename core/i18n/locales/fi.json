@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Vahvista PIN",
       "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
-      "enterNewPinDescription": "Syötä PIN-koodi, jossa on vähintään 6 numeroa",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Väärä PIN-koodi. {{attemptsRemaining}} yritystä jäljellä.",
       "incorrectPinSingular": "Virheellinen PIN-koodi. 1 yritys jäljellä.",
       "introText": "Valitse, miten haluat avata holvisi. Voit käyttää pääsalasanaa (aina saatavilla) tai määrittää nopean 4-8 numeroisen PIN-koodin nopeampaa käyttöä varten. Kolmen epäonnistuneen PIN-yrityksen jälkeen sinun on käytettävä pääsalasanaa.",
