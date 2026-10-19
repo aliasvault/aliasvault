@@ -1,6 +1,8 @@
-import { VaultKeyAlgorithm, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm, type KeyRotationInitiateResponse, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
 
+import { AppErrorCode, extractErrorCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
+import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 import { reencryptAccountKey } from '../rust/RustCore';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
@@ -9,6 +11,8 @@ import { SrpAuthService, type SrpClientProof } from './SrpAuthService';
 import { VaultKeyService } from './VaultKeyService';
 
 import type { WebApiService } from '../api/WebApiService';
+import type { KeyRotationOperationResult } from '../sync/VaultSync';
+import type { VaultSyncKeyRotationParams } from '../sync/VaultSyncEngine';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
@@ -51,8 +55,11 @@ export type SrpChallengeAnswer = {
   srpIdentity: string;
 };
 
+/** Runs the engine's key rotation operation, supplied by the host that owns the engine. */
+export type RunKeyRotation = (params: VaultSyncKeyRotationParams) => Promise<KeyRotationOperationResult>;
+
 /**
- * MasterPasswordService handling all master password operations.
+ * MasterPasswordService handling all master password operations: a password change, optionally together with a rotation of every encryption key.
  */
 export class MasterPasswordService {
   /**
@@ -160,6 +167,79 @@ export class MasterPasswordService {
 
     // Persist the new Account Key and its derivation parameters.
     await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings }, accountKey);
+  }
+
+  /**
+   * Change the master password and rotate every encryption key: a new Account Key, personal vault key, account keypair and
+   * signing keypair, with the personal vault re-encrypted and every shared-vault grant rewrapped. The Rust engine does the rotation.
+   * @param webApi - the API client to use
+   * @param runRotation - runs the engine's rotation operation
+   * @param currentPassword - the current master password
+   * @param newPassword - the new master password
+   * @throws {IncorrectPasswordError} when the current password is wrong (detected locally).
+   * @throws {PasswordChangedElsewhereError} when the password was changed on another device.
+   * @throws {ApiRequestError} when the server refuses the initiate call.
+   */
+  public static async changePasswordAndRotateKeys(webApi: WebApiService, runRotation: RunKeyRotation, currentPassword: string, newPassword: string): Promise<KeyRotationOperationResult> {
+    return withVaultSyncHold(VaultSyncHoldReason.KeyRotation, () => MasterPasswordService.performRotation(webApi, runRotation, currentPassword, newPassword));
+  }
+
+  /**
+   * Prove the current password, derive the new unlock method, generate the new account keypair and run the rotation.
+   * @param webApi - the API client to use
+   * @param runRotation - runs the engine's rotation operation
+   * @param currentPassword - the current master password
+   * @param newPassword - the new master password
+   */
+  private static async performRotation(webApi: WebApiService, runRotation: RunKeyRotation, currentPassword: string, newPassword: string): Promise<KeyRotationOperationResult> {
+    const storedParams = await MasterPasswordService.getStoredDerivationParams();
+    if (!storedParams || !await VaultKeyService.hasLocalVaultKey()) {
+      throw new Error('Key rotation requires an unlocked account-key vault');
+    }
+
+    const challenge = await webApi.get<KeyRotationInitiateResponse>('KeyRotation/initiate');
+    await MasterPasswordService.assertSaltUnchanged(challenge.salt);
+
+    const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
+    await MasterPasswordService.assertPasswordOpensChain(current.unlockKeyBase64);
+    const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
+    const keyPair = await EncryptionUtility.generateRsaKeyPair();
+
+    const result = await runRotation({
+      userId: challenge.userId,
+      currentClientPublicEphemeral: current.proof.clientPublicEphemeral,
+      currentClientSessionProof: current.proof.clientSessionProof,
+      accountKeyVersion: challenge.accountKeyVersion,
+      manifestKeyVersion: challenge.manifestKeyVersion,
+      newUnlockKey: next.unlockKeyBase64,
+      newSalt: next.salt,
+      newVerifier: next.verifier,
+      newEncryptionType: next.encryptionType,
+      newEncryptionSettings: next.encryptionSettings,
+      newAccountPublicKey: keyPair.publicKey,
+      newAccountPrivateKey: keyPair.privateKey,
+    });
+
+    if (result.success && result.accountKey) {
+      await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, result.accountKey);
+    }
+    return result;
+  }
+
+  /**
+   * Check locally that the typed password opens the cached chain, so a wrong password never reaches the server (and the lockout counter).
+   * @param unlockKeyBase64 - the unlock key derived from the typed password
+   * @throws {IncorrectPasswordError} when it does not.
+   */
+  private static async assertPasswordOpensChain(unlockKeyBase64: string): Promise<void> {
+    try {
+      await VaultKeyService.openKeyChain(unlockKeyBase64);
+    } catch (error) {
+      if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
+        throw new IncorrectPasswordError();
+      }
+      throw error;
+    }
   }
 }
 

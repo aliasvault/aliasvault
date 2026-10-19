@@ -20,7 +20,7 @@ import { devError, devLog, devWarn } from '../platform/Logger';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncKeyRotationParams, VaultSyncKeyRotationRefusal, VaultSyncKeyRotationResult, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 import type { TranslationKey } from '@aliasvault/i18n';
 
@@ -61,6 +61,16 @@ export type VaultManifestMigrationResult = SyncErrorDetail & {
 export type SharedManifestDetails = {
   /** What to call the shared manifest. */
   name?: string;
+};
+
+/**
+ * Result of a key rotation as the UI reads it.
+ */
+export type KeyRotationOperationResult = SyncErrorDetail & {
+  success: boolean;
+  accountKey?: string;
+  refusal?: VaultSyncKeyRotationRefusal;
+  requiresLogout: boolean;
 };
 
 /**
@@ -200,6 +210,22 @@ export class VaultSync {
   }
 
   /**
+   * Rotate the account's keys: the engine re-encrypts the personal vault and rewraps every grant under new keys, which
+   * the server applies in one transaction. On success the vault and the cached chain are stored under the new keys. Never throws.
+   * @param params - the password proof and the new unlock method and keypair
+   */
+  public async rotateAccountKeys(params: VaultSyncKeyRotationParams): Promise<KeyRotationOperationResult> {
+    try {
+      const result = await this.run<VaultSyncKeyRotationResult>('rotateAccountKeys', {}, { keyRotation: params });
+      return { success: result.success, accountKey: result.accountKey, refusal: result.refusal, requiresLogout: result.requiresLogout, ...VaultSync.syncError(result) };
+    } catch (error) {
+      const detail = VaultSync.driverError(error);
+      devError(`[KeyRotation] Rotation failed (${detail.errorCode ?? 'no code'}): ${detail.error ?? 'no detail'}`);
+      return { success: false, requiresLogout: false, ...detail };
+    }
+  }
+
+  /**
    * Run one sharing operation.
    * @param operation - the operation
    * @param sharing - what it acts on
@@ -260,7 +286,7 @@ export class VaultSync {
    * @param options - what the caller asks beyond what the engine decides
    * @param overrides - what one operation sets on the request itself: the unlock key resolveVaultKey runs on, or the target of a sharing operation
    */
-  private run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing'>> = {}): Promise<T> {
+  private run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing' | 'keyRotation'>> = {}): Promise<T> {
     const run = this.queue.then(async () => {
       const request = { ...await buildVaultSyncRequest(operation, options), ...overrides };
       const result = await runVaultSyncEngine<T>(this.host, request, this.webApi);

@@ -20,7 +20,23 @@ import type { StorageKey } from '../platform/KeyValueStore';
 import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
-export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest';
+export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'rotateAccountKeys';
+
+/** What a key rotation works with (the Rust `KeyRotationParams`): the password proof and the new unlock method come from the host. */
+export type VaultSyncKeyRotationParams = {
+  userId: string;
+  currentClientPublicEphemeral: string;
+  currentClientSessionProof: string;
+  accountKeyVersion: number;
+  manifestKeyVersion: number;
+  newUnlockKey: string;
+  newSalt: string;
+  newVerifier: string;
+  newEncryptionType: string;
+  newEncryptionSettings: string;
+  newAccountPublicKey: string;
+  newAccountPrivateKey: string;
+};
 
 /** What a sharing operation acts on (the Rust `SharingParams`). */
 export type VaultSyncSharingParams = {
@@ -46,6 +62,7 @@ export type VaultSyncEngineRequest = {
   minServerVersion: string;
   isOfflineMode: boolean;
   sharing?: VaultSyncSharingParams;
+  keyRotation?: VaultSyncKeyRotationParams;
 };
 
 /** The email domains the server serves; hidden private domains are also in the private list. */
@@ -91,6 +108,22 @@ export type VaultSyncMigrationStatusResult = VaultSyncEngineResultBase & {
 export type VaultSyncMigrateManifestResult = VaultSyncEngineResultBase & {
   success: boolean;
   pushed: boolean;
+  error?: string;
+  errorCode?: string;
+  apiErrorCode?: string;
+  logoutReason?: LogoutReason;
+  requiresLogout: boolean;
+};
+
+/** Why a key rotation did not run (the Rust `KeyRotationRefusal`). */
+export type VaultSyncKeyRotationRefusal = 'vaultOutOfDate' | 'serverStateChanged' | 'sharedVaultKeyUnavailable' | 'vaultUpgradeRequired';
+
+/** Outcome of a key rotation (the Rust `KeyRotationResult`). */
+export type VaultSyncKeyRotationResult = VaultSyncEngineResultBase & {
+  success: boolean;
+  accountKey?: string;
+  encryptionKey?: string;
+  refusal?: VaultSyncKeyRotationRefusal;
   error?: string;
   errorCode?: string;
   apiErrorCode?: string;
