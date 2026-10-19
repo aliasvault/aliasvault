@@ -21,7 +21,7 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, onClo
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) {
       setExportPassword('');
       setConfirmPassword('');
     }
