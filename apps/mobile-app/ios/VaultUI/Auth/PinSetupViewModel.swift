@@ -15,7 +15,7 @@ public struct PinSetupConfiguration {
     public let step: Step
     public let title: String
     public let subtitle: String
-    public let pinLength: Int?  // nil = variable length (4-8 digits)
+    public let pinLength: Int?  // nil = variable length (6-8 digits)
     public let firstStepPin: String?  // Pin from first step (used in confirm step)
 
     public init(step: Step, title: String, subtitle: String, pinLength: Int?, firstStepPin: String? = nil) {
@@ -90,8 +90,8 @@ public class PinSetupViewModel: ObservableObject {
 
     public func submitPin() async {
         // Validate minimum length for setup mode
-        if configuration.step == .enterNew && pin.count < 4 {
-            return  // Don't submit until at least 4 digits
+        if configuration.step == .enterNew && pin.count < 6 {
+            return  // Don't submit until at least 6 digits
         }
 
         isProcessing = true
@@ -168,7 +168,7 @@ public class PinSetupViewModel: ObservableObject {
     public var canSubmit: Bool {
         switch configuration.step {
         case .enterNew:
-            return pin.count >= 4 && pin.count <= 8
+            return pin.count >= 6 && pin.count <= 8
         case .confirm:
             return pin.count == configuration.pinLength
         }

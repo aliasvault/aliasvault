@@ -78,7 +78,7 @@ public struct PinUnlockView: View {
                     .padding(.bottom, 20)
                 } else {
                     // For variable length, show bullet points
-                    Text(viewModel.pin.isEmpty ? "----" : String(repeating: "•", count: viewModel.pin.count))
+                    Text(viewModel.pin.isEmpty ? "------" : String(repeating: "•", count: viewModel.pin.count))
                         .font(.system(size: 38, weight: .semibold))
                         .foregroundColor(colors.text)
                         .kerning(6)

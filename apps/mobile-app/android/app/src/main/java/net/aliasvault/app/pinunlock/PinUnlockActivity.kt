@@ -316,7 +316,7 @@ class PinUnlockActivity : AppCompatActivity() {
 
     private fun updatePinText() {
         pinTextView.text = if (currentPin.isEmpty()) {
-            "----"
+            "------"
         } else {
             "•".repeat(currentPin.length)
         }
@@ -325,8 +325,8 @@ class PinUnlockActivity : AppCompatActivity() {
     private fun updateContinueButtonState() {
         val config = configuration ?: return
         if (continueButton.visibility == View.VISIBLE) {
-            // Enable button only if PIN is at least 4 digits
-            val isEnabled = currentPin.length >= 4
+            // Enable button only if PIN is at least 6 digits
+            val isEnabled = currentPin.length >= 6
             continueButton.isEnabled = isEnabled
 
             // Animate button scale and alpha based on enabled state
@@ -405,9 +405,9 @@ class PinUnlockActivity : AppCompatActivity() {
         // Validate minimum length for setup mode
         if (config.mode == PinMode.SETUP &&
             config.setupStep == PinSetupStep.ENTER_NEW &&
-            currentPin.length < 4
+            currentPin.length < 6
         ) {
-            return // Don't submit until at least 4 digits
+            return // Don't submit until at least 6 digits
         }
 
         CoroutineScope(Dispatchers.Main).launch {
