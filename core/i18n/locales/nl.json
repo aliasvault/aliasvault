@@ -218,7 +218,7 @@
     "attachments": "Bijlagen",
     "back": "Terug",
     "backspace": "Backspace",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Voordat je verdergaat:",
     "cancel": "Annuleren",
     "clipboardCountdown": {
       "clearClipboardButton": "Klembord wissen"
@@ -285,7 +285,7 @@
     "hide": "Verberg",
     "hideDetails": "Verberg details",
     "hidePassword": "Wachtwoord verbergen",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Dit is een zeer riskante actie.",
     "home": "Home",
     "loadMore": "Laad meer",
     "loading": "Laden...",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Wachtwoord wijzigen mislukt. Probeer het opnieuw.",
         "failedToChangePassword": "Wachtwoord wijzigen mislukt. Vernieuw de pagina en probeer het opnieuw.",
         "fillAllFields": "Vul alle velden in",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Het wijzigen van je hoofdwachtwoord meldt je bij andere apparaten af.",
         "initiatingChange": "Wachtwoord wijziging starten...",
         "newPassword": "Nieuwe wachtwoord",
         "passwordChangedSuccessfully": "Wachtwoord succesvol gewijzigd",
@@ -1416,13 +1416,13 @@
         "verifyAndEnableButton": "Verifiëren en inschakelen"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "Ik heb mijn kluis geback-upt en uitgelogd op mijn andere apparaten",
+        "changePasswordAndRotate": "Wachtwoord wijzigen en sleutels roteren",
+        "optionRotateKeys": "Ook alle encryptiesleutels roteren",
+        "optionRotateKeysDescription": "Alleen nodig als je vermoedt dat je sleutels zijn blootgesteld, bijvoorbeeld als je apparaat gecompromitteerd of gestolen is. Het versleutelt je kluis opnieuw en meldt alle andere apparaten af.",
+        "riskAfterwards": "Daarna log je opnieuw in op je andere apparaten en stel je opnieuw een pincode, toegangssleutel of biometrische ontgrendeling in.",
+        "riskBackup": "Exporteer eerst een back-up van je kluis (Instellingen > Importeren / Exporteren). Een sleutelrotatie-operatie kan niet ongedaan worden gemaakt.",
+        "riskSignOut": "Laat je andere apparaten het synchroniseren afronden en log dan uit bij hen. Niet-gesynchroniseerde wijzigingen op apparaten die ingelogd blijven, gaan verloren."
       },
       "passkeyUnlock": {
         "disableButton": "Passkey ontgrendeling uitschakelen",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bevestig pincode",
       "confirmPinDescription": "Voer je pincode nogmaals in om te bevestigen",
-      "enterNewPinDescription": "Voer een pincode in van minimaal 6 cijfers",
+      "enterNewPinDescription": "Voer een pincode van minstens 6 tekens in. Letters en symbolen zijn toegestaan.",
       "incorrectPin": "Onjuiste PIN. {{attemptsRemaining}} pogingen resterend.",
       "incorrectPinSingular": "Onjuiste PIN. 1 poging resterend.",
       "introText": "Kies hoe je je vault wilt ontgrendelen. Je kunt je hoofdwachtwoord gebruiken (altijd beschikbaar) of een pincode instellen voor snellere toegang. Na 3 mislukte PIN-pogingen moet je je hoofdwachtwoord gebruiken.",
