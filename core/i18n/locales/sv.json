@@ -218,6 +218,7 @@
     "attachments": "Bilagor",
     "back": "Tillbaka",
     "backspace": "Baksteg",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Avbryt",
     "clipboardCountdown": {
       "clearClipboardButton": "Rensa urklipp"
@@ -284,6 +285,7 @@
     "hide": "Dölj",
     "hideDetails": "Dölj detaljer",
     "hidePassword": "Dölj lösenord",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Hem",
     "loadMore": "Läs in fler",
     "loading": "Laddar...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
     "enabledForThisSite": "Aktiverad för denna webbplats",
     "exportConfirmTitle": "Exportera valv",
-    "exportCsvButton": "Exportera valv till CSV-fil",
-    "exportSectionDescription": "Exportera dina valvdata till en CSV-fil. Denna fil kan användas som en säkerhetskopiering och kan även importeras till andra lösenordshanterare.",
     "exportSectionTitle": "Exportera",
     "exportWarning": "Varning: Exportering av ditt valv till en okrypterad fil kommer exponera alla dina lösenord och känslig information i ren text. Gör endast detta på enheter du litar på och se till att du:\n\n• Lagrar den exporterade filen på en säker plats\n• Raderar filen när du inte behöver den längre\n• Aldrig delar den exporterade filen med andra\n\nÄr du säker på att du vill fortsätta med exporteringen?",
-    "exporting": "Exporterar...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.",
       "aliasGenerationGenderDescription": "Ställ in föredragen könspreferens för generering av nya identiteter.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Det gick inte att ändra lösenord. Försök igen.",
         "failedToChangePassword": "Det gick inte att ändra lösenord. Uppdatera sidan och försök igen.",
         "fillAllFields": "Var god fyll i alla fält",
-        "headerText": "Förändringar av ditt huvudlösenord ändrar också krypteringsnycklarna för valvet. Det rekommenderas att du regelbundet ändrar ditt huvudlösenord för att hålla dina valv säkra.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Initierar lösenordsändring...",
         "newPassword": "Nytt lösenord",
         "passwordChangedSuccessfully": "Lösenordet har ändrats.",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Tvåfaktorsautentisering är nu aktiverat. På din nästa inloggning måste du ange din 2FA-kod.",
         "verificationCodePlaceholder": "Ange verifieringskod",
         "verifyAndEnableButton": "Verifiera och Aktivera"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Inaktivera Passkey upplåsning",
