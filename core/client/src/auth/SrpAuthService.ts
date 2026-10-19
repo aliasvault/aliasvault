@@ -1,9 +1,15 @@
+import { AppErrorCode, formatErrorWithCode } from '../api/errors/AppErrorCodes';
+import { StorageKeys } from '../constants/StorageKeys';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
+import { getPlatform } from '../platform/ClientPlatform';
 import { rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
+import { isWeakerDerivation } from './DerivationSettings';
+
 import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LegacySrpVerifierUpgrade, LoginResponse } from '@aliasvault/models/webapi';
 
 /**
@@ -253,14 +259,20 @@ export class SrpAuthService {
   }
 
   /**
-   * Derive the unlock key (the Argon2id output, base64) from the password.
+   * Derive the unlock key (the Argon2id output, base64) from the password. Refuses settings weaker than those this
+   * device already derived with, so a server cannot get a cheaper-to-guess login proof out of it.
    *
    * @param password - The user's password
    * @param salt - The account's salt
    * @param encryptionSettings - The encryption settings JSON string
    * @returns The unlock key (base64)
+   * @throws Error with {@link AppErrorCode.UNLOCK_SETTINGS_WEAKENED} when the settings are weaker than the stored ones.
    */
   public static async deriveUnlockKey(password: string, salt: string, encryptionSettings: string): Promise<string> {
+    const stored = await getPlatform().storage.get<UnlockKeyDerivationParams>(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS);
+    if (stored && isWeakerDerivation(encryptionSettings, stored.encryptionSettings)) {
+      throw new Error(formatErrorWithCode('The server sent weaker key derivation settings than this device holds', AppErrorCode.UNLOCK_SETTINGS_WEAKENED));
+    }
     return bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings));
   }
 

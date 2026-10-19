@@ -37,6 +37,7 @@ export enum AppErrorCode {
   AUTHENTICATION_FAILED = 'E-104', // The server refused the session tokens
   SESSION_EXPIRED = 'E-105', // The session expired; log in again
   PASSWORD_CHANGED = 'E-106', // The password was changed on another device
+  UNLOCK_SETTINGS_WEAKENED = 'E-107', // The server sent weaker Argon2id settings than the device already derived with
 
   // Vault retrieval and unlock errors (E-2xx)
   VAULT_NOT_FOUND = 'E-201', // No encrypted vault in storage

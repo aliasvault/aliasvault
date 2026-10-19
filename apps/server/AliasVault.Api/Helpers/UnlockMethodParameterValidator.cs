@@ -56,7 +56,43 @@ public static class UnlockMethodParameterValidator
     /// <returns>True when the parameters are safe to store and advertise at the next login.</returns>
     public static bool IsValidKekDerivationParams(string encryptionType, string encryptionSettings)
     {
-        if (encryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(encryptionSettings) || encryptionSettings.Length > MaxEncryptionSettingsLength)
+        if (encryptionType != Defaults.EncryptionType || !TryParseSettings(encryptionSettings, out var parallelism, out var memorySize, out var iterations))
+        {
+            return false;
+        }
+
+        // Check if any parameter is less than the allowed minimum, return false.
+        if (parallelism < Defaults.MinimumArgon2IdDegreeOfParallelism || memorySize < Defaults.MinimumArgon2IdMemorySize || iterations < Defaults.MinimumArgon2IdIterations)
+        {
+            return false;
+        }
+
+        // Check if any parameter exceeds the allowed maximum, return false.
+        return parallelism <= 16 && memorySize <= 2097152 && iterations <= 32;
+    }
+
+    /// <summary>
+    /// Whether stored KDF settings ask for less memory or fewer iterations than the current defaults.
+    /// </summary>
+    /// <param name="encryptionSettings">The KDF settings JSON of the stored unlock method.</param>
+    /// <returns>True when the settings are readable and below the defaults.</returns>
+    public static bool IsBelowDefaults(string encryptionSettings)
+    {
+        return TryParseSettings(encryptionSettings, out _, out var memorySize, out var iterations) && (memorySize < Defaults.Argon2IdMemorySize || iterations < Defaults.Argon2IdIterations);
+    }
+
+    /// <summary>
+    /// Read the Argon2id cost values from a KDF settings JSON.
+    /// </summary>
+    /// <param name="encryptionSettings">The KDF settings JSON.</param>
+    /// <param name="parallelism">The degree of parallelism.</param>
+    /// <param name="memorySize">The memory size in KiB.</param>
+    /// <param name="iterations">The number of iterations.</param>
+    /// <returns>True when all three values are present as integers.</returns>
+    private static bool TryParseSettings(string? encryptionSettings, out int parallelism, out int memorySize, out int iterations)
+    {
+        parallelism = memorySize = iterations = 0;
+        if (string.IsNullOrEmpty(encryptionSettings) || encryptionSettings.Length > MaxEncryptionSettingsLength)
         {
             return false;
         }
@@ -64,34 +100,11 @@ public static class UnlockMethodParameterValidator
         try
         {
             using var settings = JsonDocument.Parse(encryptionSettings);
-            if (!settings.RootElement.TryGetProperty("DegreeOfParallelism", out var parallelism) || !parallelism.TryGetInt32(out var parallelismValue))
-            {
-                return false;
-            }
-
-            if (!settings.RootElement.TryGetProperty("MemorySize", out var memorySize) || !memorySize.TryGetInt32(out var memorySizeValue))
-            {
-                return false;
-            }
-
-            if (!settings.RootElement.TryGetProperty("Iterations", out var iterations) || !iterations.TryGetInt32(out var iterationsValue))
-            {
-                return false;
-            }
-
-            // Check if any parameter is less than the allowed minimum, return false.
-            if (parallelismValue < Defaults.MinimumArgon2IdDegreeOfParallelism || memorySizeValue < Defaults.MinimumArgon2IdMemorySize || iterationsValue < Defaults.MinimumArgon2IdIterations)
-            {
-                return false;
-            }
-
-            // Check if any parameter exceeds the allowed maximum, return false.
-            if (parallelismValue > 16 || memorySizeValue > 2097152 || iterationsValue > 32)
-            {
-                return false;
-            }
-
-            return true;
+            var root = settings.RootElement;
+            return root.ValueKind == JsonValueKind.Object
+                && root.TryGetProperty("DegreeOfParallelism", out var parallelismElement) && parallelismElement.TryGetInt32(out parallelism)
+                && root.TryGetProperty("MemorySize", out var memorySizeElement) && memorySizeElement.TryGetInt32(out memorySize)
+                && root.TryGetProperty("Iterations", out var iterationsElement) && iterationsElement.TryGetInt32(out iterations);
         }
         catch (JsonException)
         {

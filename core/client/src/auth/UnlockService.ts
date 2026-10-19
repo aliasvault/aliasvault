@@ -1,6 +1,8 @@
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
+import { logExpected } from '../utilities/Diagnostics';
 
+import { KeyDerivationUpgradeService } from './KeyDerivationUpgradeService';
 import { MasterPasswordService } from './MasterPasswordService';
 import { SrpAuthService } from './SrpAuthService';
 import { SrpLoginService } from './SrpLoginService';
@@ -73,7 +75,9 @@ export class UnlockService {
     const loginResponse = await new SrpLoginService(options.webApi).initiateLogin(username!);
     const unlockKey = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
     await UnlockService.storeDerivationParams(loginResponse);
-    return VaultKeyService.refreshKeyChain(unlockKey, options.webApi);
+    const accountKey = await VaultKeyService.refreshKeyChain(unlockKey, options.webApi);
+    await UnlockService.upgradeKeyDerivation(password, loginResponse, unlockKey, options.webApi, username!);
+    return accountKey;
   }
 
   /**
@@ -96,6 +100,43 @@ export class UnlockService {
     await UnlockService.storeDerivationParams(derivationParams);
     await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, accountKey);
     return accountKey;
+  }
+
+  /**
+   * After a password login, raise the key derivation settings to the defaults when they are below them. A failure is
+   * logged and ignored: the login already succeeded and the next one tries again.
+   * @param password - the master password the user logged in with
+   * @param derivationParams - the derivation parameters the login used
+   * @param unlockKeyBase64 - the unlock key the login derived
+   * @param webApi - the API client, holding the new session's tokens
+   * @param username - the username, the SRP identity fallback for older servers
+   */
+  public static async upgradeKeyDerivation(password: string, derivationParams: UnlockKeyDerivationParams, unlockKeyBase64: string, webApi: WebApiService, username: string): Promise<void> {
+    if (!KeyDerivationUpgradeService.needsUpgrade(derivationParams.encryptionSettings)) {
+      return;
+    }
+
+    try {
+      const encryptedAccountKey = await getPlatform().storage.get<string>(StorageKeys.ENCRYPTED_ACCOUNT_KEY);
+      if (!encryptedAccountKey) {
+        return;
+      }
+
+      const result = await KeyDerivationUpgradeService.upgradeIfNeeded({
+        webApi,
+        params: derivationParams,
+        unlockKeyBase64,
+        encryptedAccountKey,
+        /** Derives with the password the user logged in with. */
+        deriveUnlockKey: (salt, encryptionSettings) => SrpAuthService.deriveUnlockKey(password, salt, encryptionSettings),
+        username,
+      });
+      if (result) {
+        await VaultKeyService.persistNewAccountKey(result.newEncryptedAccountKey, result.params, result.accountKey);
+      }
+    } catch (err) {
+      logExpected('Key derivation upgrade failed', err);
+    }
   }
 
   /**

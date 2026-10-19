@@ -1,3 +1,4 @@
+import { unlockKeyForChallenge } from '@aliasvault/client/auth/DerivationSettings';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { router } from 'expo-router';
 import { useHeaderHeight } from 'expo-router/react-navigation';
@@ -17,7 +18,9 @@ import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@aliasvault/models/webapi';
 
 /**
@@ -162,8 +165,13 @@ export default function DeleteAccountScreen(): React.ReactNode {
       const srpIdentity = data.srpIdentity ?? username;
 
       setLoadingStatus(t('settings.securitySettings.deleteAccount.verifyingWithServer'));
+      const storedParams = await NativeVaultManager.getUnlockKeyDerivationParams();
+      const proofUnlockKeyBase64 = storedParams
+        ? await unlockKeyForChallenge(data, JSON.parse(storedParams) as UnlockKeyDerivationParams, currentPasswordHashBase64, (salt, encryptionType, encryptionSettings) => NativeVaultManager.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings))
+        : currentPasswordHashBase64;
+
       // The SRP password hash the account's encryption type makes from the unlock key.
-      const currentPasswordHashString = await SrpAuthService.srpPasswordHash(currentPasswordHashBase64, data.encryptionType);
+      const currentPasswordHashString = await SrpAuthService.srpPasswordHash(proofUnlockKeyBase64, data.encryptionType);
 
       // Derive the SRP client proof to authenticate the deletion with the server.
       const clientProof = await SrpAuthService.deriveClientProof(

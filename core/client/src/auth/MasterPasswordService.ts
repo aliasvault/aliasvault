@@ -140,8 +140,7 @@ export class MasterPasswordService {
    */
   private static async performChange(webApi: WebApiService, currentPassword: string, newPassword: string): Promise<void> {
     const storedParams = await MasterPasswordService.getStoredDerivationParams();
-    const encryptedAccountKey = (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string | null;
-    if (!storedParams || !encryptedAccountKey) {
+    if (!storedParams || !await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) {
       throw new Error('Password change requires an unlocked account-key vault');
     }
 
@@ -149,6 +148,8 @@ export class MasterPasswordService {
     await MasterPasswordService.assertSaltUnchanged(challenge.salt);
 
     const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
+    await MasterPasswordService.adoptRaisedSettings(challenge, current.unlockKeyBase64, webApi);
+    const encryptedAccountKey = (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string;
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
 
     // Re-encrypt the Account Key using the new password's KEK.
@@ -201,6 +202,7 @@ export class MasterPasswordService {
     await MasterPasswordService.assertSaltUnchanged(challenge.salt);
 
     const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
+    await MasterPasswordService.adoptRaisedSettings(challenge, current.unlockKeyBase64, webApi);
     await MasterPasswordService.assertPasswordOpensChain(current.unlockKeyBase64);
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
     const keyPair = await EncryptionUtility.generateRsaKeyPair();
@@ -224,6 +226,32 @@ export class MasterPasswordService {
       await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, result.accountKey);
     }
     return result;
+  }
+
+  /**
+   * When another device raised the key derivation settings since this device cached its chain, cache the server's chain
+   * and settings for the unlock key derived under the new settings, so local key material matches the server again.
+   * @param challenge - the challenge the unlock key was derived for
+   * @param unlockKeyBase64 - the unlock key derived under the challenge's settings
+   * @param webApi - the API client to use
+   * @throws {IncorrectPasswordError} when the unlock key does not open the server's chain.
+   */
+  private static async adoptRaisedSettings(challenge: SrpChallenge, unlockKeyBase64: string, webApi: WebApiService): Promise<void> {
+    const stored = await MasterPasswordService.getStoredDerivationParams();
+    if (!stored || stored.encryptionSettings === challenge.encryptionSettings) {
+      return;
+    }
+
+    try {
+      await VaultKeyService.refreshKeyChain(unlockKeyBase64, webApi);
+    } catch (error) {
+      if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
+        throw new IncorrectPasswordError();
+      }
+      throw error;
+    }
+    const { salt, encryptionType, encryptionSettings } = challenge;
+    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS, { salt, encryptionType, encryptionSettings });
   }
 
   /**

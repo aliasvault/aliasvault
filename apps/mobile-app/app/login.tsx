@@ -1,5 +1,6 @@
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
+import { KeyDerivationUpgradeService } from '@aliasvault/client/auth/KeyDerivationUpgradeService';
+import { DEFAULT_ENCRYPTION, SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -249,6 +250,40 @@ export default function LoginScreen() : React.ReactNode {
   };
 
   /**
+   * Raise potential older key derivation settings to the current defaults as configured in the client (if applicable), improving security.
+   * @param unlockKeyBase64 - The unlock key the login derived
+   * @param params - The derivation parameters the login used
+   */
+  const upgradeKeyDerivation = async (unlockKeyBase64: string, params: UnlockKeyDerivationParams) : Promise<void> => {
+    if (!KeyDerivationUpgradeService.needsUpgrade(params.encryptionSettings)) {
+      return;
+    }
+
+    try {
+      const chainJson = await NativeVaultManager.getAccountKeyChain();
+      const encryptedAccountKey = chainJson ? (JSON.parse(chainJson) as { encryptedAccountKey?: string }).encryptedAccountKey : undefined;
+      if (!encryptedAccountKey) {
+        return;
+      }
+
+      const result = await KeyDerivationUpgradeService.upgradeIfNeeded({
+        webApi,
+        params,
+        unlockKeyBase64,
+        encryptedAccountKey,
+        deriveUnlockKey: (salt, encryptionSettings) => NativeVaultManager.deriveKeyFromPassword(credentials.password, salt, DEFAULT_ENCRYPTION.type, encryptionSettings),
+        username: SrpAuthService.normalizeUsername(credentials.username),
+      });
+      if (result) {
+        await dbContext.storeUnlockKeyDerivationParams(result.params);
+        await NativeVaultManager.resolveVaultKey(result.unlockKeyBase64);
+      }
+    } catch (err) {
+      console.warn('Key derivation upgrade failed:', err);
+    }
+  };
+
+  /**
    * Continue processing the vault response after biometric choice
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
@@ -279,6 +314,7 @@ export default function LoginScreen() : React.ReactNode {
      * KEK derived from the unlock key and caches the chain as-is. The session keeps the Account Key it yields.
      */
     await NativeVaultManager.resolveVaultKey(unlockKeyBase64);
+    await upgradeKeyDerivation(unlockKeyBase64, unlockKeyDerivationParams);
 
     let upgradeRequired = false;
 

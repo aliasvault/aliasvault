@@ -667,6 +667,95 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
+    /// Start a key derivation upgrade: the SRP handshake material for the current password.
+    /// </summary>
+    /// <returns>IActionResult.</returns>
+    [HttpGet("key-derivation-upgrade/initiate")]
+    [Authorize]
+    public async Task<IActionResult> InitiateKeyDerivationUpgrade()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var credentials = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.KeyDerivationUpgrade, credentials);
+
+        return Ok(new PasswordChangeInitiateResponse(credentials.Salt, serverEphemeral, credentials.EncryptionType, credentials.EncryptionSettings, AuthHelper.GetSrpIdentity(user)));
+    }
+
+    /// <summary>
+    /// Raise the key derivation settings of the password to the current defaults, keeping the password and salt.
+    /// </summary>
+    /// <param name="model">Key derivation upgrade request model.</param>
+    /// <returns>IActionResult.</returns>
+    [HttpPost("key-derivation-upgrade")]
+    [Authorize]
+    public async Task<IActionResult> UpgradeKeyDerivation([FromBody] KeyDerivationUpgradeRequest model)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var unlockMethod = await context.UserUnlockMethods.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        if (unlockMethod == null)
+        {
+            return ApiError.Result(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400);
+        }
+
+        /*
+         * Only moves the settings up: the stored settings must be below the defaults and the new ones at or above them.
+         * Unlike a password change it keeps the salt, archives nothing and revokes no sessions, as other devices keep
+         * working with the same password.
+         */
+        var metadata = VaultKeyMetadata.Parse(unlockMethod.Metadata);
+        var accountKeyFits = !string.IsNullOrEmpty(model.NewEncryptedAccountKey) && model.NewEncryptedAccountKey.Length <= AccountKeysUpload.MaxWrappedKeyLength;
+        if (!UnlockMethodParameterValidator.IsBelowDefaults(metadata.EncryptionSettings ?? string.Empty) || !UnlockMethodParameterValidator.IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings) || !UnlockMethodParameterValidator.WithinSrpCredentialLimits(metadata.Salt, model.NewPasswordVerifier) || !accountKeyFits)
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400);
+        }
+
+        if (!VaultKeyAlgorithms.TryParse(model.NewEncryptedAccountKeyAlgorithm, out var newAccountKeyAlgorithm) || VaultKeyAlgorithms.IsAsymmetric(newAccountKeyAlgorithm))
+        {
+            return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
+        var srpResult = await AuthHelper.ValidateStepUpAsync(cache, context, userManager, user, SrpPurpose.KeyDerivationUpgrade, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        if (srpResult.Session is null)
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.KeyDerivationUpgrade, srpResult.FailureReason);
+            return ApiError.Result(srpResult.LockedOut ? ApiErrorCode.ACCOUNT_LOCKED : ApiErrorCode.PASSWORD_MISMATCH, 400);
+        }
+
+        metadata.SrpVerifier = model.NewPasswordVerifier;
+        metadata.EncryptionType = model.NewEncryptionType;
+        metadata.EncryptionSettings = model.NewEncryptionSettings;
+        var newMetadataJson = metadata.ToJson();
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+
+        // Only while the row is the one the proof was checked against: a password change or key rotation committed meanwhile wins.
+        var updated = await context.UserUnlockMethods.Where(x => x.Id == unlockMethod.Id && x.AccountKeyVersion == unlockMethod.AccountKeyVersion && x.Metadata == unlockMethod.Metadata).ExecuteUpdateAsync(s => s
+            .SetProperty(x => x.Metadata, newMetadataJson)
+            .SetProperty(x => x.EncryptedAccountKey, model.NewEncryptedAccountKey)
+            .SetProperty(x => x.Algorithm, newAccountKeyAlgorithm)
+            .SetProperty(x => x.UpdatedAt, now));
+        if (updated == 0)
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.KeyDerivationUpgrade, AuthFailureReason.InvalidPassword);
+            return ApiError.Result(ApiErrorCode.PASSWORD_MISMATCH, 400);
+        }
+
+        await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.KeyDerivationUpgrade);
+        return Ok();
+    }
+
+    /// <summary>
     /// Validate username endpoint used to check if a username is available.
     /// </summary>
     /// <param name="model">ValidateUsernameRequest model.</param>

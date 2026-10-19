@@ -109,15 +109,20 @@ const Login: React.FC = () => {
   };
 
   /**
-   * Store the tokens and the Account Key, then continue to the sync page which loads the vault.
+   * Store the tokens and the Account Key, then continue to the sync page which loads the vault. A password login also
+   * raises older key derivation settings to the defaults (if applicable).
    */
-  const completeLogin = async (loginUsername: string, accessToken: string, refreshToken: string, unlockKey: string, params: UnlockKeyDerivationParams): Promise<void> => {
+  const completeLogin = async (loginUsername: string, accessToken: string, refreshToken: string, unlockKey: string, params: UnlockKeyDerivationParams, loginPassword?: string): Promise<void> => {
     isCompletingLogin.current = true;
     try {
-      await auth.setAuthTokens(SrpAuthService.normalizeUsername(loginUsername), accessToken, refreshToken);
+      const normalizedUsername = SrpAuthService.normalizeUsername(loginUsername);
+      await auth.setAuthTokens(normalizedUsername, accessToken, refreshToken);
 
       // Fetch the key chain, check the unlock key opens it and cache it; without a usable chain the session is useless, so end it.
       await UnlockService.completeKeyChainLogin(unlockKey, params, webApi, () => auth.logout());
+      if (loginPassword) {
+        await UnlockService.upgradeKeyDerivation(loginPassword, params, unlockKey, webApi, normalizedUsername);
+      }
 
       notifications.clearMessages();
       navigate('/sync', { replace: true });
@@ -134,7 +139,7 @@ const Login: React.FC = () => {
       throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
     }
     const params = { salt: response.salt, encryptionType: response.encryptionType, encryptionSettings: response.encryptionSettings };
-    await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, hashBase64, params);
+    await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, hashBase64, params, password);
   };
 
   /**

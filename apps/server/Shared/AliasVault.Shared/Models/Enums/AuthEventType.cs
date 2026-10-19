@@ -63,6 +63,11 @@ public enum AuthEventType
     KeyRotation = 24,
 
     /// <summary>
+    /// Represents raising the key derivation settings of the password to the current defaults, which happens automatically during login (if applicable).
+    /// </summary>
+    KeyDerivationUpgrade = 25,
+
+    /// <summary>
     /// Represents a user registration event.
     /// </summary>
     Register = 30,

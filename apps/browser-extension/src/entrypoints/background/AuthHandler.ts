@@ -250,7 +250,7 @@ export function handleLoginWithPassword(data: { username: string; password: stri
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
-      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.unlockKeyBase64, loginResponse);
+      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.unlockKeyBase64, loginResponse, data.password);
     } catch (err) {
       return failureResult('Login error', err);
     }
@@ -283,9 +283,10 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
 }
 
 /**
- * Store the session of an accepted login and pull its vault.
+ * Store the session of an accepted login and pull its vault. A password login also raises older key derivation
+ * settings to the current defaults.
  */
-async function completeLogin(username: string, token: string, refreshToken: string, unlockKey: string, derivationParams: UnlockKeyDerivationParams): Promise<BackgroundAuthResult> {
+async function completeLogin(username: string, token: string, refreshToken: string, unlockKey: string, derivationParams: UnlockKeyDerivationParams, password?: string): Promise<BackgroundAuthResult> {
   await storage.setItem(StorageKeys.USERNAME, username);
   await storage.setItem(StorageKeys.ACCESS_TOKEN, token);
   await storage.setItem(StorageKeys.REFRESH_TOKEN, refreshToken);
@@ -296,6 +297,9 @@ async function completeLogin(username: string, token: string, refreshToken: stri
     await webApi.revokeTokens();
     await handleClearSession();
   });
+  if (password) {
+    await UnlockService.upgradeKeyDerivation(password, derivationParams, unlockKey, webApi, username);
+  }
 
   // Content scripts are told once the vault is pulled: before that there is nothing to autofill from.
   await markUnlocked(false, false);

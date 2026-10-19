@@ -141,7 +141,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
         return;
       }
 
-      await executeVaultPasswordChange(currentUnlockKeyBase64, newPassword);
+      await executeVaultPasswordChange(currentPassword, currentUnlockKeyBase64, newPassword);
 
       // Show confirm dialog and go back to the settings screen
       showAlert(t('common.success'), t('settings.securitySettings.changePassword.passwordChangedSuccessfully'), () => {

@@ -36,4 +36,9 @@ public enum SrpPurpose
     /// Password change that also rotates the account's encryption keys.
     /// </summary>
     KeyRotation,
+
+    /// <summary>
+    /// Raising the key derivation settings of the password to the current defaults, which happens automatically during login (if applicable).
+    /// </summary>
+    KeyDerivationUpgrade,
 }

@@ -53,6 +53,11 @@ export enum AuthEventType {
   KeyRotation = 'key-rotation',
 
   /**
+   * Represents raising the key derivation settings of the password to the current defaults.
+   */
+  KeyDerivationUpgrade = 'key-derivation-upgrade',
+
+  /**
    * Represents a user registration event.
    */
   Register = 'register',

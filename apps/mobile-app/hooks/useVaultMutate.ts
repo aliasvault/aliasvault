@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import { VaultKeyAlgorithm, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
 import { MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { unlockKeyForChallenge } from '@aliasvault/client/auth/DerivationSettings';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { VaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 
@@ -26,7 +27,7 @@ type VaultMutationOptions = {
  */
 export function useVaultMutate() : {
   executeVaultMutation: (operation: () => Promise<void>, options?: VaultMutationOptions) => Promise<void>;
-  executeVaultPasswordChange: (currentUnlockKeyBase64: string, newPasswordPlainText: string) => Promise<void>;
+  executeVaultPasswordChange: (currentPasswordPlainText: string, currentUnlockKeyBase64: string, newPasswordPlainText: string) => Promise<void>;
   isLoading: boolean;
   syncStatus: string;
   } {
@@ -125,7 +126,7 @@ export function useVaultMutate() : {
    * Change the master password: prove the current one, re-encrypt the Account Key with the new password's KEK, commit
    * on the server, then refresh the local key chain and derivation params. The vault itself is not re-encrypted.
    */
-  const executePasswordChangeOperation = useCallback(async (currentUnlockKeyBase64: string, newPasswordPlainText: string): Promise<void> => {
+  const executePasswordChangeOperation = useCallback(async (currentPasswordPlainText: string, currentUnlockKeyBase64: string, newPasswordPlainText: string): Promise<void> => {
     const chainJson = await NativeVaultManager.getAccountKeyChain();
     const encryptedAccountKey = chainJson ? (JSON.parse(chainJson) as { encryptedAccountKey?: string }).encryptedAccountKey : undefined;
     const storedParams = await NativeVaultManager.getUnlockKeyDerivationParams();
@@ -134,16 +135,19 @@ export function useVaultMutate() : {
     }
 
     const challenge = await webApi.authFetch<PasswordChangeInitiateResponse>('Auth/change-password/initiate');
-    if (challenge.salt !== (JSON.parse(storedParams) as UnlockKeyDerivationParams).salt) {
+    const stored = JSON.parse(storedParams) as UnlockKeyDerivationParams;
+    if (challenge.salt !== stored.salt) {
       throw new PasswordChangedElsewhereError();
     }
+
+    const proofUnlockKeyBase64 = await unlockKeyForChallenge(challenge, stored, currentUnlockKeyBase64, (salt, encryptionType, encryptionSettings) => NativeVaultManager.deriveKeyFromPassword(currentPasswordPlainText, salt, encryptionType, encryptionSettings));
 
     /**
      * Use srpIdentity from server response if available, otherwise fall back to username.
      * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
      */
     const srpIdentity = challenge.srpIdentity ?? SrpAuthService.normalizeUsername(authContext.username ?? '');
-    const currentPasswordHashString = await SrpAuthService.srpPasswordHash(currentUnlockKeyBase64, challenge.encryptionType);
+    const currentPasswordHashString = await SrpAuthService.srpPasswordHash(proofUnlockKeyBase64, challenge.encryptionType);
     const currentProof = await SrpAuthService.deriveClientProof(challenge.salt, srpIdentity, currentPasswordHashString, challenge.serverEphemeral);
     const next = await SrpAuthService.prepareNewPassword(newPasswordPlainText, srpIdentity);
     const { newEncryptedAccountKey } = await MasterPasswordService.reencryptAccountKey(encryptedAccountKey, currentUnlockKeyBase64, next.unlockKeyBase64);
@@ -190,14 +194,14 @@ export function useVaultMutate() : {
    * @throws {PasswordChangedElsewhereError} when the password was already changed on another device.
    * @throws {ApiRequestError} when the server rejects the change.
    */
-  const executeVaultPasswordChange = useCallback(async (currentUnlockKeyBase64: string, newPasswordPlainText: string): Promise<void> => {
+  const executeVaultPasswordChange = useCallback(async (currentPasswordPlainText: string, currentUnlockKeyBase64: string, newPasswordPlainText: string): Promise<void> => {
     try {
       setIsLoading(true);
       setSyncStatus(t('settings.securitySettings.changePassword.initiatingChange'));
       // Hold the vault sync so no sync compares the server's new salt with the stored old one in between.
       await NativeVaultManager.setVaultSyncHold(VaultSyncHoldReason.PasswordChange);
       try {
-        await executePasswordChangeOperation(currentUnlockKeyBase64, newPasswordPlainText);
+        await executePasswordChangeOperation(currentPasswordPlainText, currentUnlockKeyBase64, newPasswordPlainText);
       } finally {
         await NativeVaultManager.setVaultSyncHold(null);
       }
