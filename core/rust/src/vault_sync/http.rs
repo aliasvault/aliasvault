@@ -115,6 +115,7 @@ pub(crate) async fn post_frame<B: FrameBody + Serialize, T: DeserializeOwned>(ho
 pub(crate) const VAULT_ENDPOINT: &str = "Vault";
 
 /// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's password-wrapped key chain.
+// TODO: switch to "UnlockMethod/Password" after minimum API is 0.32.0+ that has the new URL.
 pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
 
 /// Max ciphertext bytes in one blob transfer request or response body.

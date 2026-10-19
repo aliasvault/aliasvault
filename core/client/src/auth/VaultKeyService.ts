@@ -46,6 +46,7 @@ export class VaultKeyService {
   public static async fetchVaultKey(webApi?: WebApiService): Promise<FetchVaultKeyResult> {
     const api = webApi ?? new WebApiService();
     try {
+      // TODO: switch to `UnlockMethod/${UnlockMethodType.Password}` after minimum API is 0.32.0+ that has the new URL.
       const response = await api.get<VaultKeyGetResponse>(`VaultKey/${UnlockMethodType.Password}`);
       return { supported: true, vaultKey: response.vaultKey ?? null };
     } catch (e) {

@@ -30,7 +30,11 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
     /// </summary>
     /// <param name="type">The unlock method type, e.g. "password".</param>
     /// <returns>The vault key envelope DTO.</returns>
-    [HttpGet("{type}")]
+    // Served under two routes while the rename from "vault key" to "unlock method" rolls out:
+    // - v2/UnlockMethod/{type}: the new route, added in 0.32.0. Clients can switch to it once their minimum server version is 0.32.0 or higher.
+    // - v2/VaultKey/{type}: deprecated since 0.32.0. Remove it (and rename this controller) once AppInfo.MinimumClientVersion only allows clients that use the new route.
+    [HttpGet("~/v{version:apiVersion}/VaultKey/{type}")]
+    [HttpGet("~/v{version:apiVersion}/UnlockMethod/{type}")]
     public async Task<IActionResult> Get(string type)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
