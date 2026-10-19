@@ -281,28 +281,30 @@ test.describe('90. Vault upgrades', () => {
     });
   });
 
-  test('90.3 should upgrade the verifier of an upgraded vault at the next login', async ({ app, apiUrl, testUser }) => {
+  test('90.3 should upgrade the verifier and key derivation settings of an upgraded vault at the next login', async ({ app, apiUrl, testUser }) => {
     const { page } = app;
     const fixture = await upgradeLegacyVault(app, apiUrl, testUser);
 
     /**
-     * The encryption type the server advertises for the account's password.
+     * The encryption type and Argon2id settings the server advertises for the account's password.
      */
-    const encryptionType = async (): Promise<string> => {
+    const derivation = async (): Promise<{ encryptionType: string; memorySize: number; iterations: number }> => {
       const response = await fetch(`${apiUrl}/v2/Auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: testUser.username }) });
-      return ((await response.json()) as { encryptionType: string }).encryptionType;
+      const body = (await response.json()) as { encryptionType: string; encryptionSettings: string };
+      const settings = JSON.parse(body.encryptionSettings) as { MemorySize: number; Iterations: number };
+      return { encryptionType: body.encryptionType, memorySize: settings.MemorySize, iterations: settings.Iterations };
     };
 
-    await test.step('the upgraded vault still has the verifier of the 0.1.0 vault, which v1 may no longer use', async () => {
-      expect(await encryptionType()).toBe('Argon2Id');
+    await test.step('the upgraded vault still has the verifier and settings of the 0.1.0 vault, which v1 may no longer use', async () => {
+      expect(await derivation()).toEqual({ encryptionType: 'Argon2Id', memorySize: 19456, iterations: 2 });
       const v1 = await fetch(`${apiUrl}/v1/Auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: testUser.username }) });
       expect(v1.status).toBe(426);
     });
 
-    await test.step('a password login replaces it with the split verifier', async () => {
+    await test.step('a password login replaces it with the split verifier under the current default settings', async () => {
       await app.logout();
       await app.login(testUser.username, fixture.password);
-      expect(await encryptionType()).toBe('Argon2IdHkdf');
+      expect(await derivation()).toEqual({ encryptionType: 'Argon2IdHkdf', memorySize: 65536, iterations: 5 });
     });
 
     await test.step('the split verifier logs in, and v1 clients are told to update', async () => {
@@ -391,4 +393,32 @@ test.describe('90. Vault upgrades', () => {
       });
     });
   }
+
+  test('90.7 should change the password on a session that still holds the settings from before another session raised them', async ({ app, newApp, apiUrl, testUser }) => {
+    const fixture = await upgradeLegacyVault(app, apiUrl, testUser);
+    const newPassword = `${fixture.password}-changed`;
+
+    await test.step('another session logs in, which raises the key derivation settings', async () => {
+      const other = await newApp();
+      await other.login(testUser.username, fixture.password);
+      await other.expectVaultOpen(testUser.username);
+    });
+
+    await test.step('the first session changes the password with the raised settings', async () => {
+      await app.openSettingsPage('Change Master Password');
+      await app.page.locator('#currentPassword').fill(fixture.password);
+      await app.page.locator('#newPassword').fill(newPassword);
+      await app.page.locator('#newPasswordConfirm').fill(newPassword);
+      await app.page.getByRole('button', { name: 'Change Password', exact: true }).click();
+      await expect(app.page.getByText('Password changed successfully')).toBeVisible();
+    });
+
+    await test.step('the new password logs in', async () => {
+      await app.logout();
+      await app.login(testUser.username, newPassword);
+      for (const name of fixture.expectedItemNames) {
+        await expect(app.page.getByText(name, { exact: true })).toBeVisible();
+      }
+    });
+  });
 });
