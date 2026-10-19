@@ -218,6 +218,7 @@
     "attachments": "Atașamente",
     "back": "Înapoi",
     "backspace": "Spațiu",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Anulează",
     "clipboardCountdown": {
       "clearClipboardButton": "Golește clipboardul"
@@ -284,6 +285,7 @@
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
     "hidePassword": "Ascunde parola",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Acasă",
     "loadMore": "Încarcă mai multe",
     "loading": "Se încarcă...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Site-uri unde fereastra pop-up de completare automată nu va apărea.",
     "enabledForThisSite": "Activat pentru acest site",
     "exportConfirmTitle": "Exportă seiful",
-    "exportCsvButton": "Exportă seiful în fișier CSV",
-    "exportSectionDescription": "Exportă datele din seif într-un fișier CSV. Acest fișier poate fi folosit ca backup sau pentru import în alte aplicații.",
     "exportSectionTitle": "Export",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
-    "exporting": "Se exportă...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
       "aliasGenerationGenderDescription": "Setează preferința implicită de gen pentru generarea noilor identități.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Schimbarea parolei a eșuat. Încearcă din nou.",
         "failedToChangePassword": "Schimbarea parolei a eșuat. Reîncarcă pagina și încearcă din nou.",
         "fillAllFields": "Completează toate câmpurile tale",
-        "headerText": "Schimbarea parolei principale modifică cheile de criptare ale seifului. Îți recomandăm să îți schimbi periodic parola principală.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Se inițiază schimbarea parolei...",
         "newPassword": "Parolă nouă",
         "passwordChangedSuccessfully": "Parola a fost schimbată cu succes",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Autentificarea cu doi factori a fost activată cu succes. La următoarea autentificare va trebui să introduci codul 2FA.",
         "verificationCodePlaceholder": "Introdu codul de verificare",
         "verifyAndEnableButton": "Verifică și activează"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Dezactivează deblocarea prin Passkey",
