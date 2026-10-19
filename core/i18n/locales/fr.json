@@ -218,6 +218,7 @@
     "attachments": "Pièces jointes",
     "back": "Retour",
     "backspace": "RetArr",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Annuler",
     "clipboardCountdown": {
       "clearClipboardButton": "Effacer le presse-papiers"
@@ -284,6 +285,7 @@
     "hide": "Masquer",
     "hideDetails": "Masquer les détails",
     "hidePassword": "Cacher le mot de passe",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Accueil",
     "loadMore": "Voir plus",
     "loading": "Chargement...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Les sites où la fenêtre de saisie automatique n'apparaîtra pas.",
     "enabledForThisSite": "Activé pour ce site",
     "exportConfirmTitle": "Exporter le coffre-fort",
-    "exportCsvButton": "Exporter le coffre-fort vers un fichier CSV",
-    "exportSectionDescription": "Exporter les données de votre coffre-fort vers un fichier CSV. Ce fichier peut être utilisé comme une sauvegarde et peut également être importé dans d'autres gestionnaires de mots de passe.",
     "exportSectionTitle": "Exporter",
     "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
-    "exporting": "Exportation en cours...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Définissez la plage d'âge par défaut pour la génération de nouvelles identités. Cela affecte la date de naissance assignée à l'identité générée.",
       "aliasGenerationGenderDescription": "Définit la préférence par défaut pour le sexe des nouvelles identités.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Échec de la mise à jour du mot de passe. Veuillez réessayer.",
         "failedToChangePassword": "Impossible de modifier le mot de passe. Veuillez actualiser la page et réessayer plus tard.",
         "fillAllFields": "Veuillez renseigner tous les champs",
-        "headerText": "La modification de votre mot de passe maître modifie également les clés de chiffrement du coffre-fort. Il est conseillé de modifier périodiquement votre mot de passe maître pour garder vos coffres sécurisés.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Initialisation du changement de mot de passe...",
         "newPassword": "Nouveau mot de passe",
         "passwordChangedSuccessfully": "Mot de passe modifié avec succès",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "L'authentification à deux facteurs est maintenant activée avec succès. Lors de votre prochaine connexion, vous devrez entrer votre code 2FA.",
         "verificationCodePlaceholder": "Entrez le code de vérification",
         "verifyAndEnableButton": "Vérifier et activer"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Désactiver le déverrouillage par clé d'accès",
