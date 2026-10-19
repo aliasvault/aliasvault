@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Konfirmasi PIN",
       "confirmPinDescription": "Masukkan PIN Anda lagi untuk mengonfirmasi",
-      "enterNewPinDescription": "Masukkan kode PIN yang terdiri dari minimal 6 digit",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN salah. Tersisa {{attemptsRemaining}} percobaan.",
       "incorrectPinSingular": "PIN salah. Tersisa 1 percobaan.",
       "introText": "Pilih cara Anda ingin membuka kunci brankas. Anda dapat menggunakan kata sandi utama Anda (selalu tersedia) atau mengatur kode PIN untuk akses yang lebih cepat. Setelah 3 kali percobaan PIN yang gagal, Anda harus menggunakan kata sandi utama Anda.",
