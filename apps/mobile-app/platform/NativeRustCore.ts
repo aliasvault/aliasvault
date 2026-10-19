@@ -69,6 +69,7 @@ export const nativeRustCore: IRustCore = {
 
   symmetricDecrypt: (base64Ciphertext, keyBase64) => call('symmetricDecrypt', base64Ciphertext, keyBase64),
   symmetricDecryptBytes: (encrypted, keyBase64) => callForBytes('symmetricDecryptBytes', base64(encrypted), keyBase64),
+  symmetricEncryptBytes: (plaintext, keyBase64) => callForBytes('symmetricEncryptBytes', base64(plaintext), keyBase64),
   rsaDecrypt: (base64Ciphertext, privateKeyJwk) => callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk),
 
   pinGenerateSalt: () => notImplementedOnMobile('pinGenerateSalt', PIN_IS_NATIVE),
