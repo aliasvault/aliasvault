@@ -111,6 +111,16 @@ export class WebApp {
   }
 
   /**
+   * Open a settings page via the account popover and the settings overview, by the name of its row.
+   */
+  public async openSettingsPage(name: string): Promise<void> {
+    await this.page.locator('#userMenuButton').click();
+    await this.page.locator('#userMenu').getByRole('link', { name: 'Settings', exact: true }).click();
+    await expect(this.page).toHaveURL(/\/settings$/);
+    await this.page.getByRole('main').getByRole('link', { name }).click();
+  }
+
+  /**
    * Open the Family Sharing page via the account popover.
    */
   public async openFamilySharing(): Promise<void> {
