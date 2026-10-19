@@ -19,6 +19,7 @@ using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Controllers.Tests;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Services;
+using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -614,6 +615,46 @@ public class TestController(
         {
             key,
             value,
+        });
+    }
+
+    /// <summary>
+    /// The account's key generations, primary public keys and session count, so a test can check what a key rotation changed.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="username">The username of the account.</param>
+    /// <returns>OK with the key state.</returns>
+    [AllowAnonymous]
+    [HttpGet("key-state/by-username/{username}")]
+    public async Task<IActionResult> GetKeyStateByUsername(string username)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var user = await context.AliasVaultUsers.FirstOrDefaultAsync(u => u.NormalizedUserName == username.ToUpperInvariant());
+        if (user == null)
+        {
+            return NotFound($"User '{username}' not found");
+        }
+
+        var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
+        var manifest = personalManifestId == null ? null : await context.VaultManifests.Where(m => m.ManifestId == personalManifestId.Value).Select(m => new { m.KeyVersion, m.RevisionNumber }).FirstOrDefaultAsync();
+        var credentials = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
+
+        return Ok(new
+        {
+            accountKeyVersion = await context.UserUnlockMethods.Where(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password).Select(x => (int?)x.AccountKeyVersion).FirstOrDefaultAsync(),
+            srpSalt = credentials.Salt,
+            manifestKeyVersion = manifest?.KeyVersion,
+            manifestRevision = manifest?.RevisionNumber,
+            personalVekVersions = await context.VaultManifestAccessKeys.Where(k => k.UserId == user.Id && k.Type == ManifestKeyType.AccountKey && k.VaultManifestId == personalManifestId).OrderBy(k => k.KeyVersion).Select(k => k.KeyVersion).ToListAsync(),
+            accountPublicKey = await context.UserGrantKeys.Where(k => k.UserId == user.Id && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync(),
+            signingPublicKey = await context.UserSigningKeys.Where(k => k.UserId == user.Id && k.IsPrimary).Select(k => k.PublicKey).FirstOrDefaultAsync(),
+            activeSessions = await context.AliasVaultUserRefreshTokens.CountAsync(t => t.UserId == user.Id),
         });
     }
 
