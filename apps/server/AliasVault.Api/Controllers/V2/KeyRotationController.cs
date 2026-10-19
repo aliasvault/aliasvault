@@ -38,9 +38,8 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="cache">IMemoryCache instance for persisting SRP values between the initiate and the rotation call.</param>
 /// <param name="timeProvider">TimeProvider.</param>
 /// <param name="authLoggingService">AuthLoggingService.</param>
-/// <param name="settingsService">ServerSettingsService.</param>
 [ApiVersion("2")]
-public class KeyRotationController(ILogger<KeyRotationController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, ServerSettingsService settingsService) : AuthenticatedRequestController(userManager)
+public class KeyRotationController(ILogger<KeyRotationController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Starts a key rotation: the SRP challenge for the current password, plus the key generations the rotation starts from.
@@ -125,7 +124,6 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var settings = await settingsService.GetAllSettingsAsync();
         var currentRefreshTokenId = Guid.TryParse(User.FindFirstValue(TokenService.RefreshTokenIdClaim), out var tokenId) ? tokenId : Guid.Empty;
         var client = ClientHeaderInfo.GetRawValue(Request);
 
@@ -179,9 +177,9 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             var newAccountKeyVersion = method.AccountKeyVersion + 1;
             var newKeyVersion = manifest.KeyVersion + 1;
 
-            // 1) The master-password unlock method: archived like a password change, then rewritten for the new Account Key.
-            await UnlockMethodHistoryPolicy.ArchiveAsync(writeContext, method, settings.UnlockMethodHistoryRetentionDays, now, client);
-            await writeContext.SaveChangesAsync();
+            // 1) The master-password unlock method, rewritten for the new Account Key. Archived passwords open an older Account Key,
+            // which no longer reaches any vault key, so the password history is dropped instead of extended.
+            await writeContext.UserUnlockMethodsHistory.Where(x => x.UserId == user.Id).ExecuteDeleteAsync();
             var metadata = VaultKeyMetadata.Parse(method.Metadata);
             metadata.Salt = model.UnlockMethod.Salt;
             metadata.SrpVerifier = model.UnlockMethod.Verifier;
@@ -193,12 +191,8 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             method.AccountKeyVersion = newAccountKeyVersion;
             method.UpdatedAt = now;
 
-            // 2) The personal VEK: the retired generation stays, rewrapped under the new Account Key, next to the new one.
-            var currentAccessKey = personalAccessKeys.OrderByDescending(k => k.KeyVersion).First();
-            currentAccessKey.EncryptedVek = model.AccountKeys.RetiredEncryptedVek;
-            currentAccessKey.AccountKeyVersion = newAccountKeyVersion;
-            currentAccessKey.UpdatedAt = now;
-            writeContext.VaultManifestAccessKeys.RemoveRange(personalAccessKeys.Where(k => k != currentAccessKey));
+            // 2) The personal VEK: the new generation replaces every previous one, as nothing under an older one is kept (see 5).
+            writeContext.VaultManifestAccessKeys.RemoveRange(personalAccessKeys);
             writeContext.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
             {
                 Id = Guid.NewGuid(),
@@ -213,8 +207,9 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 UpdatedAt = now,
             });
 
-            // 3) The account keypairs: the previous ones are demoted first, as only one primary may exist per user.
-            await writeContext.UserGrantKeys.Where(k => k.UserId == user.Id && k.IsPrimary).ExecuteUpdateAsync(s => s.SetProperty(k => k.IsPrimary, false).SetProperty(k => k.UpdatedAt, now));
+            // 3) The account keypairs. Old encryption keypairs are deleted: every grant is rewrapped below and stale invitations are
+            // emptied, so nothing references them. Old signing keys stay demoted, as their public halves chain to the new one.
+            await writeContext.UserGrantKeys.Where(k => k.UserId == user.Id).ExecuteDeleteAsync();
             await writeContext.UserSigningKeys.Where(k => k.UserId == user.Id && k.IsPrimary).ExecuteUpdateAsync(s => s.SetProperty(k => k.IsPrimary, false).SetProperty(k => k.UpdatedAt, now));
             var grantKey = new UserGrantKey
             {
@@ -257,12 +252,11 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 grant.UpdatedAt = now;
             }
 
-            // 5) The personal manifest, as a new revision under the new VEK, with the same blob set.
-            var archivedRevision = manifest.HasContent ? VaultManifestsHistory.CreateFrom(manifest) : null;
-            if (archivedRevision != null)
-            {
-                writeContext.VaultManifestsHistory.Add(archivedRevision);
-            }
+            // 5) The personal manifest, as a new revision under the new VEK, with the same blob set. Earlier revisions of the manifest
+            // and its buckets are encrypted with the old VEK, which no client holds anymore, so they are deleted instead of archived.
+            await writeContext.VaultBlobReferences.Where(r => r.ManifestId == manifest.ManifestId).ExecuteDeleteAsync();
+            await writeContext.VaultManifestsHistory.Where(h => h.ManifestId == manifest.ManifestId).ExecuteDeleteAsync();
+            await writeContext.VaultDataBucketsHistory.Where(h => h.ManifestId == manifest.ManifestId).ExecuteDeleteAsync();
 
             manifest.VaultBlob = null;
             manifest.StorageFormat = VaultManifestBase.ManifestStorageFormat;
@@ -276,7 +270,6 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             manifest.Client = client;
             manifest.UpdatedByUserId = user.Id;
             manifest.UpdatedAt = now;
-            await VaultRevisionWriter.ApplyManifestRetentionAsync(writeContext, now, manifest, archivedRevision);
             foreach (var hash in referencedHashes)
             {
                 writeContext.VaultBlobReferences.Add(new VaultBlobReference { ManifestId = manifest.ManifestId, RevisionNumber = manifest.RevisionNumber, BlobHash = hash });
@@ -291,7 +284,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             var bucketRevisions = new List<BucketRevision>();
             foreach (var bucket in model.Buckets)
             {
-                var revision = await VaultRevisionWriter.UpsertBucketAsync(writeContext, now, manifest.ManifestId, bucket.Category, bucket.Data, bucket.CiphertextHash, bucket.CurrentRevision, buckets.FirstOrDefault(b => b.Category == bucket.Category), newKeyVersion);
+                var revision = await VaultRevisionWriter.UpsertBucketAsync(writeContext, now, manifest.ManifestId, bucket.Category, bucket.Data, bucket.CiphertextHash, bucket.CurrentRevision, buckets.FirstOrDefault(b => b.Category == bucket.Category), newKeyVersion, archive: false);
                 bucketRevisions.Add(new BucketRevision { ManifestId = manifest.ManifestId, Category = bucket.Category, Revision = revision });
             }
 
