@@ -218,7 +218,7 @@
     "attachments": "Anhänge",
     "back": "Zurück",
     "backspace": "Löschen",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Bevor Du weiter machst:",
     "cancel": "Abbrechen",
     "clipboardCountdown": {
       "clearClipboardButton": "Zwischenablage leeren"
@@ -285,7 +285,7 @@
     "hide": "Ausblenden",
     "hideDetails": "Details ausblenden",
     "hidePassword": "Passwort ausblenden",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Das ist eine risikoreiche Aktion.",
     "home": "Startseite",
     "loadMore": "Mehr laden",
     "loading": "Lade...",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Passwortänderung fehlgeschlagen. Bitte versuche es erneut.",
         "failedToChangePassword": "Das Ändern des Passworts ist fehlgeschlagen. Bitte aktualisiere die Seite und versuche es erneut.",
         "fillAllFields": "Bitte fülle alle Felder aus",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Das Ändern des Master-Passworts meldet Dich an Deinen anderen Geräte ab.",
         "initiatingChange": "Passwortänderung wird initiiert...",
         "newPassword": "Neues Passwort",
         "passwordChangedSuccessfully": "Dein Passwort wurde erfolgreich geändert.",
@@ -1416,7 +1416,7 @@
         "verifyAndEnableButton": "Überprüfen und aktivieren"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "acknowledge": "Ich habe meinen Tresor gesichert und mich von meinen anderen Geräten abgemeldet",
         "changePasswordAndRotate": "Change password and rotate keys",
         "optionRotateKeys": "Also rotate all encryption keys",
         "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
