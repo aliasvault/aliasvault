@@ -565,5 +565,6 @@
   "web.welcome.tutorialStepTitle": "Default tutorial step title",
   "web.welcome.twoFactorTipContent": "Content for two-factor authentication tip",
   "web.welcome.twoFactorTipTitle": "Title for two-factor authentication tip",
-  "web.welcome.welcomeMessage": "Welcome message on the first tutorial step"
+  "web.welcome.welcomeMessage": "Welcome message on the first tutorial step",
+  "settings.securitySettings.keyRotation.optionRotateKeys": "Checkbox under the collapsed advanced options of the change password page: the password change also replaces every encryption key"
 }

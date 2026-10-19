@@ -1,40 +1,64 @@
 import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
+import WarningBox from '@/components/alerts/WarningBox';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
 import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
+import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultSync } from '@/hooks/useVaultSync';
+import { WebAuthnService } from '@/utils/WebAuthnService';
+import { vaultStore } from '@/vault/VaultStore';
+
+import type { KeyRotationOperationResult } from '@aliasvault/client/sync/VaultSync';
+import type { VaultSyncKeyRotationRefusal } from '@aliasvault/client/sync/VaultSyncEngine';
+import type { TranslationKey } from '@aliasvault/i18n';
 
 const VALIDATION_DEBOUNCE_MS = 800;
 
+/** What the page tells the user for each reason the engine did not run the rotation. */
+const REFUSAL_KEYS: Record<VaultSyncKeyRotationRefusal, TranslationKey> = {
+  vaultOutOfDate: 'apiErrors.VAULT_NOT_UP_TO_DATE',
+  serverStateChanged: 'apiErrors.VAULT_NOT_UP_TO_DATE',
+  sharedVaultKeyUnavailable: 'common.errors.unexpectedErrorContactSupport',
+  vaultUpgradeRequired: 'content.vaultUpgradeRequired',
+};
+
 /**
- * The change master password page.
+ * The change master password page. A regular change keeps the encryption keys; behind the advanced options the user
+ * can also replace every encryption key along with the password, after acknowledging the risks and signing out their other devices.
  */
 const ChangePassword: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const auth = useAuth();
   const dbContext = useDb();
   const webApi = useWebApi();
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
   const { syncVault } = useVaultSync();
-  
+
   usePageTitle(t('settings.securitySettings.changeMasterPassword'));
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [rotateKeys, setRotateKeys] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [validationError, setValidationError] = useState('');
+  const [acknowledged, setAcknowledged] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
@@ -72,10 +96,55 @@ const ChangePassword: React.FC = () => {
     validate(newPassword, value);
   };
 
-  const isSubmitEnabled = currentPassword.trim().length > 0 && newPassword.trim().length > 0 && newPasswordConfirm.trim().length > 0 && newPassword === newPasswordConfirm && validationError.length === 0 && newPassword.length >= MIN_ACCEPTED_PASSWORD_LENGTH;
+  const passwordsValid = currentPassword.trim().length > 0 && newPassword.trim().length > 0 && newPasswordConfirm.trim().length > 0 && newPassword === newPasswordConfirm && validationError.length === 0 && newPassword.length >= MIN_ACCEPTED_PASSWORD_LENGTH;
+  const rotationReady = !rotateKeys || (acknowledged && !dbContext.isOffline);
+  const isSubmitEnabled = passwordsValid && rotationReady;
 
   /**
-   * Submit password change.
+   * The message for a rotation the engine refused or failed, or null when it went through.
+   */
+  const rotationOutcomeMessage = (result: KeyRotationOperationResult): string | null => {
+    if (result.success) {
+      return null;
+    }
+    if (result.refusal) {
+      return t(REFUSAL_KEYS[result.refusal]);
+    }
+    const detail = syncErrorMessage(result, t);
+    return detail ? `${t('settings.securitySettings.changePassword.failedToChangePassword')}\n${detail}` : t('settings.securitySettings.changePassword.failedToChangePassword');
+  };
+
+  /**
+   * Change the password and rotate every key; on success the page moves on to the settings overview.
+   */
+  const changePasswordAndRotateKeys = async (): Promise<void> => {
+    // The engine refuses a vault out of step with the server, so sync first.
+    if (!await syncVault()) {
+      notifications.addErrorMessage(t('apiErrors.VAULT_NOT_UP_TO_DATE'), true);
+      return;
+    }
+
+    const result = await MasterPasswordService.changePasswordAndRotateKeys(webApi, params => vaultStore.rotateAccountKeys(params), currentPassword, newPassword);
+    if (result.requiresLogout) {
+      await auth.logout({ errorMessage: syncErrorMessage(result, t) });
+      return;
+    }
+
+    const message = rotationOutcomeMessage(result);
+    if (message) {
+      notifications.addErrorMessage(message, true);
+      return;
+    }
+
+    // The passkey unlock on this browser holds the old Account Key.
+    WebAuthnService.disable();
+    await dbContext.loadStoredDatabase();
+    notifications.addSuccessMessage(t('settings.securitySettings.changePassword.passwordChangedSuccessfully'));
+    navigate('/settings');
+  };
+
+  /**
+   * Submit the change.
    */
   const changePassword = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -88,6 +157,10 @@ const ChangePassword: React.FC = () => {
     showLoading(t('settings.securitySettings.changePassword.changingPasswordMessage'));
     notifications.clearMessages();
     try {
+      if (rotateKeys) {
+        await changePasswordAndRotateKeys();
+        return;
+      }
       await MasterPasswordService.changePassword(webApi, currentPassword, newPassword);
       setCurrentPassword('');
       setNewPassword('');
@@ -130,9 +203,43 @@ const ChangePassword: React.FC = () => {
             <FormLabel htmlFor="newPasswordConfirm">{t('settings.securitySettings.changePassword.confirmNewPassword')}</FormLabel>
             <PasswordInputField id="newPasswordConfirm" value={newPasswordConfirm} onValueChange={onConfirmChange} placeholder={t('settings.securitySettings.changePassword.confirmNewPassword')} />
           </div>
+
           {validationError.length > 0 && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{validationError}</div>}
-          <button type="submit" disabled={!isSubmitEnabled} className={`w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-150 ease-in-out ${isSubmitEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
-            {t('settings.securitySettings.changePassword.changePassword')}
+
+          <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} aria-expanded={showAdvanced} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            {showAdvanced ? '\u25BE' : '\u25B8'} {t('app.loginSettings.advancedSettings')}
+          </button>
+
+          {showAdvanced && (
+            <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600" checked={rotateKeys} onChange={e => setRotateKeys(e.target.checked)} />
+              <span>
+                <span className="block font-medium">{t('settings.securitySettings.keyRotation.optionRotateKeys')}</span>
+                <span className="block text-gray-600 dark:text-gray-400">{t('settings.securitySettings.keyRotation.optionRotateKeysDescription')}</span>
+              </span>
+            </label>
+          )}
+
+          {rotateKeys && (
+            <>
+              <WarningBox icon="exclamation">
+                <p><span className="font-semibold">{t('common.highRiskAction')}</span> {t('common.beforeYouContinue')}</p>
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  <li>{t('settings.securitySettings.keyRotation.riskSignOut')}</li>
+                  <li>{t('settings.securitySettings.keyRotation.riskBackup')}</li>
+                  <li>{t('settings.securitySettings.keyRotation.riskAfterwards')}</li>
+                </ul>
+              </WarningBox>
+
+              <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <input type="checkbox" className="mt-0.5 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600" checked={acknowledged} onChange={e => setAcknowledged(e.target.checked)} />
+                <span>{t('settings.securitySettings.keyRotation.acknowledge')}</span>
+              </label>
+            </>
+          )}
+
+          <button type="submit" disabled={!isSubmitEnabled} className={`w-full text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-150 ease-in-out ${rotateKeys ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-primary-500 hover:bg-primary-600 focus:ring-primary-500'} ${isSubmitEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
+            {rotateKeys ? t('settings.securitySettings.keyRotation.changePasswordAndRotate') : t('settings.securitySettings.changePassword.changePassword')}
           </button>
         </form>
       </Card>

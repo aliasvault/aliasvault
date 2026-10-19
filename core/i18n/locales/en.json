@@ -218,6 +218,7 @@
     "attachments": "Attachments",
     "back": "Back",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Cancel",
     "clipboardCountdown": {
       "clearClipboardButton": "Clear Clipboard"
@@ -284,6 +285,7 @@
     "hide": "Hide",
     "hideDetails": "Hide details",
     "hidePassword": "Hide password",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Home",
     "loadMore": "Load more",
     "loading": "Loading...",
@@ -1361,7 +1363,7 @@
         "failedToChange": "Failed to change password. Please try again.",
         "failedToChangePassword": "Failed to change password. Please refresh the page and try again.",
         "fillAllFields": "Please fill in all fields",
-        "headerText": "Changing your master password also changes the vault encryption keys. It is advised to periodically change your master password to keep your vaults secure.",
+        "headerText": "Changing your master password signs out your other devices. Your encryption keys stay the same unless you rotate them under the advanced settings.",
         "initiatingChange": "Initiating password change...",
         "newPassword": "New Password",
         "passwordChangedSuccessfully": "Password changed successfully",
@@ -1415,6 +1417,15 @@
         "twoFactorEnabledSuccess": "Two-factor authentication is now successfully enabled. On your next login you will need to enter your 2FA code.",
         "verificationCodePlaceholder": "Enter verification code",
         "verifyAndEnableButton": "Verify and Enable"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Disable Passkey Unlock",

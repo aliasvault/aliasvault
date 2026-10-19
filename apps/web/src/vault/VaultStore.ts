@@ -10,8 +10,8 @@ import { getPlatform } from '@aliasvault/client/platform';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
-import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
+import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type KeyRotationOperationResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import { type IVaultSyncEngineHost, type VaultSyncKeyRotationParams, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 
 import i18n from '@/i18n/i18n';
@@ -525,5 +525,18 @@ export const vaultStore = {
    */
   updateSharedManifest(groupId: string, manifestId: string, details: SharedManifestDetails): Promise<SharingOperationResult> {
     return vaultSync.updateSharedManifest(groupId, manifestId, details);
+  },
+
+  /**
+   * Rotate the account's encryption keys and re-encrypt the personal vault under them.
+   * @param params - the password proof and the new unlock method and keypair
+   */
+  async rotateAccountKeys(params: VaultSyncKeyRotationParams): Promise<KeyRotationOperationResult> {
+    const result = await vaultSync.rotateAccountKeys(params);
+    if (result.success) {
+      // The engine stored the vault under the new key; the cached client still holds the old one.
+      cleanupCachedSqliteClient();
+    }
+    return result;
   },
 };
