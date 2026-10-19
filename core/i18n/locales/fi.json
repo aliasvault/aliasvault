@@ -218,6 +218,7 @@
     "attachments": "Liitteet",
     "back": "Takaisin",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Peruuta",
     "clipboardCountdown": {
       "clearClipboardButton": "Tyhjennä leikepöytä"
@@ -284,6 +285,7 @@
     "hide": "Hide",
     "hideDetails": "Piilota tiedot",
     "hidePassword": "Piilota salasana",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Koti",
     "loadMore": "Lataa lisää",
     "loading": "Ladataan...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "enabledForThisSite": "Otettu käyttöön tällä sivustolla",
     "exportConfirmTitle": "Vie holvi",
-    "exportCsvButton": "Vie holvi CSV-tiedostoon",
-    "exportSectionDescription": "Vie holvisi tiedot CSV-tiedostoon. Tätä tiedostoa voidaan käyttää varmuuskopiona, ja se voidaan myös tuoda muihin salasanojen hallintalaitteisiin.",
     "exportSectionTitle": "Vie",
     "exportWarning": "Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:\n\n• Tallenna viety tiedosto turvalliseen paikkaan\n• Poista tiedosto, kun et enää tarvitse sitä\n• Älä koskaan jaa vietyä tiedostoa muiden kanssa\n\nOletko varma, että haluat jatkaa vientiä?",
-    "exporting": "Viedään...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Aseta oletusikähaarukka uusien henkilöllisyyksien luomiseen. Tämä vaikuttaa luotuun henkilöllisyyteen asetettavaan syntymäpäivään.",
       "aliasGenerationGenderDescription": "Aseta oletussukupuoli uusien identiteettien luomiseksi.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Salasanan vaihtaminen epäonnistui. Yritä uudelleen.",
         "failedToChangePassword": "Salasanan vaihtaminen epäonnistui. Virkistä sivu ja yritä uudelleen.",
         "fillAllFields": "Täytä kaikki kentät",
-        "headerText": "Pääsalasanan vaihtaminen muuttaa myös holvin salausavaimia. On suositeltavaa vaihtaa säännöllisesti pääsalasanaasi, jotta holvisi pysyvät turvassa.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Suoritetaan salasanan muutosta...",
         "newPassword": "Uusi salasana",
         "passwordChangedSuccessfully": "Salasana vaihdettu onnistuneesti.",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Kaksivaiheinen todennus on nyt otettu käyttöön. Seuraavalla sisäänkirjautumisellasi sinun täytyy syöttää 2FA-koodisi.",
         "verificationCodePlaceholder": "Syötä tarkistuskoodi",
         "verifyAndEnableButton": "Tarkista ja ota käyttöön"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Poista todennusavaimella avaaminen käytöstä",
