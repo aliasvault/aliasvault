@@ -218,6 +218,7 @@
     "attachments": "Bijlagen",
     "back": "Terug",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Annuleren",
     "clipboardCountdown": {
       "clearClipboardButton": "Klembord wissen"
@@ -284,6 +285,7 @@
     "hide": "Verberg",
     "hideDetails": "Verberg details",
     "hidePassword": "Wachtwoord verbergen",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Home",
     "loadMore": "Laad meer",
     "loading": "Laden...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
     "enabledForThisSite": "Ingeschakeld voor deze site",
     "exportConfirmTitle": "Vault exporteren",
-    "exportCsvButton": "Exporteer vault naar CSV-bestand",
-    "exportSectionDescription": "Exporteer je vault inhoud naar een CSV-bestand. Dit bestand kan als back-up worden gebruikt en kan ook in andere wachtwoordmanagers worden geïmporteerd.",
     "exportSectionTitle": "Exporteren",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
-    "exporting": "Exporteren...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationGenderDescription": "Stel de standaard geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Wachtwoord wijzigen mislukt. Probeer het opnieuw.",
         "failedToChangePassword": "Wachtwoord wijzigen mislukt. Vernieuw de pagina en probeer het opnieuw.",
         "fillAllFields": "Vul alle velden in",
-        "headerText": "Het wijzigen van je hoofdwachtwoord wijzigt ook de encryptie sleutels. Het wordt aanbevolen om je hoofdwachtwoord periodiek te wijzigen om je vault veilig te houden.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Wachtwoord wijziging starten...",
         "newPassword": "Nieuwe wachtwoord",
         "passwordChangedSuccessfully": "Wachtwoord succesvol gewijzigd",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Tweestapsverificatie is nu ingeschakeld. Bij de volgende aanmelding moet je je 2FA-code invoeren.",
         "verificationCodePlaceholder": "Voer verificatiecode in",
         "verifyAndEnableButton": "Verifiëren en inschakelen"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Passkey ontgrendeling uitschakelen",
