@@ -12,6 +12,7 @@ import { getPlatform } from '../platform/ClientPlatform';
  */
 export enum VaultSyncHoldReason {
   PasswordChange = 'passwordChange',
+  KeyRotation = 'keyRotation',
 }
 
 /** How long a hold stays valid without being released, so a crashed holder is forgotten. */

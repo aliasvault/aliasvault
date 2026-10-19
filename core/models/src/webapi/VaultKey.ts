@@ -13,6 +13,7 @@ export type VaultKeyResponse = {
   salt: string;
   encryptionType: string;
   encryptionSettings: string;
+  keyVersion?: number;
 }
 
 /**
