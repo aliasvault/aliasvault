@@ -218,6 +218,7 @@
     "attachments": "Lampiran",
     "back": "Kembali",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Batal",
     "clipboardCountdown": {
       "clearClipboardButton": "Bersihkan Clipboard"
@@ -284,6 +285,7 @@
     "hide": "Sembunyikan",
     "hideDetails": "Sembunyikan rincian",
     "hidePassword": "Sembunyikan kata sandi",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Halaman utama",
     "loadMore": "Muat lebih banyak",
     "loading": "Memuat...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Situs dimana popup pengisian otomatis tidak akan muncul.",
     "enabledForThisSite": "Diaktifkan untuk situs ini",
     "exportConfirmTitle": "Ekspor Brankas",
-    "exportCsvButton": "Ekspor brankas ke berkas CSV",
-    "exportSectionDescription": "Ekspor data brankas Anda ke berkas CSV. Berkas ini dapat digunakan sebagai cadangan dan juga dapat diimpor ke pengelola kata sandi lainnya.",
     "exportSectionTitle": "Ekspor",
     "exportWarning": "Peringatan: Mengekspor vault Anda ke berkas yang tidak terenkripsi akan membuat semua kata sandi dan informasi sensitif Anda terpapar dalam bentuk teks biasa. Lakukan hal ini hanya pada perangkat yang tepercaya dan pastikan Anda:\n\n• Menyimpan berkas hasil ekspor di lokasi yang aman\n• Menghapus berkas tersebut saat Anda tidak lagi membutuhkannya\n• Jangan pernah membagikan berkas hasil ekspor kepada orang lain\n\nApakah Anda yakin ingin melanjutkan proses ekspor?",
-    "exporting": "Mengekspor...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Tentukan rentang usia default untuk pembuatan identitas baru. Hal ini memengaruhi tanggal lahir yang ditetapkan pada identitas yang dihasilkan.",
       "aliasGenerationGenderDescription": "Tentukan preferensi jenis kelamin default untuk pembuatan identitas baru.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Gagal mengubah kata sandi. Silakan coba lagi.",
         "failedToChangePassword": "Gagal mengubah kata sandi. Silakan segarkan halaman dan coba lagi.",
         "fillAllFields": "Silakan isi semua kolom",
-        "headerText": "Mengubah kata sandi utama Anda juga akan mengubah kunci enkripsi brankas. Disarankan untuk mengganti kata sandi utama Anda secara berkala guna menjaga keamanan brankas Anda.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Mulai mengubah kata sandi...",
         "newPassword": "Kata Sandi Baru",
         "passwordChangedSuccessfully": "Kata sandi berhasil diubah",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Otentikasi dua faktor kini telah berhasil diaktifkan. Saat Anda masuk berikutnya, Anda harus memasukkan kode 2FA Anda.",
         "verificationCodePlaceholder": "Masukkan kode verifikasi",
         "verifyAndEnableButton": "Verifikasi dan Aktifkan"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Nonaktifkan Pembukaan dengan Kode Akses",
