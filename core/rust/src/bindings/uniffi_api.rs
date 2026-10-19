@@ -199,6 +199,12 @@ pub fn symmetric_decrypt_bytes(encrypted: Vec<u8>, key_base64: String) -> Result
     crate::crypto::symmetric_decrypt_bytes(&encrypted, &key_base64)
 }
 
+/// AES-256-GCM encrypt bytes with a base64 key (random IV, no AAD) into `IV | ciphertext | tag` bytes.
+#[uniffi::export]
+pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::symmetric_encrypt_raw_with_aad(&plaintext, &key_base64, &[])
+}
+
 /// A fresh random salt for a new PIN wrap.
 #[uniffi::export]
 pub fn pin_generate_salt() -> Vec<u8> {

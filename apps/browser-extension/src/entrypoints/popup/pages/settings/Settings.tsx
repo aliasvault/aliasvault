@@ -296,6 +296,15 @@ const Settings: React.FC = () => {
           />
         </SettingsGroup>
 
+        <SettingsGroup title={t('navigation.vault')}>
+          <SettingsRow
+            id="import-export-settings-button"
+            label={t('settings.importExport')}
+            onClick={() => navigate('/settings/import-export')}
+            icon="switch-horizontal"
+          />
+        </SettingsGroup>
+
         <SettingsGroup title={t('settings.groups.general')}>
           <SettingsRow
             label={t('settings.appearance')}

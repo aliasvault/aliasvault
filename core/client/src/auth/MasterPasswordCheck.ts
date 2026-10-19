@@ -1,6 +1,7 @@
-import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
-import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { extractErrorCode } from '../api/errors/AppErrorCodes';
+
+import { MissingDerivationParamsError, UnlockService } from './UnlockService';
+import { VaultKeyService } from './VaultKeyService';
 
 /**
  * Check the master password offline against the cached key chain, the same way an offline unlock does.
