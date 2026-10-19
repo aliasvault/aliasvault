@@ -1,3 +1,4 @@
+import { verifyMasterPassword } from '@aliasvault/client/auth/MasterPasswordCheck';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +15,6 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
-import { verifyMasterPassword } from '@/utils/MasterPasswordCheck';
 
 /**
  * Empty the vault while keeping the account: confirm the username, then prompt to verify the master password.

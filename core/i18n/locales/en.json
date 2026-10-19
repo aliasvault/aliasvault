@@ -1195,11 +1195,8 @@
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "enabledForThisSite": "Enabled for this site",
     "exportConfirmTitle": "Export Vault",
-    "exportCsvButton": "Export vault to CSV file",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
     "exportSectionTitle": "Export",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
-    "exporting": "Exporting...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",

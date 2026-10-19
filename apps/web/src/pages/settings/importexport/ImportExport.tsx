@@ -1,5 +1,7 @@
+import { verifyMasterPassword } from '@aliasvault/client/auth/MasterPasswordCheck';
 import { AvexExportService } from '@aliasvault/client/transfer/export/AvexExportService';
 import { AvuxExportService } from '@aliasvault/client/transfer/export/AvuxExportService';
+import { VAULT_EXPORT_MIME_TYPES, vaultExportFileName } from '@aliasvault/client/transfer/export/VaultExportFile';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +19,6 @@ import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { verifyMasterPassword } from '@/utils/MasterPasswordCheck';
 
 /**
  * The export formats.
@@ -48,14 +49,6 @@ const ImportExport: React.FC = () => {
   const isDebugBuild = import.meta.env.DEV;
 
   /**
-   * The export file name, with the date.
-   */
-  const getExportFileName = (extension: string): string => {
-    const dateStr = new Date().toISOString().substring(0, 10);
-    return `aliasvault-export-${dateStr}.${extension}`;
-  };
-
-  /**
    * Ask for confirmation, then for the master password.
    */
   const showExportConfirmation = async (exportType: ExportType): Promise<void> => {
@@ -80,8 +73,7 @@ const ImportExport: React.FC = () => {
     if (!sqliteClient) {
       throw new Error('Vault is not available');
     }
-    const data = sqliteClient.importExport.getExportData();
-    return AvuxExportService.exportToAvux(data.items, data.folders, data.tags, data.itemTags, data.fieldDefinitions);
+    return AvuxExportService.exportToAvux(sqliteClient.importExport.getExportData());
   };
 
   /**
@@ -93,7 +85,7 @@ const ImportExport: React.FC = () => {
       if (!sqliteClient) {
         throw new Error('Vault is not available');
       }
-      downloadBytes(getExportFileName('csv'), sqliteClient.importExport.exportToCsv(), 'text/csv');
+      downloadBytes(vaultExportFileName('csv'), sqliteClient.importExport.exportToCsv(), VAULT_EXPORT_MIME_TYPES.csv);
       notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error downloading file:', error);
@@ -107,7 +99,7 @@ const ImportExport: React.FC = () => {
   const exportVaultAvux = async (): Promise<void> => {
     showLoading(t('importExport.exportingVaultMessage'));
     try {
-      downloadBytes(getExportFileName('avux'), generateAvuxBytes());
+      downloadBytes(vaultExportFileName('avux'), generateAvuxBytes(), VAULT_EXPORT_MIME_TYPES.avux);
       notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error exporting vault to .avux format:', error);
@@ -124,7 +116,7 @@ const ImportExport: React.FC = () => {
     showLoading(t('importExport.exportingVaultMessage'));
     try {
       const avexBytes = await AvexExportService.encryptToAvex(generateAvuxBytes(), exportPassword);
-      downloadBytes(getExportFileName('avex'), avexBytes);
+      downloadBytes(vaultExportFileName('avex'), avexBytes, VAULT_EXPORT_MIME_TYPES.avex);
       notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error exporting vault to .avex format:', error);
@@ -144,7 +136,7 @@ const ImportExport: React.FC = () => {
       if (!sqliteClient) {
         throw new Error('Vault is not available');
       }
-      downloadBytes(getExportFileName('sqlite'), sqliteClient.exportToBytes());
+      downloadBytes(vaultExportFileName('avux').replace(/avux$/, 'sqlite'), sqliteClient.exportToBytes());
     } catch (error) {
       console.error('[Export] Error exporting raw SQLite vault:', error);
       notifications.addErrorMessage(t('common.errorGeneric'), true);
