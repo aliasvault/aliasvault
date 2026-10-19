@@ -60,7 +60,7 @@ export interface IExtensionMessageProtocol {
   AUTH_UNLOCK_PASSWORD(data: { password: string }): BackgroundAuthResult;
   AUTH_UNLOCK_PIN(data: { pin: string }): BackgroundAuthResult;
   ADD_URL_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { success: boolean; error?: string }; 
-  AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
+  AUTOFILL_CREATED_ITEM(data: { item: ItemRef; elementIdentifier?: string }): BoolResponse;
   BLOCK_LOGIN_SAVE_FOR_DOMAIN(data: { domain: string }): void;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresManifestMigration: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;

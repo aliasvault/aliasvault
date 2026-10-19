@@ -6,7 +6,7 @@ import '@/entrypoints/contentScript/style.css';
 import { setPlatform } from '@aliasvault/client/platform';
 
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
-import { fillCreatedItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
+import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { consumeUnlockResume, getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
@@ -25,7 +25,6 @@ import { t } from '@/i18n/StandaloneI18n';
 import { extensionPlatform } from '@/platform/ExtensionPlatform';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { Item } from '@aliasvault/models/vault';
 
 import { defineContentScript, createShadowRootUi } from '#imports';
 
@@ -665,13 +664,14 @@ export default defineContentScript({
         });
 
         /*
-         * A credential was created in the full popup window (opened from this page's "create new
-         * item" flow). Autofill it back into the page form, mirroring the inline quick-create UX.
+         * A credential was created in the full popup window (opened from this frame's "create new
+         * item" flow). Autofill it back into the page form, mirroring the inline quick-create UX. Only
+         * the item's reference arrives; the fill data is fetched like for any pick, with this frame as sender.
          */
         onMessage('AUTOFILL_CREATED_ITEM', async ({ data }) => {
           const { item, elementIdentifier } = data;
 
-          if (!item) {
+          if (!item?.Id || !item.ManifestId) {
             return { success: false, error: 'No item provided' };
           }
 
@@ -698,7 +698,8 @@ export default defineContentScript({
           // Close any open inline popup before filling.
           removeExistingPopup(container);
 
-          await fillCreatedItem(item as Item, resolvedInput);
+          // Not awaited, so the popup window can close while the fill (with its typing delay) runs in the page.
+          fillItem({ Id: item.Id, ManifestId: item.ManifestId }, resolvedInput).catch((error) => logFailure('[AliasVault] Error autofilling created item', error));
 
           return { success: true };
         });

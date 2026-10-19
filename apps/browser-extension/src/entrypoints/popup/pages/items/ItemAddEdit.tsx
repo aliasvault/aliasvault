@@ -96,6 +96,7 @@ const ItemAddEdit: React.FC = () => {
   const folderIdParam = folderManifestIdParam ? searchParams.get('folderId') : null;
 
   const sourceTabIdParam = searchParams.get('sourceTabId');
+  const sourceFrameIdParam = searchParams.get('sourceFrameId');
   const fillBackElementIdentifier = searchParams.get('elementIdentifier');
 
   const { executeVaultMutationAsync } = useVaultMutate();
@@ -673,26 +674,26 @@ const ItemAddEdit: React.FC = () => {
 
   /**
    * After creating a credential from a page's "create new item" flow, autofill the freshly
-   * created item back into the originating tab and close this popup window. Returns true when the
+   * created item back into the originating frame and close this popup window. Returns true when the
    * fill-back path handled the post-save behaviour (so the caller should skip normal navigation).
    */
   const fillBackAndCloseWindow = useCallback(async (savedItem: Item): Promise<boolean> => {
-    if (isEditMode || !sourceTabIdParam) {
+    if (isEditMode || !sourceTabIdParam || !sourceFrameIdParam) {
       return false;
     }
 
     const tabId = Number(sourceTabIdParam);
-    if (!Number.isInteger(tabId)) {
+    const frameId = Number(sourceFrameIdParam);
+    if (!Number.isInteger(tabId) || !Number.isInteger(frameId)) {
       return false;
     }
 
     try {
-      // Strip the binary logo before sending as its not used by autofill and prevents message serialization errors.
-      const fillPayload = JSON.parse(JSON.stringify({ ...savedItem, Logo: undefined }));
+      // Send only the item reference, to the frame the flow started in.
       await sendMessage('AUTOFILL_CREATED_ITEM', {
-        item: fillPayload,
+        item: { Id: savedItem.Id, ManifestId: savedItem.ManifestId },
         elementIdentifier: fillBackElementIdentifier ?? undefined
-      }, tabId);
+      }, { tabId, frameId });
     } catch (err) {
       logFailure('Error autofilling created item into page', err);
     }
@@ -720,7 +721,7 @@ const ItemAddEdit: React.FC = () => {
     }
 
     return true;
-  }, [isEditMode, sourceTabIdParam, fillBackElementIdentifier]);
+  }, [isEditMode, sourceTabIdParam, sourceFrameIdParam, fillBackElementIdentifier]);
 
   /**
    * Handle form submission.

@@ -1,5 +1,3 @@
-import { itemToCredential } from '@aliasvault/models/vault';
-
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
@@ -13,7 +11,7 @@ import { ClickValidator } from '@/utils/security/ClickValidator';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
-import type { Credential, Item } from '@aliasvault/models/vault';
+import type { Credential } from '@aliasvault/models/vault';
 
 /**
  * Global timestamp to track popup debounce time.
@@ -109,17 +107,6 @@ export async function fillItem(item: ItemRef, input: HTMLInputElement): Promise<
   });
 
   // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
-  await copyTotpToClipboardIfEnabled(item);
-}
-
-/**
- * Fill an item the extension popup just created (and sent to this page) into the form of `input`.
- *
- * @param item - The created item.
- * @param input - The input element the create flow started from.
- */
-export async function fillCreatedItem(item: Item, input: HTMLInputElement): Promise<void> {
-  await fillForm(input, () => Promise.resolve(itemToCredential(item)));
   await copyTotpToClipboardIfEnabled(item);
 }
 

@@ -48,6 +48,7 @@ export function handleOpenPopupCreateCredential(message: any, sender?: any) : Pr
     const itemTitle = message.itemTitle || '';
     const currentUrl = message.currentUrl || '';
     const sourceTabId = sender?.tab?.id;
+    const sourceFrameId = sender?.frameId;
     const elementIdentifier = message.elementIdentifier;
 
     // Derive the service URL (origin only) from the page URL passed by the content script.
@@ -71,6 +72,9 @@ export function handleOpenPopupCreateCredential(message: any, sender?: any) : Pr
 
     if (sourceTabId !== undefined && sourceTabId !== null) {
       hashParams.set('sourceTabId', String(sourceTabId));
+    }
+    if (typeof sourceFrameId === 'number') {
+      hashParams.set('sourceFrameId', String(sourceFrameId));
     }
     if (elementIdentifier) {
       hashParams.set('elementIdentifier', String(elementIdentifier));
