@@ -218,6 +218,7 @@
     "attachments": "Vedhæftede filer",
     "back": "Tilbage",
     "backspace": "Slet tegn",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Annuller",
     "clipboardCountdown": {
       "clearClipboardButton": "Ryd udklipsholder"
@@ -284,6 +285,7 @@
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
     "hidePassword": "Skjul adgangskode",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Hjem",
     "loadMore": "Indlæs flere",
     "loading": "Indlæser...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Websteder hvor popup-vinduet for autofyld ikke vises.",
     "enabledForThisSite": "Aktiveret for dette websted",
     "exportConfirmTitle": "Eksporter boks",
-    "exportCsvButton": "Eksporter boks til CSV-fil",
-    "exportSectionDescription": "Eksporter dine boksdata til en CSV-fil. Denne fil kan bruges som backup og kan også importeres i andre adgangskodeadministratorer.",
     "exportSectionTitle": "Eksport",
     "exportWarning": "Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede enheder og sørg for at:\n\n• Opbevar den eksporterede fil på et sikkert sted\n• Slet filen, når du ikke længere har brug for den\n• Del aldrig den eksporterede fil med andre\n\nEr du sikker på, at du vil fortsætte med eksporten?",
-    "exporting": "Eksporterer...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
       "aliasGenerationGenderDescription": "Indstil standardpræference for køn ved generering af nye identiteter.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Kunne ikke ændre adgangskode. Prøv venligst igen.",
         "failedToChangePassword": "Kunne ikke ændre adgangskode. Genindlæs siden og prøv igen.",
         "fillAllFields": "Udfyld venligst alle felter",
-        "headerText": "Ændring af din master-adgangskode ændrer også boksens krypteringsnøgler. Det anbefales periodisk at skifte din master-adgangskode for at holde dine bokse sikre.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Starter ændring af adgangskode...",
         "newPassword": "Ny adgangskode",
         "passwordChangedSuccessfully": "Adgangskode ændret korrekt",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "To-faktor-godkendelse er nu aktiveret. Ved næste login skal du indtaste din 2FA-kode.",
         "verificationCodePlaceholder": "Indtast bekræftelseskode",
         "verifyAndEnableButton": "Bekræft og aktiver"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Deaktiver oplåsning med passkey",
