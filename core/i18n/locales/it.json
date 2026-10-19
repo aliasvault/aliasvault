@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Conferma PIN",
       "confirmPinDescription": "Inserisci di nuovo il tuo PIN per confermare",
-      "enterNewPinDescription": "Inserisci un codice PIN composto da almeno 6 cifre",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN errato. {{attemptsRemaining}} tentativi rimanenti.",
       "incorrectPinSingular": "Pin non corretto. 1 tentativo rimanente.",
       "introText": "Scegli come sbloccare la cassaforte. Puoi usare la tua password principale (sempre disponibile) o impostare un codice PIN per un accesso più veloce. Dopo 3 tentativi di PIN falliti, è necessario utilizzare la password principale.",
