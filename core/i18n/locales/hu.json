@@ -218,6 +218,7 @@
     "attachments": "Csatolmányok",
     "back": "Vissza",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Mégse",
     "clipboardCountdown": {
       "clearClipboardButton": "Vágólap ürítése"
@@ -284,6 +285,7 @@
     "hide": "Elrejtés",
     "hideDetails": "Részletek elrejtése",
     "hidePassword": "Jelszó elrejtése",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Kezdőlap",
     "loadMore": "Továbbiak betöltése",
     "loading": "Betöltés...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Weboldalak, ahol a kitöltés nem ugrik fel.",
     "enabledForThisSite": "Ehhez az oldalhoz engedélyezve",
     "exportConfirmTitle": "Széf exportálása",
-    "exportCsvButton": "Széf exportálása CSV fájlba",
-    "exportSectionDescription": "Exportálja széfét egy CSV fájlba. Biztonsági mentésként is használhatja, vagy importálhatja más jelszókezelőkbe is.",
     "exportSectionTitle": "Exportálás",
     "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szüksége\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
-    "exporting": "Exportálás...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Állítsa be a személyiség generáláshoz használt alap kor intervallumot. Ez hatással lesz a születési időre.",
       "aliasGenerationGenderDescription": "Állítsa be a személyiség generáláshoz preferált alap nemet.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Sikertelen jelszó módosítás. Próbálja meg újra.",
         "failedToChangePassword": "Sikertelen jelszó módosítás. Kérem, frissítse az oldalt és próbálja újra.",
         "fillAllFields": "Kérem töltse ki az összes mezőt",
-        "headerText": "A mester jelszó módosításával a széf titkosító kulcsok is megváltoznak. A biztonság jegyében tehát ajánlott a mester jelszó rendszeres cseréje.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Jelszó változtatás megkezdése...",
         "newPassword": "Új jelszó",
         "passwordChangedSuccessfully": "Sikeres jelszó módosítás",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "A kétlépcsős hitelesítő immáron sikeresen bekapcsolásra került. A következő belépésnél meg kell adnia a generált kódot.",
         "verificationCodePlaceholder": "Ellenőrző kód megadása",
         "verifyAndEnableButton": "Ellenőrzés és bekapcsolás"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Azonosítókulcsos feloldás kikapcsolása",
