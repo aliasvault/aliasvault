@@ -58,8 +58,9 @@ public static class VaultRevisionWriter
     /// <param name="currentRevision">The revision the client believes is current, used to seed a first write.</param>
     /// <param name="existing">The current row, already loaded by the revision gate, or null when none exists yet.</param>
     /// <param name="keyVersion">The VEK generation the payload is encrypted with, or null to keep the row's.</param>
+    /// <param name="archive">Whether the outgoing revision is kept in history.</param>
     /// <returns>The new revision number.</returns>
-    public static async Task<long> UpsertBucketAsync(AliasServerDbContext context, DateTime now, Guid manifestId, VaultDataBucketCategory kind, byte[] encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing, int? keyVersion = null)
+    public static async Task<long> UpsertBucketAsync(AliasServerDbContext context, DateTime now, Guid manifestId, VaultDataBucketCategory kind, byte[] encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing, int? keyVersion = null, bool archive = true)
     {
         if (existing is null)
         {
@@ -79,8 +80,11 @@ public static class VaultRevisionWriter
         }
 
         // Archive the outgoing revision before overwriting it, exactly as the manifest write path does.
-        var archived = VaultDataBucketsHistory.CreateFrom(existing);
-        context.VaultDataBucketsHistory.Add(archived);
+        var archived = archive ? VaultDataBucketsHistory.CreateFrom(existing) : null;
+        if (archived is not null)
+        {
+            context.VaultDataBucketsHistory.Add(archived);
+        }
 
         var newRev = existing.RevisionNumber + 1;
         existing.EncryptedData = encryptedData;
@@ -89,7 +93,11 @@ public static class VaultRevisionWriter
         existing.KeyVersion = keyVersion ?? existing.KeyVersion;
         existing.UpdatedAt = now;
 
-        await ApplyBucketRetentionAsync(context, now, manifestId, kind, archived);
+        if (archived is not null)
+        {
+            await ApplyBucketRetentionAsync(context, now, manifestId, kind, archived);
+        }
+
         return newRev;
     }
 

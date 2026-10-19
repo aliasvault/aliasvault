@@ -21,11 +21,6 @@ public class KeyRotationAccountKeys
     public required string EncryptedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the previous VEK encrypted with the new Account Key, which keeps older manifest revisions readable.
-    /// </summary>
-    public required string RetiredEncryptedVek { get; set; }
-
-    /// <summary>
     /// Gets or sets the new account encryption public key (JWK).
     /// </summary>
     public required string AccountPublicKey { get; set; }
@@ -59,7 +54,7 @@ public class KeyRotationAccountKeys
     /// Gets a value indicating whether every value is present and within the stored size limits.
     /// </summary>
     [JsonIgnore]
-    public bool FitsStorageLimits => EncryptedVek.Length <= AccountKeysUpload.MaxWrappedKeyLength && RetiredEncryptedVek.Length <= AccountKeysUpload.MaxWrappedKeyLength && AccountPublicKey.Length <= AccountKeysUpload.MaxPublicKeyLength
+    public bool FitsStorageLimits => EncryptedVek.Length <= AccountKeysUpload.MaxWrappedKeyLength && AccountPublicKey.Length <= AccountKeysUpload.MaxPublicKeyLength
         && EncryptedAccountPrivateKey.Length <= AccountKeysUpload.MaxEncryptedPrivateKeyLength && AccountPublicKeySignature.Length <= AccountKeysUpload.MaxSigningValueLength && SigningPublicKey.Length <= AccountKeysUpload.MaxSigningPublicKeyLength
         && EncryptedSigningPrivateKey.Length <= AccountKeysUpload.MaxSigningValueLength && PreviousSigningKeySignature.Length <= AccountKeysUpload.MaxSigningValueLength;
 }

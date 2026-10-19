@@ -233,10 +233,6 @@ pub struct RotatedAccountKeys {
     #[zeroize(skip)]
     pub account_keys: AccountKeyBlobs,
 
-    /// The previous VEK encrypted with the new Account Key, which keeps older manifest revisions readable.
-    #[zeroize(skip)]
-    pub retired_encrypted_vek: String,
-
     /// The previous signing key's signature over the new signing public key (see [`signing::SIGNING_KEY_ROTATION_LABEL`]).
     #[zeroize(skip)]
     pub previous_signing_key_signature: String,
@@ -244,17 +240,15 @@ pub struct RotatedAccountKeys {
 
 impl fmt::Debug for RotatedAccountKeys {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RotatedAccountKeys").field("account_keys", &self.account_keys).field("retired_encrypted_vek", &self.retired_encrypted_vek).finish_non_exhaustive()
+        f.debug_struct("RotatedAccountKeys").field("account_keys", &self.account_keys).finish_non_exhaustive()
     }
 }
 
 /// Rotate an account's keys: a new Account Key, VEK and signing keypair around an account keypair the host generated,
-/// wrapped under the KEK of `new_unlock_key_base64`. The previous VEK rides along under the new Account Key, and the
-/// previous signing key is used to confirm the new one.
-pub fn rotate_account_keys(current_vek_base64: &str, current_signing_private_key_base64: &str, user_id: &str, new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
+/// wrapped under the KEK of `new_unlock_key_base64`. The previous signing key is used to confirm the new one.
+pub fn rotate_account_keys(current_signing_private_key_base64: &str, user_id: &str, new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
     let hierarchy = create_account_key_hierarchy_with_key_pair(new_unlock_key_base64, key_pair)?;
     let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, new_unlock_key_base64)?;
-    let retired_encrypted_vek = wrap_key(current_vek_base64, &account_key, aad::PERSONAL_VEK)?;
     let rotation_message = signing::signing_key_rotation_message(user_id, &hierarchy.account_keys.signing_public_key);
     let previous_signing_key_signature = signing::sign(current_signing_private_key_base64, &rotation_message)?;
     Ok(RotatedAccountKeys {
@@ -263,7 +257,6 @@ pub fn rotate_account_keys(current_vek_base64: &str, current_signing_private_key
         account_private_key: hierarchy.account_private_key.clone(),
         signing_private_key: hierarchy.signing_private_key.clone(),
         account_keys: hierarchy.account_keys.clone(),
-        retired_encrypted_vek,
         previous_signing_key_signature,
     })
 }
@@ -278,7 +271,7 @@ mod tests {
         let new_unlock_key = generate_key_base64();
         let key_pair = generate_rsa_key_pair().unwrap();
 
-        let rotated = rotate_account_keys(&old_hierarchy.vault_encryption_key, &old_hierarchy.signing_private_key, "user-1", &new_unlock_key, &key_pair).unwrap();
+        let rotated = rotate_account_keys(&old_hierarchy.signing_private_key, "user-1", &new_unlock_key, &key_pair).unwrap();
         let blobs = &rotated.account_keys;
 
         // The new chain opens with the new unlock key and yields the new VEK and private keys.
@@ -288,10 +281,6 @@ mod tests {
         assert_eq!(opened.account_private_key.as_deref().map(String::as_str), Some(key_pair.private_key.as_str()));
         assert_ne!(rotated.vault_encryption_key, old_hierarchy.vault_encryption_key);
         assert_ne!(blobs.signing_public_key, old_hierarchy.account_keys.signing_public_key);
-
-        // The retired VEK opens under the new Account Key, in the VEK slot only.
-        assert_eq!(*unwrap_key(&rotated.retired_encrypted_vek, &rotated.account_key, aad::PERSONAL_VEK).unwrap(), old_hierarchy.vault_encryption_key);
-        assert!(unwrap_key(&rotated.retired_encrypted_vek, &rotated.account_key, aad::ACCOUNT_KEY).is_err());
 
         // The old signing key vouches for the new one, bound to the account.
         let message = signing::signing_key_rotation_message("user-1", &blobs.signing_public_key);

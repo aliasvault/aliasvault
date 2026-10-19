@@ -80,7 +80,6 @@ struct UnlockMethodWrite {
 #[serde(rename_all = "camelCase")]
 struct AccountKeysWrite {
     encrypted_vek: String,
-    retired_encrypted_vek: String,
     account_public_key: String,
     encrypted_account_private_key: String,
     account_public_key_signature: String,
@@ -179,7 +178,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let blob_keys: BlobKeysResponse = http::with_outdated_server_guard(http::get(&ctx.host, &format!("Vault/blob-keys/{}", personal_manifest_id), false).await)?;
 
     let key_pair = crypto::RsaKeyPair { public_key: params.new_account_public_key.clone(), private_key: params.new_account_private_key.expose_secret().to_string() };
-    let rotated = crypto::rotate_account_keys(vek.expose_secret(), signing_key.expose_secret(), &params.user_id, params.new_unlock_key.expose_secret(), &key_pair)?;
+    let rotated = crypto::rotate_account_keys(signing_key.expose_secret(), &params.user_id, params.new_unlock_key.expose_secret(), &key_pair)?;
     let new_vek = SecretString::from(rotated.vault_encryption_key.as_str());
     ctx.log("[KeyRotation] Generated the new Account Key, VEK, account keypair and signing keypair.").await;
 
@@ -280,7 +279,7 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         record.algorithm = ALGORITHM_RSA_OAEP_SHA256.to_string();
     }
 
-    ensure_key_chain_opens(params, rotated, new_vek, old_vek)?;
+    ensure_key_chain_opens(params, rotated, new_vek)?;
 
     let delivery_key_signature = crypto::signing::sign(&rotated.signing_private_key, &crypto::signing::delivery_key_message(personal_manifest_id, delivery_public_key, current_revision))?;
     let mut request = KeyRotationRequest {
@@ -297,7 +296,6 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         },
         account_keys: AccountKeysWrite {
             encrypted_vek: rotated.account_keys.encrypted_vek.clone(),
-            retired_encrypted_vek: rotated.retired_encrypted_vek.clone(),
             account_public_key: rotated.account_keys.account_public_key.clone(),
             encrypted_account_private_key: rotated.account_keys.encrypted_account_private_key.clone(),
             account_public_key_signature: rotated.account_keys.account_public_key_signature.clone(),
@@ -344,13 +342,12 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
 
 /// Refuse to send a rotation whose new key chain does not open from the new password down to the VEKs: once the
 /// server applies it, the old password no longer reaches any key, so a broken chain could not be recovered.
-fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, old_vek: &SecretString) -> SyncResult<()> {
+fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
     let account_key = crypto::unwrap_account_key(&blobs.encrypted_account_key, params.new_unlock_key.expose_secret()).ok().filter(|key| **key == rotated.account_key);
     ensure_opens(account_key.is_some(), "the new Account Key")?;
-    let opens_to = |wrapped: &str, expected: &str| crypto::unwrap_key(wrapped, &rotated.account_key, crypto::aad::PERSONAL_VEK).is_ok_and(|key| *key == expected);
-    ensure_opens(opens_to(&blobs.encrypted_vek, new_vek.expose_secret()), "the new vault key")?;
-    ensure_opens(opens_to(&rotated.retired_encrypted_vek, old_vek.expose_secret()), "the retired vault key")?;
+    let vek_opens = crypto::unwrap_key(&blobs.encrypted_vek, &rotated.account_key, crypto::aad::PERSONAL_VEK).is_ok_and(|key| *key == new_vek.expose_secret());
+    ensure_opens(vek_opens, "the new vault key")?;
     ensure_opens(crypto::open_account_private_key(&blobs.encrypted_account_private_key, &rotated.account_key).is_ok_and(|key| key == rotated.account_private_key), "the new account private key")?;
     ensure_opens(crypto::open_account_signing_private_key(&blobs.encrypted_signing_private_key, &rotated.account_key).is_ok_and(|key| *key == rotated.signing_private_key), "the new signing private key")
 }
