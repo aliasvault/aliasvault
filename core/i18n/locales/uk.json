@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Підтвердити ПІН-код",
       "confirmPinDescription": "Enter your PIN again to confirm",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
       "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
