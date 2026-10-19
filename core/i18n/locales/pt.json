@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Digite seu PIN novamente para confirmar",
-      "enterNewPinDescription": "Digite um PIN que consista de, pelo menos, 6 dígitos",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN incorreto. {{attemptsRemaining}} tentativas restantes.",
       "incorrectPinSingular": "PIN incorreto. 1 tentativa restante.",
       "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar sua senha mestre (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, você deverá utilizar sua senha mestre.",
