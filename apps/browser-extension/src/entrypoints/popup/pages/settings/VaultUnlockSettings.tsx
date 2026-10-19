@@ -18,6 +18,7 @@ import {
   setupPin,
   removeAndDisablePin,
   isValidPin,
+  PIN_MAX_LENGTH,
   isPinLocked,
   InvalidPinFormatError
 } from '@/utils/PinUnlockService';
@@ -279,11 +280,9 @@ const VaultUnlockSettings: React.FC = () => {
                 <div className="mb-4">
                   <input
                     type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={8}
+                    maxLength={PIN_MAX_LENGTH}
                     value={newPin}
-                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setNewPin(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
                     autoFocus
                   />
@@ -309,11 +308,9 @@ const VaultUnlockSettings: React.FC = () => {
                 <div className="mb-4">
                   <input
                     type="password"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={8}
+                    maxLength={PIN_MAX_LENGTH}
                     value={confirmPin}
-                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setConfirmPin(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
                     autoFocus
                   />
