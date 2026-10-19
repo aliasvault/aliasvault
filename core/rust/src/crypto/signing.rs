@@ -25,6 +25,9 @@ pub const DELIVERY_KEY_LABEL: &str = "aliasvault/v1/sig/delivery-key";
 /// The label of the vault name an invitation carries, signed by the inviter.
 pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
 
+/// The label of a new signing public key, signed by the signing key it replaces.
+pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
+
 /// A new signing keypair, both halves base64: the 32-byte public key and the 32-byte private seed.
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 #[serde(rename_all = "camelCase")]
@@ -78,6 +81,11 @@ pub fn invitation_name_message(manifest_id: &str, signer_user_id: &str, recipien
 /// The signed message of a delivery key publish, bound to the revision the write is based on so it cannot be replayed.
 pub fn delivery_key_message(manifest_id: &str, public_key: &str, current_revision: i64) -> Vec<u8> {
     signed_message(DELIVERY_KEY_LABEL, &[normalize(manifest_id).as_bytes(), public_key.as_bytes(), current_revision.to_string().as_bytes()])
+}
+
+/// The signed message of a signing key rotation: the account's new signing public key, vouched for by the previous one.
+pub fn signing_key_rotation_message(user_id: &str, new_signing_public_key: &str) -> Vec<u8> {
+    signed_message(SIGNING_KEY_ROTATION_LABEL, &[user_id.as_bytes(), new_signing_public_key.as_bytes()])
 }
 
 /// Sign a message with a base64 private seed. Returns the base64 signature.
@@ -142,6 +150,14 @@ mod tests {
         assert_eq!(crate::common::encoding::hex_encode_lower(&delivery_key_message(manifest_id, "{\"kty\":\"RSA\"}", 42)), DELIVERY_KEY_MESSAGE_VECTOR);
         assert_eq!(crate::common::encoding::hex_encode_lower(&invitation_name_message(manifest_id, "user-1", "{\"kty\":\"RSA\"}", "bmFtZQ==")), INVITATION_NAME_MESSAGE_VECTOR);
     }
+
+    /// Known-answer vector for the signing key rotation message, which `Signing.cs` builds too. Never regenerate it.
+    #[test]
+    fn signing_key_rotation_message_known_answer() {
+        assert_eq!(crate::common::encoding::hex_encode_lower(&signing_key_rotation_message("user-1", PUBLIC_KEY_VECTOR)), SIGNING_KEY_ROTATION_MESSAGE_VECTOR);
+    }
+
+    const SIGNING_KEY_ROTATION_MESSAGE_VECTOR: &str = "00000026616c6961737661756c742f76312f7369672f7369676e696e672d6b65792d726f746174696f6e00000006757365722d310000002c41364548762f504f454c3464634e3059353076416d57666b316a436270513166486479475a424a564d62673d";
 
     const INVITATION_NAME_MESSAGE_VECTOR: &str = "00000021616c6961737661756c742f76312f7369672f696e7669746174696f6e2d6e616d650000002430613162326333642d303030302d303030302d303030302d30303030303030303030303100000006757365722d310000000d7b226b7479223a22525341227d00000008626d46745a513d3d";
 

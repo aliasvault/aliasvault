@@ -21,4 +21,7 @@ public class ManifestRevision
 
     /// <summary>Gets or sets the name of a shared manifest, encrypted with the manifest's own key (base64).</summary>
     public string? EncryptedName { get; set; }
+
+    /// <summary>Gets or sets the generation of the VEK the current revision is encrypted with.</summary>
+    public int KeyVersion { get; set; }
 }

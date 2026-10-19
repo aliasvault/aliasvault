@@ -46,4 +46,7 @@ public class VaultKeyResponse
 
     /// <summary>Gets or sets the key derivation settings.</summary>
     public required string EncryptionSettings { get; set; }
+
+    /// <summary>Gets or sets the generation of the personal VEK that <see cref="EncryptedVek"/> yields.</summary>
+    public int KeyVersion { get; set; }
 }

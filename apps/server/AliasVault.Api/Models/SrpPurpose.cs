@@ -31,4 +31,9 @@ public enum SrpPurpose
     /// Deletion of a shared manifest.
     /// </summary>
     SharedManifestDeletion,
+
+    /// <summary>
+    /// Password change that also rotates the account's encryption keys.
+    /// </summary>
+    KeyRotation,
 }

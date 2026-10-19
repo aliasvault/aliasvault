@@ -52,11 +52,12 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
 
-        // Get the encrypted VEK and account keypair.
+        // Get the encrypted VEK of the newest key generation and the account keypair.
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
-        var encryptedVek = personalManifestId is null ? null : await context.VaultManifestAccessKeys
+        var accessKey = personalManifestId is null ? null : await context.VaultManifestAccessKeys
             .Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.AccountKey && x.VaultManifestId == personalManifestId.Value)
-            .Select(x => x.EncryptedVek)
+            .OrderByDescending(x => x.KeyVersion)
+            .Select(x => new { x.EncryptedVek, x.KeyVersion })
             .FirstOrDefaultAsync();
         var accountKeypair = await context.UserGrantKeys
             .Where(x => x.UserId == user.Id && x.IsPrimary)
@@ -77,7 +78,8 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
                 Type = UnlockMethodTypes.ToToken(unlockMethod.Type),
                 EncryptedAccountKey = unlockMethod.EncryptedAccountKey,
                 Algorithm = VaultKeyAlgorithms.ToToken(unlockMethod.Algorithm),
-                EncryptedVek = encryptedVek,
+                EncryptedVek = accessKey?.EncryptedVek,
+                KeyVersion = accessKey?.KeyVersion ?? 0,
                 AccountPublicKey = accountKeypair?.PublicKey,
                 EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,
                 SigningPublicKey = signingKeypair?.PublicKey,

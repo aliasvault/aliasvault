@@ -163,6 +163,11 @@ public enum ApiErrorCode
     VAULT_KEY_NOT_FOUND,
 
     /// <summary>
+    /// A key rotation does not cover every blob key or grant the account holds, so applying it would leave data unreadable.
+    /// </summary>
+    KEY_ROTATION_INCOMPLETE,
+
+    /// <summary>
     /// The referenced shared manifest does not exist or is not owned by the caller.
     /// </summary>
     SHARED_MANIFEST_NOT_FOUND,

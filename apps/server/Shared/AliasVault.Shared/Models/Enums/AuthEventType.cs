@@ -58,6 +58,11 @@ public enum AuthEventType
     TwoFactorAuthDisable = 23,
 
     /// <summary>
+    /// Represents a rotation of the account's encryption keys, confirmed with the master password.
+    /// </summary>
+    KeyRotation = 24,
+
+    /// <summary>
     /// Represents a user registration event.
     /// </summary>
     Register = 30,
