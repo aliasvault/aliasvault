@@ -190,10 +190,17 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         await ApplyVaultRetention(context, currentManifest, archivedRevision);
         await context.SaveChangesAsync();
 
-        // Update user email claims if email addresses have been supplied.
+        // Update user email claims under the same quota lock the v2 push takes.
         if (model.EmailAddressList.Count > 0)
         {
-            await UpdateEmailClaims(context, user, currentManifest.ManifestId, model.EmailAddressList);
+            var strategy = context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await context.Database.BeginTransactionAsync();
+                await context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({"alias-quota:" + user.PersonalGroupId}, 0))");
+                await UpdateEmailClaims(context, user, currentManifest.ManifestId, model.EmailAddressList);
+                await transaction.CommitAsync();
+            });
         }
 
         // Sync user public key if supplied, scoped to the personal manifest (every key row is manifest-scoped).

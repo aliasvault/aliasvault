@@ -476,6 +476,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// </summary>
     /// <returns>IActionResult.</returns>
     [HttpPost("register")]
+    [EnableRateLimiting(RegistrationCheckRateLimit.PolicyName)]
     public IActionResult Register()
     {
         // v1 registration is intentionally disabled. Clients must use the v2 API to create accounts.

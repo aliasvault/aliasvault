@@ -393,6 +393,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("register")]
+    [EnableRateLimiting(RegistrationCheckRateLimit.PolicyName)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest model, [FromServices] RegistrationRateLimitService registrationRateLimitService)
     {
         // Without public registration only an invite code holder may register. The invite use is taken right before the account is created.
@@ -410,13 +411,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.REGISTRATION_FAILED, 400);
         }
 
-        // Check IP-based registration rate limit
+        // Check IP-based registration rate limit.
         var settings = await settingsService.GetAllSettingsAsync();
         var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
+        using var ipLock = await registrationRateLimitService.LockAsync(ipAddress);
         if (await registrationRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxRegistrationsPerIpPer24Hours))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.RegistrationRateLimitExceeded);
             return ApiError.Result(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, 429);
+        }
+
+        // Check the invite code before the username.
+        if (requiresInvite && !await registrationInviteService.IsValidAsync(model.InviteCode))
+        {
+            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.InvalidInviteCode);
+            return ApiError.Result(ApiErrorCode.INVITE_CODE_INVALID, 400);
         }
 
         // Validate the username.
@@ -791,6 +800,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Check IP-based mobile login rate limit.
         var settings = await settingsService.GetAllSettingsAsync();
         var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
+        using var ipLock = await mobileLoginRateLimitService.LockAsync(ipAddress);
         if (await mobileLoginRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxMobileLoginRequestsPerIpPerMinute))
         {
             await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.MobileLoginRateLimitExceeded);

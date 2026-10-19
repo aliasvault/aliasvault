@@ -18,8 +18,19 @@ using Microsoft.EntityFrameworkCore;
 /// Service for checking registration rate limits based on IP address.
 /// </summary>
 /// <param name="dbContextFactory">IDbContextFactory instance.</param>
-public class RegistrationRateLimitService(IAliasServerDbContextFactory dbContextFactory)
+/// <param name="keyedLock">The per-IP lock.</param>
+public class RegistrationRateLimitService(IAliasServerDbContextFactory dbContextFactory, KeyedAsyncLock keyedLock)
 {
+    /// <summary>
+    /// Lock an IP address until its registration is written.
+    /// </summary>
+    /// <param name="ipAddress">The IP address to lock (should be /24 anonymized).</param>
+    /// <returns>The handle that releases the lock when disposed.</returns>
+    public Task<IDisposable> LockAsync(string? ipAddress)
+    {
+        return keyedLock.AcquireAsync("registration:" + ipAddress);
+    }
+
     /// <summary>
     /// Checks if the given IP address has exceeded the registration rate limit.
     /// </summary>

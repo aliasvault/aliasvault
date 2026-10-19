@@ -18,12 +18,23 @@ using Microsoft.EntityFrameworkCore;
 /// Service for checking mobile login request rate limits based on IP address.
 /// </summary>
 /// <param name="dbContextFactory">IDbContextFactory instance.</param>
-public class MobileLoginRateLimitService(IAliasServerDbContextFactory dbContextFactory)
+/// <param name="keyedLock">The per-IP lock.</param>
+public class MobileLoginRateLimitService(IAliasServerDbContextFactory dbContextFactory, KeyedAsyncLock keyedLock)
 {
     /// <summary>
     /// Length of the window the limit is enforced over.
     /// </summary>
     private const int WindowMinutes = 1;
+
+    /// <summary>
+    /// Lock an IP address until its request is written.
+    /// </summary>
+    /// <param name="ipAddress">The IP address to lock (should be /24 anonymized).</param>
+    /// <returns>The handle that releases the lock when disposed.</returns>
+    public Task<IDisposable> LockAsync(string? ipAddress)
+    {
+        return keyedLock.AcquireAsync("mobile-login:" + ipAddress);
+    }
 
     /// <summary>
     /// Checks if the given IP address has exceeded the mobile login request rate limit.

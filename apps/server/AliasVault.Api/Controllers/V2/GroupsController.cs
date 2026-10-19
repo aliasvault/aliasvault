@@ -24,6 +24,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 
 /// <summary>
@@ -187,13 +188,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }
 
-        // A family holds a handful of manifests, enough to keep e.g. streaming and banking apart without growing without bound.
-        if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
-        {
-            return ApiError.Result(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400);
-        }
-
-        // Create the empty manifest.
         var manifest = new VaultManifest
         {
             ManifestId = model.ManifestId,
@@ -206,18 +200,44 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
-        context.VaultManifests.Add(manifest);
-        context.VaultManifestShareDetails.Add(new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.GetUtcNow().UtcDateTime, UpdatedAt = timeProvider.GetUtcNow().UtcDateTime });
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, model.SelfGrantSignature, me.Id, signerPublicKey!, timeProvider.GetUtcNow().UtcDateTime));
 
-        try
+        var shareDetails = new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.GetUtcNow().UtcDateTime, UpdatedAt = timeProvider.GetUtcNow().UtcDateTime };
+        var selfGrant = GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, model.SelfGrantSignature, me.Id, signerPublicKey!, timeProvider.GetUtcNow().UtcDateTime);
+
+        // Count and insert under the group lock, so concurrent creations cannot both pass the cap.
+        var strategy = context.Database.CreateExecutionStrategy();
+        var result = await strategy.ExecuteAsync<IActionResult?>(async () =>
         {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            await LockGroupManifestsAsync(context, groupId);
+
+            if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
+            {
+                return ApiError.Result(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400);
+            }
+
+            // Create the empty manifest.
+            context.VaultManifests.Add(manifest);
+            context.VaultManifestShareDetails.Add(shareDetails);
+            context.VaultManifestAccessKeys.Add(selfGrant);
+
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // The client-generated manifest id is already taken, which a fresh id makes vanishingly unlikely; the client asks again.
+                return ApiError.Result(ApiErrorCode.MANIFEST_ID_TAKEN, 400);
+            }
+
+            await transaction.CommitAsync();
+            return null;
+        });
+
+        if (result is not null)
         {
-            // The client-generated manifest id is already taken, which a fresh id makes vanishingly unlikely; the client asks again.
-            return ApiError.Result(ApiErrorCode.MANIFEST_ID_TAKEN, 400);
+            return result;
         }
 
         await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultCreation);
@@ -383,16 +403,17 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404);
         }
 
-        if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
-        {
-            return ApiError.Result(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400);
-        }
-
-        // Create a transaction to ensure the invitation and grant are closed together.
+        // Close the invitation and the grant in one transaction; the lock keeps the last-holder check true until commit.
         var strategy = context.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
             await using var transaction = await context.Database.BeginTransactionAsync();
+            await LockManifestGrantsAsync(context, manifestId);
+
+            if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
+            {
+                return ApiError.Result(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400);
+            }
 
             foreach (var invitation in await context.GroupInvitations.Where(i => i.VaultManifestId == manifestId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
             {
@@ -406,9 +427,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
+            return Ok();
         });
-
-        return Ok();
     }
 
     /// <summary>
@@ -588,71 +608,85 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
-        var invitation = await context.GroupInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.InviteeUserId == me.Id && i.State == GroupInvitationState.Pending);
-        if (invitation is null)
-        {
-            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
-        }
-
-        // Accepting no longer joins anything: the roster decided that, and a member who was taken off it in the
-        // meantime has nothing left to accept.
-        if (!await GroupHelper.IsSharedGroupMemberAsync(context, invitation.GroupId, me.Id))
-        {
-            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
-        }
-
-        var manifestKeyVersion = invitation.VaultManifestId is null ? null : await context.VaultManifests
-            .Where(m => m.ManifestId == invitation.VaultManifestId.Value && m.OwnerGroupId == invitation.GroupId)
-            .Select(m => (int?)m.KeyVersion)
+        // Read the offer's manifest only to know which lock to take; the offer itself is read again under the lock.
+        var offeredManifestId = await context.GroupInvitations
+            .Where(i => i.Id == invitationId && i.InviteeUserId == me.Id && i.State == GroupInvitationState.Pending)
+            .Select(i => i.VaultManifestId)
             .FirstOrDefaultAsync();
 
-        if (manifestKeyVersion is null)
+        if (offeredManifestId is null)
         {
             return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
         }
 
-        // If the current manifest key version is different from the one the invitation was encrypted under, it is no longer valid.
-        if (manifestKeyVersion.Value != invitation.VaultKeyVersion)
+        // Under the manifest's grant lock, so a concurrent revoke either closes the offer first or sees the new grant.
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            CloseInvitation(invitation, GroupInvitationState.Stale);
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            await LockManifestGrantsAsync(context, offeredManifestId.Value);
+
+            var invitation = await context.GroupInvitations.FirstOrDefaultAsync(i => i.Id == invitationId && i.InviteeUserId == me.Id && i.State == GroupInvitationState.Pending);
+            if (invitation is null)
+            {
+                return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            // Accepting no longer joins anything: the roster decided that, and a member who was taken off it in the
+            // meantime has nothing left to accept.
+            if (!await GroupHelper.IsSharedGroupMemberAsync(context, invitation.GroupId, me.Id))
+            {
+                return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            var manifestKeyVersion = invitation.VaultManifestId is null ? null : await context.VaultManifests
+                .Where(m => m.ManifestId == invitation.VaultManifestId.Value && m.OwnerGroupId == invitation.GroupId)
+                .Select(m => (int?)m.KeyVersion)
+                .FirstOrDefaultAsync();
+
+            if (manifestKeyVersion is null)
+            {
+                return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            // If the current manifest key version is different from the one the invitation was encrypted under, it is no longer valid.
+            if (manifestKeyVersion.Value != invitation.VaultKeyVersion)
+            {
+                return await CloseAndCommitAsync(context, transaction, invitation, GroupInvitationState.Stale, ApiErrorCode.INVITATION_KEY_OUTDATED, 400);
+            }
+
+            if (invitation.CreatedAt < InvitationCutoff())
+            {
+                return await CloseAndCommitAsync(context, transaction, invitation, GroupInvitationState.Expired, ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            // The offer is only as good as the inviter's right to make it, checked again now and not only when it was sent.
+            if (!await InviterMayStillGrantAsync(context, invitation))
+            {
+                return await CloseAndCommitAsync(context, transaction, invitation, GroupInvitationState.Revoked, ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            if (!await PromoteInvitationGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
+            {
+                return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
+            }
+
+            invitation.State = GroupInvitationState.Accepted;
+            invitation.RespondedAt = timeProvider.GetUtcNow().UtcDateTime;
+            invitation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
+
+            // The encrypted copy has become the grant, so it stops being a second copy of the key lying around.
+            invitation.EncryptedVek = null;
+            invitation.EncryptedName = null;
+            invitation.EncryptedNameSignature = null;
+            invitation.UserGrantKeyId = null;
+            invitation.GrantSignature = null;
+            invitation.GrantSignerPublicKey = null;
+
             await context.SaveChangesAsync();
-            return ApiError.Result(ApiErrorCode.INVITATION_KEY_OUTDATED, 400);
-        }
-
-        if (invitation.CreatedAt < InvitationCutoff())
-        {
-            CloseInvitation(invitation, GroupInvitationState.Expired);
-            await context.SaveChangesAsync();
-            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
-        }
-
-        // The offer is only as good as the inviter's right to make it, checked again now and not only when it was sent.
-        if (!await InviterMayStillGrantAsync(context, invitation))
-        {
-            CloseInvitation(invitation, GroupInvitationState.Revoked);
-            await context.SaveChangesAsync();
-            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
-        }
-
-        if (!await PromoteInvitationGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
-        {
-            return ApiError.Result(ApiErrorCode.INVITATION_NOT_FOUND, 404);
-        }
-
-        invitation.State = GroupInvitationState.Accepted;
-        invitation.RespondedAt = timeProvider.GetUtcNow().UtcDateTime;
-        invitation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-
-        // The encrypted copy has become the grant, so it stops being a second copy of the key lying around.
-        invitation.EncryptedVek = null;
-        invitation.EncryptedName = null;
-        invitation.EncryptedNameSignature = null;
-        invitation.UserGrantKeyId = null;
-        invitation.GrantSignature = null;
-        invitation.GrantSignerPublicKey = null;
-
-        await context.SaveChangesAsync();
-        return Ok();
+            await transaction.CommitAsync();
+            return Ok();
+        });
     }
 
     /// <summary>
@@ -803,6 +837,26 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
+    /// Take a transaction-scoped lock on a group's set of manifests.
+    /// </summary>
+    /// <param name="context">Database context, inside an open transaction.</param>
+    /// <param name="groupId">The group.</param>
+    private static async Task LockGroupManifestsAsync(AliasServerDbContext context, Guid groupId)
+    {
+        await context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({"group-manifests:" + groupId}, 0))");
+    }
+
+    /// <summary>
+    /// Take a transaction-scoped lock on a manifest's grants.
+    /// </summary>
+    /// <param name="context">Database context, inside an open transaction.</param>
+    /// <param name="manifestId">The shared manifest.</param>
+    private static async Task LockManifestGrantsAsync(AliasServerDbContext context, Guid manifestId)
+    {
+        await context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({"manifest-grants:" + manifestId}, 0))");
+    }
+
+    /// <summary>
     /// Close an offer of access, dropping the manifest key encrypted inside it.
     /// </summary>
     /// <param name="invitation">The invitation to close.</param>
@@ -844,6 +898,24 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, invitation.GrantSignature, invitation.InviterUserId, invitation.GrantSignerPublicKey, timeProvider.GetUtcNow().UtcDateTime));
 
         return true;
+    }
+
+    /// <summary>
+    /// Close an offer, commit, and return the given error.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="transaction">The open transaction to commit.</param>
+    /// <param name="invitation">The offer to close.</param>
+    /// <param name="state">The state it ends in.</param>
+    /// <param name="errorCode">The error to answer with.</param>
+    /// <param name="statusCode">The HTTP status to answer with.</param>
+    /// <returns>The error result.</returns>
+    private async Task<IActionResult> CloseAndCommitAsync(AliasServerDbContext context, IDbContextTransaction transaction, GroupInvitation invitation, GroupInvitationState state, ApiErrorCode errorCode, int statusCode)
+    {
+        CloseInvitation(invitation, state);
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return ApiError.Result(errorCode, statusCode);
     }
 
     /// <summary>

@@ -92,6 +92,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<TimeValidationJwtBearerEvents>();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();
+builder.Services.AddSingleton<KeyedAsyncLock>();
 builder.Services.AddScoped<RegistrationRateLimitService>();
 builder.Services.AddScoped<RegistrationInviteService>();
 builder.Services.AddScoped<IpBlockListService>();
