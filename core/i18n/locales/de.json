@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "PIN bestätigen",
       "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
-      "enterNewPinDescription": "PIN-Code aus mindestens 6 Ziffern eingeben",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "Falsche PIN. {{attemptsRemaining}} verbleibende Versuche.",
       "incorrectPinSingular": "Falsche PIN. Ein Versuch übrig.",
       "introText": "Wähle, wie Du Deinen Tresor entsperren möchtest. Du kannst Dein Master-Passwort verwenden (immer verfügbar) oder einen PIN-Code für einen schnelleren Zugriff einrichten. Nach drei fehlgeschlagenen PIN-Versuchen musst Du Dein Master-Passwort verwenden.",
