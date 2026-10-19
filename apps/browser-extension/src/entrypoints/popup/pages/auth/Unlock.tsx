@@ -355,7 +355,7 @@ const Unlock: React.FC = () => {
    * Handle numpad button click
    */
   const handleNumpadClick = (digit: string): void => {
-    if (pin.length < 8) {
+    if (pin.length < pinLength) {
       handlePinChange(pin + digit);
     }
   };
@@ -595,7 +595,7 @@ const Unlock: React.FC = () => {
             </div>
 
             {/* PIN Dots Display */}
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
               {pinDots}
             </div>
 
@@ -606,11 +606,9 @@ const Unlock: React.FC = () => {
             <input
               ref={inputRef}
               type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={8}
+              maxLength={pinLength}
               value={pin}
-              onChange={(e) => handlePinChange(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => handlePinChange(e.target.value)}
               className="w-0 h-0 opacity-0 absolute"
               autoFocus
               aria-label={t('auth.pinInput')}

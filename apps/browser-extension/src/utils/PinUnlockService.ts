@@ -9,13 +9,13 @@ import { browser, storage } from '#imports';
 /**
  * PinUnlockService - Handles PIN-based vault unlock
  *
- * This service allows users to set a 6-8 digit PIN to unlock their vault instead
+ * This service allows users to set a PIN (digits, letters or symbols) to unlock their vault instead
  * of entering their full master password. The Account Key
  * is encrypted with a key derived from the PIN and stored locally.
  *
  * Security features:
  * - 4 failed attempts maximum before requiring full password
- * - PIN must be 6-8 digits
+ * - PIN must be 6-64 characters
  * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
  * - Extension ID pepper adds friction for naive attacks
  * - Failed attempts counter stored separately
@@ -118,12 +118,17 @@ export async function getPinLength(): Promise<number | null> {
   }
 }
 
+/** Minimum PIN length. */
+export const PIN_MIN_LENGTH = 6;
+
+/** Maximum PIN length. */
+export const PIN_MAX_LENGTH = 64;
+
 /**
- * Validate PIN format (6-8 digits)
+ * Validate PIN format (6-64 characters of any kind)
  */
 export function isValidPin(pin: string): boolean {
-  const pinRegex = /^\d{6,8}$/;
-  return pinRegex.test(pin);
+  return pin.length >= PIN_MIN_LENGTH && pin.length <= PIN_MAX_LENGTH;
 }
 
 /**
@@ -153,7 +158,7 @@ export async function isPinLocked(): Promise<boolean> {
  * Setup PIN unlock
  * Encrypts the session's Account Key with the PIN and stores it
  *
- * @param pin - The PIN to set (6-8 digits)
+ * @param pin - The PIN to set (6-64 characters)
  * @param accountKey - The base64 Account Key to protect (VaultKeyService.getSessionAccountKey)
  */
 export async function setupPin(pin: string, accountKey: string): Promise<void> {
