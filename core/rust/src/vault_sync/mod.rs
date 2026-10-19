@@ -13,6 +13,7 @@ mod merge;
 mod migration;
 mod pull;
 mod push;
+mod rotation;
 mod session;
 mod sharing;
 pub(crate) mod state;

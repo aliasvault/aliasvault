@@ -238,6 +238,40 @@ pub(crate) async fn active_public_key_for_manifest(host: &Host, manifest_id: &st
     Ok(rows.first().and_then(|row| row.get("PublicKey")).and_then(Value::as_str).map(str::to_string))
 }
 
+/// A delivery keypair change that can be undone when the write it was made for does not land.
+pub(crate) struct DeliveryKeyChange {
+    pub new_key_id: String,
+    pub previous_primary_ids: Vec<String>,
+}
+
+const PRIMARY_KEY_IDS_FOR_MANIFEST: &str = "SELECT Id FROM EncryptionKeys WHERE ManifestId = ? AND IsPrimary = 1";
+const DELETE_KEY: &str = "DELETE FROM EncryptionKeys WHERE Id = ?";
+const PROMOTE_KEY: &str = "UPDATE EncryptionKeys SET IsPrimary = 1 WHERE Id = ?";
+
+/// [`set_active_key_for_manifest`], remembering what it changed so [`undo_active_key_change`] can put it back.
+pub(crate) async fn rotate_active_key_for_manifest(host: &Host, manifest_id: &str, public_key: &str, private_key: &str) -> SyncResult<DeliveryKeyChange> {
+    let previous_primary_ids = query(host, Db::Local, PRIMARY_KEY_IDS_FOR_MANIFEST, vec![json!(manifest_id)]).await?.iter().filter_map(|row| row.get("Id").and_then(Value::as_str)).map(str::to_string).collect();
+    let new_key_id = new_id();
+    let now = now_vault_datetime();
+    exec(
+        host,
+        Db::Local,
+        vec![
+            SqlStatement { sql: DEMOTE_KEYS_FOR_MANIFEST.to_string(), params: vec![json!(now), json!(manifest_id)] },
+            SqlStatement { sql: INSERT_KEY_FOR_MANIFEST.to_string(), params: vec![json!(new_key_id), json!(manifest_id), json!(public_key), json!(private_key), json!(now), json!(now)] },
+        ],
+    )
+    .await?;
+    Ok(DeliveryKeyChange { new_key_id, previous_primary_ids })
+}
+
+/// Put the delivery keypair back the way it was before [`rotate_active_key_for_manifest`].
+pub(crate) async fn undo_active_key_change(host: &Host, change: &DeliveryKeyChange) -> SyncResult<()> {
+    let mut statements = vec![SqlStatement { sql: DELETE_KEY.to_string(), params: vec![json!(change.new_key_id)] }];
+    statements.extend(change.previous_primary_ids.iter().map(|id| SqlStatement { sql: PROMOTE_KEY.to_string(), params: vec![json!(id)] }));
+    exec(host, Db::Local, statements).await
+}
+
 /// Make a keypair the manifest's active one, demoting (never deleting) whatever it supersedes.
 pub(crate) async fn set_active_key_for_manifest(host: &Host, manifest_id: &str, public_key: &str, private_key: &str) -> SyncResult<()> {
     let now = now_vault_datetime();

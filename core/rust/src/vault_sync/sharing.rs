@@ -195,6 +195,9 @@ async fn own_public_key(ctx: &Ctx) -> SyncResult<Option<String>> {
     }
 }
 
+/// The VEK generation a new shared manifest starts at; its self-grant is signed over it.
+const NEW_MANIFEST_KEY_VERSION: i64 = 0;
+
 async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let key = ctx.encryption_key()?;
     let target = params(ctx)?;
@@ -216,8 +219,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = crypto::generate_key_base64();
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
-    // A new manifest starts at key version 0.
-    let self_grant_signature = crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::grant_message(&requested_id, 0, &own_user_id(ctx, &group)?, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
+    let self_grant_signature = crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::grant_message(&requested_id, NEW_MANIFEST_KEY_VERSION, &own_user_id(ctx, &group)?, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
     let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
@@ -242,6 +244,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
             salt: vault_codec::generate_manifest_salt(),
             encrypted_name: Some(encrypted_name),
             can_administer: true,
+            key_version: NEW_MANIFEST_KEY_VERSION,
         },
     );
     keys::set_shared_manifest_records(ctx, &records, key.expose_secret()).await?;
