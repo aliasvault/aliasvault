@@ -213,6 +213,32 @@ export async function enableCapability(apiUrl: string, username: string, key: st
 }
 
 /**
+ * An account's key generations, primary public keys and session count: what a key rotation changes.
+ */
+export type KeyState = {
+  accountKeyVersion: number;
+  srpSalt: string;
+  manifestKeyVersion: number;
+  manifestRevision: number;
+  personalVekVersions: number[];
+  accountPublicKey: string;
+  signingPublicKey: string;
+  activeSessions: number;
+};
+
+/**
+ * Read an account's key state via the DEBUG-only test controller.
+ */
+export async function getKeyState(apiUrl: string, username: string): Promise<KeyState> {
+  const url = `${apiUrl}/v2/Test/key-state/by-username/${encodeURIComponent(username)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Reading the key state via ${url} failed with status ${response.status}: ${await response.text()}`);
+  }
+  return (await response.json()) as KeyState;
+}
+
+/**
  * The JSON header of the binary GET /v2/Vault snapshot (the manifest and bucket ciphertexts follow it).
  */
 export async function getVaultSnapshotHeader<T>(apiUrl: string, token: string): Promise<T> {
