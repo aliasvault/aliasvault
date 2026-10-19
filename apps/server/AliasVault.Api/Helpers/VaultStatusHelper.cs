@@ -31,6 +31,7 @@ public static class VaultStatusHelper
                 ManifestId = x.ManifestId,
                 Revision = x.RevisionNumber,
                 EncryptedName = context.VaultManifestShareDetails.Where(d => d.ManifestId == x.ManifestId).Select(d => d.EncryptedName).FirstOrDefault(),
+                KeyVersion = x.KeyVersion,
             })
             .ToListAsync();
     }

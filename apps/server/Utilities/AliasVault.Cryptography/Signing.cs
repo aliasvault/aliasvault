@@ -38,6 +38,11 @@ public static class Signing
     public const string InvitationNameLabel = "aliasvault/v1/sig/invitation-name";
 
     /// <summary>
+    /// The label of a new signing public key, signed by the signing key it replaces.
+    /// </summary>
+    public const string SigningKeyRotationLabel = "aliasvault/v1/sig/signing-key-rotation";
+
+    /// <summary>
     /// Builds the bytes a signature covers: the label and each field, each prefixed with its length as a big-endian uint.
     /// </summary>
     /// <param name="label">The purpose label.</param>
@@ -97,6 +102,17 @@ public static class Signing
     public static byte[] DeliveryKeyMessage(Guid manifestId, string publicKey, long currentRevision)
     {
         return SignedMessage(DeliveryKeyLabel, Utf8(manifestId.ToString()), Utf8(publicKey), Utf8(currentRevision.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    /// <summary>
+    /// Builds the signed message of a signing key rotation: the account's new signing public key, signed by the previous one.
+    /// </summary>
+    /// <param name="userId">The account rotating its signing key.</param>
+    /// <param name="newSigningPublicKey">The new signing public key (base64).</param>
+    /// <returns>The message bytes.</returns>
+    public static byte[] SigningKeyRotationMessage(string userId, string newSigningPublicKey)
+    {
+        return SignedMessage(SigningKeyRotationLabel, Utf8(userId), Utf8(newSigningPublicKey));
     }
 
     /// <summary>
