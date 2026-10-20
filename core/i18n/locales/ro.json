@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmă PIN",
       "confirmPinDescription": "Introdu PIN-ul din nou pentru confirmare",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "Introdu un PIN de cel puțin 6 caractere. Poți folosi litere și simboluri.",
       "incorrectPin": "PIN incorect. {{attemptsRemaining}} încercări rămase.",
       "incorrectPinSingular": "PIN incorect. 1 încercare rămasă.",
       "introText": "Alege cum dorești să îți deblochezi seiful. Poți folosi parola principală (întotdeauna disponibilă) sau poți configura un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola principală.",
