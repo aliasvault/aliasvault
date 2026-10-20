@@ -285,7 +285,7 @@
     "hide": "隐藏",
     "hideDetails": "隐藏详情",
     "hidePassword": "隐藏密码",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "这是高风险操作。",
     "home": "主页",
     "loadMore": "加载更多",
     "loading": "加载中…",
@@ -691,7 +691,7 @@
     "excludedCharsLabel": "排除字符",
     "fieldHistory": {
       "deleteConfirm": "您确定吗？",
-      "title": "{{field}} history"
+      "title": "{{field}} 历史记录"
     },
     "fileSavedTo": "文件已保存至",
     "filters": {
@@ -1360,7 +1360,7 @@
         "failedToChange": "密码更改失败。请重试。",
         "failedToChangePassword": "密码更改失败。请刷新页面后重试。",
         "fillAllFields": "请填写所有字段",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "更改主密码会使您的其他设备退出登录。",
         "initiatingChange": "开始更改密码…",
         "newPassword": "新密码",
         "passwordChangedSuccessfully": "密码更改成功",
@@ -1416,10 +1416,10 @@
         "verifyAndEnableButton": "验证并启用"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "acknowledge": "我已经备份了我的密码库，并且在其他设备上退出登录",
+        "changePasswordAndRotate": "更改密码并轮换密钥",
+        "optionRotateKeys": "同时轮换所有加密密钥",
+        "optionRotateKeysDescription": "仅在您怀疑密钥已泄露（例如设备遭到入侵或被盗）时才需要此操作。它会重新加密您的密码库，并使所有其他设备退出登录。",
         "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
         "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
         "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
