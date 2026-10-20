@@ -218,7 +218,7 @@
     "attachments": "Вложения",
     "back": "Назад",
     "backspace": "Удалить",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Прежде чем продолжить:",
     "cancel": "Отмена",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистить буфер обмена"
@@ -285,7 +285,7 @@
     "hide": "Скрыть",
     "hideDetails": "Скрыть подробности",
     "hidePassword": "Скрыть пароль",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Действие с высоким риском.",
     "home": "Главная",
     "loadMore": "Загрузить ещё",
     "loading": "Загрузка...",
@@ -1027,7 +1027,7 @@
     "passwordCopied": "Пароль скопирован",
     "passwordUnlockError": "Не удалось проверить пароль",
     "pinConfirmSubtitle": "Введите PIN-код еще раз для подтверждения",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Устройство не подтвердило разблокировку. Заблокируйте экран, разблокируйте его своим PIN-кодом, паролем или графическим ключом и попробуйте снова.",
     "pinIncorrectAttemptsRemaining": "Неверный PIN-код. Осталось попыток: {{count}}",
     "pinLockedMaxAttempts": "ПИН-код заблокирован: слишком много попыток ввода",
     "pinMismatch": "PIN-коды не совпадают. Повторите попытку.",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Не удалось сменить пароль. Пожалуйста, попробуйте снова.",
         "failedToChangePassword": "Не удалось сменить пароль. Пожалуйста, обновите страницу и повторите попытку.",
         "fillAllFields": "Пожалуйста, заполните все поля",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Смена мастер-пароля сбросит вход на других устройствах.",
         "initiatingChange": "Начинается изменение пароля...",
         "newPassword": "Новый пароль",
         "passwordChangedSuccessfully": "Пароль успешно изменен",
@@ -1416,13 +1416,13 @@
         "verifyAndEnableButton": "Подтвердить и включить"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "Резервная копия хранилища сохранена, вход на остальных устройствах завершён",
+        "changePasswordAndRotate": "Сменить пароль и обновить ключи",
+        "optionRotateKeys": "Также сменить все ключи шифрования",
+        "optionRotateKeysDescription": "Требуется только в случае компрометации ключей — например, если устройство было взломано или украдено. Заново зашифрует ваше хранилище и выполнит выход на всех остальных устройствах.",
+        "riskAfterwards": "Затем войдите в аккаунт на других устройствах и заново настройте PIN-код, ключ доступа или вход по биометрии.",
+        "riskBackup": "Сначала сохраните резервную копию хранилища («Настройки» > «Импорт / экспорт»). Смену ключей невозможно отменить.",
+        "riskSignOut": "Дождитесь окончания синхронизации и выйдите из аккаунта на остальных устройствах. Иначе несинхронизированные изменения пропадут."
       },
       "passkeyUnlock": {
         "disableButton": "Отключить разблокировку ключом",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Подтвердите ПИН-код﻿",
       "confirmPinDescription": "Повторите ПИН-код для подтверждения",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "Придумайте PIN-код от 6 символов. Можно использовать буквы и спецсимволы.",
       "incorrectPin": "Неверный ПИН-код. Осталось {{attemptsRemaining}} попытки.",
       "incorrectPinSingular": "Неверный ПИН-код. Осталась 1 попытка.",
       "introText": "Выберите способ разблокировки хранилища. Вы можете использовать свой мастер-пароль (он доступен всегда) или установить ПИН-код для быстрого доступа. После 3 неудачных попыток ввода ПИН-кода необходимо будет ввести мастер-пароль.",
