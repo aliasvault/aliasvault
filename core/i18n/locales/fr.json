@@ -218,7 +218,7 @@
     "attachments": "Pièces jointes",
     "back": "Retour",
     "backspace": "RetArr",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Avant de continuer :",
     "cancel": "Annuler",
     "clipboardCountdown": {
       "clearClipboardButton": "Effacer le presse-papiers"
@@ -285,7 +285,7 @@
     "hide": "Masquer",
     "hideDetails": "Masquer les détails",
     "hidePassword": "Cacher le mot de passe",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Il s'agit d'une action à haut risque.",
     "home": "Accueil",
     "loadMore": "Voir plus",
     "loading": "Chargement...",
@@ -1360,7 +1360,7 @@
         "failedToChange": "Échec de la mise à jour du mot de passe. Veuillez réessayer.",
         "failedToChangePassword": "Impossible de modifier le mot de passe. Veuillez actualiser la page et réessayer plus tard.",
         "fillAllFields": "Veuillez renseigner tous les champs",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Changer votre mot de passe maître déconnecte vos autres appareils.",
         "initiatingChange": "Initialisation du changement de mot de passe...",
         "newPassword": "Nouveau mot de passe",
         "passwordChangedSuccessfully": "Mot de passe modifié avec succès",
@@ -1416,13 +1416,13 @@
         "verifyAndEnableButton": "Vérifier et activer"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "J'ai sauvegardé mon coffre et je me suis déconnecté de mes autres appareils",
+        "changePasswordAndRotate": "Changer le mot de passe et faire pivoter les clés",
+        "optionRotateKeys": "Faire pivoter également toutes les clés de chiffrement",
+        "optionRotateKeysDescription": "Nécessaire uniquement si vous pensez que vos clés ont été exposées, par exemple si votre appareil a été compromis ou volé. Rechiffre votre coffre et déconnecte tous les autres périphériques.",
+        "riskAfterwards": "Ensuite, connectez-vous à nouveau sur vos autres appareils et configurez à nouveau le déverrouillage par code PIN, mot de passe ou la biométrie.",
+        "riskBackup": "Exporter d'abord une sauvegarde de votre coffre (Paramètres > Import / Export). Une opération de rotation de clé ne peut pas être annulée.",
+        "riskSignOut": "Laissez vos autres appareils terminer la synchronisation, puis déconnectez-vous d'eux. Les modifications non synchronisées sur les appareils qui restent connectés sont perdues."
       },
       "passkeyUnlock": {
         "disableButton": "Désactiver le déverrouillage par clé d'accès",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmer le code PIN",
       "confirmPinDescription": "Saisissez à nouveau votre code PIN pour confirmer",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "Entrez un code PIN d'au moins 6 caractères. Les lettres et les symboles sont autorisés.",
       "incorrectPin": "Code PIN incorrect, {{attemptsRemaining}} tentatives restantes.",
       "incorrectPinSingular": "Code PIN incorrect. 1 tentative restante.",
       "introText": "Choisissez comment vous voulez déverrouiller votre coffre-fort. Vous pouvez utiliser votre mot de passe principal (toujours disponible) ou configurer un code PIN pour un accès rapide. Après 3 tentatives de PIN échouées, vous devrez utiliser votre mot de passe maître.",
