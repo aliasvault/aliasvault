@@ -1420,9 +1420,9 @@
         "changePasswordAndRotate": "更改密码并轮换密钥",
         "optionRotateKeys": "同时轮换所有加密密钥",
         "optionRotateKeysDescription": "仅在您怀疑密钥已泄露（例如设备遭到入侵或被盗）时才需要此操作。它会重新加密您的密码库，并使所有其他设备退出登录。",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "riskAfterwards": "随后，在您的其他设备上重新登录，并再次设置 PIN、通行密钥或生物识别解锁方式。",
+        "riskBackup": "请先导出密码库备份（设置 > 导入/导出）。密钥轮换操作无法撤销。",
+        "riskSignOut": "请等待其他设备完成同步，然后从这些设备上退出登录。若设备保持登录状态，其中尚未同步的更改将会丢失。"
       },
       "passkeyUnlock": {
         "disableButton": "禁用通行密钥解锁",
@@ -1495,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
-      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
+      "enterNewPinDescription": "请输入至少 6 个字符的 PIN 码。可以使用字母和符号。",
       "incorrectPin": "PIN 码错误，剩余 {{attemptsRemaining}} 次尝试。",
       "incorrectPinSingular": "PIN 码错误，剩余 1 次尝试。",
       "introText": "选择您解锁密码库的方式。您可以使用主密码（始终可用），也可以设置 PIN 码以便快捷访问。PIN 码输入错误 3 次后，您需要使用主密码。",
