@@ -223,6 +223,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<UserSigningKey> UserSigningKeys { get; set; }
 
     /// <summary>
+    /// Gets or sets the UserKeyCertifications DbSet.
+    /// </summary>
+    public DbSet<UserKeyCertification> UserKeyCertifications { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultManifestAccessKeys DbSet.
     /// </summary>
     public DbSet<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; }
@@ -379,6 +384,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending");
+
+            // An invitation without a manifest is an invitation to join the group; one open per invitee and group.
+            builder.HasIndex(e => new { e.GroupId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending' AND \"VaultManifestId\" IS NULL").HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending_Join");
             builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
@@ -531,7 +539,24 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserSigningKeys_User_Primary");
+            builder.HasIndex(e => e.Fingerprint).HasDatabaseName("IX_UserSigningKeys_Fingerprint");
             builder.Property(e => e.Algorithm).HasConversion(v => SigningKeyAlgorithms.ToToken(v), v => SigningKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserKeyCertification, one certification per certifier and subject, replaced when the subject's key changes.
+        modelBuilder.Entity<UserKeyCertification>(builder =>
+        {
+            builder.HasOne(e => e.Certifier)
+                .WithMany()
+                .HasForeignKey(e => e.CertifierUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Subject)
+                .WithMany()
+                .HasForeignKey(e => e.SubjectUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.CertifierUserId, e.SubjectUserId }).IsUnique().HasDatabaseName("UX_UserKeyCertifications_Certifier_Subject");
         });
 
         /*

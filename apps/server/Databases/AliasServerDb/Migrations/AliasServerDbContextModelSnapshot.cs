@@ -780,11 +780,14 @@ namespace AliasServerDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
-
                     b.HasIndex("InviterUserId");
 
                     b.HasIndex("UserGrantKeyId");
+
+                    b.HasIndex("GroupId", "InviteeUserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending_Join")
+                        .HasFilter("\"State\" = 'Pending' AND \"VaultManifestId\" IS NULL");
 
                     b.HasIndex("InviteeUserId", "State");
 
@@ -1169,6 +1172,49 @@ namespace AliasServerDb.Migrations
                     b.ToTable("UserGrantKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.UserKeyCertification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CertifierUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Signature")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SubjectSigningPublicKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SubjectUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectUserId");
+
+                    b.HasIndex("CertifierUserId", "SubjectUserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_UserKeyCertifications_Certifier_Subject");
+
+                    b.ToTable("UserKeyCertifications");
+                });
+
             modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1191,6 +1237,10 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<string>("Fingerprint")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");
 
@@ -1212,6 +1262,9 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Fingerprint")
+                        .HasDatabaseName("IX_UserSigningKeys_Fingerprint");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -2025,6 +2078,25 @@ namespace AliasServerDb.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AliasServerDb.UserKeyCertification", b =>
+                {
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Certifier")
+                        .WithMany()
+                        .HasForeignKey("CertifierUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Certifier");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
