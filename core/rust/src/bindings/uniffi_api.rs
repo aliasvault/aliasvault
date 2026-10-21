@@ -205,6 +205,13 @@ pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result
     crate::crypto::symmetric_encrypt_raw_with_aad(&plaintext, &key_base64, &[])
 }
 
+/// The fingerprint of the account's own signing key, derived from its private key encrypted with the Account Key.
+#[uniffi::export]
+pub fn account_signing_key_fingerprint(encrypted_signing_private_key: String, account_key: Vec<u8>) -> Result<String, VaultError> {
+    let account_key = zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&account_key));
+    crate::crypto::account_signing_key_fingerprint(&encrypted_signing_private_key, &account_key)
+}
+
 /// A fresh random salt for a new PIN wrap.
 #[uniffi::export]
 pub fn pin_generate_salt() -> Vec<u8> {

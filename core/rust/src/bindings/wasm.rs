@@ -216,6 +216,12 @@ pub fn symmetric_encrypt_bytes_js(plaintext: &[u8], key_base64: &str) -> Result<
     crate::crypto::symmetric_encrypt_raw_with_aad(plaintext, key_base64, &[]).map_err(js_err)
 }
 
+/// The fingerprint of the account's own signing key, derived from its private key encrypted with the Account Key.
+#[wasm_bindgen(js_name = accountSigningKeyFingerprint)]
+pub fn account_signing_key_fingerprint_js(encrypted_signing_private_key: &str, account_key_base64: &str) -> Result<String, JsValue> {
+    crate::crypto::account_signing_key_fingerprint(encrypted_signing_private_key, account_key_base64).map_err(js_err)
+}
+
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[wasm_bindgen(js_name = rsaDecrypt)]
 pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {

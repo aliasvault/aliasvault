@@ -154,11 +154,12 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     let mut contentless_revisions: HashMap<String, i64> = HashMap::new();
     let mut manifest_names: HashMap<String, String> = HashMap::new();
     let previous_records = keys::shared_manifest_records(ctx).await?;
+    let own_signing_public_key = keys::own_signing_public_key(ctx).await?;
 
     let ordered: Vec<&ManifestDto> = std::iter::once(personal_dto).chain(snapshot.manifests.iter().filter(|m| m.manifest_id != personal_dto.manifest_id)).collect();
     for dto in ordered {
         let is_personal = dto.manifest_id == personal_dto.manifest_id;
-        let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal).await?;
+        let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal, own_signing_public_key.as_deref()).await?;
         if is_personal {
             let entry = if personal_needs_first_write {
                 ctx.log("[Pull] Personal manifest has no content yet (new account); starting from an empty vault.").await;
@@ -173,6 +174,9 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
         }
         if !dto.has_content() {
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
+            if dto.revision != 0 {
+                return Err(SyncError::Snapshot(format!("shared manifest {} was served without content at revision {}, nothing to assemble", dto.manifest_id, dto.revision)));
+            }
             let (encrypted_vek, account_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
             let encrypted_name = served_encrypted_name(ctx, &previous_records, &dto.manifest_id);
             shared_records.insert(dto.manifest_id.clone(), SharedManifestDto { manifest_id: dto.manifest_id.clone(), encrypted_vek, account_public_key, algorithm, salt: vault_codec::generate_manifest_salt(), encrypted_name, can_administer: dto.can_administer, key_version: dto.key_version });
@@ -399,7 +403,7 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
 }
 
 /// The key that opens one snapshot manifest.
-async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool) -> SyncResult<SecretString> {
+async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool, own_signing_public_key: Option<&str>) -> SyncResult<SecretString> {
     // Only a personal manifest that predates the account key hierarchy has no key type; a shared one always states it.
     let key_type = match dto.key_type.clone() {
         Some(key_type) => key_type,
@@ -415,19 +419,20 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
     if key_type != types::KEY_TYPE_GRANT_KEY {
         return Err(SyncError::VaultVersionIncompatible(format!("manifest {} states an unknown key type \"{}\"; update the app", dto.manifest_id, key_type)));
     }
-    resolve_granted_vek(ctx, dto).await
+    resolve_granted_vek(ctx, dto, own_signing_public_key).await
 }
 
-async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<SecretString> {
+/// The VEK of a shared manifest from the grant it was served with, which has to be signed by this account itself.
+async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto, own_signing_public_key: Option<&str>) -> SyncResult<SecretString> {
     let (encrypted_vek, public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant to open it with, refusing to assemble", dto.manifest_id)))?;
     if algorithm != types::ALGORITHM_RSA_OAEP_SHA256 {
         return Err(SyncError::VaultVersionIncompatible(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\"; update the app", dto.manifest_id, algorithm)));
     }
-    // Require the grant to be signed by the account's private key.
-    if !keys::grant_signature_verifies(dto, &public_key, &algorithm, &encrypted_vek) {
-        return Err(SyncError::ServerVaultUnreadable(format!("the grant on shared manifest {} carries no valid signature, refusing to assemble", dto.manifest_id)));
+    let signing_public_key = own_signing_public_key.ok_or_else(|| SyncError::ServerVaultUnreadable(format!("this session holds no signing key to check the grant on shared manifest {} with, refusing to assemble", dto.manifest_id)))?;
+    if !keys::grant_signed_by_self(dto, signing_public_key, &public_key, &algorithm, &encrypted_vek) {
+        return Err(SyncError::ServerVaultUnreadable(format!("the grant on shared manifest {} is not signed by this account, refusing to assemble", dto.manifest_id)));
     }
     // Sanity check: no key this session holds opens the grant, so the session is behind the server.
-    let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or(SyncError::KeyOutOfSync)?;
+    let private_key = keys::resolve_grant_private_key(ctx, &public_key).await?.ok_or(SyncError::KeyOutOfSync)?;
     keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, private_key.expose_secret()).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
 }
