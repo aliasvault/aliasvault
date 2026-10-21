@@ -495,45 +495,6 @@ public class TestController(
     }
 
     /// <summary>
-    /// Create a shared group with an owner and members.
-    /// Only available in DEBUG builds.
-    /// </summary>
-    /// <param name="request">The group name and the usernames of its owner and members.</param>
-    /// <returns>OK with the group id.</returns>
-    [AllowAnonymous]
-    [HttpPost("shared-groups")]
-    public async Task<IActionResult> CreateSharedGroup([FromBody] CreateSharedGroupRequest request)
-    {
-        if (!environment.IsDevelopment())
-        {
-            return NotFound();
-        }
-
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var usernames = request.MemberUsernames.Prepend(request.OwnerUsername).Select(u => u.ToUpperInvariant()).ToList();
-        var users = await context.AliasVaultUsers.Where(u => usernames.Contains(u.NormalizedUserName!)).ToDictionaryAsync(u => u.NormalizedUserName!, u => u.Id);
-        var missing = usernames.Where(u => !users.ContainsKey(u)).ToList();
-        if (missing.Count > 0)
-        {
-            return NotFound($"Users not found: {string.Join(", ", missing)}");
-        }
-
-        var now = DateTime.UtcNow;
-        var group = new Group { Id = Guid.NewGuid(), Name = request.Name, Type = GroupType.Shared, CreatedAt = now, UpdatedAt = now };
-        context.Groups.Add(group);
-        context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(group, users[usernames[0]], now));
-        foreach (var username in usernames.Skip(1))
-        {
-            context.GroupMembers.Add(new GroupMember { Id = Guid.NewGuid(), GroupId = group.Id, UserId = users[username], Role = GroupRole.Member, CreatedAt = now, UpdatedAt = now });
-        }
-
-        await context.SaveChangesAsync();
-
-        return Ok(new { groupId = group.Id });
-    }
-
-    /// <summary>
     /// Set a capability for one account with a per-account rule, and drop the rule cache so it applies right away.
     /// Only available in DEBUG builds.
     /// </summary>

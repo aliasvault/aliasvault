@@ -20,4 +20,13 @@ public class IdentityCodeLookupResponse
 
     /// <summary>Gets or sets the account's signing public key (base64), whose fingerprint is the code.</summary>
     public required string SigningPublicKey { get; set; }
+
+    /// <summary>Gets or sets the id of the account public key a vault key is encrypted for them with, if they have one.</summary>
+    public Guid? AccountPublicKeyId { get; set; }
+
+    /// <summary>Gets or sets that account public key (JWK), if they have one.</summary>
+    public string? AccountPublicKey { get; set; }
+
+    /// <summary>Gets or sets the signature of the account public key by the signing key.</summary>
+    public string? AccountPublicKeySignature { get; set; }
 }

@@ -64,4 +64,10 @@ public class StatusResponse
     /// Gets or sets the email domains this server serves, so clients pick up a domain change without a vault pull.
     /// </summary>
     public EmailDomains EmailDomains { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the number of open invitations to shared manifests addressed to this caller, so a client knows when
+    /// to fetch them.
+    /// </summary>
+    public int PendingSharingInvitations { get; set; }
 }

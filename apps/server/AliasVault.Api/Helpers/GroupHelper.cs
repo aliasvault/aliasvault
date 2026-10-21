@@ -8,6 +8,7 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -15,6 +16,28 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 public static class GroupHelper
 {
+    /// <summary>
+    /// How long an offer of access stays open before it expires unanswered.
+    /// </summary>
+    public static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
+
+    /// <summary>
+    /// The number of open offers of access to a shared manifest addressed to a user that they can still accept: not
+    /// expired, and made by somebody who is still an admin of the group and holds the manifest's key.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The invitee.</param>
+    /// <param name="createdAfter">Offers created before this have expired.</param>
+    /// <returns>The number of open offers.</returns>
+    public static async Task<int> CountOpenInvitationsAsync(AliasServerDbContext context, string userId, DateTime createdAfter)
+    {
+        return await context.GroupInvitations
+            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared && i.VaultManifestId != null && i.CreatedAt >= createdAfter)
+            .Where(i => context.GroupMembers.Any(m => m.GroupId == i.GroupId && m.UserId == i.InviterUserId && (m.Role == GroupRole.Owner || m.Role == GroupRole.Admin)))
+            .Where(i => context.VaultManifestAccessKeys.Any(k => k.UserId == i.InviterUserId && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == i.VaultManifestId))
+            .CountAsync();
+    }
+
     /// <summary>
     /// Get the ids of every group the user may administer.
     /// </summary>
@@ -103,6 +126,17 @@ public static class GroupHelper
     public static async Task<bool> IsGroupAdminAsync(AliasServerDbContext context, Guid groupId, string userId)
     {
         return await context.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == userId && (m.Role == GroupRole.Admin || m.Role == GroupRole.Owner));
+    }
+
+    /// <summary>
+    /// The owner of a group.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="groupId">The group.</param>
+    /// <returns>The owner's user id, or null when the group has none.</returns>
+    public static async Task<string?> GetOwnerUserIdAsync(AliasServerDbContext context, Guid groupId)
+    {
+        return await context.GroupMembers.Where(m => m.GroupId == groupId && m.Role == GroupRole.Owner).Select(m => m.UserId).FirstOrDefaultAsync();
     }
 
     /// <summary>

@@ -8,10 +8,10 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// Look up the account an identity code belongs to (POST /v2/Groups/{groupId}/members/lookup).
+/// Look up the account an identity code belongs to (POST /v2/Groups/lookup).
 /// </summary>
 public class IdentityCodeLookupRequest
 {
-    /// <summary>Gets or sets the identity code the invitee gave the admin; separators are ignored.</summary>
+    /// <summary>Gets or sets the identity code the other person gave; separators are ignored.</summary>
     public required string Code { get; set; }
 }
