@@ -56,6 +56,7 @@ export enum AppErrorCode {
   BIOMETRIC_NOT_AVAILABLE = 'E-214',
   BIOMETRIC_NOT_ENROLLED = 'E-215',
   BIOMETRIC_LOCKOUT = 'E-216', // Too many failed biometric attempts
+  ACCOUNT_KEY_MISMATCH = 'E-217', // The account public key the server serves does not belong to this account's private key
 
   // Item/credential operations (E-3xx)
   ITEM_CREATE_FAILED = 'E-301',

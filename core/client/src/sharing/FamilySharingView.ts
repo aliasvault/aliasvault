@@ -114,13 +114,85 @@ export function canAdministerGroup(group: Pick<GroupInfo, 'role'>): boolean {
 }
 
 /**
- * The viewer's own user id in a group, found through the roster because the API does not name the caller.
+ * Whether this account can delete the group, which only its owner may do.
  * @param group - the group as served by the API.
- * @param username - the viewer's username.
- * @returns The user id, or an empty string when the roster does not list the viewer.
  */
-export function ownUserIdIn(group: Pick<GroupInfo, 'members'>, username: string | null | undefined): string {
-  return group.members.find(member => member.username === username)?.userId ?? '';
+export function canDeleteGroup(group: Pick<GroupInfo, 'role'>): boolean {
+  return group.role === 'owner';
+}
+
+/**
+ * Whether this account can leave the group. The owner cannot: they delete it once it is empty instead.
+ * @param group - the group as served by the API.
+ */
+export function canLeaveGroup(group: Pick<GroupInfo, 'role'>): boolean {
+  return !canDeleteGroup(group);
+}
+
+/**
+ * What the family sharing screen shows of an overview: the viewer's user id, the one family they are in (the one they
+ * own, else the one they joined; a user is in one family at a time for now), the invitations to join a family (only
+ * shown outside one, as joining a second family is not offered) and the invitations to shared manifests of families
+ * the overview does not list.
+ * @param overview - the overview as served by the API.
+ */
+export function familyView(overview: GroupOverviewResponse | null): { myUserId: string; group: GroupInfo | null; joinInvitations: ReceivedGroupInvitation[]; orphanInvitations: ReceivedManifestInvitation[] } {
+  const allGroups = overview?.groups ?? [];
+  const group = allGroups.find(candidate => candidate.role === 'owner') ?? allGroups[0] ?? null;
+  const receivedInvitations = overview?.receivedInvitations ?? [];
+  return {
+    myUserId: overview?.userId ?? '',
+    group,
+    joinInvitations: group ? [] : overview?.receivedGroupInvitations ?? [],
+    orphanInvitations: receivedInvitations.filter(invitation => !allGroups.some(candidate => candidate.groupId.toLowerCase() === invitation.groupId.toLowerCase())),
+  };
+}
+
+/**
+ * Whether this account certified the inviter's key before, so the invitation takes no code.
+ * @param invitation - the invitation as served by the API.
+ */
+export function isInviterVerified(invitation: Pick<ReceivedManifestInvitation, 'inviterCertification'>): boolean {
+  return invitation.inviterCertification !== null;
+}
+
+/**
+ * Why a member cannot be handed a manifest key yet, or null when they can: the admin has not certified their key with
+ * their family code, or their account has no keys yet.
+ * @param member - the member as served by the API to an admin.
+ */
+export function memberKeyProblem(member: Pick<GroupMemberInfo, 'accountPublicKey' | 'signingPublicKey' | 'keyCertification'>): string | null {
+  if (!member.accountPublicKey || !member.signingPublicKey) {
+    return familySharingText.errors.userNotReady;
+  }
+  return member.keyCertification ? null : familySharingText.errors.memberNotVerified;
+}
+
+/**
+ * The notice after inviting by family code: the account was invited, or was a member already and is now verified.
+ * @param result - what the invite operation reported.
+ */
+export function inviteByCodeNotice(result: { username?: string | null; alreadyMember?: boolean }): string {
+  const invitee = result.username ?? '';
+  return result.alreadyMember ? familySharingText.memberVerified(invitee) : familySharingText.familyInvitationSent(invitee);
+}
+
+/**
+ * Whether the group is empty enough to be deleted: no shared manifests left and no other members.
+ * @param group - the group as served by the API.
+ */
+export function isGroupDeletable(group: Pick<GroupInfo, 'manifests' | 'members'>): boolean {
+  return group.manifests.length === 0 && group.members.length === 1;
+}
+
+/**
+ * Whether the viewer may take a member out of the group: admins remove anyone but themselves and the owner.
+ * @param group - the group as served by the API.
+ * @param member - the member.
+ * @param ownUserId - the viewer's user id.
+ */
+export function canRemoveMember(group: Pick<GroupInfo, 'role'>, member: Pick<GroupMemberInfo, 'userId' | 'role'>, ownUserId: string): boolean {
+  return canAdministerGroup(group) && member.userId !== ownUserId && member.role !== 'owner';
 }
 
 /**
@@ -155,7 +227,7 @@ export function describeMemberAccess(group: GroupInfo, manifest: SharedManifestI
     canRevoke: hasAccess && !isSelf && isAdmin,
     canWithdraw: invitation !== null && !isSelf && isAdmin,
     canInvite: !hasAccess && invitation === null && !isSelf && isAdmin && holdsManifestKey(manifest, ownUserId),
-    isReadyForInvite: Boolean(member.accountPublicKey),
+    isReadyForInvite: memberKeyProblem(member) === null,
   };
 }
 

@@ -518,6 +518,42 @@ export const vaultStore = {
   },
 
   /**
+   * Find the account behind an identity code and check the code against its key, without inviting it.
+   * @param groupId - the family
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  lookupIdentityCode(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+    return vaultSync.lookupIdentityCode(groupId, identityCode);
+  },
+
+  /**
+   * Invite the account with the given identity code to a family, certifying its key first.
+   * @param groupId - the family
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  inviteToGroup(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+    return vaultSync.inviteToGroup(groupId, identityCode);
+  },
+
+  /**
+   * Accept an invitation to join a family, certifying the inviter's key with their identity code when not done before.
+   * @param invitationId - the invitation
+   * @param identityCode - the inviter's identity code
+   */
+  acceptGroupInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
+    return vaultSync.acceptGroupInvitation(invitationId, identityCode);
+  },
+
+  /**
+   * Accept an invitation to a shared manifest, signing its grant as this account's own.
+   * @param invitationId - the invitation
+   * @param identityCode - the inviter's identity code, when they are not certified yet
+   */
+  acceptSharedManifestInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
+    return vaultSync.acceptSharedManifestInvitation(invitationId, identityCode);
+  },
+
+  /**
    * Change the details of a shared manifest (group administrators only).
    * @param groupId - the group
    * @param manifestId - the shared manifest

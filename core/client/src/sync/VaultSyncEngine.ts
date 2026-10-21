@@ -20,7 +20,10 @@ import type { StorageKey } from '../platform/KeyValueStore';
 import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
-export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'rotateAccountKeys';
+/** The sharing operations, which take `VaultSyncSharingParams`. */
+export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupIdentityCode' | 'inviteToGroup' | 'acceptGroupInvitation' | 'acceptSharedManifestInvitation';
+
+export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | VaultSyncSharingOperation | 'rotateAccountKeys';
 
 /** What a key rotation works with (the Rust `KeyRotationParams`): the password proof and the new unlock method come from the host. */
 export type VaultSyncKeyRotationParams = {
@@ -40,10 +43,12 @@ export type VaultSyncKeyRotationParams = {
 
 /** What a sharing operation acts on (the Rust `SharingParams`). */
 export type VaultSyncSharingParams = {
-  groupId: string;
+  groupId?: string;
   manifestId?: string;
   userId?: string;
   name?: string;
+  invitationId?: string;
+  identityCode?: string;
 };
 
 /** What the host hands the engine at session start (the Rust `SyncRequest`). */
@@ -135,6 +140,8 @@ export type VaultSyncKeyRotationResult = VaultSyncEngineResultBase & {
 export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
   success: boolean;
   manifestId?: string;
+  username?: string;
+  alreadyMember: boolean;
   apiErrorCode?: string;
   vaultUpgradeRequired: boolean;
   error?: string;

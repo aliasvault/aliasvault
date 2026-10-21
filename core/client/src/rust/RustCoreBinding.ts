@@ -49,6 +49,7 @@ export interface IRustCore {
   symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
   symmetricEncryptBytes(plaintext: Uint8Array, keyBase64: string): Promise<Uint8Array>;
   rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array>;
+  accountSigningKeyFingerprint(encryptedSigningPrivateKey: string, accountKeyBase64: string): Promise<string>;
 
   pinGenerateSalt(): Promise<Uint8Array>;
   pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array>;
