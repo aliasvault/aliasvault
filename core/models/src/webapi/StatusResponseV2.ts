@@ -52,4 +52,5 @@ export type StatusResponseV2 = {
   bucketRevisions?: BucketRevision[];
   pendingActions?: PendingClientAction[];
   emailDomains?: EmailDomains;
+  pendingSharingInvitations?: number;
 }
