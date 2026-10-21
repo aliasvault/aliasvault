@@ -13,6 +13,7 @@ import type { SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
 
 type DbContextType = {
   sqliteClient: SqliteClient | null;
+  getSqliteClient: () => SqliteClient | null;
   dbInitialized: boolean;
   dbAvailable: boolean;
   isOffline: boolean;
@@ -40,6 +41,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [dbAvailable, setDbAvailable] = useState(false);
   const [isOffline, setIsOfflineState] = useState(false);
   const isOfflineRef = useRef(false);
+  const sqliteClientRef = useRef<SqliteClient | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [syncErrorDetail, setSyncErrorDetail] = useState<SyncErrorDetail | null>(null);
@@ -113,6 +115,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       if (response.vault) {
         const client = new SqliteClient();
         await client.initializeFromBytes(response.vault);
+        sqliteClientRef.current = client;
         setSqliteClient(client);
         setDbInitialized(true);
         setDbAvailable(true);
@@ -147,6 +150,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const clearDatabase = useCallback((): void => {
     clearEmailKeyCache();
+    sqliteClientRef.current = null;
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);
@@ -156,9 +160,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Get offline state.
    */
   const getIsOffline = useCallback(() => isOfflineRef.current, []);
+  const getSqliteClient = useCallback(() => sqliteClientRef.current, []);
 
   const contextValue = useMemo(() => ({
     sqliteClient,
+    getSqliteClient,
     dbInitialized,
     dbAvailable,
     isOffline,
@@ -170,7 +176,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     clearDatabase,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, setIsOffline, isSyncing, isUploading, loadStoredDatabase, clearDatabase, syncError, clearSyncError]);
+  }), [sqliteClient, getSqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, setIsOffline, isSyncing, isUploading, loadStoredDatabase, clearDatabase, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

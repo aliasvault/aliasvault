@@ -1,6 +1,4 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { ItemTypes } from '@aliasvault/models/vault';
-import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -15,7 +13,6 @@ import Icon from '@/components/shared/Icon';
 import MenuItem from '@/components/shared/MenuItem';
 import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useAuth } from '@/context/AuthContext';
-import { useCapabilities } from '@/context/CapabilityContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { useConfirmLogout } from '@/hooks/useConfirmLogout';
@@ -36,7 +33,6 @@ const TopMenu: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { username } = useAuth();
-  const hasCapability = useCapabilities();
   const { isDarkMode, toggleTheme } = useTheme();
   const confirmLogout = useConfirmLogout();
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
@@ -128,11 +124,6 @@ const TopMenu: React.FC = () => {
                   <AccountMenuLink onNavigate={closeUserMenu} to="/emails" icon="emails" label={t('emails.title')} />
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-600 py-1">
-                  {hasCapability(CapabilityKeys.VaultSharing) && (
-                    <AccountMenuLink onNavigate={closeUserMenu} to="/settings/family-sharing" icon="familySharing" label={familySharingText.title}>
-                      <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">{familySharingText.beta}</span>
-                    </AccountMenuLink>
-                  )}
                   <AccountMenuLink onNavigate={closeUserMenu} to="/settings/two-factor" icon="twoFactor" label={t('common.twoFactorAuthentication')}>
                     {reminders.enableTwoFactor && (
                       <span title={t('settings.securitySettings.twoFactor.disabledMessage')} className="flex items-center justify-center w-7 h-7">

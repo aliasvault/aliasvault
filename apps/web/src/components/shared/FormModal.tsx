@@ -21,6 +21,7 @@ type FormModalProps = {
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
   submitOnEnter?: boolean;
+  showCloseButton?: boolean;
   onClose: () => void;
   onConfirm?: () => void;
 };
@@ -45,7 +46,7 @@ const getMaxWidthClass = (maxWidth: FormModalProps['maxWidth']): string => {
 const FormModal: React.FC<FormModalProps> = ({
   isOpen, title = '', icon, iconBackgroundClass = 'bg-primary-100 dark:bg-primary-900/30', children, footerContent, showDefaultFooter = true,
   confirmText, cancelText, confirmDisabled = false, confirmButtonClass = 'bg-primary-600 hover:bg-primary-700', isLoading = false, maxWidth = 'lg',
-  closeOnOverlayClick = true, closeOnEscape = true, submitOnEnter = true, onClose, onConfirm,
+  closeOnOverlayClick = true, closeOnEscape = true, submitOnEnter = true, showCloseButton = false, onClose, onConfirm,
 }) => {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -82,10 +83,17 @@ const FormModal: React.FC<FormModalProps> = ({
             </div>
           )}
           <div className={`${icon ? 'mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left' : ''} flex-1`}>
-            {title && (
-              <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
-                {title}
-              </h3>
+            {(title || showCloseButton) && (
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="min-w-0 text-lg font-semibold leading-6 text-gray-900 dark:text-white break-words">
+                  {title}
+                </h3>
+                {showCloseButton && (
+                  <button type="button" onClick={onClose} aria-label={t('common.close')} className="-m-1 p-1 shrink-0 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700">
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
             )}
             <div className={title ? 'mt-4' : ''}>
               {children}

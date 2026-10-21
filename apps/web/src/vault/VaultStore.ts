@@ -499,12 +499,11 @@ export const vaultStore = {
   },
 
   /**
-   * Create a group's shared manifest. Leaves the vault dirty, so the next sync pushes it.
-   * @param groupId - the group
+   * Create a shared manifest with a group of its own. Leaves the vault dirty, so the next sync pushes it.
    * @param name - the shared manifest's name
    */
-  createSharedManifest(groupId: string, name: string): Promise<SharingOperationResult> {
-    return vaultSync.createSharedManifest(groupId, name);
+  createSharedManifest(name: string): Promise<SharingOperationResult> {
+    return vaultSync.createSharedManifest(name);
   },
 
   /**
@@ -518,30 +517,22 @@ export const vaultStore = {
   },
 
   /**
+   * Invite the account behind an identity code to a shared manifest, certifying its key first.
+   * @param groupId - the group
+   * @param manifestId - the shared manifest
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  inviteToSharedManifestByCode(groupId: string, manifestId: string, identityCode: string): Promise<SharingOperationResult> {
+    return vaultSync.inviteToSharedManifestByCode(groupId, manifestId, identityCode);
+  },
+
+  /**
    * Find the account behind an identity code and check the code against its key, without inviting it.
-   * @param groupId - the family
+   * @param groupId - the group of the shared folder the person is invited to, if it is shared already
    * @param identityCode - the identity code the other person gave outside AliasVault
    */
-  lookupIdentityCode(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+  lookupIdentityCode(groupId: string | undefined, identityCode: string): Promise<SharingOperationResult> {
     return vaultSync.lookupIdentityCode(groupId, identityCode);
-  },
-
-  /**
-   * Invite the account with the given identity code to a family, certifying its key first.
-   * @param groupId - the family
-   * @param identityCode - the identity code the other person gave outside AliasVault
-   */
-  inviteToGroup(groupId: string, identityCode: string): Promise<SharingOperationResult> {
-    return vaultSync.inviteToGroup(groupId, identityCode);
-  },
-
-  /**
-   * Accept an invitation to join a family, certifying the inviter's key with their identity code when not done before.
-   * @param invitationId - the invitation
-   * @param identityCode - the inviter's identity code
-   */
-  acceptGroupInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
-    return vaultSync.acceptGroupInvitation(invitationId, identityCode);
   },
 
   /**

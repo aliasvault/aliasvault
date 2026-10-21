@@ -57,7 +57,7 @@ export const RequireCapability: React.FC<{ capability: CapabilityKey; children: 
     return null;
   }
 
-  return isEnabled(capability) ? <>{children}</> : <Navigate to="/" replace />;
+  return isEnabled(capability) ? <>{children}</> : <Navigate to="/settings" replace />;
 };
 
 /**
