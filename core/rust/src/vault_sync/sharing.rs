@@ -35,6 +35,9 @@ const INVITER_NOT_VERIFIED: &str = "INVITER_NOT_VERIFIED";
 /// The refusal code for an identity code that is not the fingerprint of the key the server served.
 const IDENTITY_CODE_MISMATCH: &str = "IDENTITY_CODE_MISMATCH";
 
+/// The refusal code for an identity code that is this account's own, typed where the other person's code was asked for.
+const IDENTITY_CODE_IS_OWN: &str = "IDENTITY_CODE_IS_OWN";
+
 /// The longest name an invitation can carry: RSA-2048 OAEP-SHA256 fits 190 bytes. The UI caps names well below this.
 const MAX_SHARED_MANIFEST_NAME_BYTES: usize = 190;
 
@@ -48,8 +51,9 @@ struct GroupOverview {
     groups: Vec<GroupInfo>,
     #[serde(default)]
     received_invitations: Vec<ReceivedManifestInvitation>,
+    /// The people whose current signing key the caller certified, who can be invited without their identity code.
     #[serde(default)]
-    received_group_invitations: Vec<ReceivedGroupInvitation>,
+    verified_people: Vec<GroupMemberInfo>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -80,17 +84,6 @@ struct ReceivedManifestInvitation {
     inviter_certification: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct ReceivedGroupInvitation {
-    id: String,
-    inviter_user_id: String,
-    #[serde(default)]
-    inviter_signing_public_key: Option<String>,
-    #[serde(default)]
-    inviter_certification: Option<String>,
-}
-
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct IdentityCodeLookupRequest<'a> {
@@ -104,6 +97,22 @@ struct IdentityCodeLookupResponse {
     #[serde(default)]
     username: String,
     signing_public_key: String,
+    #[serde(default)]
+    account_public_key_id: Option<String>,
+    #[serde(default)]
+    account_public_key: Option<String>,
+    #[serde(default)]
+    account_public_key_signature: Option<String>,
+}
+
+/// The account a shared manifest's key is encrypted for: a group member, or an account found by its identity code.
+struct Recipient {
+    user_id: String,
+    username: String,
+    account_public_key: Option<String>,
+    account_public_key_id: Option<String>,
+    account_public_key_signature: Option<String>,
+    signing_public_key: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -112,12 +121,6 @@ struct CertifyKeyRequest<'a> {
     subject_user_id: &'a str,
     subject_signing_public_key: &'a str,
     signature: &'a str,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct InviteToGroupRequest<'a> {
-    user_id: &'a str,
 }
 
 #[derive(Debug, Serialize)]
@@ -151,6 +154,8 @@ struct GroupManifestInfo {
 struct GroupMemberInfo {
     user_id: String,
     #[serde(default)]
+    username: String,
+    #[serde(default)]
     account_public_key_id: Option<String>,
     #[serde(default)]
     account_public_key: Option<String>,
@@ -171,7 +176,7 @@ struct CreateSharedManifestRequest<'a> {
     self_account_public_key: &'a str,
     algorithm: &'a str,
     self_grant_signature: &'a str,
-    encrypted_name: &'a str,
+    encrypted_name: Option<&'a str>,
 }
 
 #[derive(Debug, Serialize)]
@@ -184,6 +189,8 @@ struct UpdateSharedManifestRequest<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateSharedManifestResponse {
+    #[serde(default)]
+    group_id: String,
     manifest_id: String,
     revision_number: i64,
 }
@@ -254,18 +261,6 @@ pub(crate) async fn update_shared_manifest_operation(ctx: &mut Ctx) -> SharingOp
 pub(crate) async fn lookup_identity_code_operation(ctx: &mut Ctx) -> SharingOperationResult {
     let outcome = lookup_identity_code(ctx).await;
     finish(ctx, "look up identity code", outcome).await
-}
-
-/// Invite an account to a group by its identity code.
-pub(crate) async fn invite_to_group_operation(ctx: &mut Ctx) -> SharingOperationResult {
-    let outcome = invite_to_group(ctx).await;
-    finish(ctx, "invite to group", outcome).await
-}
-
-/// Accept an invitation to join a group.
-pub(crate) async fn accept_group_invitation_operation(ctx: &mut Ctx) -> SharingOperationResult {
-    let outcome = accept_group_invitation(ctx).await;
-    finish(ctx, "accept group invitation", outcome).await
 }
 
 /// Accept an invitation to a shared manifest.
@@ -357,6 +352,11 @@ impl OwnIdentity {
         Ok(crypto::signing::sign(self.signing_key.expose_secret(), message)?)
     }
 
+    /// Whether `code` is this account's own identity code.
+    fn is_own_code(&self, code: &str) -> bool {
+        crypto::signing::fingerprint_matches(&self.signing_public_key, code)
+    }
+
     /// Whether `certification` is this account's own signed statement that `subject_key` belongs to `subject_user_id`.
     fn certified(&self, subject_user_id: &str, subject_key: &str, certification: Option<&str>) -> bool {
         certification.is_some_and(|certification| crypto::signing::verify(&self.signing_public_key, &crypto::signing::key_certification_message(&self.user_id, subject_user_id, subject_key), certification))
@@ -376,6 +376,9 @@ impl OwnIdentity {
 
     /// Certify `subject_key` as `subject_user_id`'s after checking it against the identity code the user typed, and store the certification.
     async fn certify_with_code(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, code: &str) -> SyncResult<Result<(), Refusal>> {
+        if self.is_own_code(code) {
+            return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+        }
         if !crypto::signing::fingerprint_matches(subject_key, code) {
             return Ok(Err(Refusal::Api(IDENTITY_CODE_MISMATCH.to_string())));
         }
@@ -392,13 +395,16 @@ const NEW_MANIFEST_KEY_VERSION: i64 = 0;
 async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let key = ctx.encryption_key()?;
     let target = params(ctx)?;
-    let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).ok_or_else(|| SyncError::Other("A shared manifest needs a name".to_string()))?.to_string();
-    check_name_length(&name)?;
+    // Without a name, every client shows the shared manifest under its own translated default name.
+    let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).map(str::to_string);
+    if let Some(name) = &name {
+        check_name_length(name)?;
+    }
 
     let overview = fetch_overview(ctx).await?;
-    let group = administered_group(&overview, &group_id(&target)?)?;
 
     // The new manifest's VEK is encrypted only for this account's own public key upon creation, other users are invited separately.
+    // The server creates a group for it, owned by this account.
     let Some(self_public_key) = keys::own_account_public_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_none() {
@@ -412,11 +418,11 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
     let self_grant_signature = me.sign(&crypto::signing::grant_message(&requested_id, NEW_MANIFEST_KEY_VERSION, &me.user_id, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
-    let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
+    let encrypted_name = name.as_deref().map(|name| pull::encrypt_manifest_name(name, &requested_id, &manifest_vek)).transpose()?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
-        &format!("Groups/{}/manifests", group.group_id),
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: &encrypted_name },
+        "Groups/manifests",
+        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: encrypted_name.as_deref() },
         false,
     )
     .await?;
@@ -434,7 +440,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
             account_public_key: self_public_key,
             algorithm: ALGORITHM_RSA_OAEP_SHA256.to_string(),
             salt: vault_codec::generate_manifest_salt(),
-            encrypted_name: Some(encrypted_name),
+            encrypted_name,
             can_administer: true,
             key_version: NEW_MANIFEST_KEY_VERSION,
         },
@@ -445,7 +451,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     revisions.insert(manifest_id.clone(), response.revision_number);
     state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &revisions).await?;
 
-    db::set_manifest_name(&ctx.host, &manifest_id, &name).await?;
+    db::set_manifest_name(&ctx.host, &manifest_id, name.as_deref()).await?;
 
     // Mail to an alias in this manifest is encrypted with the manifest's own keypair.
     let delivery_keys = crypto::generate_rsa_key_pair()?;
@@ -454,7 +460,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     // The name and keypair ride out on the host's next sync, which the dirty flag asks for.
     ctx.persist_local_vault(true).await?;
 
-    ctx.log(format!("[Sharing] Created shared manifest {} for group {}.", manifest_id, group.group_id)).await;
+    ctx.log(format!("[Sharing] Created shared manifest {} with group {}.", manifest_id, response.group_id)).await;
     Ok(Ok(Done::manifest(manifest_id)))
 }
 
@@ -493,25 +499,59 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     ctx.encryption_key()?;
     let target = params(ctx)?;
     let manifest_id = target.manifest_id.clone().ok_or_else(|| SyncError::Other("The invitation names no shared manifest".to_string()))?;
-    let user_id = target.user_id.clone().ok_or_else(|| SyncError::Other("The invitation names no recipient".to_string()))?;
 
     let overview = fetch_overview(ctx).await?;
     let group = administered_group(&overview, &group_id(&target)?)?;
     let manifest = group.manifests.iter().find(|candidate| ids_equal(&candidate.manifest_id, &manifest_id)).ok_or_else(|| SyncError::Other("The shared manifest does not belong to the group".to_string()))?;
-    let member = group.members.iter().find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is not a member of the group".to_string()))?;
-    let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (member.account_public_key.clone(), member.account_public_key_id.clone(), member.account_public_key_signature.as_deref(), member.signing_public_key.as_deref()) else {
+    let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
+
+    /*
+     * The recipient is either an account found by the identity code the user typed, whose key is certified with it now
+     * (accepting then also makes them a member), or a member this account certified before.
+     */
+    let recipient = match target.identity_code.as_deref().map(str::trim).filter(|code| !code.is_empty()) {
+        Some(code) => {
+            if me.is_own_code(code) {
+                return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+            }
+            let account: IdentityCodeLookupResponse = http::post(&ctx.host, "Groups/lookup", &IdentityCodeLookupRequest { code }, false).await?;
+            if let Err(refusal) = me.certify_with_code(ctx, &account.user_id, &account.signing_public_key, code).await? {
+                return Ok(Err(refusal));
+            }
+            Recipient {
+                user_id: account.user_id,
+                username: account.username,
+                account_public_key: account.account_public_key,
+                account_public_key_id: account.account_public_key_id,
+                account_public_key_signature: account.account_public_key_signature,
+                signing_public_key: Some(account.signing_public_key),
+            }
+        }
+        None => {
+            // A member of the group, or a person verified before who is not in it yet.
+            let user_id = target.user_id.clone().ok_or_else(|| SyncError::Other("The invitation names no recipient".to_string()))?;
+            let member = group.members.iter().chain(overview.verified_people.iter()).find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is neither in the group nor verified".to_string()))?;
+            // The served signing key is trusted only through this account's own certification of it, made with the member's identity code.
+            if member.signing_public_key.as_deref().is_some_and(|key| !me.certified(&member.user_id, key, member.key_certification.as_deref())) {
+                return Ok(Err(Refusal::Api(MEMBER_NOT_VERIFIED.to_string())));
+            }
+            Recipient {
+                user_id: member.user_id.clone(),
+                username: member.username.clone(),
+                account_public_key: member.account_public_key.clone(),
+                account_public_key_id: member.account_public_key_id.clone(),
+                account_public_key_signature: member.account_public_key_signature.clone(),
+                signing_public_key: member.signing_public_key.clone(),
+            }
+        }
+    };
+    let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (recipient.account_public_key.clone(), recipient.account_public_key_id.clone(), recipient.account_public_key_signature.as_deref(), recipient.signing_public_key.as_deref()) else {
         return Ok(Err(Refusal::Api(INVITE_RECIPIENT_NOT_READY.to_string())));
     };
 
-    // Only encrypt the key for a public key its owner signed with their signing key.
+    // Only encrypt the key for a public key its owner signed with their (certified) signing key.
     if !crypto::signing::verify(signing_public_key, &crypto::signing::account_public_key_message(&recipient_public_key), signature) {
-        return Err(SyncError::Other(format!("The public key of {} carries no valid signature by their signing key", member.user_id)));
-    }
-    let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
-
-    // The served signing key is trusted only through this account's own certification of it, made with the member's identity code.
-    if !me.certified(&member.user_id, signing_public_key, member.key_certification.as_deref()) {
-        return Ok(Err(Refusal::Api(MEMBER_NOT_VERIFIED.to_string())));
+        return Err(SyncError::Other(format!("The public key of {} carries no valid signature by their signing key", recipient.user_id)));
     }
 
     // Find this account's own grant on the manifest.
@@ -526,11 +566,16 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
     // The name travels encrypted in the invitation, so the recipient sees what they are invited to; one too long to fit is left out.
-    let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
+    let served_name = record.encrypted_name.as_deref().and_then(|ciphertext| pull::open_manifest_name(ciphertext, &manifest.manifest_id, manifest_vek.expose_secret()));
+    let name = match served_name {
+        Some(name) => Some(name),
+        None => db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned(),
+    }
+    .filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
     let encrypted_vek = keys::encrypt_manifest_vek(manifest_vek.expose_secret(), &manifest.manifest_id, &recipient_public_key)?;
     let encrypted_name = name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?;
     let grant = ManifestGrant {
-        recipient_user_id: member.user_id.clone(),
+        recipient_user_id: recipient.user_id.clone(),
         recipient_account_public_key_id: recipient_public_key_id,
         signature: me.sign(&crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &me.user_id, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
         encrypted_name_signature: encrypted_name.as_deref().map(|name| me.sign(&crypto::signing::invitation_name_message(&manifest.manifest_id, &me.user_id, &recipient_public_key, name))).transpose()?,
@@ -541,75 +586,33 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     http::post_no_content(
         &ctx.host,
         &format!("Groups/{}/manifests/{}/access", group.group_id, manifest.manifest_id),
-        &GrantManifestAccessRequest { user_id: &member.user_id, grant, algorithm: ALGORITHM_RSA_OAEP_SHA256 },
+        &GrantManifestAccessRequest { user_id: &recipient.user_id, grant, algorithm: ALGORITHM_RSA_OAEP_SHA256 },
     )
     .await?;
 
-    ctx.log(format!("[Sharing] Invited {} to shared manifest {} with its key encrypted for them.", member.user_id, manifest.manifest_id)).await;
-    Ok(Ok(Done::manifest(manifest.manifest_id.clone())))
+    ctx.log(format!("[Sharing] Invited {} to shared manifest {} with its key encrypted for them.", recipient.user_id, manifest.manifest_id)).await;
+    Ok(Ok(Done { manifest_id: Some(manifest.manifest_id.clone()), username: Some(recipient.username), ..Default::default() }))
 }
 
-/// Look up the account behind an identity code and check the code against the key the server returns, so the admin can
-/// confirm who they invite. Nothing is certified or invited; `invite_to_group` looks the code up again.
+/// Look up the account behind an identity code and check the code against the key the server returns, so the user can
+/// confirm who they invite, also before the folder they invite to is shared. Nothing is certified or invited;
+/// `invite_to_shared_manifest` looks the code up again. With a group, the result says whether the account is in it.
 async fn lookup_identity_code(ctx: &mut Ctx) -> Outcome {
     let target = params(ctx)?;
-    let group_id = group_id(&target)?;
     let code = target.identity_code.as_deref().map(str::trim).filter(|code| !code.is_empty()).ok_or_else(|| SyncError::Other("The lookup carries no identity code".to_string()))?;
 
     let overview = fetch_overview(ctx).await?;
-    let group = administered_group(&overview, &group_id)?;
-    let account: IdentityCodeLookupResponse = http::post(&ctx.host, &format!("Groups/{}/members/lookup", group.group_id), &IdentityCodeLookupRequest { code }, false).await?;
+    let group = target.group_id.as_deref().map(|group_id| administered_group(&overview, group_id)).transpose()?;
+    if OwnIdentity::open(ctx, &overview).await?.is_some_and(|me| me.is_own_code(code)) {
+        return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+    }
+    let account: IdentityCodeLookupResponse = http::post(&ctx.host, "Groups/lookup", &IdentityCodeLookupRequest { code }, false).await?;
     if !crypto::signing::fingerprint_matches(&account.signing_public_key, code) {
         return Ok(Err(Refusal::Api(IDENTITY_CODE_MISMATCH.to_string())));
     }
 
-    let already_member = group.members.iter().any(|member| member.user_id == account.user_id);
+    let already_member = group.is_some_and(|group| group.members.iter().any(|member| member.user_id == account.user_id));
     Ok(Ok(Done { username: Some(account.username), already_member, ..Default::default() }))
-}
-
-/// Invite an account to a group by its identity code: look it up, certify its key with the code, and invite. An account
-/// already in the group is only certified.
-async fn invite_to_group(ctx: &mut Ctx) -> Outcome {
-    ctx.encryption_key()?;
-    let target = params(ctx)?;
-    let group_id = group_id(&target)?;
-    let code = target.identity_code.as_deref().map(str::trim).filter(|code| !code.is_empty()).ok_or_else(|| SyncError::Other("The invitation carries no identity code".to_string()))?;
-
-    let overview = fetch_overview(ctx).await?;
-    let group = administered_group(&overview, &group_id)?;
-    let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
-
-    let account: IdentityCodeLookupResponse = http::post(&ctx.host, &format!("Groups/{}/members/lookup", group.group_id), &IdentityCodeLookupRequest { code }, false).await?;
-    if let Err(refusal) = me.certify_with_code(ctx, &account.user_id, &account.signing_public_key, code).await? {
-        return Ok(Err(refusal));
-    }
-
-    let already_member = group.members.iter().any(|member| member.user_id == account.user_id);
-    if !already_member {
-        http::post_no_content(&ctx.host, &format!("Groups/{}/invitations", group.group_id), &InviteToGroupRequest { user_id: &account.user_id }).await?;
-        ctx.log(format!("[Sharing] Invited {} to group {}.", account.user_id, group.group_id)).await;
-    }
-    Ok(Ok(Done { username: Some(account.username), already_member, ..Default::default() }))
-}
-
-/// Accept an invitation to join a group, after certifying the inviter's signing key with their identity code.
-async fn accept_group_invitation(ctx: &mut Ctx) -> Outcome {
-    ctx.encryption_key()?;
-    let target = params(ctx)?;
-    let invitation_id = invitation_id(&target)?;
-
-    let overview = fetch_overview(ctx).await?;
-    let invitation = overview.received_group_invitations.iter().find(|candidate| ids_equal(&candidate.id, &invitation_id)).ok_or_else(|| SyncError::Other("The group invitation is not open to this account".to_string()))?;
-    let Some(inviter_key) = invitation.inviter_signing_public_key.as_deref() else { return Ok(Err(Refusal::Api(INVITER_NOT_VERIFIED.to_string()))) };
-    let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
-
-    if let Err(refusal) = me.ensure_certified(ctx, &invitation.inviter_user_id, inviter_key, invitation.inviter_certification.as_deref(), target.identity_code.as_deref(), INVITER_NOT_VERIFIED).await? {
-        return Ok(Err(refusal));
-    }
-
-    http::post_no_content(&ctx.host, &format!("Groups/invitations/{}/accept", invitation.id), &AcceptInvitationRequest { grant_signature: None }).await?;
-    ctx.log(format!("[Sharing] Joined the group of {} (invitation {}).", invitation.inviter_user_id, invitation.id)).await;
-    Ok(Ok(Done::default()))
 }
 
 /// Accept an invitation to a shared manifest: check the certified inviter signed it and the key inside opens for this

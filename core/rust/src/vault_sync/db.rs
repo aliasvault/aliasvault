@@ -300,7 +300,7 @@ pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<St
 }
 
 /// Name a manifest in the local vault.
-pub(crate) async fn set_manifest_name(host: &Host, manifest_id: &str, name: &str) -> SyncResult<()> {
+pub(crate) async fn set_manifest_name(host: &Host, manifest_id: &str, name: Option<&str>) -> SyncResult<()> {
     exec(host, Db::Local, vec![SqlStatement { sql: UPSERT_MANIFEST_NAME.to_string(), params: vec![json!(id_key(manifest_id)), json!(name)] }]).await
 }
 
