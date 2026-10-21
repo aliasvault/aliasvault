@@ -3,9 +3,9 @@
     "ACCOUNT_BLOCKED": "Din konto er blevet deaktiveret. Hvis du mener, at dette er en fejl, bedes du kontakte support.",
     "ACCOUNT_LOCKED": "Kontoen er midlertidigt låst på grund af for mange mislykkede forsøg. Prøv venligst igen senere.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontoen er blevet slettet.",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
+    "ALIAS_LIMIT_REACHED": "Du har nået grænsen for oprettelse af nye e-mail-aliaser. Prøv igen senere, eller kontakt support, hvis du har brug for mere.",
     "CLAIM_DOES_NOT_EXIST": "Der opstod en fejl under forsøg på at indlæse e-mails. Prøv at redigere og gemme posten for at synkronisere databasen, og prøv derefter igen.",
-    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
+    "CLAIM_TAKEN": "Denne e-mail-adresse er allerede brugt af en anden konto. Rediger dette element og vælg en anden e-mail-adresse.",
     "INTERNAL_SERVER_ERROR": "Intern serverfejl.",
     "INVALID_AUTHENTICATOR_CODE": "Ugyldig godkendelseskode. Prøv venligst igen.",
     "INVALID_RECOVERY_CODE": "Ugyldig gendannelseskode. Prøv venligst igen.",
@@ -166,7 +166,7 @@
       "registrationDisabledMessage": "Nye konti kan kun oprettes med et invitationslink. Spørg serveradministratoren om en invitation.",
       "registrationDisabledTitle": "Lukket for brugerregistrering",
       "setupStepTitle": "Opsætning",
-      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
+      "termsAgreementLabel": "Jeg har læst og accepterer <termsLink>Vilkår og Betingelser</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
         "enterUsernameInstructions": "Indtast venligst det brugernavn, du ønsker at bruge. Dette kan være din e-mailadresse eller et unikt navn efter eget valg.",
@@ -174,7 +174,7 @@
         "serverCommunicationError": "Der opstod en fejl under kommunikationen med AliasVault-serveren.",
         "usernamePlaceholder": "Indtast dit ønskede brugernavn eller e-mail",
         "validatingUsernameMessage": "Validerer brugernavn...",
-        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
+        "welcomeMessage": "Velkommen! Lad os starte med at vælge et brugernavn til din konto."
       },
       "usernameStepTitle": "Vælg brugernavn"
     },
@@ -264,7 +264,7 @@
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
+      "serverOutdated": "AliasVault-serveren skal opdateres for at arbejde med denne version af AliasVault. Prøv venligst igen senere. Hvis du bruger en selvhostede server, kontakt venligst din serveradministrator.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "unexpectedErrorContactSupport": "En uventet fejl opstod. Prøv igen, og kontakt support, hvis problemet fortsætter.",
@@ -285,7 +285,7 @@
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
     "hidePassword": "Skjul adgangskode",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Dette er en højrisikoaktion.",
     "home": "Hjem",
     "loadMore": "Indlæs flere",
     "loading": "Indlæser...",
