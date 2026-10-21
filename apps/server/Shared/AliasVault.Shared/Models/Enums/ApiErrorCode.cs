@@ -198,11 +198,6 @@ public enum ApiErrorCode
     GROUP_NOT_FOUND,
 
     /// <summary>
-    /// The group already holds as many shared manifests as it is entitled to, so no further one can be created.
-    /// </summary>
-    GROUP_MANIFEST_LIMIT_REACHED,
-
-    /// <summary>
     /// The invitation does not exist, is not addressed to (or sent by) the caller, or was already answered.
     /// </summary>
     INVITATION_NOT_FOUND,
@@ -362,29 +357,14 @@ public enum ApiErrorCode
     IDENTITY_CODE_NOT_FOUND,
 
     /// <summary>
-    /// The account is already a member of the group.
+    /// The shared manifest still has other members or open invitations, so it cannot become personal again.
     /// </summary>
-    ALREADY_GROUP_MEMBER,
-
-    /// <summary>
-    /// The caller already owns the maximum number of shared groups.
-    /// </summary>
-    GROUP_LIMIT_REACHED,
+    SHARED_MANIFEST_IN_USE,
 
     /// <summary>
     /// The caller has not certified the member's current signing key with their identity code.
     /// </summary>
     MEMBER_NOT_VERIFIED,
-
-    /// <summary>
-    /// The owner of a shared group cannot leave it; they delete it instead.
-    /// </summary>
-    GROUP_OWNER_CANNOT_LEAVE,
-
-    /// <summary>
-    /// The shared group still has other members or shared manifests, so it cannot be deleted yet.
-    /// </summary>
-    GROUP_NOT_EMPTY,
 
     /// <summary>
     /// The caller has not certified the inviter's current signing key with their identity code.

@@ -30,8 +30,9 @@ using StatusModels = AliasVault.Shared.Models.WebApi.V2.Status;
 /// <param name="userManager">UserManager.</param>
 /// <param name="capabilityService">Resolves which capabilities the caller may use.</param>
 /// <param name="config">Config instance.</param>
+/// <param name="timeProvider">Time provider, for the expiry of invitations.</param>
 [ApiVersion("2")]
-public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, CapabilityService capabilityService, Config config) : AuthenticatedRequestController(userManager)
+public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, CapabilityService capabilityService, Config config, TimeProvider timeProvider) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Status endpoint called by the client to get the full sync status in one call.
@@ -84,6 +85,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, ClientHeader),
             PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
             EmailDomains = EmailDomainHelper.GetEmailDomains(config),
+            PendingSharingInvitations = await GroupHelper.CountOpenInvitationsAsync(context, user.Id, timeProvider.GetUtcNow().UtcDateTime - GroupHelper.InvitationLifetime),
         });
     }
 }
