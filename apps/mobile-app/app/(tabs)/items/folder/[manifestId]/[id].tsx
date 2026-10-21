@@ -1,7 +1,9 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { canAdministerGroup, familySharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
+import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -14,13 +16,17 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingErrors';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
+import { useSharedFolders } from '@/hooks/useSharedFolders';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
+import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
@@ -30,6 +36,7 @@ import { FolderPill } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { SortMenu } from '@/components/items/SortMenu';
+import { SharedFolderAccessModal } from '@/components/sharing/SharedFolderAccessModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -37,6 +44,8 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
+import { useWebApi } from '@/context/WebApiContext';
 
 import type { FolderWithCount } from '@/components/folders/FolderPill';
 import type { ItemSummary } from '@aliasvault/client/database/mappers/ItemMapper';
@@ -94,6 +103,14 @@ export default function FolderViewScreen(): React.ReactNode {
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
   const [showCreateSubfolderModal, setShowCreateSubfolderModal] = useState(false);
+  /** The folder whose people sheet is open; kept while the folder turns into a shared one or a personal one and the screen moves to it. */
+  const [peopleFolder, setPeopleFolder] = useState<{ folder: Folder; isShared: boolean } | null>(null);
+  const shared = useSharedFolders();
+  const reloadShared = shared.reload;
+  const webApi = useWebApi();
+  const { syncVault } = useVaultSync();
+  const { showConfirm } = useDialog();
+  const runWithPassword = usePasswordConfirmedAction();
 
   const authContext = useApp();
   const dbContext = useDb();
@@ -233,9 +250,41 @@ export default function FolderViewScreen(): React.ReactNode {
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 
-  // A virtual folder (e.g. shared manifest) is not editable or deletable here.
+  // A virtual folder (a shared manifest) is renamed and deleted through its shared folder, not as a stored folder.
   const isVirtualFolder = multiManifestRendering.isVirtualFolder(folderRef);
   const isShared = isSharedFolder(folderRef, personalManifestId);
+  const currentShared = isVirtualFolder ? shared.folders.find(candidate => candidate.manifest.manifestId.toLowerCase() === folderRef.ManifestId.toLowerCase()) ?? null : null;
+  const canManageShared = currentShared !== null && canAdministerGroup(currentShared.group);
+  const canEditFolder = !isVirtualFolder || (canManageShared && holdsManifestKey(currentShared.manifest, shared.myUserId));
+  const canDeleteFolder = !isVirtualFolder || canManageShared;
+  const canShareFolder = shared.isEnabled && folder !== null && (isVirtualFolder || !folder.ParentFolderId);
+
+  /**
+   * Delete the shared folder for everyone, after a confirmation and the master password, then go to the vault root.
+   */
+  const deleteSharedFolder = useCallback((): void => {
+    if (!currentShared) {
+      return;
+    }
+    const name = folder?.Name ?? '';
+    showConfirm(familySharingText.deleteVault, familySharingText.deleteVaultConfirm(name), t('common.delete'), async () => {
+      try {
+        const done = await runWithPassword(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(name), t('common.delete'), answerChallenge => (
+          SharingService.deleteSharedManifest(webApi, currentShared.group.groupId, currentShared.manifest.manifestId, answerChallenge)
+        ));
+        if (!done) {
+          return;
+        }
+        await syncVault();
+        emitter.emit('itemChanged');
+        await reloadShared();
+        Toast.show({ type: 'success', text1: familySharingText.vaultDeleted });
+        router.dismissTo('/(tabs)/items');
+      } catch (deleteError) {
+        Toast.show({ type: 'error', text1: sharingFailureMessage(deleteError, familySharingText.errors.deleteVaultFailed) });
+      }
+    }, { confirmStyle: 'destructive' });
+  }, [currentShared, folder?.Name, showConfirm, runWithPassword, webApi, syncVault, reloadShared, router, t]);
 
   /**
    * Set up header with folder name and edit/delete buttons.
@@ -250,32 +299,41 @@ export default function FolderViewScreen(): React.ReactNode {
       /**
        * Header right buttons for edit and delete.
        */
-      headerRight: (): React.ReactNode => (isVirtualFolder ? null : (
+      headerRight: (): React.ReactNode => (
         <View style={{ flexDirection: 'row', gap: 4 }}>
-          <RobustPressable
-            onPress={() => setShowEditFolderModal(true)}
-            style={{ padding: 8 }}
-          >
-            <MaterialIcons
-              name="edit"
-              size={Platform.OS === 'android' ? 24 : 22}
-              color={colors.primary}
-            />
-          </RobustPressable>
-          <RobustPressable
-            onPress={() => setShowDeleteFolderModal(true)}
-            style={{ padding: 8 }}
-          >
-            <MaterialIcons
-              name="delete"
-              size={Platform.OS === 'android' ? 24 : 22}
-              color={colors.destructive}
-            />
-          </RobustPressable>
+          {canShareFolder && folder && (
+            <RobustPressable onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })} style={{ padding: 8 }}>
+              <MaterialIcons name="people" size={Platform.OS === 'android' ? 24 : 22} color={colors.primary} />
+            </RobustPressable>
+          )}
+          {canEditFolder && (
+            <RobustPressable
+              onPress={() => setShowEditFolderModal(true)}
+              style={{ padding: 8 }}
+            >
+              <MaterialIcons
+                name="edit"
+                size={Platform.OS === 'android' ? 24 : 22}
+                color={colors.primary}
+              />
+            </RobustPressable>
+          )}
+          {canDeleteFolder && (
+            <RobustPressable
+              onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}
+              style={{ padding: 8 }}
+            >
+              <MaterialIcons
+                name="delete"
+                size={Platform.OS === 'android' ? 24 : 22}
+                color={colors.destructive}
+              />
+            </RobustPressable>
+          )}
         </View>
-      )),
+      ),
     });
-  }, [navigation, folder?.Name, isVirtualFolder, isShared, colors.primary, colors.destructive, t]);
+  }, [navigation, folder, isVirtualFolder, isShared, canShareFolder, canEditFolder, canDeleteFolder, deleteSharedFolder, colors.primary, colors.destructive, t]);
 
   /**
    * Delete an item (move to trash).
@@ -335,6 +393,19 @@ export default function FolderViewScreen(): React.ReactNode {
     await loadItems();
     setShowEditFolderModal(false);
   }, [dbContext.sqliteClient, folderRef, executeVaultMutation, loadItems]);
+
+  /**
+   * Rename the shared folder: its name is encrypted with its key and kept on the server for every member.
+   */
+  const handleEditSharedFolder = useCallback(async (newName: string) => {
+    if (!currentShared) {
+      return;
+    }
+    await runSharingOperation('updateSharedManifest', { groupId: currentShared.group.groupId, manifestId: currentShared.manifest.manifestId, name: newName }, t('common.errors.unknownErrorTryAgain'));
+    await syncVault();
+    await loadItems();
+    emitter.emit('itemChanged');
+  }, [currentShared, syncVault, loadItems, t]);
 
   /**
    * Delete the folder (keep items - move them to root).
@@ -862,13 +933,14 @@ export default function FolderViewScreen(): React.ReactNode {
         topOffset={Platform.OS === 'ios' ? paddingTop + 104 : paddingTop + 44}
       />
 
-      {/* Folder modals */}
+      {/* Folder modals; a shared folder is renamed through its shared manifest, whose name an invitation has to fit */}
       <FolderModal
         isOpen={showEditFolderModal}
         onClose={() => setShowEditFolderModal(false)}
-        onSave={handleEditFolder}
+        onSave={isVirtualFolder ? handleEditSharedFolder : handleEditFolder}
         initialName={folder?.Name || ''}
         mode="edit"
+        maxLength={isVirtualFolder ? MAX_SHARED_VAULT_NAME_LENGTH : undefined}
       />
       <FolderModal
         isOpen={showCreateSubfolderModal}
@@ -884,6 +956,22 @@ export default function FolderViewScreen(): React.ReactNode {
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
       />
+      {peopleFolder && (
+        <SharedFolderAccessModal
+          folder={peopleFolder.folder}
+          isShared={peopleFolder.isShared}
+          shared={shared}
+          onMoved={(ref, movedIsShared) => {
+            setPeopleFolder(open => (open ? { folder: { ...open.folder, Id: ref.Id, ManifestId: ref.ManifestId, ParentFolderId: null }, isShared: movedIsShared } : null));
+            router.setParams({ manifestId: ref.ManifestId, id: ref.Id });
+          }}
+          onLeft={() => {
+            setPeopleFolder(null);
+            router.dismissTo('/(tabs)/items');
+          }}
+          onClose={() => setPeopleFolder(null)}
+        />
+      )}
     </ThemedContainer>
   );
 }

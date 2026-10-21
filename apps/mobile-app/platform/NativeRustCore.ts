@@ -71,6 +71,7 @@ export const nativeRustCore: IRustCore = {
   symmetricDecryptBytes: (encrypted, keyBase64) => callForBytes('symmetricDecryptBytes', base64(encrypted), keyBase64),
   symmetricEncryptBytes: (plaintext, keyBase64) => callForBytes('symmetricEncryptBytes', base64(plaintext), keyBase64),
   rsaDecrypt: (base64Ciphertext, privateKeyJwk) => callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk),
+  accountSigningKeyFingerprint: () => notImplementedOnMobile('accountSigningKeyFingerprint', 'the Account Key stays in the native VaultStore, use NativeVaultManager.getSigningKeyFingerprint'),
 
   pinGenerateSalt: () => notImplementedOnMobile('pinGenerateSalt', PIN_IS_NATIVE),
   pinEncrypt: () => notImplementedOnMobile('pinEncrypt', PIN_IS_NATIVE),

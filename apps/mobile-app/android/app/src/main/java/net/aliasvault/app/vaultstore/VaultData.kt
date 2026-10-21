@@ -63,13 +63,16 @@ data class VaultMigrationResult(
 )
 
 /**
- * Result of a sharing operation of the sync engine (creating a shared manifest, inviting a member to one).
+ * Result of a sharing operation of the sync engine (creating a shared manifest, inviting to one, accepting an invitation).
  *
  * @property success Whether the operation completed.
  * @property apiErrorCode The API error code the server refused with, which the sharing screen has words for.
  * @property vaultUpgradeRequired Whether the vault has to finish upgrading before it can be shared.
  * @property error The error code, if any.
  * @property errorMessage The error message, if any.
+ * @property manifestId The shared manifest the operation created, invited to or accepted.
+ * @property username The account an identity code belonged to.
+ * @property alreadyMember The account is already in the folder's group, so only its key was certified.
  */
 data class VaultSharingResult(
     val success: Boolean,
@@ -77,4 +80,7 @@ data class VaultSharingResult(
     val vaultUpgradeRequired: Boolean = false,
     val error: String? = null,
     val errorMessage: String? = null,
+    val manifestId: String? = null,
+    val username: String? = null,
+    val alreadyMember: Boolean = false,
 )

@@ -142,6 +142,13 @@ public class NativeVaultManager: NSObject {
         resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
     }
 
+    /// The identity code of the account's own signing key; nil while locked or when the account has no signing key yet.
+    @objc
+    func getSigningKeyFingerprint(_ resolve: @escaping RCTPromiseResolveBlock,
+                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.signingKeyFingerprint())
+    }
+
     /// Resolve and store the vault key right after login from the password-derived key (see VaultStore.resolveVaultKey).
     @objc
     func resolveVaultKey(_ base64DerivedKey: String,
@@ -884,7 +891,10 @@ public class NativeVaultManager: NSObject {
                     "vaultUpgradeRequired": result.vaultUpgradeRequired,
                     "apiErrorCode": result.apiErrorCode as Any,
                     "error": result.error as Any,
-                    "errorMessage": result.errorMessage as Any
+                    "errorMessage": result.errorMessage as Any,
+                    "manifestId": result.manifestId as Any,
+                    "username": result.username as Any,
+                    "alreadyMember": result.alreadyMember
                 ]
                 resolve(response)
             }

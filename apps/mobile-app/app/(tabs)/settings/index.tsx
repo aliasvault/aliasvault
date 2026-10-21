@@ -16,6 +16,7 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import { FamilyCode } from '@/components/sharing/FamilyCode';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
@@ -49,6 +50,16 @@ export default function SettingsScreen() : React.ReactNode {
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
+  const [ownSharingCode, setOwnSharingCode] = useState<string | null>(null);
+  const isSharingEnabled = hasCapability(CapabilityKeys.VaultSharing);
+
+  // The own code is derived natively from the signing private key, which only the native layer can open.
+  useFocusEffect(useCallback(() => {
+    if (!isSharingEnabled) {
+      return;
+    }
+    NativeVaultManager.getSigningKeyFingerprint().then(setOwnSharingCode).catch(() => setOwnSharingCode(null));
+  }, [isSharingEnabled]));
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
   const { isEnabled: isDeveloperToolsEnabled, registerTap, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
 
@@ -254,24 +265,19 @@ export default function SettingsScreen() : React.ReactNode {
       borderRadius: 10,
       overflow: 'hidden',
     },
-    betaBadge: {
-      backgroundColor: colors.primary,
-      borderRadius: 10,
-      paddingHorizontal: 6,
-      paddingVertical: 1,
-    },
-    betaBadgeText: {
-      color: colors.primarySurfaceText,
-      fontSize: 10,
-      fontWeight: '600',
-      lineHeight: 14,
-      textTransform: 'uppercase',
-    },
     groupSection: {
       backgroundColor: colors.accentBackground,
       borderRadius: 10,
       marginTop: 8,
       overflow: 'hidden',
+    },
+    ownCodeHint: {
+      color: colors.textMuted,
+      fontSize: 13,
+      marginTop: 8,
+    },
+    ownCodeSection: {
+      padding: 16,
     },
     groupTitle: {
       color: colors.textMuted,
@@ -334,16 +340,6 @@ export default function SettingsScreen() : React.ReactNode {
       justifyContent: 'center',
       marginRight: 12,
       width: 24,
-    },
-    settingItemLabel: {
-      alignItems: 'center',
-      flex: 1,
-      flexDirection: 'row',
-      gap: 8,
-    },
-    settingItemLabelText: {
-      color: colors.text,
-      fontSize: 16,
     },
     settingItemText: {
       color: colors.text,
@@ -421,29 +417,15 @@ export default function SettingsScreen() : React.ReactNode {
               <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
-          {hasCapability(CapabilityKeys.VaultSharing) && (
-            <>
-              <View style={styles.separator} />
-              <TouchableOpacity
-                style={styles.settingItem}
-                onPress={() => navigate(() => router.push('/(tabs)/settings/family-sharing'))}
-              >
-                <View style={styles.settingItemIcon}>
-                  <Ionicons name="people-outline" size={20} color={colors.text} />
-                </View>
-                <View style={styles.settingItemContent}>
-                  <View style={styles.settingItemLabel}>
-                    <ThemedText style={styles.settingItemLabelText}>{familySharingText.title}</ThemedText>
-                    <View style={styles.betaBadge}>
-                      <ThemedText style={styles.betaBadgeText}>{familySharingText.beta}</ThemedText>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                </View>
-              </TouchableOpacity>
-            </>
-          )}
         </View>
+
+        {/* The code people need to invite this account to a shared folder. */}
+        {isSharingEnabled && ownSharingCode && (
+          <View style={[styles.groupSection, styles.ownCodeSection]}>
+            <FamilyCode code={ownSharingCode} />
+            <ThemedText style={styles.ownCodeHint}>{familySharingText.yourCodeSettingsHint}</ThemedText>
+          </View>
+        )}
 
         <ThemedText style={styles.groupTitle}>{t('settings.groups.autofill')}</ThemedText>
         <View style={styles.groupSection}>

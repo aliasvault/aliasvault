@@ -1,4 +1,3 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Platform, Text } from 'react-native';
@@ -96,14 +95,6 @@ export default function SettingsLayout(): React.ReactNode {
         name="import-export"
         options={{
           title: t('settings.importExport'),
-          headerBackTitle: t('common.settings'),
-          ...defaultHeaderOptions,
-        }}
-      />
-      <Stack.Screen
-        name="family-sharing"
-        options={{
-          title: familySharingText.title,
           headerBackTitle: t('common.settings'),
           ...defaultHeaderOptions,
         }}

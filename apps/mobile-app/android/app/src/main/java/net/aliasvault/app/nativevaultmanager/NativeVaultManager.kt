@@ -351,6 +351,15 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * The identity code of the account's own signing key; null while locked or when the account has no signing key yet.
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getSigningKeyFingerprint(promise: Promise) {
+        promise.resolve(vaultStore.signingKeyFingerprint())
+    }
+
+    /**
      * Resolve and store the vault key right after login from the unlock key (see VaultStore.resolveVaultKey).
      * Resolves with no value; rejects with the native error code when the chain does not open or the session is gone.
      * @param base64DerivedKey The password-derived key as base64
@@ -1539,7 +1548,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Run a sharing operation of the sync engine (see VaultStore.runSharingOperation). Failures resolve with the error code.
-     * @param operation The operation: `createSharedManifest` or `inviteToSharedManifest`.
+     * @param operation The operation, one of VaultSync.SHARING_OPERATIONS.
      * @param paramsJson What the operation acts on, as a JSON object.
      * @param promise The promise to resolve with the operation result.
      */
@@ -1554,6 +1563,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     putString("apiErrorCode", result.apiErrorCode)
                     putString("error", result.error)
                     putString("errorMessage", result.errorMessage)
+                    putString("manifestId", result.manifestId)
+                    putString("username", result.username)
+                    putBoolean("alreadyMember", result.alreadyMember)
                 }
                 withContext(Dispatchers.Main) {
                     promise.resolve(resultMap)

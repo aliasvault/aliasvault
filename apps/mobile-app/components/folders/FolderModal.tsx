@@ -21,6 +21,7 @@ interface IFolderModalProps {
   onSave: (folderName: string) => Promise<void>;
   initialName?: string;
   mode: 'create' | 'edit';
+  maxLength?: number;
 }
 
 /**
@@ -32,6 +33,7 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
   onSave,
   initialName = '',
   mode,
+  maxLength,
 }) => {
   const { t } = useTranslation();
   const colors = useColors();
@@ -67,7 +69,7 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
 
       onClose();
     } catch (err) {
-      setError(t('common.errors.unknownErrorTryAgain'));
+      setError(err instanceof Error && err.message.length > 0 ? err.message : t('common.errors.unknownErrorTryAgain'));
       console.error('Error saving folder:', err);
     } finally {
       setIsSubmitting(false);
@@ -148,6 +150,7 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
         onChangeText={setFolderName}
         placeholder={t('items.folders.folderNamePlaceholder')}
         placeholderTextColor={colors.textMuted}
+        maxLength={maxLength}
         autoFocus
         autoCapitalize="sentences"
         editable={!isSubmitting}

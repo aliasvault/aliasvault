@@ -2,6 +2,7 @@ import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -19,8 +20,10 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
+import { useSharedFolders } from '@/hooks/useSharedFolders';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
+import { useVaultSync } from '@/hooks/useVaultSync';
 
 import Logo from '@/assets/images/logo.svg';
 import { FolderModal } from '@/components/folders/FolderModal';
@@ -29,6 +32,7 @@ import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { ItemFilterMenu } from '@/components/items/ItemFilterMenu';
 import { SortMenu } from '@/components/items/SortMenu';
+import { SharedFolderInvitationModal } from '@/components/sharing/SharedFolderInvitationModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -82,6 +86,9 @@ export default function ItemsScreen(): React.ReactNode {
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
   const { executeVaultMutation } = useVaultMutate();
   const [showFolderModal, setShowFolderModal] = useState(false);
+  const shared = useSharedFolders();
+  const { syncVault } = useVaultSync();
+  const [openInvitationId, setOpenInvitationId] = useState<string | null>(null);
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -445,6 +452,22 @@ export default function ItemsScreen(): React.ReactNode {
   }, [router, navigate, filterType]);
 
   /**
+   * Finish an answered invitation: an accepted one is synced in and opened.
+   * @param manifestId - the shared folder it was for.
+   * @param accepted - whether it was accepted.
+   */
+  const finishInvitation = useCallback(async (manifestId: string, accepted: boolean): Promise<void> => {
+    setOpenInvitationId(null);
+    if (accepted) {
+      await syncVault();
+      await loadItems();
+      const folderId = manifestId.toLowerCase();
+      handleFolderClick({ Id: folderId, ManifestId: folderId });
+    }
+    await shared.reload();
+  }, [syncVault, loadItems, handleFolderClick, shared]);
+
+  /**
    * Create a new folder.
    */
   const handleCreateFolder = useCallback(async (folderName: string) => {
@@ -535,6 +558,27 @@ export default function ItemsScreen(): React.ReactNode {
     newFolderButtonText: {
       color: colors.textMuted,
       fontSize: 14,
+    },
+    invitationPill: {
+      alignItems: 'center',
+      backgroundColor: colors.primary + '10',
+      borderColor: colors.primary,
+      borderRadius: 20,
+      borderStyle: 'dashed',
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    invitationPillLabel: {
+      color: colors.primary,
+      fontSize: 12,
+    },
+    invitationPillName: {
+      color: colors.textMuted,
+      fontSize: 14,
+      maxWidth: 120,
     },
     // Search styles
     searchContainer: {
@@ -705,6 +749,14 @@ export default function ItemsScreen(): React.ReactNode {
                 folder={folder}
                 onPress={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId })}
               />
+            ))}
+            {/* Invitations to shared folders wait in the folder list until they are answered. */}
+            {shared.invitations.map(invitation => (
+              <TouchableOpacity key={invitation.id} style={styles.invitationPill} onPress={() => setOpenInvitationId(invitation.id)} activeOpacity={0.7}>
+                <MaterialIcons name="mail-outline" size={16} color={colors.primary} />
+                <Text style={styles.invitationPillName} numberOfLines={1} ellipsizeMode="tail">{shared.invitationNames[invitation.id] ?? familySharingText.sharedVault}</Text>
+                <Text style={styles.invitationPillLabel}>{familySharingText.invitationPending}</Text>
+              </TouchableOpacity>
             ))}
             <TouchableOpacity
               style={styles.newFolderButton}
@@ -910,6 +962,17 @@ export default function ItemsScreen(): React.ReactNode {
         mode="create"
       />
 
+      {((): React.ReactNode => {
+        const invitation = shared.invitations.find(candidate => candidate.id === openInvitationId) ?? null;
+        return (
+          <SharedFolderInvitationModal
+            invitation={invitation}
+            folderName={invitation ? shared.invitationNames[invitation.id] ?? familySharingText.sharedVault : ''}
+            onDone={accepted => (invitation ? finishInvitation(invitation.manifestId, accepted) : Promise.resolve())}
+            onClose={() => setOpenInvitationId(null)}
+          />
+        );
+      })()}
     </ThemedContainer>
   );
 }

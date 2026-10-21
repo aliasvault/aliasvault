@@ -36,7 +36,7 @@ export interface Spec extends TurboModule {
   migrateVaultManifest(): Promise<{ success: boolean; pushed: boolean; error: string | null; errorMessage: string | null }>;
 
   // A sharing operation of the sync engine.
-  runSharingOperation(operation: string, paramsJson: string): Promise<{ success: boolean; apiErrorCode: string | null; vaultUpgradeRequired: boolean; error: string | null; errorMessage: string | null }>;
+  runSharingOperation(operation: string, paramsJson: string): Promise<{ success: boolean; apiErrorCode: string | null; vaultUpgradeRequired: boolean; error: string | null; errorMessage: string | null; manifestId: string | null; username: string | null; alreadyMember: boolean }>;
 
   // Quick check if sync is needed
   checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorCode: string | null }>;
@@ -72,6 +72,7 @@ export interface Spec extends TurboModule {
   resolveVaultKey(base64DerivedKey: string): Promise<void>;
   getPersonalManifestId(): Promise<string | null>;
   decryptInvitationName(encryptedName: string): Promise<string | null>;
+  getSigningKeyFingerprint(): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
 
   // Auto-lock settings
