@@ -25,18 +25,15 @@ pub enum SyncOperation {
     StatusCheck,
     /// Open the account's key chain with the password-derived key right after login; see `ResolveVaultKeyResult`.
     ResolveVaultKey,
-    /// Create a group's shared manifest with this account as its first member; see `SharingParams`.
+    /// Create a shared manifest, with a group of its own that this account owns; see `SharingParams`.
     CreateSharedManifest,
-    /// Invite a group member to a shared manifest, handing them its key encrypted for their account keypair.
+    /// Invite somebody to a shared manifest (by identity code, or a person verified before), handing them its key encrypted
+    /// for their account keypair.
     InviteToSharedManifest,
     /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
     UpdateSharedManifest,
     /// Find the account behind an identity code and check the code against its key, without certifying or inviting it.
     LookupIdentityCode,
-    /// Invite an account to a group by its identity code, certifying its signing key first.
-    InviteToGroup,
-    /// Accept an invitation to join a group, certifying the inviter's signing key with their identity code first.
-    AcceptGroupInvitation,
     /// Accept an invitation to a shared manifest, signing the grant with this account's own key.
     AcceptSharedManifestInvitation,
     /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
@@ -168,6 +165,9 @@ pub struct FullSyncResult {
     pub server_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub capabilities: Option<HashMap<String, String>>,
+    /// The number of open invitations to shared manifests addressed to this account, as the server reported it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_sharing_invitations: Option<i64>,
     pub is_offline_mode: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pulled_revision: Option<i64>,
@@ -234,7 +234,7 @@ pub struct SharingOperationResult {
     pub already_member: bool,
     /// The vault (or the account's key hierarchy) has to finish upgrading before it can be shared.
     pub vault_upgrade_required: bool,
-    /// A refusal carries only `failure.api_error_code` (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
+    /// A refusal carries only `failure.api_error_code` (e.g. `INVITATION_ALREADY_EXISTS`), which the sharing screen has
     /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
     #[serde(flatten)]
     pub failure: FailureFields,
@@ -285,6 +285,9 @@ pub struct StatusCheckResult {
     pub capabilities: Option<HashMap<String, String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email_domains: Option<EmailDomainsDto>,
+    /// The number of open invitations to shared manifests addressed to this account, as the server reported it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pending_sharing_invitations: Option<i64>,
 }
 
 /*
@@ -484,6 +487,8 @@ pub struct StatusResponse {
     pub pending_actions: Vec<PendingAction>,
     #[serde(default)]
     pub email_domains: Option<EmailDomainsDto>,
+    #[serde(default)]
+    pub pending_sharing_invitations: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

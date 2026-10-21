@@ -36,8 +36,6 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         SyncOperation::InviteToSharedManifest => serde_json::to_value(sharing::invite_to_shared_manifest_operation(&mut ctx).await),
         SyncOperation::UpdateSharedManifest => serde_json::to_value(sharing::update_shared_manifest_operation(&mut ctx).await),
         SyncOperation::LookupIdentityCode => serde_json::to_value(sharing::lookup_identity_code_operation(&mut ctx).await),
-        SyncOperation::InviteToGroup => serde_json::to_value(sharing::invite_to_group_operation(&mut ctx).await),
-        SyncOperation::AcceptGroupInvitation => serde_json::to_value(sharing::accept_group_invitation_operation(&mut ctx).await),
         SyncOperation::AcceptSharedManifestInvitation => serde_json::to_value(sharing::accept_shared_manifest_invitation_operation(&mut ctx).await),
         SyncOperation::RotateAccountKeys => serde_json::to_value(rotation::rotate_account_keys_operation(&mut ctx).await),
     };
@@ -186,6 +184,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
             result.server_version = Some(status.server_version.clone());
             result.capabilities = status.capabilities.clone();
             result.email_domains = status.email_domains.clone();
+            result.pending_sharing_invitations = status.pending_sharing_invitations;
             ctx.log("[Sync] Sync finished").await;
             Flow::Done(result)
         }
@@ -513,7 +512,7 @@ async fn status_check(ctx: &mut Ctx) -> StatusCheckResult {
         }
         assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
         let has_newer_vault = server_state_needs_pull(ctx, &status).await?;
-        Ok(StatusCheckResult { success: true, has_newer_vault, has_dirty_changes: ctx.is_dirty, server_version: Some(status.server_version), capabilities: status.capabilities, email_domains: status.email_domains, ..Default::default() })
+        Ok(StatusCheckResult { success: true, has_newer_vault, has_dirty_changes: ctx.is_dirty, server_version: Some(status.server_version), capabilities: status.capabilities, email_domains: status.email_domains, pending_sharing_invitations: status.pending_sharing_invitations, ..Default::default() })
     }
     .await;
     match checked {
