@@ -31,4 +31,9 @@ public class GroupInfo
     /// Gets or sets the group's members.
     /// </summary>
     public List<GroupMemberInfo> Members { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the open invitations to join this group, for admins.
+    /// </summary>
+    public List<SentManifestInvitation> PendingJoinInvitations { get; set; } = [];
 }

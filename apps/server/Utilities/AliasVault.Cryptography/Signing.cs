@@ -43,6 +43,21 @@ public static class Signing
     public const string SigningKeyRotationLabel = "aliasvault/v1/sig/signing-key-rotation";
 
     /// <summary>
+    /// The label of a key certification: one user vouching that a signing public key belongs to another user.
+    /// </summary>
+    public const string KeyCertificationLabel = "aliasvault/v1/sig/key-certification";
+
+    /// <summary>
+    /// The label under which a signing public key is hashed into its fingerprint, the user's identity code (the family code in the apps).
+    /// </summary>
+    public const string FingerprintLabel = "aliasvault/v1/signing-key-fingerprint";
+
+    /// <summary>
+    /// The decimal digits in a fingerprint (the value is reduced modulo 10^20).
+    /// </summary>
+    public const int FingerprintDigits = 20;
+
+    /// <summary>
     /// Builds the bytes a signature covers: the label and each field, each prefixed with its length as a big-endian uint.
     /// </summary>
     /// <param name="label">The purpose label.</param>
@@ -113,6 +128,47 @@ public static class Signing
     public static byte[] SigningKeyRotationMessage(string userId, string newSigningPublicKey)
     {
         return SignedMessage(SigningKeyRotationLabel, Utf8(userId), Utf8(newSigningPublicKey));
+    }
+
+    /// <summary>
+    /// Builds the signed message of a key certification: the certifier vouches that a signing public key belongs to the subject.
+    /// </summary>
+    /// <param name="certifierUserId">The user vouching for the key.</param>
+    /// <param name="subjectUserId">The user the key belongs to.</param>
+    /// <param name="subjectSigningPublicKey">The certified signing public key (base64).</param>
+    /// <returns>The message bytes.</returns>
+    public static byte[] KeyCertificationMessage(string certifierUserId, string subjectUserId, string subjectSigningPublicKey)
+    {
+        return SignedMessage(KeyCertificationLabel, Utf8(certifierUserId), Utf8(subjectUserId), Utf8(subjectSigningPublicKey));
+    }
+
+    /// <summary>
+    /// The fingerprint of a signing public key as <see cref="FingerprintDigits"/> digits without separators, the same digits the
+    /// Rust core prints in groups of four. Null for a value that is not an Ed25519 public key.
+    /// </summary>
+    /// <param name="publicKeyBase64">The signing public key (base64).</param>
+    /// <returns>The fingerprint digits, or null.</returns>
+    public static string? Fingerprint(string? publicKeyBase64)
+    {
+        var publicKey = TryDecode(publicKeyBase64, Ed25519.PublicKeySize);
+        if (publicKey == null)
+        {
+            return null;
+        }
+
+        var digest = System.Security.Cryptography.SHA256.HashData(SignedMessage(FingerprintLabel, publicKey));
+        var value = BinaryPrimitives.ReadUInt128BigEndian(digest) % UInt128.Parse("100000000000000000000", System.Globalization.CultureInfo.InvariantCulture);
+        return value.ToString("D" + FingerprintDigits, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// The digits of a code a user typed, ignoring spaces and dashes.
+    /// </summary>
+    /// <param name="code">The typed code.</param>
+    /// <returns>Only its digits.</returns>
+    public static string NormalizeFingerprint(string? code)
+    {
+        return new string((code ?? string.Empty).Where(char.IsAsciiDigit).ToArray());
     }
 
     /// <summary>
