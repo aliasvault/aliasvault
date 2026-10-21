@@ -38,6 +38,26 @@ public enum SrpPurpose
     KeyRotation,
 
     /// <summary>
+    /// An admin taking a member's access to a shared manifest away.
+    /// </summary>
+    SharedManifestAccessRevocation,
+
+    /// <summary>
+    /// An admin removing a member from a shared group.
+    /// </summary>
+    GroupMemberRemoval,
+
+    /// <summary>
+    /// A member giving up their own access to a shared manifest.
+    /// </summary>
+    SharedManifestLeave,
+
+    /// <summary>
+    /// A member leaving a shared group.
+    /// </summary>
+    GroupLeave,
+
+    /// <summary>
     /// Raising the key derivation settings of the password to the current defaults, which happens automatically during login (if applicable).
     /// </summary>
     KeyDerivationUpgrade,

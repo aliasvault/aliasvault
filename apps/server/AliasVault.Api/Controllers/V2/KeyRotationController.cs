@@ -151,6 +151,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             var method = await writeContext.UserUnlockMethods.FirstAsync(x => x.Id == unlockMethod.Id);
             var buckets = await writeContext.VaultDataBuckets.Where(x => x.ManifestId == manifest.ManifestId).ToListAsync();
             var heldGrants = await writeContext.VaultManifestAccessKeys.Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.GrantKey).ToListAsync();
+            var certifications = await writeContext.UserKeyCertifications.Where(c => c.CertifierUserId == user.Id).ToListAsync();
             var personalAccessKeys = await writeContext.VaultManifestAccessKeys.Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.AccountKey && x.VaultManifestId == manifest.ManifestId).ToListAsync();
 
             // Revision gate: the rotation was computed against exactly this vault state, or it is not applied.
@@ -168,7 +169,10 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             var rewrappedGrantIds = model.Grants.Select(g => g.ManifestId).ToHashSet();
             var grantVersionsMatch = model.Grants.All(g => heldGrants.Any(h => h.VaultManifestId == g.ManifestId && h.KeyVersion == g.KeyVersion));
             var bucketsCovered = buckets.All(b => model.Buckets.Any(w => w.Category == b.Category));
-            if (!rewrappedHashes.SetEquals(referencedHashes) || !writtenHashes.SetEquals(referencedHashes) || !rewrappedGrantIds.SetEquals(heldGrantIds) || !grantVersionsMatch || !bucketsCovered || personalAccessKeys.Count == 0)
+            var certificationsCovered = certifications.All(c => model.Certifications.Any(w => w.SubjectUserId == c.SubjectUserId && w.SubjectSigningPublicKey == c.SubjectSigningPublicKey)) && model.Certifications.Count == certifications.Count;
+            var blobsCovered = rewrappedHashes.SetEquals(referencedHashes) && writtenHashes.SetEquals(referencedHashes);
+            var grantsCovered = rewrappedGrantIds.SetEquals(heldGrantIds) && grantVersionsMatch;
+            if (!blobsCovered || !grantsCovered || !bucketsCovered || !certificationsCovered || personalAccessKeys.Count == 0)
             {
                 await tx.RollbackAsync();
                 return ApiError.Result(ApiErrorCode.KEY_ROTATION_INCOMPLETE, 400);
@@ -235,6 +239,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 UserId = user.Id,
                 Algorithm = SigningKeyAlgorithm.Ed25519,
                 PublicKey = model.AccountKeys.SigningPublicKey,
+                Fingerprint = Signing.Fingerprint(model.AccountKeys.SigningPublicKey),
                 EncryptedPrivateKey = model.AccountKeys.EncryptedSigningPrivateKey,
                 PreviousKeySignature = model.AccountKeys.PreviousSigningKeySignature,
                 IsPrimary = true,
@@ -254,6 +259,13 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 grant.GrantSignerUserId = user.Id;
                 grant.GrantSignerPublicKey = model.AccountKeys.SigningPublicKey;
                 grant.UpdatedAt = now;
+            }
+
+            // 4b) Every key certification this account made, signed again with the new signing key, so the people it vouched for stay verified.
+            foreach (var certification in certifications)
+            {
+                certification.Signature = model.Certifications.First(c => c.SubjectUserId == certification.SubjectUserId).Signature;
+                certification.UpdatedAt = now;
             }
 
             // 5) The personal manifest, as a new revision under the new VEK, with the same blob set. Earlier revisions of the manifest
@@ -401,7 +413,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
-        if (model.BlobKeys.Select(b => b.Hash).Distinct(StringComparer.Ordinal).Count() != model.BlobKeys.Count || model.Grants.Select(g => g.ManifestId).Distinct().Count() != model.Grants.Count)
+        if (model.BlobKeys.Select(b => b.Hash).Distinct(StringComparer.Ordinal).Count() != model.BlobKeys.Count || model.Grants.Select(g => g.ManifestId).Distinct().Count() != model.Grants.Count || model.Certifications.Select(c => c.SubjectUserId).Distinct(StringComparer.Ordinal).Count() != model.Certifications.Count)
         {
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
@@ -417,14 +429,15 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
-        // Signatures: the new signing key vouches for the new account public key, every grant and the delivery key; the
-        // current signing key vouches for the new signing key.
+        // Signatures: the new signing key vouches for the new account public key, every grant, the delivery key and every
+        // key certification; the current signing key vouches for the new signing key.
         var currentSigningKey = await GrantHelper.GetPrimarySigningKeyAsync(context, user.Id);
         var signingKeyIsVouchedFor = Signing.Verify(currentSigningKey, Signing.SigningKeyRotationMessage(user.Id, keys.SigningPublicKey), keys.PreviousSigningKeySignature);
         var accountKeyIsSigned = Signing.VerifyAccountPublicKey(keys.SigningPublicKey, keys.AccountPublicKey, keys.AccountPublicKeySignature);
         var grantsAreSigned = model.Grants.All(g => Signing.Verify(keys.SigningPublicKey, Signing.GrantMessage(g.ManifestId, g.KeyVersion, user.Id, keys.AccountPublicKey, g.Algorithm, g.EncryptedVek), g.Signature));
         var deliveryKeyIsSigned = string.IsNullOrEmpty(deliveryKey) || Signing.Verify(keys.SigningPublicKey, Signing.DeliveryKeyMessage(model.Manifest.ManifestId, deliveryKey, model.Manifest.CurrentRevision), model.Manifest.DeliveryPublicKeySignature);
-        if (!signingKeyIsVouchedFor || !accountKeyIsSigned || !grantsAreSigned || !deliveryKeyIsSigned)
+        var certificationsAreSigned = model.Certifications.All(c => Signing.Verify(keys.SigningPublicKey, Signing.KeyCertificationMessage(user.Id, c.SubjectUserId, c.SubjectSigningPublicKey), c.Signature));
+        if (!signingKeyIsVouchedFor || !accountKeyIsSigned || !grantsAreSigned || !deliveryKeyIsSigned || !certificationsAreSigned)
         {
             return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }

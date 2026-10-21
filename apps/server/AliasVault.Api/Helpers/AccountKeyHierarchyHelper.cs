@@ -89,6 +89,7 @@ public static class AccountKeyHierarchyHelper
             UserId = userId,
             Algorithm = SigningKeyAlgorithm.Ed25519,
             PublicKey = keys.SigningPublicKey!,
+            Fingerprint = Signing.Fingerprint(keys.SigningPublicKey),
             EncryptedPrivateKey = keys.EncryptedSigningPrivateKey!,
             IsPrimary = true,
             CreatedAt = now,
