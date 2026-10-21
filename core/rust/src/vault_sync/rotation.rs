@@ -34,6 +34,16 @@ struct BlobKeyEntry {
     encrypted_blob_key: String,
 }
 
+/// `GET v2/Groups/certifications`: one key certification this account made, with its signature by the current signing key.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CertificationEntry {
+    subject_user_id: String,
+    subject_signing_public_key: String,
+    #[serde(default)]
+    signature: String,
+}
+
 /// `POST v2/KeyRotation`.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,6 +57,7 @@ struct KeyRotationRequest {
     buckets: Vec<BucketWrite>,
     blob_keys: Vec<BlobKeyWrite>,
     grants: Vec<GrantWrite>,
+    certifications: Vec<CertificationWrite>,
 }
 
 impl FrameBody for KeyRotationRequest {
@@ -102,6 +113,15 @@ struct GrantWrite {
     key_version: i64,
     encrypted_vek: String,
     algorithm: String,
+    signature: String,
+}
+
+/// A key certification this account made, signed again with the new signing key.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CertificationWrite {
+    subject_user_id: String,
+    subject_signing_public_key: String,
     signature: String,
 }
 
@@ -176,6 +196,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     }
 
     let blob_keys: BlobKeysResponse = http::with_outdated_server_guard(http::get(&ctx.host, &format!("Vault/blob-keys/{}", personal_manifest_id), false).await)?;
+    let certifications: Vec<CertificationEntry> = http::with_outdated_server_guard(http::get(&ctx.host, "Groups/certifications", false).await)?;
 
     let key_pair = crypto::RsaKeyPair { public_key: params.new_account_public_key.clone(), private_key: params.new_account_private_key.expose_secret().to_string() };
     let rotated = crypto::rotate_account_keys(signing_key.expose_secret(), &params.user_id, params.new_unlock_key.expose_secret(), &key_pair)?;
@@ -186,7 +207,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let delivery_pair = crypto::generate_rsa_key_pair()?;
     let delivery_change = db::rotate_active_key_for_manifest(&ctx.host, &personal_manifest_id, &delivery_pair.public_key, &delivery_pair.private_key).await?;
 
-    let posted = build_and_post(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &vek, &shared_records, &shared_veks, &blob_keys.blob_keys, &delivery_pair.public_key).await;
+    let posted = build_and_post(ctx, &params, &personal_manifest_id, &rotated, signing_key.expose_secret(), &new_vek, &vek, &shared_records, &shared_veks, &blob_keys.blob_keys, &certifications, &delivery_pair.public_key).await;
     match posted {
         Ok(Ok((applied, rewrapped_blob_keys, rewrapped_grants, fingerprints))) => {
             adopt(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &applied, &rewrapped_blob_keys, &rewrapped_grants, &fingerprints).await?;
@@ -211,7 +232,7 @@ type Built = (Applied, HashMap<String, String>, HashMap<String, SharedManifestDt
 
 /// Encrypt everything under the new keys, send it, and read the server's answer.
 #[allow(clippy::too_many_arguments)]
-async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, old_vek: &SecretString, shared_records: &HashMap<String, SharedManifestDto>, shared_veks: &HashMap<String, SecretString>, server_blob_keys: &[BlobKeyEntry], delivery_public_key: &str) -> SyncResult<Result<Built, KeyRotationRefusal>> {
+async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, current_signing_key: &str, new_vek: &SecretString, old_vek: &SecretString, shared_records: &HashMap<String, SharedManifestDto>, shared_veks: &HashMap<String, SecretString>, server_blob_keys: &[BlobKeyEntry], server_certifications: &[CertificationEntry], delivery_public_key: &str) -> SyncResult<Result<Built, KeyRotationRefusal>> {
     let manifest_revisions: HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
     let bucket_revisions: HashMap<String, i64> = state::get(&ctx.host, state::VAULT_BUCKET_REVISIONS).await?.unwrap_or_default();
     let current_revision = manifest_revisions.get(personal_manifest_id).copied().unwrap_or(0);
@@ -279,6 +300,21 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         record.algorithm = ALGORITHM_RSA_OAEP_SHA256.to_string();
     }
 
+    // Every key certification this account made, signed again with the new signing key, so the people it vouched for stay
+    // verified. An entry is signed again only when the current key signed it.
+    let current_signing_public_key = crypto::signing::signing_public_key_of(current_signing_key)?;
+    let certifications = server_certifications
+        .iter()
+        .map(|entry| {
+            let message = crypto::signing::key_certification_message(&params.user_id, &entry.subject_user_id, &entry.subject_signing_public_key);
+            if !crypto::signing::verify(&current_signing_public_key, &message, &entry.signature) {
+                return Err(SyncError::Other(format!("The rotation was not sent: the server lists a certification of {} this account did not sign.", entry.subject_user_id)));
+            }
+            let signature = crypto::signing::sign(&rotated.signing_private_key, &message)?;
+            Ok(CertificationWrite { subject_user_id: entry.subject_user_id.clone(), subject_signing_public_key: entry.subject_signing_public_key.clone(), signature })
+        })
+        .collect::<SyncResult<Vec<_>>>()?;
+
     ensure_key_chain_opens(params, rotated, new_vek)?;
 
     let delivery_key_signature = crypto::signing::sign(&rotated.signing_private_key, &crypto::signing::delivery_key_message(personal_manifest_id, delivery_public_key, current_revision))?;
@@ -317,8 +353,9 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         buckets,
         blob_keys,
         grants,
+        certifications,
     };
-    ctx.log(format!("[KeyRotation] Sending the rotation: {} bucket(s), {} blob key(s), {} grant(s).", request.buckets.len(), request.blob_keys.len(), request.grants.len())).await;
+    ctx.log(format!("[KeyRotation] Sending the rotation: {} bucket(s), {} blob key(s), {} grant(s), {} certification(s).", request.buckets.len(), request.blob_keys.len(), request.grants.len(), request.certifications.len())).await;
 
     let response: KeyRotationResponse = match http::with_outdated_server_guard(http::post_frame(&ctx.host, KEY_ROTATION_ENDPOINT, &mut request).await) {
         Ok(response) => response,

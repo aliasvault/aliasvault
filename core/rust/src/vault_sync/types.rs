@@ -31,6 +31,14 @@ pub enum SyncOperation {
     InviteToSharedManifest,
     /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
     UpdateSharedManifest,
+    /// Find the account behind an identity code and check the code against its key, without certifying or inviting it.
+    LookupIdentityCode,
+    /// Invite an account to a group by its identity code, certifying its signing key first.
+    InviteToGroup,
+    /// Accept an invitation to join a group, certifying the inviter's signing key with their identity code first.
+    AcceptGroupInvitation,
+    /// Accept an invitation to a shared manifest, signing the grant with this account's own key.
+    AcceptSharedManifestInvitation,
     /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
     RotateAccountKeys,
 }
@@ -59,13 +67,19 @@ pub struct KeyRotationParams {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SharingParams {
-    pub group_id: String,
+    #[serde(default)]
+    pub group_id: Option<String>,
     #[serde(default)]
     pub manifest_id: Option<String>,
     #[serde(default)]
     pub user_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
+    #[serde(default)]
+    pub invitation_id: Option<String>,
+    /// The other party's identity code as the user typed it, for the operations that certify a key.
+    #[serde(default)]
+    pub identity_code: Option<String>,
 }
 
 /// Sync request.
@@ -213,6 +227,11 @@ pub struct SharingOperationResult {
     /// The manifest the operation created or invited to.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_id: Option<String>,
+    /// The account an identity code belonged to.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    /// The account was already a member, so only its key was certified.
+    pub already_member: bool,
     /// The vault (or the account's key hierarchy) has to finish upgrading before it can be shared.
     pub vault_upgrade_required: bool,
     /// A refusal carries only `failure.api_error_code` (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
@@ -549,8 +568,6 @@ pub struct ManifestDto {
     pub grant_signature: Option<String>,
     #[serde(default)]
     pub grant_signer_user_id: Option<String>,
-    #[serde(default)]
-    pub grant_signer_public_key: Option<String>,
     #[serde(default)]
     pub key_version: i64,
 }

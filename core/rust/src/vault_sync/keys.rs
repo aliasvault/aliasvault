@@ -73,10 +73,36 @@ async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &
     Ok(from_zeroizing(std::mem::take(&mut opened.vault_encryption_key)))
 }
 
-/// Open the chain of a server vault-key response with `unlock_key`, refusing an unknown unlock algorithm first.
+/// Open the chain of a server vault-key response with `unlock_key`, refusing an unknown unlock algorithm first and a
+/// served account public key that is not the public half of the private key.
 async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<SecretString> {
     ensure_known_unlock_algorithm(vault_key)?;
-    open_chain(ctx, &vault_key.encrypted_account_key, vault_key.encrypted_vek.as_deref().unwrap_or_default(), vault_key.encrypted_account_private_key.as_deref(), unlock_key).await
+    let vek = open_chain(ctx, &vault_key.encrypted_account_key, vault_key.encrypted_vek.as_deref().unwrap_or_default(), vault_key.encrypted_account_private_key.as_deref(), unlock_key).await?;
+    if let (Some(public_key), Some(private_key)) = (&vault_key.account_public_key, &ctx.account_private_key) {
+        ensure_own_key_pair(public_key, private_key.expose_secret())?;
+        ctx.account_public_key = Some(public_key.clone());
+    }
+    Ok(vek)
+}
+
+/// Refuse an account public key the server serves as this account's unless it is the public half of the held private key.
+fn ensure_own_key_pair(public_key: &str, private_key: &str) -> SyncResult<()> {
+    let pair = crypto::RsaKeyPair { public_key: public_key.to_string(), private_key: private_key.to_string() };
+    crypto::rsa_oaep::validate_rsa_key_pair(&pair).map_err(|_| SyncError::AccountKeyMismatch)
+}
+
+/// This account's public key, checked against the private key this session holds; `None` when either is missing.
+pub(crate) async fn own_account_public_key(ctx: &Ctx) -> SyncResult<Option<String>> {
+    let public_key = match &ctx.account_public_key {
+        Some(key) => key.clone(),
+        None => match state::get::<String>(&ctx.host, state::ACCOUNT_PUBLIC_KEY).await? {
+            Some(key) => key,
+            None => return Ok(None),
+        },
+    };
+    let Some(private_key) = &ctx.account_private_key else { return Ok(None) };
+    ensure_own_key_pair(&public_key, private_key.expose_secret())?;
+    Ok(Some(public_key))
 }
 
 /// The login-time key resolution (the `resolveVaultKey` operation): open the server's chain with the session key,
@@ -155,6 +181,14 @@ pub(crate) async fn ensure_key_chain_accepted(ctx: &mut Ctx) -> SyncResult<bool>
     has_cached_key_chain(&ctx.host).await
 }
 
+/// This account's signing public key, derived from the private key so that it never depends on what the server serves.
+pub(crate) async fn own_signing_public_key(ctx: &mut Ctx) -> SyncResult<Option<String>> {
+    match signing_private_key(ctx).await? {
+        Some(private_key) => Ok(Some(crypto::signing::signing_public_key_of(private_key.expose_secret())?)),
+        None => Ok(None),
+    }
+}
+
 /// The account signing private key, opened on first use from the cached encrypted copy with the session's Account Key.
 /// None when that key or the cached copy is missing or does not open it.
 pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<SecretString>> {
@@ -204,11 +238,11 @@ pub(crate) async fn re_encrypt_shared_manifest_records(ctx: &Ctx, new_key: &str)
 }
 
 /// The private key that opens a grant made out to `public_key`.
-pub(crate) fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Option<SecretString> {
-    if ctx.account_public_key.as_deref() != Some(public_key) {
-        return None;
+pub(crate) async fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> SyncResult<Option<SecretString>> {
+    if own_account_public_key(ctx).await?.as_deref() != Some(public_key) {
+        return Ok(None);
     }
-    ctx.account_private_key.clone()
+    Ok(ctx.account_private_key.clone())
 }
 
 /// Encrypt a manifest's VEK for one recipient key, bound to the manifest (see [`crypto::aad::grant`]).
@@ -228,7 +262,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
         return Ok(None);
     }
-    let Some(private_key) = resolve_grant_private_key(ctx, &record.account_public_key) else {
+    let Some(private_key) = resolve_grant_private_key(ctx, &record.account_public_key).await? else {
         ctx.warn(format!("[Sharing] This session holds no account private key that opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
         return Ok(None);
     };
@@ -256,9 +290,9 @@ pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<S
     Ok(veks)
 }
 
-/// Whether the grant a manifest was served with carries a valid signature by its signer.
-pub(crate) fn grant_signature_verifies(dto: &ManifestDto, recipient_public_key: &str, algorithm: &str, encrypted_vek: &str) -> bool {
-    let (Some(signer_user_id), Some(signer_public_key), Some(signature)) = (dto.grant_signer_user_id.as_deref(), dto.grant_signer_public_key.as_deref(), dto.grant_signature.as_deref()) else { return false };
+/// Whether the grant a manifest was served with is signed by this account itself; a grant signed by anyone else does not open.
+pub(crate) fn grant_signed_by_self(dto: &ManifestDto, own_signing_public_key: &str, recipient_public_key: &str, algorithm: &str, encrypted_vek: &str) -> bool {
+    let (Some(signer_user_id), Some(signature)) = (dto.grant_signer_user_id.as_deref(), dto.grant_signature.as_deref()) else { return false };
     let message = crypto::signing::grant_message(&dto.manifest_id, dto.key_version, signer_user_id, recipient_public_key, algorithm, encrypted_vek);
-    crypto::signing::verify(signer_public_key, &message, signature)
+    crypto::signing::verify(own_signing_public_key, &message, signature)
 }

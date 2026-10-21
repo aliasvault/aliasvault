@@ -24,6 +24,9 @@ pub enum ErrorCode {
     /// The session key does not open the key chain the server holds; only a re-login recovers.
     #[serde(rename = "E-208")]
     KeyOutOfSync,
+    /// The account public key the server serves does not belong to the account private key this session holds.
+    #[serde(rename = "E-217")]
+    AccountKeyMismatch,
     /// The server's snapshot cannot be assembled into a vault.
     #[serde(rename = "E-502")]
     SyncVaultFetchFailed,
@@ -135,6 +138,9 @@ pub enum SyncError {
     /// The session key opens neither the server's chain nor its VEK; only a re-login recovers.
     #[error("Vault encryption key out of sync with the server; log in again")]
     KeyOutOfSync,
+    /// The account public key the server serves is not the public half of the account private key this session holds.
+    #[error("The account public key the server serves does not belong to this account's private key")]
+    AccountKeyMismatch,
     /// A server manifest or bucket failed its hash check or did not decrypt.
     #[error("Server vault could not be opened: {0}")]
     ServerVaultUnreadable(String),
@@ -209,6 +215,7 @@ impl SyncError {
             SyncError::UnlockKeyRejected => Failure::Coded(ErrorCode::UnlockKeyRejected),
             SyncError::KeyChainUnreadable(_) => Failure::Coded(ErrorCode::KeyChainUnreadable),
             SyncError::KeyOutOfSync => Failure::Logout(LogoutReason::PasswordChanged),
+            SyncError::AccountKeyMismatch => Failure::Coded(ErrorCode::AccountKeyMismatch),
             SyncError::ServerVaultUnreadable(_) => Failure::Coded(ErrorCode::SyncVaultDecryptFailed),
             SyncError::Snapshot(_) => Failure::Coded(ErrorCode::SyncVaultFetchFailed),
             SyncError::VaultDataRejected(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
