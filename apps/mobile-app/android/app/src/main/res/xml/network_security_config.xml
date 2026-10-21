@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-  <base-config cleartextTrafficPermitted="true">
+<!-- Release builds require TLS; user-installed CAs are trusted so self-hosted servers with a private CA work. Debug builds use network_security_config_debug.xml (selected in build.gradle). -->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+  <base-config cleartextTrafficPermitted="false">
     <trust-anchors>
       <certificates src="system"/>
-      <certificates src="user"/> <!-- opt-in to user-installed CAs -->
+      <certificates src="user" tools:ignore="AcceptsUserCertificates"/>
     </trust-anchors>
   </base-config>
 </network-security-config>
