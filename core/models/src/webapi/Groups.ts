@@ -75,22 +75,6 @@ export type GroupInfo = {
   role: GroupRole;
   manifests: SharedManifestInfo[];
   members: GroupMemberInfo[];
-  /** The open invitations to join this group, for admins. */
-  pendingJoinInvitations: SentManifestInvitation[];
-}
-
-/**
- * An open invitation to join a group, addressed to this user.
- */
-export type ReceivedGroupInvitation = {
-  id: string;
-  groupId: string;
-  inviterUserId: string;
-  inviterUsername: string;
-  createdAt: string;
-  inviterSigningPublicKey: string | null;
-  /** The invitee's own certification of `inviterSigningPublicKey`, when they certified the inviter before. */
-  inviterCertification: string | null;
 }
 
 /**
@@ -101,18 +85,12 @@ export type GroupOverviewResponse = {
   userId: string;
   groups: GroupInfo[];
   receivedInvitations: ReceivedManifestInvitation[];
-  receivedGroupInvitations: ReceivedGroupInvitation[];
+  /** The people whose current signing key this user certified, who can be invited without their identity code. */
+  verifiedPeople: GroupMemberInfo[];
 }
 
 /**
- * The created group, as served by POST /v2/Groups.
- */
-export type CreateGroupResponse = {
-  groupId: string;
-}
-
-/**
- * Create another shared manifest for a group.
+ * Create a shared manifest, with a group of its own that the caller owns (POST /v2/Groups/manifests).
  */
 export type CreateSharedManifestRequest = {
   manifestId: string;
@@ -133,9 +111,10 @@ export type UpdateSharedManifestRequest = {
 }
 
 /**
- * The created manifest, as served by POST /v2/Groups/{groupId}/manifests.
+ * The created manifest and its group, as served by POST /v2/Groups/manifests.
  */
 export type CreateSharedManifestResponse = {
+  groupId: string;
   manifestId: string;
   revisionNumber: number;
 }
