@@ -20,7 +20,7 @@ import { devError, devLog, devWarn } from '../platform/Logger';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncKeyRotationParams, VaultSyncKeyRotationRefusal, VaultSyncKeyRotationResult, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncKeyRotationParams, VaultSyncKeyRotationRefusal, VaultSyncKeyRotationResult, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingOperation, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 import type { TranslationKey } from '@aliasvault/i18n';
 
@@ -78,6 +78,12 @@ export type KeyRotationOperationResult = SyncErrorDetail & {
  */
 export type SharingOperationResult = SyncErrorDetail & {
   success: boolean;
+  /** The shared manifest the operation created or invited to. */
+  manifestId?: string;
+  /** The account an identity code belonged to. */
+  username?: string;
+  /** The account was already a member of the family, so only its key was certified. */
+  alreadyMember?: boolean;
   /** The API error code the server refused with, which the sharing screen has words for. */
   apiErrorCode?: string;
   /** The vault (or the account's key hierarchy) has to finish upgrading before it can be shared. */
@@ -210,6 +216,46 @@ export class VaultSync {
   }
 
   /**
+   * Find the account behind an identity code and check the code against its key, so the admin can confirm who they invite.
+   * Certifies and invites nothing. Never throws.
+   * @param groupId - the family
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  public async lookupIdentityCode(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('lookupIdentityCode', { groupId, identityCode });
+  }
+
+  /**
+   * Invite the account with the given identity code to a family. The engine checks the key the server returns against
+   * the code, certifies it, and invites; an account already in the family is only certified. Never throws.
+   * @param groupId - the family
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  public async inviteToGroup(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('inviteToGroup', { groupId, identityCode });
+  }
+
+  /**
+   * Accept an invitation to join a family. The inviter's key has to be certified: with their identity code now, or from
+   * an earlier certification. Never throws.
+   * @param invitationId - the invitation
+   * @param identityCode - the inviter's identity code, when they are not certified yet
+   */
+  public async acceptGroupInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('acceptGroupInvitation', { invitationId, identityCode });
+  }
+
+  /**
+   * Accept an invitation to a shared manifest: the engine checks the certified inviter signed it and signs the grant as
+   * this account's own. Never throws.
+   * @param invitationId - the invitation
+   * @param identityCode - the inviter's identity code, when they are not certified yet
+   */
+  public async acceptSharedManifestInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('acceptSharedManifestInvitation', { invitationId, identityCode });
+  }
+
+  /**
    * Rotate the account's keys: the engine re-encrypts the personal vault and rewraps every grant under new keys, which
    * the server applies in one transaction. On success the vault and the cached chain are stored under the new keys. Never throws.
    * @param params - the password proof and the new unlock method and keypair
@@ -230,10 +276,10 @@ export class VaultSync {
    * @param operation - the operation
    * @param sharing - what it acts on
    */
-  private async runSharingOperation(operation: VaultSyncOperation, sharing: VaultSyncSharingParams): Promise<SharingOperationResult> {
+  private async runSharingOperation(operation: VaultSyncSharingOperation, sharing: VaultSyncSharingParams): Promise<SharingOperationResult> {
     try {
       const result = await this.run<VaultSyncSharingResult>(operation, {}, { sharing });
-      return { success: result.success, apiErrorCode: result.apiErrorCode, vaultUpgradeRequired: result.vaultUpgradeRequired, ...VaultSync.syncError(result) };
+      return { success: result.success, manifestId: result.manifestId, username: result.username, alreadyMember: result.alreadyMember, apiErrorCode: result.apiErrorCode, vaultUpgradeRequired: result.vaultUpgradeRequired, ...VaultSync.syncError(result) };
     } catch (error) {
       const detail = VaultSync.driverError(error);
       devError(`[Sharing] ${operation} failed (${detail.errorCode ?? 'no code'}): ${detail.error ?? 'no detail'}`);

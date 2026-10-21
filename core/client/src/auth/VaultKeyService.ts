@@ -182,6 +182,13 @@ export class VaultKeyService {
   }
 
   /**
+   * The cached account signing private key, encrypted with the Account Key, or null when the account has no signing key yet.
+   */
+  public static async getEncryptedSigningPrivateKey(): Promise<string | null> {
+    return (await getPlatform().storage.get(StorageKeys.ENCRYPTED_SIGNING_PRIVATE_KEY)) as string | null;
+  }
+
+  /**
    * Persist the new account key after a local password change. The session stores the Account Key, which the change
    * leaves as it is.
    * @param newEncryptedAccountKey - the Account Key encrypted with the KEK of the new password

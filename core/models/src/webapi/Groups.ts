@@ -20,6 +20,8 @@ export type GroupMemberInfo = {
   accountPublicKey: string | null;
   accountPublicKeySignature: string | null;
   signingPublicKey: string | null;
+  /** The caller's own certification of `signingPublicKey`, for admins; the client verifies it itself. */
+  keyCertification: string | null;
 }
 
 /**
@@ -42,11 +44,17 @@ export type ReceivedManifestInvitation = {
   inviterUsername: string;
   inviterUserId: string;
   createdAt: string;
+  keyVersion: number;
+  /** The vault's key encrypted for `recipientAccountPublicKey`; the invitee signs it as their grant when accepting. */
+  encryptedVek: string | null;
+  grantSignature: string | null;
   encryptedName: string | null;
   encryptedNameSignature: string | null;
   signerPublicKey: string | null;
   recipientAccountPublicKey: string | null;
   algorithm: string;
+  /** The invitee's own certification of `signerPublicKey`, when they certified the inviter before. */
+  inviterCertification: string | null;
 }
 
 /**
@@ -67,14 +75,40 @@ export type GroupInfo = {
   role: GroupRole;
   manifests: SharedManifestInfo[];
   members: GroupMemberInfo[];
+  /** The open invitations to join this group, for admins. */
+  pendingJoinInvitations: SentManifestInvitation[];
+}
+
+/**
+ * An open invitation to join a group, addressed to this user.
+ */
+export type ReceivedGroupInvitation = {
+  id: string;
+  groupId: string;
+  inviterUserId: string;
+  inviterUsername: string;
+  createdAt: string;
+  inviterSigningPublicKey: string | null;
+  /** The invitee's own certification of `inviterSigningPublicKey`, when they certified the inviter before. */
+  inviterCertification: string | null;
 }
 
 /**
  * Everything the sharing screen renders, as served by GET /v2/Groups.
  */
 export type GroupOverviewResponse = {
+  /** The caller's own user id. */
+  userId: string;
   groups: GroupInfo[];
   receivedInvitations: ReceivedManifestInvitation[];
+  receivedGroupInvitations: ReceivedGroupInvitation[];
+}
+
+/**
+ * The created group, as served by POST /v2/Groups.
+ */
+export type CreateGroupResponse = {
+  groupId: string;
 }
 
 /**
@@ -135,9 +169,9 @@ export type GrantManifestAccessResponse = {
 }
 
 /**
- * The SRP handshake served by POST /v2/Groups/{groupId}/manifests/{manifestId}/delete/initiate.
+ * The SRP handshake served by the initiate endpoints of the sharing actions confirmed with the master password.
  */
-export type DeleteSharedManifestInitiateResponse = {
+export type PasswordConfirmationChallenge = {
   salt: string;
   serverEphemeral: string;
   encryptionType: string;
@@ -146,9 +180,9 @@ export type DeleteSharedManifestInitiateResponse = {
 }
 
 /**
- * Delete a shared manifest for good, carrying the SRP proof of the caller's master password.
+ * The SRP proof of the caller's master password, for the matching confirm endpoint.
  */
-export type DeleteSharedManifestRequest = {
+export type PasswordConfirmationRequest = {
   clientPublicEphemeral: string;
   clientSessionProof: string;
 }
