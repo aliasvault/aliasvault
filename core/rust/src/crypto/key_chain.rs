@@ -137,6 +137,13 @@ pub fn open_account_signing_private_key(encrypted_signing_private_key: &str, acc
     unwrap_key(encrypted_signing_private_key, account_key_base64, aad::ACCOUNT_SIGNING_PRIVATE_KEY)
 }
 
+/// The fingerprint of the account's own signing key, derived from the private key so that it never depends on the
+/// public key the server reports for the account.
+pub fn account_signing_key_fingerprint(encrypted_signing_private_key: &str, account_key_base64: &str) -> VaultResult<String> {
+    let private_key = open_account_signing_private_key(encrypted_signing_private_key, account_key_base64)?;
+    signing::fingerprint(&signing::signing_public_key_of(&private_key)?)
+}
+
 /// Why a key chain did not open.
 #[derive(Error, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]

@@ -5,6 +5,7 @@
 
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey, PUBLIC_KEY_LENGTH, SECRET_KEY_LENGTH, SIGNATURE_LENGTH};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fmt;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
@@ -27,6 +28,19 @@ pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
 
 /// The label of a new signing public key, signed by the signing key it replaces.
 pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
+
+/// The label of a key certification: one user vouching that a signing public key belongs to another user, after checking
+/// its fingerprint against the identity code that user gave them outside AliasVault.
+pub const KEY_CERTIFICATION_LABEL: &str = "aliasvault/v1/sig/key-certification";
+
+/// The label under which a signing public key is hashed into its fingerprint.
+pub const FINGERPRINT_LABEL: &str = "aliasvault/v1/signing-key-fingerprint";
+
+/// The decimal digits in a fingerprint, shown in groups of [`FINGERPRINT_GROUP_DIGITS`].
+pub const FINGERPRINT_DIGITS: u32 = 20;
+
+/// The digits per group of a fingerprint.
+pub const FINGERPRINT_GROUP_DIGITS: usize = 4;
 
 /// A new signing keypair, both halves base64: the 32-byte public key and the 32-byte private seed.
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
@@ -88,6 +102,11 @@ pub fn signing_key_rotation_message(user_id: &str, new_signing_public_key: &str)
     signed_message(SIGNING_KEY_ROTATION_LABEL, &[user_id.as_bytes(), new_signing_public_key.as_bytes()])
 }
 
+/// The signed message of a key certification: `certifier_user_id` vouches that `subject_signing_public_key` belongs to `subject_user_id`.
+pub fn key_certification_message(certifier_user_id: &str, subject_user_id: &str, subject_signing_public_key: &str) -> Vec<u8> {
+    signed_message(KEY_CERTIFICATION_LABEL, &[certifier_user_id.as_bytes(), subject_user_id.as_bytes(), subject_signing_public_key.as_bytes()])
+}
+
 /// Sign a message with a base64 private seed. Returns the base64 signature.
 pub fn sign(private_key_base64: &str, message: &[u8]) -> VaultResult<String> {
     Ok(base64_encode(&signing_key(private_key_base64)?.sign(message).to_bytes()))
@@ -104,6 +123,24 @@ pub fn verify(public_key_base64: &str, message: &[u8], signature_base64: &str) -
 /// The base64 public key of a base64 private seed.
 pub fn signing_public_key_of(private_key_base64: &str) -> VaultResult<String> {
     Ok(base64_encode(signing_key(private_key_base64)?.verifying_key().as_bytes()))
+}
+
+/// The fingerprint of a base64 signing public key: [`FINGERPRINT_DIGITS`] decimal digits in groups of four (`1234-5678-...`),
+/// taken from the SHA-256 of the key under [`FINGERPRINT_LABEL`]. Two users compare it outside AliasVault to check that
+/// the server handed each of them the other's real key. This is the user's identity code (the family code in the apps).
+pub fn fingerprint(public_key_base64: &str) -> VaultResult<String> {
+    let key = verifying_key(public_key_base64)?;
+    let digest = Sha256::digest(signed_message(FINGERPRINT_LABEL, &[key.as_bytes()]));
+    let mut leading = [0u8; 16];
+    leading.copy_from_slice(&digest[..16]);
+    let digits = format!("{:0width$}", u128::from_be_bytes(leading) % 10u128.pow(FINGERPRINT_DIGITS), width = FINGERPRINT_DIGITS as usize);
+    Ok(digits.chars().collect::<Vec<_>>().chunks(FINGERPRINT_GROUP_DIGITS).map(|group| group.iter().collect::<String>()).collect::<Vec<_>>().join("-"))
+}
+
+/// Whether a code a user typed is the fingerprint of a signing public key. Only the digits count, so spaces and dashes may differ.
+pub fn fingerprint_matches(public_key_base64: &str, code: &str) -> bool {
+    let typed: String = code.chars().filter(char::is_ascii_digit).collect();
+    fingerprint(public_key_base64).is_ok_and(|expected| expected.chars().filter(char::is_ascii_digit).collect::<String>() == typed)
 }
 
 fn signing_key(private_key_base64: &str) -> VaultResult<SigningKey> {
@@ -157,12 +194,48 @@ mod tests {
         assert_eq!(crate::common::encoding::hex_encode_lower(&signing_key_rotation_message("user-1", PUBLIC_KEY_VECTOR)), SIGNING_KEY_ROTATION_MESSAGE_VECTOR);
     }
 
+    /// Known-answer vector for the key certification message, which `Signing.cs` builds too. Never regenerate it.
+    #[test]
+    fn key_certification_message_known_answer() {
+        assert_eq!(crate::common::encoding::hex_encode_lower(&key_certification_message("user-1", "user-2", PUBLIC_KEY_VECTOR)), KEY_CERTIFICATION_MESSAGE_VECTOR);
+    }
+
+    const KEY_CERTIFICATION_MESSAGE_VECTOR: &str = "00000023616c6961737661756c742f76312f7369672f6b65792d63657274696669636174696f6e00000006757365722d3100000006757365722d320000002c41364548762f504f454c3464634e3059353076416d57666b316a436270513166486479475a424a564d62673d";
+
+    #[test]
+    fn fingerprint_matches_ignores_separators() {
+        assert!(fingerprint_matches(PUBLIC_KEY_VECTOR, FINGERPRINT_VECTOR));
+        assert!(fingerprint_matches(PUBLIC_KEY_VECTOR, " 0919 6981 5265 9210 5908 "));
+        assert!(!fingerprint_matches(PUBLIC_KEY_VECTOR, "0919-6981-5265-9210-5909"));
+        assert!(!fingerprint_matches(PUBLIC_KEY_VECTOR, ""));
+        assert!(!fingerprint_matches("not base64!", FINGERPRINT_VECTOR));
+    }
+
     const SIGNING_KEY_ROTATION_MESSAGE_VECTOR: &str = "00000026616c6961737661756c742f76312f7369672f7369676e696e672d6b65792d726f746174696f6e00000006757365722d310000002c41364548762f504f454c3464634e3059353076416d57666b316a436270513166486479475a424a564d62673d";
 
     const INVITATION_NAME_MESSAGE_VECTOR: &str = "00000021616c6961737661756c742f76312f7369672f696e7669746174696f6e2d6e616d650000002430613162326333642d303030302d303030302d303030302d30303030303030303030303100000006757365722d310000000d7b226b7479223a22525341227d00000008626d46745a513d3d";
 
     const GRANT_MESSAGE_VECTOR: &str = "00000017616c6961737661756c742f76312f7369672f6772616e740000002430613162326333642d303030302d303030302d303030302d303030303030303030303031000000013300000006757365722d310000000d7b226b7479223a22525341227d0000000f7273612d6f6165702d73686132353600000004646d5672";
     const DELIVERY_KEY_MESSAGE_VECTOR: &str = "0000001e616c6961737661756c742f76312f7369672f64656c69766572792d6b65790000002430613162326333642d303030302d303030302d303030302d3030303030303030303030310000000d7b226b7479223a22525341227d000000023432";
+
+    /// Known-answer vector for the fingerprint, which every client shows for the same key. A changed output means two
+    /// app versions show different codes for one key. Never regenerate it.
+    #[test]
+    fn fingerprint_known_answer() {
+        assert_eq!(fingerprint(PUBLIC_KEY_VECTOR).unwrap(), FINGERPRINT_VECTOR);
+    }
+
+    const FINGERPRINT_VECTOR: &str = "0919-6981-5265-9210-5908";
+
+    #[test]
+    fn fingerprint_has_twenty_digits_in_groups_of_four() {
+        let code = fingerprint(&generate_signing_key_pair().public_key).unwrap();
+        assert_eq!(code.len(), 24);
+        assert!(code.split('-').all(|group| group.len() == 4 && group.chars().all(|c| c.is_ascii_digit())), "{}", code);
+        assert_ne!(code, fingerprint(&generate_signing_key_pair().public_key).unwrap());
+        assert!(fingerprint("not base64!").is_err());
+        assert!(fingerprint(&base64_encode(&[1u8; 16])).is_err());
+    }
 
     #[test]
     fn signature_round_trip() {
