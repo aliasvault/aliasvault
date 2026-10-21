@@ -15,6 +15,7 @@ export type TotpCodePreview = {
 };
 
 import type { TwoFactorPrompt } from '@/entrypoints/background/TwoFactorStateHandler';
+import type { SharingActionResponse } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
@@ -97,10 +98,12 @@ export interface IExtensionMessageProtocol {
   GET_TWO_FACTOR_STATE(): TwoFactorPrompt | null;
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
-  GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };
-  GROUP_UPDATE_VAULT(data: { groupId: string; manifestId: string; details: SharedManifestDetails }): { success: boolean; error?: string; apiErrorCode?: string };
-  GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
-  GROUP_REVOKE_ACCESS(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
+  GROUP_CREATE_VAULT(data: { name: string }): SharingActionResponse;
+  GROUP_UPDATE_VAULT(data: { groupId: string; manifestId: string; details: SharedManifestDetails }): SharingActionResponse;
+  GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): SharingActionResponse;
+  GROUP_LOOKUP_IDENTITY_CODE(data: { groupId?: string; identityCode: string }): SharingActionResponse;
+  GROUP_INVITE_MEMBER_BY_CODE(data: { groupId: string; manifestId: string; identityCode: string }): SharingActionResponse;
+  GROUP_ACCEPT_MANIFEST_INVITATION(data: { invitationId: string; identityCode?: string }): SharingActionResponse;
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };
   IS_LOGIN_SAVE_BLOCKED(data: { domain: string }): boolean;
   LOCK_VAULT(): BoolResponse;

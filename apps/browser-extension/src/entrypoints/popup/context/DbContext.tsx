@@ -51,6 +51,7 @@ type VaultMetadata = {
 
 type DbContextType = {
   sqliteClient: SqliteClient | null;
+  getSqliteClient: () => SqliteClient | null;
   dbInitialized: boolean;
   dbAvailable: boolean;
   isOffline: boolean;
@@ -130,6 +131,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * SQLite client.
    */
   const [sqliteClient, setSqliteClient] = useState<SqliteClient | null>(null);
+  const sqliteClientRef = useRef<SqliteClient | null>(null);
 
   /** Writes of this window still in progress; see runLocalVaultWrite. */
   const localWritesInFlightRef = useRef(0);
@@ -258,6 +260,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   useEffect(() => {
     return vaultStateEvents.onVaultLocked(() => {
       clearEmailKeyCache();
+      sqliteClientRef.current = null;
       setSqliteClient(null);
       setDbAvailable(false);
     });
@@ -303,6 +306,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const client = new SqliteClient();
       await client.initializeFromBytes(decryptedVault);
 
+      sqliteClientRef.current = client;
       setSqliteClient(client);
       setDbInitialized(true);
       setDbAvailable(true);
@@ -432,6 +436,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const clearDatabase = useCallback(() : void => {
     clearEmailKeyCache();
+    sqliteClientRef.current = null;
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);
@@ -441,9 +446,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Get offline state synchronously from ref.
    */
   const getIsOffline = useCallback(() => isOfflineRef.current, []);
+  const getSqliteClient = useCallback(() => sqliteClientRef.current, []);
 
   const contextValue = useMemo(() => ({
     sqliteClient,
+    getSqliteClient,
     dbInitialized,
     dbAvailable,
     isOffline,
@@ -466,7 +473,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     syncError,
     clearSyncError,
     runLocalVaultWrite,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeAccountKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError, runLocalVaultWrite]);
+  }), [sqliteClient, getSqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeAccountKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError, runLocalVaultWrite]);
 
   return (
     <DbContext.Provider value={contextValue}>

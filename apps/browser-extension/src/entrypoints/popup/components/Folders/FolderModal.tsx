@@ -9,9 +9,11 @@ import { logFailure } from '@/utils/Diagnostics';
 type FolderModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** Save the name; throws an error with the message to show. */
   onSave: (folderName: string) => Promise<void>;
   initialName?: string;
   mode: 'create' | 'edit';
+  maxLength?: number;
 };
 
 /**
@@ -22,7 +24,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
   onClose,
   onSave,
   initialName = '',
-  mode
+  mode,
+  maxLength
 }) => {
   const { t } = useTranslation();
   const [folderName, setFolderName] = useState(initialName);
@@ -55,11 +58,8 @@ const FolderModal: React.FC<FolderModalProps> = ({
       await onSave(trimmedName);
       onClose();
     } catch (err) {
-      if (hasErrorCode(err)) {
-        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
-      } else {
-        setError(t('common.errors.unknownErrorTryAgain'));
-      }
+      const fallback = err instanceof Error && err.message.length > 0 ? err.message : t('common.errors.unknownErrorTryAgain');
+      setError(hasErrorCode(err) ? getErrorMessage(err, t('common.errors.unknownErrorTryAgain')) : fallback);
       logFailure('Error saving folder', err);
     } finally {
       setIsSubmitting(false);
@@ -109,6 +109,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
           type="text"
           value={folderName}
           onChange={(e) => setFolderName(e.target.value)}
+          maxLength={maxLength}
           autoFocus
           className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
         />

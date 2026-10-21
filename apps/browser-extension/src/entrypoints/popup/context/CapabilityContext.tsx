@@ -1,7 +1,6 @@
 import { type Capabilities, CapabilityService } from '@aliasvault/client/api/CapabilityService';
 import { type CapabilityKey, isCapabilityEnabled } from '@aliasvault/models/webapi';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 
 type CapabilityContextType = {
   isEnabled: (key: CapabilityKey) => boolean;
@@ -42,26 +41,6 @@ export const CapabilityProvider: React.FC<{ children: React.ReactNode }> = ({ ch
  */
 export const useCapabilities = (): CapabilityContextType['isEnabled'] => {
   return useCapabilityContext().isEnabled;
-};
-
-/**
- * Renders a page only for accounts the capability is on for.
- * @param root0 - the capability to require and the page to render.
- * @param root0.capability - the capability the page needs.
- * @param root0.children - the page.
- */
-export const RequireCapability: React.FC<{ capability: CapabilityKey; children: React.ReactNode }> = ({ capability, children }) => {
-  const { isEnabled, isLoaded } = useCapabilityContext();
-
-  /*
-   * Nothing is known before the stored capabilities are read, and redirecting on a guess would throw out a
-   * legitimate deep link. The popup's loading state covers the moment this takes.
-   */
-  if (!isLoaded) {
-    return null;
-  }
-
-  return isEnabled(capability) ? <>{children}</> : <Navigate to="/" replace />;
 };
 
 /**

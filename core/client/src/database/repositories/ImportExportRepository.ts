@@ -52,8 +52,7 @@ export class ImportExportRepository extends BaseRepository {
   /**
    * The manifest every vault export reads: always the personal manifest.
    *
-   * Note: shared manifests are not part of a regular vault export. Exporting a shared manifest is a separate,
-   * admin-only flow in the family sharing UI.
+   * Note: shared manifests are not part of a regular vault export.
    * @returns The personal manifest id
    */
   private *exportManifestId(): DbOp<string> {

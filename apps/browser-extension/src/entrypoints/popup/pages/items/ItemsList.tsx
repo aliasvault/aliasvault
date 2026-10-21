@@ -2,7 +2,9 @@ import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { canAdministerGroup, familySharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
+import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useState, useEffect, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -22,17 +24,24 @@ import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterD
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
+import SharedFolderAccessModal from '@/entrypoints/popup/components/Sharing/SharedFolderAccessModal';
+import SharedFolderInvitationModal from '@/entrypoints/popup/components/Sharing/SharedFolderInvitationModal';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
+import { usePasswordConfirmedAction } from '@/entrypoints/popup/hooks/usePasswordConfirmedAction';
+import { useSharedFolders } from '@/entrypoints/popup/hooks/useSharedFolders';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/entrypoints/popup/hooks/useVaultRefresh';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
+import { sharingFailureMessage, unwrapSharingResult } from '@/entrypoints/popup/utils/SharingErrors';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -148,6 +157,12 @@ const ItemsList: React.FC = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const [visibleItemCount, setVisibleItemCount] = useState(ITEM_BATCH_SIZE);
+  /** The folder whose people dialog is open; kept while the folder turns into a shared one and the page moves to it. */
+  const [peopleFolder, setPeopleFolder] = useState<{ folder: Pick<Folder, 'Id' | 'ManifestId' | 'Name'>; isShared: boolean } | null>(null);
+  const [openInvitationId, setOpenInvitationId] = useState<string | null>(null);
+  const shared = useSharedFolders();
+  const webApi = useWebApi();
+  const { askPassword, passwordModal } = usePasswordConfirmedAction();
   const { setIsInitialLoading } = useLoading();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -191,8 +206,14 @@ const ItemsList: React.FC = () => {
     return dbContext.sqliteClient.folders.getById(currentFolderRef);
   }, [currentFolderRef, dbContext?.sqliteClient, folderRefreshKey]);
 
-  // A virtual folder (e.g. shared manifest) is not editable or deletable here.
+  // A virtual folder (a shared manifest) is renamed and deleted through its shared folder, not as a stored folder.
   const currentFolderIsVirtual = currentFolder !== null && multiManifestRendering.isVirtualFolder(currentFolder);
+  const currentShared = currentFolder !== null && currentFolderIsVirtual ? shared.folders.find(folder => folder.manifest.manifestId.toLowerCase() === currentFolder.ManifestId.toLowerCase()) ?? null : null;
+  const canManageShared = currentShared !== null && canAdministerGroup(currentShared.group);
+  const canRenameCurrent = !currentFolderIsVirtual || (currentShared !== null && canManageShared && holdsManifestKey(currentShared.manifest, shared.myUserId));
+  const canDeleteCurrent = !currentFolderIsVirtual || canManageShared;
+  // A top-level personal folder can be shared; a subfolder cannot, as a shared folder is always a top-level one.
+  const canShareCurrent = shared.isEnabled && currentFolder !== null && (currentFolderIsVirtual || (currentFolder.ParentFolderId ?? null) === null);
 
   // Get current folder's full path (for relative path computation in search results)
   const currentFolderPath = useMemo(() => {
@@ -428,6 +449,80 @@ const ItemsList: React.FC = () => {
     // Close modal
     setShowEditFolderModal(false);
   }, [dbContext, currentFolderRef, executeVaultMutationAsync]);
+
+  /**
+   * Sync, then reopen the stored vault so the folders show what changed on the server.
+   */
+  const syncAndReload = useCallback(async (): Promise<void> => {
+    await sendMessage('FULL_VAULT_SYNC', {});
+    await dbContext.loadStoredDatabase();
+  }, [dbContext]);
+
+  /**
+   * Rename the current shared folder: its name is encrypted with its key and kept on the server for every member.
+   * Throws so the rename modal shows the error.
+   */
+  const handleRenameSharedFolder = useCallback(async (name: string): Promise<void> => {
+    if (!currentShared) {
+      return;
+    }
+
+    try {
+      unwrapSharingResult(await sendMessage('GROUP_UPDATE_VAULT', { groupId: currentShared.group.groupId, manifestId: currentShared.manifest.manifestId, details: { name } }));
+    } catch (renameError) {
+      throw new Error(sharingFailureMessage(renameError, t('common.errors.unknownErrorTryAgain')));
+    }
+
+    await syncAndReload();
+    setFolderRefreshKey(prev => prev + 1);
+    await shared.reload();
+  }, [currentShared, syncAndReload, shared, t]);
+
+  /**
+   * Delete the current shared folder for everyone, after a confirmation and the master password.
+   */
+  const handleDeleteSharedFolder = (): void => {
+    if (!currentShared) {
+      return;
+    }
+
+    const name = currentFolderName ?? '';
+    askPassword({
+      title: familySharingText.deleteVault,
+      confirmMessage: familySharingText.deleteVaultConfirm(name),
+      confirmText: t('common.delete'),
+      description: familySharingText.deleteVaultPasswordPrompt(name),
+      failureMessage: familySharingText.errors.deleteVaultFailed,
+      /**
+       * Run the deletion with the password proof.
+       * @param answerChallenge - answers the SRP challenge.
+       */
+      perform: answerChallenge => SharingService.deleteSharedManifest(webApi, currentShared.group.groupId, currentShared.manifest.manifestId, answerChallenge),
+      /**
+       * Sync the deletion in and go to the vault's top level.
+       */
+      onDone: async () => {
+        await syncAndReload();
+        await shared.reload();
+        navigate('/items');
+      },
+    });
+  };
+
+  /**
+   * Finish an answered invitation: an accepted one is synced in (the background already synced) and opened.
+   * @param manifestId - the shared folder the invitation was for.
+   * @param accepted - whether it was accepted.
+   */
+  const finishInvitation = async (manifestId: string, accepted: boolean): Promise<void> => {
+    setOpenInvitationId(null);
+    if (accepted) {
+      await dbContext.loadStoredDatabase();
+      const id = manifestId.toLowerCase();
+      navigate(`/items/folder/${id}/${id}?filter=${encodeURIComponent(filterType)}`);
+    }
+    await shared.reload();
+  };
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -814,6 +909,22 @@ const ItemsList: React.FC = () => {
     }
   }, [activeKind, activeIndex, visibleItems.length, hasMoreItems]);
 
+  /* Invitations to shared folders wait in the folder list at the top level until they are answered. */
+  const invitationPills = !currentFolderId && !searchTerm ? shared.invitations.map(invitation => (
+    <button
+      key={invitation.id}
+      data-invitation={invitation.id}
+      onClick={() => setOpenInvitationId(invitation.id)}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-dashed border-primary-400 bg-primary-50/50 text-gray-500 hover:bg-primary-50 dark:border-primary-600 dark:bg-primary-900/10 dark:text-gray-400 dark:hover:bg-primary-900/20 transition-colors"
+    >
+      <Icon name="mail" className="w-3.5 h-3.5 text-primary-500" />
+      <span className="truncate max-w-[120px]">{shared.invitationNames[invitation.id] ?? familySharingText.sharedVault}</span>
+      <span className="text-xs text-primary-600 dark:text-primary-400">{familySharingText.invitationPending}</span>
+    </button>
+  )) : [];
+
+  const openInvitation = shared.invitations.find(candidate => candidate.id === openInvitationId) ?? null;
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -847,23 +958,37 @@ const ItemsList: React.FC = () => {
             }}
             onSelectRecentlyDeleted={() => navigate('/items/deleted')}
           />
-          {/* Edit and Delete buttons, only for a folder the vault actually stores */}
-          {currentFolderId && !currentFolderIsVirtual && (
+          {/* People, edit and delete buttons; a shared folder is managed through its shared manifest */}
+          {currentFolderId && currentFolder && (canShareCurrent || canRenameCurrent || canDeleteCurrent) && (
             <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={() => setShowEditFolderModal(true)}
-                title={t('items.folders.editFolder')}
-                className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <Icon name="pencil-alt" className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setShowDeleteFolderModal(true)}
-                title={t('items.folders.deleteFolder')}
-                className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <Icon name="trash" className="w-4 h-4" strokeWidth={1} />
-              </button>
+              {canShareCurrent && (
+                <button
+                  id="folder-people"
+                  onClick={() => setPeopleFolder({ folder: currentFolder, isShared: currentFolderIsVirtual })}
+                  title={familySharingText.peopleTitle}
+                  className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <Icon name="users" className="w-4 h-4" />
+                </button>
+              )}
+              {canRenameCurrent && (
+                <button
+                  onClick={() => setShowEditFolderModal(true)}
+                  title={t('items.folders.editFolder')}
+                  className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <Icon name="pencil-alt" className="w-4 h-4" />
+                </button>
+              )}
+              {canDeleteCurrent && (
+                <button
+                  onClick={() => (currentFolderIsVirtual ? handleDeleteSharedFolder() : setShowDeleteFolderModal(true))}
+                  title={t('items.folders.deleteFolder')}
+                  className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <Icon name="trash" className="w-4 h-4" strokeWidth={1} />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -945,6 +1070,7 @@ const ItemsList: React.FC = () => {
 
       {items.length === 0 ? (
         <>
+          {invitationPills.length > 0 && <div className="flex flex-wrap items-center gap-2 mb-4">{invitationPills}</div>}
           <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
             <p>
               {t('items.welcomeTitle')}
@@ -1016,6 +1142,7 @@ const ItemsList: React.FC = () => {
                   isShared={folder.isShared}
                 />
               ))}
+              {invitationPills}
               {canCreateSubfolder && (
                 <button
                   onClick={handleAddFolder}
@@ -1049,6 +1176,7 @@ const ItemsList: React.FC = () => {
                   isShared={folder.isShared}
                 />
               ))}
+              {invitationPills}
               {canCreateSubfolder && (
                 <button
                   onClick={handleAddFolder}
@@ -1148,13 +1276,14 @@ const ItemsList: React.FC = () => {
         mode="create"
       />
 
-      {/* Edit Folder Modal */}
+      {/* Edit Folder Modal; a shared folder is renamed through its shared manifest, whose name an invitation has to fit */}
       <FolderModal
         isOpen={showEditFolderModal}
         onClose={() => setShowEditFolderModal(false)}
-        onSave={handleEditFolder}
+        onSave={currentFolderIsVirtual ? handleRenameSharedFolder : handleEditFolder}
         initialName={currentFolderName || ''}
         mode="edit"
+        maxLength={currentFolderIsVirtual ? MAX_SHARED_VAULT_NAME_LENGTH : undefined}
       />
 
       {/* Delete Folder Modal */}
@@ -1165,6 +1294,35 @@ const ItemsList: React.FC = () => {
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
       />
+
+      {peopleFolder && (
+        <SharedFolderAccessModal
+          folder={peopleFolder.folder}
+          isShared={peopleFolder.isShared}
+          shared={shared}
+          onMoved={(ref, isShared) => {
+            setPeopleFolder(open => (open ? { folder: { ...open.folder, Id: ref.Id, ManifestId: ref.ManifestId }, isShared } : null));
+            // The contents moved inside the open vault, which does not reload the list by itself.
+            setItems(dbContext.getSqliteClient()?.items.getAll() ?? []);
+            setFolderRefreshKey(prev => prev + 1);
+            navigate(`/items/folder/${ref.ManifestId}/${ref.Id}?filter=${encodeURIComponent(filterType)}`);
+          }}
+          onLeft={() => {
+            setPeopleFolder(null);
+            navigate('/items');
+          }}
+          onClose={() => setPeopleFolder(null)}
+        />
+      )}
+
+      <SharedFolderInvitationModal
+        invitation={openInvitation}
+        folderName={openInvitation ? shared.invitationNames[openInvitation.id] ?? familySharingText.sharedVault : ''}
+        onDone={accepted => (openInvitation ? finishInvitation(openInvitation.manifestId, accepted) : Promise.resolve())}
+        onClose={() => setOpenInvitationId(null)}
+      />
+
+      {passwordModal}
     </div>
   );
 };

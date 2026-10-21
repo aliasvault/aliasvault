@@ -1,4 +1,3 @@
-import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
@@ -9,7 +8,6 @@ import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrol
 import PasskeyLayout from '@/entrypoints/popup/components/Layout/PasskeyLayout';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
-import { RequireCapability } from '@/entrypoints/popup/context/CapabilityContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
@@ -33,7 +31,6 @@ import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSetting
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
-import FamilySharingSettings from '@/entrypoints/popup/pages/settings/FamilySharingSettings';
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import ImportExportSettings from '@/entrypoints/popup/pages/settings/ImportExportSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
@@ -227,7 +224,6 @@ const App: React.FC = () => {
     { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/import-export', element: <ImportExportSettings />, showBackButton: true, title: t('common.settings') },
-    { path: '/settings/family-sharing', element: <RequireCapability capability={CapabilityKeys.VaultSharing}><FamilySharingSettings /></RequireCapability>, showBackButton: true, title: t('common.settings') },
   ], [t]);
 
   useEffect(() => {
