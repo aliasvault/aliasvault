@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
@@ -16,7 +15,6 @@ import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { getOrCreateDeviceId } from '@aliasvault/client/platform/DeviceId';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
-import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
@@ -1455,16 +1453,16 @@ export async function handleGetAutofillCredential(
 /**
  * What a sharing action reports back to the page that asked for it.
  */
-type SharingActionResponse = { success: boolean; error?: string; apiErrorCode?: string };
+export type SharingActionResponse = { success: boolean; error?: string; apiErrorCode?: string; manifestId?: string; username?: string; alreadyMember?: boolean };
 
 /**
- * Put the outcome of a sharing engine operation into the words the family sharing page shows.
+ * Put the outcome of a sharing engine operation into the words the shared folders page shows.
  * @param result - what the sync engine reported.
  * @param failureMessage - the message for a failure without a more specific reason.
  */
 async function sharingActionResponse(result: SharingOperationResult, failureMessage: string): Promise<SharingActionResponse> {
   if (result.success) {
-    return { success: true };
+    return { success: true, manifestId: result.manifestId, username: result.username, alreadyMember: result.alreadyMember };
   }
 
   if (result.apiErrorCode) {
@@ -1489,61 +1487,69 @@ async function sharingActionResponse(result: SharingOperationResult, failureMess
 }
 
 /**
- * Create another shared manifest for a family, with this account as its first member. The sync engine does the work,
- * so every client creates one the same way.
+ * Create a shared folder with this account as its owner; the server creates its group. The sync that follows pushes it,
+ * which inviting to it needs.
  *
- * @param message - the family to create the vault for and the name to give it.
+ * @param message - the folder name.
  */
-export async function handleGroupCreateVault(message: { groupId: string; name: string }): Promise<SharingActionResponse> {
-  const result = await vaultSync.createSharedManifest(message.groupId, message.name);
+export async function handleGroupCreateVault(message: { name: string }): Promise<SharingActionResponse> {
+  const result = await vaultSync.createSharedManifest(message.name);
   if (result.success) {
-    // The engine left the new folder and keypair in a dirty vault; this pushes them.
-    void handleFullVaultSync().catch(error => logFailure('Background sync after creating a shared manifest failed', error));
+    await handleFullVaultSync().catch(error => logFailure('Background sync after creating a shared manifest failed', error));
   }
 
   return sharingActionResponse(result, familySharingText.errors.createVaultFailed);
 }
 
 /**
- * Change the details of one of a family's shared manifests. The server only accepts it from an administrator of the
- * family.
+ * Change the details of a shared folder. The server only accepts it from an administrator of its group.
  *
- * @param message - the family, the manifest, and the details to change.
+ * @param message - the group, the manifest, and the details to change.
  */
 export async function handleGroupUpdateVault(message: { groupId: string; manifestId: string; details: SharedManifestDetails }): Promise<SharingActionResponse> {
   return sharingActionResponse(await vaultSync.updateSharedManifest(message.groupId, message.manifestId, message.details), await t('common.errors.unknownErrorTryAgain'));
 }
 
 /**
- * Invite a member of a family to one of its shared manifests, handing them the manifest's key encrypted to their
- * account keypair. The sync engine does the work, so every client invites the same way.
+ * Invite somebody verified before to a shared folder, handing them its key encrypted to their account keypair.
  *
- * @param message - the family, the manifest, and the member being invited.
+ * @param message - the group, the manifest, and the person being invited.
  */
 export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
   return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), familySharingText.errors.inviteFailed);
 }
 
 /**
- * Take a member's access to one shared manifest away, or hand back one's own.
+ * Find the account behind an identity code and check the code against its key, without certifying or inviting it.
  *
- * @param message - the family, the vault, and the member losing access.
+ * @param message - the folder's group (none while the folder is still personal) and the identity code.
  */
-export async function handleGroupRevokeAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
-  try {
-    const webApi = new WebApiService();
-    await SharingService.revokeAccess(webApi, message.groupId, message.manifestId, message.userId);
-
-    devLog(`[Sharing] Revoked ${message.userId}'s access to vault ${message.manifestId}; syncing to pick up whatever the server left for this client to finish.`);
-    void handleFullVaultSync().catch(error => logFailure('Background sync after a vault access change failed', error));
-
-    return { success: true };
-  } catch (error) {
-    if (error instanceof ApiRequestError && error.apiErrorCode) {
-      return { success: false, apiErrorCode: error.apiErrorCode };
-    }
-
-    logFailure('Failed to revoke shared manifest access', error);
-    return { success: false, error: familySharingText.errors.revokeAccessFailed };
-  }
+export async function handleGroupLookupIdentityCode(message: { groupId?: string; identityCode: string }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.lookupIdentityCode(message.groupId, message.identityCode), familySharingText.errors.inviteFailed);
 }
+
+/**
+ * Invite the account behind an identity code to a shared folder. The sync engine checks the key the server returns
+ * against the code and certifies it first; accepting makes the account a member of the folder's group.
+ *
+ * @param message - the group, the manifest, and the identity code.
+ */
+export async function handleGroupInviteMemberByCode(message: { groupId: string; manifestId: string; identityCode: string }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.inviteToSharedManifestByCode(message.groupId, message.manifestId, message.identityCode), familySharingText.errors.inviteFailed);
+}
+
+/**
+ * Accept an invitation to a shared manifest: the sync engine signs the grant as this account's own, and the sync that
+ * follows pulls the shared manifest.
+ *
+ * @param message - the invitation and the inviter's identity code, when they are not verified yet.
+ */
+export async function handleGroupAcceptManifestInvitation(message: { invitationId: string; identityCode?: string }): Promise<SharingActionResponse> {
+  const result = await vaultSync.acceptSharedManifestInvitation(message.invitationId, message.identityCode);
+  if (result.success) {
+    await handleFullVaultSync();
+  }
+
+  return sharingActionResponse(result, familySharingText.errors.invitationGone);
+}
+

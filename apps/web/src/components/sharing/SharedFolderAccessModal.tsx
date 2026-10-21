@@ -32,6 +32,8 @@ type SharedFolderAccessModalProps = {
   shared: SharedFolders;
   /** Called once the folder became a shared one or a personal one again, with the folder it is shown as now. */
   onMoved: (ref: FolderRef, isShared: boolean) => void;
+  /** Called once this account left the shared folder, which is gone from its vault. */
+  onLeft: () => void;
   onClose: () => void;
 };
 
@@ -39,7 +41,7 @@ type SharedFolderAccessModalProps = {
  * The people of a folder: who has access, inviting someone new by their code or somebody verified before, and taking
  * access away. A personal folder becomes a shared folder on its first invitation.
  */
-const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpen, folder, isShared, shared, onMoved, onClose }) => {
+const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpen, folder, isShared, shared, onMoved, onLeft, onClose }) => {
   const { t } = useTranslation();
   const webApi = useWebApi();
   const { loadStoredDatabase, getSqliteClient } = useDb();
@@ -214,26 +216,24 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
         ? SharingService.leaveSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, answerChallenge)
         : SharingService.revokeAccess(webApi, target.group.groupId, target.manifest.manifestId, member.userId, answerChallenge))),
       /**
-       * Sync the change in and close when the folder is gone for this account.
+       * Sync the change in and leave the folder, which is gone for this account, when it was its own access.
        */
       onDone: async () => {
         try {
           await syncVault();
           await loadStoredDatabase();
-          if (isSelf) {
-            await shared.reload();
-          } else {
+          if (!isSelf) {
             // Taking the last other person out makes the folder personal again.
             await revertIfEmpty(target.manifest.manifestId);
-            await shared.reload();
           }
+          await shared.reload();
         } catch (revertError) {
           setError(sharingFailureMessage(revertError, familySharingText.errors.revokeAccessFailed));
         } finally {
           setBusy(false);
         }
         if (isSelf) {
-          onClose();
+          onLeft();
         }
       },
     });

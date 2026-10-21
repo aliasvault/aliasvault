@@ -78,11 +78,11 @@ export type KeyRotationOperationResult = SyncErrorDetail & {
  */
 export type SharingOperationResult = SyncErrorDetail & {
   success: boolean;
-  /** The shared manifest the operation created or invited to. */
+  /** The shared manifest the operation created, invited to or accepted. */
   manifestId?: string;
   /** The account an identity code belonged to. */
   username?: string;
-  /** The account was already a member of the family, so only its key was certified. */
+  /** The account is already in the folder's group, so only its key was certified. */
   alreadyMember?: boolean;
   /** The API error code the server refused with, which the sharing screen has words for. */
   apiErrorCode?: string;

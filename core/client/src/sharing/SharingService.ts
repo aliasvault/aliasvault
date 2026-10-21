@@ -60,7 +60,7 @@ export class SharingService {
   }
 
   /**
-   * The families this user belongs to, their shared manifests, and the invitations awaiting an answer.
+   * The shared folders this account is in (each with its group of people), the invitations awaiting an answer, and the people verified before.
    * @param webApi - API client to reuse.
    */
   public static async getOverview(webApi: SharingApi): Promise<GroupOverviewResponse> {

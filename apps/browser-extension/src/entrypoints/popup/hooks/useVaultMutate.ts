@@ -42,6 +42,11 @@ export function useVaultMutate(): {
    * @returns The scopes the operation wrote into
    */
   const saveLocally = useCallback((operation: () => Promise<void>): Promise<VaultMutationScope[]> => dbContext.runLocalVaultWrite(async () => {
+    const sqliteClient = dbContext.getSqliteClient();
+    if (!sqliteClient) {
+      throw new Error('Vault is locked');
+    }
+
     // Execute the provided operation (e.g. create/update/delete credential)
     await operation();
 
@@ -50,12 +55,12 @@ export function useVaultMutate(): {
      * only touched a bucket-scoped repository (e.g. 'Settings') lets the background sync push just that data
      * bucket instead of the full vault manifest.
      */
-    const scopes = dbContext.sqliteClient!.takeMutationScopes();
+    const scopes = sqliteClient.takeMutationScopes();
 
     try {
       // Export and encrypt the updated vault
       const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY') as string;
-      const encryptedVaultBlob = await encryptVaultBlob(dbContext.sqliteClient!.exportToBytes(), encryptionKey);
+      const encryptedVaultBlob = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
 
       // Store the updated vault locally, mark dirty, increment mutation sequence.
       await storeEncryptedVault(encryptedVaultBlob, { markDirty: true, scopes });
@@ -65,7 +70,7 @@ export function useVaultMutate(): {
        * reach storage carries it along. Put the scopes back, or that mutation could store the change under a
        * bucket scope alone and a bucket-only push would leave it behind.
        */
-      scopes.forEach(scope => dbContext.sqliteClient!.recordMutationScope(scope));
+      scopes.forEach(scope => sqliteClient.recordMutationScope(scope));
       throw error;
     }
 

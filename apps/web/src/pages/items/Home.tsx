@@ -719,6 +719,10 @@ const ItemsHome: React.FC = () => {
             setPeopleFolder(open => (open ? { folder: { ...open.folder, Id: ref.Id, ManifestId: ref.ManifestId, ParentFolderId: null }, isShared } : null));
             navigate(buildItemsUrl(ref, filterType));
           }}
+          onLeft={() => {
+            setPeopleFolder(null);
+            navigate(buildItemsUrl(null, filterType));
+          }}
           onClose={() => setPeopleFolder(null)}
         />
       )}
