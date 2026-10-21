@@ -29,7 +29,7 @@ pub use aes_gcm::{
     symmetric_encrypt_raw_with_aad, symmetric_encrypt_with_aad,
 };
 pub use key_chain::{
-    create_account_key_hierarchy, create_account_key_hierarchy_with_key_pair, derive_srp_password_hash, open_account_key_chain, open_account_private_key, open_account_signing_private_key,
+    account_signing_key_fingerprint, create_account_key_hierarchy, create_account_key_hierarchy_with_key_pair, derive_srp_password_hash, open_account_key_chain, open_account_private_key, open_account_signing_private_key,
     reencrypt_account_key, rotate_account_keys, unwrap_account_key, unwrap_key, wrap_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError, RotatedAccountKeys, SrpInputError,
 };
 pub use pin::{pin_decrypt, pin_encrypt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
