@@ -269,7 +269,8 @@ class VaultStore(
      */
     fun signingKeyFingerprint(): String? {
         val accountKey = accountKeyBase64?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null
-        val encryptedSigningPrivateKey = VaultSyncEngine.persistedState(storageProvider, VaultSyncEngine.ENCRYPTED_SIGNING_PRIVATE_KEY_STATE_KEY) as? String ?: return null
+        val stateKey = VaultSyncEngine.ENCRYPTED_SIGNING_PRIVATE_KEY_STATE_KEY
+        val encryptedSigningPrivateKey = VaultSyncEngine.persistedState(storageProvider, stateKey) as? String ?: return null
         return try {
             accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKey)
         } catch (e: VaultException) {
