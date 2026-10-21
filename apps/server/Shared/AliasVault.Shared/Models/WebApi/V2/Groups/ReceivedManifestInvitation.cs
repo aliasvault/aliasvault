@@ -30,6 +30,15 @@ public class ReceivedManifestInvitation
     /// <summary>Gets or sets when it was sent.</summary>
     public required DateTime CreatedAt { get; set; }
 
+    /// <summary>Gets or sets the vault's VEK version the offer was encrypted under.</summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>Gets or sets the vault's VEK, encrypted for <see cref="RecipientAccountPublicKey"/>; the invitee signs it as their grant when accepting.</summary>
+    public string? EncryptedVek { get; set; }
+
+    /// <summary>Gets or sets the inviter's signature over the offered grant, verifying under <see cref="SignerPublicKey"/>.</summary>
+    public string? GrantSignature { get; set; }
+
     /// <summary>Gets or sets the encrypted name of the vault.</summary>
     public string? EncryptedName { get; set; }
 
@@ -44,4 +53,7 @@ public class ReceivedManifestInvitation
 
     /// <summary>Gets or sets the algorithm the offer was encrypted with, as a VaultKeyAlgorithm token.</summary>
     public required string Algorithm { get; set; }
+
+    /// <summary>Gets or sets the invitee's own certification of <see cref="SignerPublicKey"/>, when they certified the inviter before.</summary>
+    public string? InviterCertification { get; set; }
 }

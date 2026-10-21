@@ -64,6 +64,11 @@ public class KeyRotationRequest : IFrameBody
     /// </summary>
     public List<GrantRewrap> Grants { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets every key certification the caller made, signed again with the new signing key.
+    /// </summary>
+    public List<CertificationRewrap> Certifications { get; set; } = [];
+
     /// <inheritdoc />
     [JsonIgnore]
     public IEnumerable<IFramePart> FrameParts => new IFramePart[] { Manifest }.Concat(Buckets);

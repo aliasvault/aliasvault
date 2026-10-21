@@ -355,4 +355,39 @@ public enum ApiErrorCode
     /// Two-factor authentication is not enabled for this account.
     /// </summary>
     TWO_FACTOR_NOT_ENABLED,
+
+    /// <summary>
+    /// No account has a signing key whose fingerprint is the given identity code.
+    /// </summary>
+    IDENTITY_CODE_NOT_FOUND,
+
+    /// <summary>
+    /// The account is already a member of the group.
+    /// </summary>
+    ALREADY_GROUP_MEMBER,
+
+    /// <summary>
+    /// The caller already owns the maximum number of shared groups.
+    /// </summary>
+    GROUP_LIMIT_REACHED,
+
+    /// <summary>
+    /// The caller has not certified the member's current signing key with their identity code.
+    /// </summary>
+    MEMBER_NOT_VERIFIED,
+
+    /// <summary>
+    /// The owner of a shared group cannot leave it; they delete it instead.
+    /// </summary>
+    GROUP_OWNER_CANNOT_LEAVE,
+
+    /// <summary>
+    /// The shared group still has other members or shared manifests, so it cannot be deleted yet.
+    /// </summary>
+    GROUP_NOT_EMPTY,
+
+    /// <summary>
+    /// The caller has not certified the inviter's current signing key with their identity code.
+    /// </summary>
+    INVITER_NOT_VERIFIED,
 }

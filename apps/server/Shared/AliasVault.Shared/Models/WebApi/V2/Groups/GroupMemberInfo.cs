@@ -32,4 +32,7 @@ public class GroupMemberInfo
 
     /// <summary>Gets or sets the member's signing public key, which <see cref="AccountPublicKeySignature"/> verifies under.</summary>
     public string? SigningPublicKey { get; set; }
+
+    /// <summary>Gets or sets the caller's own certification of <see cref="SigningPublicKey"/>, for admins; the client verifies it.</summary>
+    public string? KeyCertification { get; set; }
 }

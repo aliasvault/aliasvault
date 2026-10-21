@@ -13,6 +13,11 @@ namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 public class GroupOverviewResponse
 {
     /// <summary>
+    /// Gets or sets the caller's own user id, which the certifications and grants their client signs name.
+    /// </summary>
+    public required string UserId { get; set; }
+
+    /// <summary>
     /// Gets or sets the shared groups the caller belongs to, with each groups metadata.
     /// </summary>
     public List<GroupInfo> Groups { get; set; } = [];
@@ -21,4 +26,9 @@ public class GroupOverviewResponse
     /// Gets or sets the offers of access to a shared manifest addressed to the caller, awaiting their accept or decline.
     /// </summary>
     public List<ReceivedManifestInvitation> ReceivedInvitations { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the invitations to join a group addressed to the caller.
+    /// </summary>
+    public List<ReceivedGroupInvitation> ReceivedGroupInvitations { get; set; } = [];
 }
