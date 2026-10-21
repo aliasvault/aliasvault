@@ -189,19 +189,6 @@ export async function postTwoFactorAuth(apiUrl: string, token: string, action: '
 }
 
 /**
- * Create a shared group with the given owner and members via the DEBUG-only test controller.
- * @returns The group id
- */
-export async function createSharedGroup(apiUrl: string, name: string, ownerUsername: string, memberUsernames: string[]): Promise<string> {
-  const url = `${apiUrl}/v2/Test/shared-groups`;
-  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, ownerUsername, memberUsernames }) });
-  if (!response.ok) {
-    throw new Error(`Creating a shared group via ${url} failed with status ${response.status}: ${await response.text()}`);
-  }
-  return ((await response.json()) as { groupId: string }).groupId;
-}
-
-/**
  * Turn a capability on for one account via the DEBUG-only test controller; the API drops its capability cache so it applies on the next request.
  */
 export async function enableCapability(apiUrl: string, username: string, key: string): Promise<void> {

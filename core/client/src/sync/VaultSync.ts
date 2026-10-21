@@ -94,6 +94,7 @@ export type SharingOperationResult = SyncErrorDetail & {
 type PersistableSyncResult = VaultSyncEngineResultBase & {
   serverVersion?: string;
   capabilities?: Record<string, string>;
+  pendingSharingInvitations?: number;
   isOfflineMode?: boolean;
   emailDomains?: VaultSyncEmailDomains;
 };
@@ -185,13 +186,12 @@ export class VaultSync {
   }
 
   /**
-   * Create a group's shared manifest with this account as its first member. The vault is left dirty, so the caller's
+   * Create a shared manifest with a group of its own, owned by this account. The vault is left dirty, so the caller's
    * next sync pushes the new manifest. Never throws.
-   * @param groupId - the group to create the shared manifest for
    * @param name - name of the shared manifest / shared vault
    */
-  public async createSharedManifest(groupId: string, name: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('createSharedManifest', { groupId, name });
+  public async createSharedManifest(name: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('createSharedManifest', { name });
   }
 
   /**
@@ -206,6 +206,17 @@ export class VaultSync {
   }
 
   /**
+   * Invite the account behind an identity code to a shared manifest. The engine checks the key the server returns
+   * against the code and certifies it; accepting also makes the account a member of the group. Never throws.
+   * @param groupId - the group the shared manifest belongs to
+   * @param manifestId - the shared manifest to invite them to
+   * @param identityCode - the identity code the other person gave outside AliasVault
+   */
+  public async inviteToSharedManifestByCode(groupId: string, manifestId: string, identityCode: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('inviteToSharedManifest', { groupId, manifestId, identityCode });
+  }
+
+  /**
    * Change the details of a shared manifest (only allowed for administrators of the group).
    * @param groupId - the group the shared manifest belongs to
    * @param manifestId - the shared manifest to change
@@ -216,33 +227,13 @@ export class VaultSync {
   }
 
   /**
-   * Find the account behind an identity code and check the code against its key, so the admin can confirm who they invite.
-   * Certifies and invites nothing. Never throws.
-   * @param groupId - the family
+   * Find the account behind an identity code and check the code against its key, so the user can confirm who they invite,
+   * also before the folder is shared. Certifies and invites nothing. Never throws.
+   * @param groupId - the group of the shared folder the person is invited to, if it is shared already
    * @param identityCode - the identity code the other person gave outside AliasVault
    */
-  public async lookupIdentityCode(groupId: string, identityCode: string): Promise<SharingOperationResult> {
+  public async lookupIdentityCode(groupId: string | undefined, identityCode: string): Promise<SharingOperationResult> {
     return this.runSharingOperation('lookupIdentityCode', { groupId, identityCode });
-  }
-
-  /**
-   * Invite the account with the given identity code to a family. The engine checks the key the server returns against
-   * the code, certifies it, and invites; an account already in the family is only certified. Never throws.
-   * @param groupId - the family
-   * @param identityCode - the identity code the other person gave outside AliasVault
-   */
-  public async inviteToGroup(groupId: string, identityCode: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('inviteToGroup', { groupId, identityCode });
-  }
-
-  /**
-   * Accept an invitation to join a family. The inviter's key has to be certified: with their identity code now, or from
-   * an earlier certification. Never throws.
-   * @param invitationId - the invitation
-   * @param identityCode - the inviter's identity code, when they are not certified yet
-   */
-  public async acceptGroupInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('acceptGroupInvitation', { invitationId, identityCode });
   }
 
   /**
@@ -355,6 +346,9 @@ export class VaultSync {
     }
     if (result.capabilities) {
       await CapabilityService.storeCapabilities(result.capabilities);
+    }
+    if (result.pendingSharingInvitations !== undefined && result.pendingSharingInvitations !== await storage.get<number>(StorageKeys.PENDING_SHARING_INVITATIONS)) {
+      await storage.set(StorageKeys.PENDING_SHARING_INVITATIONS, result.pendingSharingInvitations);
     }
     if (result.isOfflineMode !== undefined) {
       await storage.set(StorageKeys.IS_OFFLINE_MODE, result.isOfflineMode);

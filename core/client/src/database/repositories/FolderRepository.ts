@@ -193,6 +193,82 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
+   * Move a folder's contents into a shared manifest, whose top level its own items and subfolders land in. A folder row
+   * cannot change manifest, so the subfolders are created there anew; items move with their own rows. The folder and its
+   * subfolders are then deleted here.
+   * @param ref - The folder whose contents move
+   * @param targetManifestId - The shared manifest they move into
+   * @returns The number of items moved
+   */
+  public async moveContentsToManifest(ref: FolderRef, targetManifestId: string): Promise<number> {
+    this.assertNotVirtual(ref);
+    return this.withTransaction(() => this.run(this.moveTree({ manifestId: ref.ManifestId, folderId: ref.Id }, { manifestId: targetManifestId, folderId: null })));
+  }
+
+  /**
+   * Move everything a shared manifest holds into a new top-level personal folder with the given name, so the shared
+   * manifest is left empty. Its folders are created there anew; items move with their own rows.
+   * @param sourceManifestId - The shared manifest whose contents move
+   * @param name - The name of the personal folder they move into
+   * @returns The new personal folder
+   */
+  public async moveManifestToNewFolder(sourceManifestId: string, name: string): Promise<FolderRef> {
+    return this.withTransaction(async () => {
+      const manifestId = await this.run(this.writeManifestId());
+      const folderId = crypto.randomUUID();
+      const now = this.now();
+      await this.run(this.execute(FolderQueries.INSERT, [folderId, name, null, manifestId, now, now]));
+      await this.run(this.moveTree({ manifestId: sourceManifestId, folderId: null }, { manifestId, folderId }));
+      return { Id: folderId, ManifestId: manifestId };
+    });
+  }
+
+  /**
+   * Recreate the folders under a source (a folder, or a manifest's top level) under a target in another manifest, move the
+   * items along, and delete the source folders (the source folder itself included).
+   * @param source - Where the contents are now: a folder, or the top level of a manifest when `folderId` is null
+   * @param target - Where they land: a folder, or the top level of a manifest when `folderId` is null
+   * @returns The number of items moved
+   */
+  private *moveTree(source: { manifestId: string; folderId: string | null }, target: { manifestId: string; folderId: string | null }): DbOp<number> {
+    const now = this.now();
+    // Source folder id (null for the source's top level) to the folder its contents land in.
+    const landing = new Map<string | null, string | null>([[source.folderId, target.folderId]]);
+    const pending: (string | null)[] = [source.folderId];
+    const moved: string[] = [];
+
+    while (pending.length > 0) {
+      const parentId = pending.shift()!;
+      const children = parentId === null
+        ? yield* this.query<{ Id: string; Name: string }>(FolderQueries.GET_TOP_LEVEL_FOLDERS, [source.manifestId])
+        : yield* this.query<{ Id: string; Name: string }>(FolderQueries.GET_CHILD_FOLDERS, [parentId, source.manifestId]);
+      for (const child of children) {
+        const newId = crypto.randomUUID();
+        yield* this.execute(FolderQueries.INSERT, [newId, child.Name, landing.get(parentId) ?? null, target.manifestId, now, now]);
+        landing.set(child.Id, newId);
+        pending.push(child.Id);
+        moved.push(child.Id);
+      }
+    }
+
+    let itemsMoved = 0;
+    for (const [folderId, newFolderId] of landing) {
+      const items = folderId === null
+        ? yield* this.query<{ Id: string }>(FolderQueries.GET_TOP_LEVEL_ITEM_IDS, [source.manifestId])
+        : yield* this.query<{ Id: string }>(FolderQueries.GET_ITEM_IDS_IN_FOLDER, [folderId, source.manifestId]);
+      for (const item of items) {
+        itemsMoved += yield* this.execute(FolderQueries.MOVE_ITEM_TO_MANIFEST, [newFolderId, target.manifestId, now, item.Id, source.manifestId]);
+      }
+    }
+
+    for (const id of [...moved.reverse(), ...(source.folderId ? [source.folderId] : [])]) {
+      yield* this.execute(FolderQueries.SOFT_DELETE, [now, id, source.manifestId]);
+    }
+
+    return itemsMoved;
+  }
+
+  /**
    * Refuse to change or delete a virtual folder (see {@link multiManifestRendering}): the vault stores no row for
    * one, settings are managed elsewhere (e.g. shared manifest settings).
    * @param ref - The folder about to be changed

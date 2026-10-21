@@ -86,6 +86,49 @@ export class FolderQueries {
     WHERE ParentFolderId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
+   * The direct child folders of a folder, with their names, within the parent's own manifest.
+   */
+  public static readonly GET_CHILD_FOLDERS = `
+    SELECT Id, Name
+    FROM Folders
+    WHERE ParentFolderId = ? AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * The top-level folders of a manifest, with their names.
+   */
+  public static readonly GET_TOP_LEVEL_FOLDERS = `
+    SELECT Id, Name
+    FROM Folders
+    WHERE ParentFolderId IS NULL AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * The live items at the top level of a manifest, outside any folder.
+   */
+  public static readonly GET_TOP_LEVEL_ITEM_IDS = `
+    SELECT Id
+    FROM Items
+    WHERE FolderId IS NULL AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * The live items directly inside a folder.
+   */
+  public static readonly GET_ITEM_IDS_IN_FOLDER = `
+    SELECT Id
+    FROM Items
+    WHERE FolderId = ? AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * Move one item into a folder of another manifest; a trigger carries its child rows along and leaves a tombstone.
+   * Params: folder id (or NULL), target manifest id, timestamp, item id, source manifest id.
+   */
+  public static readonly MOVE_ITEM_TO_MANIFEST = `
+    UPDATE Items
+    SET FolderId = ?,
+        ManifestId = ?,
+        UpdatedAt = ?
+    WHERE Id = ? AND ManifestId = ?`;
+
+  /**
    * Update parent folder for child folders.
    */
   public static readonly UPDATE_PARENT_FOLDER = `

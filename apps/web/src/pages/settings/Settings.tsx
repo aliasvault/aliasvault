@@ -1,9 +1,11 @@
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
+import FamilyCode from '@/components/settings/FamilyCode';
 import SettingsIcon, { type SettingsIconName } from '@/components/settings/SettingsIcon';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
@@ -73,6 +75,11 @@ const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { username } = useAuth();
   const hasCapability = useCapabilities();
+  const [ownSharingCode, setOwnSharingCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    void SharingService.ownIdentityCode().then(setOwnSharingCode);
+  }, []);
   const confirmLogout = useConfirmLogout();
   const { reminders } = useAccountReminders();
 
@@ -134,19 +141,19 @@ const Settings: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {hasCapability(CapabilityKeys.VaultSharing) && (
-                <Link to="/settings/family-sharing" className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600">
-                  <SettingsIcon name="familySharing" className="w-4 h-4 mr-2" />
-                  {familySharingText.title}
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">{familySharingText.beta}</span>
-                </Link>
-              )}
               <button type="button" id="logoutButton" onClick={() => void confirmLogout()} className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/30 dark:hover:bg-red-900/50">
                 <SettingsIcon name="logout" className="w-4 h-4 mr-2" />
                 {t('web.topMenu.logOut')}
               </button>
             </div>
           </section>
+          {/* The code someone who shares a folder with this account needs to invite it. */}
+          {hasCapability(CapabilityKeys.VaultSharing) && ownSharingCode && (
+            <section className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <FamilyCode id="own-identity-code" code={ownSharingCode} className="self-start" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.yourCodeSettingsHint}</p>
+            </section>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_1fr] gap-4 items-start">
             <Group group={security} className="md:col-start-1 md:row-start-1" />
             <div className="space-y-4 md:col-start-2 md:row-start-1 md:row-span-2">

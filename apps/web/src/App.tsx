@@ -1,8 +1,6 @@
-import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import { RequireCapability } from '@/context/CapabilityContext';
 import AuthLayout from '@/layouts/AuthLayout';
 import MainLayout from '@/layouts/MainLayout';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
@@ -19,7 +17,6 @@ import RecentlyDeleted from '@/pages/items/RecentlyDeleted';
 import ItemView from '@/pages/items/View';
 import NotFound from '@/pages/NotFound';
 import AppsSettings from '@/pages/settings/Apps';
-import FamilySharing from '@/pages/settings/FamilySharing';
 import GeneralSettings from '@/pages/settings/General';
 import IdentityGeneratorSettings from '@/pages/settings/IdentityGenerator';
 import ImportExport from '@/pages/settings/importexport/ImportExport';
@@ -81,7 +78,6 @@ const App: React.FC = () => (
         <Route path="/settings/two-factor/enable" element={<TwoFactor key="enable" mode="enable" />} />
         <Route path="/settings/two-factor/disable" element={<TwoFactor key="disable" mode="disable" />} />
         <Route path="/settings/storage-insights" element={<StorageInsights />} />
-        <Route path="/settings/family-sharing" element={<RequireCapability capability={CapabilityKeys.VaultSharing}><FamilySharing /></RequireCapability>} />
         <Route path="/settings/import-export" element={<ImportExport />} />
         <Route path="/settings/import-export/reset-vault" element={<ResetVault />} />
         <Route path="/settings/apps" element={<AppsSettings />} />

@@ -395,11 +395,8 @@ const NEW_MANIFEST_KEY_VERSION: i64 = 0;
 async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let key = ctx.encryption_key()?;
     let target = params(ctx)?;
-    // Without a name, every client shows the shared manifest under its own translated default name.
-    let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).map(str::to_string);
-    if let Some(name) = &name {
-        check_name_length(name)?;
-    }
+    let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).ok_or_else(|| SyncError::Other("A shared manifest needs a name".to_string()))?.to_string();
+    check_name_length(&name)?;
 
     let overview = fetch_overview(ctx).await?;
 
@@ -418,11 +415,11 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
     let self_grant_signature = me.sign(&crypto::signing::grant_message(&requested_id, NEW_MANIFEST_KEY_VERSION, &me.user_id, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
-    let encrypted_name = name.as_deref().map(|name| pull::encrypt_manifest_name(name, &requested_id, &manifest_vek)).transpose()?;
+    let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
         "Groups/manifests",
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: encrypted_name.as_deref() },
+        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: Some(&encrypted_name) },
         false,
     )
     .await?;
@@ -440,7 +437,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
             account_public_key: self_public_key,
             algorithm: ALGORITHM_RSA_OAEP_SHA256.to_string(),
             salt: vault_codec::generate_manifest_salt(),
-            encrypted_name,
+            encrypted_name: Some(encrypted_name),
             can_administer: true,
             key_version: NEW_MANIFEST_KEY_VERSION,
         },
@@ -451,7 +448,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     revisions.insert(manifest_id.clone(), response.revision_number);
     state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &revisions).await?;
 
-    db::set_manifest_name(&ctx.host, &manifest_id, name.as_deref()).await?;
+    db::set_manifest_name(&ctx.host, &manifest_id, Some(&name)).await?;
 
     // Mail to an alias in this manifest is encrypted with the manifest's own keypair.
     let delivery_keys = crypto::generate_rsa_key_pair()?;

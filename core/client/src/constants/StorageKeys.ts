@@ -30,6 +30,8 @@ export const StorageKeys = {
   SERVER_VERSION: 'local:serverVersion',
   /** The capabilities that are enabled for this account passed from the server. */
   CAPABILITIES: 'local:capabilities',
+  /** The number of open invitations to shared folders addressed to this account, from the last status call. */
+  PENDING_SHARING_INVITATIONS: 'local:pendingSharingInvitations',
 
   /*
    * -- Vault data (local cache) --
@@ -118,6 +120,7 @@ export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.REFRESH_TOKEN,
   StorageKeys.LAST_SYNC_ERROR,
   StorageKeys.CAPABILITIES,
+  StorageKeys.PENDING_SHARING_INVITATIONS,
 ];
 
 /** Keys that must not survive a vault lock: the Account Key. Hosts add anything they derive from decrypted data. */

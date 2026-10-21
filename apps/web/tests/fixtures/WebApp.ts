@@ -121,12 +121,21 @@ export class WebApp {
   }
 
   /**
-   * Open the Family Sharing page via the account popover.
+   * Open the settings overview via the account popover.
    */
-  public async openFamilySharing(): Promise<void> {
+  public async openSettings(): Promise<void> {
     await this.page.locator('#userMenuButton').click();
-    await this.page.locator('#userMenu').getByRole('link', { name: 'Family Sharing' }).click();
-    await expect(this.page).toHaveURL(/\/settings\/family-sharing$/);
+    await this.page.locator('#userMenu').getByRole('link', { name: 'Settings', exact: true }).click();
+    await expect(this.page).toHaveURL(/\/settings$/);
+  }
+
+  /**
+   * Open a folder of the vault's top level by its name.
+   */
+  public async openFolder(name: string): Promise<void> {
+    await this.openVault();
+    await this.page.getByRole('button', { name }).first().click();
+    await expect(this.page).toHaveURL(/\/items\/folder\//);
   }
 
   /**

@@ -58,7 +58,7 @@ export function useVaultMutate(): {
   const saveLocally = useCallback(async (operation: () => Promise<void>): Promise<VaultMutationScope[]> => {
     await operation();
 
-    const sqliteClient = dbContext.sqliteClient;
+    const sqliteClient = dbContext.getSqliteClient();
     if (!sqliteClient) {
       throw new Error('Vault is locked');
     }

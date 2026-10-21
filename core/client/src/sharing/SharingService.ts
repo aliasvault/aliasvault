@@ -1,7 +1,9 @@
-import { VaultKeyAlgorithm, type CreateGroupResponse, type GroupOverviewResponse, type PasswordConfirmationChallenge, type PasswordConfirmationRequest, type ReceivedManifestInvitation } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm, type GroupOverviewResponse, type PasswordConfirmationChallenge, type PasswordConfirmationRequest, type ReceivedManifestInvitation } from '@aliasvault/models/webapi';
 
 import { VaultKeyService } from '../auth/VaultKeyService';
+import { StorageKeys } from '../constants/StorageKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
+import { getPlatform } from '../platform/ClientPlatform';
 import { devWarn } from '../platform/Logger';
 import { rustCore } from '../rust/RustCore';
 
@@ -32,6 +34,15 @@ export type InvitationNameDecryptor = (encryptedName: string, recipientPublicKey
  */
 export class SharingService {
   /**
+   * Watch the number of open invitations to shared folders, which every sync updates.
+   * @param callback - called with the new number whenever it changes.
+   * @returns Unwatch function.
+   */
+  public static watchPendingInvitationCount(callback: (count: number) => void): () => void {
+    return getPlatform().storage.watch<number>(StorageKeys.PENDING_SHARING_INVITATIONS, count => callback(count ?? 0));
+  }
+
+  /**
    * This account's own identity code, derived from its signing private key; null while the vault is locked or the account has no signing key yet.
    */
   public static async ownIdentityCode(): Promise<string | null> {
@@ -46,36 +57,6 @@ export class SharingService {
       devWarn('[Sharing] The own signing key did not open, so no identity code can be shown.', error);
       return null;
     }
-  }
-
-  /**
-   * Create a family (shared group) owned by this user. The server allows one per user.
-   * @param webApi - API client to reuse.
-   * @returns The new group's id.
-   */
-  public static async createGroup(webApi: SharingApi): Promise<string> {
-    return (await webApi.post<object, CreateGroupResponse>('Groups', {})).groupId;
-  }
-
-  /**
-   * Leave a family, giving up access to all of its shared manifests. The server requires proof of the caller's master
-   * password and refuses this for the family's owner.
-   * @param webApi - API client to reuse.
-   * @param groupId - the family to leave.
-   * @param answerChallenge - proves the master password, which each host derives its own way.
-   */
-  public static async leaveGroup(webApi: SharingApi, groupId: string, answerChallenge: SrpChallengeResponder): Promise<void> {
-    const challenge = await webApi.post<object, PasswordConfirmationChallenge>(`Groups/${groupId}/leave/initiate`, {});
-    await webApi.post<PasswordConfirmationRequest, void>(`Groups/${groupId}/leave/confirm`, await answerChallenge(challenge), false);
-  }
-
-  /**
-   * Delete a family this user owns. The server refuses this while it still has shared manifests or other members.
-   * @param webApi - API client to reuse.
-   * @param groupId - the family to delete.
-   */
-  public static async deleteGroup(webApi: SharingApi, groupId: string): Promise<void> {
-    await webApi.delete<void>(`Groups/${groupId}`);
   }
 
   /**
@@ -122,19 +103,6 @@ export class SharingService {
   }
 
   /**
-   * Take a member out of the family, and with it their access to every shared manifest of the family. The server
-   * requires proof of the caller's master password.
-   * @param webApi - API client to reuse.
-   * @param groupId - the family.
-   * @param userId - the member to remove.
-   * @param answerChallenge - proves the master password, which each host derives its own way.
-   */
-  public static async removeMember(webApi: SharingApi, groupId: string, userId: string, answerChallenge: SrpChallengeResponder): Promise<void> {
-    const challenge = await webApi.post<object, PasswordConfirmationChallenge>(`Groups/${groupId}/members/${userId}/remove/initiate`, {});
-    await webApi.post<PasswordConfirmationRequest, void>(`Groups/${groupId}/members/${userId}/remove/confirm`, await answerChallenge(challenge), false);
-  }
-
-  /**
    * Take another member's access to one shared manifest away. The server requires proof of the caller's master password.
    * @param webApi - API client to reuse.
    * @param groupId - the group the manifest belongs to.
@@ -145,6 +113,17 @@ export class SharingService {
   public static async revokeAccess(webApi: SharingApi, groupId: string, manifestId: string, userId: string, answerChallenge: SrpChallengeResponder): Promise<void> {
     const challenge = await webApi.post<object, PasswordConfirmationChallenge>(`Groups/${groupId}/manifests/${manifestId}/access/${userId}/revoke/initiate`, {});
     await webApi.post<PasswordConfirmationRequest, void>(`Groups/${groupId}/manifests/${manifestId}/access/${userId}/revoke/confirm`, await answerChallenge(challenge), false);
+  }
+
+  /**
+   * Delete a shared manifest nobody else is in, after its owner moved its contents out, so the folder is personal again.
+   * The server refuses while anybody else is in it or invited; it asks for no master password, as nothing is shared anymore.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group of the shared manifest.
+   * @param manifestId - the shared manifest.
+   */
+  public static async unshareSharedManifest(webApi: SharingApi, groupId: string, manifestId: string): Promise<void> {
+    await webApi.post<object, void>(`Groups/${groupId}/manifests/${manifestId}/unshare`, {}, false);
   }
 
   /**

@@ -21,7 +21,7 @@ import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
 /** The sharing operations, which take `VaultSyncSharingParams`. */
-export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupIdentityCode' | 'inviteToGroup' | 'acceptGroupInvitation' | 'acceptSharedManifestInvitation';
+export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupIdentityCode' | 'acceptSharedManifestInvitation';
 
 export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | VaultSyncSharingOperation | 'rotateAccountKeys';
 
@@ -99,6 +99,7 @@ export type VaultSyncEngineResult = VaultSyncEngineResultBase & {
   requiresLogout: boolean;
   serverVersion?: string;
   capabilities?: Record<string, string>;
+  pendingSharingInvitations?: number;
   isOfflineMode: boolean;
   pulledRevision?: number;
   emailDomains?: VaultSyncEmailDomains;
