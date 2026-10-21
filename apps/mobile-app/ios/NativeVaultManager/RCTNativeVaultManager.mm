@@ -133,6 +133,10 @@
     [vaultManager decryptInvitationName:encryptedName resolver:resolve rejecter:reject];
 }
 
+- (void)getSigningKeyFingerprint:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getSigningKeyFingerprint:resolve rejecter:reject];
+}
+
 - (void)unlockVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager unlockVault:resolve rejecter:reject];
 }

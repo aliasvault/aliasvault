@@ -31,7 +31,7 @@ class VaultSync(
         private const val SYNC_HOLD_POLL_MS = 100L
 
         /** The engine operations the sharing screen may ask for. */
-        private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest", "updateSharedManifest")
+        private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest", "updateSharedManifest", "lookupIdentityCode", "acceptSharedManifestInvitation")
     }
 
     /** One engine run at a time: two runs against the same vault overwrite each other's stores and dirty flag. */
@@ -144,7 +144,7 @@ class VaultSync(
     }
 
     /**
-     * Run a sharing operation of the engine: `createSharedManifest`, `inviteToSharedManifest` or `updateSharedManifest`.
+     * Run a sharing operation of the engine, one of SHARING_OPERATIONS.
      */
     suspend fun runSharingOperation(operation: String, params: JSONObject, webApiService: WebApiService): VaultSharingResult {
         if (operation !in SHARING_OPERATIONS) {
@@ -156,7 +156,7 @@ class VaultSync(
             return failedSharing(e)
         }
         if (result.optBoolean("success", false)) {
-            return VaultSharingResult(true)
+            return VaultSharingResult(true, manifestId = result.optString("manifestId").takeIf { it.isNotEmpty() }, username = result.optString("username").takeIf { it.isNotEmpty() }, alreadyMember = result.optBoolean("alreadyMember", false))
         }
         val apiErrorCode = result.optString("apiErrorCode").takeIf { it.isNotEmpty() }
         val vaultUpgradeRequired = result.optBoolean("vaultUpgradeRequired", false)

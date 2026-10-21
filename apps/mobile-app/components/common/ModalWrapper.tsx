@@ -1,4 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Modal,
   StyleSheet,
@@ -6,14 +8,16 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
   StatusBar,
 } from 'react-native';
 
-import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 import { useColors } from '@/hooks/useColorScheme';
+
+import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 
 interface IModalWrapperProps {
   isOpen: boolean;
@@ -31,6 +35,8 @@ interface IModalWrapperProps {
   showHeaderBorder?: boolean;
   showFooterBorder?: boolean;
   closeOnBackdropPress?: boolean;
+  /** Show a close (X) button next to the title. */
+  showCloseButton?: boolean;
 }
 
 /**
@@ -57,8 +63,10 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
   showHeaderBorder = true,
   showFooterBorder = true,
   closeOnBackdropPress = false,
+  showCloseButton = false,
 }) => {
   const colors = useColors();
+  const { t } = useTranslation();
 
   /**
    * Handle close - only allow if not submitting.
@@ -90,14 +98,25 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
       shadowRadius: 8,
       width: width as never,
     },
+    closeButton: {
+      marginRight: -4,
+      padding: 4,
+    },
+    closeButtonDisabled: {
+      opacity: 0.4,
+    },
     header: {
+      alignItems: 'center',
       borderBottomColor: showHeaderBorder ? colors.accentBorder : 'transparent',
       borderBottomWidth: showHeaderBorder ? 1 : 0,
+      flexDirection: 'row',
+      gap: 12,
       padding: 20,
       paddingBottom: 16,
     },
     title: {
       color: colors.text,
+      flex: 1,
       fontSize: 18,
       fontWeight: '600',
     },
@@ -116,11 +135,19 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
     },
   });
 
+  /**
+   * The modal card: title, body and footer.
+   */
   const renderContent = (): React.ReactNode => (
     <View style={styles.container}>
       {title && (
         <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title} numberOfLines={showCloseButton ? 2 : undefined}>{title}</Text>
+          {showCloseButton && (
+            <TouchableOpacity style={[styles.closeButton, isSubmitting && styles.closeButtonDisabled]} onPress={handleClose} disabled={isSubmitting} accessibilityRole="button" accessibilityLabel={t('common.close')} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
@@ -142,6 +169,9 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
     </View>
   );
 
+  /**
+   * The backdrop around the card, with keyboard avoiding or close on press when asked for.
+   */
   const renderBackdrop = (): React.ReactNode => {
     if (keyboardAvoiding) {
       return (

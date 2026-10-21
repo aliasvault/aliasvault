@@ -79,19 +79,25 @@ public struct VaultMigrationResult {
     }
 }
 
-/// Result of a sharing operation of the sync engine (creating a shared manifest, inviting a member to one).
+/// Result of a sharing operation of the sync engine (creating a shared manifest, inviting to one, accepting an invitation).
 public struct VaultSharingResult {
     public let success: Bool
     public let apiErrorCode: String?
     public let vaultUpgradeRequired: Bool
     public let error: String?
     public let errorMessage: String?
+    public let manifestId: String?
+    public let username: String?
+    public let alreadyMember: Bool
 
-    public init(success: Bool, apiErrorCode: String? = nil, vaultUpgradeRequired: Bool = false, error: String? = nil, errorMessage: String? = nil) {
+    public init(success: Bool, apiErrorCode: String? = nil, vaultUpgradeRequired: Bool = false, error: String? = nil, errorMessage: String? = nil, manifestId: String? = nil, username: String? = nil, alreadyMember: Bool = false) {
         self.success = success
         self.apiErrorCode = apiErrorCode
         self.vaultUpgradeRequired = vaultUpgradeRequired
         self.error = error
         self.errorMessage = errorMessage
+        self.manifestId = manifestId
+        self.username = username
+        self.alreadyMember = alreadyMember
     }
 }

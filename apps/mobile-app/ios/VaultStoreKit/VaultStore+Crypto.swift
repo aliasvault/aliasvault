@@ -148,6 +148,17 @@ extension VaultStore {
         return String(data: plaintext, encoding: .utf8)
     }
 
+    /// The identity code of the account's own signing key, derived from the private key the sync engine cached, or nil
+    /// while the vault is locked or the account has no signing key yet.
+    /// Other platform implementations: SharingService.ownIdentityCode (core/client), VaultStore.signingKeyFingerprint (Android).
+    public func signingKeyFingerprint() -> String? {
+        guard let accountKeyBase64 = accountKeyBase64, let accountKey = Data(base64Encoded: accountKeyBase64),
+              let encryptedSigningPrivateKey = VaultSyncEngine.persistedState(forKey: VaultSyncEngine.encryptedSigningPrivateKeyStateKey, in: userDefaults) as? String else {
+            return nil
+        }
+        return try? RustCoreFramework.accountSigningKeyFingerprint(encryptedSigningPrivateKey: encryptedSigningPrivateKey, accountKey: accountKey)
+    }
+
     /// Verify the password and return its unlock key (base64) if correct. Callers derive the SRP input from it for the
     /// account's encryption type; `storeAccountKey` turns it into the Account Key.
     public func verifyPassword(_ password: String) -> String? {

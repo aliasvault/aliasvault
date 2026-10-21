@@ -1,6 +1,7 @@
 package net.aliasvault.app.vaultstore
 
 import android.os.SystemClock
+import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
@@ -19,6 +20,7 @@ import org.json.JSONObject
 import uniffi.aliasvault_core.ItemUsageAction
 import uniffi.aliasvault_core.VaultException
 import uniffi.aliasvault_core.VaultItem
+import uniffi.aliasvault_core.accountSigningKeyFingerprint
 import uniffi.aliasvault_core.rsaDecrypt
 import java.util.Date
 import java.util.UUID
@@ -259,6 +261,22 @@ class VaultStore(
      */
     internal val accountKeyBase64: String?
         get() = crypto.accountKeyBase64
+
+    /**
+     * The identity code of the account's own signing key, derived from the private key the sync engine cached, or null
+     * while the vault is locked or the account has no signing key yet.
+     * Other platform implementations: SharingService.ownIdentityCode (core/client), VaultStore.signingKeyFingerprint (iOS).
+     */
+    fun signingKeyFingerprint(): String? {
+        val accountKey = accountKeyBase64?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null
+        val encryptedSigningPrivateKey = VaultSyncEngine.persistedState(storageProvider, VaultSyncEngine.ENCRYPTED_SIGNING_PRIVATE_KEY_STATE_KEY) as? String ?: return null
+        return try {
+            accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKey)
+        } catch (e: VaultException) {
+            Log.w(TAG, "The signing private key did not open", e)
+            null
+        }
+    }
 
     /**
      * Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or null when the session

@@ -120,7 +120,7 @@ internal final class VaultSync {
             return failedSharing(Self.driverError(error))
         }
         if result["success"] as? Bool == true {
-            return VaultSharingResult(success: true)
+            return VaultSharingResult(success: true, manifestId: result["manifestId"] as? String, username: result["username"] as? String, alreadyMember: result["alreadyMember"] as? Bool ?? false)
         }
         let apiErrorCode = result["apiErrorCode"] as? String
         let vaultUpgradeRequired = result["vaultUpgradeRequired"] as? Bool ?? false
@@ -237,7 +237,7 @@ internal final class VaultSync {
     }
 
     /// The engine operations the sharing screen may ask for.
-    private static let sharingOperations: Set<String> = ["createSharedManifest", "inviteToSharedManifest", "updateSharedManifest"]
+    private static let sharingOperations: Set<String> = ["createSharedManifest", "inviteToSharedManifest", "updateSharedManifest", "lookupIdentityCode", "acceptSharedManifestInvitation"]
 
     /// The forced logouts by the engine's reason.
     private static let logoutErrors: [String: AppError] = [

@@ -33,6 +33,19 @@ class VaultSyncEngine(
         private const val ENCRYPTED_VEK_STATE_KEY = "encryptedVek"
         private const val ENCRYPTED_ACCOUNT_PRIVATE_KEY_STATE_KEY = "encryptedAccountPrivateKey"
 
+        /** Engine state key holding the account signing private key encrypted with the Account Key, which the own identity code derives from. */
+        internal const val ENCRYPTED_SIGNING_PRIVATE_KEY_STATE_KEY = "encryptedSigningPrivateKey"
+
+        /**
+         * One persisted engine value, decoded from the `{"v": value}` JSON text it is stored as.
+         * @param storageProvider The storage the engine state lives in
+         * @param key The engine state key
+         */
+        internal fun persistedState(storageProvider: StorageProvider, key: String): Any? {
+            val json = storageProvider.getSyncEngineState(key) ?: return null
+            return JSONObject(json).opt("v")?.takeIf { it != JSONObject.NULL }
+        }
+
         /** Engine state key that lives in the native store instead (the login writes it there), routed on read and write. */
         private const val DERIVATION_PARAMS_STATE_KEY = "encryptionKeyDerivationParams"
     }
@@ -215,8 +228,7 @@ class VaultSyncEngine(
         if (key == DERIVATION_PARAMS_STATE_KEY) {
             return storageProvider.getKeyDerivationParams().takeIf { it.isNotBlank() }?.let { JSONObject(it) }
         }
-        val json = storageProvider.getSyncEngineState(key) ?: return null
-        return JSONObject(json).opt("v")?.takeIf { it != JSONObject.NULL }
+        return persistedState(storageProvider, key)
     }
 
     private fun setState(key: String, value: Any?) {
