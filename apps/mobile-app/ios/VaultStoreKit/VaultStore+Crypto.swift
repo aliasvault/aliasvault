@@ -148,9 +148,9 @@ extension VaultStore {
         return String(data: plaintext, encoding: .utf8)
     }
 
-    /// The identity code of the account's own signing key, derived from the private key the sync engine cached, or nil
+    /// The account fingerprint of the account's own signing key, derived from the private key the sync engine cached, or nil
     /// while the vault is locked or the account has no signing key yet.
-    /// Other platform implementations: SharingService.ownIdentityCode (core/client), VaultStore.signingKeyFingerprint (Android).
+    /// Other platform implementations: SharingService.ownAccountFingerprint (core/client), VaultStore.signingKeyFingerprint (Android).
     public func signingKeyFingerprint() -> String? {
         guard let accountKeyBase64 = accountKeyBase64, let accountKey = Data(base64Encoded: accountKeyBase64),
               let encryptedSigningPrivateKey = VaultSyncEngine.persistedState(forKey: VaultSyncEngine.encryptedSigningPrivateKeyStateKey, in: userDefaults) as? String else {

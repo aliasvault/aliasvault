@@ -85,7 +85,7 @@ export type GroupOverviewResponse = {
   userId: string;
   groups: GroupInfo[];
   receivedInvitations: ReceivedManifestInvitation[];
-  /** The people whose current signing key this user certified, who can be invited without their identity code. */
+  /** The people whose current signing key this user certified, who can be invited without their account fingerprint. */
   verifiedPeople: GroupMemberInfo[];
 }
 

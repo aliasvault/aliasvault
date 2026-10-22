@@ -35,7 +35,7 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         SyncOperation::CreateSharedManifest => serde_json::to_value(sharing::create_shared_manifest_operation(&mut ctx).await),
         SyncOperation::InviteToSharedManifest => serde_json::to_value(sharing::invite_to_shared_manifest_operation(&mut ctx).await),
         SyncOperation::UpdateSharedManifest => serde_json::to_value(sharing::update_shared_manifest_operation(&mut ctx).await),
-        SyncOperation::LookupIdentityCode => serde_json::to_value(sharing::lookup_identity_code_operation(&mut ctx).await),
+        SyncOperation::LookupAccountFingerprint => serde_json::to_value(sharing::lookup_account_fingerprint_operation(&mut ctx).await),
         SyncOperation::AcceptSharedManifestInvitation => serde_json::to_value(sharing::accept_shared_manifest_invitation_operation(&mut ctx).await),
         SyncOperation::RotateAccountKeys => serde_json::to_value(rotation::rotate_account_keys_operation(&mut ctx).await),
     };

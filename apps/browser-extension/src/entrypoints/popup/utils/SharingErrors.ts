@@ -1,5 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingErrorMessage } from '@aliasvault/client/sharing/SharingView';
 
 import type { SharingActionResponse } from '@/entrypoints/background/VaultMessageHandler';
 

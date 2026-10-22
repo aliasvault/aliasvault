@@ -1,5 +1,5 @@
-import { familySharingText, isInviterVerified } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { sharingText, isInviterVerified } from '@aliasvault/client/sharing/SharingView';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,12 +24,12 @@ type SharedFolderInvitationModalProps = {
 
 /**
  * An invitation to a shared folder: accept or decline it. Accepting from an inviter this account has not verified yet
- * first asks for their code.
+ * first asks for their account fingerprint.
  */
 const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = ({ invitation, folderName, onDone, onClose }) => {
   const { t } = useTranslation();
   const webApi = useWebApi();
-  const [askCode, setAskCode] = useState(false);
+  const [askFingerprint, setAskCode] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,14 +45,14 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
   }
 
   /**
-   * Accept, with the inviter's code when it was asked for; an engine that holds no certification of the inviter asks for it.
+   * Accept, with the inviter's account fingerprint when it was asked for; an engine that holds no certification of the inviter asks for it.
    */
   const accept = async (): Promise<void> => {
-    if (!askCode && !isInviterVerified(invitation)) {
+    if (!askFingerprint && !isInviterVerified(invitation)) {
       setAskCode(true);
       return;
     }
-    if (askCode && code.trim().length === 0) {
+    if (askFingerprint && code.trim().length === 0) {
       return;
     }
 
@@ -60,14 +60,14 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
     setError(null);
     try {
       // The background syncs after accepting, which pulls the shared folder.
-      const result = await sendMessage('GROUP_ACCEPT_MANIFEST_INVITATION', { invitationId: invitation.id, identityCode: askCode ? code.trim() : undefined });
+      const result = await sendMessage('GROUP_ACCEPT_MANIFEST_INVITATION', { invitationId: invitation.id, accountFingerprint: askFingerprint ? code.trim() : undefined });
       if (result.apiErrorCode === 'INVITER_NOT_VERIFIED') {
         setAskCode(true);
       }
       unwrapSharingResult(result);
       await onDone(true);
     } catch (acceptError) {
-      setError(sharingFailureMessage(acceptError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(acceptError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
@@ -83,7 +83,7 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
       await SharingService.declineInvitation(webApi, invitation.id);
       await onDone(false);
     } catch (declineError) {
-      setError(sharingFailureMessage(declineError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(declineError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
@@ -91,9 +91,9 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
 
   const footer = (
     <div className="flex justify-end gap-2">
-      {!askCode && <button type="button" disabled={busy} onClick={() => void decline()} className={SECONDARY_BUTTON_CLASS}>{familySharingText.decline}</button>}
-      {askCode && <button type="button" disabled={busy} onClick={() => setAskCode(false)} className={SECONDARY_BUTTON_CLASS}>{t('common.back')}</button>}
-      <button id="accept-invitation" type="submit" form="shared-folder-invitation-form" disabled={busy || (askCode && code.trim().length === 0)} className={PRIMARY_BUTTON_CLASS}>{familySharingText.accept}</button>
+      {!askFingerprint && <button type="button" disabled={busy} onClick={() => void decline()} className={SECONDARY_BUTTON_CLASS}>{sharingText.decline}</button>}
+      {askFingerprint && <button type="button" disabled={busy} onClick={() => setAskCode(false)} className={SECONDARY_BUTTON_CLASS}>{t('common.back')}</button>}
+      <button id="accept-invitation" type="submit" form="shared-folder-invitation-form" disabled={busy || (askFingerprint && code.trim().length === 0)} className={PRIMARY_BUTTON_CLASS}>{sharingText.accept}</button>
     </div>
   );
 
@@ -101,7 +101,7 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
     <ModalWrapper
       isOpen
       onClose={onClose}
-      title={askCode ? familySharingText.inviterCodeTitle(invitation.inviterUsername) : familySharingText.sharedWithYou(invitation.inviterUsername, folderName)}
+      title={askFingerprint ? sharingText.inviterFingerprintTitle(invitation.inviterUsername) : sharingText.sharedWithYou(invitation.inviterUsername, folderName)}
       footer={footer}
     >
       <form
@@ -112,16 +112,16 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
           void accept();
         }}
       >
-        {!askCode && (
+        {!askFingerprint && (
           <>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{familySharingText.sharedWithYouHint}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{isInviterVerified(invitation) ? familySharingText.invitedByVerified(invitation.inviterUsername) : familySharingText.invitedBy(invitation.inviterUsername)}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{sharingText.sharedWithYouHint}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{isInviterVerified(invitation) ? sharingText.invitedByVerified(invitation.inviterUsername) : sharingText.invitedBy(invitation.inviterUsername)}</p>
           </>
         )}
-        {askCode && (
+        {askFingerprint && (
           <>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{familySharingText.inviterCodeExplanation(invitation.inviterUsername)}</p>
-            <input id="inviter-code" type="text" className={INPUT_CLASS} value={code} onChange={event => setCode(event.target.value)} placeholder={familySharingText.codePlaceholder} autoFocus />
+            <p className="text-sm text-gray-600 dark:text-gray-300">{sharingText.inviterFingerprintExplanation(invitation.inviterUsername)}</p>
+            <input id="inviter-fingerprint" type="text" className={INPUT_CLASS} value={code} onChange={event => setCode(event.target.value)} placeholder={sharingText.fingerprintPlaceholder} autoFocus />
           </>
         )}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

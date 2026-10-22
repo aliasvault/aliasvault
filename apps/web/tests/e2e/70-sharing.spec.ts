@@ -7,11 +7,11 @@ import { createTestUser, enableCapability } from '../helpers/test-api';
 import type { WebApp } from '../fixtures/WebApp';
 
 /**
- * The viewer's own identity code, shown on the settings overview.
+ * The viewer's own account fingerprint, shown on the settings overview.
  */
-async function ownIdentityCode(app: WebApp): Promise<string> {
+async function ownAccountFingerprint(app: WebApp): Promise<string> {
   await app.openSettings();
-  const code = (await app.page.locator('#own-identity-code').innerText()).trim();
+  const code = (await app.page.locator('#own-account-fingerprint').innerText()).trim();
   expect(code).toMatch(/^\d{4}-\d{4}-\d{4}-\d{4}-\d{4}$/);
   return code;
 }
@@ -56,31 +56,31 @@ test.describe('70. Sharing', () => {
       await expect(owner.page.getByText(itemName, { exact: true })).toBeVisible();
     });
 
-    let memberCode = '';
+    let memberFingerprint = '';
     await test.step('inviting from the folder\'s people dialog shares it first; a wrong code and the own code are refused', async () => {
-      memberCode = await ownIdentityCode(member);
-      const ownerCode = await ownIdentityCode(owner);
+      memberFingerprint = await ownAccountFingerprint(member);
+      const ownerFingerprint = await ownAccountFingerprint(owner);
       await owner.openFolder(folderName);
       await owner.page.locator('#folder-people').click();
       await expect(owner.page.getByText('Invite people to share this folder with them.', { exact: false })).toBeVisible();
       // The folder stays personal until the first invitation goes out; the wizard asks for the code first.
       await owner.page.locator('#invite-someone-new').click();
-      const wrongCode = `${memberCode.slice(0, -1)}${memberCode.endsWith('0') ? '1' : '0'}`;
-      await owner.page.locator('#invite-wizard-code').fill(wrongCode);
+      const wrongCode = `${memberFingerprint.slice(0, -1)}${memberFingerprint.endsWith('0') ? '1' : '0'}`;
+      await owner.page.locator('#invite-wizard-fingerprint').fill(wrongCode);
       await owner.page.locator('#invite-wizard-next').click();
-      await expect(owner.page.getByText('No account has this code.', { exact: false })).toBeVisible();
-      await owner.page.locator('#invite-wizard-code').fill(ownerCode);
+      await expect(owner.page.getByText('No account has this account fingerprint.', { exact: false })).toBeVisible();
+      await owner.page.locator('#invite-wizard-fingerprint').fill(ownerFingerprint);
       await owner.page.locator('#invite-wizard-next').click();
-      await expect(owner.page.getByText('This is your own code.', { exact: false })).toBeVisible();
+      await expect(owner.page.getByText('This is your own account fingerprint.', { exact: false })).toBeVisible();
       await owner.pause();
     });
 
-    await test.step('the owner invites the member with their identity code', async () => {
-      await owner.page.locator('#invite-wizard-code').fill(memberCode);
+    await test.step('the owner invites the member with their account fingerprint', async () => {
+      await owner.page.locator('#invite-wizard-fingerprint').fill(memberFingerprint);
       await owner.page.locator('#invite-wizard-next').click();
       await expect(owner.page.getByText(`You are about to share “${folderName}” with ${memberUser.username}.`, { exact: false })).toBeVisible();
       await owner.page.locator('#invite-wizard-confirm').click();
-      await expect(owner.page.getByText('Next step: share your code')).toBeVisible();
+      await expect(owner.page.getByText('Next step: share your account fingerprint')).toBeVisible();
       await expect(owner.page.locator('#invite-wizard-close')).toBeEnabled({ timeout: 5000 });
       await owner.page.locator('#invite-wizard-close').click();
       await expect(owner.page.locator(`[data-person="${memberUser.username}"]`)).toContainText('Invited');
@@ -90,7 +90,7 @@ test.describe('70. Sharing', () => {
     });
 
     await test.step('the member sees the invitation in their folder list and accepts it with the owner\'s code', async () => {
-      const ownerCode = await ownIdentityCode(owner);
+      const ownerFingerprint = await ownAccountFingerprint(owner);
       await member.openVault();
       await expect(async () => {
         await member.page.getByRole('button', { name: 'Refresh' }).click();
@@ -100,11 +100,11 @@ test.describe('70. Sharing', () => {
       await expect(member.page.getByText(`${ownerUser.username} shared “${folderName}” with you`)).toBeVisible();
       await member.page.locator('#accept-invitation').click();
       await expect(member.page.getByText(`Confirm the invitation from ${ownerUser.username}`)).toBeVisible();
-      const wrongCode = `${ownerCode.slice(0, -1)}${ownerCode.endsWith('0') ? '1' : '0'}`;
-      await member.page.locator('#inviter-code').fill(wrongCode);
+      const wrongCode = `${ownerFingerprint.slice(0, -1)}${ownerFingerprint.endsWith('0') ? '1' : '0'}`;
+      await member.page.locator('#inviter-fingerprint').fill(wrongCode);
       await member.page.locator('#accept-invitation').click();
-      await expect(member.page.getByText('This code is not correct.', { exact: false })).toBeVisible();
-      await member.page.locator('#inviter-code').fill(ownerCode);
+      await expect(member.page.getByText('This account fingerprint is not correct.', { exact: false })).toBeVisible();
+      await member.page.locator('#inviter-fingerprint').fill(ownerFingerprint);
       await member.page.locator('#accept-invitation').click();
       await expect(member.page).toHaveURL(/\/items\/folder\//);
       await expect(member.page.getByText(itemName, { exact: true })).toBeVisible();
@@ -152,7 +152,7 @@ test.describe('70. Sharing', () => {
       await expect(member.page.getByText(`Invited by ${ownerUser.username} (verified)`)).toBeVisible();
       await member.page.locator('#accept-invitation').click();
       await expect(member.page).toHaveURL(/\/items\/folder\//);
-      await expect(member.page.locator('#inviter-code')).toHaveCount(0);
+      await expect(member.page.locator('#inviter-fingerprint')).toHaveCount(0);
       await member.pause();
     });
 

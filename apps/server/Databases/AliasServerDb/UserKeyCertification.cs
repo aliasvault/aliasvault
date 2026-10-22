@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
 /// One user's signed statement that a signing public key belongs to another user, made after checking the key against that
-/// user's identity code (the family code in the apps). Only the certifier's client trusts it, by verifying it under its own
+/// user's account fingerprint. Only the certifier's client trusts it, by verifying it under its own
 /// signing key.
 /// </summary>
 public class UserKeyCertification

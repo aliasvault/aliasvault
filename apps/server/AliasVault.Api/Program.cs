@@ -99,7 +99,7 @@ builder.Services.AddScoped<IpBlockListService>();
 builder.Services.AddScoped<MobileLoginRateLimitService>();
 builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddSingleton<TakenAliasLookupRateLimitService>();
-builder.Services.AddSingleton<IdentityCodeLookupRateLimitService>();
+builder.Services.AddSingleton<AccountFingerprintLookupRateLimitService>();
 builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<CapabilityService>();
 builder.Services.AddScoped<TokenService>();

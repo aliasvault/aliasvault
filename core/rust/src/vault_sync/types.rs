@@ -27,13 +27,13 @@ pub enum SyncOperation {
     ResolveVaultKey,
     /// Create a shared manifest, with a group of its own that this account owns; see `SharingParams`.
     CreateSharedManifest,
-    /// Invite somebody to a shared manifest (by identity code, or a person verified before), handing them its key encrypted
+    /// Invite somebody to a shared manifest (by account fingerprint, or a person verified before), handing them its key encrypted
     /// for their account keypair.
     InviteToSharedManifest,
     /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
     UpdateSharedManifest,
-    /// Find the account behind an identity code and check the code against its key, without certifying or inviting it.
-    LookupIdentityCode,
+    /// Find the account behind an account fingerprint and check the fingerprint against its key, without certifying or inviting it.
+    LookupAccountFingerprint,
     /// Accept an invitation to a shared manifest, signing the grant with this account's own key.
     AcceptSharedManifestInvitation,
     /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
@@ -74,9 +74,9 @@ pub struct SharingParams {
     pub name: Option<String>,
     #[serde(default)]
     pub invitation_id: Option<String>,
-    /// The other party's identity code as the user typed it, for the operations that certify a key.
+    /// The other party's account fingerprint as the user typed it, for the operations that certify a key.
     #[serde(default)]
-    pub identity_code: Option<String>,
+    pub account_fingerprint: Option<String>,
 }
 
 /// Sync request.
@@ -227,7 +227,7 @@ pub struct SharingOperationResult {
     /// The manifest the operation created or invited to.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_id: Option<String>,
-    /// The account an identity code belonged to.
+    /// The account an account fingerprint belonged to.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub username: Option<String>,
     /// The account was already a member, so only its key was certified.

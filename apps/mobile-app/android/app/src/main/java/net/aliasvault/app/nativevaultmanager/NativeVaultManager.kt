@@ -351,7 +351,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * The identity code of the account's own signing key; null while locked or when the account has no signing key yet.
+     * The account fingerprint of the account's own signing key; null while locked or when the account has no signing key yet.
      * @param promise The promise to resolve
      */
     @ReactMethod

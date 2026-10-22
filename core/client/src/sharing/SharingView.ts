@@ -14,7 +14,7 @@ export const MAX_SHARED_VAULT_NAME_LENGTH = 60;
  * The shared folders screen's text strings, in English only on purpose (temporary) as the UI is pending changes
  * so we don't let the translation platform see this yet until its finalized. TODO: move these strings to locale files.
  */
-export const familySharingText = {
+export const sharingText = {
   /** Title of the people dialog of a folder. */
   peopleTitle: 'People with access',
   /** Shown in the people dialog of a folder that is not shared yet. */
@@ -24,23 +24,23 @@ export const familySharingText = {
   /** Title of the dialog of an invitation to a shared folder. */
   sharedWithYou: (username: string, folder: string): string => `${username} shared “${folder}” with you`,
   sharedWithYouHint: 'Accept to see this folder and everything in it in your vault.',
-  yourCodeSettingsHint: 'Someone who shares a folder with you needs this code to invite you. It is not secret.',
-  /** Title of the step that asks for the inviter's code before accepting. */
-  inviterCodeTitle: (username: string): string => `Confirm the invitation from ${username}`,
-  /** Explains why the inviter's code is asked for. */
-  inviterCodeExplanation: (username: string): string => `For your security, enter the code of ${username}. It confirms that this invitation really comes from them. ${username} finds it in Settings on their device.`,
+  yourFingerprintSettingsHint: 'Someone who shares a folder with you needs your account fingerprint to invite you. It is not secret.',
+  /** Title of the step that asks for the inviter's account fingerprint before accepting. */
+  inviterFingerprintTitle: (username: string): string => `Confirm the invitation from ${username}`,
+  /** Explains why the inviter's account fingerprint is asked for. */
+  inviterFingerprintExplanation: (username: string): string => `For your security, enter the account fingerprint of ${username}. It confirms that this invitation really comes from them. ${username} finds it in Settings on their device.`,
   /** Who sent an invitation, whose key this account verified before. */
   invitedByVerified: (username: string): string => `Invited by ${username} (verified)`,
   /** Who sent an invitation. */
   invitedBy: (username: string): string => `Invited by ${username}`,
   invitePeople: 'Invite someone',
-  /** Shown with this account's code while an invitation waits for an answer. */
-  pendingCodeTip: 'Tip: looking for your code to send to the people you invited? Here it is:',
+  /** Shown with this account's fingerprint while an invitation waits for an answer. */
+  pendingFingerprintTip: 'Tip: looking for your account fingerprint to send to the people you invited? Here it is:',
   notSharedYet: 'This folder is not shared with anyone yet. Invite someone to start sharing it.',
   inviteWizardChooseTitle: 'Who do you want to invite?',
-  inviteWizardNewCodeTitle: 'Or invite someone new with their code',
-  inviteWizardCodeTitle: 'Enter the code of the person you invite',
-  inviteWizardCodeHint: 'Ask the person to copy their code from Settings and send it to you. The code creates a secure link between your accounts. You only need to do this once per person.',
+  inviteWizardNewFingerprintTitle: 'Or invite someone new with their account fingerprint',
+  inviteWizardFingerprintTitle: 'Enter the account fingerprint of the person you invite',
+  inviteWizardFingerprintHint: 'Ask the person to copy their account fingerprint from Settings and send it to you. It creates a secure link between your accounts. You only need to do this once per person.',
   inviteWizardConfirmTitle: 'Confirm the invitation',
   /** Asks to confirm who a personal folder is shared with, which makes it a shared folder. */
   inviteWizardConfirmShare: (username: string, folder: string): string => `You are about to share “${folder}” with ${username}. They can see, change and delete everything in it.`,
@@ -48,14 +48,14 @@ export const familySharingText = {
   inviteWizardConfirmFolder: (username: string, folder: string): string => `You are about to invite ${username} to “${folder}”.`,
   /** Confirms the invitation went out. */
   inviteWizardInvited: (username: string): string => `${username} has been invited`,
-  inviteWizardNextStep: 'Next step: share your code',
-  /** Asks to send this account's own code to the person invited. */
-  inviteWizardShareHint: (username: string): string => `Send this code to ${username}. They need to enter it to accept your invitation.`,
-  inviteWizardShareNotSecret: 'This code is not secret. It only confirms that the invitation comes from you, so you can send it by email or in a chat app, or type it in by hand.',
+  inviteWizardNextStep: 'Next step: share your account fingerprint',
+  /** Asks to send this account's fingerprint to the person invited. */
+  inviteWizardShareHint: (username: string): string => `Send your account fingerprint to ${username}. They need to enter it to accept your invitation.`,
+  inviteWizardShareNotSecret: 'Your account fingerprint is not secret. It only confirms that the invitation comes from you, so you can send it by email or in a chat app.',
   /** A close button that is enabled after a short countdown. */
   closeCountdown: (seconds: number): string => `Close (${seconds})`,
-  codePlaceholder: '1234-5678-9012-3456-7890',
-  yourCode: 'Your code',
+  fingerprintPlaceholder: '1234-5678-9012-3456-7890',
+  yourFingerprint: 'Account fingerprint',
   accept: 'Accept',
   decline: 'Decline',
   owner: 'Owner',
@@ -110,12 +110,12 @@ export const familySharingText = {
     alreadyHasAccess: 'That person already has access to this folder.',
     lastMemberWithAccess: 'Somebody has to be able to open the shared folder. Give someone else access to it first.',
     deleteVaultFailed: 'The shared folder could not be deleted. Please try again.',
-    codeNotFound: 'No account has this code. Check the code and try again.',
-    codeRateLimited: 'Too many codes were looked up. Please try again later.',
-    codeIsOwn: 'This is your own code. Enter the code of the other person instead.',
-    codeMismatch: 'This code is not correct. Ask the other person for their correct code.',
-    inviterNotVerified: 'First enter the code of the person who invited you.',
-    memberNotVerified: 'First invite this person with their code under Invite someone new.',
+    fingerprintNotFound: 'No account has this account fingerprint. Check it and try again.',
+    fingerprintRateLimited: 'Too many lookups. Please try again later.',
+    fingerprintIsOwn: 'This is your own account fingerprint. Enter the one of the other person instead.',
+    fingerprintMismatch: 'This account fingerprint is not correct. Ask the other person for their correct one.',
+    inviterNotVerified: 'First enter the account fingerprint of the person who invited you.',
+    memberNotVerified: 'First invite this person with their account fingerprint under Invite someone new.',
     aliasOwnedByOtherFolder: 'This email alias receives its emails in a shared folder you cannot open, or in the personal vault of someone else. Ask them to move it here.',
   },
 };
@@ -182,7 +182,7 @@ function sortMembers<T extends Pick<GroupMemberInfo, 'role' | 'username'>>(membe
 }
 
 /**
- * Whether this account certified the inviter's key before, so the invitation takes no code.
+ * Whether this account certified the inviter's key before, so the invitation asks for no account fingerprint.
  * @param invitation - the invitation as served by the API.
  */
 export function isInviterVerified(invitation: Pick<ReceivedManifestInvitation, 'inviterCertification'>): boolean {
@@ -196,9 +196,9 @@ export function isInviterVerified(invitation: Pick<ReceivedManifestInvitation, '
  */
 export function memberKeyProblem(member: Pick<GroupMemberInfo, 'accountPublicKey' | 'signingPublicKey' | 'keyCertification'>): string | null {
   if (!member.accountPublicKey || !member.signingPublicKey) {
-    return familySharingText.errors.userNotReady;
+    return sharingText.errors.userNotReady;
   }
-  return member.keyCertification ? null : familySharingText.errors.memberNotVerified;
+  return member.keyCertification ? null : sharingText.errors.memberNotVerified;
 }
 
 /**
@@ -263,9 +263,9 @@ export function describeMemberAccess(group: Pick<GroupInfo, 'role'>, manifest: P
  */
 export function roleLabel(member: Pick<GroupMemberInfo, 'role'>): string {
   switch (member.role) {
-    case 'owner': return familySharingText.owner;
-    case 'admin': return familySharingText.admin;
-    default: return familySharingText.member;
+    case 'owner': return sharingText.owner;
+    case 'admin': return sharingText.admin;
+    default: return sharingText.member;
   }
 }
 
@@ -276,19 +276,19 @@ export function roleLabel(member: Pick<GroupMemberInfo, 'role'>): string {
  */
 export function sharingErrorMessage(apiErrorCode: string | null | undefined): string | null {
   switch (apiErrorCode) {
-    case 'INVITE_RECIPIENT_NOT_READY': return familySharingText.errors.userNotReady;
-    case 'ACCESS_ALREADY_GRANTED': return familySharingText.errors.alreadyHasAccess;
-    case 'INVITATION_ALREADY_EXISTS': return familySharingText.errors.alreadyInvited;
-    case 'INVITATION_NOT_FOUND': return familySharingText.errors.invitationGone;
-    case 'INVITATION_KEY_OUTDATED': return familySharingText.errors.invitationKeyOutdated;
-    case 'LAST_MANIFEST_GRANT_HOLDER': return familySharingText.errors.lastMemberWithAccess;
-    case 'SHARED_MANIFEST_IN_USE': return familySharingText.errors.revokeAccessFailed;
-    case 'IDENTITY_CODE_NOT_FOUND': return familySharingText.errors.codeNotFound;
-    case 'RATE_LIMIT_EXCEEDED': return familySharingText.errors.codeRateLimited;
-    case 'MEMBER_NOT_VERIFIED': return familySharingText.errors.memberNotVerified;
-    case 'INVITER_NOT_VERIFIED': return familySharingText.errors.inviterNotVerified;
-    case 'IDENTITY_CODE_MISMATCH': return familySharingText.errors.codeMismatch;
-    case 'IDENTITY_CODE_IS_OWN': return familySharingText.errors.codeIsOwn;
+    case 'INVITE_RECIPIENT_NOT_READY': return sharingText.errors.userNotReady;
+    case 'ACCESS_ALREADY_GRANTED': return sharingText.errors.alreadyHasAccess;
+    case 'INVITATION_ALREADY_EXISTS': return sharingText.errors.alreadyInvited;
+    case 'INVITATION_NOT_FOUND': return sharingText.errors.invitationGone;
+    case 'INVITATION_KEY_OUTDATED': return sharingText.errors.invitationKeyOutdated;
+    case 'LAST_MANIFEST_GRANT_HOLDER': return sharingText.errors.lastMemberWithAccess;
+    case 'SHARED_MANIFEST_IN_USE': return sharingText.errors.revokeAccessFailed;
+    case 'ACCOUNT_FINGERPRINT_NOT_FOUND': return sharingText.errors.fingerprintNotFound;
+    case 'RATE_LIMIT_EXCEEDED': return sharingText.errors.fingerprintRateLimited;
+    case 'MEMBER_NOT_VERIFIED': return sharingText.errors.memberNotVerified;
+    case 'INVITER_NOT_VERIFIED': return sharingText.errors.inviterNotVerified;
+    case 'ACCOUNT_FINGERPRINT_MISMATCH': return sharingText.errors.fingerprintMismatch;
+    case 'ACCOUNT_FINGERPRINT_IS_OWN': return sharingText.errors.fingerprintIsOwn;
     default: return null;
   }
 }

@@ -1,5 +1,5 @@
-import { familySharingText, isInviterVerified } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { sharingText, isInviterVerified } from '@aliasvault/client/sharing/SharingView';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,12 +22,12 @@ type SharedFolderInvitationModalProps = {
 
 /**
  * An invitation to a shared folder: accept or decline it. Accepting from an inviter this account has not verified yet
- * first asks for their code.
+ * first asks for their account fingerprint.
  */
 const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = ({ invitation, folderName, onDone, onClose }) => {
   const { t } = useTranslation();
   const webApi = useWebApi();
-  const [askCode, setAskCode] = useState(false);
+  const [askFingerprint, setAskCode] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,28 +43,28 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
   }
 
   /**
-   * Accept, with the inviter's code when it was asked for; an engine that holds no certification of the inviter asks for it.
+   * Accept, with the inviter's account fingerprint when it was asked for; an engine that holds no certification of the inviter asks for it.
    */
   const accept = async (): Promise<void> => {
-    if (!askCode && !isInviterVerified(invitation)) {
+    if (!askFingerprint && !isInviterVerified(invitation)) {
       setAskCode(true);
       return;
     }
-    if (askCode && code.trim().length === 0) {
+    if (askFingerprint && code.trim().length === 0) {
       return;
     }
 
     setBusy(true);
     setError(null);
     try {
-      const result = await vaultStore.acceptSharedManifestInvitation(invitation.id, askCode ? code.trim() : undefined);
+      const result = await vaultStore.acceptSharedManifestInvitation(invitation.id, askFingerprint ? code.trim() : undefined);
       if (result.apiErrorCode === 'INVITER_NOT_VERIFIED') {
         setAskCode(true);
       }
-      unwrapSharingResult(result, familySharingText.errors.invitationGone, t);
+      unwrapSharingResult(result, sharingText.errors.invitationGone, t);
       await onDone(true);
     } catch (acceptError) {
-      setError(sharingFailureMessage(acceptError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(acceptError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
@@ -80,7 +80,7 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
       await SharingService.declineInvitation(webApi, invitation.id);
       await onDone(false);
     } catch (declineError) {
-      setError(sharingFailureMessage(declineError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(declineError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
@@ -88,31 +88,31 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
 
   const footer = (
     <>
-      <Button id="accept-invitation" isDisabled={busy || (askCode && code.trim().length === 0)} onClick={() => void accept()}>{familySharingText.accept}</Button>
-      {!askCode && <Button color="secondary" isDisabled={busy} onClick={() => void decline()}>{familySharingText.decline}</Button>}
-      {askCode && <Button color="secondary" isDisabled={busy} onClick={() => setAskCode(false)}>{t('common.back')}</Button>}
+      <Button id="accept-invitation" isDisabled={busy || (askFingerprint && code.trim().length === 0)} onClick={() => void accept()}>{sharingText.accept}</Button>
+      {!askFingerprint && <Button color="secondary" isDisabled={busy} onClick={() => void decline()}>{sharingText.decline}</Button>}
+      {askFingerprint && <Button color="secondary" isDisabled={busy} onClick={() => setAskCode(false)}>{t('common.back')}</Button>}
     </>
   );
 
   return (
     <FormModal
       isOpen
-      title={askCode ? familySharingText.inviterCodeTitle(invitation.inviterUsername) : familySharingText.sharedWithYou(invitation.inviterUsername, folderName)}
+      title={askFingerprint ? sharingText.inviterFingerprintTitle(invitation.inviterUsername) : sharingText.sharedWithYou(invitation.inviterUsername, folderName)}
       footerContent={footer}
       onClose={onClose}
       onConfirm={() => void accept()}
     >
       <div className="space-y-3">
-        {!askCode && (
+        {!askFingerprint && (
           <>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{familySharingText.sharedWithYouHint}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{isInviterVerified(invitation) ? familySharingText.invitedByVerified(invitation.inviterUsername) : familySharingText.invitedBy(invitation.inviterUsername)}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{sharingText.sharedWithYouHint}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{isInviterVerified(invitation) ? sharingText.invitedByVerified(invitation.inviterUsername) : sharingText.invitedBy(invitation.inviterUsername)}</p>
           </>
         )}
-        {askCode && (
+        {askFingerprint && (
           <>
-            <p className="text-sm text-gray-600 dark:text-gray-300">{familySharingText.inviterCodeExplanation(invitation.inviterUsername)}</p>
-            <InputTextField id="inviter-code" value={code} onValueChange={setCode} placeholder={familySharingText.codePlaceholder} autoFocus />
+            <p className="text-sm text-gray-600 dark:text-gray-300">{sharingText.inviterFingerprintExplanation(invitation.inviterUsername)}</p>
+            <InputTextField id="inviter-fingerprint" value={code} onValueChange={setCode} placeholder={sharingText.fingerprintPlaceholder} autoFocus />
           </>
         )}
         {error && <AlertMessageError message={error} hasTopMargin={false} />}

@@ -1,9 +1,9 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
-import { canAdministerGroup, familySharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -267,9 +267,9 @@ export default function FolderViewScreen(): React.ReactNode {
       return;
     }
     const name = folder?.Name ?? '';
-    showConfirm(familySharingText.deleteVault, familySharingText.deleteVaultConfirm(name), t('common.delete'), async () => {
+    showConfirm(sharingText.deleteVault, sharingText.deleteVaultConfirm(name), t('common.delete'), async () => {
       try {
-        const done = await runWithPassword(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(name), t('common.delete'), answerChallenge => (
+        const done = await runWithPassword(sharingText.deleteVault, sharingText.deleteVaultPasswordPrompt(name), t('common.delete'), answerChallenge => (
           SharingService.deleteSharedManifest(webApi, currentShared.group.groupId, currentShared.manifest.manifestId, answerChallenge)
         ));
         if (!done) {
@@ -278,10 +278,10 @@ export default function FolderViewScreen(): React.ReactNode {
         await syncVault();
         emitter.emit('itemChanged');
         await reloadShared();
-        Toast.show({ type: 'success', text1: familySharingText.vaultDeleted });
+        Toast.show({ type: 'success', text1: sharingText.vaultDeleted });
         router.dismissTo('/(tabs)/items');
       } catch (deleteError) {
-        Toast.show({ type: 'error', text1: sharingFailureMessage(deleteError, familySharingText.errors.deleteVaultFailed) });
+        Toast.show({ type: 'error', text1: sharingFailureMessage(deleteError, sharingText.errors.deleteVaultFailed) });
       }
     }, { confirmStyle: 'destructive' });
   }, [currentShared, folder?.Name, showConfirm, runWithPassword, webApi, syncVault, reloadShared, router, t]);

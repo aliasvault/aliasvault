@@ -71,7 +71,7 @@ data class VaultMigrationResult(
  * @property error The error code, if any.
  * @property errorMessage The error message, if any.
  * @property manifestId The shared manifest the operation created, invited to or accepted.
- * @property username The account an identity code belonged to.
+ * @property username The account an account fingerprint belonged to.
  * @property alreadyMember The account is already in the folder's group, so only its key was certified.
  */
 data class VaultSharingResult(

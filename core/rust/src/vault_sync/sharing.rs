@@ -2,7 +2,7 @@
 //! inviting to a group or a shared manifest, and accepting those invitations.
 //!
 //! Trust between two accounts rests on key certifications: once a user has checked another account's signing key (outside
-//! AliasVault) against that account's identity code (the key's fingerprint, the family code in the apps), a client signs a
+//! AliasVault) against that account's account fingerprint (the key's fingerprint), a client signs a
 //! statement that the served key belongs to that account. A certification is only ever checked under the certifier's own signing key, 
 //! derived from their private key, so the server can hide one but not forge one. An admin certifies a member before inviting them anywhere; 
 //! a member certifies the admin before accepting anything from them. A grant opens only once signed by its holder.
@@ -26,17 +26,17 @@ const ROLE_MEMBER: &str = "member";
 /// The API error code for a recipient whose account has no keypair yet (legacy non-migrated user account).
 const INVITE_RECIPIENT_NOT_READY: &str = "INVITE_RECIPIENT_NOT_READY";
 
-/// The API error code for a member whose signing key this account has not certified with their identity code.
+/// The API error code for a member whose signing key this account has not certified with their account fingerprint.
 const MEMBER_NOT_VERIFIED: &str = "MEMBER_NOT_VERIFIED";
 
-/// The API error code for an inviter whose signing key this account has not certified with their identity code.
+/// The API error code for an inviter whose signing key this account has not certified with their account fingerprint.
 const INVITER_NOT_VERIFIED: &str = "INVITER_NOT_VERIFIED";
 
-/// The refusal code for an identity code that is not the fingerprint of the key the server served.
-const IDENTITY_CODE_MISMATCH: &str = "IDENTITY_CODE_MISMATCH";
+/// The refusal code for an account fingerprint that is not the fingerprint of the key the server served.
+const ACCOUNT_FINGERPRINT_MISMATCH: &str = "ACCOUNT_FINGERPRINT_MISMATCH";
 
-/// The refusal code for an identity code that is this account's own, typed where the other person's code was asked for.
-const IDENTITY_CODE_IS_OWN: &str = "IDENTITY_CODE_IS_OWN";
+/// The refusal code for an account fingerprint that is this account's own, typed where the other person's code was asked for.
+const ACCOUNT_FINGERPRINT_IS_OWN: &str = "ACCOUNT_FINGERPRINT_IS_OWN";
 
 /// The longest name an invitation can carry: RSA-2048 OAEP-SHA256 fits 190 bytes. The UI caps names well below this.
 const MAX_SHARED_MANIFEST_NAME_BYTES: usize = 190;
@@ -51,7 +51,7 @@ struct GroupOverview {
     groups: Vec<GroupInfo>,
     #[serde(default)]
     received_invitations: Vec<ReceivedManifestInvitation>,
-    /// The people whose current signing key the caller certified, who can be invited without their identity code.
+    /// The people whose current signing key the caller certified, who can be invited without their account fingerprint.
     #[serde(default)]
     verified_people: Vec<GroupMemberInfo>,
 }
@@ -86,13 +86,13 @@ struct ReceivedManifestInvitation {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct IdentityCodeLookupRequest<'a> {
+struct AccountFingerprintLookupRequest<'a> {
     code: &'a str,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct IdentityCodeLookupResponse {
+struct AccountFingerprintLookupResponse {
     user_id: String,
     #[serde(default)]
     username: String,
@@ -105,7 +105,7 @@ struct IdentityCodeLookupResponse {
     account_public_key_signature: Option<String>,
 }
 
-/// The account a shared manifest's key is encrypted for: a group member, or an account found by its identity code.
+/// The account a shared manifest's key is encrypted for: a group member, or an account found by its account fingerprint.
 struct Recipient {
     user_id: String,
     username: String,
@@ -163,7 +163,7 @@ struct GroupMemberInfo {
     account_public_key_signature: Option<String>,
     #[serde(default)]
     signing_public_key: Option<String>,
-    /// This account's certification of `signing_public_key`, made when it checked the member's identity code.
+    /// This account's certification of `signing_public_key`, made when it checked the member's account fingerprint.
     #[serde(default)]
     key_certification: Option<String>,
 }
@@ -257,10 +257,10 @@ pub(crate) async fn update_shared_manifest_operation(ctx: &mut Ctx) -> SharingOp
     finish(ctx, "update shared manifest", outcome).await
 }
 
-/// Find the account behind an identity code, before inviting it.
-pub(crate) async fn lookup_identity_code_operation(ctx: &mut Ctx) -> SharingOperationResult {
-    let outcome = lookup_identity_code(ctx).await;
-    finish(ctx, "look up identity code", outcome).await
+/// Find the account behind an account fingerprint, before inviting it.
+pub(crate) async fn lookup_account_fingerprint_operation(ctx: &mut Ctx) -> SharingOperationResult {
+    let outcome = lookup_account_fingerprint(ctx).await;
+    finish(ctx, "look up account fingerprint", outcome).await
 }
 
 /// Accept an invitation to a shared manifest.
@@ -352,8 +352,8 @@ impl OwnIdentity {
         Ok(crypto::signing::sign(self.signing_key.expose_secret(), message)?)
     }
 
-    /// Whether `code` is this account's own identity code.
-    fn is_own_code(&self, code: &str) -> bool {
+    /// Whether `code` is this account's own account fingerprint.
+    fn is_own_fingerprint(&self, code: &str) -> bool {
         crypto::signing::fingerprint_matches(&self.signing_public_key, code)
     }
 
@@ -363,28 +363,28 @@ impl OwnIdentity {
     }
 
     /// Make sure this account certified `subject_key` as `subject_user_id`'s: before (`certification`), or now from the
-    /// typed `identity_code`. Without either, the refusal says whose code is needed (`not_verified`).
-    async fn ensure_certified(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, certification: Option<&str>, identity_code: Option<&str>, not_verified: &str) -> SyncResult<Result<(), Refusal>> {
+    /// typed `account_fingerprint`. Without either, the refusal says whose fingerprint is needed (`not_verified`).
+    async fn ensure_certified(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, certification: Option<&str>, account_fingerprint: Option<&str>, not_verified: &str) -> SyncResult<Result<(), Refusal>> {
         if self.certified(subject_user_id, subject_key, certification) {
             return Ok(Ok(()));
         }
-        match identity_code.map(str::trim).filter(|code| !code.is_empty()) {
-            Some(code) => self.certify_with_code(ctx, subject_user_id, subject_key, code).await,
+        match account_fingerprint.map(str::trim).filter(|code| !code.is_empty()) {
+            Some(code) => self.certify_with_fingerprint(ctx, subject_user_id, subject_key, code).await,
             None => Ok(Err(Refusal::Api(not_verified.to_string()))),
         }
     }
 
-    /// Certify `subject_key` as `subject_user_id`'s after checking it against the identity code the user typed, and store the certification.
-    async fn certify_with_code(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, code: &str) -> SyncResult<Result<(), Refusal>> {
-        if self.is_own_code(code) {
-            return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+    /// Certify `subject_key` as `subject_user_id`'s after checking it against the account fingerprint the user typed, and store the certification.
+    async fn certify_with_fingerprint(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, code: &str) -> SyncResult<Result<(), Refusal>> {
+        if self.is_own_fingerprint(code) {
+            return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_IS_OWN.to_string())));
         }
         if !crypto::signing::fingerprint_matches(subject_key, code) {
-            return Ok(Err(Refusal::Api(IDENTITY_CODE_MISMATCH.to_string())));
+            return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_MISMATCH.to_string())));
         }
         let signature = self.sign(&crypto::signing::key_certification_message(&self.user_id, subject_user_id, subject_key))?;
         http::post_no_content(&ctx.host, "Groups/certifications", &CertifyKeyRequest { subject_user_id, subject_signing_public_key: subject_key, signature: &signature }).await?;
-        ctx.log(format!("[Sharing] Certified the signing key of {} with their identity code.", subject_user_id)).await;
+        ctx.log(format!("[Sharing] Certified the signing key of {} with their account fingerprint.", subject_user_id)).await;
         Ok(Ok(()))
     }
 }
@@ -503,16 +503,16 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
 
     /*
-     * The recipient is either an account found by the identity code the user typed, whose key is certified with it now
+     * The recipient is either an account found by the account fingerprint the user typed, whose key is certified with it now
      * (accepting then also makes them a member), or a member this account certified before.
      */
-    let recipient = match target.identity_code.as_deref().map(str::trim).filter(|code| !code.is_empty()) {
+    let recipient = match target.account_fingerprint.as_deref().map(str::trim).filter(|code| !code.is_empty()) {
         Some(code) => {
-            if me.is_own_code(code) {
-                return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+            if me.is_own_fingerprint(code) {
+                return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_IS_OWN.to_string())));
             }
-            let account: IdentityCodeLookupResponse = http::post(&ctx.host, "Groups/lookup", &IdentityCodeLookupRequest { code }, false).await?;
-            if let Err(refusal) = me.certify_with_code(ctx, &account.user_id, &account.signing_public_key, code).await? {
+            let account: AccountFingerprintLookupResponse = http::post(&ctx.host, "Groups/lookup", &AccountFingerprintLookupRequest { code }, false).await?;
+            if let Err(refusal) = me.certify_with_fingerprint(ctx, &account.user_id, &account.signing_public_key, code).await? {
                 return Ok(Err(refusal));
             }
             Recipient {
@@ -528,7 +528,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
             // A member of the group, or a person verified before who is not in it yet.
             let user_id = target.user_id.clone().ok_or_else(|| SyncError::Other("The invitation names no recipient".to_string()))?;
             let member = group.members.iter().chain(overview.verified_people.iter()).find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is neither in the group nor verified".to_string()))?;
-            // The served signing key is trusted only through this account's own certification of it, made with the member's identity code.
+            // The served signing key is trusted only through this account's own certification of it, made with the member's account fingerprint.
             if member.signing_public_key.as_deref().is_some_and(|key| !me.certified(&member.user_id, key, member.key_certification.as_deref())) {
                 return Ok(Err(Refusal::Api(MEMBER_NOT_VERIFIED.to_string())));
             }
@@ -591,21 +591,21 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     Ok(Ok(Done { manifest_id: Some(manifest.manifest_id.clone()), username: Some(recipient.username), ..Default::default() }))
 }
 
-/// Look up the account behind an identity code and check the code against the key the server returns, so the user can
+/// Look up the account behind an account fingerprint and check the fingerprint against the key the server returns, so the user can
 /// confirm who they invite, also before the folder they invite to is shared. Nothing is certified or invited;
-/// `invite_to_shared_manifest` looks the code up again. With a group, the result says whether the account is in it.
-async fn lookup_identity_code(ctx: &mut Ctx) -> Outcome {
+/// `invite_to_shared_manifest` looks the fingerprint up again. With a group, the result says whether the account is in it.
+async fn lookup_account_fingerprint(ctx: &mut Ctx) -> Outcome {
     let target = params(ctx)?;
-    let code = target.identity_code.as_deref().map(str::trim).filter(|code| !code.is_empty()).ok_or_else(|| SyncError::Other("The lookup carries no identity code".to_string()))?;
+    let code = target.account_fingerprint.as_deref().map(str::trim).filter(|code| !code.is_empty()).ok_or_else(|| SyncError::Other("The lookup carries no account fingerprint".to_string()))?;
 
     let overview = fetch_overview(ctx).await?;
     let group = target.group_id.as_deref().map(|group_id| administered_group(&overview, group_id)).transpose()?;
-    if OwnIdentity::open(ctx, &overview).await?.is_some_and(|me| me.is_own_code(code)) {
-        return Ok(Err(Refusal::Api(IDENTITY_CODE_IS_OWN.to_string())));
+    if OwnIdentity::open(ctx, &overview).await?.is_some_and(|me| me.is_own_fingerprint(code)) {
+        return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_IS_OWN.to_string())));
     }
-    let account: IdentityCodeLookupResponse = http::post(&ctx.host, "Groups/lookup", &IdentityCodeLookupRequest { code }, false).await?;
+    let account: AccountFingerprintLookupResponse = http::post(&ctx.host, "Groups/lookup", &AccountFingerprintLookupRequest { code }, false).await?;
     if !crypto::signing::fingerprint_matches(&account.signing_public_key, code) {
-        return Ok(Err(Refusal::Api(IDENTITY_CODE_MISMATCH.to_string())));
+        return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_MISMATCH.to_string())));
     }
 
     let already_member = group.is_some_and(|group| group.members.iter().any(|member| member.user_id == account.user_id));
@@ -630,7 +630,7 @@ async fn accept_shared_manifest_invitation(ctx: &mut Ctx) -> Outcome {
     let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     let Some(own_public_key) = keys::own_account_public_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
 
-    if let Err(refusal) = me.ensure_certified(ctx, &invitation.inviter_user_id, signer_public_key, invitation.inviter_certification.as_deref(), target.identity_code.as_deref(), INVITER_NOT_VERIFIED).await? {
+    if let Err(refusal) = me.ensure_certified(ctx, &invitation.inviter_user_id, signer_public_key, invitation.inviter_certification.as_deref(), target.account_fingerprint.as_deref(), INVITER_NOT_VERIFIED).await? {
         return Ok(Err(refusal));
     }
 

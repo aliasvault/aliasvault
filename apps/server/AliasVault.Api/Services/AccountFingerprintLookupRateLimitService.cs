@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="IdentityCodeLookupRateLimitService.cs" company="aliasvault">
+// <copyright file="AccountFingerprintLookupRateLimitService.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -11,9 +11,9 @@ using System;
 using System.Threading.RateLimiting;
 
 /// <summary>
-/// In-memory per-user limit on identity code lookups, so a family admin cannot probe the code space for accounts.
+/// In-memory per-user limit on account fingerprint lookups, so a caller cannot probe the fingerprint space for accounts.
 /// </summary>
-public sealed class IdentityCodeLookupRateLimitService : IDisposable
+public sealed class AccountFingerprintLookupRateLimitService : IDisposable
 {
     /// <summary>
     /// Lookups a user can make in a burst.

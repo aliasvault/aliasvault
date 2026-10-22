@@ -1,5 +1,5 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
@@ -16,7 +16,7 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
-import { FamilyCode } from '@/components/sharing/FamilyCode';
+import { AccountFingerprint } from '@/components/sharing/AccountFingerprint';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
@@ -50,15 +50,15 @@ export default function SettingsScreen() : React.ReactNode {
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
-  const [ownSharingCode, setOwnSharingCode] = useState<string | null>(null);
+  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
   const isSharingEnabled = hasCapability(CapabilityKeys.VaultSharing);
 
-  // The own code is derived natively from the signing private key, which only the native layer can open.
+  // The own fingerprint is derived natively from the signing private key, which only the native layer can open.
   useFocusEffect(useCallback(() => {
     if (!isSharingEnabled) {
       return;
     }
-    NativeVaultManager.getSigningKeyFingerprint().then(setOwnSharingCode).catch(() => setOwnSharingCode(null));
+    NativeVaultManager.getSigningKeyFingerprint().then(setOwnFingerprint).catch(() => setOwnFingerprint(null));
   }, [isSharingEnabled]));
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
   const { isEnabled: isDeveloperToolsEnabled, registerTap, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
@@ -419,11 +419,11 @@ export default function SettingsScreen() : React.ReactNode {
           </TouchableOpacity>
         </View>
 
-        {/* The code people need to invite this account to a shared folder. */}
-        {isSharingEnabled && ownSharingCode && (
+        {/* The account fingerprint people need to invite this account to a shared folder. */}
+        {isSharingEnabled && ownFingerprint && (
           <View style={[styles.groupSection, styles.ownCodeSection]}>
-            <FamilyCode code={ownSharingCode} />
-            <ThemedText style={styles.ownCodeHint}>{familySharingText.yourCodeSettingsHint}</ThemedText>
+            <AccountFingerprint code={ownFingerprint} />
+            <ThemedText style={styles.ownCodeHint}>{sharingText.yourFingerprintSettingsHint}</ThemedText>
           </View>
         )}
 

@@ -142,7 +142,7 @@ public class NativeVaultManager: NSObject {
         resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
     }
 
-    /// The identity code of the account's own signing key; nil while locked or when the account has no signing key yet.
+    /// The account fingerprint of the account's own signing key; nil while locked or when the account has no signing key yet.
     @objc
     func getSigningKeyFingerprint(_ resolve: @escaping RCTPromiseResolveBlock,
                                   rejecter reject: @escaping RCTPromiseRejectBlock) {

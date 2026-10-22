@@ -1,4 +1,4 @@
-import { familySharingText } from '../sharing/FamilySharingView';
+import { sharingText } from '../sharing/SharingView';
 
 import type { Folder } from '../database/repositories/FolderRepository';
 import type { EmailClaimTransferRequest, Mailbox } from '@aliasvault/models/webapi';
@@ -29,7 +29,7 @@ type PostApi = {
  */
 function sharedFolderName(folders: Pick<Folder, 'Id' | 'ManifestId' | 'Name'>[], manifestId: string): string {
   const id = manifestId.toLowerCase();
-  return folders.find(f => f.Id.toLowerCase() === id && f.ManifestId.toLowerCase() === id)?.Name ?? familySharingText.sharedVault;
+  return folders.find(f => f.Id.toLowerCase() === id && f.ManifestId.toLowerCase() === id)?.Name ?? sharingText.sharedVault;
 }
 
 /**
@@ -52,7 +52,7 @@ export function aliasOwnerNotice(
     return null;
   }
 
-  const text = familySharingText.aliasOwner;
+  const text = sharingText.aliasOwner;
   /**
    * Whether the manifest is the user's personal one.
    */
@@ -70,7 +70,7 @@ export function aliasOwnerNotice(
  */
 export function aliasOwnerErrorText(code: string | null | undefined): string | null {
   switch (code) {
-    case 'CLAIM_OWNED_BY_OTHER_VAULT': return familySharingText.errors.aliasOwnedByOtherFolder;
+    case 'CLAIM_OWNED_BY_OTHER_VAULT': return sharingText.errors.aliasOwnedByOtherFolder;
     default: return null;
   }
 }

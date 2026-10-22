@@ -1,4 +1,4 @@
-import { familySharingText, isInviterVerified } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText, isInviterVerified } from '@aliasvault/client/sharing/SharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,13 +25,13 @@ interface ISharedFolderInvitationModalProps {
 
 /**
  * An invitation to a shared folder: accept or decline it. Accepting from an inviter this account has not verified yet
- * first asks for their code.
+ * first asks for their account fingerprint.
  */
 export const SharedFolderInvitationModal: React.FC<ISharedFolderInvitationModalProps> = ({ invitation, folderName, onDone, onClose }) => {
   const { t } = useTranslation();
   const colors = useColors();
   const webApi = useWebApi();
-  const [askCode, setAskCode] = useState(false);
+  const [askFingerprint, setAskCode] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -106,28 +106,28 @@ export const SharedFolderInvitationModal: React.FC<ISharedFolderInvitationModalP
   }
 
   /**
-   * Accept, with the inviter's code when it was asked for; an engine that holds no certification of the inviter asks for it.
+   * Accept, with the inviter's account fingerprint when it was asked for; an engine that holds no certification of the inviter asks for it.
    */
   const accept = async (): Promise<void> => {
-    if (!askCode && !isInviterVerified(invitation)) {
+    if (!askFingerprint && !isInviterVerified(invitation)) {
       setAskCode(true);
       return;
     }
-    if (askCode && code.trim().length === 0) {
+    if (askFingerprint && code.trim().length === 0) {
       return;
     }
 
     setBusy(true);
     setError(null);
     try {
-      const result = await NativeVaultManager.runSharingOperation('acceptSharedManifestInvitation', JSON.stringify({ invitationId: invitation.id, identityCode: askCode ? code.trim() : undefined }));
+      const result = await NativeVaultManager.runSharingOperation('acceptSharedManifestInvitation', JSON.stringify({ invitationId: invitation.id, accountFingerprint: askFingerprint ? code.trim() : undefined }));
       if (result.apiErrorCode === 'INVITER_NOT_VERIFIED') {
         setAskCode(true);
       }
-      unwrapSharingResult(result, familySharingText.errors.invitationGone);
+      unwrapSharingResult(result, sharingText.errors.invitationGone);
       await onDone(true);
     } catch (acceptError) {
-      setError(sharingFailureMessage(acceptError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(acceptError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
@@ -143,38 +143,38 @@ export const SharedFolderInvitationModal: React.FC<ISharedFolderInvitationModalP
       await SharingService.declineInvitation(webApi, invitation.id);
       await onDone(false);
     } catch (declineError) {
-      setError(sharingFailureMessage(declineError, familySharingText.errors.invitationGone));
+      setError(sharingFailureMessage(declineError, sharingText.errors.invitationGone));
     } finally {
       setBusy(false);
     }
   };
 
-  const canAccept = !busy && !(askCode && code.trim().length === 0);
+  const canAccept = !busy && !(askFingerprint && code.trim().length === 0);
 
   return (
     <ModalWrapper
       isOpen
       onClose={onClose}
       isSubmitting={busy}
-      title={askCode ? familySharingText.inviterCodeTitle(invitation.inviterUsername) : familySharingText.sharedWithYou(invitation.inviterUsername, folderName)}
+      title={askFingerprint ? sharingText.inviterFingerprintTitle(invitation.inviterUsername) : sharingText.sharedWithYou(invitation.inviterUsername, folderName)}
       keyboardAvoiding
       showHeaderBorder={false}
       showFooterBorder={false}
     >
-      {!askCode && (
+      {!askFingerprint && (
         <>
-          <Text style={styles.bodyText}>{familySharingText.sharedWithYouHint}</Text>
-          <Text style={styles.mutedText}>{isInviterVerified(invitation) ? familySharingText.invitedByVerified(invitation.inviterUsername) : familySharingText.invitedBy(invitation.inviterUsername)}</Text>
+          <Text style={styles.bodyText}>{sharingText.sharedWithYouHint}</Text>
+          <Text style={styles.mutedText}>{isInviterVerified(invitation) ? sharingText.invitedByVerified(invitation.inviterUsername) : sharingText.invitedBy(invitation.inviterUsername)}</Text>
         </>
       )}
-      {askCode && (
+      {askFingerprint && (
         <>
-          <Text style={styles.bodyText}>{familySharingText.inviterCodeExplanation(invitation.inviterUsername)}</Text>
+          <Text style={styles.bodyText}>{sharingText.inviterFingerprintExplanation(invitation.inviterUsername)}</Text>
           <TextInput
             style={styles.codeInput}
             value={code}
             onChangeText={setCode}
-            placeholder={familySharingText.codePlaceholder}
+            placeholder={sharingText.fingerprintPlaceholder}
             placeholderTextColor={colors.textMuted}
             keyboardType="number-pad"
             autoCorrect={false}
@@ -186,11 +186,11 @@ export const SharedFolderInvitationModal: React.FC<ISharedFolderInvitationModalP
       )}
       {error && <Text style={styles.errorText}>{error}</Text>}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={[styles.modalButton, busy && styles.disabled]} disabled={busy} onPress={() => (askCode ? setAskCode(false) : void decline())}>
-          <Text style={styles.modalButtonText}>{askCode ? t('common.back') : familySharingText.decline}</Text>
+        <TouchableOpacity style={[styles.modalButton, busy && styles.disabled]} disabled={busy} onPress={() => (askFingerprint ? setAskCode(false) : void decline())}>
+          <Text style={styles.modalButtonText}>{askFingerprint ? t('common.back') : sharingText.decline}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary, !canAccept && styles.disabled]} disabled={!canAccept} onPress={() => void accept()}>
-          {busy ? <ActivityIndicator color={colors.white} size="small" /> : <Text style={styles.modalButtonPrimaryText}>{familySharingText.accept}</Text>}
+          {busy ? <ActivityIndicator color={colors.white} size="small" /> : <Text style={styles.modalButtonPrimaryText}>{sharingText.accept}</Text>}
         </TouchableOpacity>
       </View>
     </ModalWrapper>

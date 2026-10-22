@@ -80,7 +80,7 @@ export type SharingOperationResult = SyncErrorDetail & {
   success: boolean;
   /** The shared manifest the operation created, invited to or accepted. */
   manifestId?: string;
-  /** The account an identity code belonged to. */
+  /** The account an account fingerprint belonged to. */
   username?: string;
   /** The account is already in the folder's group, so only its key was certified. */
   alreadyMember?: boolean;
@@ -206,14 +206,14 @@ export class VaultSync {
   }
 
   /**
-   * Invite the account behind an identity code to a shared manifest. The engine checks the key the server returns
-   * against the code and certifies it; accepting also makes the account a member of the group. Never throws.
+   * Invite the account behind an account fingerprint to a shared manifest. The engine checks the key the server returns
+   * against the fingerprint and certifies it; accepting also makes the account a member of the group. Never throws.
    * @param groupId - the group the shared manifest belongs to
    * @param manifestId - the shared manifest to invite them to
-   * @param identityCode - the identity code the other person gave outside AliasVault
+   * @param accountFingerprint - the account fingerprint the other person gave outside AliasVault
    */
-  public async inviteToSharedManifestByCode(groupId: string, manifestId: string, identityCode: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('inviteToSharedManifest', { groupId, manifestId, identityCode });
+  public async inviteToSharedManifestByFingerprint(groupId: string, manifestId: string, accountFingerprint: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('inviteToSharedManifest', { groupId, manifestId, accountFingerprint });
   }
 
   /**
@@ -227,23 +227,23 @@ export class VaultSync {
   }
 
   /**
-   * Find the account behind an identity code and check the code against its key, so the user can confirm who they invite,
+   * Find the account behind an account fingerprint and check the fingerprint against its key, so the user can confirm who they invite,
    * also before the folder is shared. Certifies and invites nothing. Never throws.
    * @param groupId - the group of the shared folder the person is invited to, if it is shared already
-   * @param identityCode - the identity code the other person gave outside AliasVault
+   * @param accountFingerprint - the account fingerprint the other person gave outside AliasVault
    */
-  public async lookupIdentityCode(groupId: string | undefined, identityCode: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('lookupIdentityCode', { groupId, identityCode });
+  public async lookupAccountFingerprint(groupId: string | undefined, accountFingerprint: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('lookupAccountFingerprint', { groupId, accountFingerprint });
   }
 
   /**
    * Accept an invitation to a shared manifest: the engine checks the certified inviter signed it and signs the grant as
    * this account's own. Never throws.
    * @param invitationId - the invitation
-   * @param identityCode - the inviter's identity code, when they are not certified yet
+   * @param accountFingerprint - the inviter's account fingerprint, when they are not certified yet
    */
-  public async acceptSharedManifestInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
-    return this.runSharingOperation('acceptSharedManifestInvitation', { invitationId, identityCode });
+  public async acceptSharedManifestInvitation(invitationId: string, accountFingerprint?: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('acceptSharedManifestInvitation', { invitationId, accountFingerprint });
   }
 
   /**

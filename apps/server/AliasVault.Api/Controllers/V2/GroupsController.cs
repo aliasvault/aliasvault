@@ -37,9 +37,9 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="timeProvider">Time provider.</param>
 /// <param name="cache">Memory cache holding the server's SRP ephemeral between the delete initiate and confirm calls.</param>
 /// <param name="authLoggingService">Auth logging service, recording shared manifest creation and the master password checks guarding deletion.</param>
-/// <param name="identityCodeLookupRateLimit">Limits how many identity codes a caller may look up.</param>
+/// <param name="accountFingerprintLookupRateLimit">Limits how many account fingerprints a caller may look up.</param>
 [ApiVersion("2")]
-public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, TimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService, IdentityCodeLookupRateLimitService identityCodeLookupRateLimit) : AuthenticatedRequestController(userManager)
+public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, TimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService, AccountFingerprintLookupRateLimitService accountFingerprintLookupRateLimit) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Get the overview of the caller's shared groups and the access offers awaiting their answer.
@@ -161,15 +161,15 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Find the account an identity code (the fingerprint of its signing key) belongs to. The caller's client checks the returned
-    /// key against the code before it certifies the key or invites the account. Not tied to a group, so a folder can be shared
-    /// only once the person it is shared with has been found by their code.
+    /// Find the account an account fingerprint (the fingerprint of its signing key) belongs to. The caller's client checks the returned
+    /// key against the fingerprint before it certifies the key or invites the account. Not tied to a group, so a folder can be shared
+    /// only once the person it is shared with has been found by their account fingerprint.
     /// </summary>
-    /// <param name="model">The identity code.</param>
+    /// <param name="model">The account fingerprint.</param>
     /// <returns>The account and its signing public key.</returns>
     [HttpPost("lookup")]
     [RequireCapability(CapabilityKeys.VaultSharing)]
-    public async Task<IActionResult> LookupIdentityCode([FromBody] IdentityCodeLookupRequest model)
+    public async Task<IActionResult> LookupAccountFingerprint([FromBody] AccountFingerprintLookupRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var me = await GetCurrentUserAsync();
@@ -178,12 +178,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
-        if (!identityCodeLookupRateLimit.TryConsume(me.Id))
+        if (!accountFingerprintLookupRateLimit.TryConsume(me.Id))
         {
             return ApiError.Result(ApiErrorCode.RATE_LIMIT_EXCEEDED, 429);
         }
 
-        // Unknown codes, and a code shared by two keys, all answer the same, so the endpoint reveals nothing without a full code.
+        // An unknown fingerprint, and a fingerprint shared by two keys, both answer the same, so the endpoint reveals nothing without a full fingerprint.
         var fingerprint = Signing.NormalizeFingerprint(model.Code);
         var matches = fingerprint.Length != Signing.FingerprintDigits ? [] : await context.UserSigningKeys
             .Where(k => k.IsPrimary && k.Fingerprint == fingerprint)
@@ -193,12 +193,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         if (matches.Count != 1 || matches[0].UserId == me.Id)
         {
-            return ApiError.Result(ApiErrorCode.IDENTITY_CODE_NOT_FOUND, 404);
+            return ApiError.Result(ApiErrorCode.ACCOUNT_FINGERPRINT_NOT_FOUND, 404);
         }
 
         // The account public key lets the admin's client encrypt a shared manifest's key for an account that is not a member yet.
         var accountKey = (await GrantHelper.GetPrimaryKeysAsync(context, [matches[0].UserId])).GetValueOrDefault(matches[0].UserId);
-        return Ok(new IdentityCodeLookupResponse
+        return Ok(new AccountFingerprintLookupResponse
         {
             UserId = matches[0].UserId,
             Username = matches[0].Username,
@@ -228,13 +228,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var subjectKey = await GrantHelper.GetPrimarySigningKeyAsync(context, model.SubjectUserId);
         if (subjectKey is null || !string.Equals(subjectKey, model.SubjectSigningPublicKey, StringComparison.Ordinal))
         {
-            return ApiError.Result(ApiErrorCode.IDENTITY_CODE_NOT_FOUND, 404);
+            return ApiError.Result(ApiErrorCode.ACCOUNT_FINGERPRINT_NOT_FOUND, 404);
         }
 
         // A certification is only of use between accounts that share, or are about to: an admin and anyone, or two members.
         if (!await MayCertifyAsync(context, me.Id, model.SubjectUserId))
         {
-            return ApiError.Result(ApiErrorCode.IDENTITY_CODE_NOT_FOUND, 404);
+            return ApiError.Result(ApiErrorCode.ACCOUNT_FINGERPRINT_NOT_FOUND, 404);
         }
 
         var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
@@ -415,7 +415,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         /*
-         * Access goes to a member of the group, or to an account the caller certified with its identity code: accepting
+         * Access goes to a member of the group, or to an account the caller certified with its account fingerprint: accepting
          * such an offer also makes them a member. Without the certification nobody can be invited by a bare user id.
          */
         if (!await GroupHelper.IsSharedGroupMemberAsync(context, groupId, model.UserId) && !await HasCertifiedAsync(context, me.Id, model.UserId, await GrantHelper.GetPrimarySigningKeyAsync(context, model.UserId)))
@@ -873,7 +873,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 return await CloseAndCommitAsync(context, transaction, invitation, GroupInvitationState.Revoked, ApiErrorCode.INVITATION_NOT_FOUND, 404);
             }
 
-            // The invitee has certified the key the offer is signed with (their client did, with the inviter's identity code).
+            // The invitee has certified the key the offer is signed with (their client did, with the inviter's account fingerprint).
             if (!await HasCertifiedAsync(context, me.Id, invitation.InviterUserId, invitation.GrantSignerPublicKey))
             {
                 return ApiError.Result(ApiErrorCode.INVITER_NOT_VERIFIED, 400);
@@ -1223,7 +1223,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
     /// <summary>
     /// Whether a certification by <paramref name="certifierUserId"/> of <paramref name="subjectUserId"/> can serve a sharing flow: the certifier
-    /// administers a group (invites by code), the subject invited the certifier, or the two share a group.
+    /// administers a group (invites by account fingerprint), the subject invited the certifier, or the two share a group.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="certifierUserId">The user making the certification.</param>

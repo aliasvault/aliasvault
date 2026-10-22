@@ -1,6 +1,6 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { SettingsGroup, SettingsRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
-import FamilyCodeDisplay from '@/entrypoints/popup/components/Sharing/FamilyCodeDisplay';
+import AccountFingerprint from '@/entrypoints/popup/components/Sharing/AccountFingerprint';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
@@ -43,10 +43,10 @@ const Settings: React.FC = () => {
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [serverVersion, setServerVersion] = useState<string | null>(null);
-  const [ownSharingCode, setOwnSharingCode] = useState<string | null>(null);
+  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
 
   useEffect(() => {
-    void SharingService.ownIdentityCode().then(setOwnSharingCode);
+    void SharingService.ownAccountFingerprint().then(setOwnFingerprint);
   }, []);
 
   /**
@@ -229,11 +229,11 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* The code someone who shares a folder with this account needs to invite it. */}
-            {hasCapability(CapabilityKeys.VaultSharing) && ownSharingCode && (
+            {/* The account fingerprint someone who shares a folder with this account needs to invite it. */}
+            {hasCapability(CapabilityKeys.VaultSharing) && ownFingerprint && (
               <div className="flex flex-col gap-2 p-4">
-                <FamilyCodeDisplay id="own-identity-code" code={ownSharingCode} className="self-start" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">{familySharingText.yourCodeSettingsHint}</p>
+                <AccountFingerprint id="own-account-fingerprint" code={ownFingerprint} className="self-start" />
+                <p className="text-xs text-gray-500 dark:text-gray-400">{sharingText.yourFingerprintSettingsHint}</p>
               </div>
             )}
           </div>

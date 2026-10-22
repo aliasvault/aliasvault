@@ -43,9 +43,9 @@ export class SharingService {
   }
 
   /**
-   * This account's own identity code, derived from its signing private key; null while the vault is locked or the account has no signing key yet.
+   * This account's own account fingerprint, derived from its signing private key; null while the vault is locked or the account has no signing key yet.
    */
-  public static async ownIdentityCode(): Promise<string | null> {
+  public static async ownAccountFingerprint(): Promise<string | null> {
     const [accountKey, encryptedSigningPrivateKey] = await Promise.all([VaultKeyService.getSessionAccountKey(), VaultKeyService.getEncryptedSigningPrivateKey()]);
     if (!accountKey || !encryptedSigningPrivateKey) {
       return null;
@@ -54,7 +54,7 @@ export class SharingService {
     try {
       return await rustCore().accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKey);
     } catch (error) {
-      devWarn('[Sharing] The own signing key did not open, so no identity code can be shown.', error);
+      devWarn('[Sharing] The own signing key did not open, so no account fingerprint can be shown.', error);
       return null;
     }
   }

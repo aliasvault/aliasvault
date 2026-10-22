@@ -47,8 +47,8 @@ public class UserSigningKey
     public required string PublicKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the fingerprint of <see cref="PublicKey"/> (20 digits, no separators): the user's identity code (the family code in
-    /// the apps) that they give to a group admin, by which the admin looks them up.
+    /// Gets or sets the fingerprint of <see cref="PublicKey"/> (20 digits, no separators): the user's account fingerprint, which they give to
+    /// a group admin, by which the admin looks them up.
     /// </summary>
     [StringLength(20)]
     public string? Fingerprint { get; set; }

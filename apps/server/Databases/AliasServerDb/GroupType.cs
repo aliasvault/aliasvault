@@ -18,7 +18,7 @@ public enum GroupType
     Personal = 0,
 
     /// <summary>
-    /// A group users join by invitation to be able to participate in shared manifests. Represents "family" in UI.
+    /// A group users join by invitation to be able to participate in shared manifests. Shown as a shared folder in the apps.
     /// </summary>
     Shared = 1,
 }

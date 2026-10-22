@@ -1,4 +1,4 @@
-import { canAdministerGroup, describeMemberAccess, familySharingText, hasOtherPeople, holdsManifestKey, invitablePeople, memberKeyProblem, pendingInvitees, roleLabel, sharingView, type SharedFolder } from '@aliasvault/client/sharing/FamilySharingView';
+import { canAdministerGroup, describeMemberAccess, sharingText, hasOtherPeople, holdsManifestKey, invitablePeople, memberKeyProblem, pendingInvitees, roleLabel, sharingView, type SharedFolder } from '@aliasvault/client/sharing/SharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -14,8 +14,8 @@ import { type SharedFolders } from '@/hooks/useSharedFolders';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { ModalWrapper } from '@/components/common/ModalWrapper';
-import { FamilyCode } from '@/components/sharing/FamilyCode';
-import { InviteMemberWizard, type FamilyCodeAccount } from '@/components/sharing/InviteMemberWizard';
+import { AccountFingerprint } from '@/components/sharing/AccountFingerprint';
+import { InviteMemberWizard, type AccountLookupResult } from '@/components/sharing/InviteMemberWizard';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
@@ -34,7 +34,7 @@ interface ISharedFolderAccessModalProps {
 }
 
 /**
- * The people of a folder: who has access, inviting someone new by their code or somebody verified before, and taking
+ * The people of a folder: who has access, inviting someone new by their account fingerprint or somebody verified before, and taking
  * access away. A personal folder becomes a shared folder on its first invitation, and turns personal again once nobody
  * else is in it. Mounted while the sheet is open.
  */
@@ -98,10 +98,10 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
     const client = dbContext.sqliteClient;
     if (isShared || !client) {
       // A shared folder whose people have not loaded yet; never share it a second time.
-      throw new SharingOperationError(isShared ? familySharingText.errors.inviteFailed : familySharingText.errors.createVaultFailed);
+      throw new SharingOperationError(isShared ? sharingText.errors.inviteFailed : sharingText.errors.createVaultFailed);
     }
 
-    const result = await runSharingOperation('createSharedManifest', { name: folder.Name }, familySharingText.errors.createVaultFailed);
+    const result = await runSharingOperation('createSharedManifest', { name: folder.Name }, sharingText.errors.createVaultFailed);
     const manifestId = (result.manifestId ?? '').toLowerCase();
 
     // The sync pushes the new shared folder; the contents then move into it with a push of their own.
@@ -114,7 +114,7 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
 
     const created = sharingView(await SharingService.getOverview(webApi)).folders.find(candidate => candidate.manifest.manifestId.toLowerCase() === manifestId) ?? null;
     if (!created) {
-      throw new SharingOperationError(familySharingText.errors.createVaultFailed);
+      throw new SharingOperationError(sharingText.errors.createVaultFailed);
     }
     onMoved({ Id: manifestId, ManifestId: manifestId }, true);
     return created;
@@ -127,42 +127,42 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
   const inviteKnown = async (userId: string): Promise<void> => {
     try {
       const target = await ensureShared();
-      await runSharingOperation('inviteToSharedManifest', { groupId: target.group.groupId, manifestId: target.manifest.manifestId, userId }, familySharingText.errors.inviteFailed);
-      setInviteNotice(familySharingText.invitationSent(shared.verifiedPeople.find(person => person.userId === userId)?.username ?? ''));
+      await runSharingOperation('inviteToSharedManifest', { groupId: target.group.groupId, manifestId: target.manifest.manifestId, userId }, sharingText.errors.inviteFailed);
+      setInviteNotice(sharingText.invitationSent(shared.verifiedPeople.find(person => person.userId === userId)?.username ?? ''));
     } catch (inviteError) {
-      throw new Error(sharingFailureMessage(inviteError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(inviteError, sharingText.errors.inviteFailed));
     } finally {
       await shared.reload();
     }
   };
 
   /**
-   * Find the account behind a code for the invite wizard, also before the folder is shared. Throws an error with the message to show.
-   * @param code - the code entered.
+   * Find the account behind an account fingerprint for the invite wizard, also before the folder is shared. Throws an error with the message to show.
+   * @param code - the account fingerprint entered.
    */
-  const lookup = async (code: string): Promise<FamilyCodeAccount> => {
+  const lookup = async (code: string): Promise<AccountLookupResult> => {
     try {
-      const result = await runSharingOperation('lookupIdentityCode', { groupId: current?.group.groupId, identityCode: code }, familySharingText.errors.inviteFailed);
+      const result = await runSharingOperation('lookupAccountFingerprint', { groupId: current?.group.groupId, accountFingerprint: code }, sharingText.errors.inviteFailed);
       if (result.alreadyMember) {
-        throw new SharingOperationError(familySharingText.errors.alreadyHasAccess);
+        throw new SharingOperationError(sharingText.errors.alreadyHasAccess);
       }
       return { username: result.username ?? '' };
     } catch (lookupError) {
-      throw new Error(sharingFailureMessage(lookupError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(lookupError, sharingText.errors.inviteFailed));
     }
   };
 
   /**
-   * Invite the account behind a code, sharing a personal folder at this point; the sync engine checks its key against the code and certifies it.
-   * @param code - the code entered.
+   * Invite the account behind an account fingerprint, sharing a personal folder at this point; the sync engine checks its key against the fingerprint and certifies it.
+   * @param code - the account fingerprint entered.
    */
-  const inviteByCode = async (code: string): Promise<void> => {
+  const inviteByFingerprint = async (code: string): Promise<void> => {
     try {
       const target = await ensureShared();
-      const result = await runSharingOperation('inviteToSharedManifest', { groupId: target.group.groupId, manifestId: target.manifest.manifestId, identityCode: code }, familySharingText.errors.inviteFailed);
-      setInviteNotice(familySharingText.invitationSent(result.username ?? ''));
+      const result = await runSharingOperation('inviteToSharedManifest', { groupId: target.group.groupId, manifestId: target.manifest.manifestId, accountFingerprint: code }, sharingText.errors.inviteFailed);
+      setInviteNotice(sharingText.invitationSent(result.username ?? ''));
     } catch (inviteError) {
-      throw new Error(sharingFailureMessage(inviteError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(inviteError, sharingText.errors.inviteFailed));
     } finally {
       await shared.reload();
     }
@@ -218,9 +218,9 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
    * @param isSelf - whether the member is the current user.
    */
   const removeAccess = (target: SharedFolder, member: GroupMemberInfo, isSelf: boolean): void => {
-    const title = isSelf ? familySharingText.leaveVault : familySharingText.revoke;
-    const message = isSelf ? familySharingText.leaveVaultConfirm(folder.Name) : familySharingText.revokeAccessConfirm(member.username, folder.Name);
-    const passwordPrompt = isSelf ? familySharingText.leaveVaultPasswordPrompt(folder.Name) : familySharingText.revokeAccessPasswordPrompt(member.username, folder.Name);
+    const title = isSelf ? sharingText.leaveVault : sharingText.revoke;
+    const message = isSelf ? sharingText.leaveVaultConfirm(folder.Name) : sharingText.revokeAccessConfirm(member.username, folder.Name);
+    const passwordPrompt = isSelf ? sharingText.leaveVaultPasswordPrompt(folder.Name) : sharingText.revokeAccessPasswordPrompt(member.username, folder.Name);
 
     /**
      * Confirmed: ask for the password, then show the sheet with a spinner while the change runs and syncs in.
@@ -248,7 +248,7 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
         await revertIfEmpty(target.manifest.manifestId);
         await shared.reload();
       } catch (removeError) {
-        setError(sharingFailureMessage(removeError, familySharingText.errors.revokeAccessFailed));
+        setError(sharingFailureMessage(removeError, sharingText.errors.revokeAccessFailed));
       } finally {
         setBusy(false);
         setIsHidden(false);
@@ -280,7 +280,7 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
       return;
     }
     revertCheckedRef.current = emptyOwnedManifestId;
-    void run(() => revertIfEmpty(emptyOwnedManifestId), familySharingText.errors.revokeAccessFailed);
+    void run(() => revertIfEmpty(emptyOwnedManifestId), sharingText.errors.revokeAccessFailed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emptyOwnedManifestId]);
 
@@ -416,26 +416,26 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
   const renderPeople = (target: SharedFolder): React.ReactNode => (
     <View>
       <View style={styles.peopleHeader}>
-        <ThemedText style={styles.peopleTitle}>{familySharingText.peopleTitle}</ThemedText>
+        <ThemedText style={styles.peopleTitle}>{sharingText.peopleTitle}</ThemedText>
         {canInvite && (
-          <TouchableOpacity style={styles.addButton} onPress={openInviteWizard} disabled={busy} accessibilityRole="button" accessibilityLabel={familySharingText.invitePeople} hitSlop={8}>
+          <TouchableOpacity style={styles.addButton} onPress={openInviteWizard} disabled={busy} accessibilityRole="button" accessibilityLabel={sharingText.invitePeople} hitSlop={8}>
             <Ionicons name="add" size={24} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
       {target.group.members.map(member => {
         const access = describeMemberAccess(target.group, target.manifest, member, shared.myUserId);
-        return renderRow(member.userId, access.isSelf ? `${member.username} (${familySharingText.you})` : member.username, roleLabel(member), (
+        return renderRow(member.userId, access.isSelf ? `${member.username} (${sharingText.you})` : member.username, roleLabel(member), (
           <>
-            {access.canLeave && renderAction(familySharingText.leaveVault, () => removeAccess(target, member, true), true)}
-            {access.canRevoke && renderAction(familySharingText.revoke, () => removeAccess(target, member, false), true)}
+            {access.canLeave && renderAction(sharingText.leaveVault, () => removeAccess(target, member, true), true)}
+            {access.canRevoke && renderAction(sharingText.revoke, () => removeAccess(target, member, false), true)}
           </>
         ));
       })}
-      {canAdministerGroup(target.group) && pendingInvitees(target).map(invitation => renderRow(invitation.id, invitation.inviteeUsername, familySharingText.invited, renderAction(familySharingText.withdraw, () => void run(async () => {
+      {canAdministerGroup(target.group) && pendingInvitees(target).map(invitation => renderRow(invitation.id, invitation.inviteeUsername, sharingText.invited, renderAction(sharingText.withdraw, () => void run(async () => {
         await SharingService.withdrawInvitation(webApi, invitation.id);
         await revertIfEmpty(target.manifest.manifestId);
-      }, familySharingText.errors.invitationGone))))}
+      }, sharingText.errors.invitationGone))))}
     </View>
   );
 
@@ -453,25 +453,25 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
             {error && <View style={[styles.banner, styles.bannerError]}><ThemedText style={styles.bannerErrorText}>{error}</ThemedText></View>}
             {notice && <View style={[styles.banner, styles.bannerSuccess]}><ThemedText style={styles.bannerSuccessText}>{notice}</ThemedText></View>}
 
-            {!isShared && <ThemedText style={styles.hintText}>{familySharingText.shareFolderHint}</ThemedText>}
+            {!isShared && <ThemedText style={styles.hintText}>{sharingText.shareFolderHint}</ThemedText>}
 
             {/* The people with access; only listed once anybody besides this account is in. */}
             {current && hasOthers && renderPeople(current)}
 
-            {/* While an invitation waits, the code the invitee types to accept it is at hand here too. */}
-            {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownCode && (
+            {/* While an invitation waits, the fingerprint the invitee types to accept it is at hand here too. */}
+            {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownFingerprint && (
               <View style={styles.codeTip}>
-                <ThemedText style={styles.tipText}>{familySharingText.pendingCodeTip}</ThemedText>
-                <FamilyCode code={shared.ownCode} isSmall />
+                <ThemedText style={styles.tipText}>{sharingText.pendingFingerprintTip}</ThemedText>
+                <AccountFingerprint code={shared.ownFingerprint} isSmall />
               </View>
             )}
 
             {/* Nobody else in yet (or still a personal folder): inviting is the one thing to do, so it is shown prominently. */}
-            {current && !hasOthers && <ThemedText style={styles.hintText}>{familySharingText.notSharedYet}</ThemedText>}
+            {current && !hasOthers && <ThemedText style={styles.hintText}>{sharingText.notSharedYet}</ThemedText>}
             {canInvite && !hasOthers && (
               <TouchableOpacity style={styles.primaryButton} activeOpacity={0.7} onPress={openInviteWizard}>
                 <Ionicons name="add" size={18} color={colors.primarySurfaceText} />
-                <ThemedText style={styles.primaryButtonText}>{familySharingText.invitePeople}</ThemedText>
+                <ThemedText style={styles.primaryButtonText}>{sharingText.invitePeople}</ThemedText>
               </TouchableOpacity>
             )}
           </View>
@@ -480,11 +480,11 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
 
       <InviteMemberWizard
         isOpen={isInviteOpen}
-        ownCode={shared.ownCode}
+        ownFingerprint={shared.ownFingerprint}
         folderName={folder.Name}
         sharesFolder={!isShared}
         onLookup={lookup}
-        onInvite={inviteByCode}
+        onInvite={inviteByFingerprint}
         people={invitable.map(person => ({ userId: person.userId, username: person.username, problem: memberKeyProblem(person) }))}
         onInvitePerson={inviteKnown}
         onClose={closeInviteWizard}

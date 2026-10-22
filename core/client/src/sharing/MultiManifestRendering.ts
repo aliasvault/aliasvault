@@ -1,4 +1,4 @@
-import { familySharingText } from './FamilySharingView';
+import { sharingText } from './SharingView';
 
 import type { Folder } from '../database/repositories/FolderRepository';
 import type { SqliteClient } from '../database/SqliteClient';
@@ -107,7 +107,7 @@ const subfolderRendering: MultiManifestRenderer = {
 
     const roots = sharedManifests
       .filter(manifest => !storedRoots.has(manifest.ManifestId.toLowerCase()))
-      .map(manifest => ({ Id: manifest.ManifestId.toLowerCase(), Name: manifest.Name || familySharingText.sharedVault, ParentFolderId: null, Weight: 0, ManifestId: manifest.ManifestId }));
+      .map(manifest => ({ Id: manifest.ManifestId.toLowerCase(), Name: manifest.Name || sharingText.sharedVault, ParentFolderId: null, Weight: 0, ManifestId: manifest.ManifestId }));
 
     const nested = stored.map(folder => (folder.ParentFolderId === null && shared.has(String(folder.ManifestId).toLowerCase()) && !subfolderRendering.isVirtualFolder(folder)
       ? { ...folder, ParentFolderId: String(folder.ManifestId).toLowerCase() }
@@ -150,7 +150,7 @@ const subfolderRendering: MultiManifestRenderer = {
 
     // A manifest whose name is not known (yet) shows under a generic name.
     const rows = sqliteClient.executeQuery<{ Id: string; Name: string | null }>('SELECT Id, Name FROM Manifests');
-    return Object.fromEntries(rows.map(row => [row.Id.toLowerCase(), row.Name || familySharingText.sharedVault]));
+    return Object.fromEntries(rows.map(row => [row.Id.toLowerCase(), row.Name || sharingText.sharedVault]));
   },
 };
 

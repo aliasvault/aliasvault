@@ -101,9 +101,9 @@ export interface IExtensionMessageProtocol {
   GROUP_CREATE_VAULT(data: { name: string }): SharingActionResponse;
   GROUP_UPDATE_VAULT(data: { groupId: string; manifestId: string; details: SharedManifestDetails }): SharingActionResponse;
   GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): SharingActionResponse;
-  GROUP_LOOKUP_IDENTITY_CODE(data: { groupId?: string; identityCode: string }): SharingActionResponse;
-  GROUP_INVITE_MEMBER_BY_CODE(data: { groupId: string; manifestId: string; identityCode: string }): SharingActionResponse;
-  GROUP_ACCEPT_MANIFEST_INVITATION(data: { invitationId: string; identityCode?: string }): SharingActionResponse;
+  GROUP_LOOKUP_ACCOUNT_FINGERPRINT(data: { groupId?: string; accountFingerprint: string }): SharingActionResponse;
+  GROUP_INVITE_MEMBER_BY_FINGERPRINT(data: { groupId: string; manifestId: string; accountFingerprint: string }): SharingActionResponse;
+  GROUP_ACCEPT_MANIFEST_INVITATION(data: { invitationId: string; accountFingerprint?: string }): SharingActionResponse;
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };
   IS_LOGIN_SAVE_BLOCKED(data: { domain: string }): boolean;
   LOCK_VAULT(): BoolResponse;

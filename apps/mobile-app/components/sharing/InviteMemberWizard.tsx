@@ -1,4 +1,4 @@
-import { familySharingText, splitAround } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText, splitAround } from '@aliasvault/client/sharing/SharingView';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,12 @@ import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View 
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ModalWrapper } from '@/components/common/ModalWrapper';
-import { FamilyCode } from '@/components/sharing/FamilyCode';
+import { AccountFingerprint } from '@/components/sharing/AccountFingerprint';
 
-/** The account a code belongs to. */
-export type FamilyCodeAccount = { username: string };
+/** The account an account fingerprint belongs to. */
+export type AccountLookupResult = { username: string };
 
-/** Somebody verified before, who can be invited without their code. */
+/** Somebody verified before, who can be invited without their account fingerprint. */
 export type KnownPerson = {
   userId: string;
   username: string;
@@ -22,17 +22,17 @@ export type KnownPerson = {
 
 interface IInviteMemberWizardProps {
   isOpen: boolean;
-  /** The account's own code, which the invitee needs to accept. */
-  ownCode: string | null;
+  /** The account's own fingerprint, which the invitee needs to accept. */
+  ownFingerprint: string | null;
   /** The folder the invitation is for. */
   folderName: string;
   /** Whether inviting turns a personal folder into a shared one. */
   sharesFolder?: boolean;
-  /** Find the account behind a code; throws an error with the message to show. */
-  onLookup: (code: string) => Promise<FamilyCodeAccount>;
-  /** Invite the account behind a code; throws an error with the message to show. */
+  /** Find the account behind an account fingerprint; throws an error with the message to show. */
+  onLookup: (code: string) => Promise<AccountLookupResult>;
+  /** Invite the account behind an account fingerprint; throws an error with the message to show. */
   onInvite: (code: string) => Promise<void>;
-  /** The people verified before who are not in the folder yet, offered before the code field. */
+  /** The people verified before who are not in the folder yet, offered before the fingerprint field. */
   people?: KnownPerson[];
   /** Invite somebody verified before; throws an error with the message to show. */
   onInvitePerson?: (userId: string) => Promise<void>;
@@ -43,16 +43,16 @@ const STEP_COUNT = 3;
 const CLOSE_DELAY_SECONDS = 3;
 
 /**
- * Three step wizard that picks somebody verified before or takes a new person's code, confirms who gets invited, and hands
- * out this account's own code for them to accept with.
+ * Three step wizard that picks somebody verified before or takes a new person's account fingerprint, confirms who gets invited, and hands
+ * out this account's own fingerprint for them to accept with.
  */
-export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen, ownCode, folderName, sharesFolder = false, onLookup, onInvite, people = [], onInvitePerson, onClose }) => {
+export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen, ownFingerprint, folderName, sharesFolder = false, onLookup, onInvite, people = [], onInvitePerson, onClose }) => {
   const { t } = useTranslation();
   const colors = useColors();
   const [step, setStep] = useState(1);
   const [code, setCode] = useState('');
-  const [account, setAccount] = useState<FamilyCodeAccount | null>(null);
-  /** The person verified before who was picked instead of entering a code. */
+  const [account, setAccount] = useState<AccountLookupResult | null>(null);
+  /** The person verified before who was picked instead of entering a fingerprint. */
   const [selected, setSelected] = useState<KnownPerson | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -81,9 +81,9 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
 
   const trimmedCode = code.trim();
   const username = account?.username ?? '';
-  const [invitedBefore, invitedName, invitedAfter] = splitAround(familySharingText.inviteWizardInvited(username), username);
-  const [shareBefore, shareName, shareAfter] = splitAround(familySharingText.inviteWizardShareHint(username), username);
-  const [confirmBefore, confirmName, confirmAfter] = splitAround(sharesFolder ? familySharingText.inviteWizardConfirmShare(username, folderName) : familySharingText.inviteWizardConfirmFolder(username, folderName), username);
+  const [invitedBefore, invitedName, invitedAfter] = splitAround(sharingText.inviteWizardInvited(username), username);
+  const [shareBefore, shareName, shareAfter] = splitAround(sharingText.inviteWizardShareHint(username), username);
+  const [confirmBefore, confirmName, confirmAfter] = splitAround(sharesFolder ? sharingText.inviteWizardConfirmShare(username, folderName) : sharingText.inviteWizardConfirmFolder(username, folderName), username);
   const canContinue = selected !== null || trimmedCode.length > 0;
 
   /**
@@ -103,7 +103,7 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
   };
 
   /**
-   * Ask to confirm the person picked, or look the code up first and ask to confirm who it belongs to.
+   * Ask to confirm the person picked, or look the fingerprint up first and ask to confirm who it belongs to.
    */
   const lookup = (): Promise<void> => runStep(async () => {
     setAccount(selected ? { username: selected.username } : await onLookup(trimmedCode));
@@ -111,7 +111,7 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
   });
 
   /**
-   * Invite the person picked or the account behind the code, then show this account's own code.
+   * Invite the person picked or the account behind the account fingerprint, then show this account's own fingerprint.
    */
   const invite = (): Promise<void> => runStep(async () => {
     if (selected && onInvitePerson) {
@@ -290,29 +290,29 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
   );
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={close} isSubmitting={isBusy || !canClose} title={familySharingText.invitePeople} keyboardAvoiding showHeaderBorder={false} showFooterBorder={false}>
+    <ModalWrapper isOpen={isOpen} onClose={close} isSubmitting={isBusy || !canClose} title={sharingText.invitePeople} keyboardAvoiding showHeaderBorder={false} showFooterBorder={false}>
       {/* Progress through the three steps. */}
       <View style={styles.progressRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {Array.from({ length: STEP_COUNT }, (_, index) => (
           <View key={index} style={[styles.progressBar, { backgroundColor: index < step ? colors.primary : colors.accentBorder }]} />
         ))}
       </View>
-      <Text style={styles.progressText}>{familySharingText.wizardStep(step, STEP_COUNT)}</Text>
+      <Text style={styles.progressText}>{sharingText.wizardStep(step, STEP_COUNT)}</Text>
 
-      {/* While a step works (looking the code up, or sharing the folder and sending the invitation) its content makes way for a spinner. */}
+      {/* While a step works (looking the fingerprint up, or sharing the folder and sending the invitation) its content makes way for a spinner. */}
       {isBusy && (
         <View style={styles.busyBox}>
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.busyText}>{step === 2 && sharesFolder ? familySharingText.wizardCreating : t('common.loading')}</Text>
+          <Text style={styles.busyText}>{step === 2 && sharesFolder ? sharingText.wizardCreating : t('common.loading')}</Text>
         </View>
       )}
 
       {step === 1 && !isBusy && (
         <View>
-          {/* Somebody verified before needs no code; picking them and entering a code exclude each other. */}
+          {/* Somebody verified before needs no fingerprint; picking them and entering one exclude each other. */}
           {people.length > 0 && (
             <View>
-              <Text style={styles.stepTitle}>{familySharingText.inviteWizardChooseTitle}</Text>
+              <Text style={styles.stepTitle}>{sharingText.inviteWizardChooseTitle}</Text>
               {people.map(person => {
                 const isSelected = selected?.userId === person.userId;
                 return (
@@ -339,8 +339,8 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
           )}
 
           <View style={people.length > 0 ? styles.codeSection : undefined}>
-            <Text style={styles.stepTitle}>{people.length > 0 ? familySharingText.inviteWizardNewCodeTitle : familySharingText.inviteWizardCodeTitle}</Text>
-            <Text style={styles.hintText}>{familySharingText.inviteWizardCodeHint}</Text>
+            <Text style={styles.stepTitle}>{people.length > 0 ? sharingText.inviteWizardNewFingerprintTitle : sharingText.inviteWizardFingerprintTitle}</Text>
+            <Text style={styles.hintText}>{sharingText.inviteWizardFingerprintHint}</Text>
             <TextInput
               style={styles.input}
               value={code}
@@ -348,7 +348,7 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
                 setCode(value);
                 setSelected(null);
               }}
-              placeholder={familySharingText.codePlaceholder}
+              placeholder={sharingText.fingerprintPlaceholder}
               placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               autoCorrect={false}
@@ -367,12 +367,12 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
 
       {step === 2 && !isBusy && (
         <View>
-          <Text style={styles.stepTitle}>{familySharingText.inviteWizardConfirmTitle}</Text>
+          <Text style={styles.stepTitle}>{sharingText.inviteWizardConfirmTitle}</Text>
           <Text style={styles.bodyText}>{confirmBefore}<Text style={styles.emphasis}>{confirmName}</Text>{confirmAfter}</Text>
           {error && <Text style={styles.errorText}>{error}</Text>}
           <View style={styles.buttonRow}>
             {renderButton(t('common.back'), () => setStep(1), false)}
-            {renderButton(familySharingText.invite, () => void invite(), true)}
+            {renderButton(sharingText.invite, () => void invite(), true)}
           </View>
         </View>
       )}
@@ -383,15 +383,15 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
             <Ionicons name="checkmark-circle" size={22} color={colors.success} />
             <Text style={styles.stepTitle}>{invitedBefore}<Text style={styles.emphasis}>{invitedName}</Text>{invitedAfter}</Text>
           </View>
-          {/* What the inviter still has to do: the invitee types this code to accept. */}
+          {/* What the inviter still has to do: the invitee types this fingerprint to accept. */}
           <View style={styles.nextStepBox}>
-            <Text style={styles.nextStepTitle}>{familySharingText.inviteWizardNextStep}</Text>
+            <Text style={styles.nextStepTitle}>{sharingText.inviteWizardNextStep}</Text>
             <Text style={styles.bodyText}>{shareBefore}<Text style={styles.emphasis}>{shareName}</Text>{shareAfter}</Text>
-            {ownCode && <View style={styles.shareBlock}><FamilyCode code={ownCode} /></View>}
-            <Text style={styles.hintText}>{familySharingText.inviteWizardShareNotSecret}</Text>
+            {ownFingerprint && <View style={styles.shareBlock}><AccountFingerprint code={ownFingerprint} /></View>}
+            <Text style={styles.hintText}>{sharingText.inviteWizardShareNotSecret}</Text>
           </View>
           <View style={styles.buttonRow}>
-            {renderButton(canClose ? t('common.close') : familySharingText.closeCountdown(closeCountdown), close, false, canClose)}
+            {renderButton(canClose ? t('common.close') : sharingText.closeCountdown(closeCountdown), close, false, canClose)}
           </View>
         </View>
       )}

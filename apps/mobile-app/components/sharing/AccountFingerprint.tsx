@@ -1,4 +1,4 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,17 +12,17 @@ import { ThemedText } from '@/components/themed/ThemedText';
 
 const COPIED_FEEDBACK_MS = 2000;
 
-interface IFamilyCodeProps {
-  /** The account's own code. */
+interface IAccountFingerprintProps {
+  /** The account's own fingerprint. */
   code: string;
-  /** A smaller pill without the copy and share buttons, for showing the code inside other content. */
+  /** A smaller pill without the copy and share buttons, for showing the fingerprint inside other content. */
   isSmall?: boolean;
 }
 
 /**
- * The account's own code, with buttons to copy and share it; tapping the code itself copies it too. The code is not secret, so it is never cleared from the clipboard.
+ * The account's own fingerprint, with buttons to copy and share it; tapping the fingerprint itself copies it too. The fingerprint is not secret, so it is never cleared from the clipboard.
  */
-export const FamilyCode: React.FC<IFamilyCodeProps> = ({ code, isSmall = false }) => {
+export const AccountFingerprint: React.FC<IAccountFingerprintProps> = ({ code, isSmall = false }) => {
   const { t } = useTranslation();
   const colors = useColors();
   const [copied, setCopied] = useState(false);
@@ -36,25 +36,25 @@ export const FamilyCode: React.FC<IFamilyCodeProps> = ({ code, isSmall = false }
   }, [copied]);
 
   /**
-   * Copy the code to the clipboard.
+   * Copy the fingerprint to the clipboard.
    */
   const copy = async (): Promise<void> => {
     try {
       await copyToClipboard(code);
       setCopied(true);
     } catch (error) {
-      console.error('Failed to copy the code:', error);
+      console.error('Failed to copy the fingerprint:', error);
     }
   };
 
   /**
-   * Open the share sheet with the code.
+   * Open the share sheet with the fingerprint.
    */
   const share = async (): Promise<void> => {
     try {
       await Share.share({ message: code });
     } catch (error) {
-      console.error('Failed to share the code:', error);
+      console.error('Failed to share the fingerprint:', error);
     }
   };
 
@@ -121,7 +121,7 @@ export const FamilyCode: React.FC<IFamilyCodeProps> = ({ code, isSmall = false }
     <View>
       <TouchableOpacity style={[styles.pill, isSmall && styles.smallPill]} onPress={() => void copy()} activeOpacity={0.7} accessibilityRole="button" accessibilityHint={t('common.copyToClipboard')}>
         <Ionicons name="shield-checkmark-outline" size={isSmall ? 15 : 18} color={colors.primary} />
-        <ThemedText style={[styles.pillLabel, isSmall && styles.smallLabel]}>{familySharingText.yourCode}</ThemedText>
+        <ThemedText style={[styles.pillLabel, isSmall && styles.smallLabel]}>{sharingText.yourFingerprint}</ThemedText>
         <ThemedText style={[styles.pillCode, isSmall && styles.smallCode]}>{code}</ThemedText>
         {isSmall && <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={14} color={colors.primary} />}
       </TouchableOpacity>
@@ -141,4 +141,4 @@ export const FamilyCode: React.FC<IFamilyCodeProps> = ({ code, isSmall = false }
   );
 };
 
-export default FamilyCode;
+export default AccountFingerprint;

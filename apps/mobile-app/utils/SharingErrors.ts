@@ -1,5 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { familySharingText, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText, sharingErrorMessage } from '@aliasvault/client/sharing/SharingView';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -38,7 +38,7 @@ export function unwrapSharingResult(result: NativeSharingResult, fallback: strin
   }
 
   if (result.vaultUpgradeRequired) {
-    throw new SharingOperationError(familySharingText.errors.vaultUpgradeRequired);
+    throw new SharingOperationError(sharingText.errors.vaultUpgradeRequired);
   }
 
   const code = result.apiErrorCode ?? result.error;

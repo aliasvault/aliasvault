@@ -48,7 +48,7 @@ public static class Signing
     public const string KeyCertificationLabel = "aliasvault/v1/sig/key-certification";
 
     /// <summary>
-    /// The label under which a signing public key is hashed into its fingerprint, the user's identity code (the family code in the apps).
+    /// The label under which a signing public key is hashed into its fingerprint, the user's account fingerprint.
     /// </summary>
     public const string FingerprintLabel = "aliasvault/v1/signing-key-fingerprint";
 

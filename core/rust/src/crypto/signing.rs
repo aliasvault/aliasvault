@@ -30,7 +30,7 @@ pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
 pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
 
 /// The label of a key certification: one user vouching that a signing public key belongs to another user, after checking
-/// its fingerprint against the identity code that user gave them outside AliasVault.
+/// its fingerprint against the account fingerprint that user gave them outside AliasVault.
 pub const KEY_CERTIFICATION_LABEL: &str = "aliasvault/v1/sig/key-certification";
 
 /// The label under which a signing public key is hashed into its fingerprint.
@@ -127,7 +127,7 @@ pub fn signing_public_key_of(private_key_base64: &str) -> VaultResult<String> {
 
 /// The fingerprint of a base64 signing public key: [`FINGERPRINT_DIGITS`] decimal digits in groups of four (`1234-5678-...`),
 /// taken from the SHA-256 of the key under [`FINGERPRINT_LABEL`]. Two users compare it outside AliasVault to check that
-/// the server handed each of them the other's real key. This is the user's identity code (the family code in the apps).
+/// the server handed each of them the other's real key. This is the user's account fingerprint.
 pub fn fingerprint(public_key_base64: &str) -> VaultResult<String> {
     let key = verifying_key(public_key_base64)?;
     let digest = Sha256::digest(signed_message(FINGERPRINT_LABEL, &[key.as_bytes()]));
@@ -137,7 +137,7 @@ pub fn fingerprint(public_key_base64: &str) -> VaultResult<String> {
     Ok(digits.chars().collect::<Vec<_>>().chunks(FINGERPRINT_GROUP_DIGITS).map(|group| group.iter().collect::<String>()).collect::<Vec<_>>().join("-"))
 }
 
-/// Whether a code a user typed is the fingerprint of a signing public key. Only the digits count, so spaces and dashes may differ.
+/// Whether a fingerprint a user typed is the fingerprint of a signing public key. Only the digits count, so spaces and dashes may differ.
 pub fn fingerprint_matches(public_key_base64: &str, code: &str) -> bool {
     let typed: String = code.chars().filter(char::is_ascii_digit).collect();
     fingerprint(public_key_base64).is_ok_and(|expected| expected.chars().filter(char::is_ascii_digit).collect::<String>() == typed)
@@ -219,7 +219,7 @@ mod tests {
     const DELIVERY_KEY_MESSAGE_VECTOR: &str = "0000001e616c6961737661756c742f76312f7369672f64656c69766572792d6b65790000002430613162326333642d303030302d303030302d303030302d3030303030303030303030310000000d7b226b7479223a22525341227d000000023432";
 
     /// Known-answer vector for the fingerprint, which every client shows for the same key. A changed output means two
-    /// app versions show different codes for one key. Never regenerate it.
+    /// app versions show different fingerprints for one key. Never regenerate it.
     #[test]
     fn fingerprint_known_answer() {
         assert_eq!(fingerprint(PUBLIC_KEY_VECTOR).unwrap(), FINGERPRINT_VECTOR);

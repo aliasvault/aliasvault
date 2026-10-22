@@ -18,7 +18,7 @@ public final class VaultSyncEngine {
     private static let encryptedVekStateKey = "encryptedVek"
     private static let encryptedAccountPrivateKeyStateKey = "encryptedAccountPrivateKey"
 
-    /// Engine state key holding the account signing private key encrypted with the Account Key, which the own identity code derives from.
+    /// Engine state key holding the account signing private key encrypted with the Account Key, which the own account fingerprint derives from.
     static let encryptedSigningPrivateKeyStateKey = "encryptedSigningPrivateKey"
 
     /// Engine state key that lives in the native store instead (the login writes it there), routed on read and write.

@@ -24,7 +24,7 @@ public class GroupOverviewResponse
 
     /// <summary>
     /// Gets or sets the people whose current signing key the caller certified, with the keys to invite them to a shared
-    /// manifest without their identity code. The caller's client checks each certification itself.
+    /// manifest without their account fingerprint. The caller's client checks each certification itself.
     /// </summary>
     public List<GroupMemberInfo> VerifiedPeople { get; set; } = [];
 

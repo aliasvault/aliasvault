@@ -1,4 +1,4 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import React from 'react';
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
@@ -35,7 +35,7 @@ export const FolderHeaderTitle: React.FC<FolderHeaderTitleProps> = ({ name, isSh
   });
 
   return (
-    <View style={styles.container} accessible accessibilityRole="header" accessibilityLabel={isShared ? `${name}, ${familySharingText.sharedVault}` : name}>
+    <View style={styles.container} accessible accessibilityRole="header" accessibilityLabel={isShared ? `${name}, ${sharingText.sharedVault}` : name}>
       <FolderIcon isShared={isShared} size={20} color={colors.tint} />
       <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{name}</Text>
     </View>

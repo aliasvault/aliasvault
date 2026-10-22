@@ -1,4 +1,4 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import React from 'react';
 
 import Icon from '@/components/shared/Icon';
@@ -21,7 +21,7 @@ const FolderIcon: React.FC<FolderIconProps> = ({ isShared = false, variant = 'fi
       <Icon name="folder" className={className} />
     )}
     {isShared && (
-      <span title={familySharingText.sharedVault} className={`absolute -bottom-1 -right-1 flex items-center justify-center w-2.5 h-2.5 rounded-full ring-1 ${badgeClassName}`}>
+      <span title={sharingText.sharedVault} className={`absolute -bottom-1 -right-1 flex items-center justify-center w-2.5 h-2.5 rounded-full ring-1 ${badgeClassName}`}>
         <Icon name="users" className="w-2 h-2 text-primary-500 dark:text-primary-400" />
       </span>
     )}

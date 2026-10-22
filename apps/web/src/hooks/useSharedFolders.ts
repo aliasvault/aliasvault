@@ -1,5 +1,5 @@
-import { sharingView, type SharedFolder } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { sharingView, type SharedFolder } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -10,7 +10,7 @@ import type { GroupMemberInfo, ReceivedManifestInvitation } from '@aliasvault/mo
 
 /**
  * What the vault shows of sharing: the shared folders with their people, the invitations waiting for an answer, the
- * people verified before and this account's own code.
+ * people verified before and this account's own fingerprint.
  */
 export type SharedFolders = {
   isEnabled: boolean;
@@ -19,7 +19,7 @@ export type SharedFolders = {
   invitations: ReceivedManifestInvitation[];
   invitationNames: Record<string, string>;
   verifiedPeople: GroupMemberInfo[];
-  ownCode: string | null;
+  ownFingerprint: string | null;
   reload: () => Promise<void>;
 };
 
@@ -32,7 +32,7 @@ export function useSharedFolders(): SharedFolders {
   const isEnabled = useCapabilities()(CapabilityKeys.VaultSharing);
   const [view, setView] = useState<ReturnType<typeof sharingView>>(sharingView(null));
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
-  const [ownCode, setOwnCode] = useState<string | null>(null);
+  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
 
   const reload = useCallback(async (): Promise<void> => {
     if (!isEnabled) {
@@ -42,7 +42,7 @@ export function useSharedFolders(): SharedFolders {
       const overview = await SharingService.getOverview(webApi);
       setView(sharingView(overview));
       setInvitationNames(await SharingService.openInvitationNames(overview.receivedInvitations));
-      setOwnCode(await SharingService.ownIdentityCode());
+      setOwnFingerprint(await SharingService.ownAccountFingerprint());
     } catch {
       // Offline or not reachable: the vault keeps showing what it already knew.
     }
@@ -53,5 +53,5 @@ export function useSharedFolders(): SharedFolders {
     return SharingService.watchPendingInvitationCount(() => void reload());
   }, [reload]);
 
-  return { isEnabled, ...view, invitationNames, ownCode, reload };
+  return { isEnabled, ...view, invitationNames, ownFingerprint, reload };
 }

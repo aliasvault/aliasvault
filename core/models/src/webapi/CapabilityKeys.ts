@@ -6,7 +6,7 @@
 export const CapabilityKeys = {
   /**
    * Shared manifests: creating one, inviting people to it, and accepting an invitation to one. The capability
-   * behind the Family Sharing screens, and behind anything else built on a vault more than one account holds.
+   * behind the sharing screens, and behind anything else built on a vault more than one account holds.
    */
   VaultSharing: 'vault-sharing',
 } as const;

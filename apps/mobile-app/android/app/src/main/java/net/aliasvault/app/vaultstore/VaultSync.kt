@@ -35,7 +35,7 @@ class VaultSync(
             "createSharedManifest",
             "inviteToSharedManifest",
             "updateSharedManifest",
-            "lookupIdentityCode",
+            "lookupAccountFingerprint",
             "acceptSharedManifestInvitation",
         )
     }

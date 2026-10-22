@@ -3,7 +3,7 @@ import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAlias
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -274,14 +274,14 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
           onClick={() => setShowMoveConfirm(true)}
           className="mt-2 py-1 px-3 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm"
         >
-          {familySharingText.aliasOwner.moveHere}
+          {sharingText.aliasOwner.moveHere}
         </button>
       )}
       <Modal
         isOpen={showMoveConfirm}
         onClose={() => setShowMoveConfirm(false)}
         onConfirm={() => void moveHere()}
-        title={familySharingText.aliasOwner.moveHere}
+        title={sharingText.aliasOwner.moveHere}
         message={ownerNotice.moveConfirm}
         confirmText={t('common.confirm')}
         cancelText={t('common.cancel')}

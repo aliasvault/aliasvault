@@ -263,9 +263,9 @@ class VaultStore(
         get() = crypto.accountKeyBase64
 
     /**
-     * The identity code of the account's own signing key, derived from the private key the sync engine cached, or null
+     * The account fingerprint of the account's own signing key, derived from the private key the sync engine cached, or null
      * while the vault is locked or the account has no signing key yet.
-     * Other platform implementations: SharingService.ownIdentityCode (core/client), VaultStore.signingKeyFingerprint (iOS).
+     * Other platform implementations: SharingService.ownAccountFingerprint (core/client), VaultStore.signingKeyFingerprint (iOS).
      */
     fun signingKeyFingerprint(): String? {
         val accountKey = accountKeyBase64?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null

@@ -1,11 +1,11 @@
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import FamilyCode from '@/components/settings/FamilyCode';
+import AccountFingerprint from '@/components/settings/AccountFingerprint';
 import SettingsIcon, { type SettingsIconName } from '@/components/settings/SettingsIcon';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
@@ -75,10 +75,10 @@ const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { username } = useAuth();
   const hasCapability = useCapabilities();
-  const [ownSharingCode, setOwnSharingCode] = useState<string | null>(null);
+  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
 
   useEffect(() => {
-    void SharingService.ownIdentityCode().then(setOwnSharingCode);
+    void SharingService.ownAccountFingerprint().then(setOwnFingerprint);
   }, []);
   const confirmLogout = useConfirmLogout();
   const { reminders } = useAccountReminders();
@@ -147,11 +147,11 @@ const Settings: React.FC = () => {
               </button>
             </div>
           </section>
-          {/* The code someone who shares a folder with this account needs to invite it. */}
-          {hasCapability(CapabilityKeys.VaultSharing) && ownSharingCode && (
+          {/* The account fingerprint someone who shares a folder with this account needs to invite it. */}
+          {hasCapability(CapabilityKeys.VaultSharing) && ownFingerprint && (
             <section className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <FamilyCode id="own-identity-code" code={ownSharingCode} className="self-start" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.yourCodeSettingsHint}</p>
+              <AccountFingerprint id="own-account-fingerprint" code={ownFingerprint} className="self-start" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">{sharingText.yourFingerprintSettingsHint}</p>
             </section>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_1fr] gap-4 items-start">

@@ -517,31 +517,31 @@ export const vaultStore = {
   },
 
   /**
-   * Invite the account behind an identity code to a shared manifest, certifying its key first.
+   * Invite the account behind an account fingerprint to a shared manifest, certifying its key first.
    * @param groupId - the group
    * @param manifestId - the shared manifest
-   * @param identityCode - the identity code the other person gave outside AliasVault
+   * @param accountFingerprint - the account fingerprint the other person gave outside AliasVault
    */
-  inviteToSharedManifestByCode(groupId: string, manifestId: string, identityCode: string): Promise<SharingOperationResult> {
-    return vaultSync.inviteToSharedManifestByCode(groupId, manifestId, identityCode);
+  inviteToSharedManifestByFingerprint(groupId: string, manifestId: string, accountFingerprint: string): Promise<SharingOperationResult> {
+    return vaultSync.inviteToSharedManifestByFingerprint(groupId, manifestId, accountFingerprint);
   },
 
   /**
-   * Find the account behind an identity code and check the code against its key, without inviting it.
+   * Find the account behind an account fingerprint and check the fingerprint against its key, without inviting it.
    * @param groupId - the group of the shared folder the person is invited to, if it is shared already
-   * @param identityCode - the identity code the other person gave outside AliasVault
+   * @param accountFingerprint - the account fingerprint the other person gave outside AliasVault
    */
-  lookupIdentityCode(groupId: string | undefined, identityCode: string): Promise<SharingOperationResult> {
-    return vaultSync.lookupIdentityCode(groupId, identityCode);
+  lookupAccountFingerprint(groupId: string | undefined, accountFingerprint: string): Promise<SharingOperationResult> {
+    return vaultSync.lookupAccountFingerprint(groupId, accountFingerprint);
   },
 
   /**
    * Accept an invitation to a shared manifest, signing its grant as this account's own.
    * @param invitationId - the invitation
-   * @param identityCode - the inviter's identity code, when they are not certified yet
+   * @param accountFingerprint - the inviter's account fingerprint, when they are not certified yet
    */
-  acceptSharedManifestInvitation(invitationId: string, identityCode?: string): Promise<SharingOperationResult> {
-    return vaultSync.acceptSharedManifestInvitation(invitationId, identityCode);
+  acceptSharedManifestInvitation(invitationId: string, accountFingerprint?: string): Promise<SharingOperationResult> {
+    return vaultSync.acceptSharedManifestInvitation(invitationId, accountFingerprint);
   },
 
   /**

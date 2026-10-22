@@ -2,7 +2,7 @@ import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -754,8 +754,8 @@ export default function ItemsScreen(): React.ReactNode {
             {shared.invitations.map(invitation => (
               <TouchableOpacity key={invitation.id} style={styles.invitationPill} onPress={() => setOpenInvitationId(invitation.id)} activeOpacity={0.7}>
                 <MaterialIcons name="mail-outline" size={16} color={colors.primary} />
-                <Text style={styles.invitationPillName} numberOfLines={1} ellipsizeMode="tail">{shared.invitationNames[invitation.id] ?? familySharingText.sharedVault}</Text>
-                <Text style={styles.invitationPillLabel}>{familySharingText.invitationPending}</Text>
+                <Text style={styles.invitationPillName} numberOfLines={1} ellipsizeMode="tail">{shared.invitationNames[invitation.id] ?? sharingText.sharedVault}</Text>
+                <Text style={styles.invitationPillLabel}>{sharingText.invitationPending}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity
@@ -967,7 +967,7 @@ export default function ItemsScreen(): React.ReactNode {
         return (
           <SharedFolderInvitationModal
             invitation={invitation}
-            folderName={invitation ? shared.invitationNames[invitation.id] ?? familySharingText.sharedVault : ''}
+            folderName={invitation ? shared.invitationNames[invitation.id] ?? sharingText.sharedVault : ''}
             onDone={accepted => (invitation ? finishInvitation(invitation.manifestId, accepted) : Promise.resolve())}
             onClose={() => setOpenInvitationId(null)}
           />

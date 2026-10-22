@@ -14,7 +14,7 @@ import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { getOrCreateDeviceId } from '@aliasvault/client/platform/DeviceId';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
@@ -1470,7 +1470,7 @@ async function sharingActionResponse(result: SharingOperationResult, failureMess
   }
 
   if (result.vaultUpgradeRequired) {
-    return { success: false, error: familySharingText.errors.vaultUpgradeRequired };
+    return { success: false, error: sharingText.errors.vaultUpgradeRequired };
   }
 
   if (result.errorCode === AppErrorCode.VAULT_LOCKED) {
@@ -1498,7 +1498,7 @@ export async function handleGroupCreateVault(message: { name: string }): Promise
     await handleFullVaultSync().catch(error => logFailure('Background sync after creating a shared manifest failed', error));
   }
 
-  return sharingActionResponse(result, familySharingText.errors.createVaultFailed);
+  return sharingActionResponse(result, sharingText.errors.createVaultFailed);
 }
 
 /**
@@ -1516,40 +1516,40 @@ export async function handleGroupUpdateVault(message: { groupId: string; manifes
  * @param message - the group, the manifest, and the person being invited.
  */
 export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
-  return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), familySharingText.errors.inviteFailed);
+  return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), sharingText.errors.inviteFailed);
 }
 
 /**
- * Find the account behind an identity code and check the code against its key, without certifying or inviting it.
+ * Find the account behind an account fingerprint and check the fingerprint against its key, without certifying or inviting it.
  *
- * @param message - the folder's group (none while the folder is still personal) and the identity code.
+ * @param message - the folder's group (none while the folder is still personal) and the account fingerprint.
  */
-export async function handleGroupLookupIdentityCode(message: { groupId?: string; identityCode: string }): Promise<SharingActionResponse> {
-  return sharingActionResponse(await vaultSync.lookupIdentityCode(message.groupId, message.identityCode), familySharingText.errors.inviteFailed);
+export async function handleGroupLookupAccountFingerprint(message: { groupId?: string; accountFingerprint: string }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.lookupAccountFingerprint(message.groupId, message.accountFingerprint), sharingText.errors.inviteFailed);
 }
 
 /**
- * Invite the account behind an identity code to a shared folder. The sync engine checks the key the server returns
- * against the code and certifies it first; accepting makes the account a member of the folder's group.
+ * Invite the account behind an account fingerprint to a shared folder. The sync engine checks the key the server returns
+ * against the fingerprint and certifies it first; accepting makes the account a member of the folder's group.
  *
- * @param message - the group, the manifest, and the identity code.
+ * @param message - the group, the manifest, and the account fingerprint.
  */
-export async function handleGroupInviteMemberByCode(message: { groupId: string; manifestId: string; identityCode: string }): Promise<SharingActionResponse> {
-  return sharingActionResponse(await vaultSync.inviteToSharedManifestByCode(message.groupId, message.manifestId, message.identityCode), familySharingText.errors.inviteFailed);
+export async function handleGroupInviteMemberByFingerprint(message: { groupId: string; manifestId: string; accountFingerprint: string }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.inviteToSharedManifestByFingerprint(message.groupId, message.manifestId, message.accountFingerprint), sharingText.errors.inviteFailed);
 }
 
 /**
  * Accept an invitation to a shared manifest: the sync engine signs the grant as this account's own, and the sync that
  * follows pulls the shared manifest.
  *
- * @param message - the invitation and the inviter's identity code, when they are not verified yet.
+ * @param message - the invitation and the inviter's account fingerprint, when they are not verified yet.
  */
-export async function handleGroupAcceptManifestInvitation(message: { invitationId: string; identityCode?: string }): Promise<SharingActionResponse> {
-  const result = await vaultSync.acceptSharedManifestInvitation(message.invitationId, message.identityCode);
+export async function handleGroupAcceptManifestInvitation(message: { invitationId: string; accountFingerprint?: string }): Promise<SharingActionResponse> {
+  const result = await vaultSync.acceptSharedManifestInvitation(message.invitationId, message.accountFingerprint);
   if (result.success) {
     await handleFullVaultSync();
   }
 
-  return sharingActionResponse(result, familySharingText.errors.invitationGone);
+  return sharingActionResponse(result, sharingText.errors.invitationGone);
 }
 

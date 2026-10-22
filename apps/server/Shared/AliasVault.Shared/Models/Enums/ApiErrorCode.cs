@@ -352,9 +352,9 @@ public enum ApiErrorCode
     TWO_FACTOR_NOT_ENABLED,
 
     /// <summary>
-    /// No account has a signing key whose fingerprint is the given identity code.
+    /// No account has a signing key whose fingerprint is the given account fingerprint.
     /// </summary>
-    IDENTITY_CODE_NOT_FOUND,
+    ACCOUNT_FINGERPRINT_NOT_FOUND,
 
     /// <summary>
     /// The shared manifest still has other members or open invitations, so it cannot become personal again.
@@ -362,12 +362,12 @@ public enum ApiErrorCode
     SHARED_MANIFEST_IN_USE,
 
     /// <summary>
-    /// The caller has not certified the member's current signing key with their identity code.
+    /// The caller has not certified the member's current signing key with their account fingerprint.
     /// </summary>
     MEMBER_NOT_VERIFIED,
 
     /// <summary>
-    /// The caller has not certified the inviter's current signing key with their identity code.
+    /// The caller has not certified the inviter's current signing key with their account fingerprint.
     /// </summary>
     INVITER_NOT_VERIFIED,
 }

@@ -33,7 +33,7 @@ class VaultSyncEngine(
         private const val ENCRYPTED_VEK_STATE_KEY = "encryptedVek"
         private const val ENCRYPTED_ACCOUNT_PRIVATE_KEY_STATE_KEY = "encryptedAccountPrivateKey"
 
-        /** Engine state key holding the account signing private key encrypted with the Account Key, which the own identity code derives from. */
+        /** Engine state key holding the account signing private key encrypted with the Account Key, which the own account fingerprint derives from. */
         internal const val ENCRYPTED_SIGNING_PRIVATE_KEY_STATE_KEY = "encryptedSigningPrivateKey"
 
         /**

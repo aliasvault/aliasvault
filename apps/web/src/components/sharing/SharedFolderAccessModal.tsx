@@ -1,12 +1,12 @@
-import { canAdministerGroup, describeMemberAccess, familySharingText, hasOtherPeople, holdsManifestKey, invitablePeople, memberKeyProblem, pendingInvitees, roleLabel, sharingView, type SharedFolder } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { canAdministerGroup, describeMemberAccess, sharingText, hasOtherPeople, holdsManifestKey, invitablePeople, memberKeyProblem, pendingInvitees, roleLabel, sharingView, type SharedFolder } from '@aliasvault/client/sharing/SharingView';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import AlertMessageSuccess from '@/components/alerts/AlertMessageSuccess';
-import FamilyCode from '@/components/settings/FamilyCode';
-import InviteMemberWizard, { type FamilyCodeAccount } from '@/components/settings/InviteMemberWizard';
+import AccountFingerprint from '@/components/settings/AccountFingerprint';
+import InviteMemberWizard, { type AccountLookupResult } from '@/components/settings/InviteMemberWizard';
 import Button from '@/components/shared/Button';
 import FormModal from '@/components/shared/FormModal';
 import Icon from '@/components/shared/Icon';
@@ -38,7 +38,7 @@ type SharedFolderAccessModalProps = {
 };
 
 /**
- * The people of a folder: who has access, inviting someone new by their code or somebody verified before, and taking
+ * The people of a folder: who has access, inviting someone new by their account fingerprint or somebody verified before, and taking
  * access away. A personal folder becomes a shared folder on its first invitation.
  */
 const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpen, folder, isShared, shared, onMoved, onLeft, onClose }) => {
@@ -99,18 +99,18 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
     }
     if (isShared) {
       // A shared folder whose people have not loaded yet; never share it a second time.
-      throw new SharingOperationError(familySharingText.errors.inviteFailed);
+      throw new SharingOperationError(sharingText.errors.inviteFailed);
     }
 
     const result = await vaultStore.createSharedManifest(folder.Name);
-    unwrapSharingResult(result, familySharingText.errors.createVaultFailed, t);
+    unwrapSharingResult(result, sharingText.errors.createVaultFailed, t);
     const manifestId = (result.manifestId ?? '').toLowerCase();
 
     // The sync pushes the new shared folder; the contents then move into it with a push of their own.
     await syncVault();
     const client = await loadStoredDatabase();
     if (!client) {
-      throw new SharingOperationError(familySharingText.errors.createVaultFailed);
+      throw new SharingOperationError(sharingText.errors.createVaultFailed);
     }
     await executeVaultMutationAsync(async () => {
       await client.folders.moveContentsToManifest({ Id: folder.Id, ManifestId: folder.ManifestId }, manifestId);
@@ -118,7 +118,7 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
 
     const created = sharingView(await SharingService.getOverview(webApi)).folders.find(candidate => candidate.manifest.manifestId.toLowerCase() === manifestId) ?? null;
     if (!created) {
-      throw new SharingOperationError(familySharingText.errors.createVaultFailed);
+      throw new SharingOperationError(sharingText.errors.createVaultFailed);
     }
     onMoved({ Id: manifestId, ManifestId: manifestId }, true);
     return created;
@@ -131,46 +131,46 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
   const inviteKnown = async (userId: string): Promise<void> => {
     try {
       const target = await ensureShared();
-      unwrapSharingResult(await vaultStore.inviteToSharedManifest(target.group.groupId, target.manifest.manifestId, userId), familySharingText.errors.inviteFailed, t);
+      unwrapSharingResult(await vaultStore.inviteToSharedManifest(target.group.groupId, target.manifest.manifestId, userId), sharingText.errors.inviteFailed, t);
       await loadStoredDatabase();
-      setInviteNotice(familySharingText.invitationSent(shared.verifiedPeople.find(person => person.userId === userId)?.username ?? ''));
+      setInviteNotice(sharingText.invitationSent(shared.verifiedPeople.find(person => person.userId === userId)?.username ?? ''));
     } catch (inviteError) {
-      throw new Error(sharingFailureMessage(inviteError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(inviteError, sharingText.errors.inviteFailed));
     } finally {
       await shared.reload();
     }
   };
 
   /**
-   * Find the account behind a code for the invite wizard, also before the folder is shared. Throws an error with the message to show.
-   * @param code - the code entered.
+   * Find the account behind an account fingerprint for the invite wizard, also before the folder is shared. Throws an error with the message to show.
+   * @param code - the account fingerprint entered.
    */
-  const lookup = async (code: string): Promise<FamilyCodeAccount> => {
+  const lookup = async (code: string): Promise<AccountLookupResult> => {
     try {
-      const result = await vaultStore.lookupIdentityCode(current?.group.groupId, code);
-      unwrapSharingResult(result, familySharingText.errors.inviteFailed, t);
+      const result = await vaultStore.lookupAccountFingerprint(current?.group.groupId, code);
+      unwrapSharingResult(result, sharingText.errors.inviteFailed, t);
       if (result.alreadyMember) {
-        throw new SharingOperationError(familySharingText.errors.alreadyHasAccess);
+        throw new SharingOperationError(sharingText.errors.alreadyHasAccess);
       }
       return { username: result.username ?? '' };
     } catch (lookupError) {
-      throw new Error(sharingFailureMessage(lookupError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(lookupError, sharingText.errors.inviteFailed));
     }
   };
 
   /**
-   * Invite the account behind a code, sharing a personal folder at this point, once the person is known and confirmed.
-   * The sync engine checks their key against the code and certifies it.
-   * @param code - the code entered.
+   * Invite the account behind an account fingerprint, sharing a personal folder at this point, once the person is known and confirmed.
+   * The sync engine checks their key against the fingerprint and certifies it.
+   * @param code - the account fingerprint entered.
    */
-  const inviteByCode = async (code: string): Promise<void> => {
+  const inviteByFingerprint = async (code: string): Promise<void> => {
     try {
       const target = await ensureShared();
-      const result = await vaultStore.inviteToSharedManifestByCode(target.group.groupId, target.manifest.manifestId, code);
-      unwrapSharingResult(result, familySharingText.errors.inviteFailed, t);
-      setInviteNotice(familySharingText.invitationSent(result.username ?? ''));
+      const result = await vaultStore.inviteToSharedManifestByFingerprint(target.group.groupId, target.manifest.manifestId, code);
+      unwrapSharingResult(result, sharingText.errors.inviteFailed, t);
+      setInviteNotice(sharingText.invitationSent(result.username ?? ''));
     } catch (inviteError) {
-      throw new Error(sharingFailureMessage(inviteError, familySharingText.errors.inviteFailed));
+      throw new Error(sharingFailureMessage(inviteError, sharingText.errors.inviteFailed));
     } finally {
       await shared.reload();
     }
@@ -198,16 +198,16 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
    */
   const removeAccess = async (target: SharedFolder, member: GroupMemberInfo, isSelf: boolean): Promise<void> => {
     const confirmed = isSelf
-      ? await showConfirmation(familySharingText.leaveVault, familySharingText.leaveVaultConfirm(folder.Name), familySharingText.leaveVault, t('common.cancel'))
-      : await showConfirmation(familySharingText.revoke, familySharingText.revokeAccessConfirm(member.username, folder.Name), familySharingText.revoke, t('common.cancel'));
+      ? await showConfirmation(sharingText.leaveVault, sharingText.leaveVaultConfirm(folder.Name), sharingText.leaveVault, t('common.cancel'))
+      : await showConfirmation(sharingText.revoke, sharingText.revokeAccessConfirm(member.username, folder.Name), sharingText.revoke, t('common.cancel'));
     if (!confirmed) {
       return;
     }
 
     askPassword({
-      title: isSelf ? familySharingText.leaveVault : familySharingText.revoke,
-      description: isSelf ? familySharingText.leaveVaultPasswordPrompt(folder.Name) : familySharingText.revokeAccessPasswordPrompt(member.username, folder.Name),
-      failureMessage: familySharingText.errors.revokeAccessFailed,
+      title: isSelf ? sharingText.leaveVault : sharingText.revoke,
+      description: isSelf ? sharingText.leaveVaultPasswordPrompt(folder.Name) : sharingText.revokeAccessPasswordPrompt(member.username, folder.Name),
+      failureMessage: sharingText.errors.revokeAccessFailed,
       /**
        * Run the action with the password proof.
        * @param answerChallenge - answers the SRP challenge.
@@ -228,7 +228,7 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
           }
           await shared.reload();
         } catch (revertError) {
-          setError(sharingFailureMessage(revertError, familySharingText.errors.revokeAccessFailed));
+          setError(sharingFailureMessage(revertError, sharingText.errors.revokeAccessFailed));
         } finally {
           setBusy(false);
         }
@@ -276,7 +276,7 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
       return;
     }
     revertCheckedRef.current = emptyOwnedManifestId;
-    void run(() => revertIfEmpty(emptyOwnedManifestId), familySharingText.errors.revokeAccessFailed);
+    void run(() => revertIfEmpty(emptyOwnedManifestId), sharingText.errors.revokeAccessFailed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emptyOwnedManifestId]);
 
@@ -295,15 +295,15 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
           {error && <AlertMessageError message={error} hasTopMargin={false} />}
           {notice && <AlertMessageSuccess message={notice} />}
 
-          {!isShared && <p className="text-sm text-gray-600 dark:text-gray-400">{familySharingText.shareFolderHint}</p>}
+          {!isShared && <p className="text-sm text-gray-600 dark:text-gray-400">{sharingText.shareFolderHint}</p>}
 
           {/* The people with access, with a + to invite more; only listed once anybody besides this account is in. */}
           {current && hasOthers && (
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white">{familySharingText.peopleTitle}</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">{sharingText.peopleTitle}</h4>
                 {canInvite && hasOthers && (
-                  <button id="invite-someone-new" disabled={busy} onClick={() => setIsInviteOpen(true)} title={familySharingText.invitePeople} aria-label={familySharingText.invitePeople} className="p-1.5 rounded-md text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/30 disabled:opacity-50">
+                  <button id="invite-someone-new" disabled={busy} onClick={() => setIsInviteOpen(true)} title={sharingText.invitePeople} aria-label={sharingText.invitePeople} className="p-1.5 rounded-md text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/30 disabled:opacity-50">
                     <Icon name="plus" className="w-5 h-5" />
                   </button>
                 )}
@@ -314,11 +314,11 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
                   return (
                     <li key={member.userId} className="flex items-center justify-between gap-2 py-2" data-person={member.username}>
                       <div className="min-w-0">
-                        <p className="text-sm text-gray-900 dark:text-white truncate">{member.username}{access.isSelf && ` (${familySharingText.you})`}</p>
+                        <p className="text-sm text-gray-900 dark:text-white truncate">{member.username}{access.isSelf && ` (${sharingText.you})`}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
                       </div>
-                      {access.canLeave && <SmallButton color="danger" isDisabled={busy} onClick={() => void removeAccess(current, member, true)}>{familySharingText.leaveVault}</SmallButton>}
-                      {access.canRevoke && <SmallButton color="danger" isDisabled={busy} onClick={() => void removeAccess(current, member, false)}>{familySharingText.revoke}</SmallButton>}
+                      {access.canLeave && <SmallButton color="danger" isDisabled={busy} onClick={() => void removeAccess(current, member, true)}>{sharingText.leaveVault}</SmallButton>}
+                      {access.canRevoke && <SmallButton color="danger" isDisabled={busy} onClick={() => void removeAccess(current, member, false)}>{sharingText.revoke}</SmallButton>}
                     </li>
                   );
                 })}
@@ -326,32 +326,32 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
                   <li key={invitation.id} className="flex items-center justify-between gap-2 py-2" data-person={invitation.inviteeUsername}>
                     <div className="min-w-0">
                       <p className="text-sm text-gray-900 dark:text-white truncate">{invitation.inviteeUsername}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invited}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{sharingText.invited}</p>
                     </div>
                     <SmallButton isDisabled={busy} onClick={() => void run(async () => {
                       await SharingService.withdrawInvitation(webApi, invitation.id);
                       await revertIfEmpty(current.manifest.manifestId);
-                    }, familySharingText.errors.invitationGone)}>{familySharingText.withdraw}</SmallButton>
+                    }, sharingText.errors.invitationGone)}>{sharingText.withdraw}</SmallButton>
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* While an invitation waits, the code the invitee types to accept it is at hand here too. */}
-          {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownCode && (
+          {/* While an invitation waits, the fingerprint the invitee types to accept it is at hand here too. */}
+          {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownFingerprint && (
             <div className="space-y-1.5">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{familySharingText.pendingCodeTip}</p>
-              <FamilyCode code={shared.ownCode} isSmall />
+              <p className="text-xs text-gray-500 dark:text-gray-400">{sharingText.pendingFingerprintTip}</p>
+              <AccountFingerprint code={shared.ownFingerprint} isSmall />
             </div>
           )}
 
           {/* Nobody else in yet (or still a personal folder): inviting is the one thing to do, so it is shown prominently. */}
-          {current && !hasOthers && <p className="text-sm text-gray-600 dark:text-gray-400">{familySharingText.notSharedYet}</p>}
+          {current && !hasOthers && <p className="text-sm text-gray-600 dark:text-gray-400">{sharingText.notSharedYet}</p>}
           {canInvite && !hasOthers && (
             <div>
               <Button id="invite-someone-new" isDisabled={busy} onClick={() => setIsInviteOpen(true)}>
-                <span className="inline-flex items-center gap-2"><Icon name="plus" className="w-4 h-4" />{familySharingText.invitePeople}</span>
+                <span className="inline-flex items-center gap-2"><Icon name="plus" className="w-4 h-4" />{sharingText.invitePeople}</span>
               </Button>
             </div>
           )}
@@ -362,9 +362,9 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
         isOpen={isInviteOpen}
         sharesFolder={!isShared}
         folderName={folder.Name}
-        ownFamilyCode={shared.ownCode}
+        ownFingerprint={shared.ownFingerprint}
         onLookup={lookup}
-        onInvite={inviteByCode}
+        onInvite={inviteByFingerprint}
         people={invitable.map(person => ({ userId: person.userId, username: person.username, problem: memberKeyProblem(person) }))}
         onInvitePerson={inviteKnown}
         onClose={() => {

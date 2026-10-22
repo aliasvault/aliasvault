@@ -1,7 +1,7 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -196,7 +196,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
    * Move the alias to this item's vault after confirmation, then reload.
    */
   const moveHere = async (): Promise<void> => {
-    if (!ownerNotice || !await showConfirmation(familySharingText.aliasOwner.moveHere, ownerNotice.moveConfirm, t('common.confirm'), t('common.cancel'))) {
+    if (!ownerNotice || !await showConfirmation(sharingText.aliasOwner.moveHere, ownerNotice.moveConfirm, t('common.confirm'), t('common.cancel'))) {
       return;
     }
     try {
@@ -240,7 +240,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
         </div>
 
         {!isLoading && error.length === 0 && ownerNotice && (
-          <WarningBox className="mt-4" actions={ownerNotice.canMove && <Button id="move-alias-here" onClick={() => void moveHere()}>{familySharingText.aliasOwner.moveHere}</Button>}>
+          <WarningBox className="mt-4" actions={ownerNotice.canMove && <Button id="move-alias-here" onClick={() => void moveHere()}>{sharingText.aliasOwner.moveHere}</Button>}>
             <p>{ownerNotice.notice}</p>
           </WarningBox>
         )}

@@ -2,9 +2,9 @@ import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
-import { canAdministerGroup, familySharingText, holdsManifestKey } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { canAdministerGroup, sharingText, holdsManifestKey } from '@aliasvault/client/sharing/SharingView';
 import { ItemTypes, type Item, type ItemType } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -447,14 +447,14 @@ const ItemsHome: React.FC = () => {
    * Delete the current shared folder for everyone, after a confirmation and the master password.
    */
   const deleteSharedFolder = async (): Promise<void> => {
-    if (!currentShared || !await showConfirmation(familySharingText.deleteVault, familySharingText.deleteVaultConfirm(currentFolderName), t('common.delete'), t('common.cancel'))) {
+    if (!currentShared || !await showConfirmation(sharingText.deleteVault, sharingText.deleteVaultConfirm(currentFolderName), t('common.delete'), t('common.cancel'))) {
       return;
     }
 
     askPassword({
-      title: familySharingText.deleteVault,
-      description: familySharingText.deleteVaultPasswordPrompt(currentFolderName),
-      failureMessage: familySharingText.errors.deleteVaultFailed,
+      title: sharingText.deleteVault,
+      description: sharingText.deleteVaultPasswordPrompt(currentFolderName),
+      failureMessage: sharingText.errors.deleteVaultFailed,
       /**
        * Run the deletion with the password proof.
        * @param answerChallenge - answers the SRP challenge.
@@ -467,7 +467,7 @@ const ItemsHome: React.FC = () => {
         await syncVault();
         await dbContext.loadStoredDatabase();
         await shared.reload();
-        notifications.addSuccessMessage(familySharingText.vaultDeleted);
+        notifications.addSuccessMessage(sharingText.vaultDeleted);
         navigate(buildItemsUrl(null, filterType));
       },
     });
@@ -563,7 +563,7 @@ const ItemsHome: React.FC = () => {
             titleActions={isInFolder ? (
               <>
                 {canShareCurrent && (
-                  <button id="folder-people" onClick={() => setPeopleFolder({ folder: currentFolder, isShared: currentFolderIsVirtual })} title={familySharingText.peopleTitle} className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <button id="folder-people" onClick={() => setPeopleFolder({ folder: currentFolder, isShared: currentFolderIsVirtual })} title={sharingText.peopleTitle} className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <Icon name="users" className="w-5 h-5" />
                   </button>
                 )}
@@ -647,8 +647,8 @@ const ItemsHome: React.FC = () => {
                   className="inline-flex items-center gap-2 px-5 py-2.5 text-sm rounded-lg border border-dashed border-primary-400 bg-primary-50/50 text-gray-500 hover:bg-primary-50 dark:border-primary-600 dark:bg-primary-900/10 dark:text-gray-400 dark:hover:bg-primary-900/20 transition-colors"
                 >
                   <Icon name="mail" className="w-4 h-4 text-primary-500" />
-                  <span className="truncate max-w-[150px]">{shared.invitationNames[invitation.id] ?? familySharingText.sharedVault}</span>
-                  <span className="text-xs text-primary-600 dark:text-primary-400">{familySharingText.invitationPending}</span>
+                  <span className="truncate max-w-[150px]">{shared.invitationNames[invitation.id] ?? sharingText.sharedVault}</span>
+                  <span className="text-xs text-primary-600 dark:text-primary-400">{sharingText.invitationPending}</span>
                 </button>
               ))}
               {canCreateSubfolder && (
@@ -731,7 +731,7 @@ const ItemsHome: React.FC = () => {
         return (
           <SharedFolderInvitationModal
             invitation={invitation}
-            folderName={invitation ? shared.invitationNames[invitation.id] ?? familySharingText.sharedVault : ''}
+            folderName={invitation ? shared.invitationNames[invitation.id] ?? sharingText.sharedVault : ''}
             onDone={accepted => (invitation ? finishInvitation(invitation.id, invitation.manifestId, accepted) : Promise.resolve())}
             onClose={() => setOpenInvitationId(null)}
           />

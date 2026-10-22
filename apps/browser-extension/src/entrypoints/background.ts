@@ -13,7 +13,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleGetTwoFactorPrompt, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupLookupIdentityCode, handleGroupInviteMemberByCode, handleGroupAcceptManifestInvitation, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpCodes, handleGenerateTotpCode, handleGetAutofillCredential, handleRecordItemUsage, type AutofillSender } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupLookupAccountFingerprint, handleGroupInviteMemberByFingerprint, handleGroupAcceptManifestInvitation, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpCodes, handleGenerateTotpCode, handleGetAutofillCredential, handleRecordItemUsage, type AutofillSender } from '@/entrypoints/background/VaultMessageHandler';
 import { getCurrentAutofillFrameUrl } from '@/entrypoints/contentScript/AutofillFrameUrl';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -316,8 +316,8 @@ export default defineBackground({
     onExtensionPageMessage('GROUP_CREATE_VAULT', ({ data }) => handleGroupCreateVault(data));
     onExtensionPageMessage('GROUP_UPDATE_VAULT', ({ data }) => handleGroupUpdateVault(data));
     onExtensionPageMessage('GROUP_INVITE_MEMBER', ({ data }) => handleGroupInviteMember(data));
-    onExtensionPageMessage('GROUP_LOOKUP_IDENTITY_CODE', ({ data }) => handleGroupLookupIdentityCode(data));
-    onExtensionPageMessage('GROUP_INVITE_MEMBER_BY_CODE', ({ data }) => handleGroupInviteMemberByCode(data));
+    onExtensionPageMessage('GROUP_LOOKUP_ACCOUNT_FINGERPRINT', ({ data }) => handleGroupLookupAccountFingerprint(data));
+    onExtensionPageMessage('GROUP_INVITE_MEMBER_BY_FINGERPRINT', ({ data }) => handleGroupInviteMemberByFingerprint(data));
     onExtensionPageMessage('GROUP_ACCEPT_MANIFEST_INVITATION', ({ data }) => handleGroupAcceptManifestInvitation(data));
     onExtensionPageMessage('LOCK_VAULT', () => handleLockVault());
     onExtensionPageMessage('CLEAR_SESSION', () => handleClearSession());

@@ -7,7 +7,7 @@ import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-nat
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
-import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
@@ -385,7 +385,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
    * Move the alias to this item's vault after confirmation, then reload.
    */
   const confirmMoveHere = (moveConfirm: string): void => {
-    showConfirm(familySharingText.aliasOwner.moveHere, moveConfirm, t('common.confirm'), async () => {
+    showConfirm(sharingText.aliasOwner.moveHere, moveConfirm, t('common.confirm'), async () => {
       try {
         await moveAliasHere(webApi, email, manifestId);
         setOwnerNotice(null);
@@ -401,7 +401,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
       <ThemedText style={styles.ownerNoticeText}>{ownerNotice.notice}</ThemedText>
       {ownerNotice.canMove && (
         <TouchableOpacity style={styles.moveButton} onPress={() => confirmMoveHere(ownerNotice.moveConfirm)} testID="move-alias-here">
-          <ThemedText style={styles.moveButtonText}>{familySharingText.aliasOwner.moveHere}</ThemedText>
+          <ThemedText style={styles.moveButtonText}>{sharingText.aliasOwner.moveHere}</ThemedText>
         </TouchableOpacity>
       )}
     </View>

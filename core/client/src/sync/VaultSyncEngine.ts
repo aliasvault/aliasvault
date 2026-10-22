@@ -21,7 +21,7 @@ import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
 /** The sharing operations, which take `VaultSyncSharingParams`. */
-export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupIdentityCode' | 'acceptSharedManifestInvitation';
+export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupAccountFingerprint' | 'acceptSharedManifestInvitation';
 
 export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | VaultSyncSharingOperation | 'rotateAccountKeys';
 
@@ -48,7 +48,7 @@ export type VaultSyncSharingParams = {
   userId?: string;
   name?: string;
   invitationId?: string;
-  identityCode?: string;
+  accountFingerprint?: string;
 };
 
 /** What the host hands the engine at session start (the Rust `SyncRequest`). */

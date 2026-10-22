@@ -1,6 +1,6 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { familySharingText, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
+import { sharingText, sharingErrorMessage } from '@aliasvault/client/sharing/SharingView';
 
 import type { SharingOperationResult } from '@aliasvault/client/sync/VaultSync';
 import type { TFunction } from 'i18next';
@@ -36,7 +36,7 @@ export function unwrapSharingResult(result: SharingOperationResult, fallback: st
   }
 
   if (result.vaultUpgradeRequired) {
-    throw new SharingOperationError(familySharingText.errors.vaultUpgradeRequired);
+    throw new SharingOperationError(sharingText.errors.vaultUpgradeRequired);
   }
 
   if (result.errorCode === AppErrorCode.VAULT_LOCKED) {
