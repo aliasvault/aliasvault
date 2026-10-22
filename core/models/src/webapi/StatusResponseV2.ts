@@ -20,17 +20,6 @@ export type BucketRevision = {
 }
 
 /**
- * A piece of work the server needs this client to carry out, because it needs something only a client holds
- * (vault content, a vault key, a private key).
- */
-export type PendingClientAction = {
-  id: string;
-  type: string;
-  manifestId?: string | null;
-  payload?: string | null;
-}
-
-/**
  * The email domains a server serves; hidden private domains are also in the private list.
  */
 export type EmailDomains = {
@@ -50,7 +39,6 @@ export type StatusResponseV2 = {
   srpSalt: string;
   capabilities?: Record<string, string>;
   bucketRevisions?: BucketRevision[];
-  pendingActions?: PendingClientAction[];
   emailDomains?: EmailDomains;
   pendingSharingInvitations?: number;
 }

@@ -83,7 +83,6 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             PersonalManifestId = personalManifestId,
             BucketRevisions = bucketRevisions,
             Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, ClientHeader),
-            PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
             EmailDomains = EmailDomainHelper.GetEmailDomains(config),
             PendingSharingInvitations = await GroupHelper.CountOpenInvitationsAsync(context, user.Id, timeProvider.GetUtcNow().UtcDateTime - GroupHelper.InvitationLifetime),
         });

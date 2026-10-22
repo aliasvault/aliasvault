@@ -45,7 +45,7 @@ Each device keeps an encrypted copy of your vault, so you can unlock it offline.
 ## Shared vaults
 
 - **Only invite people you trust with everything in that vault.** A member can read and copy all of its contents. <WhitepaperRefs refs={[{section: '10', label: 'Vault sharing', anchor: '10-vault-sharing'}]} />
-- **Removing a member does not take back what they already synced.** When the contents must be withheld from a former member, create a new shared vault, move the items into it, delete the old one, and change the passwords the member had access to. <WhitepaperRefs refs={[{section: '13', label: 'Known limitations', anchor: 'limitation-shared-member-removal'}]} />
+- **Removing a member does not take back what they already synced.** Change the passwords the member had access to. To also move the vault to new keys, create a new shared vault, move the items and aliases into it, and delete the old one; emails received before the move are deleted with the old vault. <WhitepaperRefs refs={[{section: '13', label: 'Known limitations', anchor: 'limitation-shared-member-removal'}]} />
 - Your personal vault is never part of a shared vault, so sharing does not expose it.
 
 ## Exports

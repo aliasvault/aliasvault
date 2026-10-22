@@ -90,12 +90,6 @@ pub(crate) async fn post_no_content<B: Serialize>(host: &Host, path: &str, body:
     Ok(())
 }
 
-/// Authenticated DELETE of a v2 endpoint.
-pub(crate) async fn delete(host: &Host, path: &str) -> SyncResult<()> {
-    send_json(host, HttpMethod::Delete, path, Body::None, false).await?;
-    Ok(())
-}
-
 /// Authenticated GET of a v2 endpoint that answers with a binary frame.
 pub(crate) async fn get_frame<T: FrameBody + DeserializeOwned>(host: &Host, path: &str) -> SyncResult<T> {
     send_for_frame(host, HttpMethod::Get, path, Body::None).await

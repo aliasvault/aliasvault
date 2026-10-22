@@ -7,7 +7,7 @@ namespace AliasServerDb.Migrations
 {
     /// <summary>
     /// Every server schema change after 0.31.1 in one migration: renames UserUnlockKeys to UserUnlockMethods and GroupInvitations to
-    /// VaultManifestInvitations in place, adds the signing key fingerprint and previous-key signature, and adds UserKeyCertifications.
+    /// VaultManifestInvitations in place, adds the signing key fingerprint and previous-key signature, adds UserKeyCertifications and drops ClientActions.
     /// </summary>
     public partial class RenameGroupInvitationsToVaultManifestInvitations : Migration
     {
@@ -112,11 +112,36 @@ namespace AliasServerDb.Migrations
             migrationBuilder.RenameIndex(name: "IX_GroupInvitations_UserGrantKeyId", table: "VaultManifestInvitations", newName: "IX_VaultManifestInvitations_UserGrantKeyId");
             migrationBuilder.RenameIndex(name: "UX_GroupInvitations_Manifest_Invitee_Pending", table: "VaultManifestInvitations", newName: "UX_VaultManifestInvitations_Manifest_Invitee_Pending");
             migrationBuilder.AlterColumn<Guid>(name: "VaultManifestId", table: "VaultManifestInvitations", type: "uuid", nullable: false, oldClrType: typeof(Guid), oldType: "uuid", oldNullable: true);
+
+            // Its only action type, the delivery key rotation on member removal, was removed; queued rows have no reader left.
+            migrationBuilder.DropTable(name: "ClientActions");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ClientActions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    TargetUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    TargetGroupId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ManifestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Payload = table.Column<string>(type: "jsonb", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientActions", x => x.Id);
+                    table.ForeignKey(name: "FK_ClientActions_AliasVaultUsers_TargetUserId", column: x => x.TargetUserId, principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(name: "FK_ClientActions_Groups_TargetGroupId", column: x => x.TargetGroupId, principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateIndex(name: "IX_ClientActions_TargetGroupId", table: "ClientActions", column: "TargetGroupId");
+            migrationBuilder.CreateIndex(name: "IX_ClientActions_TargetUserId", table: "ClientActions", column: "TargetUserId");
+
             migrationBuilder.AlterColumn<Guid>(name: "VaultManifestId", table: "VaultManifestInvitations", type: "uuid", nullable: true, oldClrType: typeof(Guid), oldType: "uuid");
             migrationBuilder.RenameIndex(name: "UX_VaultManifestInvitations_Manifest_Invitee_Pending", table: "VaultManifestInvitations", newName: "UX_GroupInvitations_Manifest_Invitee_Pending");
             migrationBuilder.RenameIndex(name: "IX_VaultManifestInvitations_UserGrantKeyId", table: "VaultManifestInvitations", newName: "IX_GroupInvitations_UserGrantKeyId");

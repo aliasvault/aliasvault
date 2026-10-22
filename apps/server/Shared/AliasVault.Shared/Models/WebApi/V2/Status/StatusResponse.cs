@@ -7,7 +7,6 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Status;
 
-using AliasVault.Shared.Models.WebApi.V2.ClientActions;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
@@ -53,12 +52,6 @@ public class StatusResponse
     /// Gets or sets what this caller may do, keyed by capability.
     /// </summary>
     public Dictionary<string, string> Capabilities { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the work the server needs this client to carry out, because it needs something only a client has:
-    /// vault content, a vault key, a private key. This primarily affects vault sharing and revocation actions.
-    /// </summary>
-    public List<PendingClientAction> PendingActions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the email domains this server serves, so clients pick up a domain change without a vault pull.

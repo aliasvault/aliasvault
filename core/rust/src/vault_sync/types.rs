@@ -495,8 +495,6 @@ pub struct StatusResponse {
     #[serde(default)]
     pub capabilities: Option<HashMap<String, String>>,
     #[serde(default)]
-    pub pending_actions: Vec<PendingAction>,
-    #[serde(default)]
     pub email_domains: Option<EmailDomainsDto>,
     #[serde(default)]
     pub pending_sharing_invitations: Option<i64>,
@@ -520,16 +518,6 @@ pub struct BucketRevision {
     pub manifest_id: String,
     pub category: String,
     pub revision: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PendingAction {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub action_type: String,
-    #[serde(default)]
-    pub manifest_id: Option<String>,
 }
 
 /// `GET v2/Vault`.

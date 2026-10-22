@@ -122,11 +122,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<VaultManifestInvitation> VaultManifestInvitations { get; set; }
 
     /// <summary>
-    /// Gets or sets the ClientActions DbSet.
-    /// </summary>
-    public DbSet<ClientAction> ClientActions { get; set; }
-
-    /// <summary>
     /// Gets or sets the VaultManifestShareDetails DbSet.
     /// </summary>
     public DbSet<VaultManifestShareDetails> VaultManifestShareDetails { get; set; }
@@ -394,23 +389,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .WithMany()
                 .HasForeignKey(e => e.UserGrantKeyId)
                 .OnDelete(DeleteBehavior.SetNull);
-        });
-
-        // Configure ClientAction, a work the server needs a client to carry out on its behalf.
-        modelBuilder.Entity<ClientAction>(builder =>
-        {
-            builder.HasOne(e => e.TargetUser)
-                .WithMany()
-                .HasForeignKey(e => e.TargetUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(e => e.TargetGroup)
-                .WithMany()
-                .HasForeignKey(e => e.TargetGroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(50);
-            builder.Property(e => e.Payload).HasColumnType("jsonb");
         });
 
         // Configure VaultManifest: one row per logical manifest (current revision), keyed by ManifestId.

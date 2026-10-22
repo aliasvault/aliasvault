@@ -412,45 +412,6 @@ namespace AliasServerDb.Migrations
                     b.ToTable("CapabilityRules");
                 });
 
-            modelBuilder.Entity("AliasServerDb.ClientAction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Payload")
-                        .HasColumnType("jsonb");
-
-                    b.Property<Guid?>("TargetGroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TargetUserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TargetGroupId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("ClientActions");
-                });
-
             modelBuilder.Entity("AliasServerDb.Email", b =>
                 {
                     b.Property<int>("Id")
@@ -1925,23 +1886,6 @@ namespace AliasServerDb.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AliasServerDb.ClientAction", b =>
-                {
-                    b.HasOne("AliasServerDb.Group", "TargetGroup")
-                        .WithMany()
-                        .HasForeignKey("TargetGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "TargetUser")
-                        .WithMany()
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("TargetGroup");
-
-                    b.Navigation("TargetUser");
                 });
 
             modelBuilder.Entity("AliasServerDb.EmailAttachment", b =>

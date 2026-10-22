@@ -1233,8 +1233,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Delete a shared manifest with its grants, keys, open invitations and queued client actions, and its group once it
-    /// owns no other manifest. Runs inside the caller's transaction, under the group's member lock.
+    /// Delete a shared manifest with its grants, keys and open invitations, and its group once it owns no other manifest.
+    /// Runs inside the caller's transaction, under the group's member lock.
     /// </summary>
     /// <param name="context">The database context, inside the open transaction.</param>
     /// <param name="groupId">The group.</param>
@@ -1262,13 +1262,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         await context.SaveChangesAsync();
 
-        // Key rows and queued client actions reference the manifest without a cascading foreign key, so leftovers are deleted explicitly.
+        // Key rows reference the manifest without a cascading foreign key, so leftovers are deleted explicitly.
         await context.VaultManifestAccessKeys.Where(k => k.VaultManifestId == manifestId).ExecuteDeleteAsync();
-        await context.ClientActions.Where(a => a.ManifestId == manifestId).ExecuteDeleteAsync();
         context.VaultManifests.Remove(manifest);
         await context.SaveChangesAsync();
 
-        // The group exists for its shared manifest; memberships, invitations, client actions and quota rows cascade from it.
+        // The group exists for its shared manifest; memberships, invitations and quota rows cascade from it.
         if (!await context.VaultManifests.AnyAsync(m => m.OwnerGroupId == groupId))
         {
             await context.Groups.Where(g => g.Id == groupId && g.Type == GroupType.Shared).ExecuteDeleteAsync();
@@ -1358,8 +1357,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Close a member's open invitation and grant on a shared manifest in one transaction, and have the group rotate the
-    /// manifest's delivery key. The lock keeps the last-holder check true until commit.
+    /// Close a member's open invitation and grant on a shared manifest in one transaction. The lock keeps the last-holder
+    /// check true until commit.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="groupId">The group ID.</param>
@@ -1385,10 +1384,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 CloseInvitation(invitation, VaultManifestInvitationState.Revoked);
             }
 
-            if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
-            {
-                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.GetUtcNow().UtcDateTime);
-            }
+            await GrantHelper.RevokeAccessAsync(context, manifestId, userId);
 
             // The group is the people the shared manifest is shared with, so losing access to it is leaving the group.
             await context.SaveChangesAsync();

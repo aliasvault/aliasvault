@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 use super::fake_server::{decrypt_manifest, FakeServer};
 use super::test_host::{request_json, TestHost, USERNAME};
-use super::{active_delivery_keys, insert_item, insert_item_stats, rename_item, server_with_item, state, synced, ITEM_A, ITEM_B, ITEM_C, PERSONAL_MANIFEST_ID, SHARED_MANIFEST_ID};
+use super::{active_delivery_keys, insert_item, insert_item_stats, rename_item, server_with_item, state, synced, ITEM_A, ITEM_B, ITEM_C, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec;
 use crate::vault_sync::session::SyncSession;
@@ -230,28 +230,6 @@ fn push_creates_and_publishes_a_missing_personal_delivery_key() {
     assert_eq!(again["success"], true, "{}", again);
     assert_eq!(active_delivery_keys(&s.host.local, PERSONAL_MANIFEST_ID), keys);
     assert_eq!(s.host.last_vault_write()["manifests"][0]["deliveryPublicKey"], json!(keys[0]));
-}
-
-#[test]
-fn a_server_queued_delivery_key_rotation_is_carried_out_and_acknowledged() {
-    // Only a known action for a manifest this session administers is carried out and deleted; the others stay queued.
-    let mut s = synced(|db| insert_item(db, ITEM_A, "Server item"));
-    let record = json!({ "manifestId": SHARED_MANIFEST_ID, "encryptedVek": "x", "accountPublicKey": "x", "algorithm": "rsa-oaep-sha256", "salt": "x", "canAdminister": true });
-    let records = json!({ SHARED_MANIFEST_ID: record });
-    s.host.set_state(state::SHARED_MANIFESTS, json!(crypto::symmetric_encrypt(&records.to_string(), &s.vek).unwrap()));
-    s.server.borrow_mut().pending_actions = vec![
-        json!({ "id": "a-rotate", "type": "rotate-manifest-delivery-key", "manifestId": SHARED_MANIFEST_ID }),
-        json!({ "id": "a-unknown", "type": "future-action", "manifestId": SHARED_MANIFEST_ID }),
-        json!({ "id": "a-foreign", "type": "rotate-manifest-delivery-key", "manifestId": "33333333-3333-4333-8333-333333333333" }),
-    ];
-
-    let result = s.host.sync();
-
-    assert_eq!(result["success"], true, "{}", result);
-    assert_eq!(s.host.request_log().into_iter().filter(|r| r.starts_with("DELETE")).collect::<Vec<_>>(), vec!["DELETE ClientActions/a-rotate"]);
-    let left: Vec<Value> = s.server.borrow().pending_actions.iter().map(|a| a["id"].clone()).collect();
-    assert_eq!(left, vec![json!("a-unknown"), json!("a-foreign")]);
-    assert_eq!(active_delivery_keys(&s.host.local, SHARED_MANIFEST_ID).len(), 1, "the shared manifest got a fresh delivery keypair");
 }
 
 #[test]

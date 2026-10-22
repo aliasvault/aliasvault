@@ -13,15 +13,11 @@ use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{FailureFields, FullSyncResult, LogLevel, ResolveVaultKeyResult, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
 use super::{db, http, keys, migration, rotation, sharing};
-use crate::crypto;
-use crate::vault_model::{id_key, ids_equal};
+use crate::vault_model::id_key;
 
 /// How many times a chain of syncs may re-sync after an outdated push before giving up. Two clients pushing at the
 /// same time race on the server's revision gate; the loser pulls, merges and pushes again, up to this many times.
 const MAX_OUTDATED_RESYNCS: u32 = 3;
-
-/// The pending action type this build carries out.
-const ACTION_ROTATE_MANIFEST_DELIVERY_KEY: &str = "rotate-manifest-delivery-key";
 
 /// Run one operation to completion; the value is the `done` command's result.
 pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
@@ -153,8 +149,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     }
     announce_phase(ctx, needs_pull, ctx.is_dirty).await;
 
-    let names_changed = refresh_manifest_names(ctx, &status, needs_pull).await?;
-    let server_directed_changes = apply_server_directed_changes(ctx, &status).await? || names_changed;
+    let server_directed_changes = refresh_manifest_names(ctx, &status, needs_pull).await?;
 
     // A dirty vault on the current schema: drop the dirty flag when nothing changed, and pull first when it holds
     // rows this session cannot write (a share that was revoked), since a push would refuse them.
@@ -353,52 +348,6 @@ async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pu
     keys::set_shared_manifest_records(ctx, &records, key.expose_secret()).await?;
     ctx.log(format!("[Sharing] Refreshed the name of {} shared manifest(s).", opened.len())).await;
     Ok(true)
-}
-
-/// Carry out the pending actions the server queued for this client.
-async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -> SyncResult<bool> {
-    if status.pending_actions.is_empty() || !ctx.has_local_vault().await? || migration::vault_requires_manifest_migration(ctx).await? {
-        return Ok(false);
-    }
-    let shared = keys::shared_manifest_records(ctx).await?;
-    let mut vault_changed = false;
-    let mut completed = 0usize;
-    for action in &status.pending_actions {
-        if action.action_type != ACTION_ROTATE_MANIFEST_DELIVERY_KEY {
-            ctx.log(format!("[Sync] Action type {} is not known to this client; leaving it for one that knows it.", action.action_type)).await;
-            continue;
-        }
-        let record = shared.values().find(|r| action.manifest_id.as_deref().is_some_and(|id| ids_equal(id, &r.manifest_id))).filter(|r| r.can_administer);
-        let Some(record) = record else {
-            ctx.log(format!("[Sync] Manifest {:?} is not open to this session as an administrator; leaving its delivery key rotation for another sync.", action.manifest_id)).await;
-            continue;
-        };
-        let rotated: SyncResult<()> = async {
-            let pair = crypto::generate_rsa_key_pair()?;
-            db::set_active_key_for_manifest(&ctx.host, &record.manifest_id, &pair.public_key, &pair.private_key).await?;
-            http::delete(&ctx.host, &format!("ClientActions/{}", action.id)).await
-        }
-        .await;
-        match rotated {
-            Ok(()) => {
-                ctx.log(format!("[Sync] Rotated the mail delivery key of shared manifest {}.", record.manifest_id)).await;
-                vault_changed = true;
-                completed += 1;
-            }
-            Err(error) => ctx.warn(format!("[Sync] Could not carry out action {} ({}); retrying on the next sync. {}", action.action_type, action.id, error)).await,
-        }
-    }
-    ctx.log(format!("[Sync] {} of {} server-directed action(s) carried out.", completed, status.pending_actions.len())).await;
-
-    if vault_changed {
-        let was_dirty = ctx.is_dirty;
-        ctx.persist_local_vault(true).await?;
-        if !was_dirty {
-            // The reconciled rows ride out on this very sync, which the host had not announced as a push yet.
-            announce_phase(ctx, false, true).await;
-        }
-    }
-    Ok(vault_changed)
 }
 
 /// Outcome for a sync that stored a freshly pulled vault.

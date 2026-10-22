@@ -76,7 +76,6 @@ pub struct FakeServer {
     /// The `vaultKey` of `GET VaultKey/Password`; `Null` for an account without a key hierarchy.
     pub vault_key: Value,
     pub legacy: Option<LegacyVault>,
-    pub pending_actions: Vec<Value>,
     pub capabilities: Value,
     pub email_domains: Value,
     pub faults: Faults,
@@ -93,7 +92,6 @@ impl FakeServer {
             blobs: HashMap::new(),
             vault_key: Value::Null,
             legacy: None,
-            pending_actions: Vec::new(),
             capabilities: json!({ "sharing": "on" }),
             email_domains: json!({ "privateEmailDomainList": ["private.io"], "hiddenPrivateEmailDomainList": [], "publicEmailDomainList": [] }),
             faults: Faults::default(),
@@ -233,11 +231,6 @@ impl FakeServer {
             ("POST", "Vault/blobs/missing") => Some((200, self.missing_blobs(body?))),
             ("POST", "Vault/blobs/download") => Some((200, self.download_blobs(body?))),
             ("GET", "VaultKey/Password") => Some((200, json!({ "vaultKey": self.vault_key }))),
-            ("DELETE", path) if path.starts_with("ClientActions/") => {
-                let id = &path["ClientActions/".len()..];
-                self.pending_actions.retain(|action| action["id"] != id);
-                Some((200, json!({})))
-            }
             _ => None,
         }
     }
@@ -259,7 +252,6 @@ impl FakeServer {
             "personalManifestId": self.personal_manifest_id,
             "srpSalt": self.srp_salt,
             "capabilities": self.capabilities,
-            "pendingActions": self.pending_actions,
             "emailDomains": self.email_domains,
         })
     }
