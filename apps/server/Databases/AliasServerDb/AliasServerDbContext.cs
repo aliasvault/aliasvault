@@ -117,9 +117,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<GroupMember> GroupMembers { get; set; }
 
     /// <summary>
-    /// Gets or sets the GroupInvitations DbSet.
+    /// Gets or sets the VaultManifestInvitations DbSet.
     /// </summary>
-    public DbSet<GroupInvitation> GroupInvitations { get; set; }
+    public DbSet<VaultManifestInvitation> VaultManifestInvitations { get; set; }
 
     /// <summary>
     /// Gets or sets the ClientActions DbSet.
@@ -365,8 +365,8 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
         });
 
-        // Configure GroupInvitation, an offer to join a group.
-        modelBuilder.Entity<GroupInvitation>(builder =>
+        // Configure VaultManifestInvitation, an offer of access to a shared manifest.
+        modelBuilder.Entity<VaultManifestInvitation>(builder =>
         {
             builder.HasOne(e => e.Group)
                 .WithMany()
@@ -383,10 +383,8 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.InviteeUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending");
+            builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_VaultManifestInvitations_Manifest_Invitee_Pending");
 
-            // An invitation without a manifest is an invitation to join the group; one open per invitee and group.
-            builder.HasIndex(e => new { e.GroupId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending' AND \"VaultManifestId\" IS NULL").HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending_Join");
             builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));

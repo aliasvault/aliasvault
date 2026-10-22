@@ -208,12 +208,6 @@ public enum ApiErrorCode
     INVITATION_ALREADY_EXISTS,
 
     /// <summary>
-    /// The account access was offered to is not on the group's membership roster. Who belongs to a group is decided
-    /// outside the client, so this cannot be resolved by the caller.
-    /// </summary>
-    NOT_GROUP_MEMBER,
-
-    /// <summary>
     /// The member already holds access to this shared manifest.
     /// </summary>
     ACCESS_ALREADY_GRANTED,

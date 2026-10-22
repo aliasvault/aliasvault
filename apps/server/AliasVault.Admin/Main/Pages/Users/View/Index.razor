@@ -587,7 +587,7 @@ Do you want to proceed with the restoration?")) {
     {
         return await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == userId && x.Type == ManifestKeyType.GrantKey)
             || await dbContext.GroupMembers.AnyAsync(x => x.UserId == userId && x.Group.Type != GroupType.Personal)
-            || await dbContext.GroupInvitations.AnyAsync(x => x.InviteeUserId == userId);
+            || await dbContext.VaultManifestInvitations.AnyAsync(x => x.InviteeUserId == userId);
     }
 
     /// <summary>

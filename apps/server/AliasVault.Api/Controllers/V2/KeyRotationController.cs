@@ -317,10 +317,10 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             await writeContext.VaultBlobObjects.Where(b => b.ManifestId == manifest.ManifestId && !referencedHashes.Contains(b.Hash)).ExecuteDeleteAsync();
 
             // 7) Invitations addressed to this account are encrypted for the old public key and cannot be opened anymore.
-            var staleInvitations = await writeContext.GroupInvitations.Where(i => i.InviteeUserId == user.Id && i.State == GroupInvitationState.Pending).ToListAsync();
+            var staleInvitations = await writeContext.VaultManifestInvitations.Where(i => i.InviteeUserId == user.Id && i.State == VaultManifestInvitationState.Pending).ToListAsync();
             foreach (var invitation in staleInvitations)
             {
-                invitation.State = GroupInvitationState.Stale;
+                invitation.State = VaultManifestInvitationState.Stale;
                 invitation.EncryptedVek = null;
                 invitation.EncryptedName = null;
                 invitation.EncryptedNameSignature = null;

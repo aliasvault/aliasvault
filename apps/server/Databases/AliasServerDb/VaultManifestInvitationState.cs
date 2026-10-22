@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="GroupInvitationState.cs" company="aliasvault">
+// <copyright file="VaultManifestInvitationState.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -8,9 +8,9 @@
 namespace AliasServerDb;
 
 /// <summary>
-/// Where an invitation to join a <see cref="GroupType.Shared"/> group stands.
+/// Where an invitation to a shared manifest stands.
 /// </summary>
-public enum GroupInvitationState
+public enum VaultManifestInvitationState
 {
     /// <summary>
     /// Sent and awaiting the invitee's answer. The only state in which an invitation can be accepted or declined.
@@ -18,7 +18,7 @@ public enum GroupInvitationState
     Pending = 0,
 
     /// <summary>
-    /// The invitee accepted, which created their <see cref="GroupMember"/> row.
+    /// The invitee accepted, which created their grant and their <see cref="GroupMember"/> row.
     /// </summary>
     Accepted = 1,
 

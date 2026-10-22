@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="GroupInvitation.cs" company="aliasvault">
+// <copyright file="VaultManifestInvitation.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -13,10 +13,10 @@ using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// An offer to join a <see cref="GroupType.Shared"/> group, made by one of its admins to an existing account.
+/// An offer of access to a shared manifest, made by an admin of its group to an existing account. Accepting it also makes the invitee a member of the group.
 /// </summary>
 [Index(nameof(InviteeUserId), nameof(State))]
-public class GroupInvitation
+public class VaultManifestInvitation
 {
     /// <summary>
     /// Gets or sets the primary key.
@@ -25,7 +25,7 @@ public class GroupInvitation
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the group being joined.
+    /// Gets or sets the group that owns the manifest, which the invitee joins on accepting.
     /// </summary>
     public Guid GroupId { get; set; }
 
@@ -67,7 +67,7 @@ public class GroupInvitation
     /// <summary>
     /// Gets or sets the manifest the <see cref="EncryptedVek"/> unlocks.
     /// </summary>
-    public Guid? VaultManifestId { get; set; }
+    public Guid VaultManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the shared manifest's VEK, encrypted for the invitee's public key.
@@ -122,7 +122,7 @@ public class GroupInvitation
     /// <summary>
     /// Gets or sets where the invitation stands.
     /// </summary>
-    public GroupInvitationState State { get; set; } = GroupInvitationState.Pending;
+    public VaultManifestInvitationState State { get; set; } = VaultManifestInvitationState.Pending;
 
     /// <summary>
     /// Gets or sets created timestamp.

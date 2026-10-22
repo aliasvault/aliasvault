@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20261018160722_KeyRotation")]
-    partial class KeyRotation
+    [Migration("20261022102104_RenameGroupInvitationsToVaultManifestInvitations")]
+    partial class RenameGroupInvitationsToVaultManifestInvitations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -711,94 +711,6 @@ namespace AliasServerDb.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("AliasServerDb.GroupInvitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Algorithm")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EncryptedName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EncryptedNameSignature")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("EncryptedVek")
-                        .HasColumnType("text");
-
-                    b.Property<string>("GrantSignature")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("GrantSignerPublicKey")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("InviteeUserId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("InviterUserId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("RespondedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UserGrantKeyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("VaultKeyVersion")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("VaultManifestId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("InviterUserId");
-
-                    b.HasIndex("UserGrantKeyId");
-
-                    b.HasIndex("InviteeUserId", "State");
-
-                    b.HasIndex("VaultManifestId", "InviteeUserId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending")
-                        .HasFilter("\"State\" = 'Pending'");
-
-                    b.ToTable("GroupInvitations");
-                });
-
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1172,6 +1084,49 @@ namespace AliasServerDb.Migrations
                     b.ToTable("UserGrantKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.UserKeyCertification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CertifierUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Signature")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SubjectSigningPublicKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SubjectUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectUserId");
+
+                    b.HasIndex("CertifierUserId", "SubjectUserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_UserKeyCertifications_Certifier_Subject");
+
+                    b.ToTable("UserKeyCertifications");
+                });
+
             modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1194,6 +1149,10 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<string>("Fingerprint")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");
 
@@ -1215,6 +1174,9 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Fingerprint")
+                        .HasDatabaseName("IX_UserSigningKeys_Fingerprint");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -1658,6 +1620,94 @@ namespace AliasServerDb.Migrations
                     b.ToTable("VaultManifestDeliveryKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.VaultManifestInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptedName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EncryptedNameSignature")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("EncryptedVek")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GrantSignature")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("GrantSignerPublicKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InviteeUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("InviterUserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UserGrantKeyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("VaultKeyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("VaultManifestId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("InviterUserId");
+
+                    b.HasIndex("UserGrantKeyId");
+
+                    b.HasIndex("InviteeUserId", "State");
+
+                    b.HasIndex("VaultManifestId", "InviteeUserId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_VaultManifestInvitations_Manifest_Invitee_Pending")
+                        .HasFilter("\"State\" = 'Pending'");
+
+                    b.ToTable("VaultManifestInvitations");
+                });
+
             modelBuilder.Entity("AliasServerDb.VaultManifestShareDetails", b =>
                 {
                     b.Property<Guid>("ManifestId")
@@ -1946,40 +1996,6 @@ namespace AliasServerDb.Migrations
                     b.Navigation("Email");
                 });
 
-            modelBuilder.Entity("AliasServerDb.GroupInvitation", b =>
-                {
-                    b.HasOne("AliasServerDb.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "Invitee")
-                        .WithMany()
-                        .HasForeignKey("InviteeUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "Inviter")
-                        .WithMany()
-                        .HasForeignKey("InviterUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.UserGrantKey", "UserGrantKey")
-                        .WithMany()
-                        .HasForeignKey("UserGrantKeyId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Invitee");
-
-                    b.Navigation("Inviter");
-
-                    b.Navigation("UserGrantKey");
-                });
-
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
                 {
                     b.HasOne("AliasServerDb.Group", "Group")
@@ -2028,6 +2044,25 @@ namespace AliasServerDb.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AliasServerDb.UserKeyCertification", b =>
+                {
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Certifier")
+                        .WithMany()
+                        .HasForeignKey("CertifierUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Certifier");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("AliasServerDb.UserSigningKey", b =>
@@ -2152,6 +2187,40 @@ namespace AliasServerDb.Migrations
                         .IsRequired();
 
                     b.Navigation("VaultManifest");
+                });
+
+            modelBuilder.Entity("AliasServerDb.VaultManifestInvitation", b =>
+                {
+                    b.HasOne("AliasServerDb.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Invitee")
+                        .WithMany()
+                        .HasForeignKey("InviteeUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliasServerDb.AliasVaultUser", "Inviter")
+                        .WithMany()
+                        .HasForeignKey("InviterUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AliasServerDb.UserGrantKey", "UserGrantKey")
+                        .WithMany()
+                        .HasForeignKey("UserGrantKeyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Invitee");
+
+                    b.Navigation("Inviter");
+
+                    b.Navigation("UserGrantKey");
                 });
 
             modelBuilder.Entity("AliasServerDb.VaultManifestShareDetails", b =>

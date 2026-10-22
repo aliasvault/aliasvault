@@ -31,8 +31,8 @@ public static class GroupHelper
     /// <returns>The number of open offers.</returns>
     public static async Task<int> CountOpenInvitationsAsync(AliasServerDbContext context, string userId, DateTime createdAfter)
     {
-        return await context.GroupInvitations
-            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared && i.VaultManifestId != null && i.CreatedAt >= createdAfter)
+        return await context.VaultManifestInvitations
+            .Where(i => i.InviteeUserId == userId && i.State == VaultManifestInvitationState.Pending && i.Group.Type == GroupType.Shared && i.CreatedAt >= createdAfter)
             .Where(i => context.GroupMembers.Any(m => m.GroupId == i.GroupId && m.UserId == i.InviterUserId && (m.Role == GroupRole.Owner || m.Role == GroupRole.Admin)))
             .Where(i => context.VaultManifestAccessKeys.Any(k => k.UserId == i.InviterUserId && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == i.VaultManifestId))
             .CountAsync();
