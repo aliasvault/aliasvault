@@ -21,7 +21,7 @@ import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
 /** The sharing operations, which take `VaultSyncSharingParams`. */
-export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupAccountFingerprint' | 'acceptSharedManifestInvitation';
+export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupAccountFingerprint' | 'acceptSharedManifestInvitation' | 'transferEmailClaim';
 
 export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | VaultSyncSharingOperation | 'rotateAccountKeys';
 
@@ -49,7 +49,13 @@ export type VaultSyncSharingParams = {
   name?: string;
   invitationId?: string;
   accountFingerprint?: string;
+  address?: string;
+  sourceManifestId?: string;
+  claimVersion?: number;
 };
+
+/** Moving an email alias from `sourceManifestId` to `manifestId`, signed over the claim version the server reported. */
+export type EmailClaimTransfer = Required<Pick<VaultSyncSharingParams, 'address' | 'sourceManifestId' | 'manifestId' | 'claimVersion'>>;
 
 /** What the host hands the engine at session start (the Rust `SyncRequest`). */
 export type VaultSyncEngineRequest = {

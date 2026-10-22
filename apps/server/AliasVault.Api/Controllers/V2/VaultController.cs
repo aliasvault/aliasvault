@@ -742,7 +742,7 @@ public class VaultController(
 
     /// <summary>
     /// Moves an email alias to another manifest, which becomes its only owner. The caller must be able to open both the
-    /// current owning manifest and the target.
+    /// current owning manifest and the target, and sign the move with their signing key, so a session token alone cannot redirect mail.
     /// </summary>
     /// <param name="model">The alias and the target manifest.</param>
     /// <returns>Ok when the alias is owned by the target manifest.</returns>
@@ -776,6 +776,12 @@ public class VaultController(
             return Ok();
         }
 
+        var signingKey = await GrantHelper.GetPrimarySigningKeyAsync(context, user.Id);
+        if (signingKey is null || !Signing.Verify(signingKey, Signing.EmailClaimTransferMessage(address, model.SourceManifestId, model.TargetManifestId, model.ClaimVersion), model.Signature))
+        {
+            return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
+        }
+
         var targetGroupId = (await GroupHelper.GetOwnerGroupsAsync(context, [model.TargetManifestId]))[model.TargetManifestId];
 
         var strategy = context.Database.CreateExecutionStrategy();
@@ -785,7 +791,7 @@ public class VaultController(
 
             await LockAliasQuotaGroupsAsync(context, [targetGroupId]);
             await context.Entry(claim).ReloadAsync();
-            if (claim.VaultManifestId != sourceManifestId)
+            if (claim.VaultManifestId != model.SourceManifestId || claim.Version != model.ClaimVersion)
             {
                 return ApiError.Result(ApiErrorCode.EMAIL_CLAIM_MOVED, 409);
             }

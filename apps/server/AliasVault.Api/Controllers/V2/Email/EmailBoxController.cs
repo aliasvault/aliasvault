@@ -141,6 +141,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
             // For now anyone who can open the owning manifest may move the alias, matching VaultController.TransferEmailClaim.
             CanTransfer = true,
+            ClaimVersion = emailClaim.Version,
         };
 
         return Ok(returnValue);

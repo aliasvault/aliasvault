@@ -38,6 +38,8 @@ pub enum SyncOperation {
     AcceptSharedManifestInvitation,
     /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
     RotateAccountKeys,
+    /// Move an email alias to another manifest (`SharingParams.manifest_id`), signed with this account's own key.
+    TransferEmailClaim,
 }
 
 /// What a key rotation needs from the host: the proof of the current password and the new unlock method, both
@@ -77,6 +79,15 @@ pub struct SharingParams {
     /// The other party's account fingerprint as the user typed it, for the operations that certify a key.
     #[serde(default)]
     pub account_fingerprint: Option<String>,
+    /// The email alias an alias transfer moves.
+    #[serde(default)]
+    pub address: Option<String>,
+    /// The manifest that owns the alias before an alias transfer.
+    #[serde(default)]
+    pub source_manifest_id: Option<String>,
+    /// The claim version the server reported for the alias, which an alias transfer signs.
+    #[serde(default)]
+    pub claim_version: Option<i64>,
 }
 
 /// Sync request.

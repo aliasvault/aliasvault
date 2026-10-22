@@ -26,6 +26,9 @@ pub const DELIVERY_KEY_LABEL: &str = "aliasvault/v1/sig/delivery-key";
 /// The label of the vault name an invitation carries, signed by the inviter.
 pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
 
+/// The label of moving an email alias to another manifest, signed by the user who moves it.
+pub const EMAIL_CLAIM_TRANSFER_LABEL: &str = "aliasvault/v1/sig/email-claim-transfer";
+
 /// The label of a new signing public key, signed by the signing key it replaces.
 pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
 
@@ -95,6 +98,13 @@ pub fn invitation_name_message(manifest_id: &str, signer_user_id: &str, recipien
 /// The signed message of a delivery key publish, bound to the revision the write is based on so it cannot be replayed.
 pub fn delivery_key_message(manifest_id: &str, public_key: &str, current_revision: i64) -> Vec<u8> {
     signed_message(DELIVERY_KEY_LABEL, &[normalize(manifest_id).as_bytes(), public_key.as_bytes(), current_revision.to_string().as_bytes()])
+}
+
+/// The signed message of moving `address` from `source_manifest_id` to `target_manifest_id`, bound to the claim version
+/// the server reported so it cannot be replayed after the claim changed.
+pub fn email_claim_transfer_message(address: &str, source_manifest_id: &str, target_manifest_id: &str, claim_version: i64) -> Vec<u8> {
+    let claim_version = claim_version.to_string();
+    signed_message(EMAIL_CLAIM_TRANSFER_LABEL, &[address.as_bytes(), normalize(source_manifest_id).as_bytes(), normalize(target_manifest_id).as_bytes(), claim_version.as_bytes()])
 }
 
 /// The signed message of a signing key rotation: the account's new signing public key, vouched for by the previous one.
@@ -199,6 +209,15 @@ mod tests {
     fn key_certification_message_known_answer() {
         assert_eq!(crate::common::encoding::hex_encode_lower(&key_certification_message("user-1", "user-2", PUBLIC_KEY_VECTOR)), KEY_CERTIFICATION_MESSAGE_VECTOR);
     }
+
+    /// Known-answer vector for the email claim transfer message, which `Signing.cs` builds too. Never regenerate it.
+    #[test]
+    fn email_claim_transfer_message_known_answer() {
+        let message = email_claim_transfer_message("alias@example.com", "0A1B2C3D-0000-0000-0000-000000000001", "0A1B2C3D-0000-0000-0000-000000000002", 1767225600000);
+        assert_eq!(crate::common::encoding::hex_encode_lower(&message), EMAIL_CLAIM_TRANSFER_MESSAGE_VECTOR);
+    }
+
+    const EMAIL_CLAIM_TRANSFER_MESSAGE_VECTOR: &str = "00000026616c6961737661756c742f76312f7369672f656d61696c2d636c61696d2d7472616e7366657200000011616c696173406578616d706c652e636f6d0000002430613162326333642d303030302d303030302d303030302d3030303030303030303030310000002430613162326333642d303030302d303030302d303030302d3030303030303030303030320000000d31373637323235363030303030";
 
     const KEY_CERTIFICATION_MESSAGE_VECTOR: &str = "00000023616c6961737661756c742f76312f7369672f6b65792d63657274696669636174696f6e00000006757365722d3100000006757365722d320000002c41364548762f504f454c3464634e3059353076416d57666b316a436270513166486479475a424a564d62673d";
 

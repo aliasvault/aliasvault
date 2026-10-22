@@ -1,7 +1,8 @@
 import { sharingText } from '../sharing/SharingView';
 
 import type { Folder } from '../database/repositories/FolderRepository';
-import type { EmailClaimTransferRequest, Mailbox } from '@aliasvault/models/webapi';
+import type { EmailClaimTransfer } from '../sync/VaultSyncEngine';
+import type { Mailbox } from '@aliasvault/models/webapi';
 
 /**
  * What an item shows when its email alias receives its emails somewhere else than the item's own vault or shared folder.
@@ -9,17 +10,10 @@ import type { EmailClaimTransferRequest, Mailbox } from '@aliasvault/models/weba
 export type AliasOwnerNotice = {
   /** Where the alias receives its emails now. */
   notice: string;
-  /** Whether the user may move the alias to the item's vault or shared folder. */
-  canMove: boolean;
+  /** The move to the item's vault or shared folder, or null when the user may not move the alias. */
+  transfer: EmailClaimTransfer | null;
   /** The confirmation shown before moving the alias. */
   moveConfirm: string;
-};
-
-/**
- * The API surface needed to move an alias, offered by the WebApiService of every host.
- */
-type PostApi = {
-  post<TRequest, TResponse>(endpoint: string, data: TRequest, parseJson?: boolean): Promise<TResponse>;
 };
 
 /**
@@ -42,13 +36,13 @@ function sharedFolderName(folders: Pick<Folder, 'Id' | 'ManifestId' | 'Name'>[],
  */
 export function aliasOwnerNotice(
   email: string,
-  mailbox: Pick<Mailbox, 'ownerManifestId' | 'canTransfer'>,
+  mailbox: Pick<Mailbox, 'ownerManifestId' | 'canTransfer' | 'claimVersion'>,
   itemManifestId: string,
   personalManifestId: string | null,
   folders: Pick<Folder, 'Id' | 'ManifestId' | 'Name'>[]
 ): AliasOwnerNotice | null {
-  const owner = mailbox.ownerManifestId?.toLowerCase();
-  if (!owner || owner === itemManifestId.toLowerCase()) {
+  const owner = mailbox.ownerManifestId;
+  if (!owner || owner.toLowerCase() === itemManifestId.toLowerCase()) {
     return null;
   }
 
@@ -59,7 +53,7 @@ export function aliasOwnerNotice(
   const isPersonal = (manifestId: string): boolean => manifestId.toLowerCase() === personalManifestId?.toLowerCase();
   return {
     notice: isPersonal(owner) ? text.inPersonalVault : text.inSharedFolder(sharedFolderName(folders, owner)),
-    canMove: mailbox.canTransfer,
+    transfer: mailbox.canTransfer && mailbox.claimVersion !== null ? { address: email, sourceManifestId: owner, manifestId: itemManifestId, claimVersion: mailbox.claimVersion } : null,
     moveConfirm: isPersonal(itemManifestId) ? text.moveToPersonalVaultConfirm(email) : text.moveToSharedFolderConfirm(email, sharedFolderName(folders, itemManifestId)),
   };
 }
@@ -75,12 +69,3 @@ export function aliasOwnerErrorText(code: string | null | undefined): string | n
   }
 }
 
-/**
- * Make the item's manifest the owner of the alias, so new mail for it is delivered there.
- * @param webApi - the host's API client
- * @param address - the alias address
- * @param itemManifestId - the manifest of the item showing the alias
- */
-export async function moveAliasHere(webApi: PostApi, address: string, itemManifestId: string): Promise<void> {
-  await webApi.post<EmailClaimTransferRequest, Response>('Vault/email-claims/transfer', { address, targetManifestId: itemManifestId }, false);
-}

@@ -1,5 +1,5 @@
 //! The sharing operations that take vault keys or sign something: creating a group's shared manifest, updating one,
-//! inviting to a group or a shared manifest, and accepting those invitations.
+//! inviting to a group or a shared manifest, accepting those invitations, and moving an email alias to another manifest.
 //!
 //! Trust between two accounts rests on key certifications: once a user has checked another account's signing key (outside
 //! AliasVault) against that account's account fingerprint (the key's fingerprint), a client signs a
@@ -120,6 +120,16 @@ struct Recipient {
 struct CertifyKeyRequest<'a> {
     subject_user_id: &'a str,
     subject_signing_public_key: &'a str,
+    signature: &'a str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EmailClaimTransferRequest<'a> {
+    address: &'a str,
+    source_manifest_id: &'a str,
+    target_manifest_id: &'a str,
+    claim_version: i64,
     signature: &'a str,
 }
 
@@ -267,6 +277,12 @@ pub(crate) async fn lookup_account_fingerprint_operation(ctx: &mut Ctx) -> Shari
 pub(crate) async fn accept_shared_manifest_invitation_operation(ctx: &mut Ctx) -> SharingOperationResult {
     let outcome = accept_shared_manifest_invitation(ctx).await;
     finish(ctx, "accept shared manifest invitation", outcome).await
+}
+
+/// Move an email alias to another manifest this account can open.
+pub(crate) async fn transfer_email_claim_operation(ctx: &mut Ctx) -> SharingOperationResult {
+    let outcome = transfer_email_claim(ctx).await;
+    finish(ctx, "move email alias", outcome).await
 }
 
 /// Turn an operation's outcome into the result the host acts on.
@@ -610,6 +626,23 @@ async fn lookup_account_fingerprint(ctx: &mut Ctx) -> Outcome {
 
     let already_member = group.is_some_and(|group| group.members.iter().any(|member| member.user_id == account.user_id));
     Ok(Ok(Done { username: Some(account.username), already_member, ..Default::default() }))
+}
+
+/// Move an email alias to another manifest, signed with this account's own key so a stolen session token alone cannot redirect mail.
+async fn transfer_email_claim(ctx: &mut Ctx) -> Outcome {
+    let target = params(ctx)?;
+    let address = target.address.as_deref().map(|address| address.trim().to_lowercase()).filter(|address| !address.is_empty()).ok_or_else(|| SyncError::Other("The alias transfer names no address".to_string()))?;
+    let source_manifest_id = target.source_manifest_id.clone().ok_or_else(|| SyncError::Other("The alias transfer names no source manifest".to_string()))?;
+    let target_manifest_id = target.manifest_id.clone().ok_or_else(|| SyncError::Other("The alias transfer names no target manifest".to_string()))?;
+    let claim_version = target.claim_version.ok_or_else(|| SyncError::Other("The alias transfer carries no claim version".to_string()))?;
+    let Some(signing_key) = keys::signing_private_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
+
+    let message = crypto::signing::email_claim_transfer_message(&address, &source_manifest_id, &target_manifest_id, claim_version);
+    let signature = crypto::signing::sign(signing_key.expose_secret(), &message)?;
+    let request = EmailClaimTransferRequest { address: &address, source_manifest_id: &source_manifest_id, target_manifest_id: &target_manifest_id, claim_version, signature: &signature };
+    http::post_no_content(&ctx.host, "Vault/email-claims/transfer", &request).await?;
+    ctx.log(format!("[Sharing] Moved an email alias from manifest {} to manifest {}.", source_manifest_id, target_manifest_id)).await;
+    Ok(Ok(Done { manifest_id: Some(target_manifest_id), ..Default::default() }))
 }
 
 /// Accept an invitation to a shared manifest: check the certified inviter signed it and the key inside opens for this

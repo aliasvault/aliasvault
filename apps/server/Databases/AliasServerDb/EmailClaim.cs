@@ -74,4 +74,11 @@ public class EmailClaim
     /// Gets or sets updated timestamp.
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets the claim version a transfer is signed over: <see cref="UpdatedAt"/> in Unix milliseconds, so a signed transfer
+    /// stops verifying once the claim changed.
+    /// </summary>
+    [NotMapped]
+    public long Version => new DateTimeOffset(DateTime.SpecifyKind(UpdatedAt, DateTimeKind.Utc)).ToUnixTimeMilliseconds();
 }

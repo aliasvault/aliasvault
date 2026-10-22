@@ -34,6 +34,7 @@ import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import type { FullVaultSyncResult, SharedManifestDetails, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import type { EmailClaimTransfer } from '@aliasvault/client/sync/VaultSyncEngine';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { Credential } from '@aliasvault/models/vault';
 
@@ -104,6 +105,7 @@ export interface IExtensionMessageProtocol {
   GROUP_LOOKUP_ACCOUNT_FINGERPRINT(data: { groupId?: string; accountFingerprint: string }): SharingActionResponse;
   GROUP_INVITE_MEMBER_BY_FINGERPRINT(data: { groupId: string; manifestId: string; accountFingerprint: string }): SharingActionResponse;
   GROUP_ACCEPT_MANIFEST_INVITATION(data: { invitationId: string; accountFingerprint?: string }): SharingActionResponse;
+  EMAIL_CLAIM_TRANSFER(data: EmailClaimTransfer): SharingActionResponse;
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };
   IS_LOGIN_SAVE_BLOCKED(data: { domain: string }): boolean;
   LOCK_VAULT(): BoolResponse;

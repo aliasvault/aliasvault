@@ -20,7 +20,7 @@ import { devError, devLog, devWarn } from '../platform/Logger';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncKeyRotationParams, VaultSyncKeyRotationRefusal, VaultSyncKeyRotationResult, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingOperation, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
+import type { EmailClaimTransfer, IVaultSyncEngineHost, LogoutReason, VaultSyncEmailDomains, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncKeyRotationParams, VaultSyncKeyRotationRefusal, VaultSyncKeyRotationResult, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingOperation, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 import type { TranslationKey } from '@aliasvault/i18n';
 
@@ -244,6 +244,14 @@ export class VaultSync {
    */
   public async acceptSharedManifestInvitation(invitationId: string, accountFingerprint?: string): Promise<SharingOperationResult> {
     return this.runSharingOperation('acceptSharedManifestInvitation', { invitationId, accountFingerprint });
+  }
+
+  /**
+   * Move an email alias to another manifest, signed with this account's own key so the server accepts it. Never throws.
+   * @param transfer - the alias, its current and new manifest, and the claim version the mailbox reported
+   */
+  public async transferEmailClaim(transfer: EmailClaimTransfer): Promise<SharingOperationResult> {
+    return this.runSharingOperation('transferEmailClaim', transfer);
   }
 
   /**

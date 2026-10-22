@@ -14,12 +14,7 @@ export type Mailbox = {
 
     /** Whether the caller may move the alias to another manifest it can access. */
     canTransfer: boolean;
-}
 
-/**
- * Request to move an email alias to another manifest.
- */
-export type EmailClaimTransferRequest = {
-    address: string;
-    targetManifestId: string;
+    /** The version of the alias claim, which a move to another manifest is signed over. */
+    claimVersion: number | null;
 }

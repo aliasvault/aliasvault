@@ -11,7 +11,7 @@ import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultD
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type KeyRotationOperationResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
-import { type IVaultSyncEngineHost, type VaultSyncKeyRotationParams, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
+import { type EmailClaimTransfer, type IVaultSyncEngineHost, type VaultSyncKeyRotationParams, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 
 import i18n from '@/i18n/i18n';
@@ -533,6 +533,14 @@ export const vaultStore = {
    */
   lookupAccountFingerprint(groupId: string | undefined, accountFingerprint: string): Promise<SharingOperationResult> {
     return vaultSync.lookupAccountFingerprint(groupId, accountFingerprint);
+  },
+
+  /**
+   * Move an email alias to another manifest, signed with this account's own key.
+   * @param transfer - the alias, its current and new manifest, and the claim version the mailbox reported
+   */
+  transferEmailClaim(transfer: EmailClaimTransfer): Promise<SharingOperationResult> {
+    return vaultSync.transferEmailClaim(transfer);
   },
 
   /**

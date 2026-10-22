@@ -1,5 +1,4 @@
-import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice } from '@aliasvault/client/email/AliasOwner';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
@@ -17,6 +16,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected } from '@/utils/Diagnostics';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 
@@ -256,19 +256,22 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
    */
   const moveHere = async (): Promise<void> => {
     setShowMoveConfirm(false);
-    try {
-      await moveAliasHere(webApi, email, manifestId);
-      setOwnerNotice(null);
-      setLoading(true);
-    } catch (err) {
-      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('apiErrors.' + apiErrorCodeOf(err), { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+    if (!ownerNotice?.transfer) {
+      return;
     }
+    const result = await sendMessage('EMAIL_CLAIM_TRANSFER', ownerNotice.transfer);
+    if (!result.success) {
+      setError(aliasOwnerErrorText(result.apiErrorCode) ?? (result.apiErrorCode ? t('apiErrors.' + result.apiErrorCode, { defaultValue: t('common.errors.unknownErrorTryAgain') }) : result.error ?? t('common.errors.unknownErrorTryAgain')));
+      return;
+    }
+    setOwnerNotice(null);
+    setLoading(true);
   };
 
   const ownerNoticeBlock = ownerNotice && (
     <div className="mb-2 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 rounded">
       <p className="text-sm text-amber-900 dark:text-amber-100">{ownerNotice.notice}</p>
-      {ownerNotice.canMove && (
+      {ownerNotice.transfer && (
         <button
           id="move-alias-here"
           onClick={() => setShowMoveConfirm(true)}

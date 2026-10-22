@@ -38,6 +38,11 @@ public static class Signing
     public const string InvitationNameLabel = "aliasvault/v1/sig/invitation-name";
 
     /// <summary>
+    /// The label of moving an email alias to another manifest, signed by the user who moves it.
+    /// </summary>
+    public const string EmailClaimTransferLabel = "aliasvault/v1/sig/email-claim-transfer";
+
+    /// <summary>
     /// The label of a new signing public key, signed by the signing key it replaces.
     /// </summary>
     public const string SigningKeyRotationLabel = "aliasvault/v1/sig/signing-key-rotation";
@@ -117,6 +122,19 @@ public static class Signing
     public static byte[] DeliveryKeyMessage(Guid manifestId, string publicKey, long currentRevision)
     {
         return SignedMessage(DeliveryKeyLabel, Utf8(manifestId.ToString()), Utf8(publicKey), Utf8(currentRevision.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    /// <summary>
+    /// Builds the signed message of moving an email alias to another manifest, bound to the claim version so it cannot be replayed.
+    /// </summary>
+    /// <param name="address">The alias address, trimmed and lowercased.</param>
+    /// <param name="sourceManifestId">The manifest that owns the alias before the move.</param>
+    /// <param name="targetManifestId">The manifest that owns the alias after the move.</param>
+    /// <param name="claimVersion">The claim version the client was served.</param>
+    /// <returns>The message bytes.</returns>
+    public static byte[] EmailClaimTransferMessage(string address, Guid sourceManifestId, Guid targetManifestId, long claimVersion)
+    {
+        return SignedMessage(EmailClaimTransferLabel, Utf8(address), Utf8(sourceManifestId.ToString()), Utf8(targetManifestId.ToString()), Utf8(claimVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)));
     }
 
     /// <summary>

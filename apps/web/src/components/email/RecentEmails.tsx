@@ -1,5 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice } from '@aliasvault/client/email/AliasOwner';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -19,6 +19,7 @@ import { useWebApi } from '@/context/WebApiContext';
 import { useEmailDomains } from '@/hooks/useEmailDomains';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { type EmailViewModel, loadAliasVaultEmail, loadSpamOkEmail, spamOk } from '@/utils/EmailViewModel';
+import { vaultStore } from '@/vault/VaultStore';
 
 import type { Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 
@@ -196,15 +197,15 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
    * Move the alias to this item's vault after confirmation, then reload.
    */
   const moveHere = async (): Promise<void> => {
-    if (!ownerNotice || !await showConfirmation(sharingText.aliasOwner.moveHere, ownerNotice.moveConfirm, t('common.confirm'), t('common.cancel'))) {
+    if (!ownerNotice?.transfer || !await showConfirmation(sharingText.aliasOwner.moveHere, ownerNotice.moveConfirm, t('common.confirm'), t('common.cancel'))) {
       return;
     }
-    try {
-      await moveAliasHere(webApi, emailAddress, manifestId);
-      await manualRefresh();
-    } catch (err) {
-      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('apiErrors.' + apiErrorCodeOf(err), { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+    const result = await vaultStore.transferEmailClaim(ownerNotice.transfer);
+    if (!result.success) {
+      setError(aliasOwnerErrorText(result.apiErrorCode) ?? t('apiErrors.' + result.apiErrorCode, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+      return;
     }
+    await manualRefresh();
   };
 
   if (!showComponent) {
@@ -240,7 +241,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
         </div>
 
         {!isLoading && error.length === 0 && ownerNotice && (
-          <WarningBox className="mt-4" actions={ownerNotice.canMove && <Button id="move-alias-here" onClick={() => void moveHere()}>{sharingText.aliasOwner.moveHere}</Button>}>
+          <WarningBox className="mt-4" actions={ownerNotice.transfer && <Button id="move-alias-here" onClick={() => void moveHere()}>{sharingText.aliasOwner.moveHere}</Button>}>
             <p>{ownerNotice.notice}</p>
           </WarningBox>
         )}

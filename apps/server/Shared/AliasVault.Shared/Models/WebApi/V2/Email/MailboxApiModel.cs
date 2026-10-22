@@ -40,6 +40,11 @@ public class MailboxApiModel
     public bool CanTransfer { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the alias claim, which a transfer to another manifest is signed over.
+    /// </summary>
+    public long? ClaimVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of mailbox email API models.
     /// </summary>
     public List<MailboxEmailApiModel> Mails { get; set; } = [];

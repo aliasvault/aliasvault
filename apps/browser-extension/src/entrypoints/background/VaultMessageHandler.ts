@@ -19,7 +19,7 @@ import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultD
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
-import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
+import { type EmailClaimTransfer, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { FieldKey, ItemTypes, createSystemField, getFieldValue, itemToCredential, normalizeTotpPeriod, type Credential, type Item } from '@aliasvault/models/vault';
 
@@ -1551,5 +1551,14 @@ export async function handleGroupAcceptManifestInvitation(message: { invitationI
   }
 
   return sharingActionResponse(result, sharingText.errors.invitationGone);
+}
+
+/**
+ * Move an email alias to another manifest, signed with this account's own key.
+ *
+ * @param message - the alias, its current and new manifest, and the claim version the mailbox reported.
+ */
+export async function handleEmailClaimTransfer(message: EmailClaimTransfer): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.transferEmailClaim(message), await t('common.errors.unknownErrorTryAgain'));
 }
 

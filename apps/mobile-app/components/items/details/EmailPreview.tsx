@@ -4,13 +4,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
-import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice } from '@aliasvault/client/email/AliasOwner';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
+import type { EmailClaimTransfer } from '@aliasvault/client/sync/VaultSyncEngine';
 import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 
@@ -22,6 +22,7 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /** Client for the SpamOK mailboxes of the public email domains. */
 const spamOk = new SpamOkClient('av-mobile', AppInfo.VERSION);
@@ -384,23 +385,23 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
   /**
    * Move the alias to this item's vault after confirmation, then reload.
    */
-  const confirmMoveHere = (moveConfirm: string): void => {
+  const confirmMoveHere = (transfer: EmailClaimTransfer, moveConfirm: string): void => {
     showConfirm(sharingText.aliasOwner.moveHere, moveConfirm, t('common.confirm'), async () => {
-      try {
-        await moveAliasHere(webApi, email, manifestId);
-        setOwnerNotice(null);
-        setLoading(true);
-      } catch (err) {
-        setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t(`apiErrors.${apiErrorCodeOf(err)}`, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+      const result = await NativeVaultManager.runSharingOperation('transferEmailClaim', JSON.stringify(transfer));
+      if (!result.success) {
+        setError(aliasOwnerErrorText(result.apiErrorCode) ?? t(`apiErrors.${result.apiErrorCode}`, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+        return;
       }
+      setOwnerNotice(null);
+      setLoading(true);
     });
   };
 
   const ownerNoticeBlock = ownerNotice && (
     <View style={styles.ownerNotice}>
       <ThemedText style={styles.ownerNoticeText}>{ownerNotice.notice}</ThemedText>
-      {ownerNotice.canMove && (
-        <TouchableOpacity style={styles.moveButton} onPress={() => confirmMoveHere(ownerNotice.moveConfirm)} testID="move-alias-here">
+      {ownerNotice.transfer && (
+        <TouchableOpacity style={styles.moveButton} onPress={() => confirmMoveHere(ownerNotice.transfer!, ownerNotice.moveConfirm)} testID="move-alias-here">
           <ThemedText style={styles.moveButtonText}>{sharingText.aliasOwner.moveHere}</ThemedText>
         </TouchableOpacity>
       )}
