@@ -71,7 +71,7 @@ export interface Spec extends TurboModule {
   getAccountKeyChain(): Promise<string | null>;
   resolveVaultKey(base64DerivedKey: string): Promise<void>;
   getPersonalManifestId(): Promise<string | null>;
-  decryptInvitationName(encryptedName: string): Promise<string | null>;
+  decryptManifestInvitationName(encryptedName: string, manifestId: string): Promise<string | null>;
   getSigningKeyFingerprint(): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
 

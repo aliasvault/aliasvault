@@ -129,8 +129,8 @@
     [vaultManager getPersonalManifestId:resolve rejecter:reject];
 }
 
-- (void)decryptInvitationName:(NSString *)encryptedName resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager decryptInvitationName:encryptedName resolver:resolve rejecter:reject];
+- (void)decryptManifestInvitationName:(NSString *)encryptedName manifestId:(NSString *)manifestId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager decryptManifestInvitationName:encryptedName manifestId:manifestId resolver:resolve rejecter:reject];
 }
 
 - (void)getSigningKeyFingerprint:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

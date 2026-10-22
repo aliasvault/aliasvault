@@ -45,11 +45,6 @@ pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
     Ok(())
 }
 
-/// Encrypt bytes for the holder of a JWK public key. Returns base64 ciphertext.
-pub fn encrypt_with_public_key(plaintext: &[u8], public_key_jwk: &str) -> VaultResult<String> {
-    encrypt(plaintext, public_key_jwk, Oaep::new::<Sha256>())
-}
-
 /// Encrypt bytes for the holder of a JWK public key under an OAEP label, which decryption must present as-is.
 pub fn encrypt_with_public_key_and_label(plaintext: &[u8], public_key_jwk: &str, label: &[u8]) -> VaultResult<String> {
     encrypt(plaintext, public_key_jwk, Oaep::new_with_label::<Sha256, _>(label_text(label)?))
@@ -63,6 +58,12 @@ pub fn decrypt_with_private_key(base64_ciphertext: &str, private_key_jwk: &str) 
 /// Decrypt base64 ciphertext that was encrypted under an OAEP label.
 pub fn decrypt_with_private_key_and_label(base64_ciphertext: &str, private_key_jwk: &str, label: &[u8]) -> VaultResult<Vec<u8>> {
     decrypt(base64_ciphertext, private_key_jwk, Oaep::new_with_label::<Sha256, _>(label_text(label)?))
+}
+
+/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key, as UTF-8 text.
+pub fn decrypt_manifest_invitation_name(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> VaultResult<String> {
+    let plaintext = decrypt_with_private_key_and_label(encrypted_name, private_key_jwk, &super::aad::invitation_name(manifest_id))?;
+    String::from_utf8(plaintext).map_err(|_| VaultError::General("Decrypted invitation name is not valid text".to_string()))
 }
 
 fn encrypt(plaintext: &[u8], public_key_jwk: &str, padding: Oaep) -> VaultResult<String> {
@@ -97,5 +98,13 @@ mod tests {
         assert_eq!(decrypt_with_private_key_and_label(&ciphertext, &pair.private_key, b"grant/a").unwrap(), b"vek");
         assert!(decrypt_with_private_key_and_label(&ciphertext, &pair.private_key, b"grant/b").is_err());
         assert!(decrypt_with_private_key(&ciphertext, &pair.private_key).is_err(), "a labelled ciphertext does not open without its label");
+    }
+
+    #[test]
+    fn manifest_invitation_name_is_bound_to_its_manifest() {
+        let pair = generate_rsa_key_pair().unwrap();
+        let ciphertext = encrypt_with_public_key_and_label("Family".as_bytes(), &pair.public_key, &super::super::aad::invitation_name("A")).unwrap();
+        assert_eq!(decrypt_manifest_invitation_name(&ciphertext, "a", &pair.private_key).unwrap(), "Family");
+        assert!(decrypt_manifest_invitation_name(&ciphertext, "b", &pair.private_key).is_err());
     }
 }

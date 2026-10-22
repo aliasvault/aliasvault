@@ -338,6 +338,12 @@ pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result
     crate::crypto::decrypt_with_private_key(&base64_ciphertext, &private_key_jwk)
 }
 
+/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key.
+#[uniffi::export]
+pub fn decrypt_manifest_invitation_name(encrypted_name: String, manifest_id: String, private_key_jwk: String) -> Result<String, VaultError> {
+    crate::crypto::decrypt_manifest_invitation_name(&encrypted_name, &manifest_id, &private_key_jwk)
+}
+
 /// RSA-OAEP-256 encrypt the Account Key for a mobile login request's JWK public key, as base64.
 #[uniffi::export]
 pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {

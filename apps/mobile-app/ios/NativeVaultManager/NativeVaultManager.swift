@@ -136,10 +136,11 @@ public class NativeVaultManager: NSObject {
 
     /// Decrypt an invitation's vault name with the session account private key; nil when the session holds none that opens it.
     @objc
-    func decryptInvitationName(_ encryptedName: String,
+    func decryptManifestInvitationName(_ encryptedName: String,
+                               manifestId: String,
                                resolver resolve: @escaping RCTPromiseResolveBlock,
                                rejecter reject: @escaping RCTPromiseRejectBlock) {
-        resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
+        resolve(vaultStore.decryptManifestInvitationName(encryptedName, manifestId: manifestId))
     }
 
     /// The account fingerprint of the account's own signing key; nil while locked or when the account has no signing key yet.

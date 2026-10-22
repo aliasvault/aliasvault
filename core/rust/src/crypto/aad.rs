@@ -52,6 +52,11 @@ pub fn grant(manifest_id: &str) -> Vec<u8> {
     format!("{}/grant/{}", PREFIX, normalize(manifest_id)).into_bytes()
 }
 
+/// The RSA-OAEP label of a shared manifest's name encrypted into an invitation for its recipient.
+pub fn invitation_name(manifest_id: &str) -> Vec<u8> {
+    format!("{}/invitation-name/{}", PREFIX, normalize(manifest_id)).into_bytes()
+}
+
 /// An id as it appears in a label: lowercased, as the server prints a GUID.
 pub(crate) fn normalize(id: &str) -> String {
     id.to_ascii_lowercase()
@@ -69,6 +74,7 @@ mod tests {
         assert_eq!(blob_key("ID", "ABCD"), b"aliasvault/v1/blob-key/id/abcd".to_vec());
         assert_eq!(manifest_name("ID"), b"aliasvault/v1/manifest-name/id".to_vec());
         assert_eq!(grant("ID"), b"aliasvault/v1/grant/id".to_vec());
+        assert_eq!(invitation_name("ID"), b"aliasvault/v1/invitation-name/id".to_vec());
         assert_eq!(MOBILE_LOGIN_ACCOUNT_KEY, b"aliasvault/v1/mobile-login/account-key");
         assert_eq!(MOBILE_LOGIN_PAYLOAD_KEY, b"aliasvault/v1/mobile-login/payload-key");
     }

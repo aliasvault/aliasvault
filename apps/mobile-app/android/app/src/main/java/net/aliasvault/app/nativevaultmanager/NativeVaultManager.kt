@@ -343,11 +343,12 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     /**
      * Decrypt an invitation's vault name with the session account private key; null when the session holds none that opens it.
      * @param encryptedName The base64 RSA-OAEP ciphertext of the name
+     * @param manifestId The shared manifest the invitation is for
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun decryptInvitationName(encryptedName: String, promise: Promise) {
-        promise.resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
+    override fun decryptManifestInvitationName(encryptedName: String, manifestId: String, promise: Promise) {
+        promise.resolve(vaultStore.decryptManifestInvitationName(encryptedName, manifestId))
     }
 
     /**

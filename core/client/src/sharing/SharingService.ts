@@ -2,7 +2,6 @@ import { VaultKeyAlgorithm, type GroupOverviewResponse, type PasswordConfirmatio
 
 import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
-import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devWarn } from '../platform/Logger';
 import { rustCore } from '../rust/RustCore';
@@ -25,9 +24,9 @@ export type SharingApi = Pick<WebApiService, 'get' | 'post' | 'delete'>;
 export type SrpChallengeResponder = (challenge: PasswordConfirmationChallenge) => Promise<PasswordConfirmationRequest>;
 
 /**
- * Decrypts a vault name encrypted into an invitation for the given public key, or returns null when this session holds no key that opens it.
+ * Decrypts a vault name encrypted into an invitation to the given manifest for the given public key, or returns null when this session holds no key that opens it.
  */
-export type InvitationNameDecryptor = (encryptedName: string, recipientPublicKey: string) => Promise<string | null>;
+export type InvitationNameDecryptor = (encryptedName: string, manifestId: string, recipientPublicKey: string) => Promise<string | null>;
 
 /**
  * Service with static helpers implementing the vault sharing flows.
@@ -74,7 +73,7 @@ export class SharingService {
    * passes a native call instead, as its private key never leaves the native layer.
    * @returns The name of each invitation's vault, keyed by invitation id; invitations whose name will not open are left out.
    */
-  public static async openInvitationNames(invitations: ReceivedManifestInvitation[], decryptName: InvitationNameDecryptor = (name, key) => this.decryptWithSessionKey(name, key)): Promise<Record<string, string>> {
+  public static async openInvitationNames(invitations: ReceivedManifestInvitation[], decryptName: InvitationNameDecryptor = (name, manifestId, key) => this.decryptManifestInvitationNameWithSessionKey(name, manifestId, key)): Promise<Record<string, string>> {
     const names: Record<string, string> = {};
 
     for (const invitation of invitations) {
@@ -88,7 +87,7 @@ export class SharingService {
       }
 
       try {
-        const name = await decryptName(invitation.encryptedName, invitation.recipientAccountPublicKey);
+        const name = await decryptName(invitation.encryptedName, invitation.manifestId, invitation.recipientAccountPublicKey);
         if (name === null) {
           devWarn(`[Sharing] This session holds no account private key that decrypts the name encrypted into invitation ${invitation.id}.`);
           continue;
@@ -171,12 +170,13 @@ export class SharingService {
   }
 
   /**
-   * Decrypt something encrypted for `publicKey` with the account private key of this session.
-   * @param ciphertext - the base64 RSA-OAEP ciphertext.
+   * Decrypt an invitation's vault name encrypted for `publicKey` with the account private key of this session.
+   * @param encryptedName - the base64 RSA-OAEP ciphertext.
+   * @param manifestId - the shared manifest the invitation is for.
    * @param publicKey - the public half it was encrypted for.
-   * @returns The UTF-8 plaintext, or null when this session holds no private key for `publicKey`.
+   * @returns The name, or null when this session holds no private key for `publicKey`.
    */
-  private static async decryptWithSessionKey(ciphertext: string, publicKey: string): Promise<string | null> {
+  private static async decryptManifestInvitationNameWithSessionKey(encryptedName: string, manifestId: string, publicKey: string): Promise<string | null> {
     if (await VaultKeyService.getAccountPublicKey() !== publicKey) {
       return null;
     }
@@ -184,7 +184,7 @@ export class SharingService {
     if (!privateKey) {
       return null;
     }
-    return new TextDecoder().decode(await EncryptionUtility.decryptWithPrivateKey(ciphertext, privateKey));
+    return rustCore().decryptManifestInvitationName(encryptedName, manifestId, privateKey);
   }
 
 }

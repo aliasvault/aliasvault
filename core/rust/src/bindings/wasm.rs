@@ -228,6 +228,12 @@ pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<
     crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(js_err)
 }
 
+/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key.
+#[wasm_bindgen(js_name = decryptManifestInvitationName)]
+pub fn decrypt_manifest_invitation_name_js(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> Result<String, JsValue> {
+    crate::crypto::decrypt_manifest_invitation_name(encrypted_name, manifest_id, private_key_jwk).map_err(js_err)
+}
+
 /// A fresh random salt for a new PIN wrap.
 #[wasm_bindgen(js_name = pinGenerateSalt)]
 pub fn pin_generate_salt_js() -> Vec<u8> {

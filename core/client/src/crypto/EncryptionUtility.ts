@@ -102,20 +102,6 @@ export class EncryptionUtility {
   }
 
   /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a JWK private key
-   */
-  public static async decryptWithPrivateKey(ciphertext: string, privateKey: string): Promise<Uint8Array> {
-    try {
-      const privateKeyObj = await EncryptionUtility.importPrivateKey(privateKey);
-
-      return await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKeyObj);
-    } catch (error) {
-      logDefect('[Crypto] RSA decryption failed', error);
-      throw new Error(`Failed to decrypt: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  /**
    * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key, under an OAEP label when given.
    */
   public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey, label?: string): Promise<Uint8Array> {

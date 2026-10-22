@@ -74,6 +74,7 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     symmetricDecryptBytes: (encrypted, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricDecryptBytes(encrypted, keyBase64)),
     symmetricEncryptBytes: (plaintext, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricEncryptBytes(plaintext, keyBase64)),
     rsaDecrypt: (base64Ciphertext, privateKeyJwk): Promise<Uint8Array> => ready(() => core.rsaDecrypt(base64Ciphertext, privateKeyJwk)),
+    decryptManifestInvitationName: (encryptedName, manifestId, privateKeyJwk): Promise<string> => ready(() => core.decryptManifestInvitationName(encryptedName, manifestId, privateKeyJwk)),
     accountSigningKeyFingerprint: (encryptedSigningPrivateKey, accountKeyBase64): Promise<string> => ready(() => core.accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKeyBase64)),
 
     /*

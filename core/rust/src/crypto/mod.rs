@@ -6,7 +6,7 @@
 //! - `jwk`: RSA keys to and from JWK JSON (`rsa`), for the OAEP keys and the RS256 passkey keys.
 //! - [`key_chain`]: HKDF-SHA256 (`hkdf`) KEK and SRP input from the unlock key; KEK > Account Key > VEK, private keys.
 //! - [`pin`]: PIN unlock: Argon2id + AES-256-GCM wrap of the key the host stores, with the failed-attempt policy.
-//! - [`rsa_oaep`]: RSA-2048 OAEP-SHA256 (`rsa`, blinded decryption); grants and delivery keys.
+//! - [`rsa_oaep`]: RSA-2048 OAEP-SHA256 (`rsa`, blinded decryption); grants, invitation names and delivery keys.
 //! - [`signing`]: Ed25519 (`ed25519-dalek`) account signatures over grants, public keys and invitation names.
 //! - [`srp`]: SRP-6a client (`srp`, SHA-256, 2048-bit group); login without sending the password.
 //! - [`tokens`]: the algorithm, key-type and KDF tokens stored or sent on the wire.
@@ -33,6 +33,6 @@ pub use key_chain::{
     reencrypt_account_key, rotate_account_keys, unwrap_account_key, unwrap_key, wrap_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError, RotatedAccountKeys, SrpInputError,
 };
 pub use pin::{pin_decrypt, pin_encrypt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
-pub use rsa_oaep::{decrypt_with_private_key, decrypt_with_private_key_and_label, encrypt_with_public_key, encrypt_with_public_key_and_label, generate_rsa_key_pair, RsaKeyPair};
+pub use rsa_oaep::{decrypt_manifest_invitation_name, decrypt_with_private_key, decrypt_with_private_key_and_label, encrypt_with_public_key_and_label, generate_rsa_key_pair, RsaKeyPair};
 pub use signing::generate_signing_key_pair;
 

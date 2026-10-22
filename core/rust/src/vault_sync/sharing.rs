@@ -603,7 +603,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     }
     .filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
     let encrypted_vek = keys::encrypt_manifest_vek(manifest_vek.expose_secret(), &manifest.manifest_id, &recipient_public_key)?;
-    let encrypted_name = name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?;
+    let encrypted_name = name.map(|name| crypto::encrypt_with_public_key_and_label(name.as_bytes(), &recipient_public_key, &crypto::aad::invitation_name(&manifest.manifest_id))).transpose()?;
     let grant = ManifestGrant {
         recipient_user_id: recipient.user_id.clone(),
         recipient_account_public_key_id: recipient_public_key_id,

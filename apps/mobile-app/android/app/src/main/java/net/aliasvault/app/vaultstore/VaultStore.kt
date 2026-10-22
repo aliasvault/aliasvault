@@ -21,7 +21,7 @@ import uniffi.aliasvault_core.ItemUsageAction
 import uniffi.aliasvault_core.VaultException
 import uniffi.aliasvault_core.VaultItem
 import uniffi.aliasvault_core.accountSigningKeyFingerprint
-import uniffi.aliasvault_core.rsaDecrypt
+import uniffi.aliasvault_core.decryptManifestInvitationName as rustDecryptManifestInvitationName
 import java.util.Date
 import java.util.UUID
 import kotlin.coroutines.resume
@@ -280,15 +280,15 @@ class VaultStore(
     }
 
     /**
-     * Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or null when the session
-     * holds no private key or it does not open the ciphertext.
+     * Decrypt an invitation's vault name with the session's account private key, or null when the session holds no private
+     * key or it does not open the name.
      */
-    fun decryptWithAccountPrivateKey(base64Ciphertext: String): String? {
+    fun decryptManifestInvitationName(encryptedName: String, manifestId: String): String? {
         val privateKey = accountPrivateKey ?: return null
         return try {
-            rsaDecrypt(base64Ciphertext, privateKey).toString(Charsets.UTF_8)
+            rustDecryptManifestInvitationName(encryptedName, manifestId, privateKey)
         } catch (e: VaultException) {
-            Log.w(TAG, "The account private key did not open the ciphertext", e)
+            Log.w(TAG, "The account private key did not open the invitation name", e)
             null
         }
     }

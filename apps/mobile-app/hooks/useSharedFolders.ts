@@ -1,5 +1,5 @@
 import { sharingView, type SharedFolder } from '@aliasvault/client/sharing/SharingView';
-import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { SharingService, type InvitationNameDecryptor } from '@aliasvault/client/sharing/SharingService';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -11,6 +11,9 @@ import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 import type { GroupMemberInfo, ReceivedManifestInvitation } from '@aliasvault/models/webapi';
+
+/** Decrypts an invitation's vault name natively, where the account private key lives. */
+const decryptNameNatively: InvitationNameDecryptor = (encryptedName, manifestId) => NativeVaultManager.decryptManifestInvitationName(encryptedName, manifestId);
 
 /**
  * What the vault shows of sharing: the shared folders with their people, the invitations waiting for an answer, the
@@ -44,7 +47,7 @@ export function useSharedFolders(): SharedFolders {
     try {
       const overview = await SharingService.getOverview(webApi);
       setView(sharingView(overview));
-      setInvitationNames(await SharingService.openInvitationNames(overview.receivedInvitations, encryptedName => NativeVaultManager.decryptInvitationName(encryptedName)));
+      setInvitationNames(await SharingService.openInvitationNames(overview.receivedInvitations, decryptNameNatively));
       // The own fingerprint is derived natively from the signing private key, which only the native layer can open.
       setOwnFingerprint(await NativeVaultManager.getSigningKeyFingerprint());
     } catch {

@@ -139,13 +139,13 @@ extension VaultStore {
         }
     }
 
-    /// Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or nil when the session holds
-    /// no private key or it does not open the ciphertext.
-    public func decryptWithAccountPrivateKey(_ base64Ciphertext: String) -> String? {
-        guard let privateKey = accountPrivateKey, let plaintext = try? RustCoreFramework.rsaDecrypt(base64Ciphertext: base64Ciphertext, privateKeyJwk: privateKey) else {
+    /// Decrypt an invitation's vault name with the session's account private key, or nil when the session holds no private key
+    /// or it does not open the name.
+    public func decryptManifestInvitationName(_ encryptedName: String, manifestId: String) -> String? {
+        guard let privateKey = accountPrivateKey else {
             return nil
         }
-        return String(data: plaintext, encoding: .utf8)
+        return try? RustCoreFramework.decryptManifestInvitationName(encryptedName: encryptedName, manifestId: manifestId, privateKeyJwk: privateKey)
     }
 
     /// The account fingerprint of the account's own signing key, derived from the private key the sync engine cached, or nil
