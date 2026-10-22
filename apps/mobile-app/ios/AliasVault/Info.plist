@@ -88,7 +88,7 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
-		<true/>
+		<false/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>AliasVault supports scanning QR codes for logging into your vault on web or desktop without re-entering your master password.</string>

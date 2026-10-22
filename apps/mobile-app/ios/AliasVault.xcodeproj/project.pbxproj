@@ -699,6 +699,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				CE3AE6012F1E0A0100E7745E /* Allow local networking in Debug */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				CEE9098C2DA548C7008D568F /* Embed Foundation Extensions */,
 				CEE480A12DBE86DD00F4A367 /* Embed Frameworks */,
@@ -860,6 +861,7 @@
 				CEE9097A2DA548C7008D568F /* Sources */,
 				CEE9097B2DA548C7008D568F /* Frameworks */,
 				CEE9097C2DA548C7008D568F /* Resources */,
+				CE3AE6022F1E0A0100E7745E /* Allow local networking in Debug */,
 				CEE480B02DBE88AB00F4A367 /* Embed Frameworks */,
 				CE3AE50F2DC7FB5500E7745E /* ShellScript */,
 			);
@@ -1030,6 +1032,44 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		CE3AE6012F1E0A0100E7745E /* Allow local networking in Debug */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Allow local networking in Debug";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Debug builds may reach a local dev API over http://; release builds require TLS.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  /usr/libexec/PlistBuddy -c \"Set :NSAppTransportSecurity:NSAllowsLocalNetworking true\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
+		};
+		CE3AE6022F1E0A0100E7745E /* Allow local networking in Debug */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Allow local networking in Debug";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Debug builds may reach a local dev API over http://; release builds require TLS.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  /usr/libexec/PlistBuddy -c \"Set :NSAppTransportSecurity:NSAllowsLocalNetworking true\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
+		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

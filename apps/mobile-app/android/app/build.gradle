@@ -116,12 +116,15 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            // Debug builds may reach a local dev API over http://; release builds require TLS.
+            manifestPlaceholders = [networkSecurityConfig: "network_security_config_debug"]
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             signingConfig signingConfigs.release
+            manifestPlaceholders = [networkSecurityConfig: "network_security_config"]
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
