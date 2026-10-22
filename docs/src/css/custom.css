@@ -758,11 +758,20 @@ html[data-theme='dark'] .av-install-card__icon {
 
 /* --------------------------------------------------------------- Tables --- */
 
+/* `overflow-x: auto` (not `hidden`) keeps the rounded corners while letting wide tables scroll sideways. */
 .markdown table {
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
   border-collapse: separate;
   border-spacing: 0;
+}
+
+/* On narrow screens, give text-heavy cells a readable width and let the table scroll instead of squeezing every column. */
+@media (max-width: 768px) {
+  .markdown table:not(.av-compare) td,
+  .markdown table:not(.av-compare) th {
+    min-width: 11rem;
+  }
 }
 
 .markdown table thead tr {

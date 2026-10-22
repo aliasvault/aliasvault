@@ -43,7 +43,8 @@ AliasVault is a password and email alias manager with end-to-end encryption: you
 - The server cannot read your vaults or your emails.
 - The server cannot learn your master password or any of your keys.
 - The server cannot change what is in a vault, or move data between vaults or users.
-- The server cannot give anyone access to a vault: only a holder of the vault key can grant access, and every grant is signed.
+- The server cannot give anyone access to a vault: only a holder of the vault key can grant access, and a client opens a shared vault only with a grant it signed itself.
+- The server cannot pass a key of its own off as another user's: your app accepts another user's key only against the account fingerprint you typed.
 
 What the server does store in plaintext, and what an operator can do with it, is listed in the whitepaper: [What the server knows and can do](../security-whitepaper.mdx#24-what-the-server-knows-and-can-do).
 
