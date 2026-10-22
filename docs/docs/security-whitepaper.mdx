@@ -183,11 +183,11 @@ Properties of this hierarchy:
 ### 4.2. Key rotation
 When you change your master password, you can choose to also replace all encryption keys of your account. Without it, a password change keeps the keys ([4.1](#41-key-hierarchy)).
 
-- **Replaced**: the Account Key, the personal VEK, both account keypairs and the personal vault's Vault Delivery Keypair, all created on the client. The new signing key is signed with the old one.
+- **Replaced**: the Account Key, the personal VEK, both account keypairs and the personal vault's Vault Delivery Keypair, all created on the client.
 - **Re-encrypted**: the personal vault and its blob keys with the new VEK, and every grant the user holds for the new account public key.
 - **Signed again**: every key certification the user made, with the new signing key, after the client verified it under the old one ([10.3](#103-account-fingerprints-and-key-certifications)).
 - **Unchanged**: blob bytes, shared vault VEKs and received emails, whose old delivery keypair stays in the vault.
-- **Deleted**: the previous personal VEK, the older revisions of the personal vault with the blobs only they refer to, the password history and the old account encryption keypair, as they can only be opened with the old keys. The old signing public keys stay on the server, each new one signed by the one before it.
+- **Deleted**: the previous personal VEK, the older revisions of the personal vault with the blobs only they refer to, the password history and the old account encryption keypair, as they can only be opened with the old keys. The old signing public keys stay on the server.
 - **All or nothing**: the server applies the rotation in one transaction and refuses it when a blob key or grant is missing or the vault changed in the meantime.
 - **Other devices**: their sessions are revoked, and a device still on the old keys is signed out on its next sync. Device unlock methods have to be set up again, and pending invitations to the user are closed.
 - **Scope**: the old keys cannot decrypt anything written to the personal vault after the rotation. Received emails and shared vaults stay under their existing keys ([13.1](#limitation-shared-member-removal)).

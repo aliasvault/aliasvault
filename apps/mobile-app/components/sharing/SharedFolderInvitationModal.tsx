@@ -164,7 +164,7 @@ export const SharedFolderInvitationModal: React.FC<ISharedFolderInvitationModalP
       {!askFingerprint && (
         <>
           <Text style={styles.bodyText}>{sharingText.sharedWithYouHint}</Text>
-          <Text style={styles.mutedText}>{isInviterVerified(invitation) ? sharingText.invitedByVerified(invitation.inviterUsername) : sharingText.invitedBy(invitation.inviterUsername)}</Text>
+          <Text style={styles.mutedText}>{sharingText.invitedBy(invitation.inviterUsername)}</Text>
         </>
       )}
       {askFingerprint && (

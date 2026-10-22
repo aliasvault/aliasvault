@@ -239,10 +239,6 @@ pub struct RotatedAccountKeys {
 
     #[zeroize(skip)]
     pub account_keys: AccountKeyBlobs,
-
-    /// The previous signing key's signature over the new signing public key (see [`signing::SIGNING_KEY_ROTATION_LABEL`]).
-    #[zeroize(skip)]
-    pub previous_signing_key_signature: String,
 }
 
 impl fmt::Debug for RotatedAccountKeys {
@@ -252,19 +248,16 @@ impl fmt::Debug for RotatedAccountKeys {
 }
 
 /// Rotate an account's keys: a new Account Key, VEK and signing keypair around an account keypair the host generated,
-/// wrapped under the KEK of `new_unlock_key_base64`. The previous signing key is used to confirm the new one.
-pub fn rotate_account_keys(current_signing_private_key_base64: &str, user_id: &str, new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
+/// wrapped under the KEK of `new_unlock_key_base64`.
+pub fn rotate_account_keys(new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
     let hierarchy = create_account_key_hierarchy_with_key_pair(new_unlock_key_base64, key_pair)?;
     let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, new_unlock_key_base64)?;
-    let rotation_message = signing::signing_key_rotation_message(user_id, &hierarchy.account_keys.signing_public_key);
-    let previous_signing_key_signature = signing::sign(current_signing_private_key_base64, &rotation_message)?;
     Ok(RotatedAccountKeys {
         account_key: account_key.to_string(),
         vault_encryption_key: hierarchy.vault_encryption_key.clone(),
         account_private_key: hierarchy.account_private_key.clone(),
         signing_private_key: hierarchy.signing_private_key.clone(),
         account_keys: hierarchy.account_keys.clone(),
-        previous_signing_key_signature,
     })
 }
 
@@ -273,12 +266,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn rotated_keys_open_with_the_new_unlock_key_and_vouch_for_each_other() {
+    fn rotated_keys_open_with_the_new_unlock_key() {
         let old_hierarchy = create_account_key_hierarchy(&generate_key_base64()).unwrap();
         let new_unlock_key = generate_key_base64();
         let key_pair = generate_rsa_key_pair().unwrap();
 
-        let rotated = rotate_account_keys(&old_hierarchy.signing_private_key, "user-1", &new_unlock_key, &key_pair).unwrap();
+        let rotated = rotate_account_keys(&new_unlock_key, &key_pair).unwrap();
         let blobs = &rotated.account_keys;
 
         // The new chain opens with the new unlock key and yields the new VEK and private keys.
@@ -289,10 +282,7 @@ mod tests {
         assert_ne!(rotated.vault_encryption_key, old_hierarchy.vault_encryption_key);
         assert_ne!(blobs.signing_public_key, old_hierarchy.account_keys.signing_public_key);
 
-        // The old signing key vouches for the new one, bound to the account.
-        let message = signing::signing_key_rotation_message("user-1", &blobs.signing_public_key);
-        assert!(signing::verify(&old_hierarchy.account_keys.signing_public_key, &message, &rotated.previous_signing_key_signature));
-        assert!(!signing::verify(&old_hierarchy.account_keys.signing_public_key, &signing::signing_key_rotation_message("user-2", &blobs.signing_public_key), &rotated.previous_signing_key_signature));
+        // The new signing key vouches for the new account public key.
         assert!(signing::verify(&blobs.signing_public_key, &signing::account_public_key_message(&blobs.account_public_key), &blobs.account_public_key_signature));
     }
 

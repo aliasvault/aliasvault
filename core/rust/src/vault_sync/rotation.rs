@@ -96,7 +96,6 @@ struct AccountKeysWrite {
     account_public_key_signature: String,
     signing_public_key: String,
     encrypted_signing_private_key: String,
-    previous_signing_key_signature: String,
 }
 
 #[derive(Serialize)]
@@ -199,7 +198,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let certifications: Vec<CertificationEntry> = http::with_outdated_server_guard(http::get(&ctx.host, "Groups/certifications", false).await)?;
 
     let key_pair = crypto::RsaKeyPair { public_key: params.new_account_public_key.clone(), private_key: params.new_account_private_key.expose_secret().to_string() };
-    let rotated = crypto::rotate_account_keys(signing_key.expose_secret(), &params.user_id, params.new_unlock_key.expose_secret(), &key_pair)?;
+    let rotated = crypto::rotate_account_keys(params.new_unlock_key.expose_secret(), &key_pair)?;
     let new_vek = SecretString::from(rotated.vault_encryption_key.as_str());
     ctx.log("[KeyRotation] Generated the new Account Key, VEK, account keypair and signing keypair.").await;
 
@@ -337,7 +336,6 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
             account_public_key_signature: rotated.account_keys.account_public_key_signature.clone(),
             signing_public_key: rotated.account_keys.signing_public_key.clone(),
             encrypted_signing_private_key: rotated.account_keys.encrypted_signing_private_key.clone(),
-            previous_signing_key_signature: rotated.previous_signing_key_signature.clone(),
         },
         manifest: ManifestWrite {
             manifest_id: personal_manifest_id.to_string(),

@@ -32,9 +32,6 @@ pub const EMAIL_CLAIM_TRANSFER_LABEL: &str = "aliasvault/v1/sig/email-claim-tran
 /// The label of a Login with Mobile approval: the Account Key encrypted for the requesting client, signed by the approving user.
 pub const MOBILE_LOGIN_APPROVAL_LABEL: &str = "aliasvault/v1/sig/mobile-login-approval";
 
-/// The label of a new signing public key, signed by the signing key it replaces.
-pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
-
 /// The label of a key certification: one user vouching that a signing public key belongs to another user, after checking
 /// its fingerprint against the account fingerprint that user gave them outside AliasVault.
 pub const KEY_CERTIFICATION_LABEL: &str = "aliasvault/v1/sig/key-certification";
@@ -113,11 +110,6 @@ pub fn email_claim_transfer_message(address: &str, source_manifest_id: &str, tar
 /// The signed message of approving Login with Mobile request `request_id` with `encrypted_account_key`.
 pub fn mobile_login_approval_message(request_id: &str, algorithm: &str, encrypted_account_key: &str) -> Vec<u8> {
     signed_message(MOBILE_LOGIN_APPROVAL_LABEL, &[request_id.as_bytes(), algorithm.as_bytes(), encrypted_account_key.as_bytes()])
-}
-
-/// The signed message of a signing key rotation: the account's new signing public key, vouched for by the previous one.
-pub fn signing_key_rotation_message(user_id: &str, new_signing_public_key: &str) -> Vec<u8> {
-    signed_message(SIGNING_KEY_ROTATION_LABEL, &[user_id.as_bytes(), new_signing_public_key.as_bytes()])
 }
 
 /// The signed message of a key certification: `certifier_user_id` vouches that `subject_signing_public_key` belongs to `subject_user_id`.
@@ -206,12 +198,6 @@ mod tests {
         assert_eq!(crate::common::encoding::hex_encode_lower(&invitation_name_message(manifest_id, "user-1", "{\"kty\":\"RSA\"}", "bmFtZQ==")), INVITATION_NAME_MESSAGE_VECTOR);
     }
 
-    /// Known-answer vector for the signing key rotation message, which `Signing.cs` builds too. Never regenerate it.
-    #[test]
-    fn signing_key_rotation_message_known_answer() {
-        assert_eq!(crate::common::encoding::hex_encode_lower(&signing_key_rotation_message("user-1", PUBLIC_KEY_VECTOR)), SIGNING_KEY_ROTATION_MESSAGE_VECTOR);
-    }
-
     /// Known-answer vector for the key certification message, which `Signing.cs` builds too. Never regenerate it.
     #[test]
     fn key_certification_message_known_answer() {
@@ -247,7 +233,6 @@ mod tests {
         assert!(!fingerprint_matches("not base64!", FINGERPRINT_VECTOR));
     }
 
-    const SIGNING_KEY_ROTATION_MESSAGE_VECTOR: &str = "00000026616c6961737661756c742f76312f7369672f7369676e696e672d6b65792d726f746174696f6e00000006757365722d310000002c41364548762f504f454c3464634e3059353076416d57666b316a436270513166486479475a424a564d62673d";
 
     const INVITATION_NAME_MESSAGE_VECTOR: &str = "00000021616c6961737661756c742f76312f7369672f696e7669746174696f6e2d6e616d650000002430613162326333642d303030302d303030302d303030302d30303030303030303030303100000006757365722d310000000d7b226b7479223a22525341227d00000008626d46745a513d3d";
 

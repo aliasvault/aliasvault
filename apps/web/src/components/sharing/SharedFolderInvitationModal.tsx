@@ -106,7 +106,7 @@ const SharedFolderInvitationModal: React.FC<SharedFolderInvitationModalProps> = 
         {!askFingerprint && (
           <>
             <p className="text-sm text-gray-600 dark:text-gray-300">{sharingText.sharedWithYouHint}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{isInviterVerified(invitation) ? sharingText.invitedByVerified(invitation.inviterUsername) : sharingText.invitedBy(invitation.inviterUsername)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{sharingText.invitedBy(invitation.inviterUsername)}</p>
           </>
         )}
         {askFingerprint && (

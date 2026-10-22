@@ -29,7 +29,6 @@ namespace AliasServerDb.Migrations
             migrationBuilder.RenameColumn(name: "UnlockKeyId", table: "UserUnlockMethodsHistory", newName: "UnlockMethodId");
             migrationBuilder.Sql("""UPDATE "ServerSettings" SET "Key" = 'UnlockMethodHistoryRetentionDays' WHERE "Key" = 'UnlockKeyHistoryRetentionDays';""");
 
-            migrationBuilder.AddColumn<string>(name: "PreviousKeySignature", table: "UserSigningKeys", type: "character varying(255)", maxLength: 255, nullable: true);
             migrationBuilder.AddColumn<string>(name: "Fingerprint", table: "UserSigningKeys", type: "character varying(20)", maxLength: 20, nullable: true);
 
             // Backfill the fingerprint as Signing.Fingerprint computes it: SHA-256 over the length-prefixed label and key bytes,
@@ -160,7 +159,6 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropTable(name: "UserKeyCertifications");
             migrationBuilder.DropIndex(name: "IX_UserSigningKeys_Fingerprint", table: "UserSigningKeys");
             migrationBuilder.DropColumn(name: "Fingerprint", table: "UserSigningKeys");
-            migrationBuilder.DropColumn(name: "PreviousKeySignature", table: "UserSigningKeys");
 
             migrationBuilder.Sql("""UPDATE "ServerSettings" SET "Key" = 'UnlockKeyHistoryRetentionDays' WHERE "Key" = 'UnlockMethodHistoryRetentionDays';""");
             migrationBuilder.RenameColumn(name: "UnlockMethodId", table: "UserUnlockMethodsHistory", newName: "UnlockKeyId");

@@ -48,11 +48,6 @@ public static class Signing
     public const string MobileLoginApprovalLabel = "aliasvault/v1/sig/mobile-login-approval";
 
     /// <summary>
-    /// The label of a new signing public key, signed by the signing key it replaces.
-    /// </summary>
-    public const string SigningKeyRotationLabel = "aliasvault/v1/sig/signing-key-rotation";
-
-    /// <summary>
     /// The label of a key certification: one user vouching that a signing public key belongs to another user.
     /// </summary>
     public const string KeyCertificationLabel = "aliasvault/v1/sig/key-certification";
@@ -152,17 +147,6 @@ public static class Signing
     public static byte[] MobileLoginApprovalMessage(string requestId, string algorithm, string encryptedAccountKey)
     {
         return SignedMessage(MobileLoginApprovalLabel, Utf8(requestId), Utf8(algorithm), Utf8(encryptedAccountKey));
-    }
-
-    /// <summary>
-    /// Builds the signed message of a signing key rotation: the account's new signing public key, signed by the previous one.
-    /// </summary>
-    /// <param name="userId">The account rotating its signing key.</param>
-    /// <param name="newSigningPublicKey">The new signing public key (base64).</param>
-    /// <returns>The message bytes.</returns>
-    public static byte[] SigningKeyRotationMessage(string userId, string newSigningPublicKey)
-    {
-        return SignedMessage(SigningKeyRotationLabel, Utf8(userId), Utf8(newSigningPublicKey));
     }
 
     /// <summary>

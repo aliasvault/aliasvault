@@ -29,8 +29,6 @@ export const sharingText = {
   inviterFingerprintTitle: (username: string): string => `Confirm the invitation from ${username}`,
   /** Explains why the inviter's account fingerprint is asked for. */
   inviterFingerprintExplanation: (username: string): string => `For your security, enter the account fingerprint of ${username}. It confirms that this invitation really comes from them. ${username} finds it in Settings on their device.`,
-  /** Who sent an invitation, whose key this account verified before. */
-  invitedByVerified: (username: string): string => `Invited by ${username} (verified)`,
   /** Who sent an invitation. */
   invitedBy: (username: string): string => `Invited by ${username}`,
   invitePeople: 'Invite someone',

@@ -46,15 +46,10 @@ public class KeyRotationAccountKeys
     public required string EncryptedSigningPrivateKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the previous signing key's signature over the new signing public key.
-    /// </summary>
-    public required string PreviousSigningKeySignature { get; set; }
-
-    /// <summary>
     /// Gets a value indicating whether every value is present and within the stored size limits.
     /// </summary>
     [JsonIgnore]
     public bool FitsStorageLimits => EncryptedVek.Length <= AccountKeysUpload.MaxWrappedKeyLength && AccountPublicKey.Length <= AccountKeysUpload.MaxPublicKeyLength
         && EncryptedAccountPrivateKey.Length <= AccountKeysUpload.MaxEncryptedPrivateKeyLength && AccountPublicKeySignature.Length <= AccountKeysUpload.MaxSigningValueLength && SigningPublicKey.Length <= AccountKeysUpload.MaxSigningPublicKeyLength
-        && EncryptedSigningPrivateKey.Length <= AccountKeysUpload.MaxSigningValueLength && PreviousSigningKeySignature.Length <= AccountKeysUpload.MaxSigningValueLength;
+        && EncryptedSigningPrivateKey.Length <= AccountKeysUpload.MaxSigningValueLength;
 }

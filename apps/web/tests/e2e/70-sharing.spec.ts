@@ -149,7 +149,7 @@ test.describe('70. Sharing', () => {
         await expect(member.page.locator('[data-invitation]')).toBeVisible({ timeout: 2000 });
       }).toPass({ timeout: 30000 });
       await member.page.locator('[data-invitation]').click();
-      await expect(member.page.getByText(`Invited by ${ownerUser.username} (verified)`)).toBeVisible();
+      await expect(member.page.getByText(`Invited by ${ownerUser.username}`)).toBeVisible();
       await member.page.locator('#accept-invitation').click();
       await expect(member.page).toHaveURL(/\/items\/folder\//);
       await expect(member.page.locator('#inviter-fingerprint')).toHaveCount(0);

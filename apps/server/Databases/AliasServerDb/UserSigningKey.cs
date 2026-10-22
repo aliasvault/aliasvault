@@ -71,12 +71,6 @@ public class UserSigningKey
     public int AccountKeyVersion { get; set; }
 
     /// <summary>
-    /// Gets or sets the previous signing key's signature over <see cref="PublicKey"/>; null for an account's first signing key.
-    /// </summary>
-    [StringLength(255)]
-    public string? PreviousKeySignature { get; set; }
-
-    /// <summary>
     /// Gets or sets the timestamp at which this keypair was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }

@@ -103,7 +103,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             return ApiError.Result(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400);
         }
 
-        var shapeError = await ValidateShapeAsync(context, user, model);
+        var shapeError = ValidateShape(user, model);
         if (shapeError != null)
         {
             return shapeError;
@@ -242,7 +242,6 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
                 PublicKey = model.AccountKeys.SigningPublicKey,
                 Fingerprint = Signing.Fingerprint(model.AccountKeys.SigningPublicKey),
                 EncryptedPrivateKey = model.AccountKeys.EncryptedSigningPrivateKey,
-                PreviousKeySignature = model.AccountKeys.PreviousSigningKeySignature,
                 IsPrimary = true,
                 AccountKeyVersion = newAccountKeyVersion,
                 CreatedAt = now,
@@ -379,11 +378,10 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
 
     /// <summary>
     /// Checks everything about the request that needs no transaction: sizes, algorithms, ciphertext hashes and signatures.
-    /// Every signature is checked against the new signing key, which the rotation stores in the same transaction, except the
-    /// new signing key itself, which the current one must vouch for.
+    /// Every signature is checked against the new signing key, which the rotation stores in the same transaction.
     /// </summary>
     /// <returns>Null when the request is well-formed, else the error to answer with.</returns>
-    private static async Task<IActionResult?> ValidateShapeAsync(AliasServerDbContext context, AliasVaultUser user, KeyRotationRequest model)
+    private static IActionResult? ValidateShape(AliasVaultUser user, KeyRotationRequest model)
     {
         var unlock = model.UnlockMethod;
         var keys = model.AccountKeys;
@@ -430,15 +428,12 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
             return ApiError.Result(ApiErrorCode.INVALID_REQUEST, 400);
         }
 
-        // Signatures: the new signing key vouches for the new account public key, every grant, the delivery key and every
-        // key certification; the current signing key vouches for the new signing key.
-        var currentSigningKey = await GrantHelper.GetPrimarySigningKeyAsync(context, user.Id);
-        var signingKeyIsVouchedFor = Signing.Verify(currentSigningKey, Signing.SigningKeyRotationMessage(user.Id, keys.SigningPublicKey), keys.PreviousSigningKeySignature);
+        // Signatures: the new signing key vouches for the new account public key, every grant, the delivery key and every key certification.
         var accountKeyIsSigned = Signing.VerifyAccountPublicKey(keys.SigningPublicKey, keys.AccountPublicKey, keys.AccountPublicKeySignature);
         var grantsAreSigned = model.Grants.All(g => Signing.Verify(keys.SigningPublicKey, Signing.GrantMessage(g.ManifestId, g.KeyVersion, user.Id, keys.AccountPublicKey, g.Algorithm, g.EncryptedVek), g.Signature));
         var deliveryKeyIsSigned = string.IsNullOrEmpty(deliveryKey) || Signing.Verify(keys.SigningPublicKey, Signing.DeliveryKeyMessage(model.Manifest.ManifestId, deliveryKey, model.Manifest.CurrentRevision), model.Manifest.DeliveryPublicKeySignature);
         var certificationsAreSigned = model.Certifications.All(c => Signing.Verify(keys.SigningPublicKey, Signing.KeyCertificationMessage(user.Id, c.SubjectUserId, c.SubjectSigningPublicKey), c.Signature));
-        if (!signingKeyIsVouchedFor || !accountKeyIsSigned || !grantsAreSigned || !deliveryKeyIsSigned || !certificationsAreSigned)
+        if (!accountKeyIsSigned || !grantsAreSigned || !deliveryKeyIsSigned || !certificationsAreSigned)
         {
             return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
         }

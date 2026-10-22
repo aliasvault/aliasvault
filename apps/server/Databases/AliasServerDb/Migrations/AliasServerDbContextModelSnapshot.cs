@@ -1114,10 +1114,6 @@ namespace AliasServerDb.Migrations
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("PreviousKeySignature")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
                     b.Property<string>("PublicKey")
                         .IsRequired()
                         .HasMaxLength(100)
