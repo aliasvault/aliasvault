@@ -1,6 +1,6 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
-import { VaultKeyAlgorithm, type MobileLoginDetailsResponse, type MobileLoginRequestReference, type MobileLoginSubmitRequest } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm, type MobileLoginDetailsResponse, type MobileLoginRequestReference } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
@@ -188,8 +188,13 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
 
       // Encrypt with the public key that was verified against the QR code.
       const encryptedAccountKey = await NativeVaultManager.encryptAccountKeyForMobileLogin(request.details.clientPublicKey);
-      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedAccountKey, algorithm: request.details.algorithm };
-      await webApi.post<MobileLoginSubmitRequest, void>('auth/mobile-login/submit', submitRequest, false);
+      const approval = { requestId: scan.requestId, encryptedAccountKey, algorithm: request.details.algorithm };
+      const result = await NativeVaultManager.runSharingOperation('approveMobileLogin', JSON.stringify(approval));
+      if (!result.success) {
+        console.error('Mobile login approval failed:', result.apiErrorCode ?? result.error);
+        showResult(false);
+        return;
+      }
 
       showResult(true);
     } catch (error) {

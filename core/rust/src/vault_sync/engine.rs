@@ -35,6 +35,7 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         SyncOperation::AcceptSharedManifestInvitation => serde_json::to_value(sharing::accept_shared_manifest_invitation_operation(&mut ctx).await),
         SyncOperation::RotateAccountKeys => serde_json::to_value(rotation::rotate_account_keys_operation(&mut ctx).await),
         SyncOperation::TransferEmailClaim => serde_json::to_value(sharing::transfer_email_claim_operation(&mut ctx).await),
+        SyncOperation::ApproveMobileLogin => serde_json::to_value(sharing::approve_mobile_login_operation(&mut ctx).await),
     };
     finish(&ctx, result.unwrap_or(Value::Null))
 }

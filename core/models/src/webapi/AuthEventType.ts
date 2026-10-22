@@ -73,6 +73,31 @@ export enum AuthEventType {
   SharedVaultDeletion = 'shared-vault-deletion',
 
   /**
+   * Represents an admin taking a member's access to a shared manifest away, confirmed with the master password.
+   */
+  SharedVaultAccessRevocation = 'shared-vault-access-revocation',
+
+  /**
+   * Represents a member giving up their own access to a shared manifest, confirmed with the master password.
+   */
+  SharedVaultLeave = 'shared-vault-leave',
+
+  /**
+   * Represents an admin inviting an account to a shared manifest.
+   */
+  SharedVaultInvitation = 'shared-vault-invitation',
+
+  /**
+   * Represents accepting an invitation to a shared manifest, which gives the account its own grant.
+   */
+  SharedVaultJoin = 'shared-vault-join',
+
+  /**
+   * Represents certifying another account's signing key after checking its account fingerprint.
+   */
+  KeyCertification = 'key-certification',
+
+  /**
    * Represents a user account deletion event.
    */
   AccountDeletion = 'account-deletion',

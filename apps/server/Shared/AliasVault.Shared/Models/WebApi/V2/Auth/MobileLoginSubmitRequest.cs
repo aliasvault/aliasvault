@@ -33,4 +33,10 @@ public class MobileLoginSubmitRequest
     /// </summary>
     [Required]
     public required string Algorithm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the approving user's Ed25519 signature over the approval (see <c>Signing.MobileLoginApprovalMessage</c>).
+    /// Optional while app versions that do not sign are supported.
+    /// </summary>
+    public string? Signature { get; set; }
 }

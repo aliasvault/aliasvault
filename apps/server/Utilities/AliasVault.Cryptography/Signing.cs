@@ -43,6 +43,11 @@ public static class Signing
     public const string EmailClaimTransferLabel = "aliasvault/v1/sig/email-claim-transfer";
 
     /// <summary>
+    /// The label of a Login with Mobile approval, signed by the approving user.
+    /// </summary>
+    public const string MobileLoginApprovalLabel = "aliasvault/v1/sig/mobile-login-approval";
+
+    /// <summary>
     /// The label of a new signing public key, signed by the signing key it replaces.
     /// </summary>
     public const string SigningKeyRotationLabel = "aliasvault/v1/sig/signing-key-rotation";
@@ -135,6 +140,18 @@ public static class Signing
     public static byte[] EmailClaimTransferMessage(string address, Guid sourceManifestId, Guid targetManifestId, long claimVersion)
     {
         return SignedMessage(EmailClaimTransferLabel, Utf8(address), Utf8(sourceManifestId.ToString()), Utf8(targetManifestId.ToString()), Utf8(claimVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
+    /// <summary>
+    /// Builds the signed message of a Login with Mobile approval: the Account Key encrypted for the requesting client.
+    /// </summary>
+    /// <param name="requestId">The Login with Mobile request.</param>
+    /// <param name="algorithm">The algorithm of the encrypted Account Key.</param>
+    /// <param name="encryptedAccountKey">The encrypted Account Key.</param>
+    /// <returns>The message bytes.</returns>
+    public static byte[] MobileLoginApprovalMessage(string requestId, string algorithm, string encryptedAccountKey)
+    {
+        return SignedMessage(MobileLoginApprovalLabel, Utf8(requestId), Utf8(algorithm), Utf8(encryptedAccountKey));
     }
 
     /// <summary>

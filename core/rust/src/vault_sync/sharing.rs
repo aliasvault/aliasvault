@@ -1,5 +1,6 @@
 //! The sharing operations that take vault keys or sign something: creating a group's shared manifest, updating one,
-//! inviting to a group or a shared manifest, accepting those invitations, and moving an email alias to another manifest.
+//! inviting to a group or a shared manifest, accepting those invitations, moving an email alias to another manifest, and
+//! approving a Login with Mobile request.
 //!
 //! Trust between two accounts rests on key certifications: once a user has checked another account's signing key (outside
 //! AliasVault) against that account's account fingerprint (the key's fingerprint), a client signs a
@@ -131,6 +132,16 @@ struct EmailClaimTransferRequest<'a> {
     target_manifest_id: &'a str,
     claim_version: i64,
     signature: &'a str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MobileLoginSubmitRequest<'a> {
+    request_id: &'a str,
+    encrypted_account_key: &'a str,
+    algorithm: &'a str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    signature: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -283,6 +294,12 @@ pub(crate) async fn accept_shared_manifest_invitation_operation(ctx: &mut Ctx) -
 pub(crate) async fn transfer_email_claim_operation(ctx: &mut Ctx) -> SharingOperationResult {
     let outcome = transfer_email_claim(ctx).await;
     finish(ctx, "move email alias", outcome).await
+}
+
+/// Approve a Login with Mobile request.
+pub(crate) async fn approve_mobile_login_operation(ctx: &mut Ctx) -> SharingOperationResult {
+    let outcome = approve_mobile_login(ctx).await;
+    finish(ctx, "approve mobile login", outcome).await
 }
 
 /// Turn an operation's outcome into the result the host acts on.
@@ -643,6 +660,22 @@ async fn transfer_email_claim(ctx: &mut Ctx) -> Outcome {
     http::post_no_content(&ctx.host, "Vault/email-claims/transfer", &request).await?;
     ctx.log(format!("[Sharing] Moved an email alias from manifest {} to manifest {}.", source_manifest_id, target_manifest_id)).await;
     Ok(Ok(Done { manifest_id: Some(target_manifest_id), ..Default::default() }))
+}
+
+/// Hand the Account Key, encrypted for the requesting client, to a Login with Mobile request, signed with this account's
+/// own key so a stolen session token alone cannot approve a request. An account without a signing key yet sends it unsigned.
+async fn approve_mobile_login(ctx: &mut Ctx) -> Outcome {
+    let target = params(ctx)?;
+    let request_id = target.request_id.as_deref().ok_or_else(|| SyncError::Other("The approval names no request".to_string()))?;
+    let encrypted_account_key = target.encrypted_account_key.as_deref().ok_or_else(|| SyncError::Other("The approval carries no Account Key".to_string()))?;
+    let algorithm = target.algorithm.as_deref().ok_or_else(|| SyncError::Other("The approval names no algorithm".to_string()))?;
+    let signature = match keys::signing_private_key(ctx).await? {
+        Some(signing_key) => Some(crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::mobile_login_approval_message(request_id, algorithm, encrypted_account_key))?),
+        None => None,
+    };
+    http::post_no_content(&ctx.host, "Auth/mobile-login/submit", &MobileLoginSubmitRequest { request_id, encrypted_account_key, algorithm, signature }).await?;
+    ctx.log("[Sharing] Approved a Login with Mobile request.").await;
+    Ok(Ok(Done::default()))
 }
 
 /// Accept an invitation to a shared manifest: check the certified inviter signed it and the key inside opens for this

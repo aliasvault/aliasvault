@@ -21,7 +21,7 @@ import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
 /** The sharing operations, which take `VaultSyncSharingParams`. */
-export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupAccountFingerprint' | 'acceptSharedManifestInvitation' | 'transferEmailClaim';
+export type VaultSyncSharingOperation = 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest' | 'lookupAccountFingerprint' | 'acceptSharedManifestInvitation' | 'transferEmailClaim' | 'approveMobileLogin';
 
 export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | VaultSyncSharingOperation | 'rotateAccountKeys';
 
@@ -52,6 +52,9 @@ export type VaultSyncSharingParams = {
   address?: string;
   sourceManifestId?: string;
   claimVersion?: number;
+  requestId?: string;
+  encryptedAccountKey?: string;
+  algorithm?: string;
 };
 
 /** Moving an email alias from `sourceManifestId` to `manifestId`, signed over the claim version the server reported. */

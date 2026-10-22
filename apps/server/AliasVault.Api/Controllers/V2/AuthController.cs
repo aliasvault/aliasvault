@@ -1076,6 +1076,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
         }
 
+        // An approval creates a new session, so the approving session must still exist: a leftover access token of a revoked
+        // session cannot be used to log in again.
+        var sessionId = Guid.TryParse(User.FindFirstValue(TokenService.RefreshTokenIdClaim), out var refreshTokenId) ? refreshTokenId : Guid.Empty;
+        if (!await context.AliasVaultUserRefreshTokens.AnyAsync(t => t.Id == sessionId && t.UserId == user.Id))
+        {
+            return ApiError.Result(ApiErrorCode.NOT_AUTHENTICATED, 401);
+        }
+
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
         if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
@@ -1086,6 +1094,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (model.Algorithm != VaultKeyAlgorithms.ToToken(loginRequest.Algorithm))
         {
             return ApiError.Result(ApiErrorCode.INVALID_ALGORITHM, 400);
+        }
+
+        // A signed approval proves the signing key, which a session token alone does not. Unsigned approvals from older app
+        // versions are still accepted; make the signature required once those versions are no longer supported.
+        if (model.Signature is not null)
+        {
+            var signingKey = await GrantHelper.GetPrimarySigningKeyAsync(context, user.Id);
+            if (signingKey is null || !Signing.Verify(signingKey, Signing.MobileLoginApprovalMessage(model.RequestId, model.Algorithm, model.EncryptedAccountKey), model.Signature))
+            {
+                return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
+            }
         }
 
         // Store the answer in one transaction.

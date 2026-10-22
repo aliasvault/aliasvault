@@ -40,6 +40,8 @@ pub enum SyncOperation {
     RotateAccountKeys,
     /// Move an email alias to another manifest (`SharingParams.manifest_id`), signed with this account's own key.
     TransferEmailClaim,
+    /// Approve a Login with Mobile request with the Account Key encrypted for the requesting client, signed with this account's own key.
+    ApproveMobileLogin,
 }
 
 /// What a key rotation needs from the host: the proof of the current password and the new unlock method, both
@@ -88,6 +90,15 @@ pub struct SharingParams {
     /// The claim version the server reported for the alias, which an alias transfer signs.
     #[serde(default)]
     pub claim_version: Option<i64>,
+    /// The Login with Mobile request a mobile login approval answers.
+    #[serde(default)]
+    pub request_id: Option<String>,
+    /// The Account Key encrypted for the requesting client, for a mobile login approval.
+    #[serde(default)]
+    pub encrypted_account_key: Option<String>,
+    /// The algorithm of `encrypted_account_key`.
+    #[serde(default)]
+    pub algorithm: Option<String>,
 }
 
 /// Sync request.

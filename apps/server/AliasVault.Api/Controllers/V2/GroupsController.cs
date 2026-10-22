@@ -237,33 +237,34 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return ApiError.Result(ApiErrorCode.ACCOUNT_FINGERPRINT_NOT_FOUND, 404);
         }
 
-        var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(context, me.Id);
-        if (!Signing.Verify(signerPublicKey, Signing.KeyCertificationMessage(me.Id, model.SubjectUserId, model.SubjectSigningPublicKey), model.Signature))
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
-        }
+            await using var writeContext = await dbContextFactory.CreateDbContextAsync();
+            await using var tx = await writeContext.Database.BeginTransactionAsync();
 
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-        Task<int> ReplaceAsync() => context.UserKeyCertifications
-            .Where(c => c.CertifierUserId == me.Id && c.SubjectUserId == model.SubjectUserId)
-            .ExecuteUpdateAsync(c => c.SetProperty(x => x.SubjectSigningPublicKey, model.SubjectSigningPublicKey).SetProperty(x => x.Signature, model.Signature).SetProperty(x => x.UpdatedAt, now));
-
-        if (await ReplaceAsync() == 0)
-        {
-            context.UserKeyCertifications.Add(new UserKeyCertification { Id = Guid.NewGuid(), CertifierUserId = me.Id, SubjectUserId = model.SubjectUserId, SubjectSigningPublicKey = model.SubjectSigningPublicKey, Signature = model.Signature, CreatedAt = now, UpdatedAt = now });
-
-            try
+            // The signature is checked against the signing key under the lock a key rotation takes, so it cannot be replaced in between.
+            await GrantHelper.LockUserCertificationsAsync(writeContext, me.Id);
+            var signerPublicKey = await GrantHelper.GetPrimarySigningKeyAsync(writeContext, me.Id);
+            if (!Signing.Verify(signerPublicKey, Signing.KeyCertificationMessage(me.Id, model.SubjectUserId, model.SubjectSigningPublicKey), model.Signature))
             {
-                await context.SaveChangesAsync();
+                return ApiError.Result(ApiErrorCode.SIGNATURE_INVALID, 400);
             }
-            catch (DbUpdateException)
-            {
-                // A concurrent request stored a certification for the same pair first; this one replaces it.
-                await ReplaceAsync();
-            }
-        }
 
-        return Ok();
+            var now = timeProvider.GetUtcNow().UtcDateTime;
+            var replaced = await writeContext.UserKeyCertifications
+                .Where(c => c.CertifierUserId == me.Id && c.SubjectUserId == model.SubjectUserId)
+                .ExecuteUpdateAsync(c => c.SetProperty(x => x.SubjectSigningPublicKey, model.SubjectSigningPublicKey).SetProperty(x => x.Signature, model.Signature).SetProperty(x => x.UpdatedAt, now));
+            if (replaced == 0)
+            {
+                writeContext.UserKeyCertifications.Add(new UserKeyCertification { Id = Guid.NewGuid(), CertifierUserId = me.Id, SubjectUserId = model.SubjectUserId, SubjectSigningPublicKey = model.SubjectSigningPublicKey, Signature = model.Signature, CreatedAt = now, UpdatedAt = now });
+                await writeContext.SaveChangesAsync();
+            }
+
+            await tx.CommitAsync();
+            await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.KeyCertification);
+            return Ok();
+        });
     }
 
     /// <summary>
@@ -488,6 +489,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             }
 
             await transaction.CommitAsync();
+            await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultInvitation);
             return Ok(new GrantManifestAccessResponse { InvitationId = invitation.Id });
         });
     }
@@ -908,6 +910,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
+            await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultJoin);
             return Ok();
         });
     }

@@ -132,6 +132,7 @@ public class KeyRotationController(ILogger<KeyRotationController> logger, IAlias
         {
             await using var writeContext = await dbContextFactory.CreateDbContextAsync();
             await using var tx = await writeContext.Database.BeginTransactionAsync();
+            await GrantHelper.LockUserCertificationsAsync(writeContext, user.Id);
 
             var manifest = await writeContext.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == model.Expected.PersonalManifestId && x.OwnerGroupId == user.PersonalGroupId);
             if (manifest == null)

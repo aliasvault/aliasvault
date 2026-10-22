@@ -102,6 +102,18 @@ public static class GrantHelper
     }
 
     /// <summary>
+    /// Take a transaction-scoped lock on the key certifications a user made, so a certification and a key rotation of that
+    /// user never interleave (a certification signed with the old key after the rotation re-signed the others).
+    /// </summary>
+    /// <param name="context">Database context, inside an open transaction.</param>
+    /// <param name="userId">The certifying user.</param>
+    /// <returns>Task.</returns>
+    public static async Task LockUserCertificationsAsync(AliasServerDbContext context, string userId)
+    {
+        await context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({"user-certifications:" + userId}, 0))");
+    }
+
+    /// <summary>
     /// Take a user's access to a shared manifest away.
     /// </summary>
     /// <param name="context">Database context.</param>

@@ -38,6 +38,7 @@ class VaultSync(
             "lookupAccountFingerprint",
             "acceptSharedManifestInvitation",
             "transferEmailClaim",
+            "approveMobileLogin",
         )
     }
 

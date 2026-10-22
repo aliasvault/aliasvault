@@ -88,19 +88,24 @@ public enum AuthEventType
     SharedVaultAccessRevocation = 52,
 
     /// <summary>
-    /// Represents an admin removing a member from a family, confirmed with the master password.
-    /// </summary>
-    FamilyMemberRemoval = 53,
-
-    /// <summary>
     /// Represents a member giving up their own access to a shared manifest, confirmed with the master password.
     /// </summary>
     SharedVaultLeave = 54,
 
     /// <summary>
-    /// Represents a member leaving a family, confirmed with the master password.
+    /// Represents an admin inviting an account to a shared manifest.
     /// </summary>
-    FamilyLeave = 55,
+    SharedVaultInvitation = 56,
+
+    /// <summary>
+    /// Represents accepting an invitation to a shared manifest, which gives the account its own grant.
+    /// </summary>
+    SharedVaultJoin = 57,
+
+    /// <summary>
+    /// Represents certifying another account's signing key after checking its account fingerprint.
+    /// </summary>
+    KeyCertification = 58,
 
     /// <summary>
     /// Represents a user account deletion event.

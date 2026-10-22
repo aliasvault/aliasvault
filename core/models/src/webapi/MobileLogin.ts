@@ -70,12 +70,3 @@ export type MobileLoginDetailsResponse = {
     operatingSystem: string | null;
     createdAt: string;
 }
-
-/**
- * Mobile login submit request type.
- */
-export type MobileLoginSubmitRequest = {
-    requestId: string;
-    encryptedAccountKey: string;
-    algorithm: string;
-}

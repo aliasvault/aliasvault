@@ -29,6 +29,9 @@ pub const INVITATION_NAME_LABEL: &str = "aliasvault/v1/sig/invitation-name";
 /// The label of moving an email alias to another manifest, signed by the user who moves it.
 pub const EMAIL_CLAIM_TRANSFER_LABEL: &str = "aliasvault/v1/sig/email-claim-transfer";
 
+/// The label of a Login with Mobile approval: the Account Key encrypted for the requesting client, signed by the approving user.
+pub const MOBILE_LOGIN_APPROVAL_LABEL: &str = "aliasvault/v1/sig/mobile-login-approval";
+
 /// The label of a new signing public key, signed by the signing key it replaces.
 pub const SIGNING_KEY_ROTATION_LABEL: &str = "aliasvault/v1/sig/signing-key-rotation";
 
@@ -105,6 +108,11 @@ pub fn delivery_key_message(manifest_id: &str, public_key: &str, current_revisio
 pub fn email_claim_transfer_message(address: &str, source_manifest_id: &str, target_manifest_id: &str, claim_version: i64) -> Vec<u8> {
     let claim_version = claim_version.to_string();
     signed_message(EMAIL_CLAIM_TRANSFER_LABEL, &[address.as_bytes(), normalize(source_manifest_id).as_bytes(), normalize(target_manifest_id).as_bytes(), claim_version.as_bytes()])
+}
+
+/// The signed message of approving Login with Mobile request `request_id` with `encrypted_account_key`.
+pub fn mobile_login_approval_message(request_id: &str, algorithm: &str, encrypted_account_key: &str) -> Vec<u8> {
+    signed_message(MOBILE_LOGIN_APPROVAL_LABEL, &[request_id.as_bytes(), algorithm.as_bytes(), encrypted_account_key.as_bytes()])
 }
 
 /// The signed message of a signing key rotation: the account's new signing public key, vouched for by the previous one.
@@ -216,6 +224,15 @@ mod tests {
         let message = email_claim_transfer_message("alias@example.com", "0A1B2C3D-0000-0000-0000-000000000001", "0A1B2C3D-0000-0000-0000-000000000002", 1767225600000);
         assert_eq!(crate::common::encoding::hex_encode_lower(&message), EMAIL_CLAIM_TRANSFER_MESSAGE_VECTOR);
     }
+
+    /// Known-answer vector for the Login with Mobile approval message, which `Signing.cs` builds too. Never regenerate it.
+    #[test]
+    fn mobile_login_approval_message_known_answer() {
+        let message = mobile_login_approval_message("0123456789abcdef0123456789abcdef", "rsa-oaep-sha256", "YWs=");
+        assert_eq!(crate::common::encoding::hex_encode_lower(&message), MOBILE_LOGIN_APPROVAL_MESSAGE_VECTOR);
+    }
+
+    const MOBILE_LOGIN_APPROVAL_MESSAGE_VECTOR: &str = "00000027616c6961737661756c742f76312f7369672f6d6f62696c652d6c6f67696e2d617070726f76616c0000002030313233343536373839616263646566303132333435363738396162636465660000000f7273612d6f6165702d736861323536000000045957733d";
 
     const EMAIL_CLAIM_TRANSFER_MESSAGE_VECTOR: &str = "00000026616c6961737661756c742f76312f7369672f656d61696c2d636c61696d2d7472616e7366657200000011616c696173406578616d706c652e636f6d0000002430613162326333642d303030302d303030302d303030302d3030303030303030303030310000002430613162326333642d303030302d303030302d303030302d3030303030303030303030320000000d31373637323235363030303030";
 
