@@ -32,13 +32,8 @@ extension VaultStore {
             throw AppError.encryptionKeyNotFound
         }
 
-        guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64, options: .ignoreUnknownCharacters) else {
-            throw AppError.base64DecodeFailed
-        }
-
         do {
-            let decrypted = try decrypt(data: encryptedDbData)
-            try setupDatabaseWithDecryptedData(decrypted)
+            try openDatabase(try decryptVaultBlob(encryptedDbBase64))
             loadedVaultStamp = stamp
         } catch let vaultError as AppError {
             // Pass through AppError types
@@ -77,23 +72,8 @@ extension VaultStore {
         return containerURL.appendingPathComponent(VaultConstants.encryptedDbFileName)
     }
 
-    /// The bytes every SQLite database file begins with.
-    private static let sqliteHeader = Data("SQLite format 3\0".utf8)
-
-    /// Setup the database connection with the decrypted data.
-    private func setupDatabaseWithDecryptedData(_ decrypted: Data) throws {
-        // Step 1: Take the SQLite bytes as-is, or decode the legacy base64 text.
-        let decryptedDbData: Data
-        if decrypted.starts(with: Self.sqliteHeader) {
-            decryptedDbData = decrypted
-        } else {
-            guard let decoded = Data(base64Encoded: decrypted, options: .ignoreUnknownCharacters) else {
-                throw AppError.base64DecodeFailed
-            }
-            decryptedDbData = decoded
-        }
-
-        // Step 2: Open the bytes in the Rust core's memory directly without persisting to the filesystem.
+    /// Open the decrypted SQLite database bytes in the Rust core's memory, without persisting them to the filesystem.
+    private func openDatabase(_ decryptedDbData: Data) throws {
         self.dbConnection = nil
         do {
             let opened = try SqliteMemoryDatabase.fromBytes(bytes: decryptedDbData)

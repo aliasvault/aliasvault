@@ -8,12 +8,10 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONObject
 import uniffi.aliasvault_core.KeyChainException
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.SecretKeySpec
 import uniffi.aliasvault_core.mobileLoginEncryptAccountKey as rustMobileLoginEncryptAccountKey
 import uniffi.aliasvault_core.openAccountKeyChain as rustOpenAccountKeyChain
+import uniffi.aliasvault_core.vaultBlobDecrypt as rustVaultBlobDecrypt
+import uniffi.aliasvault_core.vaultBlobEncrypt as rustVaultBlobEncrypt
 
 /**
  * Handles encryption, decryption, and key management for the vault.
@@ -25,28 +23,6 @@ class VaultCrypto(
     companion object {
         private const val TAG = "VaultCrypto"
         private const val BIOMETRICS_AUTH_METHOD = "faceid"
-
-        /**
-         * Raw AES-GCM decryption with a caller-supplied key.
-         * Decrypts data using AES-256-GCM with a provided key.
-         */
-        fun decrypt(encryptedData: ByteArray, key: ByteArray): ByteArray {
-            require(key.size == 32) { "Decryption key must be 32 bytes (256 bits)" }
-            require(encryptedData.size >= 12) { "Encrypted data too short" }
-
-            // Extract nonce (first 12 bytes) and ciphertext (rest)
-            val nonce = encryptedData.sliceArray(0 until 12)
-            val ciphertext = encryptedData.sliceArray(12 until encryptedData.size)
-
-            // Create cipher
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            val secretKey = SecretKeySpec(key, "AES")
-            val gcmSpec = GCMParameterSpec(128, nonce)
-
-            // Decrypt
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
-            return cipher.doFinal(ciphertext)
-        }
     }
 
     /**
@@ -309,16 +285,9 @@ class VaultCrypto(
     // region Encryption/Decryption
 
     /**
-     * Decrypt data to text.
+     * Decrypt the stored vault blob (base64) into the SQLite database bytes. This can trigger biometric authentication.
      */
-    fun decryptData(encryptedData: String, authMethods: String): String {
-        return String(decryptDataBytes(encryptedData, authMethods), Charsets.UTF_8)
-    }
-
-    /**
-     * Decrypt data to raw bytes.
-     */
-    fun decryptDataBytes(encryptedData: String, authMethods: String): ByteArray {
+    fun decryptVaultBlob(encryptedBlob: String, authMethods: String): ByteArray {
         var decryptedResult: ByteArray? = null
         var error: Exception? = null
 
@@ -328,18 +297,7 @@ class VaultCrypto(
             object : CryptoOperationCallback {
                 override fun onSuccess(result: String) {
                     try {
-                        val decoded = Base64.decode(encryptedData, Base64.NO_WRAP)
-
-                        val iv = decoded.copyOfRange(0, 12)
-                        val encryptedContent = decoded.copyOfRange(12, decoded.size)
-
-                        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-                        val keySpec = SecretKeySpec(encryptionKey!!, "AES")
-                        val gcmSpec = GCMParameterSpec(128, iv)
-
-                        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec)
-
-                        decryptedResult = cipher.doFinal(encryptedContent)
+                        decryptedResult = rustVaultBlobDecrypt(encryptedBlob, encryptionKey!!)
                     } catch (e: Exception) {
                         error = AppError.VaultDecryptFailed(cause = e)
                         Log.e(TAG, "Error decrypting data", e)
@@ -364,37 +322,10 @@ class VaultCrypto(
     }
 
     /**
-     * Encrypt text.
+     * Encrypt the SQLite database bytes into the stored vault blob (base64).
      */
-    fun encryptData(data: String): String {
-        return encryptBytes(data.toByteArray(Charsets.UTF_8))
-    }
-
-    /**
-     * Encrypt raw bytes.
-     */
-    fun encryptBytes(data: ByteArray): String {
-        try {
-            val iv = ByteArray(12)
-            SecureRandom().nextBytes(iv)
-
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            val keySpec = SecretKeySpec(encryptionKey!!, "AES")
-            val gcmSpec = GCMParameterSpec(128, iv)
-
-            cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec)
-
-            val encrypted = cipher.doFinal(data)
-
-            val result = ByteArray(iv.size + encrypted.size)
-            System.arraycopy(iv, 0, result, 0, iv.size)
-            System.arraycopy(encrypted, 0, result, iv.size, encrypted.size)
-
-            return Base64.encodeToString(result, Base64.NO_WRAP)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error encrypting data", e)
-            throw e
-        }
+    fun encryptVaultBlob(sqliteBytes: ByteArray): String {
+        return rustVaultBlobEncrypt(sqliteBytes, encryptionKey!!)
     }
 
     // endregion

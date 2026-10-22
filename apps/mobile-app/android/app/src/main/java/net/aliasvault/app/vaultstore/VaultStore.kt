@@ -21,10 +21,11 @@ import uniffi.aliasvault_core.ItemUsageAction
 import uniffi.aliasvault_core.VaultException
 import uniffi.aliasvault_core.VaultItem
 import uniffi.aliasvault_core.accountSigningKeyFingerprint
-import uniffi.aliasvault_core.decryptManifestInvitationName as rustDecryptManifestInvitationName
 import java.util.Date
 import java.util.UUID
 import kotlin.coroutines.resume
+import uniffi.aliasvault_core.decryptManifestInvitationName as rustDecryptManifestInvitationName
+import uniffi.aliasvault_core.vaultBlobDecrypt as rustVaultBlobDecrypt
 
 /**
  * The vault store that manages the encrypted vault and all input/output operations on it.
@@ -334,11 +335,7 @@ class VaultStore(
             val vaultEncryptionKey = crypto.openAccountKeyChain(derivedKey).vaultEncryptionKey
 
             // Try to decrypt the vault to verify the password is correct
-            val encryptedDb = database.getEncryptedDatabase()
-            val encryptedDbBytes = android.util.Base64.decode(encryptedDb, android.util.Base64.NO_WRAP)
-
-            // Attempt decryption to verify password is correct
-            VaultCrypto.decrypt(encryptedDbBytes, vaultEncryptionKey)
+            rustVaultBlobDecrypt(database.getEncryptedDatabase(), vaultEncryptionKey)
 
             // If decryption succeeded, return the unlock key as base64
             android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)

@@ -1,3 +1,8 @@
 # getrandom 0.3 config
 [target.wasm32-unknown-unknown]
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+
+# Hardware AES and GHASH (ARMv8 crypto extensions) in the aes and polyval crates, which use software otherwise.
+# Android and macOS detect the CPU feature at runtime; iOS targets enable the `aes` target feature at compile time.
+[target.'cfg(target_arch = "aarch64")']
+rustflags = ['--cfg', 'aes_armv8', '--cfg', 'polyval_armv8']

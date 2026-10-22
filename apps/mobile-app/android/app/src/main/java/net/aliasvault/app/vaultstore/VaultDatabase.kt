@@ -1,6 +1,5 @@
 package net.aliasvault.app.vaultstore
 
-import android.util.Base64
 import android.util.Log
 import net.aliasvault.app.rustcore.JnaInitializer
 import net.aliasvault.app.vaultstore.models.VaultMutationScope
@@ -56,7 +55,7 @@ class VaultDatabase(
      * Unlock the vault. This can trigger biometric authentication.
      */
     fun unlockVault(authMethods: String) {
-        val decrypted = crypto.decryptDataBytes(getEncryptedDatabase(), authMethods)
+        val decrypted = crypto.decryptVaultBlob(getEncryptedDatabase(), authMethods)
         try {
             open(decrypted)
         } catch (e: Exception) {
@@ -78,21 +77,9 @@ class VaultDatabase(
     fun isOpen(): Boolean = db != null
 
     /**
-     * Open the decrypted vault in memory. The plaintext is either the raw SQLite bytes
-     * or base64 text of them (legacy pre-0.31.0).
+     * Open the decrypted SQLite database bytes in memory.
      */
-    private fun open(decrypted: ByteArray) {
-        val bytes = if (isSqliteDatabase(decrypted)) {
-            decrypted
-        } else {
-            try {
-                Base64.decode(String(decrypted, Charsets.UTF_8), Base64.NO_WRAP)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to decode base64 data after decryption", e)
-                throw AppError.Base64DecodeFailed(cause = e)
-            }
-        }
-
+    private fun open(bytes: ByteArray) {
         close()
         JnaInitializer.ensureInitialized()
         db = try {
@@ -209,7 +196,7 @@ class VaultDatabase(
         // End any open transactions.
         try { connection.executeBatch("END") } catch (_: Exception) {}
         try {
-            storeEncryptedDatabase(crypto.encryptBytes(export()))
+            storeEncryptedDatabase(crypto.encryptVaultBlob(export()))
         } catch (e: Exception) {
             Log.e(TAG, "Error exporting and encrypting database", e)
             throw e
@@ -236,13 +223,5 @@ class VaultDatabase(
     fun close() {
         db?.destroy()
         db = null
-    }
-
-    /**
-     * Whether these plaintext bytes are a SQLite database rather than base64 text of one.
-     */
-    private fun isSqliteDatabase(bytes: ByteArray): Boolean {
-        val header = "SQLite format 3\u0000".toByteArray(Charsets.UTF_8)
-        return bytes.size >= header.size && header.indices.all { bytes[it] == header[it] }
     }
 }

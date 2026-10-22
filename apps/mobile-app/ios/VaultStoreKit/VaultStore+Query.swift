@@ -53,8 +53,7 @@ extension VaultStore {
         let database = try requireDatabase()
         // End any open transactions.
         _ = try? database.executeBatch(sql: "END")
-        let encrypted = try encrypt(data: try exportDatabase())
-        try storeEncryptedDatabase(encrypted.base64EncodedString())
+        try storeEncryptedDatabase(try encryptVaultBlob(try exportDatabase()))
     }
 
     /// The database as SQLite file bytes.

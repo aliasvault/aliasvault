@@ -1,5 +1,7 @@
 /**
  * The locally stored vault blob: AES-GCM over the raw bytes of the SQLite database.
+ * Runs on WebCrypto for performance reasons because wasm AES-GCM has no hardware acceleration.
+ * Other platform implementations: core/rust/src/crypto/vault_blob.rs (iOS and Android through uniffi).
  */
 
 import { base64ToBytes } from '../utilities/Base64';

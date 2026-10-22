@@ -10,6 +10,7 @@
 //! - [`signing`]: Ed25519 (`ed25519-dalek`) account signatures over grants, public keys and invitation names.
 //! - [`srp`]: SRP-6a client (`srp`, SHA-256, 2048-bit group); login without sending the password.
 //! - [`tokens`]: the algorithm, key-type and KDF tokens stored or sent on the wire.
+//! - [`vault_blob`]: the locally stored vault, AES-256-GCM over the SQLite database bytes.
 //!
 //! Randomness comes from `getrandom` via `common::rng`; `rsa` and `p256` use `rand_core` `OsRng`.
 
@@ -23,6 +24,7 @@ pub mod rsa_oaep;
 pub mod signing;
 pub mod srp;
 pub mod tokens;
+pub mod vault_blob;
 
 pub use aes_gcm::{
     generate_key_base64, symmetric_decrypt, symmetric_decrypt_bytes, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt, symmetric_encrypt_bytes,
@@ -35,4 +37,5 @@ pub use key_chain::{
 pub use pin::{pin_decrypt, pin_encrypt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
 pub use rsa_oaep::{decrypt_manifest_invitation_name, decrypt_with_private_key, decrypt_with_private_key_and_label, encrypt_with_public_key_and_label, generate_rsa_key_pair, RsaKeyPair};
 pub use signing::generate_signing_key_pair;
+pub use vault_blob::{vault_blob_decrypt, vault_blob_encrypt};
 

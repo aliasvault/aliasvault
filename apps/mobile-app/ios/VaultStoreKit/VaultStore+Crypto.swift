@@ -1,5 +1,4 @@
 import Foundation
-import CryptoKit
 import LocalAuthentication
 import Security
 import RustCoreFramework
@@ -178,15 +177,10 @@ extension VaultStore {
             let vaultEncryptionKey = try openAccountKeyChain(with: derivedKey).vaultEncryptionKey
 
             // Try to decrypt the vault to verify the password is correct
-            guard let encryptedDbBase64 = getEncryptedDatabase(),
-                  let encryptedDbData = Data(base64Encoded: encryptedDbBase64, options: .ignoreUnknownCharacters) else {
+            guard let encryptedDbBase64 = getEncryptedDatabase() else {
                 return nil
             }
-
-            // Test decryption
-            let key = SymmetricKey(data: vaultEncryptionKey)
-            let sealedBox = try AES.GCM.SealedBox(combined: encryptedDbData)
-            _ = try AES.GCM.open(sealedBox, using: key)
+            _ = try RustCoreFramework.vaultBlobDecrypt(encryptedBlob: encryptedDbBase64, key: vaultEncryptionKey)
 
             // If decryption succeeded, return the unlock key as base64
             return derivedKey.base64EncodedString()
@@ -196,23 +190,16 @@ extension VaultStore {
         }
     }
 
-    /// Encrypt the data using the encryption key
-    internal func encrypt(data: Data) throws -> Data {
-        let encryptionKey = try getEncryptionKey()
-
-        let key = SymmetricKey(data: encryptionKey)
-        let sealedBox = try AES.GCM.seal(data, using: key)
-        return sealedBox.combined!
+    /// Encrypt the SQLite database bytes into the stored vault blob (base64) with the encryption key.
+    internal func encryptVaultBlob(_ sqliteBytes: Data) throws -> String {
+        return try RustCoreFramework.vaultBlobEncrypt(sqliteBytes: sqliteBytes, key: try getEncryptionKey())
     }
 
-    /// Decrypt the data using the encryption key
-    internal func decrypt(data: Data) throws -> Data {
+    /// Decrypt the stored vault blob (base64) into the SQLite database bytes with the encryption key.
+    internal func decryptVaultBlob(_ encryptedBlob: String) throws -> Data {
         let encryptionKey = try getEncryptionKey()
-
-        let key = SymmetricKey(data: encryptionKey)
-        let sealedBox = try AES.GCM.SealedBox(combined: data)
         do {
-            let decryptedData = try AES.GCM.open(sealedBox, using: key)
+            let decryptedData = try RustCoreFramework.vaultBlobDecrypt(encryptedBlob: encryptedBlob, key: encryptionKey)
 
             /*
              * If the decryption succeeds, try to persist the Account Key in the keychain.
