@@ -362,6 +362,18 @@ pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: St
     crate::crypto::encrypt_with_public_key_and_label(&account_key, &public_key_jwk, crate::crypto::aad::MOBILE_LOGIN_ACCOUNT_KEY)
 }
 
+/// SHA-256 of a mobile login request's public key JWK string, unpadded base64url; the QR code carries it.
+#[uniffi::export]
+pub fn mobile_login_public_key_hash(public_key_jwk: String) -> String {
+    crate::crypto::mobile_login_public_key_hash(&public_key_jwk)
+}
+
+/// The verification code both devices show for a mobile login request's public key JWK string.
+#[uniffi::export]
+pub fn mobile_login_verification_code(public_key_jwk: String) -> String {
+    crate::crypto::mobile_login_verification_code(&public_key_jwk)
+}
+
 /// One engine operation. The host loops on `next_command` / `resume` until the command is `done`; see the
 /// `vault_sync` module docs for the command and response shapes.
 #[derive(uniffi::Object)]

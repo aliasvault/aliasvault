@@ -1,4 +1,4 @@
-import { bytesToBase64Url } from '../utilities/Base64';
+import { rustCore } from '../rust/RustCore';
 
 /**
  * What the QR code of a mobile login request carries.
@@ -15,6 +15,7 @@ export type MobileLoginQrPayload = {
 export class MobileLoginProtocol {
   public static readonly QR_PREFIX = 'aliasvault://open/mobile-unlock/';
 
+  /** Matches `VERIFICATION_CODE_DIGITS` in `core/rust/src/crypto/mobile_login.rs`. */
   public static readonly VERIFICATION_CODE_LENGTH = 2;
 
   /** RSA-OAEP label of the Account Key the mobile app encrypts; matches `MOBILE_LOGIN_ACCOUNT_KEY` in `core/rust/src/crypto/aad.rs`. */
@@ -22,8 +23,6 @@ export class MobileLoginProtocol {
 
   /** RSA-OAEP label of the payload key the server encrypts; matches `MOBILE_LOGIN_PAYLOAD_KEY` in `core/rust/src/crypto/aad.rs`. */
   public static readonly PAYLOAD_KEY_LABEL = 'aliasvault/v1/mobile-login/payload-key';
-
-  private static readonly VERIFICATION_CODE_CONTEXT = 'AliasVault.MobileLogin.VerificationCode.v1:';
 
   private static readonly REQUEST_ID_PATTERN = /^[0-9a-f]{32}$/;
 
@@ -33,18 +32,14 @@ export class MobileLoginProtocol {
    * SHA-256 hash of the public key JWK string, base64url encoded without padding (43 characters).
    */
   public static async computePublicKeyHash(publicKeyJwk: string): Promise<string> {
-    const digest = await MobileLoginProtocol.sha256(publicKeyJwk);
-    return bytesToBase64Url(digest);
+    return rustCore().mobileLoginPublicKeyHash(publicKeyJwk);
   }
 
   /**
    * The verification code for a public key: a fixed number of digits, zero padded.
    */
   public static async computeVerificationCode(publicKeyJwk: string): Promise<string> {
-    const digest = await MobileLoginProtocol.sha256(MobileLoginProtocol.VERIFICATION_CODE_CONTEXT + publicKeyJwk);
-    const value = new DataView(digest.buffer, digest.byteOffset, 4).getUint32(0, false);
-    const modulus = 10 ** MobileLoginProtocol.VERIFICATION_CODE_LENGTH;
-    return (value % modulus).toString().padStart(MobileLoginProtocol.VERIFICATION_CODE_LENGTH, '0');
+    return rustCore().mobileLoginVerificationCode(publicKeyJwk);
   }
 
   /**
@@ -84,12 +79,5 @@ export class MobileLoginProtocol {
     }
 
     return { requestId, publicKeyHash };
-  }
-
-  /**
-   * SHA-256 of a UTF-8 string.
-   */
-  private static async sha256(data: string): Promise<Uint8Array> {
-    return new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data)));
   }
 }

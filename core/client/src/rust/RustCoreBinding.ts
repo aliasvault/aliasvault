@@ -51,6 +51,8 @@ export interface IRustCore {
   rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array>;
   decryptManifestInvitationName(encryptedName: string, manifestId: string, privateKeyJwk: string): Promise<string>;
   accountSigningKeyFingerprint(encryptedSigningPrivateKey: string, accountKeyBase64: string): Promise<string>;
+  mobileLoginPublicKeyHash(publicKeyJwk: string): Promise<string>;
+  mobileLoginVerificationCode(publicKeyJwk: string): Promise<string>;
 
   pinGenerateSalt(): Promise<Uint8Array>;
   pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array>;

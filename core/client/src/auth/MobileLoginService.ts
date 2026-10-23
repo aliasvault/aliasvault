@@ -1,6 +1,7 @@
 import { VaultKeyAlgorithm, type MobileLoginInitiateResponse, type MobileLoginPayload, type MobileLoginPollResponse } from '@aliasvault/models/webapi';
 
 import EncryptionUtility from '../crypto/EncryptionUtility';
+import { rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import { MobileLoginProtocol } from './MobileLoginProtocol';
@@ -159,7 +160,7 @@ export class MobileLoginService {
 
           // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.
           const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey, MobileLoginProtocol.PAYLOAD_KEY_LABEL));
-          const payload = JSON.parse(await EncryptionUtility.symmetricDecrypt(data.encryptedPayload, symmetricKey)) as MobileLoginPayload;
+          const payload = JSON.parse(await rustCore().symmetricDecrypt(data.encryptedPayload, symmetricKey)) as MobileLoginPayload;
 
           onSuccess({
             username: payload.username,

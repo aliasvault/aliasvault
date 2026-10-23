@@ -1,14 +1,12 @@
 import 'react-native-get-random-values';
-import { sha256 } from '@noble/hashes/sha2.js';
 
 /*
- * The part of Web Crypto the client core calls that Hermes lacks: randomUUID and the SHA-256 digest.
+ * The part of Web Crypto the client core calls that Hermes lacks: randomUUID.
  * getRandomValues comes from react-native-get-random-values.
  */
 type MobileCrypto = {
   getRandomValues<T extends ArrayBufferView | null>(array: T): T;
   randomUUID?: () => string;
-  subtle?: { digest: (algorithm: AlgorithmIdentifier, data: BufferSource) => Promise<ArrayBuffer> };
 };
 
 const mobileCrypto = globalThis.crypto as unknown as MobileCrypto;
@@ -24,17 +22,4 @@ function randomUUID(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-/**
- * The SHA-256 digest of `data`; other algorithms are not supported.
- */
-async function digest(algorithm: AlgorithmIdentifier, data: BufferSource): Promise<ArrayBuffer> {
-  const name = typeof algorithm === 'string' ? algorithm : algorithm.name;
-  if (name.toUpperCase() !== 'SHA-256') {
-    throw new Error(`Unsupported digest algorithm: ${name}`);
-  }
-  const bytes = ArrayBuffer.isView(data) ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength) : new Uint8Array(data);
-  return sha256(bytes).buffer as ArrayBuffer;
-}
-
 mobileCrypto.randomUUID ??= randomUUID;
-mobileCrypto.subtle ??= { digest };

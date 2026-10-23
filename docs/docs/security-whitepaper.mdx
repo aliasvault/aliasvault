@@ -516,6 +516,7 @@ Where each part of this document lives in the repository, for reviewers.
 | Ed25519 signing and verification | `core/rust/src/crypto/signing.rs`, `apps/server/Utilities/AliasVault.Cryptography/Signing.cs` |
 | Key rotation | `core/rust/src/crypto/key_chain.rs`, `core/rust/src/crypto/signing.rs`, `core/rust/src/vault_sync/rotation.rs`, `apps/server/AliasVault.Api/Controllers/V2/KeyRotationController.cs` |
 | PIN encryption and attempt policy | `core/rust/src/crypto/pin.rs` |
+| Login with Mobile public key hash and verification code | `core/rust/src/crypto/mobile_login.rs` |
 | Local vault copy | `core/rust/src/crypto/vault_blob.rs` (mobile), `core/client/src/crypto/VaultBlob.ts` (web app and extensions, WebCrypto) |
 | Vault format: canonicalize, materialize, integrity | `core/rust/src/vault_codec/` |
 | Sync engine: pull, push, grants, sharing, delivery keys | `core/rust/src/vault_sync/` |

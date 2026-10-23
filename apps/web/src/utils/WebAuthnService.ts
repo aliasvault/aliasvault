@@ -1,7 +1,7 @@
 import { AppErrorCode, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
-import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { getPlatform } from '@aliasvault/client/platform';
+import { rustCore } from '@aliasvault/client/rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 
 import { getLocalPreference, removeLocalPreference, setLocalPreference } from '@/utils/LocalPreferences';
@@ -136,7 +136,7 @@ export const WebAuthnService = {
     const credential = await createCredentialDerivedKey(username);
     setLocalPreference(KEYS.credentialId, credential.credentialId);
     setLocalPreference(KEYS.salt, credential.salt);
-    setLocalPreference(KEYS.encryptedAccountKey, await EncryptionUtility.symmetricEncrypt(accountKey, credential.derivedKey));
+    setLocalPreference(KEYS.encryptedAccountKey, bytesToBase64(await rustCore().symmetricEncryptBytes(new TextEncoder().encode(accountKey), credential.derivedKey)));
     setLocalPreference(KEYS.enabled, 'true');
   },
 
@@ -161,7 +161,7 @@ export const WebAuthnService = {
       throw new Error('WebAuthn encrypted encryption key is not set or WebAuthn credential ID is not set.');
     }
     const derivedKey = await getCredentialDerivedKey(credentialId, salt);
-    const accountKey = await EncryptionUtility.symmetricDecrypt(encrypted, derivedKey);
+    const accountKey = await rustCore().symmetricDecrypt(encrypted, derivedKey);
     try {
       await VaultKeyService.verifyUnlockKey(accountKey);
     } catch (error) {

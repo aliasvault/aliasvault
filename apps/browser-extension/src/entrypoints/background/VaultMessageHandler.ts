@@ -5,7 +5,6 @@ import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/Vau
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
-import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import { isSameItem, manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
@@ -13,7 +12,7 @@ import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { getOrCreateDeviceId } from '@aliasvault/client/platform/DeviceId';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, rustCore } from '@aliasvault/client/rust/RustCore';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -21,6 +20,7 @@ import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleSc
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type EmailClaimTransfer, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
+import { bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, createSystemField, getFieldValue, itemToCredential, normalizeTotpPeriod, type Credential, type Item } from '@aliasvault/models/vault';
 
 import { clearAllSavePromptState, handleGetLastAutofilled, handleStoreLastAutofilled, isRelatedDomain } from '@/entrypoints/background/SavePromptStateHandler';
@@ -562,10 +562,7 @@ export async function handlePersistFormValues(data: any): Promise<void> {
 
   // Always stringify the data properly
   const serializedData = JSON.stringify(data);
-  const encryptedData = await EncryptionUtility.symmetricEncrypt(
-    serializedData,
-    encryptionKey
-  );
+  const encryptedData = bytesToBase64(await rustCore().symmetricEncryptBytes(new TextEncoder().encode(serializedData), encryptionKey));
   await storage.setItem(StorageKeys.PERSISTED_FORM_VALUES, encryptedData);
 }
 
@@ -582,10 +579,7 @@ export async function handleGetPersistedFormValues(): Promise<any | null> {
   }
 
   try {
-    const decryptedData = await EncryptionUtility.symmetricDecrypt(
-      encryptedData,
-      encryptionKey
-    );
+    const decryptedData = await rustCore().symmetricDecrypt(encryptedData, encryptionKey);
     return JSON.parse(decryptedData);
   } catch (error) {
     logFailure('Failed to decrypt or parse persisted form values', error);

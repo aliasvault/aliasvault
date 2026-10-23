@@ -76,6 +76,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     rsaDecrypt: (base64Ciphertext, privateKeyJwk): Promise<Uint8Array> => ready(() => core.rsaDecrypt(base64Ciphertext, privateKeyJwk)),
     decryptManifestInvitationName: (encryptedName, manifestId, privateKeyJwk): Promise<string> => ready(() => core.decryptManifestInvitationName(encryptedName, manifestId, privateKeyJwk)),
     accountSigningKeyFingerprint: (encryptedSigningPrivateKey, accountKeyBase64): Promise<string> => ready(() => core.accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKeyBase64)),
+    mobileLoginPublicKeyHash: (publicKeyJwk): Promise<string> => ready(() => core.mobileLoginPublicKeyHash(publicKeyJwk)),
+    mobileLoginVerificationCode: (publicKeyJwk): Promise<string> => ready(() => core.mobileLoginVerificationCode(publicKeyJwk)),
 
     /*
      * Argon2 (also behind pinEncrypt and pinDecrypt) blocks the thread it runs on for up to a few seconds on slow

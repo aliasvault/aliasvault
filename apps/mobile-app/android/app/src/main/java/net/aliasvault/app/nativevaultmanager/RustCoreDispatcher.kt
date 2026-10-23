@@ -24,6 +24,8 @@ import uniffi.aliasvault_core.getIdentityLanguages
 import uniffi.aliasvault_core.getSyncableTableNames
 import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
+import uniffi.aliasvault_core.mobileLoginPublicKeyHash
+import uniffi.aliasvault_core.mobileLoginVerificationCode
 import uniffi.aliasvault_core.openAccountKeyChain
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.reencryptAccountKeyJson
@@ -89,6 +91,8 @@ object RustCoreDispatcher {
             "symmetricDecrypt" -> json(symmetricDecrypt(args.string(0), args.string(1)))
             "symmetricDecryptBytes" -> json(symmetricDecryptBytes(args.bytes(0), args.string(1)))
             "symmetricEncryptBytes" -> json(symmetricEncryptBytes(args.bytes(0), args.string(1)))
+            "mobileLoginPublicKeyHash" -> json(mobileLoginPublicKeyHash(args.string(0)))
+            "mobileLoginVerificationCode" -> json(mobileLoginVerificationCode(args.string(0)))
 
             "argon2DeriveKey" -> json(argon2DeriveKey(args.string(0), args.string(1), args.string(2)))
             "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))

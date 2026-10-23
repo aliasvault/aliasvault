@@ -29,17 +29,6 @@ export class EncryptionUtility {
   }
 
   /**
-   * Encrypts a UTF-8 string with AES-256-GCM into base64 `IV | ciphertext | tag`. An empty string stays empty.
-   */
-  public static async symmetricEncrypt(plaintext: string, base64Key: string): Promise<string> {
-    if (!plaintext) {
-      return plaintext;
-    }
-
-    return EncryptionUtility.symmetricEncryptBytes(new TextEncoder().encode(plaintext), base64Key);
-  }
-
-  /**
    * Encrypts bytes with AES-256-GCM (random 12-byte IV, no AAD) into base64 `IV | ciphertext | tag`.
    */
   public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
@@ -52,17 +41,6 @@ export class EncryptionUtility {
     combined.set(new Uint8Array(ciphertext), iv.length);
 
     return bytesToBase64(combined);
-  }
-
-  /**
-   * Decrypts base64 `IV | ciphertext | tag` with AES-256-GCM into a UTF-8 string.
-   */
-  public static async symmetricDecrypt(base64Ciphertext: string, base64Key: string): Promise<string> {
-    if (!base64Ciphertext) {
-      return base64Ciphertext;
-    }
-
-    return new TextDecoder().decode(await EncryptionUtility.symmetricDecryptBytes(base64ToBytes(base64Ciphertext), base64Key));
   }
 
   /**

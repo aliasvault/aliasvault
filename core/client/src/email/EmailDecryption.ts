@@ -142,7 +142,7 @@ async function resolveSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicK
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
 
 /**
- * Whether the host has full WebCrypto; the mobile app polyfills only `subtle.digest`.
+ * Whether the host has WebCrypto; the mobile app (Hermes) has none.
  */
 function hasWebCrypto(): boolean {
   return typeof crypto !== 'undefined' && typeof crypto.subtle?.importKey === 'function';

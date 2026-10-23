@@ -25,7 +25,6 @@ import java.util.Date
 import java.util.UUID
 import kotlin.coroutines.resume
 import uniffi.aliasvault_core.decryptManifestInvitationName as rustDecryptManifestInvitationName
-import uniffi.aliasvault_core.vaultBlobDecrypt as rustVaultBlobDecrypt
 
 /**
  * The vault store that manages the encrypted vault and all input/output operations on it.
@@ -332,15 +331,10 @@ class VaultStore(
 
             // Derive the unlock key from the password and open the chain; a wrong password fails to open it.
             val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
-            val vaultEncryptionKey = crypto.openAccountKeyChain(derivedKey).vaultEncryptionKey
-
-            // Try to decrypt the vault to verify the password is correct
-            rustVaultBlobDecrypt(database.getEncryptedDatabase(), vaultEncryptionKey)
-
-            // If decryption succeeded, return the unlock key as base64
+            crypto.openAccountKeyChain(derivedKey)
             android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
-            // Password incorrect or decryption failed - intentionally return null
+            // Password incorrect or the key chain did not open - intentionally return null
             // We don't log the error as this is expected when password is incorrect
             null
         }

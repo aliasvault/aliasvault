@@ -174,18 +174,10 @@ extension VaultStore {
 
             // Derive the unlock key from the password and unwrap the chain; a wrong password fails the unwrap.
             let derivedKey = try deriveKeyFromPassword(password, salt: salt, encryptionType: encryptionType, encryptionSettings: encryptionSettings)
-            let vaultEncryptionKey = try openAccountKeyChain(with: derivedKey).vaultEncryptionKey
-
-            // Try to decrypt the vault to verify the password is correct
-            guard let encryptedDbBase64 = getEncryptedDatabase() else {
-                return nil
-            }
-            _ = try RustCoreFramework.vaultBlobDecrypt(encryptedBlob: encryptedDbBase64, key: vaultEncryptionKey)
-
-            // If decryption succeeded, return the unlock key as base64
+            _ = try openAccountKeyChain(with: derivedKey)
             return derivedKey.base64EncodedString()
         } catch {
-            // Password incorrect or decryption failed
+            // Password incorrect or the key chain did not open
             return nil
         }
     }

@@ -216,6 +216,18 @@ pub fn symmetric_encrypt_bytes_js(plaintext: &[u8], key_base64: &str) -> Result<
     crate::crypto::symmetric_encrypt_raw_with_aad(plaintext, key_base64, &[]).map_err(js_err)
 }
 
+/// SHA-256 of a mobile login request's public key JWK string, unpadded base64url; the QR code carries it.
+#[wasm_bindgen(js_name = mobileLoginPublicKeyHash)]
+pub fn mobile_login_public_key_hash_js(public_key_jwk: &str) -> String {
+    crate::crypto::mobile_login_public_key_hash(public_key_jwk)
+}
+
+/// The verification code both devices show for a mobile login request's public key JWK string.
+#[wasm_bindgen(js_name = mobileLoginVerificationCode)]
+pub fn mobile_login_verification_code_js(public_key_jwk: &str) -> String {
+    crate::crypto::mobile_login_verification_code(public_key_jwk)
+}
+
 /// The fingerprint of the account's own signing key, derived from its private key encrypted with the Account Key.
 #[wasm_bindgen(js_name = accountSigningKeyFingerprint)]
 pub fn account_signing_key_fingerprint_js(encrypted_signing_private_key: &str, account_key_base64: &str) -> Result<String, JsValue> {

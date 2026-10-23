@@ -33,7 +33,6 @@
     "@aliasvault/vault": "file:../../core/vault",
     "@expo/vector-icons": "^15.0.2",
     "@hookform/resolvers": "^5.0.1",
-    "@noble/hashes": "^2.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/slider": "5.2.0",
     "@types/jsrsasign": "^10.5.15",
