@@ -22,8 +22,8 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
