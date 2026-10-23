@@ -1,7 +1,7 @@
 //! The canonical merge: last write wins per row, an item deleted as a unit, manifests merged independently.
 
 use super::*;
-use crate::vault_codec::test_support::{restamp, row, PERSONAL_MANIFEST_ID as PERSONAL, SHARED_MANIFEST_ID as SHARED};
+use crate::vault_codec::tests::support::{restamp, row, PERSONAL_MANIFEST_ID as PERSONAL, SHARED_MANIFEST_ID as SHARED};
 use serde_json::json;
 
 const SALT: &str = "0123456789abcdef0123456789abcdef";

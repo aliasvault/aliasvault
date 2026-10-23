@@ -86,25 +86,3 @@ fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> Vau
 fn label_text(label: &[u8]) -> VaultResult<String> {
     String::from_utf8(label.to_vec()).map_err(|_| VaultError::General("RSA-OAEP label must be UTF-8".to_string()))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn label_must_match() {
-        let pair = generate_rsa_key_pair().unwrap();
-        let ciphertext = encrypt_with_public_key_and_label(b"vek", &pair.public_key, b"grant/a").unwrap();
-        assert_eq!(decrypt_with_private_key_and_label(&ciphertext, &pair.private_key, b"grant/a").unwrap(), b"vek");
-        assert!(decrypt_with_private_key_and_label(&ciphertext, &pair.private_key, b"grant/b").is_err());
-        assert!(decrypt_with_private_key(&ciphertext, &pair.private_key).is_err(), "a labelled ciphertext does not open without its label");
-    }
-
-    #[test]
-    fn manifest_invitation_name_is_bound_to_its_manifest() {
-        let pair = generate_rsa_key_pair().unwrap();
-        let ciphertext = encrypt_with_public_key_and_label("Family".as_bytes(), &pair.public_key, &super::super::aad::invitation_name("A")).unwrap();
-        assert_eq!(decrypt_manifest_invitation_name(&ciphertext, "a", &pair.private_key).unwrap(), "Family");
-        assert!(decrypt_manifest_invitation_name(&ciphertext, "b", &pair.private_key).is_err());
-    }
-}

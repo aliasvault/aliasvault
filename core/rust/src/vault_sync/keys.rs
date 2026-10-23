@@ -58,10 +58,10 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     Ok(())
 }
 
-/// Open a key chain with the unlock key or the stored Account Key: stages the Account Key and the account private key
-/// for this run and returns the VEK, which the caller makes the session key.
+/// Open a key chain with the unlock key: stages the Account Key and the account private key for this run and returns
+/// the VEK, which the caller makes the session key.
 async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<SecretString> {
-    let mut opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None)?;
+    let mut opened = crypto::open_key_chain_with_unlock_key(unlock_key, encrypted_account_key, encrypted_vek, None)?;
     let account_key = from_zeroizing(std::mem::take(&mut opened.account_key));
     ctx.account_key = Some(account_key.clone());
     if let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) {

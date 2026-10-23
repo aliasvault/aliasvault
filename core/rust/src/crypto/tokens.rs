@@ -17,14 +17,3 @@ pub const ENCRYPTION_TYPE_ARGON2ID: &str = "Argon2Id";
 
 /// The `EncryptionType` of a verifier made from the HKDF-derived SRP input: every new account and password change (since 0.31.0).
 pub const ENCRYPTION_TYPE_ARGON2ID_HKDF: &str = "Argon2IdHkdf";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn tokens_are_stable() {
-        let tokens = [ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256, KEY_TYPE_ACCOUNT_KEY, KEY_TYPE_GRANT_KEY, ENCRYPTION_TYPE_ARGON2ID, ENCRYPTION_TYPE_ARGON2ID_HKDF];
-        assert_eq!(tokens, ["aes256-gcm", "rsa-oaep-sha256", "account-key", "grant-key", "Argon2Id", "Argon2IdHkdf"]);
-    }
-}

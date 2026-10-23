@@ -61,7 +61,7 @@ fn success() -> FullSyncResult {
 }
 
 /// The outcome of a failed sync: a forced logout, or a coded error.
-fn failure(error: &SyncError) -> FullSyncResult {
+pub(super) fn failure(error: &SyncError) -> FullSyncResult {
     FullSyncResult { failure: error.into(), ..Default::default() }
 }
 
@@ -248,7 +248,7 @@ fn version_logout_reason(ctx: &Ctx, status: &StatusResponse) -> Option<LogoutRea
 
 /// Whether `version1 >= version2` under the client's SemVer rules: a pre-release sorts below its release, and
 /// two pre-releases compare lexically.
-fn version_gte(version1: &str, version2: &str) -> bool {
+pub(super) fn version_gte(version1: &str, version2: &str) -> bool {
     let (core1, pre1) = split_version(version1);
     let (core2, pre2) = split_version(version2);
     let parts1: Vec<u64> = core1.split('.').map(|part| part.parse().unwrap_or(0)).collect();
@@ -472,34 +472,5 @@ async fn status_check(ctx: &mut Ctx) -> StatusCheckResult {
             let outcome = map_sync_failure(ctx, error).await;
             StatusCheckResult { success: outcome.success, has_dirty_changes: ctx.is_dirty, is_offline: outcome.was_offline, failure: outcome.failure, ..Default::default() }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use super::super::errors::ErrorCode;
-
-    #[test]
-    fn failures_carry_a_code_or_a_logout_reason_never_both() {
-        let coded = failure(&SyncError::Timeout("slow".to_string())).failure;
-        assert_eq!(coded.error_code, Some(ErrorCode::UploadTimeout));
-        assert_eq!(coded.logout_reason, None);
-        assert!(!coded.requires_logout);
-
-        let logout = failure(&SyncError::VaultVersionIncompatible("3.0.0".to_string())).failure;
-        assert_eq!(logout.logout_reason, Some(LogoutReason::VaultVersionIncompatible));
-        assert_eq!(logout.error_code, None);
-        assert!(logout.requires_logout);
-    }
-
-    #[test]
-    fn semver_rules_match_the_client() {
-        assert!(version_gte("0.12.0", "0.12.0-dev"));
-        assert!(!version_gte("0.12.0-dev", "0.12.0"));
-        assert!(version_gte("0.13.1", "0.12.0-dev"));
-        assert!(!version_gte("0.11.9", "0.12.0-dev"));
-        assert!(version_gte("1.0", "1.0.0"));
-        assert!(version_gte("0.12.0-beta", "0.12.0-alpha"));
     }
 }

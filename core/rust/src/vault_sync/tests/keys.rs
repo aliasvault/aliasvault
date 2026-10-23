@@ -32,11 +32,13 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     assert_eq!(host.state[state::ENCRYPTED_SIGNING_PRIVATE_KEY], hierarchy.account_keys.encrypted_signing_private_key);
     assert!(host.store_calls.is_empty(), "resolving a key never touches the stored vault");
 
-    // A device that stores the Account Key (Login with Mobile) resolves with it as well as with the unlock key.
+    // The operation takes the unlock key only: the Account Key itself is refused, never tried as a fallback.
     let account_key = crypto::unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
     let mut host = TestHost::new(&account_key);
     host.serve(&server);
-    assert_eq!(host.run("resolveVaultKey")["encryptionKey"], hierarchy.vault_encryption_key);
+    let result = host.run("resolveVaultKey");
+    assert_eq!(result["success"], false, "{}", result);
+    assert_eq!(result["errorCode"], "E-206");
 }
 
 /// A legacy account has no chain: the password-derived key is the vault key and any stale cached chain is dropped.

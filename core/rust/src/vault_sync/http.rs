@@ -47,7 +47,8 @@ async fn send_for_frame<T: FrameBody + DeserializeOwned>(host: &Host, method: Ht
     frame::decode(&bytes.ok_or_else(|| SyncError::Network(format!("{} answered without a body", path)))?)
 }
 
-fn check(response: HttpResponse) -> SyncResult<String> {
+/// The body of a successful response, or the error a refused or failed request maps to.
+pub(super) fn check(response: HttpResponse) -> SyncResult<String> {
     let code = api_error_code(&response.body);
     match response.status {
         200..=299 => Ok(response.body),
@@ -161,43 +162,5 @@ pub(crate) async fn get_status(host: &Host) -> SyncResult<StatusResponse> {
             Ok(StatusResponse { client_version_supported: true, server_version: SERVER_UNREACHABLE_VERSION.to_string(), ..Default::default() })
         }
         other => other,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::vault_sync::types::FailureFields;
-
-    fn response(status: u16, body: &str) -> HttpResponse {
-        HttpResponse { status, body: body.to_string(), transport_error: None, timed_out: false }
-    }
-
-    #[test]
-    fn a_refusal_keeps_the_server_code() {
-        let error = check(response(400, r#"{"code":"INVALID_REQUEST","statusCode":400}"#)).unwrap_err();
-        assert_eq!(error.api_error_code().as_deref(), Some("INVALID_REQUEST"));
-        assert_eq!(FailureFields::from(&error).api_error_code.as_deref(), Some("INVALID_REQUEST"));
-    }
-
-    #[test]
-    fn a_body_without_a_code_yields_none() {
-        assert_eq!(check(response(500, "")).unwrap_err().api_error_code(), None);
-        assert_eq!(check(response(502, "<html>Bad gateway</html>")).unwrap_err().api_error_code(), None);
-        assert_eq!(check(response(400, r#"{"code":"not a code"}"#)).unwrap_err().api_error_code(), None);
-    }
-
-    #[test]
-    fn only_an_uncoded_403_ends_the_session() {
-        assert!(matches!(check(response(403, "")), Err(SyncError::Auth)));
-        let refused = check(response(403, r#"{"code":"CAPABILITY_NOT_AVAILABLE","statusCode":403}"#)).unwrap_err();
-        assert_eq!(refused.api_error_code().as_deref(), Some("CAPABILITY_NOT_AVAILABLE"));
-    }
-
-    #[test]
-    fn only_an_uncoded_404_means_an_outdated_server() {
-        assert!(matches!(with_outdated_server_guard::<()>(check(response(404, "")).map(|_| ())), Err(SyncError::ServerUpdateRequired)));
-        let coded = with_outdated_server_guard::<()>(check(response(404, r#"{"code":"SHARED_MANIFEST_NOT_FOUND","statusCode":404}"#)).map(|_| ())).unwrap_err();
-        assert_eq!(coded.api_error_code().as_deref(), Some("SHARED_MANIFEST_NOT_FOUND"));
     }
 }

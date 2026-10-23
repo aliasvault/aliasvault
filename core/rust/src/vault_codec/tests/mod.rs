@@ -1,8 +1,17 @@
 //! The codec round trip for one manifest: canonicalize, pack, unpack, materialize, and the forward-compatibility
-//! overflow. Multi-manifest routing lives in `sharing_tests`.
+//! overflow. Multi-manifest routing lives in `sharing.rs`, the fixtures in `support.rs`;
+//! the other modules hold the unit tests of the `vault_codec` module of the same name.
+
+pub(crate) mod support;
+mod sharing;
+
+mod compress;
+mod integrity;
+mod normalize;
+mod row;
 
 use super::*;
-use super::test_support::{b64, materialize_input, materialized_map, row, stamp_unstamped, stamped, table, PERSONAL_MANIFEST_ID as PERSONAL, PERSONAL_SALT as SALT};
+use self::support::{b64, materialize_input, materialized_map, row, stamp_unstamped, stamped, table, PERSONAL_MANIFEST_ID as PERSONAL, PERSONAL_SALT as SALT};
 use super::types::{bucket_category_for, SCHEMA_VERSION};
 use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, OVERFLOW_TABLE};
 use serde_json::json;
@@ -377,7 +386,7 @@ fn materialize_derives_the_missing_ids_back() {
         extra: HashMap::new(),
     };
     // The schema knows the id columns the wire omits, so the derived ids fit instead of landing in the overflow.
-    let mut schema = test_support::fitting_schema([&manifest], &[]);
+    let mut schema = support::fitting_schema([&manifest], &[]);
     for table in ["FieldValues", "FieldHistories"] {
         schema.get_mut(table).unwrap().push("Id".to_string());
     }

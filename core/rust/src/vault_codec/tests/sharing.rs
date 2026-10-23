@@ -1,10 +1,10 @@
 //! The shared-manifest split (canonicalize) and combine (materialize): every row routes to the manifest its stamp
 //! names, each manifest is self-contained, and nothing crosses a manifest boundary that should not.
 
-use super::*;
-use super::row::rows_of;
-use super::test_support::{b64, materialize_input, materialized_map, row, stamped, table, PERSONAL_MANIFEST_ID as PERSONAL, PERSONAL_SALT as SALT_PERSONAL, SHARED_MANIFEST_ID as SHARED};
-use super::types::{is_bucketed_table, is_personal_table, manifest_scoped_tables, SCHEMA_VERSION};
+use super::super::*;
+use super::super::row::rows_of;
+use super::support::{b64, materialize_input, materialized_map, row, stamped, table, PERSONAL_MANIFEST_ID as PERSONAL, PERSONAL_SALT as SALT_PERSONAL, SHARED_MANIFEST_ID as SHARED};
+use super::super::types::{is_bucketed_table, is_personal_table, manifest_scoped_tables, SCHEMA_VERSION};
 use crate::vault_model::OVERFLOW_TABLE;
 use serde_json::json;
 use std::collections::{HashMap, HashSet};

@@ -35,7 +35,8 @@ export type RegistrationResult = {
   username: string;
   token: TokenModel;
   keys: AccountKeyHierarchy;
-  derivedKey: string;
+  /** The unlock key of the new password; the session stores `keys.accountKey`. */
+  unlockKey: string;
   derivationParams: UnlockKeyDerivationParams;
 };
 
@@ -62,7 +63,7 @@ export class SrpLoginService {
     const prepared = await SrpAuthService.prepareRegistration(username, password);
     const token = await this.parseAuthResponse<TokenModel>(await this.post('Auth/register', { ...prepared.request, inviteCode }));
     const { salt, encryptionType, encryptionSettings } = prepared.request;
-    return { username: prepared.request.username, token, keys: prepared.keys, derivedKey: prepared.derivedKey, derivationParams: { salt, encryptionType, encryptionSettings } };
+    return { username: prepared.request.username, token, keys: prepared.keys, unlockKey: prepared.unlockKey, derivationParams: { salt, encryptionType, encryptionSettings } };
   }
 
   /**

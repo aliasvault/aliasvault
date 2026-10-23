@@ -1,7 +1,8 @@
 //! Engine tests: the whole sync driven through the command loop, one real SQLite host per device against an
 //! in-process model of the v2 server. A test reads as "the server holds X, the device does Y, sync, assert".
 //!
-//! `fake_server` is the server, `test_host` is a device, this module holds the row fixtures they share.
+//! `fake_server` is the server, `test_host` is a device, this module holds the row fixtures they share. The second
+//! group of modules holds the unit tests of the `vault_sync` module of the same name.
 
 mod blobs;
 mod fake_server;
@@ -13,6 +14,17 @@ mod migration;
 mod sync;
 mod test_host;
 
+mod blob_keys;
+mod db;
+mod email_routing;
+mod engine;
+mod errors;
+mod frame;
+mod http;
+mod legacy;
+mod types;
+mod write_set;
+
 use rusqlite::Connection;
 use serde_json::json;
 
@@ -22,7 +34,7 @@ use crate::crypto;
 use crate::vault_codec;
 use crate::vault_sync::state;
 
-pub(crate) use crate::vault_codec::test_support::{PERSONAL_MANIFEST_ID, SHARED_MANIFEST_ID};
+pub(crate) use crate::vault_codec::tests::support::{PERSONAL_MANIFEST_ID, SHARED_MANIFEST_ID};
 pub const ITEM_A: &str = "aaaaaaaa-0000-4000-8000-000000000001";
 pub const ITEM_B: &str = "aaaaaaaa-0000-4000-8000-000000000002";
 pub const ITEM_C: &str = "aaaaaaaa-0000-4000-8000-000000000003";

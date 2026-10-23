@@ -2,7 +2,7 @@
 //! tombstoned blob rows are reclaimed, and every statement names the manifest it addresses.
 
 use super::*;
-use crate::vault_codec::test_support::{days_ago_iso, now_iso, restamp, row, table, PERSONAL_MANIFEST_ID as M, SHARED_MANIFEST_ID};
+use crate::vault_codec::tests::support::{days_ago_iso, now_iso, restamp, row, table, PERSONAL_MANIFEST_ID as M, SHARED_MANIFEST_ID};
 use crate::vault_model::names::{ATTACHMENTS_TABLE, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, ITEM_TAGS_TABLE};
 use serde_json::{json, Value};
 

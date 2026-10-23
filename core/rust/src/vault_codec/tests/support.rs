@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::json;
 
-use super::manifest::{CodecRecord, CodecTableData, DataBucket, Manifest, MaterializeInput, MaterializedTables};
-use super::types::manifest_scoped_tables;
+use super::super::manifest::{CodecRecord, CodecTableData, DataBucket, Manifest, MaterializeInput, MaterializedTables};
+use super::super::types::manifest_scoped_tables;
 use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL};
 
 /// The personal manifest id every test suite uses.

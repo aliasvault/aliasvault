@@ -13,8 +13,6 @@ mod manifest;
 mod materialize;
 pub(crate) mod row;
 mod sharing;
-#[cfg(test)]
-pub(crate) mod test_support;
 mod types;
 mod validate;
 
@@ -146,7 +144,4 @@ pub fn compute_content_fingerprint(payload_json: &str) -> String {
 }
 
 #[cfg(test)]
-mod tests;
-
-#[cfg(test)]
-mod sharing_tests;
+pub(crate) mod tests;

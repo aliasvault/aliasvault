@@ -155,7 +155,7 @@ fn latest_legacy_revision() -> u32 {
 }
 
 /// The data version embedded in an EF migration id (`20250101000000_2.0.0-Name`).
-fn extract_version_from_migration_id(migration_id: &str) -> Option<String> {
+pub(super) fn extract_version_from_migration_id(migration_id: &str) -> Option<String> {
     let start = migration_id.find('_')? + 1;
     let rest = &migration_id[start..];
     let end = rest.find('-')?;
@@ -169,7 +169,7 @@ fn is_well_formed_version(version: &str) -> bool {
 
 /// The legacy-chain revision a database version maps to. A known version maps to its entry; an unknown but
 /// well-formed version is treated as the latest (backwards compatible); a malformed version is incompatible.
-fn legacy_revision_for(database_version: &str) -> Result<u32, String> {
+pub(super) fn legacy_revision_for(database_version: &str) -> Result<u32, String> {
     if let Some((revision, _)) = LEGACY_VAULT_VERSIONS.iter().find(|(_, version)| *version == database_version) {
         return Ok(*revision);
     }
@@ -181,23 +181,4 @@ pub(crate) fn stamp_predates_manifest_schema(migration_id: &str) -> SyncResult<b
     let database_version = extract_version_from_migration_id(migration_id).ok_or_else(|| SyncError::Other("Could not extract version from migration ID".to_string()))?;
     let revision = legacy_revision_for(&database_version).map_err(SyncError::VaultVersionIncompatible)?;
     Ok(revision < latest_legacy_revision())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn migration_stamps_map_onto_the_frozen_chain() {
-        assert_eq!(extract_version_from_migration_id("20250101000000_2.0.0-Squashed").as_deref(), Some("2.0.0"));
-        assert_eq!(extract_version_from_migration_id("20250101000000_Initial"), None);
-        assert_eq!(legacy_revision_for("1.7.0"), Ok(12));
-        assert_eq!(legacy_revision_for("2.1.0"), Ok(13), "an unknown but well-formed version reads as the latest");
-        assert!(legacy_revision_for("nope").is_err());
-
-        assert!(stamp_predates_manifest_schema("20250101000000_1.7.0-Old").unwrap());
-        assert!(!stamp_predates_manifest_schema("20250101000000_2.0.0-Squashed").unwrap());
-        assert!(!stamp_predates_manifest_schema("20260101000000_2.1.0-Later").unwrap());
-        assert!(matches!(stamp_predates_manifest_schema("20250101000000_Initial"), Err(SyncError::Other(_))));
-    }
 }

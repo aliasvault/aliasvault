@@ -40,7 +40,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     let account_keys = &write["migration"]["accountKeys"];
     assert!(account_keys["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
     assert!(crypto::unwrap_key(account_keys["encryptedAccountKey"].as_str().unwrap(), &unlock_key, crypto::aad::ACCOUNT_KEY).is_err(), "the legacy vault key does not wrap the Account Key directly");
-    let opened = crypto::open_account_key_chain(&unlock_key, account_keys["encryptedAccountKey"].as_str().unwrap(), account_keys["encryptedVek"].as_str().unwrap(), None).unwrap();
+    let opened = crypto::open_key_chain_with_unlock_key(&unlock_key, account_keys["encryptedAccountKey"].as_str().unwrap(), account_keys["encryptedVek"].as_str().unwrap(), None).unwrap();
     assert_eq!(*opened.vault_encryption_key, new_key);
     let signed = crypto::signing::account_public_key_message(account_keys["accountPublicKey"].as_str().unwrap());
     assert!(crypto::signing::verify(account_keys["signingPublicKey"].as_str().unwrap(), &signed, account_keys["accountPublicKeySignature"].as_str().unwrap()), "the upgrade push carries a signing key that signed the account public key");

@@ -322,17 +322,3 @@ pub(crate) async fn prune_in_place(host: &Host, retention_days: u32) -> SyncResu
     exec(host, Db::Local, output.statements).await?;
     Ok(count)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ids_are_lowercase_uuid_v4() {
-        let id = new_id();
-        assert_eq!(id.len(), 36);
-        assert_eq!(id, id.to_lowercase());
-        assert_eq!(&id[14..15], "4");
-        assert!(matches!(&id[19..20], "8" | "9" | "a" | "b"));
-    }
-}
