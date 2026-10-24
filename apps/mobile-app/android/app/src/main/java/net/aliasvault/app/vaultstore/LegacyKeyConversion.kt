@@ -28,7 +28,7 @@ internal object LegacyKeyConversion {
     fun openStoredKey(crypto: VaultCrypto, key: ByteArray): VaultCrypto.SessionKeys {
         return try {
             crypto.openKeyChainWithAccountKey(key)
-        } catch (e: AppError.UnlockKeyRejected) {
+        } catch (_: AppError.UnlockKeyRejected) {
             // LEGACY: the stored key is an unlock key; the caller stores the Account Key the chain yields in its place.
             crypto.openKeyChainWithUnlockKey(key)
         }
