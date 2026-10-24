@@ -37,8 +37,6 @@ export type VaultSyncKeyRotationParams = {
   newVerifier: string;
   newEncryptionType: string;
   newEncryptionSettings: string;
-  newAccountPublicKey: string;
-  newAccountPrivateKey: string;
 };
 
 /** What a sharing operation acts on (the Rust `SharingParams`). */

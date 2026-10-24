@@ -126,6 +126,18 @@ export type AccountKeyHierarchy = {
   accountKeys: AccountKeyBlobs;
 };
 
+/** An RSA-OAEP-256 2048-bit key pair, both halves as JWK strings (the Rust `RsaKeyPair`). */
+export type RsaKeyPair = {
+  publicKey: string;
+  privateKey: string;
+};
+
+/** An opened mobile login approval (the Rust `MobileLoginApproval`): the Account Key (base64) and the session payload JSON. */
+export type MobileLoginApproval = {
+  accountKey: string;
+  payload: string;
+};
+
 /** The Account Key (base64) re-encrypted for a new password. */
 export type ReencryptedAccountKey = {
   accountKey: string;

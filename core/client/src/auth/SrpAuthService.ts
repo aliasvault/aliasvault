@@ -1,13 +1,12 @@
 import { AppErrorCode, formatErrorWithCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
-import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { getPlatform } from '../platform/ClientPlatform';
-import { argon2DeriveKey, rustCore } from '../rust/RustCore';
+import { argon2DeriveKey, createAccountKeyHierarchy, rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import { isWeakerDerivation } from './DerivationSettings';
 
-import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
+import type { AccountKeyBlobs, AccountKeyHierarchy, SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LegacySrpVerifierUpgrade, LoginResponse } from '@aliasvault/models/webapi';
 

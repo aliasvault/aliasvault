@@ -34,6 +34,7 @@ function notImplementedOnMobile(name: string, reason: string): Promise<never> {
 }
 
 const PIN_IS_NATIVE = 'PIN unlock runs in the native VaultStore';
+const MOBILE_LOGIN_IS_WEB = 'the mobile app approves a mobile login, only the web app and the browser extension request one';
 
 /*
  * The client core's Rust binding on mobile: the uniffi Swift/Kotlin bindings, reached through the one generic
@@ -70,11 +71,13 @@ export const nativeRustCore: IRustCore = {
   symmetricDecrypt: (base64Ciphertext, keyBase64) => call('symmetricDecrypt', base64Ciphertext, keyBase64),
   symmetricDecryptBytes: (encrypted, keyBase64) => callForBytes('symmetricDecryptBytes', base64(encrypted), keyBase64),
   symmetricEncryptBytes: (plaintext, keyBase64) => callForBytes('symmetricEncryptBytes', base64(plaintext), keyBase64),
+  generateRsaKeyPair: () => notImplementedOnMobile('generateRsaKeyPair', MOBILE_LOGIN_IS_WEB),
   rsaDecrypt: (base64Ciphertext, privateKeyJwk) => callForBytes('rsaDecrypt', base64Ciphertext, privateKeyJwk),
   decryptManifestInvitationName: () => notImplementedOnMobile('decryptManifestInvitationName', 'the account private key stays in the native VaultStore, use NativeVaultManager.decryptManifestInvitationName'),
   accountSigningKeyFingerprint: () => notImplementedOnMobile('accountSigningKeyFingerprint', 'the Account Key stays in the native VaultStore, use NativeVaultManager.getSigningKeyFingerprint'),
   mobileLoginPublicKeyHash: (publicKeyJwk) => call('mobileLoginPublicKeyHash', publicKeyJwk),
   mobileLoginVerificationCode: (publicKeyJwk) => call('mobileLoginVerificationCode', publicKeyJwk),
+  mobileLoginOpenApproval: () => notImplementedOnMobile('mobileLoginOpenApproval', MOBILE_LOGIN_IS_WEB),
 
   pinGenerateSalt: () => notImplementedOnMobile('pinGenerateSalt', PIN_IS_NATIVE),
   pinEncrypt: () => notImplementedOnMobile('pinEncrypt', PIN_IS_NATIVE),
@@ -86,7 +89,7 @@ export const nativeRustCore: IRustCore = {
   deriveSrpPasswordHash: (unlockKeyBase64, encryptionType) => call('deriveSrpPasswordHash', unlockKeyBase64, encryptionType),
   openKeyChainWithUnlockKey: (unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey) => call('openKeyChainWithUnlockKey', unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey),
   openKeyChainWithAccountKey: (accountKey, encryptedVek, encryptedAccountPrivateKey) => call('openKeyChainWithAccountKey', accountKey, encryptedVek, encryptedAccountPrivateKey),
-  createAccountKeyHierarchy: (unlockKeyBase64, publicKeyJwk, privateKeyJwk) => call('createAccountKeyHierarchyJson', unlockKeyBase64, publicKeyJwk, privateKeyJwk),
+  createAccountKeyHierarchy: (unlockKeyBase64) => call('createAccountKeyHierarchyJson', unlockKeyBase64),
   reencryptAccountKey: (encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64) => call('reencryptAccountKeyJson', encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64),
 
   srpGenerateSalt: () => call('srpGenerateSalt'),

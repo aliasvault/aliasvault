@@ -2,7 +2,6 @@ use crate::common::encoding::hex_encode_upper;
 use crate::crypto::aad;
 use crate::crypto::aes_gcm::{generate_key_base64, symmetric_decrypt_with_aad};
 use crate::crypto::key_chain::*;
-use crate::crypto::rsa_oaep::{generate_rsa_key_pair, RsaKeyPair};
 use crate::crypto::signing;
 use crate::crypto::tokens::{ENCRYPTION_TYPE_ARGON2ID, ENCRYPTION_TYPE_ARGON2ID_HKDF};
 
@@ -119,33 +118,21 @@ fn a_private_key_that_does_not_open_leaves_grants_closed_but_opens_the_vault() {
 fn rotated_keys_open_with_the_new_unlock_key() {
     let old_hierarchy = create_account_key_hierarchy(&generate_key_base64()).unwrap();
     let new_unlock_key = generate_key_base64();
-    let key_pair = generate_rsa_key_pair().unwrap();
 
-    let rotated = rotate_account_keys(&new_unlock_key, &key_pair).unwrap();
+    let rotated = rotate_account_keys(&new_unlock_key).unwrap();
     let blobs = &rotated.account_keys;
 
     // The new chain opens with the new unlock key and yields the new VEK and private keys.
     let opened = open_key_chain_with_unlock_key(&new_unlock_key, &blobs.encrypted_account_key, &blobs.encrypted_vek, Some(&blobs.encrypted_account_private_key)).unwrap();
     assert_eq!(*opened.vault_encryption_key, rotated.vault_encryption_key);
     assert_eq!(*opened.account_key, rotated.account_key);
-    assert_eq!(opened.account_private_key.as_deref().map(String::as_str), Some(key_pair.private_key.as_str()));
+    assert_eq!(opened.account_private_key.as_deref().map(String::as_str), Some(rotated.account_private_key.as_str()));
     assert_ne!(rotated.vault_encryption_key, old_hierarchy.vault_encryption_key);
+    assert_ne!(blobs.account_public_key, old_hierarchy.account_keys.account_public_key);
     assert_ne!(blobs.signing_public_key, old_hierarchy.account_keys.signing_public_key);
 
     // The new signing key vouches for the new account public key.
     assert!(signing::verify(&blobs.signing_public_key, &signing::account_public_key_message(&blobs.account_public_key), &blobs.account_public_key_signature));
-}
-
-#[test]
-fn hierarchy_takes_a_host_key_pair_and_rejects_a_mismatched_one() {
-    let unlock_key = generate_key_base64();
-    let key_pair = generate_rsa_key_pair().unwrap();
-    let hierarchy = create_account_key_hierarchy_with_key_pair(&unlock_key, &key_pair).unwrap();
-    assert_eq!(hierarchy.account_keys.account_public_key, key_pair.public_key);
-    assert_eq!(hierarchy.account_private_key, key_pair.private_key);
-
-    let mismatched = RsaKeyPair { public_key: generate_rsa_key_pair().unwrap().public_key.clone(), private_key: key_pair.private_key.clone() };
-    assert!(create_account_key_hierarchy_with_key_pair(&unlock_key, &mismatched).is_err());
 }
 
 #[test]

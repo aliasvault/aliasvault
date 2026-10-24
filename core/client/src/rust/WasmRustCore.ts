@@ -7,7 +7,7 @@ import initWasm, * as core from '#wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -73,11 +73,14 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     symmetricDecrypt: (base64Ciphertext, keyBase64): Promise<string> => ready(() => core.symmetricDecrypt(base64Ciphertext, keyBase64)),
     symmetricDecryptBytes: (encrypted, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricDecryptBytes(encrypted, keyBase64)),
     symmetricEncryptBytes: (plaintext, keyBase64): Promise<Uint8Array> => ready(() => core.symmetricEncryptBytes(plaintext, keyBase64)),
+    generateRsaKeyPair: (): Promise<RsaKeyPair> => ready(() => core.generateRsaKeyPair() as RsaKeyPair),
     rsaDecrypt: (base64Ciphertext, privateKeyJwk): Promise<Uint8Array> => ready(() => core.rsaDecrypt(base64Ciphertext, privateKeyJwk)),
     decryptManifestInvitationName: (encryptedName, manifestId, privateKeyJwk): Promise<string> => ready(() => core.decryptManifestInvitationName(encryptedName, manifestId, privateKeyJwk)),
     accountSigningKeyFingerprint: (encryptedSigningPrivateKey, accountKeyBase64): Promise<string> => ready(() => core.accountSigningKeyFingerprint(encryptedSigningPrivateKey, accountKeyBase64)),
     mobileLoginPublicKeyHash: (publicKeyJwk): Promise<string> => ready(() => core.mobileLoginPublicKeyHash(publicKeyJwk)),
     mobileLoginVerificationCode: (publicKeyJwk): Promise<string> => ready(() => core.mobileLoginVerificationCode(publicKeyJwk)),
+    mobileLoginOpenApproval: (privateKeyJwk, encryptedAccountKey, encryptedPayloadKey, encryptedPayload): Promise<MobileLoginApproval> =>
+      ready(() => core.mobileLoginOpenApproval(privateKeyJwk, encryptedAccountKey, encryptedPayloadKey, encryptedPayload) as MobileLoginApproval),
 
     /*
      * Argon2 (also behind pinEncrypt and pinDecrypt) blocks the thread it runs on for up to a few seconds on slow
@@ -104,8 +107,7 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       ready(() => core.openKeyChainWithUnlockKey(unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
     openKeyChainWithAccountKey: (accountKey, encryptedVek, encryptedAccountPrivateKey): Promise<KeyChainOpenResult> =>
       ready(() => core.openKeyChainWithAccountKey(accountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
-    createAccountKeyHierarchy: (unlockKeyBase64, publicKeyJwk, privateKeyJwk): Promise<AccountKeyHierarchy> =>
-      ready(() => core.createAccountKeyHierarchy(unlockKeyBase64, publicKeyJwk, privateKeyJwk) as AccountKeyHierarchy),
+    createAccountKeyHierarchy: (unlockKeyBase64): Promise<AccountKeyHierarchy> => ready(() => core.createAccountKeyHierarchy(unlockKeyBase64) as AccountKeyHierarchy),
     reencryptAccountKey: (encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64): Promise<ReencryptedAccountKey | null> =>
       ready(() => core.reencryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64) as ReencryptedAccountKey | null),
 

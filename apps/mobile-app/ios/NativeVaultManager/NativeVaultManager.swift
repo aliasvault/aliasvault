@@ -1578,7 +1578,7 @@ private enum RustCoreDispatcher {
         case "openKeyChainWithAccountKey":
             return try keyChainResult { try RustCoreFramework.openKeyChainWithAccountKey(accountKey: try args.data(0), encryptedVek: try args.string(1), encryptedAccountPrivateKey: args.optionalString(2)) }
         case "createAccountKeyHierarchyJson":
-            return try RustCoreFramework.createAccountKeyHierarchyJson(unlockKey: try args.data(0), publicKeyJwk: try args.string(1), privateKeyJwk: try args.string(2))
+            return try RustCoreFramework.createAccountKeyHierarchyJson(unlockKey: try args.data(0))
         case "reencryptAccountKeyJson":
             return try RustCoreFramework.reencryptAccountKeyJson(encryptedAccountKey: try args.string(0), oldUnlockKey: try args.data(1), newUnlockKey: try args.data(2))
 

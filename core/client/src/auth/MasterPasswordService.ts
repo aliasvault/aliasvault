@@ -2,7 +2,6 @@ import { VaultKeyAlgorithm, type KeyRotationInitiateResponse, type PasswordChang
 
 import { AppErrorCode, extractErrorCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
-import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 import { reencryptAccountKey } from '../rust/RustCore';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
@@ -205,7 +204,6 @@ export class MasterPasswordService {
     await MasterPasswordService.adoptRaisedSettings(challenge, current.unlockKeyBase64, webApi);
     await MasterPasswordService.assertPasswordOpensChain(current.unlockKeyBase64);
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
-    const keyPair = await EncryptionUtility.generateRsaKeyPair();
 
     const result = await runRotation({
       userId: challenge.userId,
@@ -218,8 +216,6 @@ export class MasterPasswordService {
       newVerifier: next.verifier,
       newEncryptionType: next.encryptionType,
       newEncryptionSettings: next.encryptionSettings,
-      newAccountPublicKey: keyPair.publicKey,
-      newAccountPrivateKey: keyPair.privateKey,
     });
 
     if (result.success && result.accountKey) {

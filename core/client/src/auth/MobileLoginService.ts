@@ -1,8 +1,6 @@
 import { VaultKeyAlgorithm, type MobileLoginInitiateResponse, type MobileLoginPayload, type MobileLoginPollResponse } from '@aliasvault/models/webapi';
 
-import EncryptionUtility from '../crypto/EncryptionUtility';
 import { rustCore } from '../rust/RustCore';
-import { bytesToBase64 } from '../utilities/Base64';
 
 import { MobileLoginProtocol } from './MobileLoginProtocol';
 
@@ -57,7 +55,7 @@ export class MobileLoginService {
   private isPollInFlight = false;
   private requestId: string | null = null;
   private pollSecret: string | null = null;
-  private privateKey: CryptoKey | null = null;
+  private privateKeyJwk: string | null = null;
 
   /**
    * Create the service.
@@ -72,8 +70,8 @@ export class MobileLoginService {
    */
   public async initiate(): Promise<{ qrPayload: string; verificationCode: string }> {
     try {
-      const { publicKeyJwk, privateKey } = await EncryptionUtility.generateRsaKeyPairNonExtractable();
-      this.privateKey = privateKey;
+      const { publicKey: publicKeyJwk, privateKey } = await rustCore().generateRsaKeyPair();
+      this.privateKeyJwk = privateKey;
 
       const response = await this.api.rawFetch('auth/mobile-login/initiate', {
         method: 'POST',
@@ -106,7 +104,7 @@ export class MobileLoginService {
    * Poll the server until the request is approved, declined or expired. Exactly one of the callbacks is called.
    */
   public startPolling(onSuccess: (result: MobileLoginResult) => void, onError: (errorCode: MobileLoginErrorCode) => void): void {
-    if (!this.requestId || !this.pollSecret || !this.privateKey) {
+    if (!this.requestId || !this.pollSecret || !this.privateKeyJwk) {
       throw new Error('Must call initiate() before starting polling');
     }
 
@@ -152,21 +150,18 @@ export class MobileLoginService {
 
         if (data.status === 'approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedAccountKey) {
           // Capture the key locally.
-          const privateKey = this.privateKey!;
+          const privateKeyJwk = this.privateKeyJwk!;
           this.cleanup();
 
-          // The mobile app encrypted its Account Key with our public key.
-          const accountKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey, MobileLoginProtocol.ACCOUNT_KEY_LABEL));
-
-          // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.
-          const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey, MobileLoginProtocol.PAYLOAD_KEY_LABEL));
-          const payload = JSON.parse(await rustCore().symmetricDecrypt(data.encryptedPayload, symmetricKey)) as MobileLoginPayload;
+          // The mobile app encrypted its Account Key with our public key, the server the key of the session payload.
+          const approval = await rustCore().mobileLoginOpenApproval(privateKeyJwk, data.encryptedAccountKey, data.encryptedSymmetricKey, data.encryptedPayload);
+          const payload = JSON.parse(approval.payload) as MobileLoginPayload;
 
           onSuccess({
             username: payload.username,
             token: payload.token,
             refreshToken: payload.refreshToken,
-            accountKey,
+            accountKey: approval.accountKey,
             salt: payload.salt,
             encryptionType: payload.encryptionType,
             encryptionSettings: payload.encryptionSettings,
@@ -201,7 +196,7 @@ export class MobileLoginService {
       clearTimeout(this.pollingTimeout);
       this.pollingTimeout = null;
     }
-    this.privateKey = null;
+    this.privateKeyJwk = null;
   }
 
   /**

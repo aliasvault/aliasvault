@@ -1,4 +1,4 @@
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -48,11 +48,13 @@ export interface IRustCore {
   symmetricDecrypt(base64Ciphertext: string, keyBase64: string): Promise<string>;
   symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
   symmetricEncryptBytes(plaintext: Uint8Array, keyBase64: string): Promise<Uint8Array>;
+  generateRsaKeyPair(): Promise<RsaKeyPair>;
   rsaDecrypt(base64Ciphertext: string, privateKeyJwk: string): Promise<Uint8Array>;
   decryptManifestInvitationName(encryptedName: string, manifestId: string, privateKeyJwk: string): Promise<string>;
   accountSigningKeyFingerprint(encryptedSigningPrivateKey: string, accountKeyBase64: string): Promise<string>;
   mobileLoginPublicKeyHash(publicKeyJwk: string): Promise<string>;
   mobileLoginVerificationCode(publicKeyJwk: string): Promise<string>;
+  mobileLoginOpenApproval(privateKeyJwk: string, encryptedAccountKey: string, encryptedPayloadKey: string, encryptedPayload: string): Promise<MobileLoginApproval>;
 
   pinGenerateSalt(): Promise<Uint8Array>;
   pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array>;
@@ -64,7 +66,7 @@ export interface IRustCore {
   deriveSrpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string>;
   openKeyChainWithUnlockKey(unlockKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
   openKeyChainWithAccountKey(accountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
-  createAccountKeyHierarchy(unlockKeyBase64: string, publicKeyJwk: string, privateKeyJwk: string): Promise<AccountKeyHierarchy>;
+  createAccountKeyHierarchy(unlockKeyBase64: string): Promise<AccountKeyHierarchy>;
   reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<ReencryptedAccountKey | null>;
 
   srpGenerateSalt(): Promise<string>;

@@ -45,8 +45,7 @@ pub enum SyncOperation {
 }
 
 /// What a key rotation needs from the host: the proof of the current password and the new unlock method, both
-/// derived from the master password on the host, and the new account keypair (WebCrypto generates RSA keys far
-/// faster than wasm).
+/// derived from the master password on the host.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KeyRotationParams {
@@ -60,8 +59,6 @@ pub struct KeyRotationParams {
     pub new_verifier: String,
     pub new_encryption_type: String,
     pub new_encryption_settings: String,
-    pub new_account_public_key: String,
-    pub new_account_private_key: SecretString,
 }
 
 /// What a sharing operation acts on.

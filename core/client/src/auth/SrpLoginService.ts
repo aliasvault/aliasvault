@@ -4,7 +4,7 @@ import { throwIfServerPredatesV2Api } from '../sync/LegacyStorageModelMigration'
 import { SrpAuthService, type LoginCredentials, type SrpClientSession } from './SrpAuthService';
 
 import type { WebApiService } from '../api/WebApiService';
-import type { AccountKeyHierarchy } from '../crypto/AccountKeys';
+import type { AccountKeyHierarchy } from '../rust/RustCoreTypes';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LegacySrpVerifierUpgrade, LoginResponse, TokenModel, ValidateLoginRequest, ValidateLoginRequest2Fa, ValidateLoginResponse } from '@aliasvault/models/webapi';
 

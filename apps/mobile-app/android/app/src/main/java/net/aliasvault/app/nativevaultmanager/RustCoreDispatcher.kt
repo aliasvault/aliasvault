@@ -100,7 +100,7 @@ object RustCoreDispatcher {
             "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))
             "openKeyChainWithUnlockKey" -> keyChainResult { openKeyChainWithUnlockKey(args.bytes(0), args.string(1), args.string(2), args.optionalString(3)) }
             "openKeyChainWithAccountKey" -> keyChainResult { openKeyChainWithAccountKey(args.bytes(0), args.string(1), args.optionalString(2)) }
-            "createAccountKeyHierarchyJson" -> createAccountKeyHierarchyJson(args.bytes(0), args.string(1), args.string(2))
+            "createAccountKeyHierarchyJson" -> createAccountKeyHierarchyJson(args.bytes(0))
             "reencryptAccountKeyJson" -> reencryptAccountKeyJson(args.string(0), args.bytes(1), args.bytes(2))
 
             "srpGenerateSalt" -> json(srpGenerateSalt())

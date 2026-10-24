@@ -11,7 +11,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aad;
 use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt_bytes_with_aad, symmetric_encrypt_with_aad};
-use super::rsa_oaep::{generate_rsa_key_pair, validate_rsa_key_pair, RsaKeyPair};
+use super::rsa_oaep::generate_rsa_key_pair;
 use super::signing::{self, generate_signing_key_pair};
 use super::tokens::{ALGORITHM_AES256_GCM, ENCRYPTION_TYPE_ARGON2ID, ENCRYPTION_TYPE_ARGON2ID_HKDF};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
@@ -193,12 +193,7 @@ fn open_optional_account_private_key(encrypted_account_private_key: Option<&str>
 
 /// Create a new account key hierarchy wrapped under the KEK derived from an unlock key.
 pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<AccountKeyHierarchy> {
-    create_account_key_hierarchy_with_key_pair(unlock_key_base64, &generate_rsa_key_pair()?)
-}
-
-/// [`create_account_key_hierarchy`] around an account keypair the host generated, as WebCrypto is far faster than wasm.
-pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<AccountKeyHierarchy> {
-    validate_rsa_key_pair(key_pair)?;
+    let key_pair = generate_rsa_key_pair()?;
     let vault_encryption_key = generate_key_base64();
     let account_key = Zeroizing::new(generate_key_base64());
     let signing_key_pair = generate_signing_key_pair();
@@ -255,10 +250,10 @@ impl fmt::Debug for RotatedAccountKeys {
     }
 }
 
-/// Rotate an account's keys: a new Account Key, VEK and signing keypair around an account keypair the host generated,
-/// wrapped under the KEK of `new_unlock_key_base64`.
-pub fn rotate_account_keys(new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
-    let hierarchy = create_account_key_hierarchy_with_key_pair(new_unlock_key_base64, key_pair)?;
+/// Rotate an account's keys: a new Account Key, VEK, account keypair and signing keypair, wrapped under the KEK of
+/// `new_unlock_key_base64`.
+pub fn rotate_account_keys(new_unlock_key_base64: &str) -> VaultResult<RotatedAccountKeys> {
+    let hierarchy = create_account_key_hierarchy(new_unlock_key_base64)?;
     Ok(RotatedAccountKeys {
         account_key: hierarchy.account_key.clone(),
         vault_encryption_key: hierarchy.vault_encryption_key.clone(),

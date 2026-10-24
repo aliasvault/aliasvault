@@ -231,10 +231,10 @@ export async function openKeyChainWithAccountKey(accountKey: string, encryptedVe
 }
 
 /**
- * Create a new account key hierarchy for the unlock key (base64) around an account keypair (JWK) the caller generated.
+ * Create a new account key hierarchy for the unlock key (base64).
  */
-export async function createAccountKeyHierarchy(unlockKeyBase64: string, publicKeyJwk: string, privateKeyJwk: string): Promise<AccountKeyHierarchy> {
-  return rustCore().createAccountKeyHierarchy(unlockKeyBase64, publicKeyJwk, privateKeyJwk);
+export async function createAccountKeyHierarchy(unlockKeyBase64: string): Promise<AccountKeyHierarchy> {
+  return rustCore().createAccountKeyHierarchy(unlockKeyBase64);
 }
 
 /**

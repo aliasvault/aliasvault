@@ -234,6 +234,18 @@ pub fn account_signing_key_fingerprint_js(encrypted_signing_private_key: &str, a
     crate::crypto::account_signing_key_fingerprint(encrypted_signing_private_key, account_key_base64).map_err(js_err)
 }
 
+/// Open an approved mobile login request with its one-off JWK private key: `{ accountKey, payload }`.
+#[wasm_bindgen(js_name = mobileLoginOpenApproval)]
+pub fn mobile_login_open_approval_js(private_key_jwk: &str, encrypted_account_key: &str, encrypted_payload_key: &str, encrypted_payload: &str) -> Result<JsValue, JsValue> {
+    to_js(&crate::crypto::mobile_login_open_approval(private_key_jwk, encrypted_account_key, encrypted_payload_key, encrypted_payload).map_err(js_err)?)
+}
+
+/// A new RSA-OAEP-256 2048-bit key pair, both halves as JWK strings: `{ publicKey, privateKey }`.
+#[wasm_bindgen(js_name = generateRsaKeyPair)]
+pub fn generate_rsa_key_pair_js() -> Result<JsValue, JsValue> {
+    to_js(&crate::crypto::generate_rsa_key_pair().map_err(js_err)?)
+}
+
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[wasm_bindgen(js_name = rsaDecrypt)]
 pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
@@ -276,11 +288,10 @@ pub fn pin_register_failure_js(failed_attempts: u32) -> Result<JsValue, JsValue>
     to_js(&crate::crypto::pin_register_failure(failed_attempts))
 }
 
-/// Create a new account key hierarchy for the base64 unlock key around an account keypair (JWK) the caller generated.
+/// Create a new account key hierarchy for the base64 unlock key.
 #[wasm_bindgen(js_name = createAccountKeyHierarchy)]
-pub fn create_account_key_hierarchy_js(unlock_key_base64: &str, public_key_jwk: String, private_key_jwk: String) -> Result<JsValue, JsValue> {
-    let key_pair = crate::crypto::RsaKeyPair { public_key: public_key_jwk, private_key: private_key_jwk };
-    to_js(&crate::crypto::create_account_key_hierarchy_with_key_pair(unlock_key_base64, &key_pair).map_err(js_err)?)
+pub fn create_account_key_hierarchy_js(unlock_key_base64: &str) -> Result<JsValue, JsValue> {
+    to_js(&crate::crypto::create_account_key_hierarchy(unlock_key_base64).map_err(js_err)?)
 }
 
 /// Re-encrypt the Account Key from the old to the new base64 unlock key; `null` when the old unlock key does not open it.

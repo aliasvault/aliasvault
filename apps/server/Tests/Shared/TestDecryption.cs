@@ -21,7 +21,8 @@ using Org.BouncyCastle.Security;
 public static class TestDecryption
 {
     /// <summary>
-    /// Decrypts a symmetric key encrypted with <see cref="Encryption.EncryptSymmetricKeyWithRsa(byte[], string)"/> (BCL RSA-OAEP-SHA256, no label).
+    /// Decrypts a symmetric key encrypted with <see cref="Encryption.EncryptSymmetricKeyWithRsa(byte[], string)"/> with the
+    /// .NET RSA-OAEP-SHA256 (no label), so the test checks the BouncyCastle encryption against a second implementation.
     /// </summary>
     /// <param name="ciphertext">The encrypted symmetric key as base64.</param>
     /// <param name="privateKey">The RSA private key in JWK format.</param>

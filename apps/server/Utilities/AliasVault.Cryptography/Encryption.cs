@@ -18,7 +18,8 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
 /// <summary>
-/// RSA/AES and Argon2id encryption methods.
+/// The server's encryption: AES-256-GCM (.NET) over email contents and RSA-OAEP-SHA256 (BouncyCastle, for the label
+/// support) of the symmetric keys for client public keys. The server never holds a private key.
 /// </summary>
 public static class Encryption
 {
@@ -38,25 +39,20 @@ public static class Encryption
     }
 
     /// <summary>
-    /// Encrypts a symmetric key using an RSA public key.
+    /// Encrypts a symmetric key for the holder of an RSA public key with RSA-OAEP-SHA256 and no label: the format every
+    /// email key is stored in.
     /// </summary>
     /// <param name="symmetricKey">The symmetric key to encrypt.</param>
     /// <param name="publicKey">The RSA public key in JWK format.</param>
     /// <returns>The encrypted symmetric key as a base64-encoded string.</returns>
     public static string EncryptSymmetricKeyWithRsa(byte[] symmetricKey, string publicKey)
     {
-        using (var rsa = RSA.Create())
-        {
-            ImportPublicKey(rsa, publicKey);
-            var rsaParams = RSAEncryptionPadding.OaepSHA256;
-
-            byte[] encryptedKey = rsa.Encrypt(symmetricKey, rsaParams);
-            return Convert.ToBase64String(encryptedKey);
-        }
+        return EncryptSymmetricKeyWithRsa(symmetricKey, publicKey, string.Empty);
     }
 
     /// <summary>
-    /// Encrypts a symmetric key using an RSA public key under an OAEP label, which decryption must present as-is.
+    /// Encrypts a symmetric key for the holder of an RSA public key with RSA-OAEP-SHA256 under an OAEP label, which
+    /// decryption must present as-is. An empty label is plain RSA-OAEP-SHA256.
     /// </summary>
     /// <param name="symmetricKey">The symmetric key to encrypt.</param>
     /// <param name="publicKey">The RSA public key in JWK format.</param>
@@ -131,6 +127,10 @@ public static class Encryption
     {
         int nonceSize = AesGcm.NonceByteSizes.MaxSize;
         int tagSize = AesGcm.TagByteSizes.MaxSize;
+        if (encryptedBytes.Length < nonceSize + tagSize)
+        {
+            throw new CryptographicException("AES-GCM ciphertext is too short.");
+        }
 
         // Extract nonce, ciphertext, and tag
         byte[] nonce = new byte[nonceSize];
@@ -177,25 +177,5 @@ public static class Encryption
     private static byte[] JwkBytes(string value)
     {
         return Base64Url.DecodeFromChars(value.Replace('+', '-').Replace('/', '_').TrimEnd('='));
-    }
-
-    /// <summary>
-    /// Imports a public key from JWK format into an RSA provider.
-    /// </summary>
-    /// <param name="rsa">The RSA provider to import the key into.</param>
-    /// <param name="jwk">The public key in JWK format.</param>
-    private static void ImportPublicKey(RSA rsa, string jwk)
-    {
-        var jwkObj = JsonSerializer.Deserialize<JsonElement>(jwk);
-        var n = JwkBytes(jwkObj.GetProperty("n").GetString()!);
-        var e = JwkBytes(jwkObj.GetProperty("e").GetString()!);
-
-        var rsaParameters = new RSAParameters
-        {
-            Modulus = n,
-            Exponent = e,
-        };
-
-        rsa.ImportParameters(rsaParameters);
     }
 }

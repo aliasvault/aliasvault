@@ -197,8 +197,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let blob_keys: BlobKeysResponse = http::with_outdated_server_guard(http::get(&ctx.host, &format!("Vault/blob-keys/{}", personal_manifest_id), false).await)?;
     let certifications: Vec<CertificationEntry> = http::with_outdated_server_guard(http::get(&ctx.host, "Groups/certifications", false).await)?;
 
-    let key_pair = crypto::RsaKeyPair { public_key: params.new_account_public_key.clone(), private_key: params.new_account_private_key.expose_secret().to_string() };
-    let rotated = crypto::rotate_account_keys(params.new_unlock_key.expose_secret(), &key_pair)?;
+    let rotated = crypto::rotate_account_keys(params.new_unlock_key.expose_secret())?;
     let new_vek = SecretString::from(rotated.vault_encryption_key.as_str());
     ctx.log("[KeyRotation] Generated the new Account Key, VEK, account keypair and signing keypair.").await;
 

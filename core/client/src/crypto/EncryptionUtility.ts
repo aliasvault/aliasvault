@@ -1,33 +1,16 @@
-import { argon2DeriveKey } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
-import { logDefect } from '../utilities/Diagnostics';
 
 /** AES-GCM IV length in bytes; every AES-GCM payload starts with it. */
 const AES_GCM_IV_LENGTH = 12;
 
 /**
- * Utility class for encryption operations including:
- * - Argon2Id key derivation
- * - AES-GCM symmetric encryption/decryption
- * - RSA-OAEP asymmetric encryption/decryption
+ * The WebCrypto operations the web app and the browser extension run outside the Rust core, each for a reason:
+ * - AES-256-GCM over the local vault blob and email fields: hardware accelerated, where wasm AES is not
+ *   (the format is the Rust `aes_gcm.rs` format)
+ * - RSA-OAEP decryption of email keys with an imported non-extractable private key, at WebCrypto speed
+ * Everything else (Argon2id, the key chain, RSA key pair generation, SRP, signing, PIN wrap) runs in the Rust core only.
  */
 export class EncryptionUtility {
-  /**
-   * Derives a key from a password using Argon2Id
-   */
-  public static async deriveKeyFromPassword(
-    password: string,
-    salt: string,
-    encryptionSettings: string
-  ): Promise<Uint8Array> {
-    try {
-      return await argon2DeriveKey(password, salt, encryptionSettings);
-    } catch (error) {
-      logDefect('[Crypto] Argon2 hashing failed', error);
-      throw error;
-    }
-  }
-
   /**
    * Encrypts bytes with AES-256-GCM (random 12-byte IV, no AAD) into base64 `IV | ciphertext | tag`.
    */
@@ -59,38 +42,10 @@ export class EncryptionUtility {
   }
 
   /**
-   * Generates an extractable RSA-OAEP-2048 (SHA-256) key pair, both halves exported as JWK strings.
+   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
    */
-  public static async generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
-    const keyPair = await EncryptionUtility.generateRsaOaepKeyPair(true);
-    const publicKey = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
-    const privateKey = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
-
-    return { publicKey: JSON.stringify(publicKey), privateKey: JSON.stringify(privateKey) };
-  }
-
-  /**
-   * Generates an RSA-OAEP-2048 (SHA-256) key pair whose private key stays inside WebCrypto; the public key is a JWK string.
-   */
-  public static async generateRsaKeyPairNonExtractable(): Promise<{ publicKeyJwk: string, privateKey: CryptoKey }> {
-    const keyPair = await EncryptionUtility.generateRsaOaepKeyPair(false);
-    const publicKey = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
-
-    return { publicKeyJwk: JSON.stringify(publicKey), privateKey: keyPair.privateKey };
-  }
-
-  /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key, under an OAEP label when given.
-   */
-  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey, label?: string): Promise<Uint8Array> {
-    const cipherBuffer = base64ToBytes(ciphertext);
-    const plaintextBuffer = await crypto.subtle.decrypt(
-      label === undefined ? { name: "RSA-OAEP" } : { name: "RSA-OAEP", label: new TextEncoder().encode(label) },
-      privateKey,
-      cipherBuffer
-    );
-
-    return new Uint8Array(plaintextBuffer);
+  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, base64ToBytes(ciphertext)));
   }
 
   /**
@@ -105,17 +60,6 @@ export class EncryptionUtility {
    */
   private static async importAesKey(base64Key: string, usage: 'encrypt' | 'decrypt'): Promise<CryptoKey> {
     return await crypto.subtle.importKey('raw', base64ToBytes(base64Key), { name: 'AES-GCM', length: 256 }, false, [usage]);
-  }
-
-  /**
-   * Generates an RSA-OAEP-2048 key pair with SHA-256 and exponent 65537.
-   */
-  private static async generateRsaOaepKeyPair(extractable: boolean): Promise<CryptoKeyPair> {
-    return await crypto.subtle.generateKey(
-      { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
-      extractable,
-      ['encrypt', 'decrypt']
-    );
   }
 }
 

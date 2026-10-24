@@ -254,12 +254,11 @@ pub fn pin_register_failure(failed_attempts: u32) -> crate::crypto::PinFailure {
     crate::crypto::pin_register_failure(failed_attempts)
 }
 
-/// Create a new account key hierarchy for the unlock key around an account keypair (JWK) the caller generated, as JSON.
+/// Create a new account key hierarchy for the unlock key, as JSON.
 #[uniffi::export]
-pub fn create_account_key_hierarchy_json(unlock_key: Vec<u8>, public_key_jwk: String, private_key_jwk: String) -> Result<String, VaultError> {
+pub fn create_account_key_hierarchy_json(unlock_key: Vec<u8>) -> Result<String, VaultError> {
     let unlock_key = zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&unlock_key));
-    let key_pair = crate::crypto::RsaKeyPair { public_key: public_key_jwk, private_key: private_key_jwk };
-    let hierarchy = crate::crypto::create_account_key_hierarchy_with_key_pair(&unlock_key, &key_pair)?;
+    let hierarchy = crate::crypto::create_account_key_hierarchy(&unlock_key)?;
     Ok(serde_json::to_string(&hierarchy)?)
 }
 
