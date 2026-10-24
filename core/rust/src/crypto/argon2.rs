@@ -2,6 +2,7 @@
 
 use serde::Deserialize;
 use thiserror::Error;
+use zeroize::Zeroizing;
 
 /// Length of every derived key in bytes; the vault format assumes a 256-bit key throughout.
 const ARGON2_OUTPUT_LENGTH: usize = 32;
@@ -66,7 +67,7 @@ struct EncryptionSettingsJson {
 }
 
 /// Derive a 32-byte key from a password with Argon2id under explicit cost parameters; the salt is at least 8 bytes.
-pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> Result<Vec<u8>, Argon2Error> {
+pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> Result<Zeroizing<Vec<u8>>, Argon2Error> {
     use argon2::{Algorithm, Argon2, Params, Version};
 
     if params.memory_kib < MIN_MEMORY_KIB || params.iterations < MIN_ITERATIONS || params.parallelism < MIN_PARALLELISM {
@@ -78,9 +79,9 @@ pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> 
 
     let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, argon2_params);
 
-    let mut output = vec![0u8; ARGON2_OUTPUT_LENGTH];
+    let mut output = Zeroizing::new(vec![0u8; ARGON2_OUTPUT_LENGTH]);
     argon2
-        .hash_password_into(password, salt, &mut output)
+        .hash_password_into(password, salt, &mut output[..])
         .map_err(|e| Argon2Error::InvalidParameter(format!("Argon2 hash failed: {}", e)))?;
 
     Ok(output)
@@ -88,13 +89,13 @@ pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> 
 
 /// Derive a 32-byte key from a password and salt (hashed as their UTF-8 bytes) under the cost parameters in
 /// `settings_json`.
-pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
+pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json: &str) -> Result<Zeroizing<Vec<u8>>, Argon2Error> {
     argon2_derive_key_bytes_from_settings(password.as_bytes(), salt.as_bytes(), settings_json)
 }
 
 /// [`argon2_derive_key_from_settings`] over raw bytes: the mobile PIN unlock's Keychain/Keystore salt is random
 /// bytes, not UTF-8.
-pub fn argon2_derive_key_bytes_from_settings(password: &[u8], salt: &[u8], settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
+pub fn argon2_derive_key_bytes_from_settings(password: &[u8], salt: &[u8], settings_json: &str) -> Result<Zeroizing<Vec<u8>>, Argon2Error> {
     let params = Argon2Params::from_settings_json(settings_json)?;
     argon2_derive_key(password, salt, params)
 }

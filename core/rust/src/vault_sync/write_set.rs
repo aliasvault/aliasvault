@@ -25,7 +25,7 @@ pub(crate) struct ManifestRecord {
 pub(crate) enum SkipReason {
     /// The vault holds no rows for it, so writing it would empty it server-side.
     NoRowsInVault,
-    /// Its grant did not unwrap in this session.
+    /// Its grant did not decrypt in this session.
     KeyDidNotOpen,
 }
 

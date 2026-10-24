@@ -444,7 +444,7 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
         return Ok(Err(Refusal::VaultUpgradeRequired));
     }
 
-    let manifest_vek = crypto::generate_key_base64();
+    let manifest_vek = zeroize::Zeroizing::new(crypto::generate_key_base64());
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
     let self_grant_signature = me.sign(&crypto::signing::grant_message(&requested_id, NEW_MANIFEST_KEY_VERSION, &me.user_id, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;

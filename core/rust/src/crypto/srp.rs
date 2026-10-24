@@ -14,6 +14,7 @@ use srp::groups::G_2048;
 use srp::utils::{compute_k, compute_u};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::common::encoding::{hex_decode, hex_encode_upper as bytes_to_hex};
 use crate::common::rng::random_bytes;
@@ -73,12 +74,13 @@ pub(super) fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SrpError> {
 }
 
 /// Left-pad bytes with zeros to a specific length.
-pub(super) fn pad_to_length(bytes: Vec<u8>, target_len: usize) -> Vec<u8> {
+pub(super) fn pad_to_length(mut bytes: Vec<u8>, target_len: usize) -> Vec<u8> {
     if bytes.len() >= target_len {
         bytes
     } else {
         let mut padded = vec![0u8; target_len - bytes.len()];
-        padded.extend(bytes);
+        padded.extend_from_slice(&bytes);
+        bytes.zeroize();
         padded
     }
 }
@@ -110,7 +112,7 @@ pub fn srp_derive_private_key(salt: &str, identity: &str, password_hash: &str) -
 
 /// The SRP verifier `v = g^x mod N` as uppercase hex (256 bytes), from the hex private key.
 pub fn srp_derive_verifier(private_key: &str) -> Result<String, SrpError> {
-    let x = BigUint::from_bytes_be(&hex_to_bytes(private_key)?);
+    let x = BigUint::from_bytes_be(&Zeroizing::new(hex_to_bytes(private_key)?));
 
     let client = SrpClient::<Sha256>::new(&G_2048);
     let v = client.compute_v(&x);
@@ -122,7 +124,7 @@ pub fn srp_derive_verifier(private_key: &str) -> Result<String, SrpError> {
 pub fn srp_generate_ephemeral() -> SrpEphemeral {
     let client = SrpClient::<Sha256>::new(&G_2048);
 
-    let a = random_bytes(64);
+    let a = Zeroizing::new(random_bytes(64));
     let a_pub = client.compute_public_ephemeral(&a);
 
     SrpEphemeral { public: bytes_to_hex(&pad_to_length(a_pub, N_BYTES)), secret: bytes_to_hex(&a) }
@@ -131,10 +133,10 @@ pub fn srp_generate_ephemeral() -> SrpEphemeral {
 /// The client session (key `K` and proof `M1`) from the server's public ephemeral `B`; hex in, hex out.
 pub fn srp_derive_session(client_secret: &str, server_public: &str, salt: &str, identity: &str, private_key: &str) -> Result<SrpSession, SrpError> {
     let identity = identity.to_lowercase();
-    let a = BigUint::from_bytes_be(&hex_to_bytes(client_secret)?);
+    let a = BigUint::from_bytes_be(&Zeroizing::new(hex_to_bytes(client_secret)?));
     let b_pub = BigUint::from_bytes_be(&hex_to_bytes(server_public)?);
     let salt_bytes = hex_to_bytes(salt)?;
-    let x = BigUint::from_bytes_be(&hex_to_bytes(private_key)?);
+    let x = BigUint::from_bytes_be(&Zeroizing::new(hex_to_bytes(private_key)?));
 
     // Safeguard against malicious B (B mod N must not be 0)
     if &b_pub % &G_2048.n == BigUint::default() {
@@ -166,7 +168,7 @@ pub fn srp_derive_session(client_secret: &str, server_public: &str, salt: &str, 
 pub fn srp_verify_session(client_public: &str, client_proof: &str, session_key: &str, server_proof: &str) -> Result<bool, SrpError> {
     let a_pub_bytes = hex_to_bytes(client_public)?;
     let m1_bytes = hex_to_bytes(client_proof)?;
-    let key_bytes = hex_to_bytes(session_key)?;
+    let key_bytes = Zeroizing::new(hex_to_bytes(session_key)?);
     let server_m2_bytes = hex_to_bytes(server_proof)?;
 
     let expected_m2 = compute_m2(&a_pub_bytes, &m1_bytes, &key_bytes);
@@ -180,8 +182,9 @@ pub fn srp_verify_session(client_public: &str, client_proof: &str, session_key: 
  */
 
 /// Derive the session key K = H(PAD(S)) from the premaster secret.
-pub(super) fn derive_session_key(s: &BigUint) -> Vec<u8> {
-    Sha256::digest(to_padded_bytes(s)).to_vec()
+pub(super) fn derive_session_key(s: &BigUint) -> Zeroizing<Vec<u8>> {
+    let padded = Zeroizing::new(to_padded_bytes(s));
+    Zeroizing::new(Sha256::digest(&*padded).to_vec())
 }
 
 /// Compute M1 = H(H(N) XOR H(g) | H(I) | s | A | B | K)

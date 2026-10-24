@@ -33,7 +33,7 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     assert!(host.store_calls.is_empty(), "resolving a key never touches the stored vault");
 
     // The operation takes the unlock key only: the Account Key itself is refused, never tried as a fallback.
-    let account_key = crypto::unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = crypto::decrypt_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
     let mut host = TestHost::new(&account_key);
     host.serve(&server);
     let result = host.run("resolveVaultKey");
@@ -74,7 +74,7 @@ fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
 }
 
 /// A key that does not open the chain is a rejected unlock key (E-206); a chain whose VEK does not open under its
-/// own account key is damage, not a wrong password (E-207); an unknown wrap algorithm asks for an app update.
+/// own account key is damage, not a wrong password (E-207); an unknown encryption algorithm asks for an app update.
 #[test]
 fn resolve_vault_key_tells_the_failure_modes_apart() {
     let unlock_key = crypto::generate_key_base64();
@@ -89,7 +89,7 @@ fn resolve_vault_key_tells_the_failure_modes_apart() {
     assert!(result.get("encryptionKey").is_none());
 
     let mut damaged = hierarchy.clone();
-    damaged.account_keys.encrypted_vek = crypto::wrap_key(&crypto::generate_key_base64(), &crypto::generate_key_base64(), crypto::aad::PERSONAL_VEK).unwrap();
+    damaged.account_keys.encrypted_vek = crypto::encrypt_key(&crypto::generate_key_base64(), &crypto::generate_key_base64(), crypto::aad::PERSONAL_VEK).unwrap();
     server.borrow_mut().set_vault_key(&damaged);
     let mut host = TestHost::new(&unlock_key);
     host.serve(&server);

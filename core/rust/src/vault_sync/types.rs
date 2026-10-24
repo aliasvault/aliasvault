@@ -267,7 +267,7 @@ pub enum KeyRotationRefusal {
     VaultOutOfDate,
     /// The server state moved on between initiate and the rotation; sync and try again.
     ServerStateChanged,
-    /// A shared vault's key could not be opened on this device, so its grant could not be rewrapped.
+    /// A shared vault's key could not be opened on this device, so its grant could not be reencrypted.
     SharedVaultKeyUnavailable,
     /// The vault or the account's key hierarchy has to finish upgrading first.
     VaultUpgradeRequired,

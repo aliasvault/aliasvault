@@ -43,11 +43,11 @@ fn kek_differs_from_the_unlock_key() {
 }
 
 #[test]
-fn account_key_is_not_wrapped_with_the_raw_unlock_key() {
+fn account_key_is_not_encrypted_with_the_raw_unlock_key() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
-    assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key, aad::ACCOUNT_KEY).is_err());
-    assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &derive_kek_base64(&unlock_key).unwrap(), aad::ACCOUNT_KEY).is_ok());
+    assert!(decrypt_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key, aad::ACCOUNT_KEY).is_err());
+    assert!(decrypt_key(&hierarchy.account_keys.encrypted_account_key, &derive_kek_base64(&unlock_key).unwrap(), aad::ACCOUNT_KEY).is_ok());
 }
 
 #[test]
@@ -74,7 +74,7 @@ fn each_open_refuses_the_other_kind_of_key() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
     let blobs = &hierarchy.account_keys;
-    let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = decrypt_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
 
     assert_eq!(open_key_chain_with_account_key(&unlock_key, &blobs.encrypted_vek, None).err(), Some(KeyChainError::AccountKeyRejected));
     assert_eq!(open_key_chain_with_unlock_key(&account_key, &blobs.encrypted_account_key, &blobs.encrypted_vek, None).err(), Some(KeyChainError::UnlockKeyRejected));
@@ -92,8 +92,8 @@ fn chain_rejects_a_wrong_key() {
 fn chain_with_a_foreign_vek_is_unreadable_under_the_unlock_key() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
-    let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
-    let foreign_vek = wrap_key(&generate_key_base64(), &generate_key_base64(), aad::PERSONAL_VEK).unwrap();
+    let account_key = decrypt_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
+    let foreign_vek = encrypt_key(&generate_key_base64(), &generate_key_base64(), aad::PERSONAL_VEK).unwrap();
 
     // The Account Key opened, so the unlock key was right: a damaged chain, never a wrong password.
     assert!(matches!(open_key_chain_with_unlock_key(&unlock_key, &hierarchy.account_keys.encrypted_account_key, &foreign_vek, None), Err(KeyChainError::KeyChainUnreadable(_))));
@@ -106,7 +106,7 @@ fn a_private_key_that_does_not_open_leaves_grants_closed_but_opens_the_vault() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
     let blobs = &hierarchy.account_keys;
-    let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = decrypt_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
 
     let opened = open_key_chain_with_account_key(&account_key, &blobs.encrypted_vek, Some(&blobs.encrypted_vek)).unwrap();
     assert_eq!(*opened.vault_encryption_key, hierarchy.vault_encryption_key);
@@ -140,7 +140,7 @@ fn hierarchy_carries_a_signing_key_that_signed_the_account_public_key() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
     let blobs = &hierarchy.account_keys;
-    let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = decrypt_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
 
     let signing_private_key = open_account_signing_private_key(&blobs.encrypted_signing_private_key, &account_key).unwrap();
     assert_eq!(*signing_private_key, hierarchy.signing_private_key);
@@ -173,11 +173,11 @@ fn reencrypt_rejects_a_wrong_old_unlock_key() {
 }
 
 #[test]
-fn wrap_and_unwrap_round_trip() {
-    let wrapping = generate_key_base64();
+fn encrypt_and_decrypt_key_round_trip() {
+    let outer = generate_key_base64();
     let key = generate_key_base64();
-    assert_eq!(*unwrap_key(&wrap_key(&key, &wrapping, b"a").unwrap(), &wrapping, b"a").unwrap(), key);
-    assert!(unwrap_key(&wrap_key(&key, &wrapping, b"a").unwrap(), &wrapping, b"b").is_err());
+    assert_eq!(*decrypt_key(&encrypt_key(&key, &outer, b"a").unwrap(), &outer, b"a").unwrap(), key);
+    assert!(decrypt_key(&encrypt_key(&key, &outer, b"a").unwrap(), &outer, b"b").is_err());
 }
 
 #[test]
@@ -185,12 +185,12 @@ fn chain_ciphertexts_do_not_open_in_each_others_slot() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
     let blobs = &hierarchy.account_keys;
-    let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = decrypt_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
 
-    // The Account Key wrap served as the VEK wrap: refused, not read as the VEK.
+    // The encrypted Account Key served as the encrypted VEK: refused, not read as the VEK.
     assert!(matches!(open_key_chain_with_unlock_key(&unlock_key, &blobs.encrypted_account_key, &blobs.encrypted_account_key, None), Err(KeyChainError::KeyChainUnreadable(_))));
     assert_eq!(open_key_chain_with_account_key(&account_key, &blobs.encrypted_account_key, None).err(), Some(KeyChainError::AccountKeyRejected));
-    assert!(unwrap_key(&blobs.encrypted_vek, &account_key, aad::ACCOUNT_KEY).is_err());
+    assert!(decrypt_key(&blobs.encrypted_vek, &account_key, aad::ACCOUNT_KEY).is_err());
     assert!(open_account_private_key(&blobs.encrypted_account_private_key, &account_key).is_ok());
     assert!(symmetric_decrypt_with_aad(&blobs.encrypted_account_private_key, &account_key, aad::PERSONAL_VEK).is_err());
 }
@@ -199,10 +199,10 @@ fn chain_ciphertexts_do_not_open_in_each_others_slot() {
 fn an_account_key_encrypted_under_any_other_label_is_refused() {
     let unlock_key = generate_key_base64();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
-    let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
+    let account_key = decrypt_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
     let kek = derive_kek_base64(&unlock_key).unwrap();
     for label in [aad::PERSONAL_VEK, aad::ACCOUNT_PRIVATE_KEY, aad::ACCOUNT_SIGNING_PRIVATE_KEY, aad::MOBILE_LOGIN_ACCOUNT_KEY, aad::MOBILE_LOGIN_PAYLOAD_KEY, b""] {
-        let foreign = wrap_key(&account_key, &kek, label).unwrap();
+        let foreign = encrypt_key(&account_key, &kek, label).unwrap();
         let opened = open_key_chain_with_unlock_key(&unlock_key, &foreign, &hierarchy.account_keys.encrypted_vek, None);
         assert_eq!(opened.err(), Some(KeyChainError::UnlockKeyRejected), "label {:?}", String::from_utf8_lossy(label));
     }

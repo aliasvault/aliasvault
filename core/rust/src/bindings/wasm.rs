@@ -194,8 +194,9 @@ pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: O
 
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[wasm_bindgen(js_name = argon2DeriveKey)]
-pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
+pub fn argon2_derive_key_js(password: String, salt: &str, encryption_settings: &str) -> Result<js_sys::Uint8Array, JsValue> {
+    let password = zeroize::Zeroizing::new(password);
+    crate::crypto::argon2::argon2_derive_key_from_settings(&password, salt, encryption_settings).map(|key| js_sys::Uint8Array::from(&key[..])).map_err(js_err)
 }
 
 /// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
@@ -258,7 +259,7 @@ pub fn decrypt_manifest_invitation_name_js(encrypted_name: &str, manifest_id: &s
     crate::crypto::decrypt_manifest_invitation_name(encrypted_name, manifest_id, private_key_jwk).map_err(js_err)
 }
 
-/// A fresh random salt for a new PIN wrap.
+/// A fresh random salt for a new PIN key.
 #[wasm_bindgen(js_name = pinGenerateSalt)]
 pub fn pin_generate_salt_js() -> Vec<u8> {
     crate::crypto::pin_generate_salt()
@@ -266,14 +267,16 @@ pub fn pin_generate_salt_js() -> Vec<u8> {
 
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.
 #[wasm_bindgen(js_name = pinEncrypt)]
-pub fn pin_encrypt_js(pin: &str, salt: &[u8], secret: &[u8]) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::pin_encrypt(pin, salt, secret).map_err(js_err)
+pub fn pin_encrypt_js(pin: String, salt: &[u8], secret: Vec<u8>) -> Result<Vec<u8>, JsValue> {
+    let (pin, secret) = (zeroize::Zeroizing::new(pin), zeroize::Zeroizing::new(secret));
+    crate::crypto::pin_encrypt(&pin, salt, &secret).map_err(js_err)
 }
 
-/// Decrypt a PIN wrap. Fails for a wrong PIN.
+/// Decrypt a key encrypted with the PIN. Fails for a wrong PIN.
 #[wasm_bindgen(js_name = pinDecrypt)]
-pub fn pin_decrypt_js(pin: &str, salt: &[u8], encrypted: &[u8]) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::pin_decrypt(pin, salt, encrypted).map_err(js_err)
+pub fn pin_decrypt_js(pin: String, salt: &[u8], encrypted: &[u8]) -> Result<js_sys::Uint8Array, JsValue> {
+    let pin = zeroize::Zeroizing::new(pin);
+    crate::crypto::pin_decrypt(&pin, salt, encrypted).map(|secret| js_sys::Uint8Array::from(&secret[..])).map_err(js_err)
 }
 
 /// Whether a stored failed-attempt count means the PIN is locked.

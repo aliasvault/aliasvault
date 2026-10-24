@@ -1,5 +1,5 @@
 //! Key rotation: a new Account Key, VEK, account keypair and signing keypair, with the personal vault re-encrypted and
-//! every grant rewrapped, which the server applies in one transaction or not at all.
+//! every grant reencrypted, which the server applies in one transaction or not at all.
 
 use std::collections::HashMap;
 
@@ -184,7 +184,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
         return Ok(Err(KeyRotationRefusal::ServerStateChanged));
     }
 
-    // Every grant this account holds has to open here, or the rewrap would leave that shared vault unreachable.
+    // Every grant this account holds has to open here, or re-encrypting would leave that shared vault unreachable.
     let shared_records = keys::shared_manifest_records(ctx).await?;
     let mut shared_veks: HashMap<String, SecretString> = HashMap::new();
     for record in shared_records.values() {
@@ -207,8 +207,8 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
 
     let posted = build_and_post(ctx, &params, &personal_manifest_id, &rotated, signing_key.expose_secret(), &new_vek, &vek, &shared_records, &shared_veks, &blob_keys.blob_keys, &certifications, &delivery_pair.public_key).await;
     match posted {
-        Ok(Ok((applied, rewrapped_blob_keys, rewrapped_grants, fingerprints))) => {
-            adopt(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &applied, &rewrapped_blob_keys, &rewrapped_grants, &fingerprints).await?;
+        Ok(Ok((applied, reencrypted_blob_keys, reencrypted_grants, fingerprints))) => {
+            adopt(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &applied, &reencrypted_blob_keys, &reencrypted_grants, &fingerprints).await?;
             ctx.log("[KeyRotation] The server applied the rotation; this device now holds the new keys.").await;
             Ok(Ok((SecretString::from(rotated.account_key.as_str()), new_vek)))
         }
@@ -225,7 +225,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     }
 }
 
-/// The rewrapped blob keys, the rewrapped grants and the content fingerprints a successful rotation commits locally.
+/// The reencrypted blob keys, the reencrypted grants and the content fingerprints a successful rotation commits locally.
 type Built = (Applied, HashMap<String, String>, HashMap<String, SharedManifestDto>, HashMap<String, String>);
 
 /// Encrypt everything under the new keys, send it, and read the server's answer.
@@ -268,24 +268,24 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
 
     // Every blob key the server holds, under the new VEK; a blob the manifest references without a key cannot be rotated.
     let mut blob_keys = Vec::new();
-    let mut rewrapped_blob_keys: HashMap<String, String> = HashMap::new();
+    let mut reencrypted_blob_keys: HashMap<String, String> = HashMap::new();
     for blob_key in server_blob_keys {
         let aad = crypto::aad::blob_key(personal_manifest_id, &blob_key.hash);
-        let plain = crypto::unwrap_key(&blob_key.encrypted_blob_key, old_vek.expose_secret(), &aad).map_err(|e| SyncError::Other(format!("the key of blob {} does not open with the current vault key: {}", blob_key.hash, e)))?;
-        let rewrapped = crypto::wrap_key(&plain, new_vek.expose_secret(), &aad)?;
-        ensure_opens(crypto::unwrap_key(&rewrapped, new_vek.expose_secret(), &aad).is_ok_and(|k| *k == *plain), &format!("the key of blob {}", blob_key.hash))?;
-        rewrapped_blob_keys.insert(blob_key.hash.clone(), rewrapped.clone());
-        blob_keys.push(BlobKeyWrite { hash: blob_key.hash.clone(), encrypted_blob_key: rewrapped });
+        let plain = crypto::decrypt_key(&blob_key.encrypted_blob_key, old_vek.expose_secret(), &aad).map_err(|e| SyncError::Other(format!("the key of blob {} does not open with the current vault key: {}", blob_key.hash, e)))?;
+        let reencrypted = crypto::encrypt_key(&plain, new_vek.expose_secret(), &aad)?;
+        ensure_opens(crypto::decrypt_key(&reencrypted, new_vek.expose_secret(), &aad).is_ok_and(|k| *k == *plain), &format!("the key of blob {}", blob_key.hash))?;
+        reencrypted_blob_keys.insert(blob_key.hash.clone(), reencrypted.clone());
+        blob_keys.push(BlobKeyWrite { hash: blob_key.hash.clone(), encrypted_blob_key: reencrypted });
     }
     let references: Vec<BlobRef> = entry.manifest.referenced_blobs().into_iter().map(|(hash, category)| BlobRef { hash, category }).collect();
-    if let Some(unkeyed) = references.iter().find(|r| !rewrapped_blob_keys.contains_key(&r.hash)) {
+    if let Some(unkeyed) = references.iter().find(|r| !reencrypted_blob_keys.contains_key(&r.hash)) {
         return Err(SyncError::Other(format!("the server holds no key for referenced blob {}; sync and try again", unkeyed.hash)));
     }
 
     // Every grant, for the new account public key, signed by the new signing key.
     let mut grants = Vec::new();
-    let mut rewrapped_grants = shared_records.clone();
-    for record in rewrapped_grants.values_mut() {
+    let mut reencrypted_grants = shared_records.clone();
+    for record in reencrypted_grants.values_mut() {
         let shared_vek = &shared_veks[&record.manifest_id];
         let encrypted_vek = keys::encrypt_manifest_vek(shared_vek.expose_secret(), &record.manifest_id, &rotated.account_keys.account_public_key)?;
         let message = crypto::signing::grant_message(&record.manifest_id, record.key_version, &params.user_id, &rotated.account_keys.account_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek);
@@ -368,7 +368,7 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
         Err(error) => return Err(error),
     };
     match response.status.as_str() {
-        "ok" => Ok(Ok((Applied { manifest_revision: response.manifest_revision, bucket_revisions: response.bucket_revisions }, rewrapped_blob_keys, rewrapped_grants, fingerprints))),
+        "ok" => Ok(Ok((Applied { manifest_revision: response.manifest_revision, bucket_revisions: response.bucket_revisions }, reencrypted_blob_keys, reencrypted_grants, fingerprints))),
         "outdated" => Ok(Err(KeyRotationRefusal::ServerStateChanged)),
         other => Err(SyncError::Other(format!("the server answered the rotation with an unknown status \"{}\"", other))),
     }
@@ -378,11 +378,11 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
 /// server applies it, the old password no longer reaches any key, so a broken chain could not be recovered.
 fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
-    let account_key = crypto::unwrap_account_key(&blobs.encrypted_account_key, params.new_unlock_key.expose_secret()).ok().filter(|key| **key == rotated.account_key);
+    let account_key = crypto::decrypt_account_key(&blobs.encrypted_account_key, params.new_unlock_key.expose_secret()).ok().filter(|key| **key == rotated.account_key);
     ensure_opens(account_key.is_some(), "the new Account Key")?;
-    let vek_opens = crypto::unwrap_key(&blobs.encrypted_vek, &rotated.account_key, crypto::aad::PERSONAL_VEK).is_ok_and(|key| *key == new_vek.expose_secret());
+    let vek_opens = crypto::decrypt_key(&blobs.encrypted_vek, &rotated.account_key, crypto::aad::PERSONAL_VEK).is_ok_and(|key| *key == new_vek.expose_secret());
     ensure_opens(vek_opens, "the new vault key")?;
-    ensure_opens(crypto::open_account_private_key(&blobs.encrypted_account_private_key, &rotated.account_key).is_ok_and(|key| key == rotated.account_private_key), "the new account private key")?;
+    ensure_opens(crypto::open_account_private_key(&blobs.encrypted_account_private_key, &rotated.account_key).is_ok_and(|key| *key == rotated.account_private_key), "the new account private key")?;
     ensure_opens(crypto::open_account_signing_private_key(&blobs.encrypted_signing_private_key, &rotated.account_key).is_ok_and(|key| *key == rotated.signing_private_key), "the new signing private key")
 }
 
@@ -405,7 +405,7 @@ fn ensure_opens(opens: bool, what: &str) -> SyncResult<()> {
 /// Take the new keys over: the cached chain, the derivation parameters, the revisions and fingerprints the server
 /// now holds, the blob keys and grants under the new keys, and the stored vault under the new VEK.
 #[allow(clippy::too_many_arguments)]
-async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, applied: &Applied, rewrapped_blob_keys: &HashMap<String, String>, rewrapped_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
+async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, applied: &Applied, reencrypted_blob_keys: &HashMap<String, String>, reencrypted_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;
@@ -429,8 +429,8 @@ async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: 
 
     let mut cache: HashMap<String, EncryptedBlob> = state::get(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE).await?.unwrap_or_default();
     for (hash, encrypted) in cache.iter_mut() {
-        if let Some(rewrapped) = rewrapped_blob_keys.get(hash) {
-            encrypted.encrypted_blob_key = rewrapped.clone();
+        if let Some(reencrypted) = reencrypted_blob_keys.get(hash) {
+            encrypted.encrypted_blob_key = reencrypted.clone();
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &cache).await?;
@@ -439,7 +439,7 @@ async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: 
     ctx.account_public_key = Some(blobs.account_public_key.clone());
     ctx.account_private_key = Some(SecretString::from(rotated.account_private_key.as_str()));
     ctx.signing_private_key = Some(SecretString::from(rotated.signing_private_key.as_str()));
-    keys::set_shared_manifest_records(ctx, rewrapped_grants, new_vek.expose_secret()).await?;
+    keys::set_shared_manifest_records(ctx, reencrypted_grants, new_vek.expose_secret()).await?;
     ctx.set_encryption_key(new_vek.clone());
     ctx.persist_local_vault(false).await
 }

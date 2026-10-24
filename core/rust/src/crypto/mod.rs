@@ -1,12 +1,12 @@
 //! Cryptographic modules used by the clients. Every AAD string and RSA-OAEP label lives in [`aad`].
 //!
 //! - [`aad`]: the associated-data and OAEP-label registry that binds each ciphertext to its slot.
-//! - [`aes_gcm`]: AES-256-GCM (`aes-gcm`), random 96-bit nonce, `IV | ciphertext | tag`; every vault payload and key wrap.
+//! - [`aes_gcm`]: AES-256-GCM (`aes-gcm`), random 96-bit nonce, `IV | ciphertext | tag`; every vault payload and every key encrypted with another key.
 //! - [`argon2`]: Argon2id (`argon2`) with a parameter floor; turns the master password into the unlock key.
 //! - `jwk`: RSA keys to and from JWK JSON (`rsa`), for the OAEP keys and the RS256 passkey keys.
 //! - [`key_chain`]: HKDF-SHA256 (`hkdf`) KEK and SRP input from the unlock key; KEK > Account Key > VEK, private keys.
 //! - [`mobile_login`]: SHA-256 public key hash and verification code of the mobile login (QR unlock) handshake.
-//! - [`pin`]: PIN unlock: Argon2id + AES-256-GCM wrap of the key the host stores, with the failed-attempt policy.
+//! - [`pin`]: PIN unlock: the key the host stores, encrypted with AES-256-GCM under an Argon2id key of the PIN, with the failed-attempt policy.
 //! - [`rsa_oaep`]: RSA-2048 OAEP-SHA256 (`rsa`, blinded decryption); grants, invitation names and delivery keys.
 //! - [`signing`]: Ed25519 (`ed25519-dalek`) account signatures over grants, public keys and invitation names.
 //! - [`srp`]: SRP-6a client (`srp`, SHA-256, 2048-bit group); login without sending the password.
@@ -37,7 +37,7 @@ pub use aes_gcm::{
 };
 pub use key_chain::{
     account_signing_key_fingerprint, create_account_key_hierarchy, derive_srp_password_hash, open_account_private_key, open_account_signing_private_key,
-    open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, rotate_account_keys, unwrap_account_key, unwrap_key, wrap_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,
+    decrypt_account_key, decrypt_key, encrypt_key, open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, rotate_account_keys, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,
     RotatedAccountKeys, SrpInputError,
 };
 pub use mobile_login::{mobile_login_open_approval, mobile_login_public_key_hash, mobile_login_verification_code, MobileLoginApproval};

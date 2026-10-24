@@ -8,18 +8,18 @@ fn round_trips_and_rejects_a_wrong_pin() {
     assert_eq!(salt.len(), PIN_SALT_LENGTH);
     let encrypted = pin_encrypt("123456", &salt, b"account key").unwrap();
     assert_eq!(encrypted.len(), 12 + b"account key".len() + 16, "layout is IV | ciphertext | tag");
-    assert_eq!(pin_decrypt("123456", &salt, &encrypted).unwrap(), b"account key");
+    assert_eq!(*pin_decrypt("123456", &salt, &encrypted).unwrap(), b"account key");
     assert!(pin_decrypt("654321", &salt, &encrypted).is_err());
     assert!(pin_decrypt("123456", &pin_generate_salt(), &encrypted).is_err());
 }
 
-/// A wrap stored before this module existed: Argon2id under the PIN settings, then AES-GCM with that key.
+/// A PIN key stored before this module existed: Argon2id under the PIN settings, then AES-GCM with that key.
 #[test]
-fn opens_a_wrap_made_with_the_argon2_key_directly() {
+fn opens_a_key_encrypted_with_the_argon2_key_directly() {
     let salt = b"some-salt-bytes!";
     let key = argon2_derive_key_bytes_from_settings(b"8765432", salt, PIN_ARGON2_SETTINGS).unwrap();
     let encrypted = symmetric_encrypt_with_raw_key(b"secret", &key).unwrap();
-    assert_eq!(pin_decrypt("8765432", salt, &encrypted).unwrap(), b"secret");
+    assert_eq!(*pin_decrypt("8765432", salt, &encrypted).unwrap(), b"secret");
 }
 
 #[test]

@@ -34,7 +34,7 @@ pub(crate) struct Ctx {
     has_local_vault: bool,
     /// The stored vault did not decrypt with the session key, so this run treats it as absent until a store replaces it.
     local_vault_discarded: bool,
-    /// The VEK of every shared manifest this account holds a grant on, unwrapped once per run.
+    /// The VEK of every shared manifest this account holds a grant on, decrypted once per run.
     shared_veks: Mutex<Option<HashMap<String, SecretString>>>,
 }
 
@@ -143,12 +143,12 @@ impl Ctx {
         Ok(schema)
     }
 
-    /// The shared-manifest keys unwrapped earlier in this run, if any.
+    /// The shared-manifest keys decrypted earlier in this run, if any.
     pub fn cached_shared_veks(&self) -> Option<HashMap<String, SecretString>> {
         self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).clone()
     }
 
-    /// Remember the unwrapped shared-manifest keys; `None` forgets them (the records changed).
+    /// Remember the decrypted shared-manifest keys; `None` forgets them (the records changed).
     pub fn cache_shared_veks(&self, veks: Option<HashMap<String, SecretString>>) {
         *self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = veks;
     }

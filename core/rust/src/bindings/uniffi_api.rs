@@ -184,7 +184,8 @@ pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultE
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[uniffi::export]
 pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
-    crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
+    let password = zeroize::Zeroizing::new(password);
+    crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings).map(|mut key| std::mem::take(&mut *key))
 }
 
 /// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
@@ -224,7 +225,7 @@ pub fn account_signing_key_fingerprint(encrypted_signing_private_key: String, ac
     crate::crypto::account_signing_key_fingerprint(&encrypted_signing_private_key, &account_key)
 }
 
-/// A fresh random salt for a new PIN wrap.
+/// A fresh random salt for a new PIN key.
 #[uniffi::export]
 pub fn pin_generate_salt() -> Vec<u8> {
     crate::crypto::pin_generate_salt()
@@ -233,13 +234,15 @@ pub fn pin_generate_salt() -> Vec<u8> {
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.
 #[uniffi::export]
 pub fn pin_encrypt(pin: String, salt: Vec<u8>, secret: Vec<u8>) -> Result<Vec<u8>, VaultError> {
+    let (pin, secret) = (zeroize::Zeroizing::new(pin), zeroize::Zeroizing::new(secret));
     crate::crypto::pin_encrypt(&pin, &salt, &secret)
 }
 
-/// Decrypt a PIN wrap. Fails for a wrong PIN.
+/// Decrypt a key encrypted with the PIN. Fails for a wrong PIN.
 #[uniffi::export]
 pub fn pin_decrypt(pin: String, salt: Vec<u8>, encrypted: Vec<u8>) -> Result<Vec<u8>, VaultError> {
-    crate::crypto::pin_decrypt(&pin, &salt, &encrypted)
+    let pin = zeroize::Zeroizing::new(pin);
+    crate::crypto::pin_decrypt(&pin, &salt, &encrypted).map(|mut secret| std::mem::take(&mut *secret))
 }
 
 /// Whether a stored failed-attempt count means the PIN is locked.

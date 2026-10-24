@@ -33,8 +33,8 @@ fn changing_the_vek_only_encrypts_the_blob_key_again() {
     let blob = encrypt_blob(&[9; 64], &old_vek, MANIFEST, HASH).unwrap();
 
     let key_aad = aad::blob_key(MANIFEST, HASH);
-    let blob_key = crypto::unwrap_key(&blob.encrypted_blob_key, &old_vek, &key_aad).unwrap();
-    let rekeyed = EncryptedBlob { encrypted_data: blob.encrypted_data.clone(), encrypted_blob_key: crypto::wrap_key(&blob_key, &new_vek, &key_aad).unwrap() };
+    let blob_key = crypto::decrypt_key(&blob.encrypted_blob_key, &old_vek, &key_aad).unwrap();
+    let rekeyed = EncryptedBlob { encrypted_data: blob.encrypted_data.clone(), encrypted_blob_key: crypto::encrypt_key(&blob_key, &new_vek, &key_aad).unwrap() };
 
     assert_eq!(decrypt_blob(&rekeyed, &new_vek, MANIFEST, HASH).unwrap(), vec![9; 64]);
     assert!(decrypt_blob(&rekeyed, &old_vek, MANIFEST, HASH).is_err());

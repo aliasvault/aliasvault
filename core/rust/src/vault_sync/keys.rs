@@ -66,7 +66,7 @@ async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &
     ctx.account_key = Some(account_key.clone());
     if let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) {
         match crypto::open_account_private_key(encrypted, account_key.expose_secret()) {
-            Ok(private_key) => ctx.account_private_key = Some(SecretString::from(private_key)),
+            Ok(private_key) => ctx.account_private_key = Some(SecretString::from(private_key.as_str())),
             Err(error) => ctx.warn(format!("[Keys] The cached account private key did not open; shared grants stay closed. {}", error)).await,
         }
     }
@@ -256,7 +256,7 @@ pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, priva
     std::str::from_utf8(&plaintext).map(SecretString::from).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
 }
 
-/// Unwrap one shared manifest's VEK from the grant this account holds on it.
+/// Decrypt one shared manifest's VEK from the grant this account holds on it.
 pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestDto) -> SyncResult<Option<SecretString>> {
     if record.algorithm != ALGORITHM_RSA_OAEP_SHA256 {
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
@@ -269,13 +269,13 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
     match decrypt_manifest_vek(&record.encrypted_vek, &record.manifest_id, private_key.expose_secret()) {
         Ok(vek) => Ok(Some(vek)),
         Err(error) => {
-            ctx.warn(format!("[Sharing] Failed to unwrap the key of manifest {}; leaving it closed. {}", record.manifest_id, error)).await;
+            ctx.warn(format!("[Sharing] Failed to decrypt the key of manifest {}; leaving it closed. {}", record.manifest_id, error)).await;
             Ok(None)
         }
     }
 }
 
-/// The VEK of every shared manifest this account holds a grant on, keyed by manifest id. Unwrapped once per run.
+/// The VEK of every shared manifest this account holds a grant on, keyed by manifest id. Decrypted once per run.
 pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<String, SecretString>> {
     if let Some(cached) = ctx.cached_shared_veks() {
         return Ok(cached);

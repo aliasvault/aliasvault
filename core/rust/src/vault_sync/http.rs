@@ -109,7 +109,7 @@ pub(crate) async fn post_frame<B: FrameBody + Serialize, T: DeserializeOwned>(ho
 /// The v2 vault endpoint (`GET`/`POST v2/Vault`).
 pub(crate) const VAULT_ENDPOINT: &str = "Vault";
 
-/// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's password-wrapped key chain.
+/// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's key chain encrypted under the password.
 // TODO: switch to "UnlockMethod/Password" after minimum API is 0.32.0+ that has the new URL.
 pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
 

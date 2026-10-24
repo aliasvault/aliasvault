@@ -1,12 +1,12 @@
-//! Helpers for `SecretString`: moving key text in without a copy, and writing it back out over the JSON boundary.
+//! Helpers for `SecretString`: moving key text in, and writing it back out over the JSON boundary.
 
 use secrecy::{ExposeSecret, SecretString};
 use serde::Serializer;
 use zeroize::Zeroizing;
 
-/// Moves a zeroizing string into a `SecretString` without copying the text.
-pub fn from_zeroizing(mut value: Zeroizing<String>) -> SecretString {
-    SecretString::from(std::mem::take(&mut *value))
+/// Moves a zeroizing string into a `SecretString`.
+pub fn from_zeroizing(value: Zeroizing<String>) -> SecretString {
+    SecretString::from(value.as_str())
 }
 
 /// Writes an optional secret as a plain JSON string, for `#[serde(serialize_with = ...)]`.
