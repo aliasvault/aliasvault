@@ -218,6 +218,7 @@
     "attachments": "附件",
     "back": "返回",
     "backspace": "Backspace",
+    "beforeYouContinue": "在继续之前：",
     "cancel": "取消",
     "clipboardCountdown": {
       "clearClipboardButton": "清除剪贴板"
@@ -284,6 +285,7 @@
     "hide": "隐藏",
     "hideDetails": "隐藏详情",
     "hidePassword": "隐藏密码",
+    "highRiskAction": "这是高风险操作。",
     "home": "主页",
     "loadMore": "加载更多",
     "loading": "加载中…",
@@ -689,7 +691,7 @@
     "excludedCharsLabel": "排除字符",
     "fieldHistory": {
       "deleteConfirm": "您确定吗？",
-      "title": "{{field}} history"
+      "title": "{{field}} 历史记录"
     },
     "fileSavedTo": "文件已保存至",
     "filters": {
@@ -1025,7 +1027,7 @@
     "passwordCopied": "密码已复制",
     "passwordUnlockError": "密码验证失败",
     "pinConfirmSubtitle": "重新输入您的 PIN 以确认",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "您的设备未确认已解锁。请锁定您的设备，然后使用您的设备 PIN 码、图案或密码解锁设备再试一次。",
     "pinIncorrectAttemptsRemaining": "PIN 错误，剩余 {{count}} 次尝试",
     "pinLockedMaxAttempts": "PIN 因多次尝试失败而被锁定",
     "pinMismatch": "PIN 不匹配，请重试。",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "自动填充弹窗不会出现的网站。",
     "enabledForThisSite": "对此网站启用",
     "exportConfirmTitle": "导出密码库",
-    "exportCsvButton": "将密码库导出为 CSV 文件",
-    "exportSectionDescription": "将您的密码库数据导出到 CSV 文件。该文件可用作备份，亦可导入到其他密码管理器中。",
     "exportSectionTitle": "导出",
     "exportWarning": "警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。请您仅在受信任的设备上执行此操作，并确保您：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n您确定要继续导出吗？",
-    "exporting": "导出中…",
     "general": {
       "aliasGenerationAgeRangeDescription": "设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。",
       "aliasGenerationGenderDescription": "设置生成新身份时的默认性别偏好。",
@@ -1361,7 +1360,7 @@
         "failedToChange": "密码更改失败。请重试。",
         "failedToChangePassword": "密码更改失败。请刷新页面后重试。",
         "fillAllFields": "请填写所有字段",
-        "headerText": "更改主密码也会更改密码库加密密钥。建议定期更改主密码以保证密码库安全。",
+        "headerText": "更改主密码会使您的其他设备退出登录。",
         "initiatingChange": "开始更改密码…",
         "newPassword": "新密码",
         "passwordChangedSuccessfully": "密码更改成功",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "两步验证已成功启用。下次登录时，您需要输入两步验证码。",
         "verificationCodePlaceholder": "输入验证码",
         "verifyAndEnableButton": "验证并启用"
+      },
+      "keyRotation": {
+        "acknowledge": "我已经备份了我的密码库，并且在其他设备上退出登录",
+        "changePasswordAndRotate": "更改密码并轮换密钥",
+        "optionRotateKeys": "同时轮换所有加密密钥",
+        "optionRotateKeysDescription": "仅在您怀疑密钥已泄露（例如设备遭到入侵或被盗）时才需要此操作。它会重新加密您的密码库，并使所有其他设备退出登录。",
+        "riskAfterwards": "随后，在您的其他设备上重新登录，并再次设置 PIN、通行密钥或生物识别解锁方式。",
+        "riskBackup": "请先导出密码库备份（设置 > 导入/导出）。密钥轮换操作无法撤销。",
+        "riskSignOut": "请等待其他设备完成同步，然后从这些设备上退出登录。若设备保持登录状态，其中尚未同步的更改将会丢失。"
       },
       "passkeyUnlock": {
         "disableButton": "禁用通行密钥解锁",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
-      "enterNewPinDescription": "请输入至少 6 位数的 PIN 码",
+      "enterNewPinDescription": "请输入至少 6 个字符的 PIN 码。可以使用字母和符号。",
       "incorrectPin": "PIN 码错误，剩余 {{attemptsRemaining}} 次尝试。",
       "incorrectPinSingular": "PIN 码错误，剩余 1 次尝试。",
       "introText": "选择您解锁密码库的方式。您可以使用主密码（始终可用），也可以设置 PIN 码以便快捷访问。PIN 码输入错误 3 次后，您需要使用主密码。",

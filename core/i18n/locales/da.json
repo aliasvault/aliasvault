@@ -3,9 +3,9 @@
     "ACCOUNT_BLOCKED": "Din konto er blevet deaktiveret. Hvis du mener, at dette er en fejl, bedes du kontakte support.",
     "ACCOUNT_LOCKED": "Kontoen er midlertidigt låst på grund af for mange mislykkede forsøg. Prøv venligst igen senere.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontoen er blevet slettet.",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
+    "ALIAS_LIMIT_REACHED": "Du har nået grænsen for oprettelse af nye e-mail-aliaser. Prøv igen senere, eller kontakt support, hvis du har brug for mere.",
     "CLAIM_DOES_NOT_EXIST": "Der opstod en fejl under forsøg på at indlæse e-mails. Prøv at redigere og gemme posten for at synkronisere databasen, og prøv derefter igen.",
-    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
+    "CLAIM_TAKEN": "Denne e-mail-adresse er allerede brugt af en anden konto. Rediger dette element og vælg en anden e-mail-adresse.",
     "INTERNAL_SERVER_ERROR": "Intern serverfejl.",
     "INVALID_AUTHENTICATOR_CODE": "Ugyldig godkendelseskode. Prøv venligst igen.",
     "INVALID_RECOVERY_CODE": "Ugyldig gendannelseskode. Prøv venligst igen.",
@@ -166,7 +166,7 @@
       "registrationDisabledMessage": "Nye konti kan kun oprettes med et invitationslink. Spørg serveradministratoren om en invitation.",
       "registrationDisabledTitle": "Lukket for brugerregistrering",
       "setupStepTitle": "Opsætning",
-      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
+      "termsAgreementLabel": "Jeg har læst og accepterer <termsLink>Vilkår og Betingelser</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault-assistent",
         "enterUsernameInstructions": "Indtast venligst det brugernavn, du ønsker at bruge. Dette kan være din e-mailadresse eller et unikt navn efter eget valg.",
@@ -174,7 +174,7 @@
         "serverCommunicationError": "Der opstod en fejl under kommunikationen med AliasVault-serveren.",
         "usernamePlaceholder": "Indtast dit ønskede brugernavn eller e-mail",
         "validatingUsernameMessage": "Validerer brugernavn...",
-        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
+        "welcomeMessage": "Velkommen! Lad os starte med at vælge et brugernavn til din konto."
       },
       "usernameStepTitle": "Vælg brugernavn"
     },
@@ -218,6 +218,7 @@
     "attachments": "Vedhæftede filer",
     "back": "Tilbage",
     "backspace": "Slet tegn",
+    "beforeYouContinue": "Før du fortsætter:",
     "cancel": "Annuller",
     "clipboardCountdown": {
       "clearClipboardButton": "Ryd udklipsholder"
@@ -263,7 +264,7 @@
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
+      "serverOutdated": "AliasVault-serveren skal opdateres for at arbejde med denne version af AliasVault. Prøv venligst igen senere. Hvis du bruger en selvhostede server, kontakt venligst din serveradministrator.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "unexpectedErrorContactSupport": "En uventet fejl opstod. Prøv igen, og kontakt support, hvis problemet fortsætter.",
@@ -284,6 +285,7 @@
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
     "hidePassword": "Skjul adgangskode",
+    "highRiskAction": "Dette er en højrisiko aktion.",
     "home": "Hjem",
     "loadMore": "Indlæs flere",
     "loading": "Indlæser...",
@@ -685,8 +687,8 @@
     "emailUnexpectedError": "Der opstod en uventet fejl under indlæsning af e-mails. Prøv igen senere.",
     "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe, skal du redigere elementet og trykke på mappe-ikonet i navnefeltet.",
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
-    "excludedCharsDescription": "Generated passwords will never contain these characters.",
-    "excludedCharsLabel": "Exclude characters",
+    "excludedCharsDescription": "Genererede adgangskoder vil aldrig indeholde disse tegn.",
+    "excludedCharsLabel": "Udelad tegn",
     "fieldHistory": {
       "deleteConfirm": "Er du sikker?",
       "title": "{{field}} historik"
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Adgangskode kopieret",
     "passwordUnlockError": "Kunne ikke bekræfte adgangskode",
     "pinConfirmSubtitle": "Indtast din PIN-kode igen for at bekræfte",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Din enhed bekræftede ikke, at den er låst op. Lås din enhed, lås op med din enheds pinkode, mønster eller adgangskode, og prøv igen.",
     "pinIncorrectAttemptsRemaining": "Forkert PIN-kode. {{count}} forsøg tilbage",
     "pinLockedMaxAttempts": "PIN-kode låst efter for mange mislykkede forsøg",
     "pinMismatch": "PIN-koderne stemmer ikke overens. Prøv venligst igen.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Websteder hvor popup-vinduet for autofyld ikke vises.",
     "enabledForThisSite": "Aktiveret for dette websted",
     "exportConfirmTitle": "Eksporter boks",
-    "exportCsvButton": "Eksporter boks til CSV-fil",
-    "exportSectionDescription": "Eksporter dine boksdata til en CSV-fil. Denne fil kan bruges som backup og kan også importeres i andre adgangskodeadministratorer.",
     "exportSectionTitle": "Eksport",
     "exportWarning": "Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede enheder og sørg for at:\n\n• Opbevar den eksporterede fil på et sikkert sted\n• Slet filen, når du ikke længere har brug for den\n• Del aldrig den eksporterede fil med andre\n\nEr du sikker på, at du vil fortsætte med eksporten?",
-    "exporting": "Eksporterer...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
       "aliasGenerationGenderDescription": "Indstil standardpræference for køn ved generering af nye identiteter.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Kunne ikke ændre adgangskode. Prøv venligst igen.",
         "failedToChangePassword": "Kunne ikke ændre adgangskode. Genindlæs siden og prøv igen.",
         "fillAllFields": "Udfyld venligst alle felter",
-        "headerText": "Ændring af din master-adgangskode ændrer også boksens krypteringsnøgler. Det anbefales periodisk at skifte din master-adgangskode for at holde dine bokse sikre.",
+        "headerText": "Ændring af din hovedadgangskode logger dig ud af dine andre enheder.",
         "initiatingChange": "Starter ændring af adgangskode...",
         "newPassword": "Ny adgangskode",
         "passwordChangedSuccessfully": "Adgangskode ændret korrekt",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "To-faktor-godkendelse er nu aktiveret. Ved næste login skal du indtaste din 2FA-kode.",
         "verificationCodePlaceholder": "Indtast bekræftelseskode",
         "verifyAndEnableButton": "Bekræft og aktiver"
+      },
+      "keyRotation": {
+        "acknowledge": "Jeg har sikkerhedskopieret min boks og logget ud af mine andre enheder",
+        "changePasswordAndRotate": "Skift adgangskode og rotere nøgler",
+        "optionRotateKeys": "Rotere også alle krypteringsnøgler",
+        "optionRotateKeysDescription": "Kun nødvendigt, hvis du har mistanke om dine nøgler blev afsløret, for eksempel hvis din enhed blev kompromitteret eller stjålet. Gen-krypterer din boks og logger dig ud af alle andre enheder.",
+        "riskAfterwards": "Log efterfølgende ind igen på dine andre enheder og opsæt PIN, adgangsnøgle eller biometrisk oplåsning igen.",
+        "riskBackup": "Eksporter først en sikkerhedskopi af din boks (Settings > Import / Export). En nøglerotationshandling kan ikke fortrydes.",
+        "riskSignOut": "Lad dine andre enheder afslutte synkroniseringen, og log derefter ud fra dem. Usynkroniserede ændringer på enheder, der forbliver logget ind, går tabt."
       },
       "passkeyUnlock": {
         "disableButton": "Deaktiver oplåsning med passkey",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bekræft PIN-kode",
       "confirmPinDescription": "Indtast din PIN-kode igen for at bekræfte",
-      "enterNewPinDescription": "Indtast en PIN-kode på mindst 6 cifre",
+      "enterNewPinDescription": "Indtast en pinkode på mindst 6 tegn. Bogstaver og symboler er tilladt.",
       "incorrectPin": "Forkert PIN-kode. {{attemptsRemaining}} forsøg tilbage.",
       "incorrectPinSingular": "Forkert PIN-kode. 1 forsøg tilbage.",
       "introText": "Vælg hvordan du vil låse din boks op. Du kan bruge din hovedadgangskode (altid tilgængelig) eller opsætte en PIN-kode for hurtigere adgang. Efter 3 mislykkede PIN-forsøg skal du bruge din hovedadgangskode.",
@@ -1560,14 +1568,14 @@
     "addName": "Tilføj et navn (valgfrit)",
     "addTotpCodeDescription": "Tilføj en to-faktor-godkendelseskode",
     "addTotpCodeModalTitle": "Tilføj 2FA TOTP-kode",
-    "algorithm": "Algorithm",
+    "algorithm": "Algoritme",
     "closeFormButton": "Luk formular",
     "defaultName": "Godkender",
     "deleteCodeConfirmation": "Er du sikker på, at du vil slette denne TOTP-kode?",
     "deleteCodeTitle": "Slet TOTP-kode",
     "deleteTotpCodeConfirmation": "Er du sikker på, at du vil slette 2FA koden \"{{name}}\"?",
     "deleteTotpCodeTitle": "Slet 2FA Kode",
-    "digits": "Digits",
+    "digits": "Cifre",
     "enterManually": "Indtast hemmelig nøgle",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
@@ -1575,8 +1583,8 @@
     },
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
-    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
-    "period": "Time step",
+    "parameterSummary": "{{algorithm}} · {{digits}} cifre · {{period}}s",
+    "period": "Tidsinterval",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
     "secretKey": "Hemmelig nøgle (Secret Key)",

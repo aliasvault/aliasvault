@@ -218,6 +218,7 @@
     "attachments": "Załączniki",
     "back": "Powrót",
     "backspace": "Usuń znak",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Anuluj",
     "clipboardCountdown": {
       "clearClipboardButton": "Wyczyść schowek"
@@ -284,6 +285,7 @@
     "hide": "Ukryj",
     "hideDetails": "Ukryj szczegóły",
     "hidePassword": "Ukryj hasło",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Panel główny",
     "loadMore": "Załaduj więcej",
     "loading": "Wczytywanie...",
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Hasło skopiowane",
     "passwordUnlockError": "Nie udało się zweryfikować hasła",
     "pinConfirmSubtitle": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Twoje urządzenie nie potwierdziło, że jest odblokowane. Zablokuj urządzenie, odblokuj je za pomocą kodu PIN, wzoru lub hasła urządzenia i spróbuj ponownie.",
     "pinIncorrectAttemptsRemaining": "Nieprawidłowy kod PIN. Pozostało {{count}} prób",
     "pinLockedMaxAttempts": "PIN zablokowany po zbyt wielu nieudanych próbach",
     "pinMismatch": "Kody PIN nie pasują. Spróbuj jeszcze raz.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Witryny, w których okienko autouzupełniania nie będzie wyświetlane.",
     "enabledForThisSite": "Włączone dla tej witryny",
     "exportConfirmTitle": "Eksportuj sejf",
-    "exportCsvButton": "Eksportuj sejf do pliku CSV",
-    "exportSectionDescription": "Wyeksportuj dane swojego sejfu do pliku CSV. Plik ten może służyć jako kopia zapasowa, a także może zostać zaimportowany do innych menedżerów haseł.",
     "exportSectionTitle": "Eksportowanie",
     "exportWarning": "Uwaga: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje zapisanie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
-    "exporting": "Eksportowanie...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Ustaw domyślny zakres wieku dla generowania nowych tożsamości. Ma to wpływ na datę urodzenia przypisaną do wygenerowanej tożsamości.",
       "aliasGenerationGenderDescription": "Ustaw domyślne preferencje dotyczące płci dla generowania nowych tożsamości.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Nie udało się zmienić hasła. Spróbuj ponownie.",
         "failedToChangePassword": "Nie udało się zmienić hasła. Odśwież stronę i spróbuj ponownie.",
         "fillAllFields": "Proszę wypełnić wszystkie pola",
-        "headerText": "Zmiana hasła głównego powoduje również zmianę kluczy szyfrujących sejf. Zaleca się okresową zmianę hasła głównego, aby zapewnić bezpieczeństwo sejfu.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Rozpoczynanie zmiany hasła...",
         "newPassword": "Nowe hasło",
         "passwordChangedSuccessfully": "Hasło zostało pomyślnie zmienione",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Uwierzytelnianie dwuskładnikowe jest teraz pomyślnie włączone. Po następnym logowaniu musisz wprowadzić kod 2FA.",
         "verificationCodePlaceholder": "Wprowadź kod weryfikacyjny",
         "verifyAndEnableButton": "Zweryfikuj i włącz"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Wyłącz odblokowywanie kluczem dostępu",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Potwierdź kod PIN",
       "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-      "enterNewPinDescription": "Wprowadź kod PIN składający się z co najmniej 6 cyfr",
+      "enterNewPinDescription": "Wprowadź kod PIN zawierający co najmniej 6 znaków. Dozwolone są litery i symbole.",
       "incorrectPin": "Nieprawidłowy kod PIN. Pozostało {{attemptsRemaining}} prób.",
       "incorrectPinSingular": "Nieprawidłowy kod PIN. Pozostała 1 próba.",
       "introText": "Wybierz sposób odblokowania sejfu. Możesz użyć hasła głównego (zawsze dostępnego) lub skonfigurować kod PIN, aby uzyskać szybszy dostęp. Po 3 nieudanych próbach wprowadzenia kodu PIN konieczne będzie użycie hasła głównego.",
