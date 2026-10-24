@@ -176,30 +176,17 @@ class SqliteClient {
   }
 
   /**
-   * Open a session in memory with the unlock key or the Account Key, without keychain persistence.
-   * Use this to test if a key is valid before persisting.
+   * Open a session with the unlock key of a password login; the native session keeps the Account Key the key chain
+   * yields. With `persistToKeychain` it is also stored for biometric unlock (may trigger a biometric prompt).
    *
-   * @param base64Key The base64 encoded unlock key or Account Key
+   * @param unlockKeyBase64 The base64 encoded unlock key, the password's Argon2id output
+   * @param persistToKeychain Whether to also persist the Account Key to the keychain or keystore
    */
-  public async storeAccountKeyInMemory(base64Key: string): Promise<void> {
+  public async openSessionWithUnlockKey(unlockKeyBase64: string, persistToKeychain: boolean): Promise<void> {
     try {
-      await NativeVaultManager.storeAccountKeyInMemory(base64Key);
+      await NativeVaultManager.openSessionWithUnlockKey(unlockKeyBase64, persistToKeychain);
     } catch (error) {
-      console.error('Error storing Account Key in memory:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Open a session with the unlock key or the Account Key AND persist the Account Key to keychain (may trigger biometric prompt).
-   *
-   * @param base64Key The base64 encoded unlock key or Account Key
-   */
-  public async storeAccountKey(base64Key: string): Promise<void> {
-    try {
-      await NativeVaultManager.storeAccountKey(base64Key);
-    } catch (error) {
-      console.error('Error storing Account Key:', error);
+      console.error('Error opening the session with the unlock key:', error);
       throw error;
     }
   }

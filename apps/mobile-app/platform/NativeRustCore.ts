@@ -84,7 +84,8 @@ export const nativeRustCore: IRustCore = {
 
   argon2DeriveKey: (password, salt, encryptionSettings) => callForBytes('argon2DeriveKey', password, salt, encryptionSettings),
   deriveSrpPasswordHash: (unlockKeyBase64, encryptionType) => call('deriveSrpPasswordHash', unlockKeyBase64, encryptionType),
-  openAccountKeyChain: (storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey) => call('openAccountKeyChain', storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey),
+  openKeyChainWithUnlockKey: (unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey) => call('openKeyChainWithUnlockKey', unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey),
+  openKeyChainWithAccountKey: (accountKey, encryptedVek, encryptedAccountPrivateKey) => call('openKeyChainWithAccountKey', accountKey, encryptedVek, encryptedAccountPrivateKey),
   createAccountKeyHierarchy: (unlockKeyBase64, publicKeyJwk, privateKeyJwk) => call('createAccountKeyHierarchyJson', unlockKeyBase64, publicKeyJwk, privateKeyJwk),
   reencryptAccountKey: (encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64) => call('reencryptAccountKeyJson', encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64),
 

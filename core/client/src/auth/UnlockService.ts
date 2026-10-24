@@ -6,7 +6,7 @@ import { KeyDerivationUpgradeService } from './KeyDerivationUpgradeService';
 import { MasterPasswordService } from './MasterPasswordService';
 import { SrpAuthService } from './SrpAuthService';
 import { SrpLoginService } from './SrpLoginService';
-import { VaultKeyService } from './VaultKeyService';
+import { VaultKeyService, type KeyChainKey } from './VaultKeyService';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
@@ -75,23 +75,23 @@ export class UnlockService {
     const loginResponse = await new SrpLoginService(options.webApi).initiateLogin(username!);
     const unlockKey = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
     await UnlockService.storeDerivationParams(loginResponse);
-    const accountKey = await VaultKeyService.refreshKeyChain(unlockKey, options.webApi);
+    const accountKey = await VaultKeyService.refreshKeyChain({ unlockKey }, options.webApi);
     await UnlockService.upgradeKeyDerivation(password, loginResponse, unlockKey, options.webApi, username!);
     return accountKey;
   }
 
   /**
    * Finish an accepted login: fetch and check the key chain, then store the derivation parameters and the Account Key.
-   * @param unlockKeyBase64 - the unlock key of the login, or the Account Key a mobile app sent
+   * @param key - the unlock key of the login, or the Account Key a mobile app sent
    * @param derivationParams - the derivation parameters of the account's password
    * @param webApi - the API client, already holding the new session's tokens
    * @param onKeyChainFailure - ends the session when the key chain cannot be opened, before the error is rethrown
    * @returns The Account Key.
    */
-  public static async completeKeyChainLogin(unlockKeyBase64: string, derivationParams: UnlockKeyDerivationParams, webApi: WebApiService, onKeyChainFailure?: () => Promise<void>): Promise<string> {
+  public static async completeKeyChainLogin(key: KeyChainKey, derivationParams: UnlockKeyDerivationParams, webApi: WebApiService, onKeyChainFailure?: () => Promise<void>): Promise<string> {
     let accountKey: string;
     try {
-      accountKey = await VaultKeyService.refreshKeyChain(unlockKeyBase64, webApi);
+      accountKey = await VaultKeyService.refreshKeyChain(key, webApi);
     } catch (err) {
       await onKeyChainFailure?.();
       throw err;

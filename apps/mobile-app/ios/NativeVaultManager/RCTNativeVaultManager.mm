@@ -97,12 +97,8 @@
     [vaultManager storeMetadata:metadata resolver:resolve rejecter:reject];
 }
 
-- (void)storeAccountKeyInMemory:(NSString *)base64Key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeAccountKeyInMemory:base64Key resolver:resolve rejecter:reject];
-}
-
-- (void)storeAccountKey:(NSString *)base64Key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeAccountKey:base64Key resolver:resolve rejecter:reject];
+- (void)openSessionWithUnlockKey:(NSString *)unlockKeyBase64 persistToKeychain:(BOOL)persistToKeychain resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager openSessionWithUnlockKey:unlockKeyBase64 persistToKeychain:persistToKeychain resolver:resolve rejecter:reject];
 }
 
 - (void)clearEncryptionKeyFromMemory:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

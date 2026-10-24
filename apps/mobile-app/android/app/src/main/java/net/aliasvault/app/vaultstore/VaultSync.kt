@@ -120,7 +120,7 @@ class VaultSync(
         if (!result.optBoolean("success", false)) {
             throw syncError(result)
         }
-        vaultStore.storeAccountKey(derivedKeyBase64)
+        vaultStore.openSessionWithUnlockKey(derivedKeyBase64, persistToKeystore = true)
         vaultStore.encryptionKey
     }
 

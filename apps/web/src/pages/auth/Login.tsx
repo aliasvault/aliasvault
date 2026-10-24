@@ -119,7 +119,7 @@ const Login: React.FC = () => {
       await auth.setAuthTokens(normalizedUsername, accessToken, refreshToken);
 
       // Fetch the key chain, check the unlock key opens it and cache it; without a usable chain the session is useless, so end it.
-      await UnlockService.completeKeyChainLogin(unlockKey, params, webApi, () => auth.logout());
+      await UnlockService.completeKeyChainLogin({ unlockKey }, params, webApi, () => auth.logout());
       if (loginPassword) {
         await UnlockService.upgradeKeyDerivation(loginPassword, params, unlockKey, webApi, normalizedUsername);
       }

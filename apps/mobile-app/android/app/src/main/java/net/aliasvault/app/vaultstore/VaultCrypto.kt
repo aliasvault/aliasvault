@@ -8,8 +8,10 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONObject
 import uniffi.aliasvault_core.KeyChainException
+import uniffi.aliasvault_core.KeyChainKeys
 import uniffi.aliasvault_core.mobileLoginEncryptAccountKey as rustMobileLoginEncryptAccountKey
-import uniffi.aliasvault_core.openAccountKeyChain as rustOpenAccountKeyChain
+import uniffi.aliasvault_core.openKeyChainWithAccountKey as rustOpenKeyChainWithAccountKey
+import uniffi.aliasvault_core.openKeyChainWithUnlockKey as rustOpenKeyChainWithUnlockKey
 import uniffi.aliasvault_core.vaultBlobDecrypt as rustVaultBlobDecrypt
 import uniffi.aliasvault_core.vaultBlobEncrypt as rustVaultBlobEncrypt
 
@@ -49,13 +51,15 @@ class VaultCrypto(
         get() = sessionKeys()?.accountKey?.let { Base64.encodeToString(it, Base64.NO_WRAP) }
 
     /**
-     * What the Account Key opens in the cached account key chain; a legacy key converts (see [LegacyKeyConversion]).
+     * What the session key opens in the cached account key chain. A session opened before the device had a chain holds
+     * the unlock key; once a sync caches the chain it opens as such and the Account Key replaces it (see [LegacyKeyConversion]).
      */
     @Suppress("SwallowedException")
     private fun sessionKeys(): SessionKeys? {
         val key = accountKey ?: return null
         return try {
-            openAccountKeyChain(key).also { if (!it.accountKey.contentEquals(key)) accountKey = it.accountKey }
+            // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+            LegacyKeyConversion.openStoredKey(this, key).also { if (!it.accountKey.contentEquals(key)) accountKey = it.accountKey }
         } catch (e: Exception) {
             null
         }
@@ -83,17 +87,30 @@ class VaultCrypto(
     // region Encryption Key Management
 
     /**
-     * Open a session with the unlock key or the Account Key and optionally persist the Account Key to keystore if
-     * biometrics are enabled.
-     *
-     * During login, if biometrics are enabled, this will attempt to persist the key to keystore.
-     * However, if Activity context is not available (common during login before UI is fully ready),
-     * the key will only be stored in memory. It will be persisted to keystore on next unlock
-     * when Activity context is available.
+     * Open a session with the Account Key a device unlock method restored and persist it to the keystore if biometrics
+     * are enabled.
      */
     fun storeAccountKey(base64Key: String, authMethods: String) {
-        openSession(Base64.decode(base64Key, Base64.NO_WRAP))
+        storeAccountKeyInMemory(base64Key)
+        persistAccountKeyIfBiometricsEnabled(authMethods)
+    }
 
+    /**
+     * Open a session with the unlock key of a password login; the session keeps the Account Key the chain yields and,
+     * when asked, persists it to the keystore if biometrics are enabled.
+     */
+    fun openSessionWithUnlockKey(base64Key: String, persistToKeystore: Boolean, authMethods: String) {
+        accountKey = openKeyChainWithUnlockKey(Base64.decode(base64Key, Base64.NO_WRAP)).accountKey
+        if (persistToKeystore) {
+            persistAccountKeyIfBiometricsEnabled(authMethods)
+        }
+    }
+
+    /**
+     * Persist the session's Account Key to the biometric keystore when biometrics are enabled. Without an Activity
+     * context (common during login before the UI is ready) the key stays in memory and is persisted on the next unlock.
+     */
+    private fun persistAccountKeyIfBiometricsEnabled(authMethods: String) {
         if (authMethods.contains(BIOMETRICS_AUTH_METHOD)) {
             try {
                 val latch = java.util.concurrent.CountDownLatch(1)
@@ -130,10 +147,19 @@ class VaultCrypto(
     }
 
     /**
-     * Open a session in memory only with the unlock key or the Account Key.
+     * Open a session in memory only with the Account Key a device unlock method restored.
      */
     fun storeAccountKeyInMemory(base64Key: String) {
-        openSession(Base64.decode(base64Key, Base64.NO_WRAP))
+        accountKey = openKeyChainWithAccountKey(Base64.decode(base64Key, Base64.NO_WRAP)).accountKey
+    }
+
+    /**
+     * Open a session in memory with a key the keystore stored: the Account Key, or the unlock key of a store written
+     * before the account had a key chain (see [LegacyKeyConversion]).
+     */
+    fun openSessionWithStoredKey(key: ByteArray) {
+        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        accountKey = LegacyKeyConversion.openStoredKey(this, key).accountKey
     }
 
     /**
@@ -184,32 +210,53 @@ class VaultCrypto(
     class SessionKeys(val vaultEncryptionKey: ByteArray, val accountPrivateKey: String?, val accountKey: ByteArray)
 
     /**
-     * Open the cached account key chain with the Account Key or the unlock key (Rust `openAccountKeyChain`).
+     * The cached account key chain as the server sent it. [encryptedAccountPrivateKey] is null when the account has no
+     * keypair; a private key that does not open must not fail the unlock, grants then stay closed.
      */
-    fun openAccountKeyChain(key: ByteArray): SessionKeys {
-        val chainJson = getAccountKeyChain() ?: return SessionKeys(key, null, key)
-        val chain = JSONObject(chainJson)
-        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(key, null, key)
-        val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
-        // A private key that does not open must not fail the unlock; grants stay closed until the next login.
-        val encryptedPrivateKey = chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() }
+    private class CachedKeyChain(val encryptedAccountKey: String, val encryptedVek: String, val encryptedAccountPrivateKey: String?)
 
-        val keys = try {
-            rustOpenAccountKeyChain(key, encryptedAccountKey, encryptedVek, encryptedPrivateKey)
-        } catch (e: KeyChainException.UnlockKeyRejected) {
-            throw AppError.UnlockKeyRejected(cause = e)
-        } catch (e: KeyChainException.KeyChainUnreadable) {
-            // The account key opened, so this is a damaged chain and never a wrong password.
-            throw AppError.KeyChainUnreadable(e.message ?: "decrypt failed", e)
-        }
-        return SessionKeys(keys.vaultEncryptionKey, keys.accountPrivateKey, keys.accountKey)
+    /**
+     * The cached account key chain, null for an account without one (its key is the vault key).
+     */
+    private fun cachedKeyChain(): CachedKeyChain? {
+        val chain = JSONObject(getAccountKeyChain() ?: return null)
+        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return null
+        val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
+        return CachedKeyChain(encryptedAccountKey, encryptedVek, chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() })
     }
 
     /**
-     * Open a session with a key that opens the cached account key chain; the session keeps the Account Key it yields.
+     * Open the cached account key chain with the unlock key of a password login (Rust `openKeyChainWithUnlockKey`).
+     * Other platform implementations: VaultStore.openKeyChainWithUnlockKey (iOS), VaultKeyService.openKeyChain (core/client).
      */
-    fun openSession(key: ByteArray) {
-        accountKey = openAccountKeyChain(key).accountKey
+    fun openKeyChainWithUnlockKey(unlockKey: ByteArray): SessionKeys = openKeyChain(unlockKey) { chain ->
+        rustOpenKeyChainWithUnlockKey(unlockKey, chain.encryptedAccountKey, chain.encryptedVek, chain.encryptedAccountPrivateKey)
+    }
+
+    /**
+     * Open the cached account key chain with the Account Key (Rust `openKeyChainWithAccountKey`).
+     * Other platform implementations: VaultStore.openKeyChainWithAccountKey (iOS), VaultKeyService.openKeyChain (core/client).
+     */
+    fun openKeyChainWithAccountKey(accountKey: ByteArray): SessionKeys = openKeyChain(accountKey) { chain ->
+        rustOpenKeyChainWithAccountKey(accountKey, chain.encryptedVek, chain.encryptedAccountPrivateKey)
+    }
+
+    /**
+     * Open the cached chain through [open]; without a chain [key] is the vault key. Either rejection is E-206, an
+     * unreadable chain E-207 (the Account Key opened, so never a wrong password).
+     */
+    private fun openKeyChain(key: ByteArray, open: (CachedKeyChain) -> KeyChainKeys): SessionKeys {
+        val chain = cachedKeyChain() ?: return SessionKeys(key, null, key)
+        val keys = try {
+            open(chain)
+        } catch (e: KeyChainException.UnlockKeyRejected) {
+            throw AppError.UnlockKeyRejected(cause = e)
+        } catch (e: KeyChainException.AccountKeyRejected) {
+            throw AppError.UnlockKeyRejected(cause = e)
+        } catch (e: KeyChainException.KeyChainUnreadable) {
+            throw AppError.KeyChainUnreadable(e.message ?: "decrypt failed", e)
+        }
+        return SessionKeys(keys.vaultEncryptionKey, keys.accountPrivateKey, keys.accountKey)
     }
 
     /**
@@ -249,7 +296,8 @@ class VaultCrypto(
                     override fun onSuccess(result: String) {
                         try {
                             val keystoreKey = Base64.decode(result, Base64.NO_WRAP)
-                            openSession(keystoreKey)
+                            openSessionWithStoredKey(keystoreKey)
+                            // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
                             accountKey?.let { LegacyKeyConversion.convertLegacyKeystoreKey(keystoreProvider, keystoreKey, it) }
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
                         } catch (e: AppError) {

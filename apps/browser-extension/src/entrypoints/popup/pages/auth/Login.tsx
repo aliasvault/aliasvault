@@ -186,7 +186,7 @@ const Login: React.FC = () => {
      */
     let accountKey: string;
     try {
-      accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+      accountKey = await VaultKeyService.refreshKeyChain({ unlockKey }, webApi);
     } catch (err) {
       // If key chain can't be fetched, logout user and show error as this is not a recoverable error.
       await app.logout();

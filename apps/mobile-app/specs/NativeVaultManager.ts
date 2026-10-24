@@ -63,9 +63,8 @@ export interface Spec extends TurboModule {
   // Database/encryption key operations
   storeMetadata(metadata: string): Promise<void>;
   setAuthMethods(authMethods: string[]): Promise<void>;
-  storeAccountKeyInMemory(base64Key: string): Promise<void>;
+  openSessionWithUnlockKey(unlockKeyBase64: string, persistToKeychain: boolean): Promise<void>;
   clearEncryptionKeyFromMemory(): Promise<void>;
-  storeAccountKey(base64Key: string): Promise<void>;
   storeUnlockKeyDerivationParams(keyDerivationParams: string): Promise<void>;
   getUnlockKeyDerivationParams(): Promise<string | null>;
   getAccountKeyChain(): Promise<string | null>;

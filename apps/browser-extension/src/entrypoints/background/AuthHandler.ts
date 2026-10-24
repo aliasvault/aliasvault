@@ -7,7 +7,6 @@ import { describeAuthError, type AuthErrorOptions } from '@aliasvault/client/aut
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
-import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { logoutReasonKey } from '@aliasvault/client/sync/VaultSync';
 
 import { handleClearTwoFactorState, handleGetTwoFactorState, handleStoreTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
@@ -15,7 +14,7 @@ import { handleClearSession, handleFullVaultSync, handleStoreAccountKey } from '
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected, logFailure } from '@/utils/Diagnostics';
-import { convertLegacyPinKey } from '@/utils/LegacyKeyConversion';
+import { accountKeyFromPinKey } from '@/utils/LegacyKeyConversion';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { IncorrectPinError, InvalidPinFormatError, PinLockedError, removeAndDisablePin, resetFailedAttempts, unlockWithPin } from '@/utils/PinUnlockService';
@@ -190,8 +189,8 @@ export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAu
   return runExclusive(async () => {
     try {
       const pinKey = await unlockWithPin(data.pin);
-      const accountKey = await VaultKeyService.verifyUnlockKey(pinKey);
-      await convertLegacyPinKey(data.pin, pinKey, accountKey);
+      // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+      const accountKey = await accountKeyFromPinKey(data.pin, pinKey);
 
       const status = await checkServerStatus(new WebApiService());
       if ('logout' in status) {
@@ -293,7 +292,7 @@ async function completeLogin(username: string, token: string, refreshToken: stri
 
   // Fetch the key chain and check the unlock key opens it. Not recoverable when it fails, so log out again.
   const webApi = new WebApiService();
-  await UnlockService.completeKeyChainLogin(unlockKey, derivationParams, webApi, async () => {
+  await UnlockService.completeKeyChainLogin({ unlockKey }, derivationParams, webApi, async () => {
     await webApi.revokeTokens();
     await handleClearSession();
   });

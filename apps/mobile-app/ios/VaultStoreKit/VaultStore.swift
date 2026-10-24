@@ -52,12 +52,14 @@ public class VaultStore {
         return sessionKeys?.accountKey.base64EncodedString()
     }
 
-    /// What the Account Key opens in the cached account key chain.
+    /// What the session key opens in the cached account key chain. A session opened before the device had a chain holds the
+    /// unlock key, which still opens it as such once a sync caches the chain (see `VaultStore+LegacyKeyConversion`).
     private var sessionKeys: SessionKeys? {
         guard let accountKey = accountKey else {
             return nil
         }
-        return try? openAccountKeyChain(with: accountKey)
+        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        return try? openStoredKey(accountKey)
     }
 
     /// Last successful biometric/PIN auth operation.

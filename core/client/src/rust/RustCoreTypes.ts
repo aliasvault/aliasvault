@@ -91,12 +91,13 @@ export type PinFailure = {
 };
 
 /**
- * The outcome of opening a key chain with a stored key (the Rust `open_account_key_chain`). Keys are base64; on
- * success `accountKey` is what the caller stores in place of the key it passed in.
+ * The outcome of opening a key chain (the Rust `open_key_chain_with_unlock_key` and `open_key_chain_with_account_key`).
+ * Keys are base64; on success `accountKey` is the Account Key the caller stores for later unlocks.
  */
 export type KeyChainOpenResult =
   | { status: 'opened'; vaultEncryptionKey: string; accountKey: string; accountPrivateKey: string | null }
   | { status: 'unlockKeyRejected' }
+  | { status: 'accountKeyRejected' }
   | { status: 'keyChainUnreadable'; message: string };
 
 /**
@@ -117,6 +118,8 @@ export type AccountKeyBlobs = {
  * A newly created account key hierarchy (the Rust `create_account_key_hierarchy`): the encrypted blobs plus the plaintext halves the client keeps.
  */
 export type AccountKeyHierarchy = {
+  /** The Account Key (base64) the session stores. */
+  accountKey: string;
   vaultEncryptionKey: string;
   accountPrivateKey: string;
   signingPrivateKey: string;

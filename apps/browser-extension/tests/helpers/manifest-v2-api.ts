@@ -10,7 +10,7 @@
 import { createHash } from 'crypto';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { getSyncableTableNames, openAccountKeyChain, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
+import { getSyncableTableNames, openKeyChainWithUnlockKey, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
 
 import { bucketAad, manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
 
@@ -140,7 +140,7 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
     throw new Error('Vault key chain is missing the encrypted VEK');
   }
 
-  const opened = await openAccountKeyChain(Buffer.from(derivedKey).toString('base64'), vaultKey.encryptedAccountKey, vaultKey.encryptedVek, null);
+  const opened = await openKeyChainWithUnlockKey(Buffer.from(derivedKey).toString('base64'), vaultKey.encryptedAccountKey, vaultKey.encryptedVek, null);
   if (opened.status !== 'opened') {
     throw new Error(`Vault key chain did not open: ${opened.status}`);
   }

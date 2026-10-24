@@ -287,25 +287,36 @@ pub fn derive_srp_password_hash(unlock_key: Vec<u8>, encryption_type: String) ->
 pub struct KeyChainKeys {
     pub vault_encryption_key: Vec<u8>,
 
-    /// What the caller stores in place of the key it passed in.
+    /// The Account Key: what the caller stores for later unlocks.
     pub account_key: Vec<u8>,
 
     /// The account private key (JWK), none when the account has no keypair or it does not open.
     pub account_private_key: Option<String>,
 }
 
-/// Open a key chain with a stored key: the Account Key or an unlock key.
+impl KeyChainKeys {
+    fn from(opened: crate::crypto::key_chain::OpenedKeyChain) -> Result<Self, KeyChainError> {
+        let decode = |key: &str| crate::common::encoding::base64_decode(key).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()));
+        Ok(KeyChainKeys {
+            vault_encryption_key: decode(&opened.vault_encryption_key)?,
+            account_key: decode(&opened.account_key)?,
+            account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
+        })
+    }
+}
+
+/// Open a key chain with the unlock key (the password's Argon2id output).
 #[uniffi::export]
-pub fn open_account_key_chain(stored_key: Vec<u8>, encrypted_account_key: String, encrypted_vek: String, encrypted_account_private_key: Option<String>) -> Result<KeyChainKeys, KeyChainError> {
-    use crate::common::encoding::{base64_decode, base64_encode};
-    let stored_key = zeroize::Zeroizing::new(base64_encode(&stored_key));
-    let opened = crate::crypto::open_account_key_chain(&stored_key, &encrypted_account_key, &encrypted_vek, encrypted_account_private_key.as_deref())?;
-    let decode = |key: &str| base64_decode(key).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()));
-    Ok(KeyChainKeys {
-        vault_encryption_key: decode(&opened.vault_encryption_key)?,
-        account_key: decode(&opened.account_key)?,
-        account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
-    })
+pub fn open_key_chain_with_unlock_key(unlock_key: Vec<u8>, encrypted_account_key: String, encrypted_vek: String, encrypted_account_private_key: Option<String>) -> Result<KeyChainKeys, KeyChainError> {
+    let unlock_key = zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&unlock_key));
+    KeyChainKeys::from(crate::crypto::open_key_chain_with_unlock_key(&unlock_key, &encrypted_account_key, &encrypted_vek, encrypted_account_private_key.as_deref())?)
+}
+
+/// Open a key chain with the Account Key.
+#[uniffi::export]
+pub fn open_key_chain_with_account_key(account_key: Vec<u8>, encrypted_vek: String, encrypted_account_private_key: Option<String>) -> Result<KeyChainKeys, KeyChainError> {
+    let account_key = zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&account_key));
+    KeyChainKeys::from(crate::crypto::open_key_chain_with_account_key(&account_key, &encrypted_vek, encrypted_account_private_key.as_deref())?)
 }
 
 /// A random 32-byte SRP salt as an uppercase hex string.

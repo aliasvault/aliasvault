@@ -79,7 +79,7 @@ internal final class VaultSync {
         guard result["success"] as? Bool == true else {
             throw Self.syncError(from: result)
         }
-        try vaultStore.storeAccountKey(base64Key: derivedKeyBase64)
+        try vaultStore.openSessionWithUnlockKey(base64Key: derivedKeyBase64, persistToKeychain: true)
         _ = try vaultStore.getEncryptionKey()
     }
 

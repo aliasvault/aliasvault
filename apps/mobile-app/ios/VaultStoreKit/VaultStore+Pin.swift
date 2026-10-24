@@ -82,7 +82,8 @@ extension VaultStore {
     /// - Throws: PinUnlockError with specific error type and metadata
     public func unlockWithPin(_ pin: String) throws -> String {
         let pinProtectedKey = try decryptPinProtectedKey(pin)
-        let accountKey = try openAccountKeyChain(with: pinProtectedKey).accountKey
+        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        let accountKey = try openStoredKey(pinProtectedKey).accountKey
         convertLegacyPinKey(pin: pin, pinKey: pinProtectedKey, accountKey: accountKey)
         return accountKey.base64EncodedString()
     }

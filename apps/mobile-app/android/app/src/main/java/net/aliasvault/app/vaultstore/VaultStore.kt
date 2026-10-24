@@ -178,7 +178,7 @@ class VaultStore(
     // region Crypto Methods
 
     /**
-     * Open a session with the unlock key or the Account Key and persist the Account Key to keystore if biometrics
+     * Open a session with the Account Key a device unlock method restored and persist it to the keystore if biometrics
      * are enabled.
      */
     fun storeAccountKey(base64Key: String) {
@@ -186,10 +186,25 @@ class VaultStore(
     }
 
     /**
-     * Open a session in memory only with the unlock key or the Account Key.
+     * Open a session in memory only with the Account Key a device unlock method restored.
      */
     fun storeAccountKeyInMemory(base64Key: String) {
         crypto.storeAccountKeyInMemory(base64Key)
+    }
+
+    /**
+     * Open a session with the unlock key of a password login; with [persistToKeystore] the Account Key the chain yields
+     * is also stored for biometric unlock.
+     */
+    fun openSessionWithUnlockKey(unlockKeyBase64: String, persistToKeystore: Boolean) {
+        crypto.openSessionWithUnlockKey(unlockKeyBase64, persistToKeystore, auth.getAuthMethods())
+    }
+
+    /**
+     * Open a session in memory with a key the biometric keystore stored (see [LegacyKeyConversion]).
+     */
+    fun openSessionWithStoredKey(base64Key: String) {
+        crypto.openSessionWithStoredKey(android.util.Base64.decode(base64Key, android.util.Base64.NO_WRAP))
     }
 
     /**
@@ -331,7 +346,7 @@ class VaultStore(
 
             // Derive the unlock key from the password and open the chain; a wrong password fails to open it.
             val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
-            crypto.openAccountKeyChain(derivedKey)
+            crypto.openKeyChainWithUnlockKey(derivedKey)
             android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
             // Password incorrect or the key chain did not open - intentionally return null
@@ -973,7 +988,8 @@ class VaultStore(
         val key = pin.unlockWithPin(pinValue)
         markSuccessfulAuth()
 
-        val accountKey = crypto.openAccountKeyChain(android.util.Base64.decode(key, android.util.Base64.NO_WRAP)).accountKey
+        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        val accountKey = LegacyKeyConversion.openStoredKey(crypto, android.util.Base64.decode(key, android.util.Base64.NO_WRAP)).accountKey
         val accountKeyBase64 = android.util.Base64.encodeToString(accountKey, android.util.Base64.NO_WRAP)
         LegacyKeyConversion.convertLegacyPinKey(pin, pinValue, key, accountKeyBase64)
         return accountKeyBase64

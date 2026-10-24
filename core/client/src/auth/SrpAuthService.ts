@@ -1,9 +1,8 @@
 import { AppErrorCode, formatErrorWithCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
-import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
-import { rustCore } from '../rust/RustCore';
+import { argon2DeriveKey, rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import { isWeakerDerivation } from './DerivationSettings';
@@ -30,7 +29,7 @@ export type RegisterRequest = AccountKeyBlobs & {
 export type PreparedRegistration = {
   request: RegisterRequest;
   keys: AccountKeyHierarchy;
-  derivedKey: string;
+  unlockKey: string;
 };
 
 /**
@@ -273,7 +272,7 @@ export class SrpAuthService {
     if (stored && isWeakerDerivation(encryptionSettings, stored.encryptionSettings)) {
       throw new Error(formatErrorWithCode('The server sent weaker key derivation settings than this device holds', AppErrorCode.UNLOCK_SETTINGS_WEAKENED));
     }
-    return bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings));
+    return bytesToBase64(await argon2DeriveKey(password, salt, encryptionSettings));
   }
 
   /**
@@ -389,7 +388,7 @@ export class SrpAuthService {
         ...hierarchy.accountKeys,
       },
       keys: hierarchy,
-      derivedKey: material.unlockKeyBase64,
+      unlockKey: material.unlockKeyBase64,
     };
   }
 }

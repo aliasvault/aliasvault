@@ -63,30 +63,18 @@ public class NativeVaultManager: NSObject {
         }
     }
 
-    /// Open a session in memory with the unlock key or the Account Key, without keychain persistence.
-    /// Use this to test if a key is valid before persisting.
+    /// Open a session with the unlock key of a password login; with `persistToKeychain` the Account Key it yields is also
+    /// stored in the keychain if Face ID is enabled.
     @objc
-    func storeAccountKeyInMemory(_ base64Key: String,
-                                 resolver resolve: @escaping RCTPromiseResolveBlock,
-                                 rejecter reject: @escaping RCTPromiseRejectBlock) {
+    func openSessionWithUnlockKey(_ unlockKeyBase64: String,
+                                  persistToKeychain: Bool,
+                                  resolver resolve: @escaping RCTPromiseResolveBlock,
+                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.storeAccountKeyInMemory(base64Key: base64Key)
+            try vaultStore.openSessionWithUnlockKey(base64Key: unlockKeyBase64, persistToKeychain: persistToKeychain)
             resolve(nil)
         } catch {
-            reject("ERR_STORE_KEY_MEMORY", "Failed to store Account Key in memory: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Open a session with the unlock key or the Account Key AND persist the Account Key to keychain if Face ID is enabled.
-    @objc
-    func storeAccountKey(_ base64Key: String,
-                         resolver resolve: @escaping RCTPromiseResolveBlock,
-                         rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            try vaultStore.storeAccountKey(base64Key: base64Key)
-            resolve(nil)
-        } catch {
-            reject("KEYCHAIN_ERROR", "Failed to store Account Key: \(error.localizedDescription)", error)
+            reject("ERR_OPEN_SESSION", "Failed to open the session with the unlock key: \(error.localizedDescription)", error)
         }
     }
 
@@ -1064,7 +1052,7 @@ public class NativeVaultManager: NSObject {
                     }
 
                     // Open the session in memory only
-                    try self.vaultStore.storeAccountKeyInMemory(base64Key: unlockKeyBase64)
+                    try self.vaultStore.openSessionWithUnlockKey(base64Key: unlockKeyBase64, persistToKeychain: false)
 
                     // Unlock the vault
                     try self.vaultStore.unlockVault()
@@ -1409,7 +1397,7 @@ public class NativeVaultManager: NSObject {
                         throw NSError(domain: "NativeVaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
-                    try self.vaultStore.storeAccountKeyInMemory(base64Key: unlockKeyBase64)
+                    try self.vaultStore.openSessionWithUnlockKey(base64Key: unlockKeyBase64, persistToKeychain: false)
 
                     // Success - dismiss and resolve
                     await MainActor.run {
@@ -1585,9 +1573,10 @@ private enum RustCoreDispatcher {
         case "argon2DeriveKey":
             return try json(bytes: try RustCoreFramework.argon2DeriveKey(password: try args.string(0), salt: try args.string(1), encryptionSettings: try args.string(2)))
         case "deriveSrpPasswordHash": return try json(try RustCoreFramework.deriveSrpPasswordHash(unlockKey: try args.data(0), encryptionType: try args.string(1)))
-        case "openAccountKeyChain":
-            let key = try args.data(0)
-            return try openKeyChain(key: key, encryptedAccountKey: try args.string(1), encryptedVek: try args.string(2), encryptedAccountPrivateKey: args.optionalString(3))
+        case "openKeyChainWithUnlockKey":
+            return try keyChainResult { try RustCoreFramework.openKeyChainWithUnlockKey(unlockKey: try args.data(0), encryptedAccountKey: try args.string(1), encryptedVek: try args.string(2), encryptedAccountPrivateKey: args.optionalString(3)) }
+        case "openKeyChainWithAccountKey":
+            return try keyChainResult { try RustCoreFramework.openKeyChainWithAccountKey(accountKey: try args.data(0), encryptedVek: try args.string(1), encryptedAccountPrivateKey: args.optionalString(2)) }
         case "createAccountKeyHierarchyJson":
             return try RustCoreFramework.createAccountKeyHierarchyJson(unlockKey: try args.data(0), publicKeyJwk: try args.string(1), privateKeyJwk: try args.string(2))
         case "reencryptAccountKeyJson":
@@ -1626,12 +1615,10 @@ private enum RustCoreDispatcher {
         return text
     }
 
-    /// Open a key chain and report the outcome as the `KeyChainOpenResult` JSON the client core expects.
-    private static func openKeyChain(key: Data, encryptedAccountKey: String, encryptedVek: String, encryptedAccountPrivateKey: String?) throws -> String {
+    /// Open a key chain through `open` and report the outcome as the `KeyChainOpenResult` JSON the client core expects.
+    private static func keyChainResult(_ open: () throws -> KeyChainKeys) throws -> String {
         do {
-            let keys = try RustCoreFramework.openAccountKeyChain(
-                storedKey: key, encryptedAccountKey: encryptedAccountKey, encryptedVek: encryptedVek, encryptedAccountPrivateKey: encryptedAccountPrivateKey
-            )
+            let keys = try open()
             return try json([
                 "status": "opened",
                 "vaultEncryptionKey": keys.vaultEncryptionKey.base64EncodedString(),
@@ -1640,6 +1627,8 @@ private enum RustCoreDispatcher {
             ])
         } catch KeyChainError.UnlockKeyRejected {
             return try json(["status": "unlockKeyRejected"])
+        } catch KeyChainError.AccountKeyRejected {
+            return try json(["status": "accountKeyRejected"])
         } catch KeyChainError.KeyChainUnreadable(let message) {
             return try json(["status": "keyChainUnreadable", "message": message])
         }

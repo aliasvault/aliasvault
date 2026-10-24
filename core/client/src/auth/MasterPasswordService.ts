@@ -243,7 +243,7 @@ export class MasterPasswordService {
     }
 
     try {
-      await VaultKeyService.refreshKeyChain(unlockKeyBase64, webApi);
+      await VaultKeyService.refreshKeyChain({ unlockKey: unlockKeyBase64 }, webApi);
     } catch (error) {
       if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
         throw new IncorrectPasswordError();
@@ -261,7 +261,7 @@ export class MasterPasswordService {
    */
   private static async assertPasswordOpensChain(unlockKeyBase64: string): Promise<void> {
     try {
-      await VaultKeyService.openKeyChain(unlockKeyBase64);
+      await VaultKeyService.openKeyChain({ unlockKey: unlockKeyBase64 });
     } catch (error) {
       if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
         throw new IncorrectPasswordError();

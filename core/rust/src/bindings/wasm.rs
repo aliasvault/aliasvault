@@ -300,7 +300,7 @@ pub fn derive_srp_password_hash_js(unlock_key_base64: &str, encryption_type: &st
     crate::crypto::derive_srp_password_hash(&unlock_key, encryption_type).map(|hash| hash.to_string()).map_err(js_err)
 }
 
-/// The outcome of `openAccountKeyChain`: `status` is `opened`, `unlockKeyRejected` or `keyChainUnreadable`.
+/// The outcome of opening a key chain: `status` is `opened`, `unlockKeyRejected`, `accountKeyRejected` or `keyChainUnreadable`.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct KeyChainOpenResult {
@@ -311,23 +311,35 @@ struct KeyChainOpenResult {
     message: Option<String>,
 }
 
-/// Open a key chain with a stored key (the Account Key or an unlock key, base64). On success `accountKey` is what the
-/// caller stores in place of the key it passed in.
-#[wasm_bindgen(js_name = openAccountKeyChain)]
-pub fn open_account_key_chain_js(stored_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<String>) -> Result<JsValue, JsValue> {
-    use crate::crypto::KeyChainError;
-    let result = match crate::crypto::open_account_key_chain(stored_key, encrypted_account_key, encrypted_vek, encrypted_account_private_key.as_deref()) {
-        Ok(opened) => KeyChainOpenResult {
-            status: "opened",
-            vault_encryption_key: Some(opened.vault_encryption_key.to_string()),
-            account_key: Some(opened.account_key.to_string()),
-            account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
-            message: None,
-        },
-        Err(KeyChainError::UnlockKeyRejected) => KeyChainOpenResult { status: "unlockKeyRejected", vault_encryption_key: None, account_key: None, account_private_key: None, message: None },
-        Err(KeyChainError::KeyChainUnreadable(message)) => KeyChainOpenResult { status: "keyChainUnreadable", vault_encryption_key: None, account_key: None, account_private_key: None, message: Some(message) },
-    };
-    to_js(&result)
+impl KeyChainOpenResult {
+    fn from(result: Result<crate::crypto::key_chain::OpenedKeyChain, crate::crypto::KeyChainError>) -> Self {
+        use crate::crypto::KeyChainError;
+        let rejected = |status: &'static str, message: Option<String>| KeyChainOpenResult { status, vault_encryption_key: None, account_key: None, account_private_key: None, message };
+        match result {
+            Ok(opened) => KeyChainOpenResult {
+                status: "opened",
+                vault_encryption_key: Some(opened.vault_encryption_key.to_string()),
+                account_key: Some(opened.account_key.to_string()),
+                account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
+                message: None,
+            },
+            Err(KeyChainError::UnlockKeyRejected) => rejected("unlockKeyRejected", None),
+            Err(KeyChainError::AccountKeyRejected) => rejected("accountKeyRejected", None),
+            Err(KeyChainError::KeyChainUnreadable(message)) => rejected("keyChainUnreadable", Some(message)),
+        }
+    }
+}
+
+/// Open a key chain with the unlock key (base64). On success `accountKey` is what the caller stores for later unlocks.
+#[wasm_bindgen(js_name = openKeyChainWithUnlockKey)]
+pub fn open_key_chain_with_unlock_key_js(unlock_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<String>) -> Result<JsValue, JsValue> {
+    to_js(&KeyChainOpenResult::from(crate::crypto::open_key_chain_with_unlock_key(unlock_key, encrypted_account_key, encrypted_vek, encrypted_account_private_key.as_deref())))
+}
+
+/// Open a key chain with the Account Key (base64).
+#[wasm_bindgen(js_name = openKeyChainWithAccountKey)]
+pub fn open_key_chain_with_account_key_js(account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<String>) -> Result<JsValue, JsValue> {
+    to_js(&KeyChainOpenResult::from(crate::crypto::open_key_chain_with_account_key(account_key, encrypted_vek, encrypted_account_private_key.as_deref())))
 }
 
 /// A random 32-byte SRP salt as an uppercase hex string.

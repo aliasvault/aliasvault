@@ -217,10 +217,17 @@ export async function argon2DeriveKey(password: string, salt: string, encryption
 }
 
 /**
- * Open a key chain with a stored key: the Account Key, or an unlock key that is then replaced by the Account Key.
+ * Open a key chain with the unlock key (base64), the password's Argon2id output. Never accepts the Account Key.
  */
-export async function openAccountKeyChain(storedKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult> {
-  return rustCore().openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
+export async function openKeyChainWithUnlockKey(unlockKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult> {
+  return rustCore().openKeyChainWithUnlockKey(unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
+}
+
+/**
+ * Open a key chain with the Account Key (base64). Never accepts an unlock key.
+ */
+export async function openKeyChainWithAccountKey(accountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult> {
+  return rustCore().openKeyChainWithAccountKey(accountKey, encryptedVek, encryptedAccountPrivateKey);
 }
 
 /**

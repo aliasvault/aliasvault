@@ -43,6 +43,7 @@ pub struct AccountKeyBlobs {
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountKeyHierarchy {
+    pub account_key: String,
     pub vault_encryption_key: String,
     pub account_private_key: String,
     pub signing_private_key: String,
@@ -53,12 +54,7 @@ pub struct AccountKeyHierarchy {
 
 impl fmt::Debug for AccountKeyHierarchy {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("AccountKeyHierarchy")
-            .field("vault_encryption_key", &"<redacted>")
-            .field("account_private_key", &"<redacted>")
-            .field("signing_private_key", &"<redacted>")
-            .field("account_keys", &self.account_keys)
-            .finish()
+        f.debug_struct("AccountKeyHierarchy").field("account_keys", &self.account_keys).finish_non_exhaustive()
     }
 }
 
@@ -149,9 +145,13 @@ pub fn account_signing_key_fingerprint(encrypted_signing_private_key: &str, acco
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
 #[cfg_attr(feature = "uniffi", uniffi(flat_error))]
 pub enum KeyChainError {
-    /// The stored key is neither the Account Key nor an unlock key that opens it (wrong password or PIN).
-    #[error("The key does not open the account key")]
+    /// The unlock key does not open the Account Key (wrong password).
+    #[error("The unlock key does not open the account key")]
     UnlockKeyRejected,
+
+    /// The Account Key does not open the VEK: a stored Account Key that is not this chain's.
+    #[error("The account key does not open the vault encryption key")]
+    AccountKeyRejected,
 
     /// The Account Key opened but the VEK does not open under it: a damaged chain, never a wrong password.
     #[error("The key chain is unreadable: {0}")]
@@ -162,25 +162,33 @@ pub enum KeyChainError {
 pub struct OpenedKeyChain {
     pub vault_encryption_key: Zeroizing<String>,
 
-    /// The Account Key: what the caller stores for later unlocks, in place of the key it passed in.
+    /// The Account Key: what the caller stores for later unlocks.
     pub account_key: Zeroizing<String>,
 
     /// None when the account has no keypair or its private key does not open; grants then stay closed.
     pub account_private_key: Option<Zeroizing<String>>,
 }
 
-/// Open a key chain with a stored key: the Account Key, or an unlock key stored before the switch to the Account Key.
-pub fn open_account_key_chain(stored_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
-    let (account_key, vault_encryption_key) = match unwrap_key(encrypted_vek, stored_key, aad::PERSONAL_VEK) {
-        Ok(vek) => (Zeroizing::new(stored_key.to_string()), vek),
-        Err(_) => {
-            let account_key = unwrap_account_key(encrypted_account_key, stored_key).map_err(|_| KeyChainError::UnlockKeyRejected)?;
-            let vek = unwrap_key(encrypted_vek, &account_key, aad::PERSONAL_VEK).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
-            (account_key, vek)
-        }
-    };
-    let account_private_key = encrypted_account_private_key.filter(|e| !e.is_empty()).and_then(|e| open_account_private_key(e, &account_key).ok()).map(Zeroizing::new);
+/// Open a key chain with the unlock key (the password's Argon2id output): the KEK derived from it unwraps the Account
+/// Key, which unwraps the VEK. Never accepts the Account Key itself; see [`open_key_chain_with_account_key`].
+pub fn open_key_chain_with_unlock_key(unlock_key_base64: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
+    let account_key = unwrap_account_key(encrypted_account_key, unlock_key_base64).map_err(|_| KeyChainError::UnlockKeyRejected)?;
+    let vault_encryption_key = unwrap_key(encrypted_vek, &account_key, aad::PERSONAL_VEK).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
+    let account_private_key = open_optional_account_private_key(encrypted_account_private_key, &account_key);
     Ok(OpenedKeyChain { vault_encryption_key, account_key, account_private_key })
+}
+
+/// Open a key chain with the Account Key, as a device unlock method or an unlocked session holds it. Never accepts an
+/// unlock key; see [`open_key_chain_with_unlock_key`].
+pub fn open_key_chain_with_account_key(account_key_base64: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
+    let vault_encryption_key = unwrap_key(encrypted_vek, account_key_base64, aad::PERSONAL_VEK).map_err(|_| KeyChainError::AccountKeyRejected)?;
+    let account_private_key = open_optional_account_private_key(encrypted_account_private_key, account_key_base64);
+    Ok(OpenedKeyChain { vault_encryption_key, account_key: Zeroizing::new(account_key_base64.to_string()), account_private_key })
+}
+
+/// The account private key when the chain carries one that opens; a failure keeps grants closed, not the vault.
+fn open_optional_account_private_key(encrypted_account_private_key: Option<&str>, account_key_base64: &str) -> Option<Zeroizing<String>> {
+    encrypted_account_private_key.filter(|e| !e.is_empty()).and_then(|e| open_account_private_key(e, account_key_base64).ok()).map(Zeroizing::new)
 }
 
 /// Create a new account key hierarchy wrapped under the KEK derived from an unlock key.
@@ -207,7 +215,7 @@ pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_p
         account_public_key_signature: signing::sign(&signing_key_pair.private_key, &account_public_key_message)?,
     };
 
-    Ok(AccountKeyHierarchy { vault_encryption_key, account_private_key: key_pair.private_key.clone(), signing_private_key: signing_key_pair.private_key.clone(), account_keys })
+    Ok(AccountKeyHierarchy { account_key: account_key.to_string(), vault_encryption_key, account_private_key: key_pair.private_key.clone(), signing_private_key: signing_key_pair.private_key.clone(), account_keys })
 }
 
 /// The Account Key re-encrypted for a new password.
@@ -251,9 +259,8 @@ impl fmt::Debug for RotatedAccountKeys {
 /// wrapped under the KEK of `new_unlock_key_base64`.
 pub fn rotate_account_keys(new_unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<RotatedAccountKeys> {
     let hierarchy = create_account_key_hierarchy_with_key_pair(new_unlock_key_base64, key_pair)?;
-    let account_key = unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, new_unlock_key_base64)?;
     Ok(RotatedAccountKeys {
-        account_key: account_key.to_string(),
+        account_key: hierarchy.account_key.clone(),
         vault_encryption_key: hierarchy.vault_encryption_key.clone(),
         account_private_key: hierarchy.account_private_key.clone(),
         signing_private_key: hierarchy.signing_private_key.clone(),

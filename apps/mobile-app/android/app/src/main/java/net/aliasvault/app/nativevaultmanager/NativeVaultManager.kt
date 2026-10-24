@@ -249,35 +249,20 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Open a session in memory with the unlock key or the Account Key, without keystore persistence.
-     * Use this to test if a key is valid before persisting.
-     * @param base64Key The unlock key or Account Key as a base64 encoded string
+     * Open a session with the unlock key of a password login; with [persistToKeychain] the Account Key it yields is also
+     * stored in the keystore when biometrics are enabled (may trigger a biometric prompt).
+     * @param unlockKeyBase64 The unlock key as a base64 encoded string
+     * @param persistToKeychain Whether to also persist the Account Key to the keystore
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun storeAccountKeyInMemory(base64Key: String, promise: Promise) {
+    override fun openSessionWithUnlockKey(unlockKeyBase64: String, persistToKeychain: Boolean, promise: Promise) {
         try {
-            vaultStore.storeAccountKeyInMemory(base64Key)
+            vaultStore.openSessionWithUnlockKey(unlockKeyBase64, persistToKeychain)
             promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing Account Key in memory", e)
-            promise.reject("ERR_STORE_KEY_MEMORY", "Failed to store Account Key in memory: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Open a session with the unlock key or the Account Key AND persist the Account Key to keystore (may trigger biometric prompt).
-     * @param base64Key The unlock key or Account Key as a base64 encoded string
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun storeAccountKey(base64Key: String, promise: Promise) {
-        try {
-            vaultStore.storeAccountKey(base64Key)
-            promise.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error storing Account Key", e)
-            promise.reject("ERR_STORE_KEY", "Failed to store Account Key: ${e.message}", e)
+            Log.e(TAG, "Error opening the session with the unlock key", e)
+            promise.reject("ERR_OPEN_SESSION", "Failed to open the session with the unlock key: ${e.message}", e)
         }
     }
 

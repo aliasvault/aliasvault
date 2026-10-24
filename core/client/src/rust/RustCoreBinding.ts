@@ -62,7 +62,8 @@ export interface IRustCore {
 
   argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array>;
   deriveSrpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string>;
-  openAccountKeyChain(storedKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
+  openKeyChainWithUnlockKey(unlockKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
+  openKeyChainWithAccountKey(accountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
   createAccountKeyHierarchy(unlockKeyBase64: string, publicKeyJwk: string, privateKeyJwk: string): Promise<AccountKeyHierarchy>;
   reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<ReencryptedAccountKey | null>;
 

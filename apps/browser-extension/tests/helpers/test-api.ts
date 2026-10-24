@@ -69,11 +69,11 @@ export async function registerTestUser(
 ): Promise<{ tokenModel: TokenModel; encryptionKey: Uint8Array }> {
   const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
   const auth = new SrpLoginService({ rawFetch: (endpoint, options) => fetch(`${baseUrl}${endpoint}`, options) });
-  const { token, keys, derivedKey } = await auth.register(username, password);
+  const { token, keys, unlockKey } = await auth.register(username, password);
 
   await pushInitialVault(apiBaseUrl, token.token, username, base64ToBytes(keys.vaultEncryptionKey));
 
-  return { tokenModel: token, encryptionKey: base64ToBytes(derivedKey) };
+  return { tokenModel: token, encryptionKey: base64ToBytes(unlockKey) };
 }
 
 /**

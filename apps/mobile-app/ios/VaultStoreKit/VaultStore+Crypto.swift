@@ -23,15 +23,30 @@ extension VaultStore {
         return derivedKey
     }
 
-    /// Open a session in memory with the unlock key or the Account Key, without keychain persistence.
-    /// Use this to test if a key is valid before persisting.
+    /// Open a session in memory with the Account Key a device unlock method restored, without keychain persistence.
     public func storeAccountKeyInMemory(base64Key: String) throws {
+        self.accountKey = try openKeyChainWithAccountKey(try keyData(base64Key)).accountKey
+        print("Opened session in memory only (no keychain persistence)")
+    }
+
+    /// Open a session with the unlock key of a password login; the session keeps the Account Key the chain yields and,
+    /// when asked, persists it to the keychain if Face ID is enabled.
+    public func openSessionWithUnlockKey(base64Key: String, persistToKeychain: Bool) throws {
+        self.accountKey = try openKeyChainWithUnlockKey(try keyData(base64Key)).accountKey
+        if persistToKeychain {
+            try persistAccountKeyIfBiometricsEnabled()
+        }
+    }
+
+    /// The 32 bytes of a base64 key.
+    private func keyData(_ base64Key: String) throws -> Data {
         guard let keyData = Data(base64Encoded: base64Key) else {
             throw NSError(domain: "VaultStore", code: 6, userInfo: [NSLocalizedDescriptionKey: "Invalid base64 key"])
         }
-
-        try openSession(with: keyData)
-        print("Opened session in memory only (no keychain persistence)")
+        guard keyData.count == 32 else {
+            throw NSError(domain: "VaultStore", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid key length. Expected 32 bytes"])
+        }
+        return keyData
     }
 
     /// Clear the Account Key from memory.
@@ -42,12 +57,14 @@ extension VaultStore {
         print("Cleared Account Key from memory")
     }
 
-    /// Open a session in memory with the unlock key or the Account Key AND persist the Account Key to keychain if Face ID is enabled.
+    /// Open a session with the Account Key a device unlock method restored AND persist it to the keychain if Face ID is enabled.
     public func storeAccountKey(base64Key: String) throws {
-        // First open the session in memory
         try storeAccountKeyInMemory(base64Key: base64Key)
+        try persistAccountKeyIfBiometricsEnabled()
+    }
 
-        // Then persist to keychain if Face ID is enabled AND keystore is available
+    /// Persist the session's Account Key to the keychain when Face ID is enabled and the keystore is available.
+    private func persistAccountKeyIfBiometricsEnabled() throws {
         if self.enabledAuthMethods.contains(.faceID), let keyData = self.accountKey {
             if isKeystoreAvailable() {
                 try storeKeyInKeychain(keyData)
@@ -58,15 +75,6 @@ extension VaultStore {
         } else {
             print("Opened session in memory (Face ID not enabled, skipping keychain)")
         }
-    }
-
-    /// Open a session with a key that opens the cached account key chain; the session keeps the Account Key it yields.
-    internal func openSession(with key: Data) throws {
-        guard key.count == 32 else {
-            throw NSError(domain: "VaultStore", code: 7, userInfo: [NSLocalizedDescriptionKey: "Invalid key length. Expected 32 bytes"])
-        }
-
-        self.accountKey = try openAccountKeyChain(with: key).accountKey
     }
 
     /// Store the key derivation parameters used for deriving the encryption key from the plain text password
@@ -110,30 +118,57 @@ extension VaultStore {
         let accountKey: Data
     }
 
-    /// Open the cached account key chain with the Account Key or the unlock key (Rust `openAccountKeyChain`).
-    internal func openAccountKeyChain(with key: Data) throws -> SessionKeys {
+    /// The cached account key chain as the server sent it.
+    private struct CachedKeyChain {
+        let encryptedAccountKey: String
+        let encryptedVek: String
+        /// Nil when the account has no keypair; a private key that does not open must not fail the unlock, grants then stay closed.
+        let encryptedAccountPrivateKey: String?
+    }
+
+    /// The cached account key chain, nil for an account without one (its key is the vault key).
+    private func cachedKeyChain() throws -> CachedKeyChain? {
         guard let chainJson = getAccountKeyChain(),
               let chainData = chainJson.data(using: .utf8),
               let chain = try? JSONSerialization.jsonObject(with: chainData) as? [String: Any],
               let encryptedAccountKey = chain["encryptedAccountKey"] as? String, !encryptedAccountKey.isEmpty else {
-            return SessionKeys(vaultEncryptionKey: key, accountPrivateKey: nil, accountKey: key)
+            return nil
         }
-
         guard let encryptedVek = chain["encryptedVek"] as? String, !encryptedVek.isEmpty else {
             throw NSError(domain: "VaultStore", code: 41, userInfo: [NSLocalizedDescriptionKey: "Account key chain is missing the encrypted VEK"])
         }
-
-        // A private key that does not open must not fail the unlock; grants stay closed until the next login.
         let encryptedPrivateKey = (chain["encryptedAccountPrivateKey"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+        return CachedKeyChain(encryptedAccountKey: encryptedAccountKey, encryptedVek: encryptedVek, encryptedAccountPrivateKey: encryptedPrivateKey)
+    }
+
+    /// Open the cached account key chain with the unlock key of a password login (Rust `openKeyChainWithUnlockKey`).
+    /// Other platform implementations: VaultCrypto.openKeyChainWithUnlockKey (Android), VaultKeyService.openKeyChain (core/client).
+    internal func openKeyChainWithUnlockKey(_ unlockKey: Data) throws -> SessionKeys {
+        return try openKeyChain(unlockKey) { chain in
+            try RustCoreFramework.openKeyChainWithUnlockKey(unlockKey: unlockKey, encryptedAccountKey: chain.encryptedAccountKey, encryptedVek: chain.encryptedVek, encryptedAccountPrivateKey: chain.encryptedAccountPrivateKey)
+        }
+    }
+
+    /// Open the cached account key chain with the Account Key (Rust `openKeyChainWithAccountKey`).
+    /// Other platform implementations: VaultCrypto.openKeyChainWithAccountKey (Android), VaultKeyService.openKeyChain (core/client).
+    internal func openKeyChainWithAccountKey(_ accountKey: Data) throws -> SessionKeys {
+        return try openKeyChain(accountKey) { chain in
+            try RustCoreFramework.openKeyChainWithAccountKey(accountKey: accountKey, encryptedVek: chain.encryptedVek, encryptedAccountPrivateKey: chain.encryptedAccountPrivateKey)
+        }
+    }
+
+    /// Open the cached chain through `open`; without a chain `key` is the vault key. Either rejection is E-206, an
+    /// unreadable chain E-207 (the Account Key opened, so never a wrong password).
+    private func openKeyChain(_ key: Data, _ open: (CachedKeyChain) throws -> KeyChainKeys) throws -> SessionKeys {
+        guard let chain = try cachedKeyChain() else {
+            return SessionKeys(vaultEncryptionKey: key, accountPrivateKey: nil, accountKey: key)
+        }
         do {
-            let keys = try RustCoreFramework.openAccountKeyChain(
-                storedKey: key, encryptedAccountKey: encryptedAccountKey, encryptedVek: encryptedVek, encryptedAccountPrivateKey: encryptedPrivateKey
-            )
+            let keys = try open(chain)
             return SessionKeys(vaultEncryptionKey: keys.vaultEncryptionKey, accountPrivateKey: keys.accountPrivateKey, accountKey: keys.accountKey)
-        } catch KeyChainError.UnlockKeyRejected {
+        } catch KeyChainError.UnlockKeyRejected, KeyChainError.AccountKeyRejected {
             throw AppError.unlockKeyRejected
         } catch KeyChainError.KeyChainUnreadable(let message) {
-            // The account key opened, so this is a damaged chain and never a wrong password.
             throw AppError.keyChainUnreadable(message: message)
         }
     }
@@ -174,7 +209,7 @@ extension VaultStore {
 
             // Derive the unlock key from the password and unwrap the chain; a wrong password fails the unwrap.
             let derivedKey = try deriveKeyFromPassword(password, salt: salt, encryptionType: encryptionType, encryptionSettings: encryptionSettings)
-            _ = try openAccountKeyChain(with: derivedKey)
+            _ = try openKeyChainWithUnlockKey(derivedKey)
             return derivedKey.base64EncodedString()
         } catch {
             // Password incorrect or the key chain did not open
@@ -252,7 +287,8 @@ extension VaultStore {
     /// Get the encryption key - the key used to encrypt and decrypt the vault.
     internal func getEncryptionKey() throws -> Data {
         let key = try getAccountKey()
-        let keys = try openAccountKeyChain(with: key)
+        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        let keys = try openStoredKey(key)
         if keys.accountKey != key {
             // A legacy key, see `VaultStore+LegacyKeyConversion`.
             self.accountKey = keys.accountKey
@@ -315,10 +351,10 @@ extension VaultStore {
             }
 
             do {
-                try openSession(with: keyData)
-                if let accountKey = self.accountKey {
-                    convertLegacyKeychainKey(keychainKey: keyData, accountKey: accountKey)
-                }
+                // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+                let accountKey = try openStoredKey(keyData).accountKey
+                self.accountKey = accountKey
+                convertLegacyKeychainKey(keychainKey: keyData, accountKey: accountKey)
             } catch let vaultError as AppError {
                 print("The Account Key from the keychain does not open the account key chain: \(vaultError.message)")
                 throw vaultError

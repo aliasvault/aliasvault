@@ -100,8 +100,10 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       return ready(() => core.argon2DeriveKey(password, salt, encryptionSettings));
     },
     deriveSrpPasswordHash: (unlockKeyBase64, encryptionType): Promise<string> => ready(() => core.deriveSrpPasswordHash(unlockKeyBase64, encryptionType)),
-    openAccountKeyChain: (storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey): Promise<KeyChainOpenResult> =>
-      ready(() => core.openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
+    openKeyChainWithUnlockKey: (unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey): Promise<KeyChainOpenResult> =>
+      ready(() => core.openKeyChainWithUnlockKey(unlockKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
+    openKeyChainWithAccountKey: (accountKey, encryptedVek, encryptedAccountPrivateKey): Promise<KeyChainOpenResult> =>
+      ready(() => core.openKeyChainWithAccountKey(accountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
     createAccountKeyHierarchy: (unlockKeyBase64, publicKeyJwk, privateKeyJwk): Promise<AccountKeyHierarchy> =>
       ready(() => core.createAccountKeyHierarchy(unlockKeyBase64, publicKeyJwk, privateKeyJwk) as AccountKeyHierarchy),
     reencryptAccountKey: (encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64): Promise<ReencryptedAccountKey | null> =>

@@ -163,7 +163,7 @@ export const WebAuthnService = {
     const derivedKey = await getCredentialDerivedKey(credentialId, salt);
     const accountKey = await rustCore().symmetricDecrypt(encrypted, derivedKey);
     try {
-      await VaultKeyService.verifyUnlockKey(accountKey);
+      await VaultKeyService.verifyAccountKey(accountKey);
     } catch (error) {
       // A key the chain rejects is discarded, the password unlock still works.
       if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {

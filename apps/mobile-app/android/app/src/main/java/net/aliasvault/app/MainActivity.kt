@@ -271,8 +271,8 @@ class MainActivity : ReactActivity() {
                 // Run on IO thread to avoid blocking main thread
                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                     try {
-                        // Store unlock key in memory only
-                        vaultStore.storeAccountKeyInMemory(unlockKeyBase64)
+                        // Open the session with the unlock key, in memory only
+                        vaultStore.openSessionWithUnlockKey(unlockKeyBase64, persistToKeystore = false)
 
                         // Unlock the vault with the key now in memory
                         vaultStore.unlockVault()
