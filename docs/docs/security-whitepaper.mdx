@@ -31,7 +31,7 @@ AliasVault is a password and email alias manager with end-to-end encryption. It 
 
 - **Server**: a .NET API, an admin portal, an SMTP service and a task runner, backed by PostgreSQL. The server stores encrypted vaults and emails, routes mail to aliases, authenticates users and keeps the metadata needed to do so.
 - **Clients**: a web app, browser extensions (Chrome, Firefox, Edge, Safari) and native iOS and Android apps.
-- **Rust core**: one library, compiled to WebAssembly for the web app and browser extensions, and to native libraries for iOS and Android. This core implements key derivation, key encryption, signing, SRP, the vault format, sync and merge, passkeys and the email parser. Every client runs the same cryptographic code, except the browser based apps which use WebCrypto for AES-256-GCM on the local vault and emails in order to benefit from hardware acceleration.
+- **Rust core**: a single library, compiled to WebAssembly for the web app and browser extensions, and to native libraries for iOS and Android. This core implements key derivation, key encryption, signing, SRP, the vault format, sync and merge, passkeys and the email parser. Every client runs the same cryptographic code. For performance, the browser based apps run two operations through WebCrypto instead, in the same formats as the Rust core: AES-256-GCM on the local vault and emails (hardware accelerated), and RSA-OAEP decryption of email keys.
 
 All of it is open source under the AGPL-3.0 license in one repository: [github.com/aliasvault/aliasvault](https://github.com/aliasvault/aliasvault). The same code runs as AliasVault Cloud ([app.aliasvault.com](https://app.aliasvault.com)), operated by the AliasVault team, and as self-hosted instances. In this document "the server" means whichever of the two a user's clients talk to, and "the server operator" means the party running it; the threat model treats the server as untrusted in both cases.
 
@@ -511,12 +511,15 @@ Where each part of this document lives in the repository, for reviewers.
 |---|---|
 | Argon2id and the HKDF split into SRP input and KEK | `core/rust/src/crypto/argon2.rs`, `core/rust/src/crypto/key_chain.rs` |
 | Key encryption (AES-256-GCM) and the associated-data labels | `core/rust/src/crypto/aes_gcm.rs`, `core/rust/src/crypto/aad.rs`, `core/rust/src/crypto/key_chain.rs` |
+| Opening the key chain with the unlock key or the Account Key | `core/rust/src/crypto/key_chain.rs`, `core/client/src/auth/VaultKeyService.ts`, `apps/mobile-app/ios/VaultStoreKit/VaultStore+Crypto.swift`, `apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultCrypto.kt` |
+| Password login and unlock flows | `core/client/src/auth/SrpAuthService.ts`, `core/client/src/auth/UnlockService.ts`, `apps/server/AliasVault.Api/Helpers/AccountKeyHierarchyHelper.cs` |
 | SRP client and server | `core/rust/src/crypto/srp.rs`, `apps/server/Utilities/AliasVault.Cryptography/Srp.cs`, `apps/server/AliasVault.Api/Controllers/V2/AuthController.cs` |
-| RSA-OAEP and JWK handling | `core/rust/src/crypto/rsa_oaep.rs`, `core/rust/src/crypto/jwk.rs` |
+| RSA-OAEP and JWK handling | `core/rust/src/crypto/rsa_oaep.rs`, `core/rust/src/crypto/jwk.rs`, `apps/server/Utilities/AliasVault.Cryptography/Encryption.cs` (server side: email keys and Login with Mobile) |
+| WebCrypto operations outside the Rust core (web app and extensions) | `core/client/src/crypto/EncryptionUtility.ts` |
 | Ed25519 signing and verification | `core/rust/src/crypto/signing.rs`, `apps/server/Utilities/AliasVault.Cryptography/Signing.cs` |
 | Key rotation | `core/rust/src/crypto/key_chain.rs`, `core/rust/src/crypto/signing.rs`, `core/rust/src/vault_sync/rotation.rs`, `apps/server/AliasVault.Api/Controllers/V2/KeyRotationController.cs` |
 | PIN encryption and attempt policy | `core/rust/src/crypto/pin.rs` |
-| Login with Mobile public key hash and verification code | `core/rust/src/crypto/mobile_login.rs` |
+| Login with Mobile | `core/rust/src/crypto/mobile_login.rs` (public key hash and verification code), `core/client/src/auth/MobileLoginService.ts` (requesting client), `apps/mobile-app/ios/VaultStoreKit/VaultStore+Crypto.swift` and `apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultCrypto.kt` (approving app), `apps/server/AliasVault.Api/Controllers/V2/AuthController.cs`, `apps/server/AliasVault.Api/Helpers/MobileLoginRequestHelper.cs` |
 | Local vault copy | `core/rust/src/crypto/vault_blob.rs` (mobile), `core/client/src/crypto/VaultBlob.ts` (web app and extensions, WebCrypto) |
 | Vault format: canonicalize, materialize, integrity | `core/rust/src/vault_codec/` |
 | Sync engine: pull, push, grants, sharing, delivery keys | `core/rust/src/vault_sync/` |
@@ -524,10 +527,11 @@ Where each part of this document lives in the repository, for reviewers.
 | Passkeys (WebAuthn authenticator) | `core/rust/src/passkey/` |
 | Email parsing and HTML sanitizing | `core/rust/src/email_parser/`, `core/client/src/email/EmailHtmlSanitizer.ts` |
 | Email encryption on receipt | `apps/server/Utilities/AliasVault.Cryptography/EmailEncryption.cs`, `apps/server/AliasVault.SmtpService/` |
+| Email decryption on the client | `core/client/src/email/EmailDecryption.ts` (WebCrypto on the web app and extensions, the Rust core on mobile) |
 | API: authentication, vault, sharing, email, Login with Mobile | `apps/server/AliasVault.Api/Controllers/V2/` |
 | Session tokens | `apps/server/AliasVault.Api/Services/TokenService.cs` |
-| Device key storage | iOS `apps/mobile-app/ios/NativeVaultManager/`, Android `apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/`, extension `apps/browser-extension/src/utils/PinUnlockService.ts` |
-| Encrypted export | `core/client/src/transfer/export/AvexExportService.ts` |
+| Device key storage | iOS `apps/mobile-app/ios/VaultStoreKit/`, Android `apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/`, extension `apps/browser-extension/src/utils/PinUnlockService.ts`, web app `apps/web/src/utils/WebAuthnService.ts` |
+| Encrypted export | `core/client/src/transfer/export/AvexExportService.ts`, `core/client/src/transfer/import/importers/aliasvault/AvexImportService.ts` |
 | Logo fetching | `core/client/src/items/FaviconService.ts`, `apps/server/Utilities/AliasVault.FaviconExtractor/` |
 
 ## Appendix B. Glossary
