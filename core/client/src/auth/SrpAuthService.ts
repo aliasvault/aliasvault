@@ -1,10 +1,9 @@
-import { AppErrorCode, formatErrorWithCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { argon2DeriveKey, createAccountKeyHierarchy, rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
-import { isWeakerDerivation } from './DerivationSettings';
+import { assertNotWeakerDerivation } from './DerivationSettings';
 
 import type { AccountKeyBlobs, AccountKeyHierarchy, SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
@@ -268,8 +267,8 @@ export class SrpAuthService {
    */
   public static async deriveUnlockKey(password: string, salt: string, encryptionSettings: string): Promise<string> {
     const stored = await getPlatform().storage.get<UnlockKeyDerivationParams>(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS);
-    if (stored && isWeakerDerivation(encryptionSettings, stored.encryptionSettings)) {
-      throw new Error(formatErrorWithCode('The server sent weaker key derivation settings than this device holds', AppErrorCode.UNLOCK_SETTINGS_WEAKENED));
+    if (stored) {
+      assertNotWeakerDerivation(encryptionSettings, stored.encryptionSettings);
     }
     return bytesToBase64(await argon2DeriveKey(password, salt, encryptionSettings));
   }

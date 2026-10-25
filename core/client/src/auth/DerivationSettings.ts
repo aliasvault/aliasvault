@@ -20,6 +20,18 @@ export function isWeakerDerivation(served: string, reference: string): boolean {
 }
 
 /**
+ * Throws when `served` is weaker than `reference`, so a server cannot request a cheaper-to-guess login proof than what device used previously (downgrade attack).
+ * @param served - the encryption settings JSON the server sent
+ * @param reference - the encryption settings JSON this device already derived the unlock key with
+ * @throws Error with {@link AppErrorCode.UNLOCK_SETTINGS_WEAKENED} when the served settings are weaker.
+ */
+export function assertNotWeakerDerivation(served: string, reference: string): void {
+  if (isWeakerDerivation(served, reference)) {
+    throw new Error(formatErrorWithCode('The server sent weaker key derivation settings than this device holds', AppErrorCode.UNLOCK_SETTINGS_WEAKENED));
+  }
+}
+
+/**
  * The memory and iteration cost of an encryption settings JSON, or null when it has no numeric values for them.
  */
 function parseCost(settingsJson: string): { memory: number; iterations: number } | null {
@@ -47,8 +59,6 @@ export async function unlockKeyForChallenge(challenge: UnlockKeyDerivationParams
   if (challenge.encryptionSettings === stored.encryptionSettings) {
     return storedUnlockKeyBase64;
   }
-  if (isWeakerDerivation(challenge.encryptionSettings, stored.encryptionSettings)) {
-    throw new Error(formatErrorWithCode('The server sent weaker key derivation settings than this device holds', AppErrorCode.UNLOCK_SETTINGS_WEAKENED));
-  }
+  assertNotWeakerDerivation(challenge.encryptionSettings, stored.encryptionSettings);
   return derive(challenge.salt, challenge.encryptionType, challenge.encryptionSettings);
 }
