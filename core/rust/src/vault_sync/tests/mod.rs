@@ -125,7 +125,7 @@ pub fn legacy_device(unlock_key: &str, server: &Server, seed: impl FnOnce(&Conne
 
 /// A server at revision 7 holding the vault `seed` builds, pulled by a logged-in device.
 pub fn synced(seed: impl FnOnce(&Connection)) -> Synced {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let salt = vault_codec::generate_manifest_salt();
     let db = open_schema_db();
     seed(&db);
@@ -136,7 +136,7 @@ pub fn synced(seed: impl FnOnce(&Connection)) -> Synced {
     assert_eq!(pulled["success"], true, "{}", pulled);
     host.requests.clear();
     host.store_calls.clear();
-    Synced { server, host, db, vek, salt }
+    Synced { server, host, db, vek: vek.to_string(), salt }
 }
 
 impl Synced {

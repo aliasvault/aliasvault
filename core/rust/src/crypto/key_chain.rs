@@ -10,7 +10,7 @@ use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aad;
-use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt_bytes_with_aad, symmetric_encrypt_with_aad};
+use super::aes_gcm::{self, decrypt_text, encrypt_text, generate_key};
 use super::rsa_oaep::generate_rsa_key_pair;
 use super::signing::{self, generate_signing_key_pair};
 use super::tokens::{ALGORITHM_AES256_GCM, ENCRYPTION_TYPE_ARGON2ID, ENCRYPTION_TYPE_ARGON2ID_HKDF};
@@ -114,18 +114,18 @@ pub fn decrypt_account_key(encrypted_account_key: &str, unlock_key_base64: &str)
 
 /// Encrypt a base64 key with another base64 key, bound to `aad` (see [`aad`]). Returns base64 of `IV | ciphertext | tag`.
 pub fn encrypt_key(key_base64: &str, with_key_base64: &str, aad: &[u8]) -> VaultResult<String> {
-    symmetric_encrypt_bytes_with_aad(&Zeroizing::new(base64_decode(key_base64)?), with_key_base64, aad)
+    Ok(base64_encode(&aes_gcm::encrypt(&Zeroizing::new(base64_decode(key_base64)?), with_key_base64, aad)?))
 }
 
 /// Decrypt a key encrypted with [`encrypt_key`] bound to `aad`. Returns the key as base64.
 pub fn decrypt_key(encrypted_key_base64: &str, with_key_base64: &str, aad: &[u8]) -> VaultResult<Zeroizing<String>> {
-    let raw = Zeroizing::new(symmetric_decrypt_bytes_with_aad(&base64_decode(encrypted_key_base64)?, with_key_base64, aad)?);
+    let raw = Zeroizing::new(aes_gcm::decrypt(&base64_decode(encrypted_key_base64)?, with_key_base64, aad)?);
     Ok(Zeroizing::new(base64_encode(&raw[..])))
 }
 
 /// Decrypt the account private key (a JWK) with the Account Key.
 pub fn open_account_private_key(encrypted_account_private_key: &str, account_key_base64: &str) -> VaultResult<Zeroizing<String>> {
-    symmetric_decrypt_with_aad(encrypted_account_private_key, account_key_base64, aad::ACCOUNT_PRIVATE_KEY).map(Zeroizing::new)
+    decrypt_text(encrypted_account_private_key, account_key_base64, aad::ACCOUNT_PRIVATE_KEY).map(Zeroizing::new)
 }
 
 /// Decrypt the account signing private key (base64 seed) with the Account Key.
@@ -194,8 +194,8 @@ fn open_optional_account_private_key(encrypted_account_private_key: Option<&str>
 /// Create a new account key hierarchy encrypted with the KEK derived from an unlock key.
 pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<AccountKeyHierarchy> {
     let key_pair = generate_rsa_key_pair()?;
-    let vault_encryption_key = Zeroizing::new(generate_key_base64());
-    let account_key = Zeroizing::new(generate_key_base64());
+    let vault_encryption_key = generate_key();
+    let account_key = generate_key();
     let signing_key_pair = generate_signing_key_pair();
     let account_public_key_message = signing::account_public_key_message(&key_pair.public_key);
 
@@ -204,7 +204,7 @@ pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<Acco
         encrypted_account_key_algorithm: account_key_encryption_algorithm(),
         encrypted_vek: encrypt_key(&vault_encryption_key, &account_key, aad::PERSONAL_VEK)?,
         account_public_key: key_pair.public_key.clone(),
-        encrypted_account_private_key: symmetric_encrypt_with_aad(&key_pair.private_key, &account_key, aad::ACCOUNT_PRIVATE_KEY)?,
+        encrypted_account_private_key: encrypt_text(&key_pair.private_key, &account_key, aad::ACCOUNT_PRIVATE_KEY)?,
         signing_public_key: signing_key_pair.public_key.clone(),
         encrypted_signing_private_key: encrypt_key(&signing_key_pair.private_key, &account_key, aad::ACCOUNT_SIGNING_PRIVATE_KEY)?,
         account_public_key_signature: signing::sign(&signing_key_pair.private_key, &account_public_key_message)?,

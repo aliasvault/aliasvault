@@ -31,10 +31,6 @@ pub mod vault_blob;
 #[cfg(test)]
 mod tests;
 
-pub use aes_gcm::{
-    generate_key_base64, symmetric_decrypt, symmetric_decrypt_bytes, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt, symmetric_encrypt_bytes,
-    symmetric_encrypt_raw_with_aad, symmetric_encrypt_with_aad,
-};
 pub use key_chain::{
     account_signing_key_fingerprint, create_account_key_hierarchy, derive_srp_password_hash, open_account_private_key, open_account_signing_private_key,
     decrypt_account_key, decrypt_key, encrypt_key, open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, rotate_account_keys, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,

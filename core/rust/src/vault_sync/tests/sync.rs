@@ -15,7 +15,7 @@ const OTHER_DEVICE: &str = "0a9b8c7d-6e5f-4a3b-9c2d-1e0f2a3b4c5d";
 
 #[test]
 fn fresh_client_pulls_and_materializes_the_server_vault() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = server_with_item(&vek);
     let mut host = TestHost::logged_in(&vek, &server);
 
@@ -41,7 +41,7 @@ fn fresh_client_pulls_and_materializes_the_server_vault() {
 
 #[test]
 fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(0);
     let mut host = TestHost::logged_in(&vek, &server);
@@ -67,7 +67,7 @@ fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
 
 #[test]
 fn new_account_whose_first_write_fails_retries_it_on_the_next_sync() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(0);
     server.borrow_mut().faults.drop_writes = true;
@@ -91,7 +91,7 @@ fn new_account_whose_first_write_fails_retries_it_on_the_next_sync() {
 fn contentless_personal_manifest_past_revision_zero_is_refused() {
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(4);
-    let mut host = TestHost::logged_in(&crypto::generate_key_base64(), &server);
+    let mut host = TestHost::logged_in(&crypto::aes_gcm::generate_key(), &server);
 
     let result = host.sync();
 
@@ -102,7 +102,7 @@ fn contentless_personal_manifest_past_revision_zero_is_refused() {
 
 #[test]
 fn unknown_storage_format_is_refused_not_read_as_legacy() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = server_with_item(&vek);
     let mut vault = server.borrow().vault();
     vault["storageFormat"] = json!("manifest-v2");
@@ -336,7 +336,7 @@ fn a_write_the_server_keeps_refusing_gives_up_after_three_resyncs() {
 
 #[test]
 fn unreachable_server_with_a_local_vault_goes_offline() {
-    let mut host = TestHost::new(&crypto::generate_key_base64());
+    let mut host = TestHost::new(&crypto::aes_gcm::generate_key());
     host.store_local_as_blob();
 
     let result = host.sync();
@@ -350,7 +350,7 @@ fn unreachable_server_with_a_local_vault_goes_offline() {
 fn expired_session_requires_logout() {
     let server = FakeServer::new();
     server.borrow_mut().faults.status_http = Some(401);
-    let mut host = TestHost::logged_in(&crypto::generate_key_base64(), &server);
+    let mut host = TestHost::logged_in(&crypto::aes_gcm::generate_key(), &server);
 
     let result = host.sync();
 
@@ -363,7 +363,7 @@ fn expired_session_requires_logout() {
 fn password_changed_elsewhere_requires_logout() {
     let server = FakeServer::new();
     server.borrow_mut().srp_salt = "new-salt".to_string();
-    let mut host = TestHost::logged_in(&crypto::generate_key_base64(), &server);
+    let mut host = TestHost::logged_in(&crypto::aes_gcm::generate_key(), &server);
     host.set_state(state::UNLOCK_KEY_DERIVATION_PARAMS, json!({ "salt": "old-salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" }));
 
     let result = host.sync();

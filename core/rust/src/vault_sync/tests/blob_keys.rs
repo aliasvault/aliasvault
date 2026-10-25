@@ -6,17 +6,17 @@ const HASH: &str = "aa11";
 
 #[test]
 fn a_blob_opens_with_the_vek_through_its_own_key() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let blob = encrypt_blob(&[1, 2, 3, 4], &vek, MANIFEST, HASH).unwrap();
 
     assert_eq!(decrypt_blob(&blob, &vek, MANIFEST, HASH).unwrap(), vec![1, 2, 3, 4]);
-    assert!(crypto::symmetric_decrypt_bytes(&blob.encrypted_data, &vek).is_err(), "the bytes are not encrypted with the VEK itself");
-    assert!(decrypt_blob(&blob, &crypto::generate_key_base64(), MANIFEST, HASH).is_err());
+    assert!(crypto::aes_gcm::decrypt(&blob.encrypted_data, &vek, &[]).is_err(), "the bytes are not encrypted with the VEK itself");
+    assert!(decrypt_blob(&blob, &crypto::aes_gcm::generate_key(), MANIFEST, HASH).is_err());
 }
 
 #[test]
 fn a_blob_does_not_open_at_another_address() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let blob = encrypt_blob(&[1, 2, 3, 4], &vek, MANIFEST, HASH).unwrap();
     assert!(decrypt_blob(&blob, &vek, MANIFEST, "bb22").is_err(), "served under another hash");
     assert!(decrypt_blob(&blob, &vek, "0a1b2c3d-0000-0000-0000-000000000002", HASH).is_err(), "served under another manifest");
@@ -29,7 +29,7 @@ fn a_blob_does_not_open_at_another_address() {
 
 #[test]
 fn changing_the_vek_only_encrypts_the_blob_key_again() {
-    let (old_vek, new_vek) = (crypto::generate_key_base64(), crypto::generate_key_base64());
+    let (old_vek, new_vek) = (crypto::aes_gcm::generate_key(), crypto::aes_gcm::generate_key());
     let blob = encrypt_blob(&[9; 64], &old_vek, MANIFEST, HASH).unwrap();
 
     let key_aad = aad::blob_key(MANIFEST, HASH);
@@ -42,7 +42,7 @@ fn changing_the_vek_only_encrypts_the_blob_key_again() {
 
 #[test]
 fn a_cached_blob_reads_back_as_it_was_written() {
-    let blob = encrypt_blob(&[5], &crypto::generate_key_base64(), MANIFEST, HASH).unwrap();
+    let blob = encrypt_blob(&[5], &crypto::aes_gcm::generate_key(), MANIFEST, HASH).unwrap();
     let read: EncryptedBlob = serde_json::from_value(serde_json::to_value(&blob).unwrap()).unwrap();
     assert_eq!(read, blob);
 }

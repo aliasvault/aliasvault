@@ -5,7 +5,8 @@ use zeroize::Zeroizing;
 
 use crate::common::error::{VaultError, VaultResult};
 use crate::common::rng::random_bytes;
-use crate::crypto::aes_gcm::{symmetric_decrypt_with_raw_key, symmetric_encrypt_with_raw_key};
+use crate::common::encoding::base64_encode;
+use crate::crypto::aes_gcm;
 use crate::crypto::argon2::argon2_derive_key_bytes_from_settings;
 
 /// Failed attempts after which the PIN is locked and the host deletes the encrypted key.
@@ -37,12 +38,12 @@ pub fn pin_generate_salt() -> Vec<u8> {
 
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.
 pub fn pin_encrypt(pin: &str, salt: &[u8], secret: &[u8]) -> VaultResult<Vec<u8>> {
-    symmetric_encrypt_with_raw_key(secret, &derive_pin_key(pin, salt)?)
+    aes_gcm::encrypt(secret, &derive_pin_key(pin, salt)?, &[])
 }
 
 /// Decrypt a key encrypted by [`pin_encrypt`]. Fails for a wrong PIN.
 pub fn pin_decrypt(pin: &str, salt: &[u8], encrypted: &[u8]) -> VaultResult<Zeroizing<Vec<u8>>> {
-    symmetric_decrypt_with_raw_key(encrypted, &derive_pin_key(pin, salt)?).map(Zeroizing::new)
+    aes_gcm::decrypt(encrypted, &derive_pin_key(pin, salt)?, &[]).map(Zeroizing::new)
 }
 
 /// Whether a stored failed-attempt count means the PIN is locked.
@@ -56,6 +57,7 @@ pub fn pin_register_failure(failed_attempts: u32) -> PinFailure {
     PinFailure { failed_attempts, attempts_remaining: PIN_MAX_ATTEMPTS.saturating_sub(failed_attempts), locked: pin_is_locked(failed_attempts) }
 }
 
-fn derive_pin_key(pin: &str, salt: &[u8]) -> VaultResult<Zeroizing<Vec<u8>>> {
-    argon2_derive_key_bytes_from_settings(pin.as_bytes(), salt, PIN_ARGON2_SETTINGS).map_err(|e| VaultError::General(e.to_string()))
+fn derive_pin_key(pin: &str, salt: &[u8]) -> VaultResult<Zeroizing<String>> {
+    let key = argon2_derive_key_bytes_from_settings(pin.as_bytes(), salt, PIN_ARGON2_SETTINGS).map_err(|e| VaultError::General(e.to_string()))?;
+    Ok(Zeroizing::new(base64_encode(&key)))
 }

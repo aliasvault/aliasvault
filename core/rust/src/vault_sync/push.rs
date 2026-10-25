@@ -407,7 +407,7 @@ pub(crate) struct EncryptedPayload {
 /// Pack and encrypt a JSON payload under `key` bound to `aad`, logging its size at every stage.
 pub(crate) async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
-    let ciphertext = crypto::symmetric_encrypt_raw_with_aad(&packed, key, aad)?;
+    let ciphertext = crypto::aes_gcm::encrypt(&packed, key, aad)?;
     ctx.log(format!("[Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
     let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
     Ok(EncryptedPayload { ciphertext, hash })

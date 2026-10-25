@@ -9,7 +9,7 @@ use crate::crypto;
 
 /// Sync a fresh device against a personal vault plus the given shared manifest dto.
 fn sync_with_shared_manifest(shared: Value) -> (TestHost, Value) {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = server_with_item(&vek);
     server.borrow_mut().add_manifest_dto(shared);
     let mut host = TestHost::logged_in(&vek, &server);

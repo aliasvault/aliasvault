@@ -144,7 +144,7 @@ impl FakeServer {
     /// LEGACY: hold the account as a sqlite blob under `unlock_key`.
     pub fn publish_legacy(&mut self, db: &Connection, unlock_key: &str, revision: i64) {
         let bytes = db.serialize(rusqlite::MAIN_DB).unwrap().to_vec();
-        self.legacy = Some(LegacyVault { blob: crypto::symmetric_encrypt_bytes(&bytes, unlock_key).unwrap(), revision });
+        self.legacy = Some(LegacyVault { blob: crypto::vault_blob_encrypt(&bytes, unlock_key).unwrap(), revision });
     }
 
     /// Serve a shared manifest exactly as given (a manifest dto), for the grant tests.
@@ -387,7 +387,7 @@ impl FakeServer {
 /// A manifest or bucket payload packed and encrypted under `vek`, with its ciphertext hash.
 fn encrypt_payload(json: &str, vek: &str, aad: &[u8]) -> (String, String) {
     let packed = vault_codec::pack_payload(json).unwrap();
-    let blob = crypto::symmetric_encrypt_raw_with_aad(&packed, vek, aad).unwrap();
+    let blob = crypto::aes_gcm::encrypt(&packed, vek, aad).unwrap();
     let hash = vault_codec::compute_ciphertext_hash(&blob);
     (crate::common::encoding::base64_encode(&blob), hash)
 }
@@ -407,6 +407,6 @@ pub fn decrypt_manifest(blob: &str, vek: &str, manifest_id: &str) -> Value {
 }
 
 fn decrypt_payload(blob: &str, vek: &str, aad: &[u8]) -> Value {
-    let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(blob).unwrap(), vek, aad).unwrap();
+    let plain = crypto::aes_gcm::decrypt(&crate::common::encoding::base64_decode(blob).unwrap(), vek, aad).unwrap();
     serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
 }

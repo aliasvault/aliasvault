@@ -1,4 +1,5 @@
-use crate::crypto::aes_gcm::symmetric_encrypt_with_raw_key;
+use crate::common::encoding::base64_encode;
+use crate::crypto::aes_gcm;
 use crate::crypto::argon2::argon2_derive_key_bytes_from_settings;
 use crate::crypto::pin::*;
 
@@ -18,7 +19,7 @@ fn round_trips_and_rejects_a_wrong_pin() {
 fn opens_a_key_encrypted_with_the_argon2_key_directly() {
     let salt = b"some-salt-bytes!";
     let key = argon2_derive_key_bytes_from_settings(b"8765432", salt, PIN_ARGON2_SETTINGS).unwrap();
-    let encrypted = symmetric_encrypt_with_raw_key(b"secret", &key).unwrap();
+    let encrypted = aes_gcm::encrypt(b"secret", &base64_encode(&key), &[]).unwrap();
     assert_eq!(*pin_decrypt("8765432", salt, &encrypted).unwrap(), b"secret");
 }
 
