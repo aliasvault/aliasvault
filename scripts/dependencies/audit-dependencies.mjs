@@ -350,14 +350,26 @@ function cargoParse([project, auditFile]) {
         const adv = item.advisory ?? { id: item.kind, title: item.kind, aliases: [] };
         const patched = item.versions?.patched ?? [];
         const title = item.kind && item.kind !== 'vulnerability' ? `${item.kind}: ${adv.title}` : adv.title;
-        emit({ eco: 'cargo', project, pkg: item.package.name, version: item.package.version, severity: item.severity, id: adv.id, ids: [adv.id, ...(adv.aliases ?? [])], title, fix: patched.length ? `cargo update (patched ${patched.join(', ')})` : 'no fix' });
+        const fix = !patched.length ? 'no fix' : cargoUpdatable(item) ? `cargo update (patched ${patched.join(', ')})` : `major: ${cargoPatchedVersions(item).sort(compareVersions)[0]} (newer parent crate)`;
+        emit({ eco: 'cargo', project, pkg: item.package.name, version: item.package.version, severity: item.severity, id: adv.id, ids: [adv.id, ...(adv.aliases ?? [])], title, fix });
     }
 }
 
-/** Print "name@version" for every cargo advisory or warning that has a patched version. */
+/** The versions named in the patched requirements of a cargo advisory, e.g. "0.7.6" for ">=0.7.6". */
+function cargoPatchedVersions(item) {
+    return (item.versions?.patched ?? []).flatMap((req) => req.split(',')).map((c) => c.trim().replace(/^[^0-9]*/, '')).filter(Boolean);
+}
+
+/** Whether `cargo update` can reach a patched version: one within the semver-compatible range of the locked version. */
+function cargoUpdatable(item) {
+    const current = item.package.version;
+    return cargoPatchedVersions(item).some((v) => majorKey(v) === majorKey(current) && compareVersions(v, current) > 0);
+}
+
+/** Print "name@version" for every cargo advisory `cargo update` can fix, and every yanked crate. */
 function cargoUpdates([auditFile]) {
     const items = cargoItems(auditFile);
-    const specs = new Set(items.filter((i) => (i.versions?.patched ?? []).length || i.kind === 'yanked').map((i) => `${i.package.name}@${i.package.version}`));
+    const specs = new Set(items.filter((i) => cargoUpdatable(i) || i.kind === 'yanked').map((i) => `${i.package.name}@${i.package.version}`));
     for (const s of specs) console.log(s);
 }
 
@@ -543,7 +555,7 @@ function report([level]) {
         console.log(color('2', [
             'Fix column, for what `fix` cannot do on its own:',
             '  "major: x (override or newer parent)"  the patch only exists in a new major the parent\'s semver range excludes;',
-            '                                          add an override in package.json or update the parent package',
+            '                                          add an override in package.json or update the parent package (Cargo.toml for cargo)',
             '  "override pins x"                       our own package.json override holds it back (`fix` raises exact pins within the major)',
             '  "transitive, needs x"                   Gradle: comes from an Expo/RN module; update that npm package or add a constraint',
             '  "no patched release" / "no fix"         nothing to upgrade to; allowlist it with a reason or replace the package',
