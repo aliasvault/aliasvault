@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+import { base64ToBytes } from '../utilities/Base64';
 
 /** AES-GCM IV length in bytes; every AES-GCM payload starts with it. */
 const AES_GCM_IV_LENGTH = 12;
@@ -12,9 +12,9 @@ const AES_GCM_IV_LENGTH = 12;
  */
 export class EncryptionUtility {
   /**
-   * Encrypts bytes with AES-256-GCM (random 12-byte IV, no AAD) into base64 `IV | ciphertext | tag`.
+   * Encrypts bytes with AES-256-GCM (random 12-byte IV, no AAD) into `IV | ciphertext | tag` bytes.
    */
-  public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
+  public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<Uint8Array> {
     const key = await EncryptionUtility.importAesKey(base64Key, 'encrypt');
     const iv = crypto.getRandomValues(new Uint8Array(AES_GCM_IV_LENGTH));
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintextBytes as Uint8Array<ArrayBuffer>);
@@ -23,17 +23,13 @@ export class EncryptionUtility {
     combined.set(iv, 0);
     combined.set(new Uint8Array(ciphertext), iv.length);
 
-    return bytesToBase64(combined);
+    return combined;
   }
 
   /**
-   * Decrypts `IV | ciphertext | tag` bytes with AES-256-GCM (no AAD).
+   * Decrypts `IV | ciphertext | tag` bytes with AES-256-GCM (no AAD). An empty ciphertext is an error.
    */
   public static async symmetricDecryptBytes(encryptedBytes: Uint8Array, base64Key: string): Promise<Uint8Array> {
-    if (!encryptedBytes || encryptedBytes.length === 0) {
-      return encryptedBytes;
-    }
-
     const key = await EncryptionUtility.importAesKey(base64Key, 'decrypt');
     const iv = encryptedBytes.slice(0, AES_GCM_IV_LENGTH);
     const ciphertext = encryptedBytes.slice(AES_GCM_IV_LENGTH);

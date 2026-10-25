@@ -4,7 +4,7 @@
  * Other platform implementations: core/rust/src/crypto/vault_blob.rs (iOS and Android through uniffi).
  */
 
-import { base64ToBytes } from '../utilities/Base64';
+import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 
 import { EncryptionUtility } from './EncryptionUtility';
 
@@ -21,7 +21,7 @@ const SQLITE_HEADER = new TextEncoder().encode('SQLite format 3\u0000');
  * @returns Base64 of (IV | ciphertext | tag).
  */
 export async function encryptVaultBlob(sqliteBytes: Uint8Array, key: string): Promise<string> {
-  return EncryptionUtility.symmetricEncryptBytes(sqliteBytes, key);
+  return bytesToBase64(await EncryptionUtility.symmetricEncryptBytes(sqliteBytes, key));
 }
 
 /**
