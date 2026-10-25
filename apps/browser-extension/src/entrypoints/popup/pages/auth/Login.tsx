@@ -1,8 +1,5 @@
-import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
-import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { syncErrorMessage, syncErrorReportDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { useEffect, useRef, useState } from 'react';
@@ -17,7 +14,6 @@ import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoginServerInfo from '@/entrypoints/popup/components/LoginServerInfo';
 import VaultErrorReport from '@/entrypoints/popup/components/VaultErrorReport';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
-import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
@@ -32,7 +28,6 @@ import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAut
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
-import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { storage } from '#imports';
 
@@ -49,7 +44,6 @@ const Login: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const app = useApp();
-  const dbContext = useDb();
   const { setHeaderButtons } = useHeaderButtons();
   const [credentials, setCredentials] = useState({
     username: '',
@@ -71,24 +65,6 @@ const Login: React.FC = () => {
    * True while this page waits for a background login, so its own login does not trigger the cross-window reload.
    */
   const authInFlightRef = useRef(false);
-
-  /**
-   * Pull the vault from the server.
-   */
-  const pullAndLoadVault = async (): Promise<void> => {
-    const result = await sendMessage('FULL_VAULT_SYNC', { forcePull: true, reportErrorToPopup: false });
-    if (result.logoutReason === 'clientVersionNotSupported') {
-      throw new ClientUpgradeRequiredError();
-    }
-    if (result.logoutReason === 'serverVersionNotSupported') {
-      throw new ServerUpdateRequiredError();
-    }
-    if (!result.success) {
-      throw new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result, t) ?? t('common.errors.unknownError')), syncErrorReportDetail(result));
-    }
-
-    await dbContext.loadStoredDatabase();
-  };
 
   /**
    * Show login attempt failure.
@@ -160,65 +136,6 @@ const Login: React.FC = () => {
         // An unlock flow finished while this page was open, reinitialize routes to where it left the popup.
         navigate('/reinitialize', { replace: true });
     }
-  };
-
-  /**
-   * Finish a mobile login: store the tokens and the Account Key, then pull and load the vault.
-   * @param username - the normalized username
-   * @param token - the access token
-   * @param refreshToken - the refresh token
-   * @param accountKeyFromMobile - the Account Key the phone sent, base64
-   * @param derivationParams - how the unlock key is derived from the password
-   */
-  const handleSuccessfulAuth = async (
-    username: string,
-    token: string,
-    refreshToken: string,
-    accountKeyFromMobile: string,
-    derivationParams: UnlockKeyDerivationParams
-  ) : Promise<void> => {
-    // Store auth info first; the vault fetch below makes an authenticated request via the stored access token.
-    await app.setAuthTokens(username, token, refreshToken);
-
-    /*
-     * Fetch the account's key chain, check the unlock key opens it and cache it as-is; the vault encryption key is
-     * derived from the two on demand. Legacy accounts have no chain.
-     */
-    let accountKey: string;
-    try {
-      accountKey = await VaultKeyService.refreshKeyChain({ accountKey: accountKeyFromMobile }, webApi);
-    } catch (err) {
-      // If key chain can't be fetched, logout user and show error as this is not a recoverable error.
-      await app.logout();
-      throw err;
-    }
-
-    await dbContext.storeUnlockKeyDerivationParams({
-      salt: derivationParams.salt,
-      encryptionType: derivationParams.encryptionType,
-      encryptionSettings: derivationParams.encryptionSettings
-    });
-
-    // Store the Account Key, then pull and load the vault.
-    await dbContext.storeAccountKey(accountKey);
-    await pullAndLoadVault();
-
-    // Reset prefill flag so next logout will prefill again
-    usernamePrefillAttempted = false;
-
-    /*
-     * Navigate to reinitialize page which will:
-     * 1. Call syncVault() to check version compatibility
-     * 2. Send the vault through /upgrade when either the legacy sqlite-blob chain or the manifest migration applies
-     * 3. Navigate to appropriate page
-     *
-     * Other windows on /login or /unlock pick up the encryption-key storage
-     * event via vaultStateEvents.onVaultUnlocked and reload themselves.
-     */
-    navigate('/reinitialize', { replace: true });
-
-    // Show app.
-    hideLoading();
   };
 
   useEffect(() => {
@@ -354,12 +271,14 @@ const Login: React.FC = () => {
       app.clearGlobalMessage();
       setIsInitialLoading(false);
 
-      // The mobile device sends its Account Key.
-      await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.accountKey, result);
-    } catch (err) {
-      await showLoginError('Mobile login error', err);
+      // The background stores the session with the Account Key the mobile device sent and pulls the vault.
+      const outcome = await runBackgroundAuth(() => sendMessage('AUTH_LOGIN_MOBILE', result));
+      if (outcome?.status !== 'success') {
+        // Let the modal show an error too; runBackgroundAuth already shows the reason on this page.
+        throw new Error('Mobile login failed');
+      }
+    } finally {
       hideLoading();
-      throw err; // Re-throw to let modal show error
     }
   };
 

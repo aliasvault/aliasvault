@@ -199,7 +199,7 @@ const Unlock: React.FC = () => {
       await webApi.revokeCurrentTokens();
       await auth.setAuthTokens(result.username, result.token, result.refreshToken);
 
-      // Throws an unlock-key-rejected (E-206) error if the key does not open the key chain.
+      // Throws a key-out-of-sync (E-208) error if the key does not open the key chain.
       await UnlockService.completeKeyChainLogin({ accountKey: result.accountKey }, result, webApi);
       navigate('/sync', { replace: true });
     } catch (err) {

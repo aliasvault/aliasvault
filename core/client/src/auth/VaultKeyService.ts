@@ -71,7 +71,8 @@ export class VaultKeyService {
    * @param key - the unlock key of the password login, or the Account Key a mobile app sent
    * @param webApi - the API client to use
    * @returns The Account Key to store for this session.
-   * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
+   * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the unlock key does not open the chain (wrong password),
+   * or {@link AppErrorCode.KEY_OUT_OF_SYNC} when the Account Key does not (a stale key).
    */
   public static async refreshKeyChain(key: KeyChainKey, webApi?: WebApiService): Promise<string> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
@@ -94,7 +95,16 @@ export class VaultKeyService {
       throw new Error(formatErrorWithCode(`Unsupported Account Key algorithm '${result.vaultKey.algorithm}'`, AppErrorCode.VAULT_VERSION_INCOMPATIBLE));
     }
 
-    const keys = await VaultKeyService.openChain(key, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
+    let keys: SessionKeys;
+    try {
+      keys = await VaultKeyService.openChain(key, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
+    } catch (error) {
+      // An Account Key the server's chain rejects is stale (the keys changed since it was stored), never a wrong password.
+      if ('accountKey' in key && error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
+        throw new Error(formatErrorWithCode('The Account Key does not open the key chain the server holds', AppErrorCode.KEY_OUT_OF_SYNC));
+      }
+      throw error;
+    }
 
     /*
      * A device holding a vault under its unlock key but no chain yet (the account was upgraded on another device) stays

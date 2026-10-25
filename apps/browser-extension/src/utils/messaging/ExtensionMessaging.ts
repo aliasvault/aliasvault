@@ -29,6 +29,7 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -59,6 +60,7 @@ export interface IExtensionMessageProtocol {
   AUTH_AWAIT_PENDING(): BackgroundAuthResult | null;
   AUTH_LOGIN(data: { username: string; password: string; rememberMe: boolean }): BackgroundAuthResult;
   AUTH_LOGIN_TWO_FACTOR(data: { code: string }): BackgroundAuthResult;
+  AUTH_LOGIN_MOBILE(data: MobileLoginResult): BackgroundAuthResult;
   AUTH_UNLOCK_PASSWORD(data: { password: string }): BackgroundAuthResult;
   AUTH_UNLOCK_PIN(data: { pin: string }): BackgroundAuthResult;
   ADD_URL_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { success: boolean; error?: string }; 

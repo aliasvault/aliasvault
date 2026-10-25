@@ -20,6 +20,8 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { IncorrectPinError, InvalidPinFormatError, PinLockedError, removeAndDisablePin, resetFailedAttempts, unlockWithPin } from '@/utils/PinUnlockService';
 import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
+import type { KeyChainKey } from '@aliasvault/client/auth/VaultKeyService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { browser, storage } from '#imports';
@@ -249,7 +251,7 @@ export function handleLoginWithPassword(data: { username: string; password: stri
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
-      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.unlockKeyBase64, loginResponse, data.password);
+      return await completeLogin(username, validation.token.token, validation.token.refreshToken, { unlockKey: credentials.unlockKeyBase64 }, loginResponse, data.password);
     } catch (err) {
       return failureResult('Login error', err);
     }
@@ -274,9 +276,23 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
       }
 
       handleClearTwoFactorState();
-      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.unlockKeyBase64, state.derivationParams);
+      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, { unlockKey: state.unlockKeyBase64 }, state.derivationParams);
     } catch (err) {
       return failureResult('2FA error', err);
+    }
+  });
+}
+
+/**
+ * Finish a login a mobile app approved, with the Account Key it sent.
+ */
+export function handleLoginWithMobile(data: MobileLoginResult): Promise<BackgroundAuthResult> {
+  return runExclusive(async () => {
+    try {
+      const { salt, encryptionType, encryptionSettings } = data;
+      return await completeLogin(SrpAuthService.normalizeUsername(data.username), data.token, data.refreshToken, { accountKey: data.accountKey }, { salt, encryptionType, encryptionSettings });
+    } catch (err) {
+      return failureResult('Mobile login error', err);
     }
   });
 }
@@ -285,19 +301,19 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
  * Store the session of an accepted login and pull its vault. A password login also raises older key derivation
  * settings to the current defaults.
  */
-async function completeLogin(username: string, token: string, refreshToken: string, unlockKey: string, derivationParams: UnlockKeyDerivationParams, password?: string): Promise<BackgroundAuthResult> {
+async function completeLogin(username: string, token: string, refreshToken: string, key: KeyChainKey, derivationParams: UnlockKeyDerivationParams, password?: string): Promise<BackgroundAuthResult> {
   await storage.setItem(StorageKeys.USERNAME, username);
   await storage.setItem(StorageKeys.ACCESS_TOKEN, token);
   await storage.setItem(StorageKeys.REFRESH_TOKEN, refreshToken);
 
-  // Fetch the key chain and check the unlock key opens it. Not recoverable when it fails, so log out again.
+  // Fetch the key chain and check the key opens it. Not recoverable when it fails, so log out again.
   const webApi = new WebApiService();
-  await UnlockService.completeKeyChainLogin({ unlockKey }, derivationParams, webApi, async () => {
+  await UnlockService.completeKeyChainLogin(key, derivationParams, webApi, async () => {
     await webApi.revokeTokens();
     await handleClearSession();
   });
-  if (password) {
-    await UnlockService.upgradeKeyDerivation(password, derivationParams, unlockKey, webApi, username);
+  if (password && 'unlockKey' in key) {
+    await UnlockService.upgradeKeyDerivation(password, derivationParams, key.unlockKey, webApi, username);
   }
 
   // Content scripts are told once the vault is pulled: before that there is nothing to autofill from.

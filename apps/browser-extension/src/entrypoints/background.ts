@@ -4,7 +4,7 @@
 
 import '@/platform/ClientServices';
 
-import { broadcastVaultUnlocked, handleAwaitPendingAuth, handleLoginWithPassword, handleLoginWithTwoFactor, handleUnlockWithPassword, handleUnlockWithPin } from '@/entrypoints/background/AuthHandler';
+import { broadcastVaultUnlocked, handleAwaitPendingAuth, handleLoginWithMobile, handleLoginWithPassword, handleLoginWithTwoFactor, handleUnlockWithPassword, handleUnlockWithPin } from '@/entrypoints/background/AuthHandler';
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { handleBlockLoginSaveForDomain, handleDisableAutofillForSite, handleDismissVaultLockedPopup, handleGetContentSettings, handleGetLanguage, handleIsLoginSaveBlocked, restrictContentScriptStorage } from '@/entrypoints/background/ContentSettingsHandler';
@@ -299,6 +299,7 @@ export default defineBackground({
     // Login and unlock run in the background so they complete when the popup closes mid-flow.
     onExtensionPageMessage('AUTH_LOGIN', ({ data }) => handleLoginWithPassword(data));
     onExtensionPageMessage('AUTH_LOGIN_TWO_FACTOR', ({ data }) => handleLoginWithTwoFactor(data));
+    onExtensionPageMessage('AUTH_LOGIN_MOBILE', ({ data }) => handleLoginWithMobile(data));
     onExtensionPageMessage('AUTH_UNLOCK_PASSWORD', ({ data }) => handleUnlockWithPassword(data));
     onExtensionPageMessage('AUTH_UNLOCK_PIN', ({ data }) => handleUnlockWithPin(data));
     onExtensionPageMessage('AUTH_AWAIT_PENDING', () => handleAwaitPendingAuth());
