@@ -1,6 +1,7 @@
 //! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings compatible with the WebCrypto API.
 
-use rsa::{Oaep, RsaPrivateKey};
+use rsa::traits::PublicKeyParts;
+use rsa::{BigUint, Oaep, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::fmt;
@@ -11,6 +12,7 @@ use crate::common::encoding::{base64_decode, base64_encode};
 use crate::common::error::{VaultError, VaultResult};
 
 const MODULUS_BITS: usize = 2048;
+const PUBLIC_EXPONENT: u32 = 65537;
 
 /// A freshly generated key pair, both halves as JWK JSON strings.
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
@@ -39,7 +41,7 @@ pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
 
 /// Check that a key pair generated elsewhere (WebCrypto) is a valid private key whose public half matches.
 pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
-    if rsa_private_from_jwk(&key_pair.private_key)?.to_public_key() != rsa_public_from_jwk(&key_pair.public_key)? {
+    if rsa_private_from_jwk(&key_pair.private_key)?.to_public_key() != oaep_public_from_jwk(&key_pair.public_key)? {
         return Err(VaultError::General("RSA public key does not belong to the private key".to_string()));
     }
     Ok(())
@@ -67,7 +69,7 @@ pub fn decrypt_manifest_invitation_name(encrypted_name: &str, manifest_id: &str,
 }
 
 fn encrypt(plaintext: &[u8], public_key_jwk: &str, padding: Oaep) -> VaultResult<String> {
-    let public = rsa_public_from_jwk(public_key_jwk)?;
+    let public = oaep_public_from_jwk(public_key_jwk)?;
     let ciphertext = public.encrypt(&mut rand_core06::OsRng, padding, plaintext).map_err(|e| VaultError::General(format!("RSA-OAEP encryption failed: {}", e)))?;
     Ok(base64_encode(&ciphertext))
 }
@@ -80,6 +82,21 @@ fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> Vau
     private
         .decrypt_blinded(&mut rand_core06::OsRng, padding, &ciphertext)
         .map_err(|_| VaultError::General("RSA-OAEP decryption failed (wrong key or corrupt data)".to_string()))
+}
+
+/// The RSA-OAEP public key of a JWK.
+fn oaep_public_from_jwk(jwk: &str) -> VaultResult<RsaPublicKey> {
+    let public = rsa_public_from_jwk(jwk)?;
+    ensure_oaep_key_size(&public)?;
+    Ok(public)
+}
+
+/// Ensure that the provided key matches the expected format.
+fn ensure_oaep_key_size(key: &impl PublicKeyParts) -> VaultResult<()> {
+    if key.n().bits() != MODULUS_BITS || *key.e() != BigUint::from(PUBLIC_EXPONENT) {
+        return Err(VaultError::General(format!("Unsupported RSA-OAEP key: expected {}-bit modulus with exponent {}", MODULUS_BITS, PUBLIC_EXPONENT)));
+    }
+    Ok(())
 }
 
 /// The `rsa` crate takes the OAEP label as text; every label this crate uses is ASCII.
