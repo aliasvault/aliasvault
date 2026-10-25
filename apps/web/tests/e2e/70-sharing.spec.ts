@@ -137,6 +137,7 @@ test.describe('70. Sharing', () => {
       await owner.page.locator('#invite-wizard-next').click();
       await expect(owner.page.getByText(`You are about to share “${secondFolderName}” with ${memberUser.username}.`, { exact: false })).toBeVisible();
       await owner.page.locator('#invite-wizard-confirm').click();
+      await expect(owner.page.locator('#invite-wizard-close')).toBeVisible();
       await expect(owner.page.locator('#invite-wizard-close')).toBeEnabled({ timeout: 5000 });
       await owner.page.locator('#invite-wizard-close').click();
       await expect(owner.page.getByText(`Invitation sent to ${memberUser.username}.`)).toBeVisible();
