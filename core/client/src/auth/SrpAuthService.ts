@@ -349,10 +349,10 @@ export class SrpAuthService {
    */
   public static async prepareNewPassword(password: string, srpIdentity: string): Promise<NewPasswordMaterial> {
     const salt = await SrpAuthService.generateSalt();
-    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.type, DEFAULT_ENCRYPTION.settings);
-    const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
+    const unlockKeyBase64 = bytesToBase64(await argon2DeriveKey(password, salt, DEFAULT_ENCRYPTION.settings));
+    const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, await SrpAuthService.srpPasswordHash(unlockKeyBase64, DEFAULT_ENCRYPTION.type));
     const verifier = await SrpAuthService.deriveVerifier(privateKey);
-    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, unlockKeyBase64: credentials.unlockKeyBase64 };
+    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, unlockKeyBase64 };
   }
 
   /**
