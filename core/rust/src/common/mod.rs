@@ -6,3 +6,6 @@ pub(crate) mod gzip;
 pub(crate) mod rng;
 pub(crate) mod secret;
 pub mod timestamp;
+
+#[cfg(test)]
+mod tests;
