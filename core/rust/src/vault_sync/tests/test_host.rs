@@ -147,7 +147,7 @@ impl TestHost {
     /// Encrypt the local database as the at-rest blob, the way the app stores it.
     pub fn store_local_as_blob(&mut self) {
         let bytes = self.local.serialize(MAIN_DB).unwrap().to_vec();
-        self.vault_blob = Some(crypto::symmetric_encrypt_bytes(&bytes, &self.vault_key).unwrap());
+        self.vault_blob = Some(crypto::vault_blob_encrypt(&bytes, &self.vault_key).unwrap());
     }
 
     /// Change the local vault the way the app does: write rows, store the blob, count the mutation, mark dirty.

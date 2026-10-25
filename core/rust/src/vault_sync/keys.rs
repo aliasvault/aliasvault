@@ -211,7 +211,7 @@ pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<Secr
 pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<String, SharedManifestDto>> {
     let Some(ciphertext) = state::get::<String>(&ctx.host, state::SHARED_MANIFESTS).await? else { return Ok(HashMap::new()) };
     let Some(key) = &ctx.encryption_key else { return Ok(HashMap::new()) };
-    match crypto::symmetric_decrypt(&ciphertext, key.expose_secret()).and_then(|json| serde_json::from_str(&json).map_err(Into::into)) {
+    match crypto::aes_gcm::decrypt_text(&ciphertext, key.expose_secret(), &[]).and_then(|json| serde_json::from_str(&json).map_err(Into::into)) {
         Ok(records) => Ok(records),
         Err(error) => {
             ctx.warn(format!("[Sharing] The stored shared-manifest key records did not decrypt (re-keyed vault?); treating them as absent. {}", error)).await;
@@ -222,7 +222,7 @@ pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<Str
 
 /// Persist the shared-manifest key records under `key`.
 pub(crate) async fn set_shared_manifest_records(ctx: &Ctx, records: &HashMap<String, SharedManifestDto>, key: &str) -> SyncResult<()> {
-    let ciphertext = crypto::symmetric_encrypt(&serde_json::to_string(records)?, key)?;
+    let ciphertext = crypto::aes_gcm::encrypt_text(&serde_json::to_string(records)?, key, &[])?;
     state::set(&ctx.host, state::SHARED_MANIFESTS, &ciphertext).await?;
     ctx.cache_shared_veks(None);
     Ok(())

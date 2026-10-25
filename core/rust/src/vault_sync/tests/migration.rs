@@ -11,7 +11,7 @@ use crate::vault_codec;
 
 #[test]
 fn legacy_account_without_vault_key_reports_the_manifest_migration() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish(&open_schema_db(), &unlock_key, &vault_codec::generate_manifest_salt(), 3);
     let mut host = legacy_device(&unlock_key, &server, |_| {});
@@ -25,7 +25,7 @@ fn legacy_account_without_vault_key_reports_the_manifest_migration() {
 
 #[test]
 fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(3);
     let mut host = legacy_device(&unlock_key, &server, |db| insert_item(db, ITEM_A, "Old item"));
@@ -35,7 +35,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
     let new_key = host.vault_key.clone();
-    assert_ne!(new_key, unlock_key, "the host receives the new VEK through the store command");
+    assert_ne!(new_key, *unlock_key, "the host receives the new VEK through the store command");
     let write = host.last_vault_write();
     let account_keys = &write["migration"]["accountKeys"];
     assert!(account_keys["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
@@ -54,7 +54,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
 
 #[test]
 fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let bytes = vec![0x00u8, 0xFF, 0xC3, 0x28, 0x10];
     let text = crate::common::encoding::base64_encode(&bytes);
     let server = FakeServer::new();
@@ -78,7 +78,7 @@ fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
 fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     // The migration encrypts every personal blob again under the new key; one it has no bytes for would stay under
     // the old key and never open again. The vault stays dirty and the migration runs again once the blob loads.
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(3);
     let mut host = legacy_device(&unlock_key, &server, |db| {
@@ -90,12 +90,12 @@ fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
 
     assert_eq!(result["pushed"], false, "{}", result);
     assert!(host.vault_writes().is_empty(), "nothing was written with the new key");
-    assert_eq!(host.vault_key, unlock_key, "and the session keeps its key");
+    assert_eq!(host.vault_key, *unlock_key, "and the session keeps its key");
 }
 
 #[test]
 fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(3);
     let mut host = legacy_device(&vek, &server, |db| {
@@ -115,13 +115,13 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     assert_eq!(host.item_names(), vec!["Kept item"]);
     assert!(host.requests_to("VaultKey/Password").is_empty(), "a migrated account is not probed for a key hierarchy");
     assert!(host.last_vault_write()["migration"].is_null(), "no key hierarchy is created");
-    assert_eq!(host.vault_key, vek, "the session key stays the VEK");
+    assert_eq!(host.vault_key, *vek, "the session key stays the VEK");
 }
 
 /// Two legacy sessions of one account: the first upgrades the account, the second still holds its sqlite-blob vault
 /// with a row that names no manifest, which the schema rebuild refuses.
 fn session_of_an_account_upgraded_elsewhere() -> TestHost {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(3);
     let mut upgraded = legacy_device(&unlock_key, &server, |db| insert_item(db, ITEM_A, "Upgraded item"));
@@ -170,7 +170,7 @@ fn pre_format_session(unlock_key: &str, dirty: bool) -> TestHost {
 
 #[test]
 fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let mut host = pre_format_session(&unlock_key, false);
 
     let result = host.run("migrateManifest");
@@ -188,7 +188,7 @@ fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
 
 #[test]
 fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let mut host = pre_format_session(&unlock_key, true);
 
     let result = host.run("migrateManifest");

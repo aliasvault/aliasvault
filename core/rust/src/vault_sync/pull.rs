@@ -89,7 +89,7 @@ pub(crate) fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], ex
         }
     }
     let unreadable = |e: crate::common::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
-    let plain = crypto::symmetric_decrypt_bytes_with_aad(ciphertext, vek, aad).map_err(unreadable)?;
+    let plain = crypto::aes_gcm::decrypt(ciphertext, vek, aad).map_err(unreadable)?;
     match vault_codec::unpack_versioned_payload(&plain).map_err(unreadable)? {
         UnpackedPayload::Readable(payload_json) => Ok(payload_json),
         UnpackedPayload::NewerFormat(version) => Err(newer_format(label, version)),
@@ -247,12 +247,12 @@ fn served_encrypted_name(ctx: &Ctx, previous: &HashMap<String, SharedManifestDto
 
 /// Decrypt a shared manifest's name with the manifest's own key.
 pub(crate) fn open_manifest_name(ciphertext: &str, manifest_id: &str, manifest_key: &str) -> Option<String> {
-    crypto::symmetric_decrypt_with_aad(ciphertext, manifest_key, &crypto::aad::manifest_name(manifest_id)).ok().filter(|name| !name.is_empty())
+    crypto::aes_gcm::decrypt_text(ciphertext, manifest_key, &crypto::aad::manifest_name(manifest_id)).ok().filter(|name| !name.is_empty())
 }
 
 /// Encrypt a shared manifest's name with the manifest's own key.
 pub(crate) fn encrypt_manifest_name(name: &str, manifest_id: &str, manifest_key: &str) -> SyncResult<String> {
-    Ok(crypto::symmetric_encrypt_with_aad(name, manifest_key, &crypto::aad::manifest_name(manifest_id))?)
+    Ok(crypto::aes_gcm::encrypt_text(name, manifest_key, &crypto::aad::manifest_name(manifest_id))?)
 }
 
 /// Commit a pulled vault's revisions as the local believed-current revisions, manifests and buckets together.

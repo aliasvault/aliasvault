@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aad;
-use super::aes_gcm::symmetric_decrypt;
+use super::aes_gcm::decrypt_text;
 use super::rsa_oaep::decrypt_with_private_key_and_label;
 use crate::common::encoding::{base64_encode, base64url_encode};
 use crate::common::error::VaultResult;
@@ -41,5 +41,5 @@ pub struct MobileLoginApproval {
 pub fn mobile_login_open_approval(private_key_jwk: &str, encrypted_account_key: &str, encrypted_payload_key: &str, encrypted_payload: &str) -> VaultResult<MobileLoginApproval> {
     let account_key = Zeroizing::new(decrypt_with_private_key_and_label(encrypted_account_key, private_key_jwk, aad::MOBILE_LOGIN_ACCOUNT_KEY)?);
     let payload_key = Zeroizing::new(base64_encode(&Zeroizing::new(decrypt_with_private_key_and_label(encrypted_payload_key, private_key_jwk, aad::MOBILE_LOGIN_PAYLOAD_KEY)?)));
-    Ok(MobileLoginApproval { account_key: base64_encode(&account_key), payload: symmetric_decrypt(encrypted_payload, &payload_key)? })
+    Ok(MobileLoginApproval { account_key: base64_encode(&account_key), payload: decrypt_text(encrypted_payload, &payload_key, &[])? })
 }

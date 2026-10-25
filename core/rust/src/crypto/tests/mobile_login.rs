@@ -1,5 +1,5 @@
 use crate::crypto::aad;
-use crate::crypto::aes_gcm::{generate_key_base64, symmetric_encrypt};
+use crate::crypto::aes_gcm::{encrypt_text, generate_key};
 use crate::crypto::mobile_login::*;
 use crate::crypto::rsa_oaep::{encrypt_with_public_key_and_label, generate_rsa_key_pair};
 
@@ -18,10 +18,10 @@ fn known_answers() {
 fn approval_opens_with_the_request_key_and_rejects_swapped_labels() {
     let pair = generate_rsa_key_pair().unwrap();
     let account_key = [7u8; 32];
-    let payload_key = generate_key_base64();
+    let payload_key = generate_key();
     let encrypted_account_key = encrypt_with_public_key_and_label(&account_key, &pair.public_key, aad::MOBILE_LOGIN_ACCOUNT_KEY).unwrap();
     let encrypted_payload_key = encrypt_with_public_key_and_label(&crate::common::encoding::base64_decode(&payload_key).unwrap(), &pair.public_key, aad::MOBILE_LOGIN_PAYLOAD_KEY).unwrap();
-    let encrypted_payload = symmetric_encrypt(r#"{"username":"u"}"#, &payload_key).unwrap();
+    let encrypted_payload = encrypt_text(r#"{"username":"u"}"#, &payload_key, &[]).unwrap();
 
     let approval = mobile_login_open_approval(&pair.private_key, &encrypted_account_key, &encrypted_payload_key, &encrypted_payload).unwrap();
     assert_eq!(approval.account_key, crate::common::encoding::base64_encode(&account_key));

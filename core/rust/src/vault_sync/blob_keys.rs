@@ -19,9 +19,9 @@ pub(crate) struct EncryptedBlob {
 
 /// Encrypt blob bytes with a fresh blob key, and that key with the manifest's VEK, both bound to the blob's address.
 pub(crate) fn encrypt_blob(bytes: &[u8], vek: &str, manifest_id: &str, hash: &str) -> VaultResult<EncryptedBlob> {
-    let blob_key = zeroize::Zeroizing::new(crypto::generate_key_base64());
+    let blob_key = crypto::aes_gcm::generate_key();
     Ok(EncryptedBlob {
-        encrypted_data: crypto::symmetric_encrypt_raw_with_aad(bytes, &blob_key, &aad::blob_data(manifest_id, hash))?,
+        encrypted_data: crypto::aes_gcm::encrypt(bytes, &blob_key, &aad::blob_data(manifest_id, hash))?,
         encrypted_blob_key: crypto::encrypt_key(&blob_key, vek, &aad::blob_key(manifest_id, hash))?,
     })
 }
@@ -29,7 +29,7 @@ pub(crate) fn encrypt_blob(bytes: &[u8], vek: &str, manifest_id: &str, hash: &st
 /// Decrypt the blob stored at `(manifest_id, hash)` with the manifest's VEK.
 pub(crate) fn decrypt_blob(blob: &EncryptedBlob, vek: &str, manifest_id: &str, hash: &str) -> VaultResult<Vec<u8>> {
     let blob_key = crypto::decrypt_key(&blob.encrypted_blob_key, vek, &aad::blob_key(manifest_id, hash))?;
-    crypto::symmetric_decrypt_bytes_with_aad(&blob.encrypted_data, &blob_key, &aad::blob_data(manifest_id, hash))
+    crypto::aes_gcm::decrypt(&blob.encrypted_data, &blob_key, &aad::blob_data(manifest_id, hash))
 }
 
 /// Serde for bytes stored as a standard base64 string.

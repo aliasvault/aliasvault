@@ -14,7 +14,7 @@ use secrecy::ExposeSecret;
 /// cached for offline unlock, and the VEK comes back as the key to store.
 #[test]
 fn resolve_vault_key_opens_the_chain_from_the_server() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let server = FakeServer::new();
     server.borrow_mut().set_vault_key(&hierarchy);
@@ -44,7 +44,7 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
 /// A legacy account has no chain: the password-derived key is the vault key and any stale cached chain is dropped.
 #[test]
 fn resolve_vault_key_keeps_the_unlock_key_for_a_legacy_account() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let mut host = TestHost::new(&unlock_key);
     host.serve(&FakeServer::new());
     host.set_state(state::ENCRYPTED_ACCOUNT_KEY, json!("stale"));
@@ -53,14 +53,14 @@ fn resolve_vault_key_keeps_the_unlock_key_for_a_legacy_account() {
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], false);
-    assert_eq!(result["encryptionKey"], unlock_key);
+    assert_eq!(result["encryptionKey"], *unlock_key);
     assert!(!host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
 }
 
 /// Offline, the cached chain opens with the password-derived key (a re-login after a forced logout).
 #[test]
 fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let mut host = TestHost::new(&unlock_key);
     host.set_state(state::ENCRYPTED_ACCOUNT_KEY, json!(hierarchy.account_keys.encrypted_account_key));
@@ -77,19 +77,19 @@ fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
 /// own account key is damage, not a wrong password (E-207); an unknown encryption algorithm asks for an app update.
 #[test]
 fn resolve_vault_key_tells_the_failure_modes_apart() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let server = FakeServer::new();
     server.borrow_mut().set_vault_key(&hierarchy);
 
-    let mut host = TestHost::new(&crypto::generate_key_base64());
+    let mut host = TestHost::new(&crypto::aes_gcm::generate_key());
     host.serve(&server);
     let result = host.run("resolveVaultKey");
     assert_eq!(result["errorCode"], "E-206", "{}", result);
     assert!(result.get("encryptionKey").is_none());
 
     let mut damaged = hierarchy.clone();
-    damaged.account_keys.encrypted_vek = crypto::encrypt_key(&crypto::generate_key_base64(), &crypto::generate_key_base64(), crypto::aad::PERSONAL_VEK).unwrap();
+    damaged.account_keys.encrypted_vek = crypto::encrypt_key(&crypto::aes_gcm::generate_key(), &crypto::aes_gcm::generate_key(), crypto::aad::PERSONAL_VEK).unwrap();
     server.borrow_mut().set_vault_key(&damaged);
     let mut host = TestHost::new(&unlock_key);
     host.serve(&server);
@@ -109,7 +109,7 @@ fn resolve_vault_key_tells_the_failure_modes_apart() {
 /// together with the VEK it is now encrypted under.
 #[test]
 fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
     let server = server_with_item(&vek);
@@ -132,7 +132,7 @@ fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
 /// is not silently upgraded. Resolving the key is the host's job.
 #[test]
 fn a_device_with_a_cached_chain_is_not_probed_and_its_session_key_is_left_alone() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
     let server = FakeServer::new();
@@ -155,7 +155,7 @@ fn a_device_with_a_cached_chain_is_not_probed_and_its_session_key_is_left_alone(
 /// and then once per run.
 #[test]
 fn a_legacy_account_is_probed_for_a_vault_key_only_when_it_pulls_or_pushes() {
-    let unlock_key = crypto::generate_key_base64();
+    let unlock_key = crypto::aes_gcm::generate_key();
     let server = FakeServer::new();
     server.borrow_mut().publish_contentless_personal(3);
     let mut host = legacy_device(&unlock_key, &server, |_| {});

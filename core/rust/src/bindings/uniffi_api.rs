@@ -188,22 +188,22 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
     crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings).map(|mut key| std::mem::take(&mut *key))
 }
 
-/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string into UTF-8 with a base64 key; empty stays empty.
+/// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string (no AAD) into UTF-8 with a base64 key. An empty ciphertext is an error.
 #[uniffi::export]
 pub fn symmetric_decrypt(base64_ciphertext: String, key_base64: String) -> Result<String, VaultError> {
-    crate::crypto::symmetric_decrypt(&base64_ciphertext, &key_base64)
+    crate::crypto::aes_gcm::decrypt_text(&base64_ciphertext, &key_base64, &[])
 }
 
 /// AES-256-GCM decrypt `IV | ciphertext | tag` bytes with a base64 key.
 #[uniffi::export]
 pub fn symmetric_decrypt_bytes(encrypted: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
-    crate::crypto::symmetric_decrypt_bytes(&encrypted, &key_base64)
+    crate::crypto::aes_gcm::decrypt(&encrypted, &key_base64, &[])
 }
 
 /// AES-256-GCM encrypt bytes with a base64 key (random IV, no AAD) into `IV | ciphertext | tag` bytes.
 #[uniffi::export]
 pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result<Vec<u8>, VaultError> {
-    crate::crypto::symmetric_encrypt_raw_with_aad(&plaintext, &key_base64, &[])
+    crate::crypto::aes_gcm::encrypt(&plaintext, &key_base64, &[])
 }
 
 /// Encrypt the SQLite database bytes into the locally stored vault blob (base64) under the raw 32-byte VEK.

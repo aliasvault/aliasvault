@@ -37,7 +37,7 @@ enum NotLoaded {
 
 /// A device that pulled `vault_with_blobs` while none of its blobs loaded.
 fn synced_without_blobs(how: NotLoaded) -> Synced {
-    let vek = crypto::generate_key_base64();
+    let vek = crypto::aes_gcm::generate_key();
     let salt = vault_codec::generate_manifest_salt();
     let db = open_schema_db();
     vault_with_blobs(&db);
@@ -47,7 +47,7 @@ fn synced_without_blobs(how: NotLoaded) -> Synced {
             server.borrow_mut().publish(&db, &vek, &salt, 7);
             server.borrow_mut().faults.withhold_blobs = true;
         }
-        NotLoaded::Undecryptable => server.borrow_mut().publish_with_blob_key(&db, &vek, &salt, 7, &crypto::generate_key_base64()),
+        NotLoaded::Undecryptable => server.borrow_mut().publish_with_blob_key(&db, &vek, &salt, 7, &crypto::aes_gcm::generate_key()),
     }
     let mut host = TestHost::logged_in(&vek, &server);
     let pulled = host.sync();
@@ -55,7 +55,7 @@ fn synced_without_blobs(how: NotLoaded) -> Synced {
     assert_eq!(host.item_names(), vec!["Server item"]);
     let not_loaded = query(&host.local, "SELECT Id FROM Attachments WHERE IsDeleted = 0 AND Blob IS NULL AND BlobHash IS NOT NULL", &[]).unwrap();
     assert_eq!(not_loaded.len(), 1, "the attachment row is there, not loaded, and knows its blob");
-    Synced { server, host, db, vek, salt }
+    Synced { server, host, db, vek: vek.to_string(), salt }
 }
 
 #[test]
