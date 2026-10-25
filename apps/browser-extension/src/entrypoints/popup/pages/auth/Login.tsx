@@ -163,18 +163,18 @@ const Login: React.FC = () => {
   };
 
   /**
-   * Finish a mobile login: store the tokens and unlock key, then pull and load the vault.
+   * Finish a mobile login: store the tokens and the Account Key, then pull and load the vault.
    * @param username - the normalized username
    * @param token - the access token
    * @param refreshToken - the refresh token
-   * @param unlockKey - the key the phone sent (its Account Key, or an unlock key from an older app), base64
+   * @param accountKeyFromMobile - the Account Key the phone sent, base64
    * @param derivationParams - how the unlock key is derived from the password
    */
   const handleSuccessfulAuth = async (
     username: string,
     token: string,
     refreshToken: string,
-    unlockKey: string,
+    accountKeyFromMobile: string,
     derivationParams: UnlockKeyDerivationParams
   ) : Promise<void> => {
     // Store auth info first; the vault fetch below makes an authenticated request via the stored access token.
@@ -186,7 +186,7 @@ const Login: React.FC = () => {
      */
     let accountKey: string;
     try {
-      accountKey = await VaultKeyService.refreshKeyChain({ unlockKey }, webApi);
+      accountKey = await VaultKeyService.refreshKeyChain({ accountKey: accountKeyFromMobile }, webApi);
     } catch (err) {
       // If key chain can't be fetched, logout user and show error as this is not a recoverable error.
       await app.logout();

@@ -28,6 +28,7 @@ import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
 
 import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
+import type { KeyChainKey } from '@aliasvault/client/auth/VaultKeyService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse, ValidateLoginResponse } from '@aliasvault/models/webapi';
 
@@ -112,16 +113,16 @@ const Login: React.FC = () => {
    * Store the tokens and the Account Key, then continue to the sync page which loads the vault. A password login also
    * raises older key derivation settings to the defaults (if applicable).
    */
-  const completeLogin = async (loginUsername: string, accessToken: string, refreshToken: string, unlockKey: string, params: UnlockKeyDerivationParams, loginPassword?: string): Promise<void> => {
+  const completeLogin = async (loginUsername: string, accessToken: string, refreshToken: string, key: KeyChainKey, params: UnlockKeyDerivationParams, loginPassword?: string): Promise<void> => {
     isCompletingLogin.current = true;
     try {
       const normalizedUsername = SrpAuthService.normalizeUsername(loginUsername);
       await auth.setAuthTokens(normalizedUsername, accessToken, refreshToken);
 
       // Fetch the key chain, check the unlock key opens it and cache it; without a usable chain the session is useless, so end it.
-      await UnlockService.completeKeyChainLogin({ unlockKey }, params, webApi, () => auth.logout());
-      if (loginPassword) {
-        await UnlockService.upgradeKeyDerivation(loginPassword, params, unlockKey, webApi, normalizedUsername);
+      await UnlockService.completeKeyChainLogin(key, params, webApi, () => auth.logout());
+      if (loginPassword && 'unlockKey' in key) {
+        await UnlockService.upgradeKeyDerivation(loginPassword, params, key.unlockKey, webApi, normalizedUsername);
       }
 
       notifications.clearMessages();
@@ -139,7 +140,7 @@ const Login: React.FC = () => {
       throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
     }
     const params = { salt: response.salt, encryptionType: response.encryptionType, encryptionSettings: response.encryptionSettings };
-    await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, hashBase64, params, password);
+    await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, { unlockKey: hashBase64 }, params, password);
   };
 
   /**
@@ -152,7 +153,7 @@ const Login: React.FC = () => {
 
     try {
       const params = { salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings };
-      await completeLogin(result.username, result.token, result.refreshToken, result.accountKey, params);
+      await completeLogin(result.username, result.token, result.refreshToken, { accountKey: result.accountKey }, params);
     } catch (err) {
       setErrors(await toErrorMessages(err));
     } finally {

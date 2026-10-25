@@ -4,6 +4,7 @@ import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 import uniffi.aliasvault_core.KeyChainException
+import uniffi.aliasvault_core.KeyChainKeys
 import uniffi.aliasvault_core.argon2DeriveKey
 import uniffi.aliasvault_core.createAccountKeyHierarchyJson
 import uniffi.aliasvault_core.decodeEmailSource
@@ -26,7 +27,6 @@ import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.mobileLoginPublicKeyHash
 import uniffi.aliasvault_core.mobileLoginVerificationCode
-import uniffi.aliasvault_core.KeyChainKeys
 import uniffi.aliasvault_core.openKeyChainWithAccountKey
 import uniffi.aliasvault_core.openKeyChainWithUnlockKey
 import uniffi.aliasvault_core.parseEmailSource
