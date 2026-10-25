@@ -22,6 +22,11 @@
             "id": "RUSTSEC-2023-0071",
             "package": "rsa",
             "reason": "The Marvin timing attack is primarily relevant when an attacker can observe decryption timing, such as over a network. Since decryption is performed client-side only and uses decrypt_blinded, this provides a sufficient mitigation."
+        },
+        {
+            "id": "RUSTSEC-2026-0374",
+            "package": "basic-toml",
+            "reason": "Unmaintained notice, no vulnerability. Bindings generation only, via uniffi_bindgen (askama templates); not compiled into the app libraries. Recheck on the next uniffi upgrade."
         }
     ]
 }
