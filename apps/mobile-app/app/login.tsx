@@ -1,4 +1,5 @@
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
+import { assertNotWeakerDerivation } from '@aliasvault/client/auth/DerivationSettings';
 import { KeyDerivationUpgradeService } from '@aliasvault/client/auth/KeyDerivationUpgradeService';
 import { DEFAULT_ENCRYPTION, SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -404,6 +405,11 @@ export default function LoginScreen() : React.ReactNode {
 
     try {
       const initiateLoginResponse = await srpUtil.initiateLogin(SrpAuthService.normalizeUsername(credentials.username));
+
+      const storedParams = await NativeVaultManager.getUnlockKeyDerivationParams();
+      if (storedParams) {
+        assertNotWeakerDerivation(initiateLoginResponse.encryptionSettings, (JSON.parse(storedParams) as UnlockKeyDerivationParams).encryptionSettings);
+      }
 
       const unlockKeyBase64 = await NativeVaultManager.deriveKeyFromPassword(credentials.password, initiateLoginResponse.salt, initiateLoginResponse.encryptionType, initiateLoginResponse.encryptionSettings);
       const passwordCredentials = await SrpAuthService.loginCredentials(unlockKeyBase64, initiateLoginResponse, credentials.username);
