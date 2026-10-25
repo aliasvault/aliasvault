@@ -47,7 +47,7 @@ subtle = "2.5"
 getrandom = { version = "0.4", features = ["wasm_js"] }
 
 # Argon2 password hashing
-argon2 = "0.5"
+argon2 = { version = "0.5", features = ["zeroize"] }
 
 # HKDF-SHA256 (SRP/KEK derivation from unlock key)
 hkdf = "0.12"
@@ -62,7 +62,7 @@ sha1 = "0.10"
 aes-gcm = "0.10"
 rsa = { version = "0.9", features = ["sha2"] }
 # ECDSA P-256 (ES256 passkeys)
-p256 = { version = "0.13", default-features = false, features = ["alloc", "ecdsa", "pkcs8", "std"] }
+p256 = { version = "0.14", default-features = false, features = ["alloc", "ecdsa", "getrandom", "pkcs8", "std"] }
 rand_core06 = { package = "rand_core", version = "0.6", features = ["getrandom"] }
 
 # Wipes key material from memory on drop

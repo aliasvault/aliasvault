@@ -2,7 +2,9 @@
 
 use p256::ecdsa::signature::Signer;
 use p256::ecdsa::{Signature, SigningKey};
+use p256::elliptic_curve::Generate;
 use p256::pkcs8::EncodePublicKey;
+use rsa::pkcs8::EncodePublicKey as _;
 use rsa::traits::PublicKeyParts;
 use rsa::{Pkcs1v15Sign, RsaPrivateKey};
 use serde::{Deserialize, Serialize};
@@ -71,8 +73,8 @@ pub(super) fn sign(private_key_jwk: &str, data: &[u8]) -> VaultResult<Vec<u8>> {
 }
 
 fn generate_es256() -> VaultResult<GeneratedKey> {
-    let key = SigningKey::random(&mut rand_core06::OsRng);
-    let point = key.verifying_key().to_encoded_point(false);
+    let key = SigningKey::try_generate().map_err(|e| VaultError::General(format!("P-256 key generation failed: {e}")))?;
+    let point = key.verifying_key().to_sec1_point(false);
     let (x, y) = (point.x().ok_or_else(invalid_point)?.to_vec(), point.y().ok_or_else(invalid_point)?.to_vec());
     let d = Zeroizing::new(key.to_bytes().to_vec());
 
@@ -107,7 +109,7 @@ fn signing_key_from_scalar(d: &[u8]) -> VaultResult<SigningKey> {
     }
     let mut padded = Zeroizing::new([0u8; 32]);
     padded[32 - d.len()..].copy_from_slice(d);
-    SigningKey::from_bytes(padded.as_slice().into()).map_err(|_| VaultError::General("Invalid P-256 private key".to_string()))
+    SigningKey::from_slice(padded.as_slice()).map_err(|_| VaultError::General("Invalid P-256 private key".to_string()))
 }
 
 fn to_json(jwk: &PasskeyJwk) -> VaultResult<String> {

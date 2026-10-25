@@ -1,6 +1,6 @@
 use p256::ecdsa::signature::Verifier;
 use p256::ecdsa::{Signature, VerifyingKey};
-use p256::EncodedPoint;
+use p256::Sec1Point;
 use rsa::{BigUint, Pkcs1v15Sign, RsaPublicKey};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -20,8 +20,9 @@ fn jwk_field(jwk: &str, name: &str) -> Vec<u8> {
 }
 
 fn es256_verifying_key(public_jwk: &str) -> VerifyingKey {
-    let point = EncodedPoint::from_affine_coordinates(jwk_field(public_jwk, "x").as_slice().into(), jwk_field(public_jwk, "y").as_slice().into(), false);
-    VerifyingKey::from_encoded_point(&point).unwrap()
+    let (x, y) = (jwk_field(public_jwk, "x"), jwk_field(public_jwk, "y"));
+    let point = Sec1Point::from_affine_coordinates(x.as_slice().try_into().unwrap(), y.as_slice().try_into().unwrap(), false);
+    VerifyingKey::from_sec1_point(&point).unwrap()
 }
 
 fn signed_bytes(authenticator_data: &[u8]) -> Vec<u8> {
@@ -87,7 +88,7 @@ fn stored_ec_keys_with_a_short_scalar_or_webcrypto_members_still_sign() {
     let short = format!("{{\"kty\":\"EC\",\"crv\":\"P-256\",\"d\":\"{}\",\"ext\":true,\"key_ops\":[\"sign\"]}}", base64url_encode(&[1]));
     let assertion = get_assertion("example.com", &CLIENT_DATA_HASH, &short, false, None, None).unwrap();
 
-    let generator = VerifyingKey::from_encoded_point(&p256::AffinePoint::GENERATOR.into()).unwrap();
+    let generator = VerifyingKey::from_affine(p256::AffinePoint::GENERATOR).unwrap();
     generator.verify(&signed_bytes(&assertion.authenticator_data), &Signature::from_der(&assertion.signature).unwrap()).unwrap();
 }
 
