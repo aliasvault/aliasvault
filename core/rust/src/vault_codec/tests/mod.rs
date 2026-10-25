@@ -6,6 +6,7 @@ pub(crate) mod support;
 mod sharing;
 
 mod compress;
+mod hash;
 mod integrity;
 mod normalize;
 mod row;
@@ -116,7 +117,7 @@ fn a_vault_round_trips_through_manifest_buckets_and_blobs() {
 
     let blobs = &manifest_of(&out).blobs;
     assert_eq!(blobs.len(), 2);
-    let logo_hash = hash::salted_blob_hash(&favicon, SALT).unwrap();
+    let logo_hash = super::hash::salted_blob_hash(&favicon, SALT).unwrap();
     assert_eq!(blobs[&logo_hash].kind, "favicon");
     assert_eq!(manifest.tables["Logos"][0]["FileData"], json!({ "__blobRef": logo_hash, "__blobKind": "favicon" }));
     let attachments: HashMap<&str, &CodecRecord> = manifest.tables["Attachments"].iter().map(|r| (r["Id"].as_str().unwrap(), r)).collect();
@@ -145,7 +146,7 @@ fn packing_wraps_a_payload_in_a_verified_envelope() {
     assert_eq!(serde_json::from_str::<serde_json::Value>(&unpack_payload(&packed).unwrap()).unwrap(), payload);
 
     // Tampered: the original hash over a changed payload.
-    let envelope = json!({ "schemaVersion": 1, "contentHash": hash::content_hash(&json!({ "a": 1 })), "payload": { "a": 2 } });
+    let envelope = json!({ "schemaVersion": 1, "contentHash": super::hash::content_hash(&json!({ "a": 1 })), "payload": { "a": 2 } });
     assert!(unpack_payload(&super::compress::gzip(envelope.to_string().as_bytes()).unwrap()).is_err());
 
     // A format version this build cannot read is reported as such, before the hash is checked.
@@ -159,7 +160,7 @@ fn salts_and_fingerprints() {
     assert_eq!(salt.len(), 64);
     assert!(salt.chars().all(|c| c.is_ascii_hexdigit()));
     for bad in ["", "not-hex", "abc"] {
-        assert!(hash::salted_blob_hash(&[1, 2, 3], bad).is_err(), "a blob hash without a usable salt would break the per-manifest separation");
+        assert!(super::hash::salted_blob_hash(&[1, 2, 3], bad).is_err(), "a blob hash without a usable salt would break the per-manifest separation");
     }
 
     // A content fingerprint ignores key order, whitespace and the volatile `canonicalizedAt`, and nothing else.

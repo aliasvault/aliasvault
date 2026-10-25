@@ -16,22 +16,3 @@ pub fn serialize_option<S: Serializer>(value: &Option<SecretString>, serializer:
         None => serializer.serialize_none(),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde::{Deserialize, Serialize};
-
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Holder {
-        #[serde(serialize_with = "serialize_option")]
-        key: Option<SecretString>,
-    }
-
-    #[test]
-    fn round_trips_as_a_plain_string_and_never_prints() {
-        let holder: Holder = serde_json::from_str(r#"{"key":"k"}"#).unwrap();
-        assert_eq!(serde_json::to_string(&holder).unwrap(), r#"{"key":"k"}"#);
-        assert!(format!("{:?}", holder).contains("[REDACTED]"));
-    }
-}

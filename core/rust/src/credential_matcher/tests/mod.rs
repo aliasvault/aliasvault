@@ -1,6 +1,9 @@
 //! The autofill matcher: which credentials a URL, app package or page title offers, in priority order, and which
 //! it must never offer (anti-phishing).
 
+mod domain;
+mod public_suffix;
+
 use super::*;
 
 fn credential(name: &str, urls: &[&str], username: &str) -> Credential {
