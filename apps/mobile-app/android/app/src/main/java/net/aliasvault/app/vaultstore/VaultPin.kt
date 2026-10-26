@@ -47,13 +47,6 @@ sealed class PinUnlockException(message: String) : Exception(message) {
  * The key wrap and the attempt policy live in the Rust core (crypto/pin.rs); this class only stores them.
  * Other platform implementations: VaultStore+Pin.swift (iOS), PinUnlockService.ts (browser extension).
  *
- * Security features:
- * - 4 failed attempts maximum before requiring full password
- * - Salt stored in Android Keystore (makes offline brute-force impossible)
- * - Failed attempts counter stored in Keystore (prevents tampering)
- * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
- * - Encrypted data automatically deleted after max failed attempts
- *
  * @param context The Android context for accessing SharedPreferences and Keystore
  */
 class VaultPin(
