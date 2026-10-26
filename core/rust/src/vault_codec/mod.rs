@@ -30,6 +30,7 @@ pub use manifest::{
 pub use materialize::materialize_as_sqlite;
 pub use logos::logo_id_for;
 pub use sharing::extract_encryption_key_for_public_key;
+pub(crate) use hash::salted_blob_hash;
 pub(crate) use types::{blob_spec_for, ensure_readable_schema_version};
 pub use types::{bucket_categories, identity_part, is_bucketed_table, is_readable_schema_version, is_skip_table, manifest_scoped_tables, tables_for_category};
 pub use validate::{validate_data_bucket, validate_manifest, ValidationResult};
