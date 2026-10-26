@@ -33,7 +33,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="System.Drawing.Common" Version="10.0.12" />
+      <PackageReference Include="System.Drawing.Common" Version="10.0.14" />
     </ItemGroup>
 
 </Project>
