@@ -6,6 +6,7 @@ import org.json.JSONObject
 import uniffi.aliasvault_core.KeyChainException
 import uniffi.aliasvault_core.KeyChainKeys
 import uniffi.aliasvault_core.argon2DeriveKey
+import uniffi.aliasvault_core.avexEncrypt
 import uniffi.aliasvault_core.createAccountKeyHierarchyJson
 import uniffi.aliasvault_core.decodeEmailSource
 import uniffi.aliasvault_core.deriveSrpPasswordHash
@@ -92,6 +93,7 @@ object RustCoreDispatcher {
             "rsaDecrypt" -> json(rsaDecrypt(args.string(0), args.string(1)))
             "symmetricDecrypt" -> json(symmetricDecrypt(args.string(0), args.string(1)))
             "symmetricDecryptBytes" -> json(symmetricDecryptBytes(args.bytes(0), args.string(1)))
+            "avexEncrypt" -> json(avexEncrypt(args.bytes(0), args.string(1), args.string(2), args.string(3)))
             "symmetricEncryptBytes" -> json(symmetricEncryptBytes(args.bytes(0), args.string(1)))
             "mobileLoginPublicKeyHash" -> json(mobileLoginPublicKeyHash(args.string(0)))
             "mobileLoginVerificationCode" -> json(mobileLoginVerificationCode(args.string(0)))

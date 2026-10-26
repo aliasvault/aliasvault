@@ -15,10 +15,10 @@ describe('AvexExportService', () => {
     const avuxBytes = exportItems([createTestItem('Encrypted item', ItemTypes.Login, { [FieldKey.LoginUsername]: 'user' })]);
 
     const avexBytes = await AvexExportService.encryptToAvex(avuxBytes, 'export-password');
-    const { header, payloadOffset } = AvexImportService.parseAvexHeader(avexBytes);
+    const header = await AvexImportService.parseAvexHeader(avexBytes);
     const key = await argon2DeriveKey('export-password', header.kdf.salt, JSON.stringify(header.kdf.params));
 
-    const decrypted = await EncryptionUtility.symmetricDecryptBytes(avexBytes.subarray(payloadOffset), bytesToBase64(key));
+    const decrypted = await EncryptionUtility.symmetricDecryptBytes(avexBytes.subarray(header.encryption.encryptedDataOffset), bytesToBase64(key));
     expect(Array.from(decrypted)).toEqual(Array.from(avuxBytes));
   });
 
@@ -26,7 +26,7 @@ describe('AvexExportService', () => {
     const avuxBytes = exportItems([createTestItem('Encrypted item', ItemTypes.Login, { [FieldKey.LoginUsername]: 'user' })]);
 
     const avexBytes = await AvexExportService.encryptToAvex(avuxBytes, 'export-password');
-    const { header } = AvexImportService.parseAvexHeader(avexBytes);
+    const header = await AvexImportService.parseAvexHeader(avexBytes);
     expect(header.format).toBe('avex');
     expect(header.version).toBe('1.0.0');
     expect(header.kdf.type.toLowerCase()).toBe('argon2id');

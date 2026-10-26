@@ -3,6 +3,7 @@
 //! - [`aad`]: the associated-data and OAEP-label registry that binds each ciphertext to its slot.
 //! - [`aes_gcm`]: AES-256-GCM (`aes-gcm`), random 96-bit nonce, `IV | ciphertext | tag`; every vault payload and every key encrypted with another key.
 //! - [`argon2`]: Argon2id (`argon2`) with a parameter floor; turns the master password into the unlock key.
+//! - [`avex`]: the .avex encrypted vault export, a JSON header and the .avux bytes under AES-256-GCM with an Argon2id key of the export password.
 //! - `jwk`: RSA keys to and from JWK JSON (`rsa`), for the OAEP keys and the RS256 passkey keys.
 //! - [`key_chain`]: HKDF-SHA256 (`hkdf`) KEK and SRP input from the unlock key; KEK > Account Key > VEK, private keys.
 //! - [`mobile_login`]: SHA-256 public key hash and verification code of the mobile login (QR unlock) handshake.
@@ -18,6 +19,7 @@
 pub mod aad;
 pub mod aes_gcm;
 pub mod argon2;
+pub mod avex;
 pub(crate) mod jwk;
 pub mod key_chain;
 pub mod mobile_login;
@@ -31,13 +33,14 @@ pub mod vault_blob;
 #[cfg(test)]
 mod tests;
 
+pub use avex::{avex_decrypt, avex_encrypt, avex_parse_header, AvexError, AvexHeader};
 pub use key_chain::{
     account_signing_key_fingerprint, create_account_key_hierarchy, derive_srp_password_hash, open_account_private_key, open_account_signing_private_key,
     decrypt_account_key, decrypt_key, encrypt_key, open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, rotate_account_keys, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,
     RotatedAccountKeys, SrpInputError,
 };
 pub use mobile_login::{mobile_login_open_approval, mobile_login_public_key_hash, mobile_login_verification_code, MobileLoginApproval};
-pub use pin::{pin_decrypt, pin_encrypt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
+pub use pin::{pin_decrypt, pin_encrypt, pin_extension_salt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
 pub use rsa_oaep::{decrypt_manifest_invitation_name, decrypt_with_private_key, decrypt_with_private_key_and_label, encrypt_with_public_key_and_label, generate_rsa_key_pair, RsaKeyPair};
 pub use signing::generate_signing_key_pair;
 pub use vault_blob::{vault_blob_decrypt, vault_blob_encrypt};

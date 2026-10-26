@@ -4,6 +4,7 @@
 mod aad;
 mod aes_gcm;
 mod argon2;
+mod avex;
 mod jwk;
 mod key_chain;
 mod mobile_login;

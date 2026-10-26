@@ -259,10 +259,36 @@ pub fn decrypt_manifest_invitation_name_js(encrypted_name: &str, manifest_id: &s
     crate::crypto::decrypt_manifest_invitation_name(encrypted_name, manifest_id, private_key_jwk).map_err(js_err)
 }
 
+/// Encrypt .avux bytes into an .avex file under the export password.
+#[wasm_bindgen(js_name = avexEncrypt)]
+pub fn avex_encrypt_js(avux: Vec<u8>, password: String, exported_at: &str, app_version: &str) -> Result<Vec<u8>, JsValue> {
+    let (avux, password) = (zeroize::Zeroizing::new(avux), zeroize::Zeroizing::new(password));
+    crate::crypto::avex_encrypt(&avux, &password, exported_at, app_version).map_err(js_err)
+}
+
+/// Read and check the header of an .avex file.
+#[wasm_bindgen(js_name = avexParseHeader)]
+pub fn avex_parse_header_js(avex: &[u8]) -> Result<JsValue, JsValue> {
+    to_js(&crate::crypto::avex_parse_header(avex).map_err(js_err)?)
+}
+
+/// Decrypt an .avex file into its .avux bytes. Fails for a wrong password.
+#[wasm_bindgen(js_name = avexDecrypt)]
+pub fn avex_decrypt_js(avex: &[u8], password: String) -> Result<js_sys::Uint8Array, JsValue> {
+    let password = zeroize::Zeroizing::new(password);
+    crate::crypto::avex_decrypt(avex, &password).map(|avux| js_sys::Uint8Array::from(&avux[..])).map_err(js_err)
+}
+
 /// A fresh random salt for a new PIN key.
 #[wasm_bindgen(js_name = pinGenerateSalt)]
 pub fn pin_generate_salt_js() -> Vec<u8> {
     crate::crypto::pin_generate_salt()
+}
+
+/// The salt the browser extension derives its PIN key with, from the stored random salt and the extension id.
+#[wasm_bindgen(js_name = pinExtensionSalt)]
+pub fn pin_extension_salt_js(salt: &[u8], extension_id: &str) -> Vec<u8> {
+    crate::crypto::pin_extension_salt(salt, extension_id)
 }
 
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.
