@@ -113,7 +113,7 @@ impl FakeServer {
         let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput {
             tables: read_tables(db),
             canonicalized_at: "2026-09-11T00:00:00.000Z".to_string(),
-            manifests: vec![ManifestSpec { manifest_id: personal.clone(), manifest_salt: salt.to_string(), name: None }],
+            manifests: vec![ManifestSpec { manifest_id: personal.clone(), manifest_salt: salt.to_string() }],
             stamp_unstamped_into: None,
         })
         .unwrap();
@@ -122,8 +122,8 @@ impl FakeServer {
         let store = self.blobs.entry(personal.clone()).or_default();
         let mut references = Vec::new();
         for (blob_hash, blob_entry) in &entry.blobs {
-            let bytes = crate::common::encoding::base64_decode(&blob_entry.bytes_base64).unwrap();
-            let encrypted = blob_keys::encrypt_blob(&bytes, blob_key, &personal, blob_hash).unwrap();
+            let bytes = &blob_entry.bytes;
+            let encrypted = blob_keys::encrypt_blob(bytes, blob_key, &personal, blob_hash).unwrap();
             store.insert(blob_hash.clone(), json!({ "hash": blob_hash, "category": blob_entry.kind, "encryptedDataBase64": crate::common::encoding::base64_encode(&encrypted.encrypted_data), "encryptedBlobKey": encrypted.encrypted_blob_key }));
             references.push(json!({ "hash": blob_hash, "category": blob_entry.kind, "sizeBytes": bytes.len() }));
         }
@@ -199,7 +199,7 @@ impl FakeServer {
         let local = vault_codec::canonicalize_from_sqlite(CanonicalizeInput {
             tables: read_tables(&host.local),
             canonicalized_at: String::new(),
-            manifests: vec![ManifestSpec { manifest_id: self.personal_manifest_id.clone(), manifest_salt: salt.to_string(), name: None }],
+            manifests: vec![ManifestSpec { manifest_id: self.personal_manifest_id.clone(), manifest_salt: salt.to_string() }],
             stamp_unstamped_into: None,
         })
         .unwrap();

@@ -396,7 +396,7 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
     // A salt from an earlier attempt is kept, so blob hashes stay stable until the first write lands.
     let manifest_salt = state::get::<String>(&ctx.host, state::VAULT_MANIFEST_SALT).await?.unwrap_or_else(vault_codec::generate_manifest_salt);
     let tables = SYNCABLE_TABLE_NAMES.iter().map(|name| CodecTableData { name: name.to_string(), records: Vec::new() }).collect();
-    let spec = ManifestSpec { manifest_id: dto.manifest_id.clone(), manifest_salt, name: None };
+    let spec = ManifestSpec { manifest_id: dto.manifest_id.clone(), manifest_salt };
     let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::common::timestamp::now_iso_utc(), manifests: vec![spec], stamp_unstamped_into: None })?;
     let manifest = canonicalized.manifests.into_iter().next().map(|m| m.manifest).ok_or_else(|| SyncError::Other("canonicalize returned no manifest for the empty vault".to_string()))?;
     Ok(ResolvedManifest { manifest_id: dto.manifest_id.clone(), is_personal: true, manifest, vek: SecretString::from(vek), revision: dto.revision, blob_references: Vec::new(), content_fingerprint: String::new() })

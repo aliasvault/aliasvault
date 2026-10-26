@@ -80,7 +80,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         let tables: Tables = partition.tables.into_iter().map(|(name, records)| Ok((name.clone(), extract_table_blobs(&name, records, &partition.spec.manifest_salt, &mut blobs)?))).collect::<VaultResult<_>>()?;
         let extra = overflow.manifest_extra(&partition.spec.manifest_id);
         manifests.push(CanonicalizedManifest {
-            manifest: Manifest { schema_version: SCHEMA_VERSION, manifest_salt: partition.spec.manifest_salt, canonicalized_at: input.canonicalized_at.clone(), manifest_id: partition.spec.manifest_id, name: partition.spec.name, tables, extra },
+            manifest: Manifest { schema_version: SCHEMA_VERSION, manifest_salt: partition.spec.manifest_salt, canonicalized_at: input.canonicalized_at.clone(), manifest_id: partition.spec.manifest_id, tables, extra },
             blobs,
         });
     }
@@ -208,7 +208,7 @@ fn extract_blob_cell(cell: Option<&Value>, manifest_salt: &str, kind: &str, blob
         _ => return Ok(Value::Null),
     };
     let hash = salted_blob_hash(&bytes, manifest_salt)?;
-    blobs.entry(hash.clone()).or_insert_with(|| BlobEntry { kind: kind.to_string(), bytes_base64: b64.to_string() });
+    blobs.entry(hash.clone()).or_insert_with(|| BlobEntry { kind: kind.to_string(), bytes });
     Ok(blob_ref(&hash, kind))
 }
 

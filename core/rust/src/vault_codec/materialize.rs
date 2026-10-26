@@ -116,7 +116,7 @@ fn store_blob_hashes(table_name: &str, records: &mut [CodecRecord], schema_colum
     }
 }
 
-/// One `Manifests` row per materialized manifest: `{ Id, Name }`.
+/// One `Manifests` row per materialized manifest: `{ Id }`.
 fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
     let mut records: Vec<CodecRecord> = Vec::with_capacity(manifests.len());
     for manifest in manifests {
@@ -126,7 +126,6 @@ fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
         }
         let mut row: CodecRecord = HashMap::new();
         row.insert(ID_COL.to_string(), json!(id));
-        row.insert("Name".to_string(), manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
         super::normalize::normalize_row_id_spelling(&mut row);
         records.push(row);
     }

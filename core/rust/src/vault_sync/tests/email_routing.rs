@@ -9,7 +9,7 @@ fn manifest(id: &str, items: Vec<Value>, fields: Vec<Value>) -> Manifest {
     let mut tables = HashMap::new();
     tables.insert("Items".to_string(), items.into_iter().map(|v| serde_json::from_value(v).unwrap()).collect());
     tables.insert("FieldValues".to_string(), fields.into_iter().map(|v| serde_json::from_value(v).unwrap()).collect());
-    Manifest { schema_version: 1, manifest_salt: String::new(), canonicalized_at: String::new(), manifest_id: id.to_string(), name: None, tables, extra: HashMap::new() }
+    Manifest { schema_version: 1, manifest_salt: String::new(), canonicalized_at: String::new(), manifest_id: id.to_string(), tables, extra: HashMap::new() }
 }
 
 #[test]

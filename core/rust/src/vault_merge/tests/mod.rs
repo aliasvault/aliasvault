@@ -10,7 +10,7 @@ const T_MID: &str = "2024-01-05T00:00:00Z";
 const T_NEW: &str = "2024-01-09T00:00:00Z";
 
 fn manifest(manifest_id: &str, tables: &[(&str, Vec<CodecRecord>)]) -> Manifest {
-    Manifest { schema_version: 1, manifest_salt: SALT.to_string(), canonicalized_at: T_OLD.to_string(), manifest_id: manifest_id.to_string(), name: None, tables: tables.iter().map(|(name, rows)| (name.to_string(), rows.clone())).collect(), extra: HashMap::new() }
+    Manifest { schema_version: 1, manifest_salt: SALT.to_string(), canonicalized_at: T_OLD.to_string(), manifest_id: manifest_id.to_string(), tables: tables.iter().map(|(name, rows)| (name.to_string(), rows.clone())).collect(), extra: HashMap::new() }
 }
 
 /// A row in `PERSONAL` with the given columns plus an `UpdatedAt`.
@@ -167,11 +167,10 @@ fn blob_references_and_server_metadata_ride_through() {
     let (rows, _) = merge_table("Attachments", vec![attachment("hash-old", T_OLD)], vec![attachment("hash-new", T_NEW)]);
     assert_eq!(rows[0]["Blob"], json!({ "__blobRef": "hash-new", "__blobKind": "attachment" }), "no byte payload ever crosses the merge");
 
-    let mut server = manifest(PERSONAL, &[("Items", vec![item("a", "server", T_OLD)])]);
-    server.name = Some("Family".to_string());
+    let server = manifest(PERSONAL, &[("Items", vec![item("a", "server", T_OLD)])]);
     let output = merge(vec![server], vec![manifest(PERSONAL, &[("Items", vec![item("b", "local", T_MID)])])]);
     let merged = &output.manifests[0].manifest;
-    assert_eq!((merged.manifest_salt.as_str(), merged.name.as_deref()), (SALT, Some("Family")), "salt and name come from the server manifest");
+    assert_eq!(merged.manifest_salt, SALT, "the salt comes from the server manifest");
     assert!(crate::vault_codec::validate_manifest(merged).ok);
 }
 

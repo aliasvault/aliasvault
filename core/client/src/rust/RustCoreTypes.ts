@@ -159,7 +159,6 @@ export type CodecManifest = {
   manifestSalt: string;
   canonicalizedAt: string;
   manifestId: string;
-  name?: string | null;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
@@ -170,7 +169,6 @@ export type CodecManifest = {
 export type CodecManifestSpec = {
   manifestId: string;
   manifestSalt: string;
-  name?: string | null;
 };
 
 /**
@@ -184,8 +182,8 @@ export type CodecDataBucket = {
   [key: string]: unknown;
 };
 
-/** A decoded blob entry: kind + plaintext bytes (base64). */
-export type CodecBlobEntry = { kind: string; bytesBase64: string };
+/** A decoded blob entry: kind + plaintext bytes. */
+export type CodecBlobEntry = { kind: string; bytes: number[] };
 
 /** One manifest produced by canonicalize: the manifest and the blobs hashed with its own salt. */
 export type CodecCanonicalizedManifest = { manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };

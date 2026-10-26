@@ -68,13 +68,13 @@ pub struct BucketLayoutEntry {
     pub tables: Vec<String>,
 }
 
-/// A decoded blob entry. `bytes_base64` is the plaintext blob, base64-encoded for transport
+/// A decoded blob entry: its kind and plaintext bytes.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobEntry {
     /// "favicon" | "attachment".
     pub kind: String,
-    pub bytes_base64: String,
+    pub bytes: Vec<u8>,
 }
 
 /// One manifest the caller wants canonicalize to emit.
