@@ -34,6 +34,7 @@ function notImplementedOnMobile(name: string, reason: string): Promise<never> {
 }
 
 const PIN_IS_NATIVE = 'PIN unlock runs in the native VaultStore';
+const AVEX_IMPORT_IS_WEB = 'the mobile app exports .avex files, only the web app imports them';
 const MOBILE_LOGIN_IS_WEB = 'the mobile app approves a mobile login, only the web app and the browser extension request one';
 
 /*
@@ -80,10 +81,15 @@ export const nativeRustCore: IRustCore = {
   mobileLoginOpenApproval: () => notImplementedOnMobile('mobileLoginOpenApproval', MOBILE_LOGIN_IS_WEB),
 
   pinGenerateSalt: () => notImplementedOnMobile('pinGenerateSalt', PIN_IS_NATIVE),
+  pinExtensionSalt: () => notImplementedOnMobile('pinExtensionSalt', 'only the browser extension peppers its PIN salt'),
   pinEncrypt: () => notImplementedOnMobile('pinEncrypt', PIN_IS_NATIVE),
   pinDecrypt: () => notImplementedOnMobile('pinDecrypt', PIN_IS_NATIVE),
   pinIsLocked: () => notImplementedOnMobile('pinIsLocked', PIN_IS_NATIVE),
   pinRegisterFailure: () => notImplementedOnMobile('pinRegisterFailure', PIN_IS_NATIVE),
+
+  avexEncrypt: (avux, password, exportedAt, appVersion) => callForBytes('avexEncrypt', base64(avux), password, exportedAt, appVersion),
+  avexParseHeader: () => notImplementedOnMobile('avexParseHeader', AVEX_IMPORT_IS_WEB),
+  avexDecrypt: () => notImplementedOnMobile('avexDecrypt', AVEX_IMPORT_IS_WEB),
 
   argon2DeriveKey: (password, salt, encryptionSettings) => callForBytes('argon2DeriveKey', password, salt, encryptionSettings),
   deriveSrpPasswordHash: (unlockKeyBase64, encryptionType) => call('deriveSrpPasswordHash', unlockKeyBase64, encryptionType),

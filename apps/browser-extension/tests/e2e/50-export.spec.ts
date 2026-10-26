@@ -81,7 +81,7 @@ test.describe.serial('50. Vault export', () => {
     await expect(popup.getByText('exported successfully')).toBeVisible({ timeout: Timeouts.LONG });
 
     const avexBytes = new Uint8Array(readFileSync(await download.path()));
-    expect(AvexImportService.parseAvexHeader(avexBytes).header.format).toBe('avex');
+    expect((await AvexImportService.parseAvexHeader(avexBytes)).format).toBe('avex');
     await expect(AvexImportService.decryptAvex(avexBytes, 'not-the-export-password')).rejects.toThrow();
 
     const avuxBytes = await AvexImportService.decryptAvex(avexBytes, exportPassword);

@@ -33,3 +33,11 @@ fn locks_after_the_maximum_attempts() {
     assert_eq!(pin_register_failure(3), PinFailure { failed_attempts: 4, attempts_remaining: 0, locked: true });
     assert_eq!(pin_register_failure(u32::MAX), PinFailure { failed_attempts: u32::MAX, attempts_remaining: 0, locked: true });
 }
+
+/// Known answer: changing the composition locks every extension user out of their PIN.
+#[test]
+fn composes_the_extension_salt() {
+    let salt: Vec<u8> = (0..16).collect();
+    let extension_salt = pin_extension_salt(&salt, "kbfnbcaeplbcioakkpcpgfkobkghlhen");
+    assert_eq!(String::from_utf8(extension_salt).unwrap(), "AAECAwQFBgcICQoLDA0OD4eGMIgKFBN57SzMx9wUAqplk99xzEeBHTBkcKcQ1JQ+");
+}

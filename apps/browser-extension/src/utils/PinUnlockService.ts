@@ -1,4 +1,4 @@
-import { pinDecrypt, pinEncrypt, pinGenerateSalt, pinIsLocked, pinRegisterFailure } from '@aliasvault/client/rust/RustCore';
+import { pinDecrypt, pinEncrypt, pinExtensionSalt, pinGenerateSalt, pinIsLocked, pinRegisterFailure } from '@aliasvault/client/rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 
 import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
@@ -12,26 +12,6 @@ import { browser, storage } from '#imports';
  * This service allows users to set a PIN (digits, letters or symbols) to unlock their vault instead
  * of entering their full master password. The Account Key
  * is encrypted with a key derived from the PIN and stored locally.
- *
- * Security features:
- * - 4 failed attempts maximum before requiring full password
- * - PIN must be 6-64 characters
- * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
- * - Extension ID pepper adds friction for naive attacks
- * - Failed attempts counter stored separately
- * - Encrypted data automatically deleted after max failed attempts
- *
- * Security model
- * - Random salt: Stored locally (prevents rainbow tables)
- * - Extension ID pepper: Derived from browser.runtime.id
- * - Argon2id memory cost: 64 MB makes each attempt expensive
- * - Attempt limiting: 4 attempts max before PIN is disabled
- *
- * Recommendation: Use PIN unlock only on trusted devices. For high-security scenarios, always
- * use full master password unlock.
- *
- * The key wrap and the attempt policy live in the Rust core (crypto/pin.rs); this file only stores them.
- * Other platform implementations: VaultStore+Pin.swift (iOS), VaultPin.kt (Android).
  */
 
 /**
@@ -270,37 +250,12 @@ export async function resetFailedAttempts(): Promise<void> {
 }
 
 /**
- * Get extension ID pepper component
+ * The Argon2id salt for the PIN key: the stored random salt with the extension ID as pepper, composed in the Rust core.
  *
- * This provides a device-bound value that is NOT stored in chrome.storage.
- * The extension ID is unique per installation and accessible via browser.runtime.id.
- *
- * Security benefits:
- * - Not stored in chrome.storage directly (however still stored elsewhere on filesystem)
- * - Adds friction for attackers who only copy storage directory
- * - Unique per extension installation
- *
- * @returns SHA-256 hash of extension ID as Uint8Array
- */
-async function getExtensionPepper(): Promise<Uint8Array> {
-  const extensionId = browser.runtime.id;
-  const pepperSource = new TextEncoder().encode(extensionId);
-  const pepperHash = await crypto.subtle.digest('SHA-256', pepperSource);
-  return new Uint8Array(pepperHash);
-}
-
-/**
- * The Argon2id salt for the PIN key: the UTF-8 characters of base64(random salt || extension ID pepper).
- *
- * The salt is hashed as the characters of this base64 string, not as the bytes it decodes to.
- * Every PIN ever set was derived that way, so decoding here would lock users out of their vault.
+ * The extension ID is not stored in chrome.storage, which adds friction for an attacker who only copies that directory.
  *
  * @param randomSalt - The random salt stored in chrome.storage
  */
 async function argon2Salt(randomSalt: Uint8Array): Promise<Uint8Array> {
-  const pepper = await getExtensionPepper();
-  const combinedSalt = new Uint8Array(randomSalt.length + pepper.length);
-  combinedSalt.set(randomSalt, 0);
-  combinedSalt.set(pepper, randomSalt.length);
-  return new TextEncoder().encode(bytesToBase64(combinedSalt));
+  return pinExtensionSalt(randomSalt, browser.runtime.id);
 }

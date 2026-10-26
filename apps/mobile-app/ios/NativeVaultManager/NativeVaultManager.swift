@@ -1566,6 +1566,7 @@ private enum RustCoreDispatcher {
         case "rsaDecrypt": return try json(bytes: try RustCoreFramework.rsaDecrypt(base64Ciphertext: try args.string(0), privateKeyJwk: try args.string(1)))
         case "symmetricDecrypt": return try json(try RustCoreFramework.symmetricDecrypt(base64Ciphertext: try args.string(0), keyBase64: try args.string(1)))
         case "symmetricDecryptBytes": return try json(bytes: try RustCoreFramework.symmetricDecryptBytes(encrypted: try args.data(0), keyBase64: try args.string(1)))
+        case "avexEncrypt": return try json(bytes: try RustCoreFramework.avexEncrypt(avux: try args.data(0), password: try args.string(1), exportedAt: try args.string(2), appVersion: try args.string(3)))
         case "symmetricEncryptBytes": return try json(bytes: try RustCoreFramework.symmetricEncryptBytes(plaintext: try args.data(0), keyBase64: try args.string(1)))
         case "mobileLoginPublicKeyHash": return try json(RustCoreFramework.mobileLoginPublicKeyHash(publicKeyJwk: try args.string(0)))
         case "mobileLoginVerificationCode": return try json(RustCoreFramework.mobileLoginVerificationCode(publicKeyJwk: try args.string(0)))

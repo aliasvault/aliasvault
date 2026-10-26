@@ -7,7 +7,7 @@ import initWasm, * as core from '#wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -87,6 +87,7 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
      * devices, so let the caller's loading indicator paint first before proceeding with the expensive operation.
      */
     pinGenerateSalt: (): Promise<Uint8Array> => ready(() => core.pinGenerateSalt()),
+    pinExtensionSalt: (salt, extensionId): Promise<Uint8Array> => ready(() => core.pinExtensionSalt(salt, extensionId)),
     pinEncrypt: async (pin, salt, secret): Promise<Uint8Array> => {
       await yieldToPaint();
       return ready(() => core.pinEncrypt(pin, salt, secret));
@@ -97,6 +98,16 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     },
     pinIsLocked: (failedAttempts): Promise<boolean> => ready(() => core.pinIsLocked(failedAttempts)),
     pinRegisterFailure: (failedAttempts): Promise<PinFailure> => ready(() => core.pinRegisterFailure(failedAttempts) as PinFailure),
+
+    avexEncrypt: async (avux, password, exportedAt, appVersion): Promise<Uint8Array> => {
+      await yieldToPaint();
+      return ready(() => core.avexEncrypt(avux, password, exportedAt, appVersion));
+    },
+    avexParseHeader: (avex): Promise<AvexHeader> => ready(() => core.avexParseHeader(avex) as AvexHeader),
+    avexDecrypt: async (avex, password): Promise<Uint8Array> => {
+      await yieldToPaint();
+      return ready(() => core.avexDecrypt(avex, password));
+    },
 
     argon2DeriveKey: async (password, salt, encryptionSettings): Promise<Uint8Array> => {
       await yieldToPaint();

@@ -1,4 +1,4 @@
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -57,10 +57,15 @@ export interface IRustCore {
   mobileLoginOpenApproval(privateKeyJwk: string, encryptedAccountKey: string, encryptedPayloadKey: string, encryptedPayload: string): Promise<MobileLoginApproval>;
 
   pinGenerateSalt(): Promise<Uint8Array>;
+  pinExtensionSalt(salt: Uint8Array, extensionId: string): Promise<Uint8Array>;
   pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array>;
   pinDecrypt(pin: string, salt: Uint8Array, encrypted: Uint8Array): Promise<Uint8Array>;
   pinIsLocked(failedAttempts: number): Promise<boolean>;
   pinRegisterFailure(failedAttempts: number): Promise<PinFailure>;
+
+  avexEncrypt(avux: Uint8Array, password: string, exportedAt: string, appVersion: string): Promise<Uint8Array>;
+  avexParseHeader(avex: Uint8Array): Promise<AvexHeader>;
+  avexDecrypt(avex: Uint8Array, password: string): Promise<Uint8Array>;
 
   argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array>;
   deriveSrpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string>;

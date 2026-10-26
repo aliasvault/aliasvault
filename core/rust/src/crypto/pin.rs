@@ -1,6 +1,7 @@
 //! PIN unlock: the key encrypted with the PIN and the failed-attempt policy.
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use zeroize::Zeroizing;
 
 use crate::common::error::{VaultError, VaultResult};
@@ -34,6 +35,15 @@ pub struct PinFailure {
 /// A fresh random salt for a new PIN key.
 pub fn pin_generate_salt() -> Vec<u8> {
     random_bytes(PIN_SALT_LENGTH)
+}
+
+/// The salt the browser extension derives its PIN key with: the UTF-8 characters of base64(`salt` || SHA-256(`extension_id`)).
+///
+/// The base64 characters are hashed, not the bytes they decode to: every extension PIN ever set was derived that way.
+pub fn pin_extension_salt(salt: &[u8], extension_id: &str) -> Vec<u8> {
+    let mut combined = salt.to_vec();
+    combined.extend_from_slice(&Sha256::digest(extension_id.as_bytes()));
+    base64_encode(&combined).into_bytes()
 }
 
 /// Encrypt `secret` with a key derived from the PIN and salt. Returns `IV | ciphertext | tag`.

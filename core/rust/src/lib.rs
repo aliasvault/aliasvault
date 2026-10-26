@@ -13,7 +13,7 @@
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **totp**: RFC 6238 TOTP code generation
 //! - **identity_generator**: Random identity (alias persona) generation
-//! - **crypto**: Argon2id derivation, AES-256-GCM, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
+//! - **crypto**: Argon2id derivation, AES-256-GCM, the .avex export, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
 //! - **common**: `VaultError`, byte encodings, randomness and the vault timestamp formats
 //! - **bindings**: the wasm-bindgen and UniFFI entry points
 

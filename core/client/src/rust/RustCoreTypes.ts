@@ -80,6 +80,21 @@ export type SrpSession = {
   key: string;
 };
 
+/** The header of an .avex encrypted export (the Rust `AvexHeader`), with its JSON wire names. */
+export type AvexHeader = {
+  format: string;
+  /** The .avex container format version (not the app version). */
+  version: string;
+  kdf: {
+    type: string;
+    /** The base64 salt. */
+    salt: string;
+    params: { DegreeOfParallelism: number; MemorySize: number; Iterations: number };
+  };
+  encryption: { algorithm: string; encryptedDataOffset: number };
+  metadata: { exportedAt: string; appVersion: string | null };
+};
+
 /** The PIN attempt counter after a failed attempt (the Rust `pin_register_failure`). */
 export type PinFailure = {
   /** The failed-attempt count to store. */

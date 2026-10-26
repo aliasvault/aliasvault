@@ -182,6 +182,13 @@ export async function pinGenerateSalt(): Promise<Uint8Array> {
 }
 
 /**
+ * The salt the browser extension derives its PIN key with, from the stored random salt and the extension id.
+ */
+export async function pinExtensionSalt(salt: Uint8Array, extensionId: string): Promise<Uint8Array> {
+  return rustCore().pinExtensionSalt(salt, extensionId);
+}
+
+/**
  * Encrypt `secret` with a key derived from the PIN and salt, as `IV | ciphertext | tag`.
  */
 export async function pinEncrypt(pin: string, salt: Uint8Array, secret: Uint8Array): Promise<Uint8Array> {

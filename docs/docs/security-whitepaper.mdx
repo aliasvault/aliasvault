@@ -531,7 +531,7 @@ Where each part of this document lives in the repository, for reviewers.
 | API: authentication, vault, sharing, email, Login with Mobile | `apps/server/AliasVault.Api/Controllers/V2/` |
 | Session tokens | `apps/server/AliasVault.Api/Services/TokenService.cs` |
 | Device key storage | iOS `apps/mobile-app/ios/VaultStoreKit/`, Android `apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/`, extension `apps/browser-extension/src/utils/PinUnlockService.ts`, web app `apps/web/src/utils/WebAuthnService.ts` |
-| Encrypted export | `core/client/src/transfer/export/AvexExportService.ts`, `core/client/src/transfer/import/importers/aliasvault/AvexImportService.ts` |
+| Encrypted export | `core/rust/src/crypto/avex.rs` |
 | Logo fetching | `core/client/src/items/FaviconService.ts`, `apps/server/Utilities/AliasVault.FaviconExtractor/` |
 
 ## Appendix B. Glossary

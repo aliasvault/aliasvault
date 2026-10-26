@@ -225,6 +225,13 @@ pub fn account_signing_key_fingerprint(encrypted_signing_private_key: String, ac
     crate::crypto::account_signing_key_fingerprint(&encrypted_signing_private_key, &account_key)
 }
 
+/// Encrypt .avux bytes into an .avex file under the export password.
+#[uniffi::export]
+pub fn avex_encrypt(avux: Vec<u8>, password: String, exported_at: String, app_version: String) -> Result<Vec<u8>, VaultError> {
+    let (avux, password) = (zeroize::Zeroizing::new(avux), zeroize::Zeroizing::new(password));
+    crate::crypto::avex_encrypt(&avux, &password, &exported_at, &app_version)
+}
+
 /// A fresh random salt for a new PIN key.
 #[uniffi::export]
 pub fn pin_generate_salt() -> Vec<u8> {
