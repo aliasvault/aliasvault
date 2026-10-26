@@ -18,17 +18,6 @@ export function manifestAad(manifestId: string): Uint8Array {
 }
 
 /**
- * Associated data of a data bucket payload under its manifest's VEK.
- *
- * @param manifestId - The manifest the bucket belongs to
- * @param category - The bucket category
- * @returns The AAD bytes
- */
-export function bucketAad(manifestId: string, category: string): Uint8Array {
-  return new TextEncoder().encode(`aliasvault/v1/bucket/${manifestId.toLowerCase()}/${category}`);
-}
-
-/**
  * Encrypts raw bytes bound to `aad`, returning base64(IV | ciphertext | authTag).
  *
  * @param plaintextBytes - The plaintext bytes to encrypt

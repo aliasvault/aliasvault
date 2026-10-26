@@ -1596,14 +1596,8 @@ private enum RustCoreDispatcher {
         case "srpVerifySession":
             return try json(try RustCoreFramework.srpVerifySession(clientPublic: try args.string(0), clientProof: try args.string(1), sessionKey: try args.string(2), serverProof: try args.string(3)))
 
-        case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
-
-        case "vaultCodecCanonicalizeFromSqlite": return try RustCoreFramework.vaultCodecCanonicalizeFromSqlite(inputJson: try args.string(0))
-        case "vaultCodecGenerateManifestSalt": return try json(RustCoreFramework.vaultCodecGenerateManifestSalt())
         case "vaultCodecLogoIdFor": return try json(RustCoreFramework.vaultCodecLogoIdFor(manifestId: try args.string(0), kind: try args.string(1), source: try args.string(2)))
         case "vaultCodecLogoContentHash": return try json(RustCoreFramework.vaultCodecLogoContentHash(bytes: try args.data(0)))
-        case "vaultCodecPackPayload": return try json(bytes: try RustCoreFramework.vaultCodecPackPayload(payloadJson: try args.string(0)))
-        case "vaultCodecUnpackPayload": return try json(try RustCoreFramework.vaultCodecUnpackPayload(plainBytes: try args.data(0)))
 
         default: throw DispatchError.unknownFunction(name)
         }

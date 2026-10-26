@@ -76,7 +76,7 @@ export const StorageKeys = {
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
   /** The client's last known revision per data bucket. */
   VAULT_BUCKET_REVISIONS: 'local:vaultBucketRevisions',
-  /** The personal manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
+  /** The personal manifest's blob-hashing salt, cached from the last pull. */
   VAULT_MANIFEST_SALT: 'local:vaultManifestSalt',
 
   /**

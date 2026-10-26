@@ -7,7 +7,7 @@ import initWasm, * as core from '#wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { AccountKeyHierarchy, AvexHeader, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -131,14 +131,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     srpVerifySession: (clientPublic, clientProof, sessionKey, serverProof): Promise<boolean> =>
       ready(() => core.srpVerifySession(clientPublic, clientProof, sessionKey, serverProof)),
 
-    getSyncableTableNames: (): Promise<string[]> => ready(() => core.getSyncableTableNames()),
-
-    vaultCodecCanonicalizeFromSqlite: (input: CodecCanonicalizeInput): Promise<CodecCanonicalized> => ready(() => core.vaultCodecCanonicalizeFromSqlite(input) as CodecCanonicalized),
-    vaultCodecGenerateManifestSalt: (): Promise<string> => ready(() => core.vaultCodecGenerateManifestSalt()),
     vaultCodecLogoIdFor: (manifestId, kind, source): Promise<string> => ready(() => core.vaultCodecLogoIdFor(manifestId, kind, source)),
     vaultCodecLogoContentHash: (bytes): Promise<string> => ready(() => core.vaultCodecLogoContentHash(bytes)),
-    vaultCodecPackPayload: (payloadJson): Promise<Uint8Array> => ready(() => core.vaultCodecPackPayload(payloadJson)),
-    vaultCodecUnpackPayload: (plainBytes): Promise<string> => ready(() => core.vaultCodecUnpackPayload(plainBytes)),
 
     createVaultSyncSession: (requestJson): Promise<IVaultSyncSession> => ready((): IVaultSyncSession => {
       const session = new core.VaultSyncSession(requestJson);

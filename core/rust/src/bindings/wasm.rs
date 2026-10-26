@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput, CredentialMatcherOutput};
 use crate::password_generator::{available_languages, generate_password};
-use crate::vault_codec::{self, CanonicalizeInput};
+use crate::vault_codec;
 
 /// Initialize panic hook for better error messages.
 #[wasm_bindgen(start)]
@@ -23,12 +23,6 @@ fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
     value.serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true)).map_err(js_err)
 }
 
-/// Get the list of table names that take part in a vault sync.
-#[wasm_bindgen(js_name = getSyncableTableNames)]
-pub fn get_syncable_table_names_js() -> Vec<String> {
-    crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
-}
-
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what `vaultCodecLogoIdFor` then derives the row id from.
 #[wasm_bindgen(js_name = vaultCodecLogoContentHash)]
@@ -41,33 +35,6 @@ pub fn vault_codec_logo_content_hash_js(bytes: Vec<u8>) -> String {
 #[wasm_bindgen(js_name = vaultCodecLogoIdFor)]
 pub fn vault_codec_logo_id_for_js(manifest_id: String, kind: String, source: String) -> String {
     vault_codec::logo_id_for(&manifest_id, &kind, &source)
-}
-
-/// Canonicalize normalized tables into manifest + data buckets.
-/// Input: `CanonicalizeInput`. Output: `CanonicalizedVault`.
-#[wasm_bindgen(js_name = vaultCodecCanonicalizeFromSqlite)]
-pub fn vault_codec_canonicalize_from_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: CanonicalizeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    let output = vault_codec::canonicalize_from_sqlite(input).map_err(js_err)?;
-    to_js(&output)
-}
-
-/// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
-#[wasm_bindgen(js_name = vaultCodecGenerateManifestSalt)]
-pub fn vault_codec_generate_manifest_salt_js() -> String {
-    vault_codec::generate_manifest_salt()
-}
-
-/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
-#[wasm_bindgen(js_name = vaultCodecPackPayload)]
-pub fn vault_codec_pack_payload_js(payload_json: &str) -> Result<Vec<u8>, JsValue> {
-    vault_codec::pack_payload(payload_json).map_err(js_err)
-}
-
-/// Unpack a (decrypted) payload: gunzip > verify content hash > return payload JSON string.
-#[wasm_bindgen(js_name = vaultCodecUnpackPayload)]
-pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsValue> {
-    vault_codec::unpack_payload(plain_bytes).map_err(js_err)
 }
 
 /// Filter credentials for autofill. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.

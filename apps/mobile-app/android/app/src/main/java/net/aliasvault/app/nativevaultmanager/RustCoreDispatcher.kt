@@ -23,7 +23,6 @@ import uniffi.aliasvault_core.generateTotpCode
 import uniffi.aliasvault_core.getDicewareLanguages
 import uniffi.aliasvault_core.getIdentityAgeRanges
 import uniffi.aliasvault_core.getIdentityLanguages
-import uniffi.aliasvault_core.getSyncableTableNames
 import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.mobileLoginPublicKeyHash
@@ -43,12 +42,8 @@ import uniffi.aliasvault_core.srpVerifySession
 import uniffi.aliasvault_core.symmetricDecrypt
 import uniffi.aliasvault_core.symmetricDecryptBytes
 import uniffi.aliasvault_core.symmetricEncryptBytes
-import uniffi.aliasvault_core.vaultCodecCanonicalizeFromSqlite
-import uniffi.aliasvault_core.vaultCodecGenerateManifestSalt
 import uniffi.aliasvault_core.vaultCodecLogoContentHash
 import uniffi.aliasvault_core.vaultCodecLogoIdFor
-import uniffi.aliasvault_core.vaultCodecPackPayload
-import uniffi.aliasvault_core.vaultCodecUnpackPayload
 
 /**
  * Routes `rustCall` invocations from React Native onto the uniffi bindings: one case per exported core
@@ -118,14 +113,8 @@ object RustCoreDispatcher {
             }
             "srpVerifySession" -> srpVerifySession(args.string(0), args.string(1), args.string(2), args.string(3)).toString()
 
-            "getSyncableTableNames" -> json(getSyncableTableNames())
-
-            "vaultCodecCanonicalizeFromSqlite" -> vaultCodecCanonicalizeFromSqlite(args.string(0))
-            "vaultCodecGenerateManifestSalt" -> json(vaultCodecGenerateManifestSalt())
             "vaultCodecLogoIdFor" -> json(vaultCodecLogoIdFor(args.string(0), args.string(1), args.string(2)))
             "vaultCodecLogoContentHash" -> json(vaultCodecLogoContentHash(args.bytes(0)))
-            "vaultCodecPackPayload" -> json(vaultCodecPackPayload(args.string(0)))
-            "vaultCodecUnpackPayload" -> json(vaultCodecUnpackPayload(args.bytes(0)))
 
             else -> throw IllegalArgumentException("Unknown Rust core function '$name'")
         }

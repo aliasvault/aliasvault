@@ -105,14 +105,8 @@ export const nativeRustCore: IRustCore = {
   srpDeriveSession: (clientSecret, serverPublic, salt, identity, privateKey) => call('srpDeriveSession', clientSecret, serverPublic, salt, identity, privateKey),
   srpVerifySession: (clientPublic, clientProof, sessionKey, serverProof) => call('srpVerifySession', clientPublic, clientProof, sessionKey, serverProof),
 
-  getSyncableTableNames: () => call('getSyncableTableNames'),
-
-  vaultCodecCanonicalizeFromSqlite: (input) => call('vaultCodecCanonicalizeFromSqlite', JSON.stringify(input)),
-  vaultCodecGenerateManifestSalt: () => call('vaultCodecGenerateManifestSalt'),
   vaultCodecLogoIdFor: (manifestId, kind, source) => call('vaultCodecLogoIdFor', manifestId, kind, source),
   vaultCodecLogoContentHash: (bytes) => call('vaultCodecLogoContentHash', base64(bytes)),
-  vaultCodecPackPayload: (payloadJson) => callForBytes('vaultCodecPackPayload', payloadJson),
-  vaultCodecUnpackPayload: (plainBytes) => call('vaultCodecUnpackPayload', base64(plainBytes)),
 
   createVaultSyncSession: () => notImplementedOnMobile('createVaultSyncSession', 'the vault sync engine is driven natively'),
 };

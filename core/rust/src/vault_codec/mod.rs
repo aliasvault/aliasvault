@@ -82,18 +82,10 @@ pub enum UnpackedPayload {
     NewerFormat(u32),
 }
 
-/// Unpack a payload: gunzip > parse envelope > verify the embedded content hash.
-/// Refuses an envelope written at a format version this build cannot read.
-pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
-    match unpack_versioned_payload(plain_bytes)? {
-        UnpackedPayload::Readable(payload_json) => Ok(payload_json),
-        UnpackedPayload::NewerFormat(version) => Err(VaultError::General(format!("payload has format version {}, this build supports reading up to {}", version, SCHEMA_VERSION))),
-    }
-}
-
-/// [`unpack_payload`], reporting a newer format version as a value instead of an error. The version is read
-/// before the content hash, since a newer format may hash differently and must not read as corruption.
-pub fn unpack_versioned_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
+/// Unpack a payload: gunzip > parse envelope > verify the embedded content hash. A newer format version is reported
+/// as a value instead of an error, read before the content hash, since a newer format may hash differently and must not
+/// read as corruption.
+pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
     let decompressed = gunzip(plain_bytes, MAX_DECOMPRESSED_PAYLOAD_BYTES)?;
     let envelope_json = std::str::from_utf8(&decompressed).map_err(|e| VaultError::General(format!("payload is not valid UTF-8: {}", e)))?;
     let envelope: serde_json::Value = serde_json::from_str(envelope_json)?;

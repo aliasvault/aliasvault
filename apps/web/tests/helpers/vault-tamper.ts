@@ -4,11 +4,9 @@
  */
 
 import { createHash, randomBytes, webcrypto } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload } from '@aliasvault/client/rust/RustCore';
-
-import './client-platform';
 
 import { getVaultSnapshotHeader, type TestUser } from './test-api';
 
@@ -32,16 +30,32 @@ export async function writeUndecryptableManifest(apiUrl: string, user: TestUser)
  */
 export async function writeManifestWithBrokenRow(apiUrl: string, user: TestUser, table: string, row: Record<string, unknown>): Promise<void> {
   const { manifestId } = await getPersonalManifest(apiUrl, user);
-  const canonicalized = await vaultCodecCanonicalizeFromSqlite({
-    tables: (await getSyncableTableNames()).map((name) => ({ name, records: [] })),
-    canonicalizedAt: new Date().toISOString(),
-    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt() }],
-  });
-  const manifest = canonicalized.manifests[0].manifest as { tables: Record<string, unknown[]> };
-  manifest.tables[table] = [...(manifest.tables[table] ?? []), row];
-
-  const packed = await vaultCodecPackPayload(JSON.stringify(manifest));
+  const manifest = { schemaVersion: 1, manifestSalt: randomBytes(32).toString('hex'), canonicalizedAt: new Date().toISOString(), manifestId, tables: { [table]: [row] } };
+  const packed = packPayload(manifest);
   await writePersonalManifest(apiUrl, user, await encryptManifest(packed, user.vaultEncryptionKey, manifestId));
+}
+
+/**
+ * Pack a payload as the Rust core does (`core/rust/src/vault_codec/mod.rs`): gzip of `{ schemaVersion, contentHash, payload }`,
+ * the hash taken over the payload's canonical JSON.
+ */
+function packPayload(payload: unknown): Uint8Array {
+  const contentHash = createHash('sha256').update(canonicalJson(payload)).digest('hex');
+  return gzipSync(JSON.stringify({ schemaVersion: 1, contentHash, payload }));
+}
+
+/**
+ * The canonical JSON the content hash is taken over: object keys sorted recursively, arrays kept in order.
+ */
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalJson).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
 }
 
 /**

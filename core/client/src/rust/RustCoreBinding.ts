@@ -1,4 +1,4 @@
-import type { AccountKeyHierarchy, AvexHeader, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -81,14 +81,8 @@ export interface IRustCore {
   srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<SrpSession>;
   srpVerifySession(clientPublic: string, clientProof: string, sessionKey: string, serverProof: string): Promise<boolean>;
 
-  getSyncableTableNames(): Promise<string[]>;
-
-  vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized>;
-  vaultCodecGenerateManifestSalt(): Promise<string>;
   vaultCodecLogoIdFor(manifestId: string, kind: string, source: string): Promise<string>;
   vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string>;
-  vaultCodecPackPayload(payloadJson: string): Promise<Uint8Array>;
-  vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string>;
 
   createVaultSyncSession(requestJson: string): Promise<IVaultSyncSession>;
 }
