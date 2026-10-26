@@ -21,7 +21,7 @@
         {
             "id": "RUSTSEC-2023-0071",
             "package": "rsa",
-            "reason": "The Marvin timing attack is primarily relevant when an attacker can observe decryption timing, such as over a network. Since decryption is performed client-side only and uses decrypt_blinded, this provides a sufficient mitigation."
+            "reason": "No patched release exists. The Marvin timing attack needs an attacker who can observe many decryption timings, such as over a network. RSA decryption runs client-side only, and decrypt_blinded reduces (but does not remove) the leak. Recheck when rsa 0.10 is stable."
         },
         {
             "id": "RUSTSEC-2026-0374",

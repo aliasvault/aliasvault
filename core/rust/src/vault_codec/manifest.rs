@@ -25,9 +25,6 @@ pub struct Manifest {
     pub canonicalized_at: String,
     /// The server-side id of the manifest this snapshot belongs to.
     pub manifest_id: String,
-    /// Display name of the manifest, carried inside the encrypted payload so the server never sees it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
     #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
@@ -87,9 +84,6 @@ pub struct ManifestSpec {
     pub manifest_id: String,
     /// Per-manifest salt for this manifest's blob hashing.
     pub manifest_salt: String,
-    /// Display name written into the manifest. See [`Manifest::name`].
-    #[serde(default)]
-    pub name: Option<String>,
 }
 
 /// One manifest produced by canonicalize: the manifest blob and the blob map hashed with its own salt.

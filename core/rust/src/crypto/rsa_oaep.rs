@@ -39,7 +39,7 @@ pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
     Ok(RsaKeyPair { public_key: rsa_public_to_jwk(&public, Some(OAEP_PUBLIC))?, private_key: rsa_private_to_jwk(&private, Some(OAEP_PRIVATE))? })
 }
 
-/// Check that a key pair generated elsewhere (WebCrypto) is a valid private key whose public half matches.
+/// Check that the public key belongs to the private key, such as an account public key the server serves.
 pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
     if rsa_private_from_jwk(&key_pair.private_key)?.to_public_key() != oaep_public_from_jwk(&key_pair.public_key)? {
         return Err(VaultError::General("RSA public key does not belong to the private key".to_string()));
@@ -77,8 +77,8 @@ fn encrypt(plaintext: &[u8], public_key_jwk: &str, padding: Oaep) -> VaultResult
 fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> VaultResult<Vec<u8>> {
     let private = rsa_private_from_jwk(private_key_jwk)?;
     let ciphertext = base64_decode(base64_ciphertext)?;
-    // Blinded: plain `decrypt` runs the exponentiation on the ciphertext as given, which leaks timing an
-    // attacker who can submit chosen ciphertexts turns into key recovery (RUSTSEC-2023-0071, Marvin attack).
+    // Blinded, which reduces but does not remove the timing leak of RUSTSEC-2023-0071 (Marvin attack): the rsa crate's
+    // big-integer arithmetic is not constant time. Accepted because decryption runs on the client only.
     private
         .decrypt_blinded(&mut rand_core06::OsRng, padding, &ciphertext)
         .map_err(|_| VaultError::General("RSA-OAEP decryption failed (wrong key or corrupt data)".to_string()))

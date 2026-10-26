@@ -21,7 +21,7 @@ pub fn gzip(bytes: &[u8]) -> VaultResult<Vec<u8>> {
 
 /// Cap on a decompressed payload, so a gzip bomb in a shared manifest cannot exhaust memory. Derived from the
 /// server's default `MAX_UPLOAD_SIZE_MB` (100 MB per vault write, compressed): 5x that leaves room for highly
-/// compressible JSON while staying well below what a wasm32 client can hold.
+/// compressible JSON.
 pub const MAX_DECOMPRESSED_PAYLOAD_BYTES: u64 = 512 * 1024 * 1024;
 
 /// Decompress gzipped bytes into a UTF-8 string, refusing output above [`MAX_DECOMPRESSED_PAYLOAD_BYTES`].
