@@ -33,6 +33,8 @@ enum NotLoaded {
     Withheld,
     /// The server served it encrypted under a key this device does not hold.
     Undecryptable,
+    /// A writer of the manifest stored other bytes at its address, under the right keys.
+    Forged,
 }
 
 /// A device that pulled `vault_with_blobs` while none of its blobs loaded.
@@ -48,6 +50,14 @@ fn synced_without_blobs(how: NotLoaded) -> Synced {
             server.borrow_mut().faults.withhold_blobs = true;
         }
         NotLoaded::Undecryptable => server.borrow_mut().publish_with_blob_key(&db, &vek, &salt, 7, &crypto::aes_gcm::generate_key()),
+        NotLoaded::Forged => {
+            server.borrow_mut().publish(&db, &vek, &salt, 7);
+            for (hash, stored) in server.borrow_mut().blobs.get_mut(PERSONAL_MANIFEST_ID).unwrap().iter_mut() {
+                let forged = blob_keys::encrypt_blob(&[0xee; 16], &vek, PERSONAL_MANIFEST_ID, hash).unwrap();
+                stored["encryptedDataBase64"] = json!(crate::common::encoding::base64_encode(&forged.encrypted_data));
+                stored["encryptedBlobKey"] = json!(forged.encrypted_blob_key);
+            }
+        }
     }
     let mut host = TestHost::logged_in(&vek, &server);
     let pulled = host.sync();
@@ -86,7 +96,7 @@ fn pushed_blobs_are_encrypted_under_their_own_key_and_stored_with_their_manifest
 
     // The uploaded blob opens through its own key at its own address (the key scheme itself is `blob_keys`' to test).
     let uploaded: blob_keys::EncryptedBlob = serde_json::from_value(upload["blobs"][0].clone()).unwrap();
-    assert_eq!(blob_keys::decrypt_blob(&uploaded, &s.vek, PERSONAL_MANIFEST_ID, hash).unwrap(), vec![1u8, 2, 3, 4]);
+    assert_eq!(blob_keys::decrypt_blob(&uploaded, &s.vek, PERSONAL_MANIFEST_ID, &s.salt, hash).unwrap(), vec![1u8, 2, 3, 4]);
     s.server.borrow().assert_converged(&s.host);
 }
 
@@ -109,7 +119,7 @@ fn the_missing_blob_check_stays_within_the_servers_hash_cap() {
 
 #[test]
 fn a_blob_that_did_not_load_keeps_its_reference_on_the_next_push() {
-    for how in [NotLoaded::Withheld, NotLoaded::Undecryptable] {
+    for how in [NotLoaded::Withheld, NotLoaded::Undecryptable, NotLoaded::Forged] {
         let mut s = synced_without_blobs(how);
         let server_hashes = s.server.borrow().stored_blob_hashes();
 

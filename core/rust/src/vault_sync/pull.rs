@@ -335,12 +335,12 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest]) -> 
             continue;
         };
         let owner = owners[&reference.hash];
-        match blob_keys::decrypt_blob(encrypted, owner.vek.expose_secret(), &owner.manifest_id, &reference.hash) {
+        match blob_keys::decrypt_blob(encrypted, owner.vek.expose_secret(), &owner.manifest_id, &owner.manifest.manifest_salt, &reference.hash) {
             Ok(bytes) => {
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), encrypted.clone());
             }
-            Err(_) => ctx.warn(format!("[Pull] Referenced {} blob {} did not decrypt with the manifest key; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await,
+            Err(_) => ctx.warn(format!("[Pull] Referenced {} blob {} did not decrypt with the manifest key or does not hash to its address; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await,
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &pruned_cache).await?;
