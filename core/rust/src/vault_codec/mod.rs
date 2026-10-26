@@ -1,9 +1,8 @@
 //! The manifest-v1 storage format: `canonicalize` maps the local SQLite tables to manifests, data buckets and
 //! content-addressed blobs, `materialize` maps them back. The codec knows the format rules (routing by manifest,
-//! `integrity`, `logos`, `normalize`), the payload envelope (`hash`, `compress`) and `validate`; encryption and
+//! `integrity`, `logos`, `normalize`), the payload envelope (`hash`, gzip) and `validate`; encryption and
 //! storage stay with the caller.
 
-mod compress;
 mod canonicalize;
 pub(crate) mod integrity;
 pub(crate) mod normalize;
@@ -19,6 +18,7 @@ mod validate;
 use serde_json::json;
 
 use crate::common::encoding::hex_encode_lower;
+use crate::common::gzip::{gunzip, gzip};
 use crate::common::error::{VaultError, VaultResult};
 pub use types::SCHEMA_VERSION;
 
@@ -68,8 +68,13 @@ pub fn pack_payload(payload_json: &str) -> VaultResult<Vec<u8>> {
         "payload": payload,
     });
     let envelope_json = serde_json::to_string(&envelope)?;
-    compress::gzip(envelope_json.as_bytes())
+    gzip(envelope_json.as_bytes())
 }
+
+/// Cap on a decompressed payload, so a gzip bomb in a shared manifest cannot exhaust memory. Derived from the
+/// server's default `MAX_UPLOAD_SIZE_MB` (100 MB per vault write, compressed): 5x that leaves room for highly
+/// compressible JSON.
+const MAX_DECOMPRESSED_PAYLOAD_BYTES: u64 = 512 * 1024 * 1024;
 
 /// A decompressed payload envelope: its content, or the format version of one this build cannot read.
 pub enum UnpackedPayload {
@@ -77,7 +82,7 @@ pub enum UnpackedPayload {
     NewerFormat(u32),
 }
 
-/// Unpack a payload: decompress (gzip or plain JSON) > parse envelope > verify the embedded content hash.
+/// Unpack a payload: gunzip > parse envelope > verify the embedded content hash.
 /// Refuses an envelope written at a format version this build cannot read.
 pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
     match unpack_versioned_payload(plain_bytes)? {
@@ -89,8 +94,9 @@ pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
 /// [`unpack_payload`], reporting a newer format version as a value instead of an error. The version is read
 /// before the content hash, since a newer format may hash differently and must not read as corruption.
 pub fn unpack_versioned_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
-    let envelope_json = compress::decompress_to_string(plain_bytes)?;
-    let envelope: serde_json::Value = serde_json::from_str(&envelope_json)?;
+    let decompressed = gunzip(plain_bytes, MAX_DECOMPRESSED_PAYLOAD_BYTES)?;
+    let envelope_json = std::str::from_utf8(&decompressed).map_err(|e| VaultError::General(format!("payload is not valid UTF-8: {}", e)))?;
+    let envelope: serde_json::Value = serde_json::from_str(envelope_json)?;
 
     let version = envelope.get("schemaVersion").and_then(|v| v.as_u64()).ok_or_else(|| VaultError::General("envelope missing schemaVersion".to_string()))?;
     let version = u32::try_from(version).unwrap_or(u32::MAX);

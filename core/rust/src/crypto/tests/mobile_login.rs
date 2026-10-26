@@ -1,7 +1,7 @@
 use crate::crypto::aad;
 use crate::crypto::aes_gcm::{encrypt_text, generate_key};
 use crate::crypto::mobile_login::*;
-use crate::crypto::rsa_oaep::{encrypt_with_public_key_and_label, generate_rsa_key_pair};
+use crate::crypto::rsa_oaep::{self, generate_rsa_key_pair};
 
 /// Known-answer vectors from the former TypeScript implementation, which released clients still run. A changed output
 /// means an old and a new client no longer agree on the QR code or the code they show. Never regenerate them.
@@ -19,8 +19,8 @@ fn approval_opens_with_the_request_key_and_rejects_swapped_labels() {
     let pair = generate_rsa_key_pair().unwrap();
     let account_key = [7u8; 32];
     let payload_key = generate_key();
-    let encrypted_account_key = encrypt_with_public_key_and_label(&account_key, &pair.public_key, aad::MOBILE_LOGIN_ACCOUNT_KEY).unwrap();
-    let encrypted_payload_key = encrypt_with_public_key_and_label(&crate::common::encoding::base64_decode(&payload_key).unwrap(), &pair.public_key, aad::MOBILE_LOGIN_PAYLOAD_KEY).unwrap();
+    let encrypted_account_key = mobile_login_encrypt_account_key(&account_key, &pair.public_key).unwrap();
+    let encrypted_payload_key = rsa_oaep::encrypt(&crate::common::encoding::base64_decode(&payload_key).unwrap(), &pair.public_key, aad::MOBILE_LOGIN_PAYLOAD_KEY).unwrap();
     let encrypted_payload = encrypt_text(r#"{"username":"u"}"#, &payload_key, &[]).unwrap();
 
     let approval = mobile_login_open_approval(&pair.private_key, &encrypted_account_key, &encrypted_payload_key, &encrypted_payload).unwrap();

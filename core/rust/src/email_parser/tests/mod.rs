@@ -1,5 +1,4 @@
 use super::*;
-use std::io::Write;
 
 const PLAIN_EMAIL: &str = "From: Alice <alice@example.com>\r\n\
 To: bob@example.org\r\n\
@@ -45,9 +44,7 @@ Content-Transfer-Encoding: 8bit\r\n\
 Special symbols: é€ñ ∑ • ≈\r\n";
 
 fn gzip(data: &[u8]) -> Vec<u8> {
-    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
-    encoder.write_all(data).unwrap();
-    encoder.finish().unwrap()
+    crate::common::gzip::gzip(data).unwrap()
 }
 
 /// Reproduce how the server used to store a legacy email source: the raw bytes read back as Latin-1
@@ -229,11 +226,4 @@ fn json_output_uses_camel_case_fields() {
     assert!(json.contains("\"textBody\""));
     assert!(json.contains("\"mimeType\""));
     assert!(!json.contains("\"contentBase64\""), "attachment bytes must not ride along in the parse result");
-}
-
-#[test]
-fn gunzip_rejects_output_over_the_limit() {
-    let compressed = gzip(&[b'a'; 1025]);
-    assert!(gunzip_capped(&compressed, 1024).is_err());
-    assert_eq!(gunzip_capped(&compressed, 1025).unwrap().len(), 1025);
 }

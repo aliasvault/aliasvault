@@ -5,7 +5,6 @@
 pub(crate) mod support;
 mod sharing;
 
-mod compress;
 mod hash;
 mod integrity;
 mod normalize;
@@ -147,11 +146,11 @@ fn packing_wraps_a_payload_in_a_verified_envelope() {
 
     // Tampered: the original hash over a changed payload.
     let envelope = json!({ "schemaVersion": 1, "contentHash": super::hash::content_hash(&json!({ "a": 1 })), "payload": { "a": 2 } });
-    assert!(unpack_payload(&super::compress::gzip(envelope.to_string().as_bytes()).unwrap()).is_err());
+    assert!(unpack_payload(&crate::common::gzip::gzip(envelope.to_string().as_bytes()).unwrap()).is_err());
 
     // A format version this build cannot read is reported as such, before the hash is checked.
     let newer = json!({ "schemaVersion": SCHEMA_VERSION + 1, "contentHash": "x", "payload": {} });
-    assert!(matches!(unpack_versioned_payload(&super::compress::gzip(newer.to_string().as_bytes()).unwrap()).unwrap(), UnpackedPayload::NewerFormat(v) if v == SCHEMA_VERSION + 1));
+    assert!(matches!(unpack_versioned_payload(&crate::common::gzip::gzip(newer.to_string().as_bytes()).unwrap()).unwrap(), UnpackedPayload::NewerFormat(v) if v == SCHEMA_VERSION + 1));
 }
 
 #[test]

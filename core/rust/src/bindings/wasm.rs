@@ -196,7 +196,8 @@ pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: O
 #[wasm_bindgen(js_name = argon2DeriveKey)]
 pub fn argon2_derive_key_js(password: String, salt: &str, encryption_settings: &str) -> Result<js_sys::Uint8Array, JsValue> {
     let password = zeroize::Zeroizing::new(password);
-    crate::crypto::argon2::argon2_derive_key_from_settings(&password, salt, encryption_settings).map(|key| js_sys::Uint8Array::from(&key[..])).map_err(js_err)
+    let params = crate::crypto::argon2::Argon2Params::from_settings_json(encryption_settings).map_err(js_err)?;
+    crate::crypto::argon2::argon2_derive_key(password.as_bytes(), salt.as_bytes(), params).map(|key| js_sys::Uint8Array::from(&key[..])).map_err(js_err)
 }
 
 /// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string (no AAD) into UTF-8 with a base64 key. An empty ciphertext is an error.
@@ -250,13 +251,13 @@ pub fn generate_rsa_key_pair_js() -> Result<JsValue, JsValue> {
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[wasm_bindgen(js_name = rsaDecrypt)]
 pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(js_err)
+    crate::crypto::rsa_oaep::decrypt(base64_ciphertext, private_key_jwk, &[]).map_err(js_err)
 }
 
 /// Decrypt the shared manifest name encrypted into an invitation for this JWK private key.
 #[wasm_bindgen(js_name = decryptManifestInvitationName)]
 pub fn decrypt_manifest_invitation_name_js(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> Result<String, JsValue> {
-    crate::crypto::decrypt_manifest_invitation_name(encrypted_name, manifest_id, private_key_jwk).map_err(js_err)
+    crate::vault_sync::keys::decrypt_manifest_invitation_name(encrypted_name, manifest_id, private_key_jwk).map_err(js_err)
 }
 
 /// Encrypt .avux bytes into an .avex file under the export password.

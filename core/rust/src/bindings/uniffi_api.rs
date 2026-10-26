@@ -185,7 +185,8 @@ pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultE
 #[uniffi::export]
 pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
     let password = zeroize::Zeroizing::new(password);
-    crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings).map(|mut key| std::mem::take(&mut *key))
+    let params = crate::crypto::argon2::Argon2Params::from_settings_json(&encryption_settings)?;
+    crate::crypto::argon2::argon2_derive_key(password.as_bytes(), salt.as_bytes(), params).map(|mut key| std::mem::take(&mut *key))
 }
 
 /// AES-256-GCM decrypt a base64 `IV | ciphertext | tag` string (no AAD) into UTF-8 with a base64 key. An empty ciphertext is an error.
@@ -367,19 +368,19 @@ pub fn srp_verify_session(client_public: String, client_proof: String, session_k
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[uniffi::export]
 pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result<Vec<u8>, VaultError> {
-    crate::crypto::decrypt_with_private_key(&base64_ciphertext, &private_key_jwk)
+    crate::crypto::rsa_oaep::decrypt(&base64_ciphertext, &private_key_jwk, &[])
 }
 
 /// Decrypt the shared manifest name encrypted into an invitation for this JWK private key.
 #[uniffi::export]
 pub fn decrypt_manifest_invitation_name(encrypted_name: String, manifest_id: String, private_key_jwk: String) -> Result<String, VaultError> {
-    crate::crypto::decrypt_manifest_invitation_name(&encrypted_name, &manifest_id, &private_key_jwk)
+    crate::vault_sync::keys::decrypt_manifest_invitation_name(&encrypted_name, &manifest_id, &private_key_jwk)
 }
 
 /// RSA-OAEP-256 encrypt the Account Key for a mobile login request's JWK public key, as base64.
 #[uniffi::export]
 pub fn mobile_login_encrypt_account_key(account_key: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {
-    crate::crypto::encrypt_with_public_key_and_label(&account_key, &public_key_jwk, crate::crypto::aad::MOBILE_LOGIN_ACCOUNT_KEY)
+    crate::crypto::mobile_login_encrypt_account_key(&account_key, &public_key_jwk)
 }
 
 /// SHA-256 of a mobile login request's public key JWK string, unpadded base64url; the QR code carries it.

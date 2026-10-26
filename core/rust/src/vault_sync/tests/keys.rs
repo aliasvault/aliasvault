@@ -7,6 +7,7 @@ use super::test_host::{open_schema_db, TestHost};
 use super::{insert_item, legacy_device, server_with_item, state, ITEM_A, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec;
+use crate::vault_sync::keys::{decrypt_manifest_invitation_name, encrypt_manifest_invitation_name};
 use crate::vault_sync::types::Command;
 use secrecy::ExposeSecret;
 
@@ -168,4 +169,12 @@ fn a_legacy_account_is_probed_for_a_vault_key_only_when_it_pulls_or_pushes() {
     let result = host.sync();
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(host.requests_to("VaultKey/Password").len(), 1, "dirty: probed once");
+}
+
+#[test]
+fn manifest_invitation_name_is_bound_to_its_manifest() {
+    let pair = crypto::generate_rsa_key_pair().unwrap();
+    let ciphertext = encrypt_manifest_invitation_name("Family", "A", &pair.public_key).unwrap();
+    assert_eq!(decrypt_manifest_invitation_name(&ciphertext, "a", &pair.private_key).unwrap(), "Family");
+    assert!(decrypt_manifest_invitation_name(&ciphertext, "b", &pair.private_key).is_err());
 }
