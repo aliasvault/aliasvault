@@ -8,7 +8,7 @@ use crate::common::error::{VaultError, VaultResult};
 use crate::common::rng::random_bytes;
 use crate::common::encoding::base64_encode;
 use crate::crypto::aes_gcm;
-use crate::crypto::argon2::argon2_derive_key_bytes_from_settings;
+use crate::crypto::argon2::{argon2_derive_key, Argon2Params};
 
 /// Failed attempts after which the PIN is locked and the host deletes the encrypted key.
 pub const PIN_MAX_ATTEMPTS: u32 = 4;
@@ -17,7 +17,7 @@ pub const PIN_MAX_ATTEMPTS: u32 = 4;
 pub(super) const PIN_SALT_LENGTH: usize = 16;
 
 /// Argon2id cost parameters for the PIN key. Note: changing this makes any existing PINs not work anymore.
-pub(super) const PIN_ARGON2_SETTINGS: &str = r#"{"MemorySize":65536,"Iterations":3,"DegreeOfParallelism":1}"#;
+pub(super) const PIN_ARGON2_PARAMS: Argon2Params = Argon2Params { memory_kib: 65536, iterations: 3, parallelism: 1 };
 
 /// The counter state after a failed PIN attempt.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -68,6 +68,6 @@ pub fn pin_register_failure(failed_attempts: u32) -> PinFailure {
 }
 
 fn derive_pin_key(pin: &str, salt: &[u8]) -> VaultResult<Zeroizing<String>> {
-    let key = argon2_derive_key_bytes_from_settings(pin.as_bytes(), salt, PIN_ARGON2_SETTINGS).map_err(|e| VaultError::General(e.to_string()))?;
+    let key = argon2_derive_key(pin.as_bytes(), salt, PIN_ARGON2_PARAMS).map_err(|e| VaultError::General(e.to_string()))?;
     Ok(Zeroizing::new(base64_encode(&key)))
 }

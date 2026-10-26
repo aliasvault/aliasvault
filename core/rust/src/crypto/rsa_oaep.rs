@@ -47,36 +47,20 @@ pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
     Ok(())
 }
 
-/// Encrypt bytes for the holder of a JWK public key under an OAEP label, which decryption must present as-is.
-pub fn encrypt_with_public_key_and_label(plaintext: &[u8], public_key_jwk: &str, label: &[u8]) -> VaultResult<String> {
-    encrypt(plaintext, public_key_jwk, Oaep::new_with_label::<Sha256, _>(label_text(label)?))
-}
-
-/// Decrypt base64 ciphertext with a JWK private key.
-pub fn decrypt_with_private_key(base64_ciphertext: &str, private_key_jwk: &str) -> VaultResult<Vec<u8>> {
-    decrypt(base64_ciphertext, private_key_jwk, Oaep::new::<Sha256>())
-}
-
-/// Decrypt base64 ciphertext that was encrypted under an OAEP label.
-pub fn decrypt_with_private_key_and_label(base64_ciphertext: &str, private_key_jwk: &str, label: &[u8]) -> VaultResult<Vec<u8>> {
-    decrypt(base64_ciphertext, private_key_jwk, Oaep::new_with_label::<Sha256, _>(label_text(label)?))
-}
-
-/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key, as UTF-8 text.
-pub fn decrypt_manifest_invitation_name(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> VaultResult<String> {
-    let plaintext = decrypt_with_private_key_and_label(encrypted_name, private_key_jwk, &super::aad::invitation_name(manifest_id))?;
-    String::from_utf8(plaintext).map_err(|_| VaultError::General("Decrypted invitation name is not valid text".to_string()))
-}
-
-fn encrypt(plaintext: &[u8], public_key_jwk: &str, padding: Oaep) -> VaultResult<String> {
+/// Encrypt bytes for the holder of a JWK public key under an OAEP label, which decryption must present as-is. Returns base64.
+/// An empty label is plain OAEP.
+pub fn encrypt(plaintext: &[u8], public_key_jwk: &str, label: &[u8]) -> VaultResult<String> {
     let public = oaep_public_from_jwk(public_key_jwk)?;
+    let padding = Oaep::new_with_label::<Sha256, _>(label_text(label)?);
     let ciphertext = public.encrypt(&mut rand_core06::OsRng, padding, plaintext).map_err(|e| VaultError::General(format!("RSA-OAEP encryption failed: {}", e)))?;
     Ok(base64_encode(&ciphertext))
 }
 
-fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, padding: Oaep) -> VaultResult<Vec<u8>> {
+/// Decrypt base64 ciphertext with a JWK private key, under the OAEP label it was encrypted with.
+pub fn decrypt(base64_ciphertext: &str, private_key_jwk: &str, label: &[u8]) -> VaultResult<Vec<u8>> {
     let private = rsa_private_from_jwk(private_key_jwk)?;
     let ciphertext = base64_decode(base64_ciphertext)?;
+    let padding = Oaep::new_with_label::<Sha256, _>(label_text(label)?);
     // Blinded, which reduces but does not remove the timing leak of RUSTSEC-2023-0071 (Marvin attack): the rsa crate's
     // big-integer arithmetic is not constant time. Accepted because decryption runs on the client only.
     private

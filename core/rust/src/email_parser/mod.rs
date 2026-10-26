@@ -3,7 +3,7 @@ use mail_parser::{GetHeader, Message, MessageParser, MessagePart, MimeHeaders};
 use serde::Serialize;
 
 use crate::common::error::{VaultError, VaultResult};
-use crate::common::gzip::{gunzip_capped, GZIP_MAGIC};
+use crate::common::gzip::{gunzip, is_gzip};
 
 /// Header the server stamps on an attachment whose body it detached from the source at ingest, carrying the
 /// index that body is stored and requested under. Reading the index from the message itself keeps it
@@ -82,10 +82,10 @@ pub fn parse_email_source(source: &[u8]) -> VaultResult<ParsedEmail> {
 /// Turn a stored email source into the raw RFC 822 message bytes: gunzip the source-only storage
 /// format, repair the double encoding of the legacy format. Clients use this for the source view.
 pub fn decode_email_source(source: &[u8]) -> VaultResult<Vec<u8>> {
-    Ok(match decompress_if_gzip(source)? {
-        MaybeDecompressed::Decompressed(raw) => raw,
-        MaybeDecompressed::AsIs(raw) => repair_legacy_double_encoding(raw),
-    })
+    if is_gzip(source) {
+        return gunzip(source, MAX_DECOMPRESSED_EMAIL_BYTES);
+    }
+    Ok(repair_legacy_double_encoding(source.to_vec()))
 }
 
 /// Extract the decoded bytes of a single attachment, identified by its index in
@@ -159,24 +159,7 @@ fn header_u64(part: &MessagePart<'_>, name: &str) -> Option<u64> {
 /// Decompress a stored detached attachment body. Unlike the message source there is no legacy encoding to
 /// repair: detached parts only exist in the source-only storage format.
 fn decode_detached_part(body: &[u8]) -> VaultResult<Vec<u8>> {
-    Ok(match decompress_if_gzip(body)? {
-        MaybeDecompressed::Decompressed(bytes) | MaybeDecompressed::AsIs(bytes) => bytes,
-    })
-}
-
-/// The outcome of the gzip check, which also tells the caller which storage format the source came from.
-enum MaybeDecompressed {
-    Decompressed(Vec<u8>),
-    AsIs(Vec<u8>),
-}
-
-/// Gunzip the input when it starts with the gzip magic bytes (0x1f 0x8b), pass it through otherwise.
-fn decompress_if_gzip(source: &[u8]) -> VaultResult<MaybeDecompressed> {
-    if !source.starts_with(&GZIP_MAGIC) {
-        return Ok(MaybeDecompressed::AsIs(source.to_vec()));
-    }
-
-    gunzip_capped(source, MAX_DECOMPRESSED_EMAIL_BYTES).map(MaybeDecompressed::Decompressed)
+    gunzip(body, MAX_DECOMPRESSED_EMAIL_BYTES)
 }
 
 /// Undo the Latin-1 then UTF-8 double encoding of legacy (pre-0.31.0) stored sources, where `é` (`C3 A9`) became `C3 83 C2 A9`.

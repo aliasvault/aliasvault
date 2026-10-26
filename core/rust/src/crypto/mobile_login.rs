@@ -7,7 +7,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aad;
 use super::aes_gcm::decrypt_text;
-use super::rsa_oaep::decrypt_with_private_key_and_label;
+use super::rsa_oaep;
 use crate::common::encoding::{base64_encode, base64url_encode};
 use crate::common::error::VaultResult;
 
@@ -37,9 +37,14 @@ pub struct MobileLoginApproval {
     pub payload: String,
 }
 
+/// Encrypt the Account Key for a mobile login request's JWK public key, as base64.
+pub fn mobile_login_encrypt_account_key(account_key: &[u8], public_key_jwk: &str) -> VaultResult<String> {
+    rsa_oaep::encrypt(account_key, public_key_jwk, aad::MOBILE_LOGIN_ACCOUNT_KEY)
+}
+
 /// Open an approved mobile login request with the request's one-off JWK private key.
 pub fn mobile_login_open_approval(private_key_jwk: &str, encrypted_account_key: &str, encrypted_payload_key: &str, encrypted_payload: &str) -> VaultResult<MobileLoginApproval> {
-    let account_key = Zeroizing::new(decrypt_with_private_key_and_label(encrypted_account_key, private_key_jwk, aad::MOBILE_LOGIN_ACCOUNT_KEY)?);
-    let payload_key = Zeroizing::new(base64_encode(&Zeroizing::new(decrypt_with_private_key_and_label(encrypted_payload_key, private_key_jwk, aad::MOBILE_LOGIN_PAYLOAD_KEY)?)));
+    let account_key = Zeroizing::new(rsa_oaep::decrypt(encrypted_account_key, private_key_jwk, aad::MOBILE_LOGIN_ACCOUNT_KEY)?);
+    let payload_key = Zeroizing::new(base64_encode(&Zeroizing::new(rsa_oaep::decrypt(encrypted_payload_key, private_key_jwk, aad::MOBILE_LOGIN_PAYLOAD_KEY)?)));
     Ok(MobileLoginApproval { account_key: base64_encode(&account_key), payload: decrypt_text(encrypted_payload, &payload_key, &[])? })
 }

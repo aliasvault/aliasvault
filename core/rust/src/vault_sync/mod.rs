@@ -7,7 +7,7 @@ mod engine;
 pub(crate) mod errors;
 mod frame;
 mod http;
-mod keys;
+pub(crate) mod keys;
 mod legacy;
 mod merge;
 mod migration;

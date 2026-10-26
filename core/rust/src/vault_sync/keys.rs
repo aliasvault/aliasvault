@@ -9,6 +9,7 @@ use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
 use super::http;
+use crate::common::error::{VaultError, VaultResult};
 use crate::common::secret::from_zeroizing;
 use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
@@ -247,13 +248,24 @@ pub(crate) async fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Sy
 
 /// Encrypt a manifest's VEK for one recipient key, bound to the manifest (see [`crypto::aad::grant`]).
 pub(crate) fn encrypt_manifest_vek(manifest_vek: &str, manifest_id: &str, recipient_public_key_jwk: &str) -> SyncResult<String> {
-    Ok(crypto::encrypt_with_public_key_and_label(manifest_vek.as_bytes(), recipient_public_key_jwk, &crypto::aad::grant(manifest_id))?)
+    Ok(crypto::rsa_oaep::encrypt(manifest_vek.as_bytes(), recipient_public_key_jwk, &crypto::aad::grant(manifest_id))?)
 }
 
 /// Decrypt a manifest's VEK from a grant made out to this private key for that manifest.
 pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, private_key_jwk: &str) -> SyncResult<SecretString> {
-    let plaintext = Zeroizing::new(crypto::decrypt_with_private_key_and_label(encrypted_vek, private_key_jwk, &crypto::aad::grant(manifest_id))?);
+    let plaintext = Zeroizing::new(crypto::rsa_oaep::decrypt(encrypted_vek, private_key_jwk, &crypto::aad::grant(manifest_id))?);
     std::str::from_utf8(&plaintext).map(SecretString::from).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
+}
+
+/// Encrypt a shared manifest's name into an invitation for one recipient key, bound to the manifest (see [`crypto::aad::invitation_name`]).
+pub(crate) fn encrypt_manifest_invitation_name(name: &str, manifest_id: &str, recipient_public_key_jwk: &str) -> VaultResult<String> {
+    crypto::rsa_oaep::encrypt(name.as_bytes(), recipient_public_key_jwk, &crypto::aad::invitation_name(manifest_id))
+}
+
+/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key, as UTF-8 text.
+pub(crate) fn decrypt_manifest_invitation_name(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> VaultResult<String> {
+    let plaintext = crypto::rsa_oaep::decrypt(encrypted_name, private_key_jwk, &crypto::aad::invitation_name(manifest_id))?;
+    String::from_utf8(plaintext).map_err(|_| VaultError::General("Decrypted invitation name is not valid text".to_string()))
 }
 
 /// Decrypt one shared manifest's VEK from the grant this account holds on it.

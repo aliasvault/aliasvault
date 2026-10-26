@@ -17,7 +17,7 @@ fn rejects_incomplete_or_empty_settings() {
 #[test]
 fn rejects_params_below_the_minimum() {
     for settings in [r#"{"DegreeOfParallelism":1,"MemorySize":19455,"Iterations":2}"#, r#"{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":1}"#, r#"{"DegreeOfParallelism":0,"MemorySize":65536,"Iterations":5}"#] {
-        assert!(matches!(argon2_derive_key_from_settings("password", "user@example.tld", settings), Err(Argon2Error::InvalidParameter(_))), "accepted {settings}");
+        assert!(matches!(derive("password", "user@example.tld", settings), Err(Argon2Error::InvalidParameter(_))), "accepted {settings}");
     }
 }
 
@@ -30,7 +30,11 @@ fn matches_the_reference_implementation() {
         (r#"{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":5}"#, "j7bnKpt3W46ak6Qid2JENR7NxznhfgRNDWAImnpAc40="),
     ];
     for (settings, expected) in cases {
-        let key = argon2_derive_key_from_settings("password", "user@example.tld", settings).unwrap();
+        let key = derive("password", "user@example.tld", settings).unwrap();
         assert_eq!(base64_encode(&key), expected, "settings {settings}");
     }
+}
+
+fn derive(password: &str, salt: &str, settings: &str) -> Result<zeroize::Zeroizing<Vec<u8>>, Argon2Error> {
+    argon2_derive_key(password.as_bytes(), salt.as_bytes(), Argon2Params::from_settings_json(settings)?)
 }
