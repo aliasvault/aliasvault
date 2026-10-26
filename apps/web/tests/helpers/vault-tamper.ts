@@ -35,7 +35,7 @@ export async function writeManifestWithBrokenRow(apiUrl: string, user: TestUser,
   const canonicalized = await vaultCodecCanonicalizeFromSqlite({
     tables: (await getSyncableTableNames()).map((name) => ({ name, records: [] })),
     canonicalizedAt: new Date().toISOString(),
-    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt(), name: null }],
+    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt() }],
   });
   const manifest = canonicalized.manifests[0].manifest as { tables: Record<string, unknown[]> };
   manifest.tables[table] = [...(manifest.tables[table] ?? []), row];

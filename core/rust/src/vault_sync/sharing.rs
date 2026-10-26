@@ -595,13 +595,8 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let record = record.ok_or_else(|| SyncError::Other("This account holds no key for the shared manifest".to_string()))?;
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
-    // The name travels encrypted in the invitation, so the recipient sees what they are invited to; one too long to fit is left out.
-    let served_name = record.encrypted_name.as_deref().and_then(|ciphertext| pull::open_manifest_name(ciphertext, &manifest.manifest_id, manifest_vek.expose_secret()));
-    let name = match served_name {
-        Some(name) => Some(name),
-        None => db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned(),
-    }
-    .filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
+    // The name travels encrypted in the invitation, so the recipient sees what they are invited to.
+    let name = record.encrypted_name.as_deref().and_then(|ciphertext| pull::open_manifest_name(ciphertext, &manifest.manifest_id, manifest_vek.expose_secret())).filter(|name| name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
     let encrypted_vek = keys::encrypt_manifest_vek(manifest_vek.expose_secret(), &manifest.manifest_id, &recipient_public_key)?;
     let encrypted_name = name.map(|name| crypto::encrypt_with_public_key_and_label(name.as_bytes(), &recipient_public_key, &crypto::aad::invitation_name(&manifest.manifest_id))).transpose()?;
     let grant = ManifestGrant {

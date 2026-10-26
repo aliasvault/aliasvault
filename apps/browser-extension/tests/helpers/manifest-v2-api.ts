@@ -234,7 +234,7 @@ export async function pushInitialVault(apiBaseUrl: string, token: string, userna
   const canonicalized = await vaultCodecCanonicalizeFromSqlite({
     tables,
     canonicalizedAt: new Date().toISOString(),
-    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt(), name: null }],
+    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt() }],
   });
 
   const manifest = canonicalized.manifests[0].manifest as DecryptedManifest;

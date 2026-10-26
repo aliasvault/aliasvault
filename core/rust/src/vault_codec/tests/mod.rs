@@ -23,7 +23,7 @@ fn canonicalize(tables: Vec<CodecTableData>) -> CanonicalizedVault {
     canonicalize_from_sqlite(CanonicalizeInput {
         tables: stamp_unstamped(tables, PERSONAL),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
-        manifests: vec![ManifestSpec { manifest_id: PERSONAL.to_string(), manifest_salt: SALT.to_string(), name: None }],
+        manifests: vec![ManifestSpec { manifest_id: PERSONAL.to_string(), manifest_salt: SALT.to_string() }],
         stamp_unstamped_into: None,
     })
     .unwrap()
@@ -134,7 +134,7 @@ fn a_vault_round_trips_through_manifest_buckets_and_blobs() {
     assert!(re.overflow.is_empty() && overflow_table_of(&re).is_none(), "a fitting schema splits nothing off");
 
     // The vault DB carries one Manifests row per materialized manifest, which canonicalize consumes as bookkeeping.
-    assert_eq!(tables[MANIFESTS_TABLE], vec![row(&[("Id", json!(PERSONAL)), ("Name", serde_json::Value::Null)])]);
+    assert_eq!(tables[MANIFESTS_TABLE], vec![row(&[("Id", json!(PERSONAL))])]);
     assert!(!canonicalize(re.tables.clone()).manifests[0].manifest.tables.contains_key(MANIFESTS_TABLE));
 }
 
@@ -371,7 +371,6 @@ fn materialize_derives_the_missing_ids_back() {
         manifest_salt: SALT.to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         manifest_id: PERSONAL.to_string(),
-        name: None,
         tables: [
             ("Items".to_string(), vec![stamped(PERSONAL, &[("Id", json!("i-1"))])]),
             ("FieldValues".to_string(), vec![

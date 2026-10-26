@@ -12,8 +12,8 @@ use std::collections::{HashMap, HashSet};
 const SALT_SHARED: &str = "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100";
 
 fn spec(manifest_id: &str) -> ManifestSpec {
-    let (salt, name) = if manifest_id == PERSONAL { (SALT_PERSONAL, None) } else { (SALT_SHARED, Some(format!("Share {manifest_id}"))) };
-    ManifestSpec { manifest_id: manifest_id.to_string(), manifest_salt: salt.to_string(), name }
+    let salt = if manifest_id == PERSONAL { SALT_PERSONAL } else { SALT_SHARED };
+    ManifestSpec { manifest_id: manifest_id.to_string(), manifest_salt: salt.to_string() }
 }
 
 /// A canonicalize input for the personal manifest plus `shared` manifests; rows carry their stamps already.
@@ -172,7 +172,6 @@ fn every_row_routes_to_the_manifest_its_stamp_names() {
     let personal = &manifest(&out, PERSONAL).manifest;
     let shared = &manifest(&out, SHARED).manifest;
 
-    assert_eq!(shared.name.as_deref(), Some(format!("Share {SHARED}").as_str()), "the manifest carries its display name");
     assert_eq!(shared.manifest_salt, SALT_SHARED);
     assert_eq!(ids(rows_of(&shared.tables, "Folders")), vec!["f-shared", "f-sub"]);
     assert_eq!(ids(rows_of(&personal.tables, "Folders")), vec!["f-personal"]);
@@ -585,7 +584,7 @@ fn rebind_blobs(tables: &mut [CodecTableData], blobs: &HashMap<String, BlobEntry
     for record in tables.iter_mut().flat_map(|t| t.records.iter_mut()) {
         let refs: Vec<(String, String)> = record.iter().filter_map(|(col, value)| Some((col.clone(), value.get("__blobRef")?.as_str()?.to_string()))).collect();
         for (col, hash) in refs {
-            record.insert(col, json!({ "__b64": blobs.get(&hash).map(|b| b.bytes_base64.clone()).unwrap_or_default() }));
+            record.insert(col, json!({ "__b64": blobs.get(&hash).map(|b| b64(&b.bytes)).unwrap_or_default() }));
         }
     }
 }
@@ -653,7 +652,7 @@ fn a_members_push_keeps_the_shared_logo_and_its_bytes() {
         let blob_ref = logo["FileData"]["__blobRef"].as_str().unwrap_or_else(|| panic!("shared row empty {shared_row_empty}: the pushed folder logo must still carry bytes, got {:?}", logo["FileData"]));
         assert!(shared.blobs.contains_key(blob_ref), "and registers them so the write keeps a live blob reference");
         if !shared_row_empty {
-            assert_eq!(shared.blobs[blob_ref].bytes_base64, b64(&[0xAA, 0xBB]), "the folder keeps the logo its members agreed on");
+            assert_eq!(shared.blobs[blob_ref].bytes, [0xAA, 0xBB], "the folder keeps the logo its members agreed on");
         }
         assert_eq!(find(rows_of(&shared.manifest.tables, "Items"), "i-shared")["LogoId"], logo["Id"], "the item was folded back onto the folder's row");
     }
@@ -669,7 +668,6 @@ fn combine_scopes_a_manifest_written_before_scoping_into_its_own_namespace() {
         manifest_salt: SALT_SHARED.to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         manifest_id: "m-legacy".to_string(),
-        name: Some("Legacy share".to_string()),
         tables: HashMap::from([
             ("Folders".to_string(), vec![row(&[("Id", json!("f-legacy")), ("ParentFolderId", serde_json::Value::Null)])]),
             ("Items".to_string(), vec![row(&[("Id", json!("i-legacy")), ("FolderId", json!("f-legacy")), ("LogoId", json!("their-random-id"))])]),
@@ -965,18 +963,17 @@ fn children_left_unstamped_follow_their_item_only_while_that_is_unambiguous() {
 
 #[test]
 fn manifest_specs_deserialize_from_camel_case_json() {
-    // Every manifest is described the same way on the wire (id, salt, optional name) with nothing marking one as special.
+    // Every manifest is described the same way on the wire (id, salt) with nothing marking one as special.
     let input_json = json!({
         "tables": [{ "name": "Items", "records": [] }],
         "canonicalizedAt": "2026-01-01T00:00:00.000Z",
-        "manifests": [{ "manifestId": PERSONAL, "manifestSalt": SALT_PERSONAL }, { "manifestId": "m-1", "manifestSalt": SALT_SHARED, "name": "Team", "anchorFolderId": "f-1" }]
+        "manifests": [{ "manifestId": PERSONAL, "manifestSalt": SALT_PERSONAL }, { "manifestId": "m-1", "manifestSalt": SALT_SHARED, "anchorFolderId": "f-1" }]
     })
     .to_string();
     let out_json = crate::common::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
     let value: serde_json::Value = serde_json::from_str(&out_json).unwrap();
     assert_eq!(value["manifests"][0]["manifest"]["manifestId"], json!(PERSONAL));
     assert_eq!(value["manifests"][1]["manifest"]["manifestId"], json!("m-1"));
-    assert_eq!(value["manifests"][1]["manifest"]["name"], json!("Team"));
     assert!(value["manifests"].as_array().unwrap().iter().all(|m| m.get("isPersonal").is_none() && m["manifest"].get("anchorFolderId").is_none()), "nothing flags a manifest as the vault's own, and folder anchoring is never persisted");
     assert!(value["dataBuckets"].is_array() && value["manifests"][0].get("dataBuckets").is_none(), "buckets belong to the vault, beside the manifests");
 }
