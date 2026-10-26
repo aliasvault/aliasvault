@@ -13,8 +13,6 @@ import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { base64ToBytes } from '@aliasvault/client/utilities/Base64';
 import * as OTPAuth from 'otpauth';
 
-import { pushInitialVault } from './manifest-v2-api';
-
 import './client-platform';
 
 import type { TokenModel } from '@aliasvault/models/webapi';
@@ -54,7 +52,7 @@ export function generateTestPassword(): string {
 }
 
 /**
- * Registers a new test user via the API and writes the first revision of their vault.
+ * Registers a new test user via the API. The client's first login writes the first revision of their vault.
  *
  * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
  * @param username - The username for the new account
@@ -69,9 +67,7 @@ export async function registerTestUser(
 ): Promise<{ tokenModel: TokenModel; encryptionKey: Uint8Array }> {
   const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
   const auth = new SrpLoginService({ rawFetch: (endpoint, options) => fetch(`${baseUrl}${endpoint}`, options) });
-  const { token, keys, unlockKey } = await auth.register(username, password);
-
-  await pushInitialVault(apiBaseUrl, token.token, username, base64ToBytes(keys.vaultEncryptionKey));
+  const { token, unlockKey } = await auth.register(username, password);
 
   return { tokenModel: token, encryptionKey: base64ToBytes(unlockKey) };
 }

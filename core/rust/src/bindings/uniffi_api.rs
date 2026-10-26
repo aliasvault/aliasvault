@@ -5,16 +5,9 @@
 use crate::crypto::argon2::Argon2Error;
 use crate::crypto::{KeyChainError, SrpInputError};
 use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
-use crate::common::error::{json_call, VaultError};
+use crate::common::error::VaultError;
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
-use crate::vault_codec::{self, CanonicalizeInput};
 use crate::vault_items;
-
-/// Get the list of table names that take part in a vault sync.
-#[uniffi::export]
-pub fn get_syncable_table_names() -> Vec<String> {
-    crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
-}
 
 /// Filter credentials for autofill by the current URL/app and page title.
 /// Input: `CredentialMatcherInput` JSON. Output: `CredentialMatcherOutput` JSON.
@@ -142,19 +135,6 @@ pub fn extract_email_attachment(source: Vec<u8>, index: u32, detached_body: Opti
     crate::email_parser::extract_email_attachment(&source, index as usize, detached_body.as_deref())
 }
 
-/// Canonicalize normalized tables into manifest + metadata + blob map.
-/// Input: `CanonicalizeInput` JSON. Output: `CanonicalizedVault` JSON.
-#[uniffi::export]
-pub fn vault_codec_canonicalize_from_sqlite(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, |input: CanonicalizeInput| vault_codec::canonicalize_from_sqlite(input))
-}
-
-/// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
-#[uniffi::export]
-pub fn vault_codec_generate_manifest_salt() -> String {
-    crate::vault_codec::generate_manifest_salt()
-}
-
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what [`vault_codec_logo_id_for`] then derives the row id from.
 #[uniffi::export]
@@ -167,18 +147,6 @@ pub fn vault_codec_logo_content_hash(bytes: Vec<u8>) -> String {
 #[uniffi::export]
 pub fn vault_codec_logo_id_for(manifest_id: String, kind: String, source: String) -> String {
     crate::vault_codec::logo_id_for(&manifest_id, &kind, &source)
-}
-
-/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
-#[uniffi::export]
-pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultError> {
-    crate::vault_codec::pack_payload(&payload_json)
-}
-
-/// Unpack a (decrypted) payload: gunzip > verify content hash > return payload JSON string.
-#[uniffi::export]
-pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultError> {
-    crate::vault_codec::unpack_payload(&plain_bytes)
 }
 
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).

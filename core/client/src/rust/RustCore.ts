@@ -12,12 +12,12 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey } from './RustCoreTypes';
+import type { AccountKeyHierarchy, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
 export { AutofillMatchingMode } from './RustCoreTypes';
-export type { CodecBlobEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecTableData, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, PinFailure } from './RustCoreTypes';
+export type { FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, PinFailure } from './RustCoreTypes';
 
 /**
  * The host's Rust core binding.
@@ -315,20 +315,6 @@ async function urlComparisonKey(url: string): Promise<string> {
  */
 
 /**
- * Canonicalize normalized tables into manifest + data buckets + blob map.
- */
-export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized> {
-  return rustCore().vaultCodecCanonicalizeFromSqlite(input);
-}
-
-/**
- * The vault tables that take part in sync, as declared by the shared vault table registry.
- */
-export async function getSyncableTableNames(): Promise<string[]> {
-  return rustCore().getSyncableTableNames();
-}
-
-/**
  * The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
  *
  * Logo identity is derived: two devices that fetch the same favicon independently produce
@@ -346,27 +332,6 @@ export async function vaultCodecLogoIdFor(manifestId: string, kind: string, sour
  */
 export async function vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string> {
   return rustCore().vaultCodecLogoContentHash(bytes);
-}
-
-/**
- * Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
- */
-export async function vaultCodecGenerateManifestSalt(): Promise<string> {
-  return rustCore().vaultCodecGenerateManifestSalt();
-}
-
-/**
- * Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
- */
-export async function vaultCodecPackPayload(payloadJson: string): Promise<Uint8Array> {
-  return rustCore().vaultCodecPackPayload(payloadJson);
-}
-
-/**
- * Unpack a (decrypted) payload: gunzip > verify content hash > return the payload JSON string.
- */
-export async function vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string> {
-  return rustCore().vaultCodecUnpackPayload(plainBytes);
 }
 
 /**

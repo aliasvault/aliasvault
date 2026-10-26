@@ -10,9 +10,10 @@
 import { createHash } from 'crypto';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { getSyncableTableNames, openKeyChainWithUnlockKey, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
+import { openKeyChainWithUnlockKey } from '@aliasvault/client/rust/RustCore';
 
-import { bucketAad, manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
+import { manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
+import { packPayload, unpackPayload } from './vault-payload';
 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
@@ -57,15 +58,6 @@ type ManifestWrite = {
   currentRevision: number;
   credentialsCount: number;
   blobReferences: Array<{ hash: string; category: string }>;
-};
-
-/** One data bucket element of a POST /v2/Vault write. */
-type BucketWrite = {
-  manifestId: string;
-  category: string;
-  blob: string;
-  ciphertextHash: string;
-  currentRevision: number;
 };
 
 /** The result of a POST /v2/Vault write. */
@@ -148,7 +140,7 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
 }
 
 /**
- * Decrypts and unpacks a manifest blob into its JSON object (content hash verified by the codec).
+ * Decrypts and unpacks a manifest blob into its JSON object.
  *
  * @param manifestId - The manifest the blob belongs to
  * @param blobBase64 - The encrypted manifest blob from the snapshot
@@ -157,12 +149,11 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
  */
 export async function openManifest(manifestId: string, blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
   const packedBytes = await symmetricDecryptBytes(blobBase64, encryptionKey, manifestAad(manifestId));
-  return JSON.parse(await vaultCodecUnpackPayload(packedBytes)) as DecryptedManifest;
+  return unpackPayload<DecryptedManifest>(packedBytes);
 }
 
 /**
- * Packs (envelope + canonical content hash + gzip via the Rust codec), encrypts, and uploads a
- * manifest as a new revision, exactly like the extension's full push does.
+ * Packs (envelope + canonical content hash + gzip), encrypts, and uploads a manifest as a new revision.
  *
  * @param apiBaseUrl - The base URL of the API
  * @param token - Bearer token
@@ -185,7 +176,7 @@ export async function pushManifest(
   encryptionKey: Uint8Array
 ): Promise<number> {
   const write = await buildManifestWrite(manifestId, manifest, currentRevision, blobReferences, encryptionKey);
-  const result = await postVaultWrite(apiBaseUrl, token, username, [write], []);
+  const result = await postVaultWrite(apiBaseUrl, token, username, [write]);
 
   const written = (result.manifestRevisions ?? []).find((r) => r.manifestId === manifestId);
   if (!written) {
@@ -207,47 +198,7 @@ export async function pushManifest(
 export async function pushManifestBlob(apiBaseUrl: string, token: string, username: string, manifestId: string, blob: string, currentRevision: number): Promise<void> {
   const manifestCiphertextHash = createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex');
   const write = { manifestId, manifestBlob: blob, manifestCiphertextHash, currentRevision, credentialsCount: 0, blobReferences: [] };
-  await postVaultWrite(apiBaseUrl, token, username, [write], []);
-}
-
-/**
- * Writes the first manifest-v1 revision for a newly registered account.
- *
- * @param apiBaseUrl - The base URL of the API
- * @param token - Bearer token
- * @param username - The vault owner's username
- * @param encryptionKey - The account's VEK, which the vault content is encrypted with
- * @returns The id of the personal manifest that was written
- */
-export async function pushInitialVault(apiBaseUrl: string, token: string, username: string, encryptionKey: Uint8Array): Promise<string> {
-  const snapshot = await getVaultSnapshot(apiBaseUrl, token);
-  const manifestId = snapshot.personalManifestId;
-  if (!manifestId) {
-    throw new Error('Freshly registered account has no personal manifest to write the initial vault into.');
-  }
-
-  /*
-   * A brand-new vault is every syncable table, all empty. Taking the list from the shared table registry keeps
-   * this in step with the schema: canonicalize refuses a manifest that carries no tables at all.
-   */
-  const tables = (await getSyncableTableNames()).map((name) => ({ name, records: [] }));
-  const canonicalized = await vaultCodecCanonicalizeFromSqlite({
-    tables,
-    canonicalizedAt: new Date().toISOString(),
-    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt() }],
-  });
-
-  const manifest = canonicalized.manifests[0].manifest as DecryptedManifest;
-  const manifestWrite = await buildManifestWrite(manifestId, manifest, 0, [], encryptionKey);
-
-  const bucketWrites: BucketWrite[] = [];
-  for (const bucket of canonicalized.dataBuckets) {
-    const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(bucket), encryptionKey, bucketAad(bucket.manifestId, bucket.category));
-    bucketWrites.push({ manifestId: bucket.manifestId, category: bucket.category, blob, ciphertextHash, currentRevision: 0 });
-  }
-
-  await postVaultWrite(apiBaseUrl, token, username, [manifestWrite], bucketWrites);
-  return manifestId;
+  await postVaultWrite(apiBaseUrl, token, username, [write]);
 }
 
 /**
@@ -276,20 +227,6 @@ export async function pollUntil<T>(predicate: () => Promise<T | undefined | fals
 }
 
 /**
- * Packs a payload through the Rust codec and encrypts it.
- *
- * @param payloadJson - The payload to pack
- * @param encryptionKey - The key the vault content is encrypted with
- * @param aad - The associated data the ciphertext is bound to
- * @returns The encrypted blob and the ciphertext hash the server verifies it against
- */
-async function packEncrypt(payloadJson: string, encryptionKey: Uint8Array, aad: Uint8Array): Promise<{ blob: string; ciphertextHash: string }> {
-  const packedBytes = await vaultCodecPackPayload(payloadJson);
-  const blob = await symmetricEncryptBytes(packedBytes, encryptionKey, aad);
-  return { blob, ciphertextHash: createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex') };
-}
-
-/**
  * Builds one manifest element of a vault write.
  *
  * @param manifestId - The manifest this write targets
@@ -306,11 +243,11 @@ async function buildManifestWrite(
   blobReferences: Array<{ hash: string; category: string }>,
   encryptionKey: Uint8Array
 ): Promise<ManifestWrite> {
-  const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(manifest), encryptionKey, manifestAad(manifestId));
+  const blob = await symmetricEncryptBytes(packPayload(manifest), encryptionKey, manifestAad(manifestId));
   return {
     manifestId,
     manifestBlob: blob,
-    manifestCiphertextHash: ciphertextHash,
+    manifestCiphertextHash: createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex'),
     currentRevision,
     credentialsCount: (manifest.tables.Items ?? []).length,
     blobReferences,
@@ -324,15 +261,13 @@ async function buildManifestWrite(
  * @param token - Bearer token
  * @param username - The vault owner's username
  * @param manifests - The manifests this write targets, each addressed by id exactly as a real client does
- * @param buckets - The data buckets this write targets
  * @returns The write result
  */
 async function postVaultWrite(
   apiBaseUrl: string,
   token: string,
   username: string,
-  manifests: ManifestWrite[],
-  buckets: BucketWrite[]
+  manifests: ManifestWrite[]
 ): Promise<VaultWriteResult> {
   // The body is a 4-byte big-endian header length, the JSON header (offset and size in place of each base64 ciphertext), then the ciphertexts.
   const ciphertexts: Buffer[] = [];
@@ -346,7 +281,7 @@ async function postVaultWrite(
   const header = Buffer.from(JSON.stringify({
     username: SrpAuthService.normalizeUsername(username),
     manifests: manifests.map(({ manifestBlob, ...rest }) => ({ ...rest, ...place(manifestBlob) })),
-    buckets: buckets.map(({ blob, ...rest }) => ({ ...rest, ...place(blob) })),
+    buckets: [],
     emailRouting: null,
   }));
   const headerLength = Buffer.alloc(4);

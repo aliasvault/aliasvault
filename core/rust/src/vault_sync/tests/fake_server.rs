@@ -408,5 +408,8 @@ pub fn decrypt_manifest(blob: &str, vek: &str, manifest_id: &str) -> Value {
 
 fn decrypt_payload(blob: &str, vek: &str, aad: &[u8]) -> Value {
     let plain = crypto::aes_gcm::decrypt(&crate::common::encoding::base64_decode(blob).unwrap(), vek, aad).unwrap();
-    serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
+    match vault_codec::unpack_payload(&plain).unwrap() {
+        vault_codec::UnpackedPayload::Readable(payload_json) => serde_json::from_str(&payload_json).unwrap(),
+        vault_codec::UnpackedPayload::NewerFormat(version) => panic!("unexpected newer format version {}", version),
+    }
 }

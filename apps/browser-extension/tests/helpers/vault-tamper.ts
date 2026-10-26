@@ -5,9 +5,7 @@
 
 import { randomBytes } from 'crypto';
 
-import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt } from '@aliasvault/client/rust/RustCore';
-
-import { getVaultSnapshot, pushManifest, pushManifestBlob, requirePersonalManifest, resolveVaultEncryptionKey, type DecryptedManifest } from './manifest-v2-api';
+import { getVaultSnapshot, pushManifest, pushManifestBlob, resolveVaultEncryptionKey, type SnapshotManifest } from './manifest-v2-api';
 
 import type { TestUser } from './test-api';
 
@@ -16,7 +14,7 @@ import type { TestUser } from './test-api';
  */
 export async function writeUndecryptableManifest(apiUrl: string, user: TestUser): Promise<void> {
   const token = user.token!.token;
-  const { manifestId, revision } = requirePersonalManifest(await getVaultSnapshot(apiUrl, token));
+  const { manifestId, revision } = await getPersonalManifest(apiUrl, token);
   await pushManifestBlob(apiUrl, token, user.username, manifestId, randomBytes(256).toString('base64'), revision);
 }
 
@@ -25,15 +23,21 @@ export async function writeUndecryptableManifest(apiUrl: string, user: TestUser)
  */
 export async function writeManifestWithBrokenRow(apiUrl: string, user: TestUser, table: string, row: Record<string, unknown>): Promise<void> {
   const token = user.token!.token;
-  const { manifestId, revision } = requirePersonalManifest(await getVaultSnapshot(apiUrl, token));
-  const canonicalized = await vaultCodecCanonicalizeFromSqlite({
-    tables: (await getSyncableTableNames()).map((name) => ({ name, records: [] })),
-    canonicalizedAt: new Date().toISOString(),
-    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt() }],
-  });
-  const manifest = canonicalized.manifests[0].manifest as DecryptedManifest;
-  manifest.tables[table] = [...(manifest.tables[table] ?? []), row];
+  const { manifestId, revision } = await getPersonalManifest(apiUrl, token);
+  const manifest = { schemaVersion: 1, manifestSalt: randomBytes(32).toString('hex'), canonicalizedAt: new Date().toISOString(), manifestId, tables: { [table]: [row] } };
 
   const vaultKey = await resolveVaultEncryptionKey(apiUrl, token, user.encryptionKey!);
   await pushManifest(apiUrl, token, user.username, manifestId, manifest, revision, [], vaultKey);
+}
+
+/**
+ * The account's personal manifest entry, which exists from registration on, before any client wrote to it.
+ */
+async function getPersonalManifest(apiUrl: string, token: string): Promise<SnapshotManifest> {
+  const snapshot = await getVaultSnapshot(apiUrl, token);
+  const personal = snapshot.manifests?.find((m) => m.manifestId === snapshot.personalManifestId);
+  if (!personal) {
+    throw new Error('Test account has no personal manifest to overwrite.');
+  }
+  return personal;
 }

@@ -142,7 +142,7 @@ fn packing_wraps_a_payload_in_a_verified_envelope() {
     let payload = json!({ "schemaVersion": 1, "tables": { "Items": [] }, "manifestSalt": "abcd" });
     let packed = pack_payload(&payload.to_string()).unwrap();
     assert_eq!(&packed[0..2], &[0x1f, 0x8b], "packed output is gzip");
-    assert_eq!(serde_json::from_str::<serde_json::Value>(&unpack_payload(&packed).unwrap()).unwrap(), payload);
+    assert!(matches!(unpack_payload(&packed).unwrap(), UnpackedPayload::Readable(json) if serde_json::from_str::<serde_json::Value>(&json).unwrap() == payload));
 
     // Tampered: the original hash over a changed payload.
     let envelope = json!({ "schemaVersion": 1, "contentHash": super::hash::content_hash(&json!({ "a": 1 })), "payload": { "a": 2 } });
@@ -150,7 +150,7 @@ fn packing_wraps_a_payload_in_a_verified_envelope() {
 
     // A format version this build cannot read is reported as such, before the hash is checked.
     let newer = json!({ "schemaVersion": SCHEMA_VERSION + 1, "contentHash": "x", "payload": {} });
-    assert!(matches!(unpack_versioned_payload(&crate::common::gzip::gzip(newer.to_string().as_bytes()).unwrap()).unwrap(), UnpackedPayload::NewerFormat(v) if v == SCHEMA_VERSION + 1));
+    assert!(matches!(unpack_payload(&crate::common::gzip::gzip(newer.to_string().as_bytes()).unwrap()).unwrap(), UnpackedPayload::NewerFormat(v) if v == SCHEMA_VERSION + 1));
 }
 
 #[test]

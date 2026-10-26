@@ -90,7 +90,7 @@ pub(crate) fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], ex
     }
     let unreadable = |e: crate::common::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
     let plain = crypto::aes_gcm::decrypt(ciphertext, vek, aad).map_err(unreadable)?;
-    match vault_codec::unpack_versioned_payload(&plain).map_err(unreadable)? {
+    match vault_codec::unpack_payload(&plain).map_err(unreadable)? {
         UnpackedPayload::Readable(payload_json) => Ok(payload_json),
         UnpackedPayload::NewerFormat(version) => Err(newer_format(label, version)),
     }
