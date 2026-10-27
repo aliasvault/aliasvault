@@ -222,7 +222,7 @@ Your master password is never sent to the server. Instead, during login, client 
 
 ### 5.4. Brute-force protection
 - After 10 failed login attempts an account is locked for 30 minutes
-- Registration, Login with Mobile, logo fetching and alias availability checks are rate limited per account and per IP address, and the server operator can block IP ranges
+- Registration, Login with Mobile, logo fetching and alias availability checks are rate limited per account and per IP address, account fingerprint lookups are rate limited per account, and the server operator can block IP ranges
 - Every login attempt and security-relevant action (password change, key rotation, two-factor changes, logout, shared vault creation, deletion, invitations, joins, leaves and access revocations, key certifications, account deletion) is written to the authentication log with the IP address and client details
 
 ## 6. Vault operations
