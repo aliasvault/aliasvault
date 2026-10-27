@@ -5,17 +5,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting;
 
 using System;
 using System.Collections.Concurrent;
+using AliasVault.Api.Services.RateLimiting.Models;
 
 /// <summary>
-/// In-memory per-user rate limiter for the favicon extraction API. Each successful extraction
-/// (single or one URL inside a batch) consumes one unit; the limit is enforced over a rolling
-/// 24-hour window. State is held in process so it is not shared across instances — a deliberate
-/// trade-off, since the limit's purpose is to bound the SSRF/DDoS amplification an individual
-/// user could cause from a single API instance, not to provide a hard global ceiling.
+/// In-memory per-user limit on favicon extractions (each URL counts once) over a rolling 24 hours. Held in process on
+/// purpose: it bounds the outbound requests one user can trigger from one instance, not a global total.
 /// </summary>
 public sealed class FaviconRateLimitService
 {

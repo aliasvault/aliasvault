@@ -11,7 +11,7 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
 using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;

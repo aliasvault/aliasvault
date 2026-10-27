@@ -5,12 +5,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Auth;
+namespace AliasVault.Api.Services.RateLimiting;
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AliasServerDb;
+using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
 using Microsoft.EntityFrameworkCore;
 

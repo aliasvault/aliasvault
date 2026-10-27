@@ -5,9 +5,9 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.UnitTests.Services;
+namespace AliasVault.UnitTests.Services.RateLimiting;
 
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
 using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>

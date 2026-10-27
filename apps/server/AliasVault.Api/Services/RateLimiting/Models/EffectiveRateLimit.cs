@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting.Models;
 
 /// <summary>
 /// A resolved limit for a user: <paramref name="MaxCount"/> over a window (<paramref name="WindowSeconds"/> 0 =

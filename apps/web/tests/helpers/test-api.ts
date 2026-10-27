@@ -90,6 +90,16 @@ export async function isApiAvailable(apiUrl: string): Promise<boolean> {
 export const TEST_DISABLE_PUBLIC_REGISTRATION_HEADER = 'X-AliasVault-Test-Disable-Public-Registration';
 
 /**
+ * Request header with which the API (Development) applies the per-IP login limit to that request, with the value as the limit.
+ */
+export const TEST_LOGIN_RATE_LIMIT_HEADER = 'X-AliasVault-Test-Login-Rate-Limit';
+
+/**
+ * Request header that gives an opted-in login request its own count, so other tests and retries never share it.
+ */
+export const TEST_LOGIN_RATE_LIMIT_BUCKET_HEADER = 'X-AliasVault-Test-Login-Rate-Limit-Bucket';
+
+/**
  * Create a registration invite via the DEBUG-only test controller, as the admin panel would.
  * @returns The invite code
  */

@@ -5,9 +5,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting.Helpers;
 
 using AliasServerDb;
+using AliasVault.Api.Services.RateLimiting.Models;
 
 /// <summary>
 /// Rate limit resolver logic which determines the limits that apply to a given group.

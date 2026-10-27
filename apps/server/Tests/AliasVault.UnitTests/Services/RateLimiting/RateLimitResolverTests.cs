@@ -5,10 +5,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.UnitTests.Services;
+namespace AliasVault.UnitTests.Services.RateLimiting;
 
 using AliasServerDb;
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
+using AliasVault.Api.Services.RateLimiting.Helpers;
+using AliasVault.Api.Services.RateLimiting.Models;
 
 /// <summary>
 /// Tests for <see cref="RateLimitResolver"/> with various rule combinations.

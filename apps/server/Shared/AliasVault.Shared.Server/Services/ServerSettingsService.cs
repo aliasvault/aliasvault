@@ -211,6 +211,11 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.MaxMobileLoginRequestsPerIpPerMinute = maxMobileLoginRequests;
         }
 
+        if (int.TryParse(settings.GetValueOrDefault("MaxLoginAttemptsPerIpPerMinute"), out var maxLoginAttempts))
+        {
+            model.MaxLoginAttemptsPerIpPerMinute = maxLoginAttempts;
+        }
+
         if (int.TryParse(settings.GetValueOrDefault("MobileLoginLogRetentionDays"), out var mobileLoginDays))
         {
             model.MobileLoginLogRetentionDays = mobileLoginDays;
@@ -242,6 +247,7 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
         await SetSettingAsync("RefreshTokenLifetimeLong", model.RefreshTokenLifetimeLong.ToString());
         await SetSettingAsync("MaxRegistrationsPerIpPer24Hours", model.MaxRegistrationsPerIpPer24Hours.ToString());
         await SetSettingAsync("MaxMobileLoginRequestsPerIpPerMinute", model.MaxMobileLoginRequestsPerIpPerMinute.ToString());
+        await SetSettingAsync("MaxLoginAttemptsPerIpPerMinute", model.MaxLoginAttemptsPerIpPerMinute.ToString());
         await SetSettingAsync("MobileLoginLogRetentionDays", model.MobileLoginLogRetentionDays.ToString());
     }
 
