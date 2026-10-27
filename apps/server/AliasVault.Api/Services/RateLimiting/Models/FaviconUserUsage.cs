@@ -5,40 +5,34 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting.Models;
 
 using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// Per-user usage record for <see cref="FaviconRateLimitService"/>. Tracks recent extractions
-/// in per-minute buckets so a power-user re-downloading thousands of favicons in quick succession
-/// still produces a bounded number of entries.
+/// The favicon extractions of one user within the rolling window of <see cref="FaviconRateLimitService"/>, counted per minute.
 /// </summary>
 internal sealed class FaviconUserUsage
 {
-    // Bucket entries by the minute they happened in. A power-user re-downloading a 5k-item
-    // vault produces at most ~minutes-of-batches entries this way, even though the underlying
-    // unit count can be in the thousands — keeps memory bounded without losing accuracy.
+    // One entry per minute instead of per extraction, so re-downloading thousands of favicons stays a few entries.
     private readonly LinkedList<(DateTime BucketStart, int Count)> _entries = new();
 
     /// <summary>
-    /// Gets the lock guarding mutations to this usage record. Callers must hold this lock
-    /// across read-modify-write sequences (Prune + Add) to keep TryConsume atomic.
+    /// Gets the lock a caller holds across Prune, the limit check and Add.
     /// </summary>
     public object SyncRoot { get; } = new object();
 
     /// <summary>
-    /// Gets the total number of units consumed inside the currently retained window.
+    /// Gets the number of extractions in the retained buckets.
     /// </summary>
     public int Total { get; private set; }
 
     /// <summary>
-    /// Records <paramref name="count"/> consumed units at <paramref name="now"/>, merging into
-    /// the last bucket when it falls in the same minute.
+    /// Count <paramref name="count"/> extractions in the bucket of the minute of <paramref name="now"/>.
     /// </summary>
-    /// <param name="now">The timestamp to record under (typically <see cref="DateTime.UtcNow"/>).</param>
-    /// <param name="count">Number of units consumed.</param>
+    /// <param name="now">The current UTC time.</param>
+    /// <param name="count">The number of extractions.</param>
     public void Add(DateTime now, int count)
     {
         var bucket = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, DateTimeKind.Utc);
@@ -56,10 +50,9 @@ internal sealed class FaviconUserUsage
     }
 
     /// <summary>
-    /// Drops buckets older than <paramref name="cutoff"/> from the front of the list, which is
-    /// where the oldest entries live since Add only appends.
+    /// Drop the buckets that started before <paramref name="cutoff"/>.
     /// </summary>
-    /// <param name="cutoff">Buckets strictly older than this are removed.</param>
+    /// <param name="cutoff">The start of the window.</param>
     public void Prune(DateTime cutoff)
     {
         while (_entries.First is { Value.BucketStart: var first } node && first < cutoff)

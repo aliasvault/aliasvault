@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting;
 
 using System;
 using System.Threading.RateLimiting;

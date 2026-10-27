@@ -83,6 +83,11 @@ public enum AuthFailureReason
     InvalidInviteCode = 13,
 
     /// <summary>
+    /// Indicates that the login attempt was blocked because the client IP started too many logins in a short period.
+    /// </summary>
+    LoginRateLimitExceeded = 14,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,

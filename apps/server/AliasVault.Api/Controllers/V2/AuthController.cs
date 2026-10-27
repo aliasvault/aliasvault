@@ -17,6 +17,8 @@ using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
 using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
+using AliasVault.Api.Services.RateLimiting.Helpers;
 using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
@@ -58,15 +60,23 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Login endpoint used to process login attempt using credentials.
     /// </summary>
     /// <param name="model">Login model.</param>
+    /// <param name="loginRateLimitService">LoginRateLimitService instance.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginInitiateRequest model)
+    public async Task<IActionResult> Login([FromBody] LoginInitiateRequest model, [FromServices] LoginRateLimitService loginRateLimitService)
     {
         // Check the IP blocklist.
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.IpBlocked);
             return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
+        }
+
+        // Cap the logins one IP starts across accounts.
+        if (!loginRateLimitService.TryRecordLogin(HttpContext, (await settingsService.GetAllSettingsAsync()).MaxLoginAttemptsPerIpPerMinute))
+        {
+            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.LoginRateLimitExceeded);
+            return ApiError.Result(ApiErrorCode.RATE_LIMIT_EXCEEDED, 429);
         }
 
         var user = await userManager.FindByNameAsync(model.Username);

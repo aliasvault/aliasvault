@@ -102,4 +102,9 @@ public class ServerSettingsModel
     /// one minute. Defaults to 10. Set to 0 to disable mobile login rate limiting.
     /// </summary>
     public int MaxMobileLoginRequestsPerIpPerMinute { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets the maximum number of logins a single IP address may start within one minute. Set to 0 to disable.
+    /// </summary>
+    public int MaxLoginAttemptsPerIpPerMinute { get; set; } = 10;
 }

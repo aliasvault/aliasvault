@@ -12,7 +12,7 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Models;
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Auth;

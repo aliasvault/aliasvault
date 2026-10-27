@@ -10,7 +10,7 @@ namespace AliasVault.Api.Controllers.V2;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V2.Favicon;
 using Asp.Versioning;

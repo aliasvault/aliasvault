@@ -9,7 +9,7 @@ namespace AliasVault.Api.Controllers.V1;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
-using AliasVault.Api.Services;
+using AliasVault.Api.Services.RateLimiting;
 using AliasVault.Shared.Models.WebApi.V1.Favicon;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;

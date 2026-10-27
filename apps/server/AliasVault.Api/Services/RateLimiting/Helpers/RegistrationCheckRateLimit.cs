@@ -5,11 +5,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Helpers;
+namespace AliasVault.Api.Services.RateLimiting.Helpers;
 
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
+using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;

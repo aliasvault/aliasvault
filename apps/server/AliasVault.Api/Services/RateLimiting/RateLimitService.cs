@@ -5,9 +5,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Services;
+namespace AliasVault.Api.Services.RateLimiting;
 
 using AliasServerDb;
+using AliasVault.Api.Services.RateLimiting.Helpers;
+using AliasVault.Api.Services.RateLimiting.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 

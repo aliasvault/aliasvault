@@ -2,6 +2,7 @@
  * Category 11: Authentication (requires API)
  */
 import { test, expect } from '../fixtures';
+import { createTestUser, TEST_LOGIN_RATE_LIMIT_BUCKET_HEADER, TEST_LOGIN_RATE_LIMIT_HEADER } from '../helpers/test-api';
 
 test.describe('11. Authentication', () => {
   test('11.1 should log in and log out', async ({ app, testUser }) => {
@@ -95,6 +96,51 @@ test.describe('11. Authentication', () => {
 
     await test.step('logging out still works', async () => {
       expect((await v1('POST', 'Auth/revoke', { token: testUser.token, refreshToken: 'unknown' }, null)).status).toBe(200);
+    });
+  });
+
+  test('11.5 should limit the logins one IP starts across accounts', async ({ app, apiUrl, testUser, newApp }) => {
+    const { page } = app;
+    const loginLimit = 15;
+    const lockoutAfter = 10;
+    const otherUser = await createTestUser(apiUrl);
+    await page.context().setExtraHTTPHeaders({ [TEST_LOGIN_RATE_LIMIT_HEADER]: String(loginLimit), [TEST_LOGIN_RATE_LIMIT_BUCKET_HEADER]: crypto.randomUUID() });
+
+    /**
+     * Submit the login form and return the status of the login request it starts.
+     */
+    const attempt = async (username: string, password: string): Promise<number> => {
+      const response = page.waitForResponse((r) => /\/v2\/Auth\/login$/i.test(r.url()) && r.request().method() === 'POST');
+      await app.submitLogin(username, password);
+      return (await response).status();
+    };
+
+    await page.goto('/user/login');
+
+    await test.step('wrong passwords lock the first account', async () => {
+      for (let i = 0; i < lockoutAfter; i++) {
+        expect(await attempt(testUser.username, 'wrong-password')).toBe(200);
+        await expect(page.getByText(/Invalid username or password|Account temporarily locked/)).toBeVisible();
+        await expect(page.locator('#login-button')).toBeEnabled();
+      }
+    });
+
+    await test.step('the locked account is refused, even with its password', async () => {
+      for (let i = lockoutAfter; i < loginLimit; i++) {
+        expect(await attempt(testUser.username, testUser.password)).toBe(400);
+        await expect(page.getByText('Account temporarily locked')).toBeVisible();
+        await expect(page.locator('#login-button')).toBeEnabled();
+      }
+    });
+
+    await test.step('a second account from the same IP is refused by the rate limit', async () => {
+      expect(await attempt(otherUser.username, otherUser.password)).toBe(429);
+      await expect(page).toHaveURL(/\/user\/login$/);
+    });
+
+    await test.step('the second account logs in outside the limited bucket', async () => {
+      const other = await newApp();
+      await other.login(otherUser.username, otherUser.password);
     });
   });
 });
