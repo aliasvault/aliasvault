@@ -197,7 +197,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let blob_keys: BlobKeysResponse = http::with_outdated_server_guard(http::get(&ctx.host, &format!("Vault/blob-keys/{}", personal_manifest_id), false).await)?;
     let certifications: Vec<CertificationEntry> = http::with_outdated_server_guard(http::get(&ctx.host, "Groups/certifications", false).await)?;
 
-    let rotated = crypto::rotate_account_keys(params.new_unlock_key.expose_secret())?;
+    let rotated = crypto::create_account_key_hierarchy(params.new_unlock_key.expose_secret())?;
     let new_vek = SecretString::from(rotated.vault_encryption_key.as_str());
     ctx.log("[KeyRotation] Generated the new Account Key, VEK, account keypair and signing keypair.").await;
 
@@ -230,7 +230,7 @@ type Built = (Applied, HashMap<String, String>, HashMap<String, SharedManifestDt
 
 /// Encrypt everything under the new keys, send it, and read the server's answer.
 #[allow(clippy::too_many_arguments)]
-async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, current_signing_key: &str, new_vek: &SecretString, old_vek: &SecretString, shared_records: &HashMap<String, SharedManifestDto>, shared_veks: &HashMap<String, SecretString>, server_blob_keys: &[BlobKeyEntry], server_certifications: &[CertificationEntry], delivery_public_key: &str) -> SyncResult<Result<Built, KeyRotationRefusal>> {
+async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::AccountKeyHierarchy, current_signing_key: &str, new_vek: &SecretString, old_vek: &SecretString, shared_records: &HashMap<String, SharedManifestDto>, shared_veks: &HashMap<String, SecretString>, server_blob_keys: &[BlobKeyEntry], server_certifications: &[CertificationEntry], delivery_public_key: &str) -> SyncResult<Result<Built, KeyRotationRefusal>> {
     let manifest_revisions: HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
     let bucket_revisions: HashMap<String, i64> = state::get(&ctx.host, state::VAULT_BUCKET_REVISIONS).await?.unwrap_or_default();
     let current_revision = manifest_revisions.get(personal_manifest_id).copied().unwrap_or(0);
@@ -376,7 +376,7 @@ async fn build_and_post(ctx: &mut Ctx, params: &KeyRotationParams, personal_mani
 
 /// Refuse to send a rotation whose new key chain does not open from the new password down to the VEKs: once the
 /// server applies it, the old password no longer reaches any key, so a broken chain could not be recovered.
-fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString) -> SyncResult<()> {
+fn ensure_key_chain_opens(params: &KeyRotationParams, rotated: &crypto::AccountKeyHierarchy, new_vek: &SecretString) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
     let account_key = crypto::decrypt_account_key(&blobs.encrypted_account_key, params.new_unlock_key.expose_secret()).ok().filter(|key| **key == rotated.account_key);
     ensure_opens(account_key.is_some(), "the new Account Key")?;
@@ -405,7 +405,7 @@ fn ensure_opens(opens: bool, what: &str) -> SyncResult<()> {
 /// Take the new keys over: the cached chain, the derivation parameters, the revisions and fingerprints the server
 /// now holds, the blob keys and grants under the new keys, and the stored vault under the new VEK.
 #[allow(clippy::too_many_arguments)]
-async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::RotatedAccountKeys, new_vek: &SecretString, applied: &Applied, reencrypted_blob_keys: &HashMap<String, String>, reencrypted_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
+async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::AccountKeyHierarchy, new_vek: &SecretString, applied: &Applied, reencrypted_blob_keys: &HashMap<String, String>, reencrypted_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;

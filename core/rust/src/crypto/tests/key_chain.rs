@@ -115,27 +115,6 @@ fn a_private_key_that_does_not_open_leaves_grants_closed_but_opens_the_vault() {
 }
 
 #[test]
-fn rotated_keys_open_with_the_new_unlock_key() {
-    let old_hierarchy = create_account_key_hierarchy(&generate_key()).unwrap();
-    let new_unlock_key = generate_key();
-
-    let rotated = rotate_account_keys(&new_unlock_key).unwrap();
-    let blobs = &rotated.account_keys;
-
-    // The new chain opens with the new unlock key and yields the new VEK and private keys.
-    let opened = open_key_chain_with_unlock_key(&new_unlock_key, &blobs.encrypted_account_key, &blobs.encrypted_vek, Some(&blobs.encrypted_account_private_key)).unwrap();
-    assert_eq!(*opened.vault_encryption_key, rotated.vault_encryption_key);
-    assert_eq!(*opened.account_key, rotated.account_key);
-    assert_eq!(opened.account_private_key.as_deref().map(String::as_str), Some(rotated.account_private_key.as_str()));
-    assert_ne!(rotated.vault_encryption_key, old_hierarchy.vault_encryption_key);
-    assert_ne!(blobs.account_public_key, old_hierarchy.account_keys.account_public_key);
-    assert_ne!(blobs.signing_public_key, old_hierarchy.account_keys.signing_public_key);
-
-    // The new signing key vouches for the new account public key.
-    assert!(signing::verify(&blobs.signing_public_key, &signing::account_public_key_message(&blobs.account_public_key), &blobs.account_public_key_signature));
-}
-
-#[test]
 fn hierarchy_carries_a_signing_key_that_signed_the_account_public_key() {
     let unlock_key = generate_key();
     let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
