@@ -1,6 +1,6 @@
 //! The account key hierarchy: the KEK encrypts the Account Key, which encrypts the Vault Encryption Key, the account
-//! private key and the account signing private key.
-//! The KEK and SRP password hash are each HKDF-derived from the unlock key using separate labels.
+//! private key and the account signing private key. The KEK and SRP password hash are each HKDF-derived from the unlock
+//! key using separate labels.
 
 use hkdf::Hkdf;
 use serde::{Deserialize, Serialize};
@@ -26,7 +26,6 @@ fn account_key_encryption_algorithm() -> String {
 #[serde(rename_all = "camelCase")]
 pub struct AccountKeyBlobs {
     pub encrypted_account_key: String,
-    /// The algorithm of `encrypted_account_key`, as a VaultKeyAlgorithm token.
     #[serde(default = "account_key_encryption_algorithm")]
     pub encrypted_account_key_algorithm: String,
     pub encrypted_vek: String,
@@ -34,8 +33,6 @@ pub struct AccountKeyBlobs {
     pub encrypted_account_private_key: String,
     pub signing_public_key: String,
     pub encrypted_signing_private_key: String,
-
-    /// The signing key's signature over `account_public_key` (see [`signing::ACCOUNT_PUBLIC_KEY_LABEL`]).
     pub account_public_key_signature: String,
 }
 
@@ -61,7 +58,7 @@ impl fmt::Debug for AccountKeyHierarchy {
 /// HKDF `info` that binds the derived key to its use as the KEK; changing it breaks every stored Account Key.
 const KEK_INFO: &[u8] = b"AliasVault KEK v1";
 
-/// HKDF `info` that binds the derived key to its use as the SRP input; changing it breaks every upgraded verifier.
+/// HKDF `info` that binds the derived key to its use as the SRP input; changing it breaks every verifier.
 const SRP_INFO: &[u8] = b"AliasVault SRP v1";
 
 /// Why an SRP password hash could not be derived.
@@ -170,7 +167,7 @@ pub struct OpenedKeyChain {
 }
 
 /// Open a key chain with the unlock key (the password's Argon2id output): the KEK derived from it decrypts the Account
-/// Key, which decrypts the VEK. Never accepts the Account Key itself; see [`open_key_chain_with_account_key`].
+/// Key, which decrypts the VEK.
 pub fn open_key_chain_with_unlock_key(unlock_key_base64: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
     let account_key = decrypt_account_key(encrypted_account_key, unlock_key_base64).map_err(|_| KeyChainError::UnlockKeyRejected)?;
     let vault_encryption_key = decrypt_key(encrypted_vek, &account_key, aad::PERSONAL_VEK).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
@@ -178,20 +175,20 @@ pub fn open_key_chain_with_unlock_key(unlock_key_base64: &str, encrypted_account
     Ok(OpenedKeyChain { vault_encryption_key, account_key, account_private_key })
 }
 
-/// Open a key chain with the Account Key, as a device unlock method or an unlocked session holds it. Never accepts an
-/// unlock key; see [`open_key_chain_with_unlock_key`].
+/// Open a key chain with the Account Key, as a device unlock method or an unlocked session holds it.
 pub fn open_key_chain_with_account_key(account_key_base64: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
     let vault_encryption_key = decrypt_key(encrypted_vek, account_key_base64, aad::PERSONAL_VEK).map_err(|_| KeyChainError::AccountKeyRejected)?;
     let account_private_key = open_optional_account_private_key(encrypted_account_private_key, account_key_base64);
     Ok(OpenedKeyChain { vault_encryption_key, account_key: Zeroizing::new(account_key_base64.to_string()), account_private_key })
 }
 
-/// The account private key when the chain carries one that opens; a failure keeps grants closed, not the vault.
+/// The account private key when the chain carries one that opens.
 fn open_optional_account_private_key(encrypted_account_private_key: Option<&str>, account_key_base64: &str) -> Option<Zeroizing<String>> {
     encrypted_account_private_key.filter(|e| !e.is_empty()).and_then(|e| open_account_private_key(e, account_key_base64).ok())
 }
 
-/// Create a new account key hierarchy encrypted with the KEK derived from an unlock key.
+/// Create a new Account Key, VEK, account keypair and signing keypair, with the Account Key encrypted under the KEK of
+/// `unlock_key_base64`.
 pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<AccountKeyHierarchy> {
     let key_pair = generate_rsa_key_pair()?;
     let vault_encryption_key = generate_key();
@@ -228,37 +225,4 @@ pub fn reencrypt_account_key(encrypted_account_key: &str, old_unlock_key_base64:
     let account_key = decrypt_account_key(encrypted_account_key, old_unlock_key_base64).map_err(|_| KeyChainError::UnlockKeyRejected)?;
     let new_encrypted_account_key = encrypt_account_key(&account_key, new_unlock_key_base64).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
     Ok(ReencryptedAccountKey { account_key: account_key.to_string(), new_encrypted_account_key })
-}
-
-/// A rotated account key hierarchy: the new encrypted blobs the server stores, what ties them to the old generation,
-/// and the plaintext halves the client keeps.
-#[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
-#[serde(rename_all = "camelCase")]
-pub struct RotatedAccountKeys {
-    pub account_key: String,
-    pub vault_encryption_key: String,
-    pub account_private_key: String,
-    pub signing_private_key: String,
-
-    #[zeroize(skip)]
-    pub account_keys: AccountKeyBlobs,
-}
-
-impl fmt::Debug for RotatedAccountKeys {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("RotatedAccountKeys").field("account_keys", &self.account_keys).finish_non_exhaustive()
-    }
-}
-
-/// Rotate an account's keys: a new Account Key, VEK, account keypair and signing keypair, encrypted with the KEK of
-/// `new_unlock_key_base64`.
-pub fn rotate_account_keys(new_unlock_key_base64: &str) -> VaultResult<RotatedAccountKeys> {
-    let hierarchy = create_account_key_hierarchy(new_unlock_key_base64)?;
-    Ok(RotatedAccountKeys {
-        account_key: hierarchy.account_key.clone(),
-        vault_encryption_key: hierarchy.vault_encryption_key.clone(),
-        account_private_key: hierarchy.account_private_key.clone(),
-        signing_private_key: hierarchy.signing_private_key.clone(),
-        account_keys: hierarchy.account_keys.clone(),
-    })
 }

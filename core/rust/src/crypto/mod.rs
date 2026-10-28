@@ -36,8 +36,8 @@ mod tests;
 pub use avex::{avex_decrypt, avex_encrypt, avex_parse_header, AvexError, AvexHeader};
 pub use key_chain::{
     account_signing_key_fingerprint, create_account_key_hierarchy, derive_srp_password_hash, open_account_private_key, open_account_signing_private_key,
-    decrypt_account_key, decrypt_key, encrypt_key, open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, rotate_account_keys, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,
-    RotatedAccountKeys, SrpInputError,
+    decrypt_account_key, decrypt_key, encrypt_key, open_key_chain_with_account_key, open_key_chain_with_unlock_key, reencrypt_account_key, AccountKeyBlobs, AccountKeyHierarchy, KeyChainError,
+    SrpInputError,
 };
 pub use mobile_login::{mobile_login_encrypt_account_key, mobile_login_open_approval, mobile_login_public_key_hash, mobile_login_verification_code, MobileLoginApproval};
 pub use pin::{pin_decrypt, pin_encrypt, pin_extension_salt, pin_generate_salt, pin_is_locked, pin_register_failure, PinFailure};
