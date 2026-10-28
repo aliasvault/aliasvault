@@ -16,50 +16,39 @@ using SecureRemotePassword;
 public static class Srp
 {
     /// <summary>
-    /// Generate an ephemeral value for the server.
+    /// Generate the server's ephemeral pair for a verifier.
     /// </summary>
-    /// <param name="verifier">Verifier.</param>
-    /// <returns>Ephemeral as string.</returns>
+    /// <param name="verifier">The account's verifier.</param>
+    /// <returns>The ephemeral pair.</returns>
     public static SrpEphemeral GenerateEphemeralServer(string verifier)
     {
-        var server = new SrpServer();
-        return server.GenerateEphemeral(verifier);
+        return new SrpServer().GenerateEphemeral(verifier);
     }
 
     /// <summary>
-    /// Derive a shared session key on the server side.
+    /// Derive the server session, which checks the client's proof.
     /// </summary>
-    /// <param name="serverEphemeralSecret">serverEphemeralSecret.</param>
-    /// <param name="clientEphemeralPublic">clientEphemeralPublic.</param>
-    /// <param name="salt">Salt.</param>
-    /// <param name="username">Username.</param>
-    /// <param name="verifier">Verifier.</param>
-    /// <param name="clientSessionProof">Client session proof.</param>
-    /// <returns>SrpSession.</returns>
+    /// <param name="serverEphemeralSecret">The server's secret ephemeral.</param>
+    /// <param name="clientEphemeralPublic">The client's public ephemeral.</param>
+    /// <param name="salt">The account's salt.</param>
+    /// <param name="username">The SRP identity; lowercased, as SRP is case sensitive.</param>
+    /// <param name="verifier">The account's verifier.</param>
+    /// <param name="clientSessionProof">The client's session proof.</param>
+    /// <returns>The session, or null when the proof is wrong or malformed.</returns>
     public static SrpSession? DeriveSessionServer(string serverEphemeralSecret, string clientEphemeralPublic, string salt, string username, string verifier, string clientSessionProof)
     {
-        // Make sure the username is lowercase as the SRP protocol is case sensitive.
-        username = username.ToLowerInvariant();
-
         try
         {
-            var server = new SrpServer();
-            return server.DeriveSession(
-                serverEphemeralSecret,
-                clientEphemeralPublic,
-                salt,
-                username,
-                verifier,
-                clientSessionProof);
+            return new SrpServer().DeriveSession(serverEphemeralSecret, clientEphemeralPublic, salt, username.ToLowerInvariant(), verifier, clientSessionProof);
         }
         catch (System.Security.SecurityException)
         {
-            // Incorrect password provided, return null.
+            // Wrong password.
             return null;
         }
         catch (FormatException)
         {
-            // Malformed (non-hexadecimal) ephemeral or proof provided, return null.
+            // Non-hexadecimal ephemeral or proof.
             return null;
         }
     }

@@ -1,4 +1,4 @@
-//! Const tokens that name an algorithm, key type or KDF; each is stored or sent as-is and never changes.
+//! String constants for algorithm, key type and encryption type fields, stored and sent to the server as-is.
 
 /// AES-256-GCM: the algorithm every Account Key and personal VEK is encrypted with (VaultKeyAlgorithm).
 pub const ALGORITHM_AES256_GCM: &str = "aes256-gcm";

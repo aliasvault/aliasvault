@@ -1,7 +1,4 @@
 //! Ed25519 account signing keys, which let a client check what another client published.
-//!
-//! A signature always covers a [`signed_message`]: a fixed label plus length-prefixed fields, so a signature made for
-//! one purpose never verifies for another. The server builds the same bytes to check signatures.
 
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey, PUBLIC_KEY_LENGTH, SECRET_KEY_LENGTH, SIGNATURE_LENGTH};
 use serde::{Deserialize, Serialize};

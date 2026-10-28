@@ -1,20 +1,4 @@
-//! Cryptographic modules used by the clients. Every AAD string and RSA-OAEP label lives in [`aad`].
-//!
-//! - [`aad`]: the associated-data and OAEP-label registry that binds each ciphertext to its slot.
-//! - [`aes_gcm`]: AES-256-GCM (`aes-gcm`), random 96-bit nonce, `IV | ciphertext | tag`; every vault payload and every key encrypted with another key.
-//! - [`argon2`]: Argon2id (`argon2`) with a parameter floor; turns the master password into the unlock key.
-//! - [`avex`]: the .avex encrypted vault export, a JSON header and the .avux bytes under AES-256-GCM with an Argon2id key of the export password.
-//! - `jwk`: RSA keys to and from JWK JSON (`rsa`), for the OAEP keys and the RS256 passkey keys.
-//! - [`key_chain`]: HKDF-SHA256 (`hkdf`) KEK and SRP input from the unlock key; KEK > Account Key > VEK, private keys.
-//! - [`mobile_login`]: SHA-256 public key hash and verification code of the mobile login (QR unlock) handshake.
-//! - [`pin`]: PIN unlock: the key the host stores, encrypted with AES-256-GCM under an Argon2id key of the PIN, with the failed-attempt policy.
-//! - [`rsa_oaep`]: RSA-2048 OAEP-SHA256 (`rsa`, blinded decryption); grants, invitation names and delivery keys.
-//! - [`signing`]: Ed25519 (`ed25519-dalek`) account signatures over grants, public keys and invitation names.
-//! - [`srp`]: SRP-6a client (`srp`, SHA-256, 2048-bit group); login without sending the password.
-//! - [`tokens`]: the algorithm, key-type and KDF tokens stored or sent on the wire.
-//! - [`vault_blob`]: the locally stored vault, AES-256-GCM over the SQLite database bytes.
-//!
-//! Randomness comes from `getrandom` via `common::rng`; `rsa` and `p256` use `rand_core` `OsRng`.
+//! Cryptographic modules used by the clients.
 
 pub mod aad;
 pub mod aes_gcm;

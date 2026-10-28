@@ -16,7 +16,7 @@ import uniffi.aliasvault_core.vaultBlobDecrypt as rustVaultBlobDecrypt
 import uniffi.aliasvault_core.vaultBlobEncrypt as rustVaultBlobEncrypt
 
 /**
- * Handles encryption, decryption, and key management for the vault.
+ * Key derivation, the account key chain, the keystore-backed session and the vault blob.
  */
 class VaultCrypto(
     private val keystoreProvider: KeystoreProvider,
@@ -51,14 +51,13 @@ class VaultCrypto(
         get() = sessionKeys()?.accountKey?.let { Base64.encodeToString(it, Base64.NO_WRAP) }
 
     /**
-     * What the session key opens in the cached account key chain. A session opened before the device had a chain holds
-     * the unlock key; once a sync caches the chain it opens as such and the Account Key replaces it (see [LegacyKeyConversion]).
+     * What the session key opens in the cached account key chain.
      */
     @Suppress("SwallowedException")
     private fun sessionKeys(): SessionKeys? {
         val key = accountKey ?: return null
         return try {
-            // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+            // LEGACY: a stored unlock key is converted into the Account Key. TODO: remove once all clients run 0.31.0+.
             LegacyKeyConversion.openStoredKey(this, key).also { if (!it.accountKey.contentEquals(key)) accountKey = it.accountKey }
         } catch (e: Exception) {
             null
@@ -68,14 +67,9 @@ class VaultCrypto(
     // region Key Derivation
 
     /**
-     * Derive a key from a password using Argon2Id.
+     * Derive the unlock key from a password with Argon2id.
      */
-    fun deriveKeyFromPassword(
-        password: String,
-        salt: String,
-        encryptionType: String,
-        encryptionSettings: String,
-    ): ByteArray {
+    fun deriveKeyFromPassword(password: String, salt: String, encryptionType: String, encryptionSettings: String): ByteArray {
         // Both types derive the unlock key with Argon2id; they differ only in how the SRP input is made from it.
         require(encryptionType == "Argon2Id" || encryptionType == "Argon2IdHkdf") { "Unsupported encryption type: $encryptionType" }
 
@@ -138,7 +132,6 @@ class VaultCrypto(
                     Log.d(TAG, "Encryption key stored in memory only, biometric keystore persistence deferred")
                 }
             } catch (e: Exception) {
-                // Catch any unexpected errors during keystore operations
                 Log.d(TAG, "Could not persist encryption key to keystore, stored in memory only: ${e.message}")
             }
         } else {
@@ -154,57 +147,54 @@ class VaultCrypto(
     }
 
     /**
-     * Open a session in memory with a key the keystore stored: the Account Key, or the unlock key of a store written
-     * before the account had a key chain (see [LegacyKeyConversion]).
+     * Open a session in memory with a key the keystore stored: the Account Key, or LEGACY the unlock key of a store
+     * written before the account had a key chain.
      */
     fun openSessionWithStoredKey(key: ByteArray) {
-        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        // LEGACY: a stored unlock key is converted into the Account Key. TODO: remove once all clients run 0.31.0+.
         accountKey = LegacyKeyConversion.openStoredKey(this, key).accountKey
     }
 
     /**
-     * Clear the Account Key from memory.
-     * This forces getEncryptionKey() to fetch the Account Key from keystore on next biometric access.
+     * Clear the Account Key from memory, so the next access opens the session from the keystore.
      */
     fun clearEncryptionKeyFromMemory() {
         clearKey()
     }
 
     /**
-     * Store the encryption key derivation parameters.
+     * Store the unlock key derivation parameters (JSON) of the password.
      */
     fun storeUnlockKeyDerivationParams(keyDerivationParams: String) {
         storageProvider.setKeyDerivationParams(keyDerivationParams)
     }
 
     /**
-     * Get the encryption key derivation parameters.
+     * The stored unlock key derivation parameters (JSON) of the password.
      */
     fun getUnlockKeyDerivationParams(): String {
         return storageProvider.getKeyDerivationParams()
     }
 
     /**
-     * Store the account-key chain the native unlock opens: JSON with the Account Key wrapped by the
-     * KEK derived from the unlock key ("encryptedAccountKey") and the VEK wrapped by the Account Key ("encryptedVek").
-     * Null until the account is upgraded; its unlock key encrypts the vault directly.
+     * Store the account key chain the native unlock opens, as the server sent it; null for a legacy account.
      */
     fun storeAccountKeyChain(chainJson: String?) {
         storageProvider.setAccountKeyChain(chainJson?.takeIf { it.isNotEmpty() })
     }
 
     /**
-     * The stored account-key chain JSON, or null until the account is upgraded.
+     * The stored account key chain JSON, or null for a legacy account.
      */
     fun getAccountKeyChain(): String? {
         return storageProvider.getAccountKeyChain()
     }
 
     /**
-     * The session keys the account key chain gives.
+     * The keys an opened account key chain gives.
      *
      * @property vaultEncryptionKey The key that encrypts and decrypts the vault
-     * @property accountPrivateKey The account private key (JWK), null when the account has no keypair
+     * @property accountPrivateKey The account private key (JWK), null when the account has no keypair or it does not open
      * @property accountKey The Account Key to keep, in place of the key the chain was opened with
      */
     class SessionKeys(val vaultEncryptionKey: ByteArray, val accountPrivateKey: String?, val accountKey: ByteArray)
@@ -260,21 +250,21 @@ class VaultCrypto(
     }
 
     /**
-     * Check if biometric authentication is enabled and available.
+     * Whether biometrics are enabled in the settings and available on the device.
      */
     fun isBiometricAuthEnabled(authMethods: String): Boolean {
         return authMethods.contains(BIOMETRICS_AUTH_METHOD) && keystoreProvider.isBiometricAvailable()
     }
 
     /**
-     * Get the encryption key, the key that encrypts and decrypts the vault.
+     * The encryption key, the key that encrypts and decrypts the vault.
      */
     fun getEncryptionKey(callback: CryptoOperationCallback, authMethods: String) {
         withSession(callback, authMethods) { encryptionKey }
     }
 
     /**
-     * Get the Account Key, the key the keystore and PIN protect.
+     * The Account Key, the key the keystore and PIN protect.
      */
     fun getAccountKey(callback: CryptoOperationCallback, authMethods: String) {
         withSession(callback, authMethods) { accountKey }
@@ -297,7 +287,7 @@ class VaultCrypto(
                         try {
                             val keystoreKey = Base64.decode(result, Base64.NO_WRAP)
                             openSessionWithStoredKey(keystoreKey)
-                            // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+                            // LEGACY: a stored unlock key is converted into the Account Key. TODO: remove once all clients run 0.31.0+.
                             accountKey?.let { LegacyKeyConversion.convertLegacyKeystoreKey(keystoreProvider, keystoreKey, it) }
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
                         } catch (e: AppError) {
@@ -311,7 +301,6 @@ class VaultCrypto(
 
                     override fun onError(e: Exception) {
                         Log.e(TAG, "Error retrieving key", e)
-                        // Pass through the error - AndroidKeystoreProvider now throws proper AppError types
                         callback.onError(e)
                     }
                 },
@@ -322,7 +311,7 @@ class VaultCrypto(
     }
 
     /**
-     * Clear the encryption key from memory.
+     * Clear the Account Key from memory.
      */
     fun clearKey() {
         accountKey = null
@@ -381,8 +370,7 @@ class VaultCrypto(
     // region Mobile Login
 
     /**
-     * Encrypts the Account Key using an RSA public key for mobile login. The receiving
-     * client opens the account key chain with it, exactly as after a password login.
+     * Encrypt the Account Key for a mobile login request's RSA public key.
      */
     fun encryptAccountKeyForMobileLogin(publicKeyJWK: String, authMethods: String): String {
         var result: String? = null

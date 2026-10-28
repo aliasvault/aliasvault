@@ -39,7 +39,7 @@ using Microsoft.Extensions.Caching.Memory;
 using SecureRemotePassword;
 
 /// <summary>
-/// Auth controller for handling authentication.
+/// Login, registration, password change, session tokens, Login with Mobile and account deletion.
 /// </summary>
 /// <param name="dbContextFactory">AliasServerDbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
@@ -126,7 +126,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var (user, serverSession, unlockMethodId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
-            // Error occured during validation, return the error.
             return error;
         }
 
@@ -163,13 +162,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var (user, serverSession, unlockMethodId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
-            // Error occured during validation, return the error.
             return error;
         }
 
         if (user == null || serverSession == null)
         {
-            // Expected variables are not set, return generic error.
             return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
@@ -211,13 +208,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var (user, serverSession, unlockMethodId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
-            // Error occured during validation, return the error.
             return error;
         }
 
         if (user == null || serverSession == null)
         {
-            // Expected variables are not set, return generic error.
             return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
@@ -975,7 +970,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.MOBILE_LOGIN_REQUEST_EXPIRED, 410);
         }
 
-        // Sanity check: check if user exists using UserId FK
+        // The approving user must still exist, be unblocked and not locked out.
         var user = await userManager.FindByIdAsync(loginRequest.UserId!);
         if (user == null)
         {
@@ -983,14 +978,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return ApiError.Result(ApiErrorCode.USER_NOT_FOUND, 400);
         }
 
-        // Sanity check: check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountBlocked);
             return ApiError.Result(ApiErrorCode.ACCOUNT_BLOCKED, 400);
         }
 
-        // Sanity check: check if the account is locked out.
         if (await userManager.IsLockedOutAsync(user))
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountLocked);
@@ -1079,7 +1072,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        // Get the authenticated user
         var user = await userManager.GetUserAsync(User);
         if (user == null)
         {

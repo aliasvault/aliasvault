@@ -1,9 +1,7 @@
 //! SRP-6a (Secure Remote Password), client side only; the server side lives in the .NET API.
 //!
 //! Uses RustCrypto `srp` crate for most operations, except certain places
-//! where the format must stay compatible with the `SecureRemotePassword` .NET package
-//! used by the API server and the `secure-remote-password` library used in the JS test suite.
-//! `tests/srp.rs` carries a server side of the handshake to test the client-server flow locally.
+//! where the format must stay compatible with the `SecureRemotePassword` .NET package used by the API server.
 
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
@@ -177,7 +175,7 @@ pub fn srp_verify_session(client_public: &str, client_proof: &str, session_key: 
 }
 
 /*
- * Wire format primitives that deviate from the `srp` crate on purpose: the SecureRemotePassword (.NET/JS) format hashes
+ * Wire format primitives that deviate from the `srp` crate on purpose: the SecureRemotePassword (.NET) format hashes
  * the padded premaster secret into K and uses the RFC 2945 M1, while the crate uses raw S and M1 = H(A|B|S).
  */
 

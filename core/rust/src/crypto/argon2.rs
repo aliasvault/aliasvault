@@ -8,9 +8,9 @@ use zeroize::Zeroizing;
 const ARGON2_OUTPUT_LENGTH: usize = 32;
 
 /*
- * The weakest Argon2id parameters a client accepts from the server, to prevent KDF downgrade scenarios issued by the server.
- * The minimum parameters reflect the defaults of the first public release (0.9.0), which accounts keep until a password change
- * in 0.31.0+.
+ * The weakest Argon2id parameters a client accepts from the server, to prevent a KDF downgrade by the server. They match the
+ * defaults of the first public release (0.9.0). Clients from 0.32.0 upgrade older accounts at login, so this floor can be
+ * raised once all users run 0.32.0+.
  */
 const MIN_MEMORY_KIB: u32 = 19456;
 const MIN_ITERATIONS: u32 = 2;

@@ -18,15 +18,13 @@ public static class EmailEncryption
     /// <summary>
     /// Encrypt the email contents with a fresh symmetric key, encrypted once per recipient manifest's delivery key.
     /// </summary>
-    /// <param name="email">The plain text email object to encrypt.</param>
-    /// <param name="deliveryKeys">The delivery keys of every manifest that claims the alias; each gets its own encrypted copy of the same symmetric key.</param>
-    /// <returns>Email object with all sensitive fields encrypted.</returns>
+    /// <param name="email">The plaintext email.</param>
+    /// <param name="deliveryKeys">The delivery keys of every manifest that claims the alias.</param>
+    /// <returns>The email with every sensitive field encrypted.</returns>
     public static Email EncryptEmail(Email email, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys)
     {
-        // Generate symmetric key for email encryption.
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
 
-        // Encrypt all email contents with the symmetric key.
         if (email.MessageHtml is not null)
         {
             email.MessageHtml = Encryption.SymmetricEncrypt(email.MessageHtml, symmetricKey);
@@ -57,19 +55,18 @@ public static class EmailEncryption
         email.FromLocal = Encryption.SymmetricEncrypt(email.FromLocal, symmetricKey);
         email.FromDomain = Encryption.SymmetricEncrypt(email.FromDomain, symmetricKey);
 
-        // Encrypt all attachments with the symmetric key.
         foreach (var attachment in email.Attachments)
         {
             attachment.Bytes = Encryption.SymmetricEncrypt(attachment.Bytes, symmetricKey);
         }
 
-        // Encrypt the attachment bodies that were detached from the source with the same symmetric key.
+        // The attachment bodies detached from the source.
         foreach (var part in email.Parts)
         {
             part.Bytes = Encryption.SymmetricEncrypt(part.Bytes, symmetricKey);
         }
 
-        // Encrypt the same symmetric key once per recipient manifest's delivery key.
+        // The symmetric key, once per recipient manifest's delivery key.
         foreach (var deliveryKey in deliveryKeys)
         {
             var encryptedSymmetricKey = deliveryKey.Algorithm switch

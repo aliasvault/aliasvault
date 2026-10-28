@@ -147,7 +147,7 @@ export class MasterPasswordService {
     await MasterPasswordService.assertSaltUnchanged(challenge.salt);
 
     const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
-    await MasterPasswordService.adoptRaisedSettings(challenge, current.unlockKeyBase64, webApi);
+    await MasterPasswordService.refreshRaisedSettings(challenge, current.unlockKeyBase64, webApi);
     const encryptedAccountKey = (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string;
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
 
@@ -201,7 +201,7 @@ export class MasterPasswordService {
     await MasterPasswordService.assertSaltUnchanged(challenge.salt);
 
     const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
-    await MasterPasswordService.adoptRaisedSettings(challenge, current.unlockKeyBase64, webApi);
+    await MasterPasswordService.refreshRaisedSettings(challenge, current.unlockKeyBase64, webApi);
     await MasterPasswordService.assertPasswordOpensChain(current.unlockKeyBase64);
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
 
@@ -232,7 +232,7 @@ export class MasterPasswordService {
    * @param webApi - the API client to use
    * @throws {IncorrectPasswordError} when the unlock key does not open the server's chain.
    */
-  private static async adoptRaisedSettings(challenge: SrpChallenge, unlockKeyBase64: string, webApi: WebApiService): Promise<void> {
+  private static async refreshRaisedSettings(challenge: SrpChallenge, unlockKeyBase64: string, webApi: WebApiService): Promise<void> {
     const stored = await MasterPasswordService.getStoredDerivationParams();
     if (!stored || stored.encryptionSettings === challenge.encryptionSettings) {
       return;

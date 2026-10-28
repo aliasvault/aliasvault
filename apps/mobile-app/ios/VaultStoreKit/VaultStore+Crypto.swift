@@ -4,13 +4,10 @@ import Security
 import RustCoreFramework
 import VaultUtils
 
-/// Extension for the VaultStore class to handle encryption/decryption
+/// Key derivation, the account key chain, the keychain-backed session and the vault blob.
 extension VaultStore {
-    /// Derives a key from a password using Argon2Id
-    public func deriveKeyFromPassword(_ password: String,
-                                     salt: String,
-                                     encryptionType: String,
-                                     encryptionSettings: String) throws -> Data {
+    /// Derive the unlock key from a password with Argon2id.
+    public func deriveKeyFromPassword(_ password: String, salt: String, encryptionType: String, encryptionSettings: String) throws -> Data {
         // Both types derive the unlock key with Argon2id; they differ only in how the SRP input is made from it.
         guard encryptionType == "Argon2Id" || encryptionType == "Argon2IdHkdf" else {
             throw NSError(domain: "VaultStore", code: 13, userInfo: [NSLocalizedDescriptionKey: "Unsupported encryption type: \(encryptionType)"])
@@ -49,8 +46,7 @@ extension VaultStore {
         return keyData
     }
 
-    /// Clear the Account Key from memory.
-    /// This forces getEncryptionKey() to fetch the Account Key from keychain on next access.
+    /// Clear the Account Key from memory, so the next access opens the session from the keychain.
     public func clearEncryptionKeyFromMemory() {
         self.accountKey = nil
         clearLastSuccessfulAuth()
@@ -77,18 +73,13 @@ extension VaultStore {
         }
     }
 
-    /// Store the key derivation parameters used for deriving the encryption key from the plain text password
+    /// Store the unlock key derivation parameters (JSON) of the password.
     public func storeUnlockKeyDerivationParams(_ keyDerivationParams: String) throws {
-        // Store the key derivation params in memory
         self.keyDerivationParams = keyDerivationParams
-
-        // Store the key derivation params in UserDefaults
         self.userDefaults.set(keyDerivationParams, forKey: VaultConstants.unlockKeyDerivationParamsKey)
-
-        print("Stored key derivation params in UserDefaults")
     }
 
-    /// Get the key derivation parameters used for deriving the encryption key from the plain text password
+    /// The stored unlock key derivation parameters (JSON) of the password.
     public func getUnlockKeyDerivationParams() -> String? {
         return self.keyDerivationParams
     }
@@ -193,11 +184,9 @@ extension VaultStore {
         return try? RustCoreFramework.accountSigningKeyFingerprint(encryptedSigningPrivateKey: encryptedSigningPrivateKey, accountKey: accountKey)
     }
 
-    /// Verify the password and return its unlock key (base64) if correct. Callers derive the SRP input from it for the
-    /// account's encryption type; `storeAccountKey` turns it into the Account Key.
+    /// Verify the password offline and return its unlock key (base64), or nil when it does not open the key chain.
     public func verifyPassword(_ password: String) -> String? {
         do {
-            // Get encryption key derivation parameters
             guard let paramsString = getUnlockKeyDerivationParams(),
                   let paramsData = paramsString.data(using: .utf8),
                   let params = try? JSONSerialization.jsonObject(with: paramsData) as? [String: Any],
@@ -207,12 +196,10 @@ extension VaultStore {
                 return nil
             }
 
-            // Derive the unlock key from the password and unwrap the chain; a wrong password fails the unwrap.
             let derivedKey = try deriveKeyFromPassword(password, salt: salt, encryptionType: encryptionType, encryptionSettings: encryptionSettings)
             _ = try openKeyChainWithUnlockKey(derivedKey)
             return derivedKey.base64EncodedString()
         } catch {
-            // Password incorrect or the key chain did not open
             return nil
         }
     }
@@ -228,21 +215,12 @@ extension VaultStore {
         do {
             let decryptedData = try RustCoreFramework.vaultBlobDecrypt(encryptedBlob: encryptedBlob, key: encryptionKey)
 
-            /*
-             * If the decryption succeeds, try to persist the Account Key in the keychain.
-             * This makes sure that on future password unlock attempts, only successful decryptions
-             * will be remembered and used so failed re-authentication attempts won't overwrite
-             * a previous successful decryption key stored in the keychain.
-             *
-             * We only attempt this if Face ID is enabled AND keystore is available.
-             * If keystore is not available (no device passcode), we silently skip this step.
-             */
+            // The Account Key is persisted only after a successful decryption, so a failed re-authentication never
+            // overwrites a working key in the keychain. A failure to persist (passcode removed) does not fail the decryption.
             if self.enabledAuthMethods.contains(.faceID) && isKeystoreAvailable(), let accountKey = self.accountKey {
                 do {
                     try storeKeyInKeychain(accountKey)
                 } catch {
-                    // Don't fail the decryption if we can't store to keychain
-                    // This can happen if device passcode is removed after Face ID was enabled
                     print("Warning: Could not persist encryption key to keychain: \(error)")
                 }
             }
@@ -251,28 +229,20 @@ extension VaultStore {
         } catch {
             print("Decryption failed: \(error)")
 
-            // Note: We intentionally do not clear the encryption key here.
-            // The key may be valid for a different vault (e.g., after password change
-            // during login, the new key is stored but the old vault can't be decrypted).
-            // Clearing it would break the subsequent sync that downloads the new vault.
-
+            // The key is kept: after a password change it opens the vault the next sync downloads.
             throw NSError(domain: "VaultStore", code: 12, userInfo: [NSLocalizedDescriptionKey: "Decryption failed"])
         }
     }
 
-    /// Check if biometric authentication is enabled and available
-    /// Returns true if Face ID is enabled in settings AND the device supports biometric authentication
+    /// Whether Face ID is enabled in the settings and the device supports biometrics (always on the simulator).
     public func isBiometricAuthEnabled() -> Bool {
-        // Check if Face ID is enabled in app settings
         guard self.enabledAuthMethods.contains(.faceID) else {
             return false
         }
 
         #if targetEnvironment(simulator)
-            // In simulator, always return true if Face ID is enabled in settings
             return true
         #else
-            // Check if device supports biometric authentication
             let context = LAContext()
             var error: NSError?
             return context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
@@ -284,13 +254,12 @@ extension VaultStore {
         return try getEncryptionKey().base64EncodedString()
     }
 
-    /// Get the encryption key - the key used to encrypt and decrypt the vault.
+    /// The encryption key, the key that encrypts and decrypts the vault.
     internal func getEncryptionKey() throws -> Data {
         let key = try getAccountKey()
-        // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+        // LEGACY: a stored unlock key is converted into the Account Key. TODO: remove once all clients run 0.31.0+.
         let keys = try openStoredKey(key)
         if keys.accountKey != key {
-            // A legacy key, see `VaultStore+LegacyKeyConversion`.
             self.accountKey = keys.accountKey
             convertLegacyKeychainKey(keychainKey: key, accountKey: keys.accountKey)
         }
@@ -312,8 +281,6 @@ extension VaultStore {
 
     /// Open a session with the Account Key the keychain holds, behind a biometric prompt.
     private func openSessionFromKeychain() throws {
-        // Key not in memory - check if we should try keychain retrieval
-        // Only attempt keychain retrieval if Face ID is enabled AND keystore is available
         if self.enabledAuthMethods.contains(.faceID) && isKeystoreAvailable() {
             let context = LAContext()
             var error: NSError?
@@ -322,7 +289,6 @@ extension VaultStore {
                 print("Simulator detected, skipping biometric policy evaluation check and continuing with key retrieval from keychain")
             #else
                 if !context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-                    // Map LAError codes to specific error types for better debugging
                     if let laError = error as? LAError {
                         switch laError.code {
                         case .biometryNotAvailable:
@@ -351,7 +317,7 @@ extension VaultStore {
             }
 
             do {
-                // This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+                // LEGACY: a stored unlock key is converted into the Account Key. TODO: remove once all clients run 0.31.0+.
                 let accountKey = try openStoredKey(keyData).accountKey
                 self.accountKey = accountKey
                 convertLegacyKeychainKey(keychainKey: keyData, accountKey: accountKey)
@@ -365,18 +331,12 @@ extension VaultStore {
             return
         }
 
-        // Key not in memory and cannot retrieve from keychain
-        // This happens when:
-        // 1. Password-only auth (Face ID not enabled)
-        // 2. Face ID enabled but keystore unavailable (no device passcode)
-        // 3. Face ID enabled but key was never stored (e.g., during initial login)
+        // Face ID is not enabled, the keystore is unavailable (no device passcode) or no key was stored yet.
         throw AppError.keystoreKeyNotFound
     }
 
-    /// Check if keystore is available (requires device passcode to be set)
+    /// Whether the keystore is available, which requires a device passcode.
     public func isKeystoreAvailable() -> Bool {
-        // Try to create access control with passcode requirement
-        // If this fails, it means no passcode is set
         guard let accessControl = SecAccessControlCreateWithFlags(
             nil,
             kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
@@ -386,7 +346,7 @@ extension VaultStore {
             return false
         }
 
-        // Try a test keychain operation
+        // A test item under that access control tells whether a passcode is set.
         let testKey = "test_keystore_availability"
         let testData = Data([0x00])
         let query: [String: Any] = [
@@ -398,28 +358,21 @@ extension VaultStore {
             kSecAttrAccessControl as String: accessControl
         ]
 
-        // Clean up any existing test item
         SecItemDelete(query as CFDictionary)
-
-        // Try to add - if it succeeds, keystore is available
         let status = SecItemAdd(query as CFDictionary, nil)
-
-        // Clean up test item
         SecItemDelete(query as CFDictionary)
 
         return status == errSecSuccess
     }
 
-    /// Store the Account Key in the keychain
+    /// Store the Account Key in the keychain behind biometrics.
     internal func storeKeyInKeychain(_ keyData: Data) throws {
-        // Check if keystore is available (device passcode must be set)
         guard isKeystoreAvailable() else {
             print("Cannot store key in keychain: device passcode not set")
             throw AppError.biometricNotAvailable
         }
 
-        // Use .biometryCurrentSet to require biometric authentication only (no passcode fallback)
-        // This also invalidates the key when biometrics are added/removed.
+        // .biometryCurrentSet requires biometrics (no passcode fallback) and invalidates the key when they change.
         guard let accessControl = SecAccessControlCreateWithFlags(
             nil,
             kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
@@ -446,7 +399,7 @@ extension VaultStore {
         }
     }
 
-    /// Remove the encryption key from the keychain
+    /// Remove the Account Key from the keychain.
     internal func removeKeyFromKeychain() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -463,14 +416,12 @@ extension VaultStore {
 
     // MARK: - Private Keychain Methods
 
-    /// Retrieve the Account Key from the keychain
+    /// Retrieve the Account Key from the keychain behind a biometric prompt.
     private func retrieveKeyFromKeychain(context: LAContext) throws -> Data {
-        // Ensure interaction is allowed so system can prompt for biometric authentication
         context.interactionNotAllowed = false
         context.localizedReason = "Authenticate to unlock your vault"
 
-        // Add a small delay to ensure the context is fully ready
-        // This helps prevent race conditions where the biometric prompt doesn't show on first tap
+        // Without this delay the biometric prompt sometimes does not show on the first tap.
         Thread.sleep(forTimeInterval: 0.05)
 
         let query: [String: Any] = [
@@ -488,30 +439,25 @@ extension VaultStore {
 
         guard status == errSecSuccess,
               let keyData = result as? Data else {
-            // Map keychain status codes to specific errors for better debugging
             switch status {
             case errSecUserCanceled:
                 throw AppError.biometricCancelled
             case errSecAuthFailed:
                 throw AppError.biometricFailed
             case errSecItemNotFound:
-                // Key not found in keychain - user may need to re-login
                 print("Keychain item not found (errSecItemNotFound: \(status))")
                 throw AppError.keychainItemNotFound
             case errSecInteractionNotAllowed:
-                // Access denied - may happen if app is in background or screen is locked
+                // The app is in the background or the screen is locked.
                 print("Keychain interaction not allowed (errSecInteractionNotAllowed: \(status))")
                 throw AppError.keychainAccessDenied(status: status)
             case errSecMissingEntitlement:
-                // Missing keychain-access-groups entitlement or access group mismatch
                 print("Missing keychain entitlement (errSecMissingEntitlement: \(status))")
                 throw AppError.keychainAccessDenied(status: status)
             case errSecDecode:
-                // Data corruption or format issue
                 print("Keychain decode error (errSecDecode: \(status))")
                 throw AppError.keychainAccessDenied(status: status)
             default:
-                // Log the specific status code for debugging
                 print("Keychain error - status: \(status)")
                 throw AppError.keystoreKeyNotFound
             }

@@ -1,7 +1,3 @@
-/**
- * VaultKeyService with client-side helpers for key operations.
- */
-
 import { UnlockMethodType, VaultKeyAlgorithm, type VaultKeyGetResponse, type VaultKeyResponse } from '@aliasvault/models/webapi';
 
 import { ApiRequestError } from '../api/errors/ApiRequestError';
@@ -42,7 +38,8 @@ export type SessionKeys = {
 export type KeyChainKey = { unlockKey: string } | { accountKey: string };
 
 /**
- * Static helper for fetching, caching and opening the account-key unlock chain (KEK → AK → VEK + account keypair).
+ * Fetches, caches and opens the account key chain: the KEK opens the Account Key, which opens the VEK and the account
+ * keypair.
  */
 export class VaultKeyService {
   /**
@@ -107,8 +104,9 @@ export class VaultKeyService {
     }
 
     /*
-     * A device holding a vault under its unlock key but no chain yet (the account was upgraded on another device) stays
-     * a legacy session: its first sync caches the chain and re-encrypts the stored vault under the VEK in one step.
+     * LEGACY: a device holding a vault under its unlock key but no chain yet (the account was upgraded on another device)
+     * stays a legacy session; its first sync caches the chain and re-encrypts the stored vault under the VEK.
+     * TODO: remove once every account has upgraded to 0.31.0+.
      */
     if ('unlockKey' in key && !await VaultKeyService.hasLocalVaultKey() && await getPlatform().storage.get(StorageKeys.ENCRYPTED_VAULT) !== null) {
       return key.unlockKey;
@@ -119,8 +117,7 @@ export class VaultKeyService {
   }
 
   /**
-   * Check offline that the unlock key derived from the typed password opens the locally cached chain (an account not yet
-   * upgraded has none; its unlock key is the vault key).
+   * Check offline that the unlock key derived from the typed password opens the locally cached chain.
    * @param unlockKey - the unlock key derived from the typed password
    * @returns The Account Key to store for this session.
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
@@ -140,10 +137,8 @@ export class VaultKeyService {
   }
 
   /**
-   * Whether this device holds a key chain, i.e. whether the account is on the account-key model rather than a
-   * legacy account whose unlock key encrypts the vault directly. The cache is written on every login and cleared
-   * when the server reports no vault key, so it needs no server round-trip. A false answer is only ever stale in
-   * one direction (another device migrated since the last login), which the sync resolves by accepting the remote chain.
+   * Whether this device holds a key chain, i.e. the account is on the account-key model rather than a legacy account
+   * whose unlock key encrypts the vault directly.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
     const platform = getPlatform();
@@ -198,8 +193,8 @@ export class VaultKeyService {
       }
     }
     /*
-     * LEGACY: the session holds an unlock key from before the account had a key chain.
-     * This legacy key conversion call can be removed once all clients have updated to 0.31.0+.
+     * LEGACY: the session holds an unlock key from before the account had a key chain. TODO: remove once all clients
+     * run 0.31.0+.
      */
     const keys = await VaultKeyService.openKeyChain({ unlockKey: storedKey });
     await convertLegacySessionKey(storedKey, keys.accountKey);
@@ -214,8 +209,7 @@ export class VaultKeyService {
   }
 
   /**
-   * The account private key of the unlocked session (JWK string), or null when the vault is locked or
-   * the account has no keypair yet (legacy account, not migrated to manifest-v1 yet). Used to decrypt shared-manifest VEK grants.
+   * The account private key of the unlocked session (JWK), or null when the vault is locked or the account has no keypair yet.
    */
   public static async getSessionAccountPrivateKey(): Promise<string | null> {
     return (await VaultKeyService.getSessionKeys())?.accountPrivateKey ?? null;
@@ -271,8 +265,7 @@ export class VaultKeyService {
   }
 
   /**
-   * Walk a chain with the unlock key or the Account Key (the Rust `open_key_chain_with_unlock_key` and
-   * `open_key_chain_with_account_key`).
+   * Walk a chain with the unlock key or the Account Key.
    * @param key - the unlock key or the Account Key
    * @param encryptedAccountKey - the Account Key encrypted with the KEK derived from the unlock key
    * @param encryptedVek - the VEK encrypted with the Account Key
