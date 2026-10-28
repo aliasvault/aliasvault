@@ -10,7 +10,7 @@ import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LegacySrpVerifierUpgrade, LoginResponse } from '@aliasvault/models/webapi';
 
 /**
- * Register request type for creating a new user.
+ * The register request body: the SRP credentials and the account key hierarchy.
  */
 export type RegisterRequest = AccountKeyBlobs & {
   username: string;
@@ -31,7 +31,7 @@ export type PreparedRegistration = {
 };
 
 /**
- * SRP client proof type.
+ * The client's SRP proof as sent in a request body.
  */
 export type SrpClientProof = {
   clientPublicEphemeral: string;
@@ -39,8 +39,7 @@ export type SrpClientProof = {
 };
 
 /**
- * A client proof plus the session key it was derived with. The key stays client-side and is used to check the
- * server's proof, so it is kept apart from the proof that goes into the request body.
+ * A client proof plus the session key that checks the server's proof; the key never leaves the client.
  */
 export type SrpClientSession = {
   proof: SrpClientProof;
@@ -48,7 +47,7 @@ export type SrpClientSession = {
 };
 
 /**
- * Login credentials prepared from password derivation.
+ * What a password derives for a login.
  */
 export type PreparedCredentials = {
   /** The SRP password hash (uppercase hex) for the account's encryption type. */
@@ -93,118 +92,74 @@ export const DEFAULT_ENCRYPTION = {
 } as const;
 
 /**
- * SrpAuthService provides SRP-based authentication utilities using Rust WASM.
- *
- * This service handles:
- * - User registration with SRP protocol
- * - Password hashing and key derivation
- * - SRP verifier generation
- *
- * It uses the Rust core library compiled to WASM for cross-platform consistency.
- * The WASM module must be initialized before use (handled automatically).
+ * SRP registration, login proofs and unlock key derivation, on top of the Rust core.
  */
 export class SrpAuthService {
   /**
-   * Normalizes a username by converting to lowercase and trimming whitespace.
-   *
+   * Lowercases and trims a username.
    * @param username - The username to normalize
-   * @returns The normalized username
    */
   public static normalizeUsername(username: string): string {
     return username.toLowerCase().trim();
   }
 
   /**
-   * Generates a cryptographically secure SRP salt using Rust WASM.
-   *
-   * @returns A random salt string (uppercase hex)
+   * A random SRP salt (uppercase hex).
    */
   public static async generateSalt(): Promise<string> {
     return rustCore().srpGenerateSalt();
   }
 
   /**
-   * Derives an SRP private key from credentials using Rust WASM.
-   *
+   * The SRP private key (uppercase hex).
    * @param salt - The SRP salt
-   * @param username - The normalized username or SRP identity
-   * @param passwordHashString - The password hash as uppercase hex string
-   * @returns The SRP private key (uppercase hex)
+   * @param username - The username or SRP identity
+   * @param passwordHashString - The SRP password hash (uppercase hex)
    */
-  public static async derivePrivateKey(
-    salt: string,
-    username: string,
-    passwordHashString: string
-  ): Promise<string> {
+  public static async derivePrivateKey(salt: string, username: string, passwordHashString: string): Promise<string> {
     return rustCore().srpDerivePrivateKey(salt, SrpAuthService.normalizeUsername(username), passwordHashString);
   }
 
   /**
-   * Derives an SRP verifier from a private key using Rust WASM.
-   *
+   * The SRP verifier (uppercase hex) of a private key.
    * @param privateKey - The SRP private key
-   * @returns The SRP verifier (uppercase hex)
    */
   public static async deriveVerifier(privateKey: string): Promise<string> {
     return rustCore().srpDeriveVerifier(privateKey);
   }
 
   /**
-   * Generates an SRP ephemeral key pair for client-side authentication using Rust WASM.
-   *
-   * @returns Object containing public and secret ephemeral values (uppercase hex)
+   * A client ephemeral pair (uppercase hex).
    */
   public static async generateEphemeral(): Promise<SrpEphemeral> {
     return rustCore().srpGenerateEphemeral();
   }
 
   /**
-   * Derives an SRP session from the authentication exchange using Rust WASM.
-   *
+   * The client session (proof and key, uppercase hex) from the server's public ephemeral.
    * @param clientSecretEphemeral - Client's secret ephemeral value
    * @param serverPublicEphemeral - Server's public ephemeral value
    * @param salt - The SRP salt
-   * @param username - The normalized username or SRP identity
+   * @param username - The username or SRP identity
    * @param privateKey - The SRP private key
-   * @returns The SRP session containing proof and key (uppercase hex)
    */
-  public static async deriveSession(
-    clientSecretEphemeral: string,
-    serverPublicEphemeral: string,
-    salt: string,
-    username: string,
-    privateKey: string
-  ): Promise<SrpSession> {
-    return rustCore().srpDeriveSession(
-      clientSecretEphemeral,
-      serverPublicEphemeral,
-      salt,
-      SrpAuthService.normalizeUsername(username),
-      privateKey
-    );
+  public static async deriveSession(clientSecretEphemeral: string, serverPublicEphemeral: string, salt: string, username: string, privateKey: string): Promise<SrpSession> {
+    return rustCore().srpDeriveSession(clientSecretEphemeral, serverPublicEphemeral, salt, SrpAuthService.normalizeUsername(username), privateKey);
   }
 
   /**
-   * Derives the client's SRP proof for one server-verified master password check.
-   *
+   * The client's SRP proof for one server-verified master password check.
    * @param salt - The SRP salt from the initiate response
    * @param srpIdentity - The SRP identity from the initiate response
-   * @param passwordHashString - The password hash as uppercase hex string
+   * @param passwordHashString - The SRP password hash (uppercase hex)
    * @param serverEphemeral - The server's public ephemeral from the initiate response
-   * @returns The client public ephemeral and session proof to submit to the confirm endpoint
    */
-  public static async deriveClientProof(
-    salt: string,
-    srpIdentity: string,
-    passwordHashString: string,
-    serverEphemeral: string
-  ): Promise<SrpClientProof> {
+  public static async deriveClientProof(salt: string, srpIdentity: string, passwordHashString: string, serverEphemeral: string): Promise<SrpClientProof> {
     return (await SrpAuthService.deriveClientSession(salt, srpIdentity, passwordHashString, serverEphemeral)).proof;
   }
 
   /**
-   * Derives the client's SRP proof and the session key, for exchanges where the server's proof is checked.
-   *
+   * The client's SRP proof and the session key, for exchanges where the server's proof is checked.
    * @param salt - The SRP salt from the initiate response
    * @param srpIdentity - The SRP identity from the initiate response
    * @param passwordHashString - The password hash as uppercase hex string
@@ -221,7 +176,6 @@ export class SrpAuthService {
 
   /**
    * Checks the server's session proof (M2), which confirms the server holds the verifier for this password.
-   *
    * @param session - The client session the request was sent with
    * @param serverSessionProof - The server's proof from the validate response
    * @throws {Error} when the proof does not match
@@ -234,22 +188,13 @@ export class SrpAuthService {
   }
 
   /**
-   * Derives the client's SRP proof for a login initiate response.
-   *
+   * The client's SRP proof and session key for a login initiate response.
    * @param loginResponse - The login initiate response holding salt, SRP identity and server ephemeral
-   * @param username - The username typed by the user, used as SRP identity fallback on older servers
-   * @param passwordHashString - The password hash as uppercase hex string
-   * @returns The proof to submit to the validate endpoint and the session key to verify the server's proof with
+   * @param username - The username typed by the user, the SRP identity fallback on older servers
+   * @param passwordHashString - The SRP password hash (uppercase hex)
    */
-  public static async deriveLoginSession(
-    loginResponse: LoginResponse,
-    username: string,
-    passwordHashString: string
-  ): Promise<SrpClientSession> {
-    /*
-     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
-     * @todo Remove fallback after 0.26.0+ has been released.
-     */
+  public static async deriveLoginSession(loginResponse: LoginResponse, username: string, passwordHashString: string): Promise<SrpClientSession> {
+    // LEGACY: servers before 0.26.0 send no SRP identity. TODO: remove the fallback once the minimum server is 0.26.0+.
     const srpIdentity = loginResponse.srpIdentity ?? SrpAuthService.normalizeUsername(username);
 
     return SrpAuthService.deriveClientSession(loginResponse.salt, srpIdentity, passwordHashString, loginResponse.serverEphemeral);
@@ -257,8 +202,7 @@ export class SrpAuthService {
 
   /**
    * Derive the unlock key (the Argon2id output, base64) from the password. Refuses settings weaker than those this
-   * device already derived with, so a server cannot get a cheaper-to-guess login proof out of it.
-   *
+   * device already derived with.
    * @param password - The user's password
    * @param salt - The account's salt
    * @param encryptionSettings - The encryption settings JSON string
@@ -275,7 +219,6 @@ export class SrpAuthService {
 
   /**
    * Derive the unlock key from the password and the SRP password hash the account's encryption type makes from it.
-   *
    * @param password - The user's password
    * @param salt - The salt from the server's challenge
    * @param encryptionType - The encryption type from the server's challenge
@@ -289,7 +232,6 @@ export class SrpAuthService {
 
   /**
    * The SRP password hash (uppercase hex) an account's encryption type makes from an unlock key.
-   *
    * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
    * @param encryptionType - The encryption type from the server's challenge
    * @returns The SRP password hash
@@ -300,11 +242,9 @@ export class SrpAuthService {
 
   /**
    * {@link prepareCredentials} for a login: an account that still has a legacy verifier also gets its upgrade.
-   *
    * @param password - The user's password
    * @param loginResponse - The login initiate response
-   * @param username - The username typed by the user, used as SRP identity fallback on older servers
-   * @returns The credentials to log in with
+   * @param username - The username typed by the user, the SRP identity fallback on older servers
    */
   public static async prepareLoginCredentials(password: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
     const unlockKeyBase64 = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
@@ -313,11 +253,9 @@ export class SrpAuthService {
 
   /**
    * The login credentials of an unlock key derived elsewhere (natively on mobile), see {@link prepareLoginCredentials}.
-   *
    * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
    * @param loginResponse - The login initiate response
-   * @param username - The username typed by the user, used as SRP identity fallback on older servers
-   * @returns The credentials to log in with
+   * @param username - The username typed by the user, the SRP identity fallback on older servers
    */
   public static async loginCredentials(unlockKeyBase64: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
     const credentials: PreparedCredentials = { passwordHashString: await SrpAuthService.srpPasswordHash(unlockKeyBase64, loginResponse.encryptionType), unlockKeyBase64 };
@@ -332,17 +270,15 @@ export class SrpAuthService {
   }
 
   /**
-   * Generates a random UUID v4 for use as SRP identity.
-   *
-   * @returns A random UUID string
+   * A random UUID v4 as SRP identity.
    */
   public static generateSrpIdentity(): string {
     return crypto.randomUUID();
   }
 
   /**
-   * Derive what a new master password needs: a fresh salt, the SRP verifier the server stores, and the unlock key
-   * whose derived KEK wraps the client's key material. Uses the default Argon2Id settings.
+   * Derive what a new master password needs: a fresh salt, the SRP verifier and the unlock key, with the default
+   * Argon2id settings.
    * @param password - the new master password
    * @param srpIdentity - the account's SRP identity the verifier is bound to
    */
@@ -355,21 +291,12 @@ export class SrpAuthService {
   }
 
   /**
-   * Prepares SRP registration data for a new user.
-   *
-   * This generates all the cryptographic values needed to register a user:
-   * - Salt for key derivation
-   * - Verifier for SRP authentication
-   * - SRP identity (random GUID) for immutable authentication identity
-   *
+   * Prepare a registration: a fresh salt, verifier and SRP identity, and the account key hierarchy.
    * @param username - The username for registration
    * @param password - The password for registration
-   * @returns Registration request data ready to send to the API plus the generated key material
+   * @returns The request body plus the key material the client keeps
    */
-  public static async prepareRegistration(
-    username: string,
-    password: string
-  ): Promise<PreparedRegistration> {
+  public static async prepareRegistration(username: string, password: string): Promise<PreparedRegistration> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const srpIdentity = SrpAuthService.generateSrpIdentity();
     const material = await SrpAuthService.prepareNewPassword(password, srpIdentity);

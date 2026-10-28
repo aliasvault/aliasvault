@@ -1,8 +1,5 @@
 //! Associated data for ciphertext to bind it to the slot it belongs in.
 
-/// Versions the AAD label scheme, not the API or the vault format: this should not be bumped to match either.
-const PREFIX: &str = "aliasvault/v1";
-
 /// The Account Key under the KEK.
 pub const ACCOUNT_KEY: &[u8] = b"aliasvault/v1/account-key";
 
@@ -23,38 +20,37 @@ pub const MOBILE_LOGIN_PAYLOAD_KEY: &[u8] = b"aliasvault/v1/mobile-login/payload
 
 /// A manifest payload under its manifest's VEK.
 pub fn manifest(manifest_id: &str) -> Vec<u8> {
-    format!("{}/manifest/{}", PREFIX, normalize(manifest_id)).into_bytes()
+    format!("aliasvault/v1/manifest/{}", normalize(manifest_id)).into_bytes()
 }
 
 /// A data bucket payload under its manifest's VEK.
 pub fn bucket(manifest_id: &str, category: &str) -> Vec<u8> {
-    format!("{}/bucket/{}/{}", PREFIX, normalize(manifest_id), category).into_bytes()
+    format!("aliasvault/v1/bucket/{}/{}", normalize(manifest_id), category).into_bytes()
 }
 
 /// A shared manifest's name under its manifest's VEK.
 pub fn manifest_name(manifest_id: &str) -> Vec<u8> {
-    format!("{}/manifest-name/{}", PREFIX, normalize(manifest_id)).into_bytes()
+    format!("aliasvault/v1/manifest-name/{}", normalize(manifest_id)).into_bytes()
 }
 
 /// A blob's bytes under its own blob key.
 pub fn blob_data(manifest_id: &str, hash: &str) -> Vec<u8> {
-    format!("{}/blob/{}/{}", PREFIX, normalize(manifest_id), normalize(hash)).into_bytes()
+    format!("aliasvault/v1/blob/{}/{}", normalize(manifest_id), normalize(hash)).into_bytes()
 }
 
 /// A blob key under its manifest's VEK.
 pub fn blob_key(manifest_id: &str, hash: &str) -> Vec<u8> {
-    format!("{}/blob-key/{}/{}", PREFIX, normalize(manifest_id), normalize(hash)).into_bytes()
+    format!("aliasvault/v1/blob-key/{}/{}", normalize(manifest_id), normalize(hash)).into_bytes()
 }
 
-/// The RSA-OAEP label of a grant: a manifest's VEK encrypted for one recipient key. The recipient is not in the label,
-/// since only the matching private key can decrypt the grant anyway.
+/// The RSA-OAEP label of a grant: a manifest's VEK encrypted for one recipient key.
 pub fn grant(manifest_id: &str) -> Vec<u8> {
-    format!("{}/grant/{}", PREFIX, normalize(manifest_id)).into_bytes()
+    format!("aliasvault/v1/grant/{}", normalize(manifest_id)).into_bytes()
 }
 
 /// The RSA-OAEP label of a shared manifest's name encrypted into an invitation for its recipient.
 pub fn invitation_name(manifest_id: &str) -> Vec<u8> {
-    format!("{}/invitation-name/{}", PREFIX, normalize(manifest_id)).into_bytes()
+    format!("aliasvault/v1/invitation-name/{}", normalize(manifest_id)).into_bytes()
 }
 
 /// An id as it appears in a label: lowercased, as the server prints a GUID.

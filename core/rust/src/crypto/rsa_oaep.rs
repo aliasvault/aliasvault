@@ -1,4 +1,4 @@
-//! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings compatible with the WebCrypto API.
+//! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings.
 
 use rsa::traits::PublicKeyParts;
 use rsa::{BigUint, Oaep, RsaPrivateKey, RsaPublicKey};

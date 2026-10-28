@@ -1,14 +1,7 @@
 /**
- * Email decryption logic.
- *
- * 1. Pick the email's decryption key whose public key the caller holds ({@link resolveSymmetricKey}).
- * 2. Unwrap the email's symmetric key with that keypair's RSA-OAEP-256 private key.
- * 3. Decrypt the header fields, the message source and attachments with AES-256-GCM (`IV | ciphertext | tag`).
- * 4. Hand the decrypted source to the Rust email parser for the bodies and attachment list.
- *
- * The crypto primitives run on WebCrypto in the browser extension and web app, which is about 10x faster than the Rust
- * core compiled to WebAssembly for RSA and for large sources. The mobile app has no WebCrypto and uses the native Rust
- * core (core/rust/src/crypto) instead. Both produce and read the same formats.
+ * Email decryption: the email's symmetric key is decrypted with the matching RSA-OAEP-256 private key, the fields and
+ * source with AES-256-GCM, and the Rust email parser reads the source. Runs on WebCrypto where the host has it (web app
+ * and browser extension) and on the Rust core otherwise (mobile).
  */
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { devWarn } from '../platform/Logger';
@@ -72,11 +65,8 @@ export async function decryptEmail(email: Email, encryptionKeys: EncryptionKey[]
 }
 
 /**
- * Decrypts the header fields of a page of mailbox emails. The publicKeys table is the one the API sent alongside the
- * emails; each email's decryption keys reference it by index.
- *
- * Emails that cannot be decrypted are skipped rather than failing the batch. The server only serves mail the caller
- * holds a key for, so this should not happen, but one unreadable record must not break the whole list view.
+ * Decrypts the header fields of a page of mailbox emails; each email's decryption keys name a public key by index into
+ * `publicKeys`. An email that does not decrypt is skipped, so one unreadable record does not break the list.
  */
 export async function decryptEmailList(emails: MailboxEmail[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<MailboxEmail[]> {
   const results = await Promise.all(emails.map(async (email): Promise<MailboxEmail | null> => {
@@ -118,9 +108,7 @@ export function clearEmailKeyCache(): void {
 }
 
 /**
- * The email's symmetric key (base64), unwrapped from the first decryption key whose public key the caller holds. A
- * decryption key names its public key by index into the response's publicKeys table, so the email's own list of
- * decryption keys is not aligned with the caller's keys.
+ * The email's symmetric key (base64), decrypted from the first decryption key whose public key the caller holds.
  */
 async function resolveSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
   for (const decryptionKey of decryptionKeys) {
@@ -134,22 +122,18 @@ async function resolveSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicK
   throw new Error('Encryption key not found');
 }
 
-/*
- * Crypto primitives: WebCrypto where the host has it, the native Rust core otherwise (mobile).
- */
-
 /** Imported non-extractable RSA private keys, by public key, so a page of emails imports each keypair once. */
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
 
 /**
- * Whether the host has WebCrypto; the mobile app (Hermes) has none.
+ * Whether the host has WebCrypto; the mobile app has none.
  */
 function hasWebCrypto(): boolean {
   return typeof crypto !== 'undefined' && typeof crypto.subtle?.importKey === 'function';
 }
 
 /**
- * RSA-OAEP-256 decrypt an email's symmetric key with the keypair's private key. Returns the key as base64.
+ * Decrypt an email's symmetric key with the keypair's RSA-OAEP-256 private key. Returns the key as base64.
  */
 async function unwrapSymmetricKey(encryptedSymmetricKey: string, encryptionKey: EncryptionKey): Promise<string> {
   if (!hasWebCrypto()) {

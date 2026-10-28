@@ -1,5 +1,5 @@
 //! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
-//! ([`upgrade_account_to_manifest_v1`]). Remove this module once every account has upgraded, together with the
+//! ([`upgrade_account_to_manifest_v1`]). TODO: remove this module once every account has upgraded, together with the
 //! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check, the
 //! branch without a vault key in `migration::migrate_manifest` and the upgrade-elsewhere check in `migration::migration_status`.
 

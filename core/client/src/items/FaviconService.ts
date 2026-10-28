@@ -19,14 +19,14 @@ export type FaviconStore = {
 };
 
 /**
- * Favicon API calls.
+ * The part of the API client the favicon fetch needs.
  */
 export type FaviconApi = {
   post<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse>;
 };
 
 /**
- * Result of a favicon fetch operation.
+ * Result of a favicon fetch.
  */
 export type FaviconFetchResult = {
   success: boolean;
@@ -39,10 +39,7 @@ export type FaviconFetchResult = {
  * Options for a favicon fetch.
  */
 export type FaviconFetchOptions = {
-  /**
-   * Fetch even when the vault already holds a favicon for the domain. Set for an explicit re-fetch,
-   * where the point is to replace a favicon that has gone stale.
-   */
+  /** Fetch even when the vault already holds a favicon for the domain (an explicit re-fetch). */
   ignoreStored?: boolean;
 
   /** Timeout in milliseconds (default: 5000ms). */
@@ -50,12 +47,12 @@ export type FaviconFetchOptions = {
 };
 
 /**
- * Default timeout for favicon fetch operations (5 seconds).
+ * Default timeout of a favicon fetch.
  */
 const FAVICON_FETCH_TIMEOUT_MS = 5000;
 
 /**
- * Centralized service for favicon/logo operations, shared by every client.
+ * Favicon lookup and fetching, shared by every client.
  */
 export class FaviconService {
   /**
@@ -78,18 +75,15 @@ export class FaviconService {
   }
 
   /**
-   * Fetch the favicon for a resolved target from the server API.
-   * Includes deduplication check and timeout handling.
+   * Fetch the favicon of a resolved target from the server, unless the vault already holds one for its domain.
    * @param target The favicon target to fetch
-   * @param logos The vault's logo repository, for the deduplication check
-   * @param webApi The WebAPI service for making the request
+   * @param logos The vault's logo repository
+   * @param webApi The API client
    * @param options Optional fetch options
-   * @returns FaviconFetchResult with success status and image data
    */
   public static async fetchFavicon(target: FaviconTarget, logos: FaviconStore, webApi: FaviconApi, options: FaviconFetchOptions = {}): Promise<FaviconFetchResult> {
     const timeoutMs = options.timeoutMs ?? FAVICON_FETCH_TIMEOUT_MS;
 
-    // Check if logo already exists (deduplication)
     if (!options.ignoreStored && await logos.hasFaviconForSource(target.source)) {
       return { success: false, skipped: true };
     }
@@ -109,7 +103,6 @@ export class FaviconService {
 
       return { success: false, error: 'No favicon returned from server' };
     } catch (err) {
-      // Favicon extraction failed or timed out - not critical
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       logExpected('[Favicon] Extracting the favicon failed', errorMessage);
       return { success: false, error: errorMessage };
@@ -119,17 +112,14 @@ export class FaviconService {
   }
 
   /**
-   * Fetch and attach a favicon to an item if needed.
-   * @param item The item to potentially update with a logo
-   * @param urlFieldValue The value of the URL field (can be string or string[])
-   * @param logos The vault's logo repository, for the deduplication check
-   * @param webApi The WebAPI service for making the request
-   * @returns The updated item with Logo attached (if favicon was fetched), or cleared when nothing was fetched
+   * The item with the favicon of its URL as Logo, or without a Logo when none was fetched.
+   * @param item The item to update
+   * @param urlFieldValue The value of the URL field (single string or multi-value array)
+   * @param logos The vault's logo repository
+   * @param webApi The API client
    */
   public static async fetchAndAttachFavicon(item: Item, urlFieldValue: string | string[] | undefined | null, logos: FaviconStore, webApi: FaviconApi): Promise<Item> {
     const target = await FaviconService.resolveTarget(urlFieldValue);
-
-    // No valid URL found: clear any existing logo.
     if (!target) {
       return { ...item, Logo: undefined };
     }

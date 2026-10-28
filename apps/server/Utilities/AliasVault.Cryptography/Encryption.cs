@@ -30,17 +30,16 @@ public static class Encryption
     public const string MobileLoginPayloadKeyLabel = "aliasvault/v1/mobile-login/payload-key";
 
     /// <summary>
-    /// Generates a random symmetric key for use with AES-256.
+    /// Generates a random AES-256 key.
     /// </summary>
-    /// <returns>A 256-bit (32-byte) random key as a byte array.</returns>
+    /// <returns>The 32-byte key.</returns>
     public static byte[] GenerateRandomSymmetricKey()
     {
-        return RandomNumberGenerator.GetBytes(32); // 256 bits
+        return RandomNumberGenerator.GetBytes(32);
     }
 
     /// <summary>
-    /// Encrypts a symmetric key for the holder of an RSA public key with RSA-OAEP-SHA256 and no label: the format every
-    /// email key is stored in.
+    /// Encrypts a symmetric key for the holder of an RSA public key with RSA-OAEP-SHA256 and no label (every email key).
     /// </summary>
     /// <param name="symmetricKey">The symmetric key to encrypt.</param>
     /// <param name="publicKey">The RSA public key in JWK format.</param>
@@ -52,7 +51,7 @@ public static class Encryption
 
     /// <summary>
     /// Encrypts a symmetric key for the holder of an RSA public key with RSA-OAEP-SHA256 under an OAEP label, which
-    /// decryption must present as-is. An empty label is plain RSA-OAEP-SHA256.
+    /// decryption must present as-is.
     /// </summary>
     /// <param name="symmetricKey">The symmetric key to encrypt.</param>
     /// <param name="publicKey">The RSA public key in JWK format.</param>
@@ -68,35 +67,33 @@ public static class Encryption
     }
 
     /// <summary>
-    /// SymmetricEncrypt a plaintext string using AES-256 GCM.
+    /// Encrypts a UTF-8 string with AES-256-GCM.
     /// </summary>
     /// <param name="plaintext">The plaintext string.</param>
-    /// <param name="key">Key to use for encryption (must be 32 bytes for AES-256).</param>
-    /// <returns>The encrypted string (ciphertext).</returns>
+    /// <param name="key">The 32-byte key.</param>
+    /// <returns>Base64 of nonce | ciphertext | tag.</returns>
     public static string SymmetricEncrypt(string plaintext, byte[] key)
     {
-        var encryptedBytes = SymmetricEncrypt(Encoding.UTF8.GetBytes(plaintext), key);
-        return Convert.ToBase64String(encryptedBytes);
+        return Convert.ToBase64String(SymmetricEncrypt(Encoding.UTF8.GetBytes(plaintext), key));
     }
 
     /// <summary>
-    /// SymmetricEncrypt a byte array using AES-256 GCM.
+    /// Encrypts bytes with AES-256-GCM (random 12-byte nonce, 16-byte tag, no AAD).
     /// </summary>
-    /// <param name="plainBytes">The plain byte array.</param>
-    /// <param name="key">Key to use for encryption (must be 32 bytes for AES-256).</param>
-    /// <returns>The encrypted string (ciphertext).</returns>
+    /// <param name="plainBytes">The plaintext bytes.</param>
+    /// <param name="key">The 32-byte key.</param>
+    /// <returns>nonce | ciphertext | tag.</returns>
     public static byte[] SymmetricEncrypt(byte[] plainBytes, byte[] key)
     {
-        byte[] nonce = new byte[AesGcm.NonceByteSizes.MaxSize]; // 12 bytes
+        byte[] nonce = new byte[AesGcm.NonceByteSizes.MaxSize];
         RandomNumberGenerator.Fill(nonce);
 
         byte[] ciphertext = new byte[plainBytes.Length];
-        byte[] tag = new byte[AesGcm.TagByteSizes.MaxSize]; // 16 bytes
+        byte[] tag = new byte[AesGcm.TagByteSizes.MaxSize];
 
         using var aesGcm = new AesGcm(key, AesGcm.TagByteSizes.MaxSize);
         aesGcm.Encrypt(nonce, plainBytes, ciphertext, tag);
 
-        // Combine nonce + ciphertext + tag
         byte[] result = new byte[nonce.Length + ciphertext.Length + tag.Length];
         Buffer.BlockCopy(nonce, 0, result, 0, nonce.Length);
         Buffer.BlockCopy(ciphertext, 0, result, nonce.Length, ciphertext.Length);
@@ -106,11 +103,11 @@ public static class Encryption
     }
 
     /// <summary>
-    /// SymmetricDecrypt a ciphertext string using AES-256 GCM.
+    /// Decrypts base64 nonce | ciphertext | tag with AES-256-GCM into a UTF-8 string.
     /// </summary>
-    /// <param name="ciphertext">The encrypted string (ciphertext).</param>
-    /// <param name="key">The key used to originally encrypt the string.</param>
-    /// <returns>The original plaintext string.</returns>
+    /// <param name="ciphertext">The base64 ciphertext.</param>
+    /// <param name="key">The 32-byte key.</param>
+    /// <returns>The plaintext string.</returns>
     public static string SymmetricDecrypt(string ciphertext, byte[] key)
     {
         var plainBytes = SymmetricDecrypt(Convert.FromBase64String(ciphertext), key);
@@ -118,11 +115,11 @@ public static class Encryption
     }
 
     /// <summary>
-    /// SymmetricDecrypt a cipher byte array using AES-256 GCM.
+    /// Decrypts nonce | ciphertext | tag bytes with AES-256-GCM.
     /// </summary>
-    /// <param name="encryptedBytes">The encrypted byte array (cipherBytes).</param>
-    /// <param name="key">The key used to originally encrypt the string.</param>
-    /// <returns>The original plaintext string.</returns>
+    /// <param name="encryptedBytes">The encrypted bytes.</param>
+    /// <param name="key">The 32-byte key.</param>
+    /// <returns>The plaintext bytes.</returns>
     public static byte[] SymmetricDecrypt(byte[] encryptedBytes, byte[] key)
     {
         int nonceSize = AesGcm.NonceByteSizes.MaxSize;
@@ -132,7 +129,6 @@ public static class Encryption
             throw new CryptographicException("AES-GCM ciphertext is too short.");
         }
 
-        // Extract nonce, ciphertext, and tag
         byte[] nonce = new byte[nonceSize];
         byte[] tag = new byte[tagSize];
         byte[] ciphertext = new byte[encryptedBytes.Length - nonceSize - tagSize];

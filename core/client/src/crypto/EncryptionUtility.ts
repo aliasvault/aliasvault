@@ -4,11 +4,8 @@ import { base64ToBytes } from '../utilities/Base64';
 const AES_GCM_IV_LENGTH = 12;
 
 /**
- * The WebCrypto operations the web app and the browser extension run outside the Rust core, each for a reason:
- * - AES-256-GCM over the local vault blob and email fields: hardware accelerated, where wasm AES is not
- *   (the format is the Rust `aes_gcm.rs` format)
- * - RSA-OAEP decryption of email keys with an imported non-extractable private key, at WebCrypto speed
- * Everything else (Argon2id, the key chain, RSA key pair generation, SRP, signing, PIN wrap) runs in the Rust core only.
+ * The WebCrypto operations the web app and browser extension run instead of calling the Rust core because of
+ * performance reasons (no hardware acceleration via Rust WASM). Same formats as `core/rust/src/crypto/aes_gcm.rs` and `rsa_oaep.rs`.
  */
 export class EncryptionUtility {
   /**
@@ -38,7 +35,7 @@ export class EncryptionUtility {
   }
 
   /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
+   * Decrypts base64 RSA-OAEP ciphertext with an imported private key.
    */
   public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
     return new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, base64ToBytes(ciphertext)));
