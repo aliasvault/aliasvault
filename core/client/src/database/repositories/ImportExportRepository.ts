@@ -29,7 +29,7 @@ export function createImportWriteSession(): ImportWriteSession {
   return { writtenDefinitionIds: new Set(), tagIds: new Map() };
 }
 
-/** A row of a manifest-scoped child table, with the key of the item it hangs off. */
+/** A row of a manifest-scoped child table, with the key of the item it belongs to. */
 type ChildRow = { ItemId: string; ManifestId: string };
 
 /** The tables a vault reset empties, dependents first. */

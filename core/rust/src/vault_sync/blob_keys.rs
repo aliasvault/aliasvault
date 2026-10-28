@@ -2,23 +2,23 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::{self, aad};
 use crate::common::encoding::{base64_decode, base64_encode};
 use crate::common::error::{VaultError, VaultResult};
+use crate::crypto::{self, aad};
 use crate::vault_codec;
 
 /// A blob as the server stores it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct EncryptedBlob {
-    /// The bytes, encrypted with the blob key. Persisted as base64 under the old field name, so existing caches still read.
+    /// The bytes, encrypted with the blob key; cached as base64 under `encryptedDataBase64`, the name existing caches use.
     #[serde(rename = "encryptedDataBase64", with = "base64_bytes")]
     pub encrypted_data: Vec<u8>,
     /// The blob key, encrypted with the manifest's VEK.
     pub encrypted_blob_key: String,
 }
 
-/// Encrypt blob bytes with a fresh blob key, and that key with the manifest's VEK, both bound to the blob's address.
+/// Encrypt blob bytes with a new blob key, and that key with the manifest's VEK, both bound to the blob's address.
 pub(crate) fn encrypt_blob(bytes: &[u8], vek: &str, manifest_id: &str, hash: &str) -> VaultResult<EncryptedBlob> {
     let blob_key = crypto::aes_gcm::generate_key();
     Ok(EncryptedBlob {

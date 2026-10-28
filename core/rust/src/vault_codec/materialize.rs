@@ -1,8 +1,5 @@
-//! Materialize the canonical representation as SQLite tables; the inverse of `canonicalize`.
-//!
-//! Whatever the caller's schema (`schema_columns`) cannot hold is split into [`CodecOverflow`] and emitted as the
-//! `OVERFLOW_TABLE` row, so it lives in the vault DB and `canonicalize_from_sqlite` re-merges it on the next push.
-//! A manifest or bucket written at a newer major format version is refused.
+//! Materialize the canonical representation as SQLite tables; the inverse of `canonicalize`. What the caller's schema
+//! cannot hold goes into the `OVERFLOW_TABLE` row, so the next canonicalize re-merges it.
 
 use std::collections::{HashMap, HashSet};
 
@@ -35,7 +32,6 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     }
 
     let mut overflow = CodecOverflow::default();
-    // Top-level keys a newer writer added to a manifest or bucket; the next canonicalize writes them back.
     for manifest in manifests.iter().filter(|manifest| !manifest.extra.is_empty()) {
         overflow.manifest_extras.insert(id_key(&manifest.manifest_id), manifest.extra.clone());
     }
@@ -45,19 +41,14 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
     let mut combined = super::sharing::combine_manifest_tables(manifests);
-
-    // The wire omits derived row ids (single-value FieldValues, FieldHistories); derive them back so the
-    // SQLite projection has the primary keys it expects back, identical on every device.
     super::normalize::derive_missing_ids(&mut combined);
-
     super::normalize::normalize_id_spelling(&mut combined);
 
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
     for (name, mut records) in combined {
         store_blob_hashes(&name, &mut records, &schema_columns);
-        // A local-only table must never occur in a manifest, and passing an OVERFLOW_TABLE row
-        // through would collide with the row this function emits below.
+        // A local-only table never occurs in a manifest, and an OVERFLOW_TABLE row would collide with the one emitted below.
         if is_local_only_table(&name) {
             continue;
         }
@@ -69,7 +60,6 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         }
     }
 
-    // Put every data bucket's tables back into the flat set.
     let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     for bucket in data_buckets {
         for (name, mut records) in bucket.tables {
@@ -90,7 +80,6 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     }
     tables.extend(bucket_tables.into_iter().map(|(name, records)| CodecTableData { name, records }));
 
-    // Carry the overflow inside the vault DB itself: one OVERFLOW_TABLE row, inserted like any table.
     if !overflow.is_empty() {
         tables.push(CodecTableData { name: OVERFLOW_TABLE.to_string(), records: overflow.to_table_records() });
     }
@@ -102,8 +91,8 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     Ok(MaterializedTables { tables, overflow })
 }
 
-/// Write each row's blob hash into the local hash column of its table (when the caller's schema has it), so a row
-/// whose bytes are not loaded still knows its blob and canonicalize can keep the reference.
+/// Write each row's blob hash into its table's local hash column (when the caller's schema has it), so a row whose
+/// bytes are not loaded still knows its blob.
 fn store_blob_hashes(table_name: &str, records: &mut [CodecRecord], schema_columns: &HashMap<String, Vec<String>>) {
     let Some(spec) = blob_spec_for(table_name) else { return };
     if !schema_columns.get(table_name).is_some_and(|columns| columns.iter().any(|column| column == spec.hash_column)) {
@@ -134,19 +123,14 @@ fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
 
 /// Outcome of fitting one table's rows to the caller's schema.
 enum SplitResult {
-    /// Rows the schema can insert (unknown columns already split off into overflow).
+    /// Rows the schema can insert, unknown columns already split off.
     Fits(Vec<CodecRecord>),
-    /// The schema has no such table at all; the whole table belongs in overflow.
+    /// The schema has no such table; the whole table belongs in the overflow.
     UnknownTable(Vec<CodecRecord>),
 }
 
-/// Fit `records` to the caller's schema. Unknown columns are stashed in `column_overflow` keyed by row identity.
-fn split_for_schema(
-    table_name: &str,
-    records: Vec<CodecRecord>,
-    schema_columns: &HashMap<String, Vec<String>>,
-    column_overflow: &mut HashMap<String, HashMap<String, CodecRecord>>,
-) -> SplitResult {
+/// Fit `records` to the caller's schema; unknown columns go to `column_overflow`, keyed by row identity.
+fn split_for_schema(table_name: &str, records: Vec<CodecRecord>, schema_columns: &HashMap<String, Vec<String>>, column_overflow: &mut HashMap<String, HashMap<String, CodecRecord>>) -> SplitResult {
     let known_columns: HashSet<&str> = match schema_columns.get(table_name) {
         None => return SplitResult::UnknownTable(records),
         Some(columns) => columns.iter().map(String::as_str).collect(),
@@ -160,11 +144,10 @@ fn split_for_schema(
                 column_overflow.entry(table_name.to_string()).or_default().insert(identity, unknown);
             }
         }
-        // A row with no insertable columns would produce invalid SQL (`INSERT INTO t () VALUES ()`); skip it.
+        // A row with no insertable columns would produce invalid SQL (`INSERT INTO t () VALUES ()`).
         if !known.is_empty() {
             fitted.push(known);
         }
     }
     SplitResult::Fits(fitted)
 }
-

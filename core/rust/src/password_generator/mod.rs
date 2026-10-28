@@ -25,10 +25,8 @@ use crate::common::rng::{make_rng, unbiased_index};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum GeneratorType {
-    /// Character-set password generator.
     #[default]
     Basic,
-    /// Diceware passphrase generator.
     Diceware,
 }
 
@@ -36,16 +34,13 @@ pub(crate) enum GeneratorType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum Capitalization {
-    /// Leave each word as-is.
     None,
-    /// Uppercase the first letter of each word, lowercase the rest.
+    /// First letter uppercase, the rest lowercase.
     TitleCase,
-    /// Uppercase every letter.
     Uppercase,
-    /// Lowercase every letter (default, matches the UI default).
     #[default]
     Lowercase,
-    /// Randomize the capitalization of each letter.
+    /// Each letter uppercase or lowercase at random.
     Random,
 }
 
@@ -53,85 +48,67 @@ pub enum Capitalization {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum Separator {
-    /// No separator (words are concatenated).
     None,
-    /// A dash (default, matches the UI default).
     #[default]
     Dash,
-    /// A space.
     Space,
-    /// An underscore.
     Underscore,
-    /// A dot.
     Dot,
 }
 
-/// Optional random salt character added to a Diceware passphrase.
+/// Where a random alphanumeric salt character goes in a Diceware passphrase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum Salt {
-    /// No salt (default).
     #[default]
     None,
-    /// Prepend a random alphanumeric character.
     Prefix,
-    /// Insert a random alphanumeric character at a random position.
+    /// At a random position.
     Sprinkle,
-    /// Append a random alphanumeric character.
     Suffix,
 }
 
-/// Settings controlling password/passphrase generation.
-///
-/// Field names use PascalCase to match the JSON blob persisted by the apps under the `PasswordGenerationSettings` settings key.
-/// Every field has a serde default so that older blobs (which lack the Diceware fields) deserialize cleanly.
+/*
+ * The JSON shape of the `PasswordGenerationSettings` settings blob the apps persist: PascalCase keys, and a serde
+ * default on every field so blobs written before the Diceware fields existed still deserialize.
+ */
+
+/// Settings controlling password or passphrase generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct PasswordSettings {
-    /// Which generator to use.
     #[serde(rename = "Type", default)]
     pub generator_type: GeneratorType,
 
-    /// Length of the generated password.
     #[serde(default = "default_length")]
     pub length: u32,
-    /// Whether to include lowercase letters.
     #[serde(default = "default_true")]
     pub use_lowercase: bool,
-    /// Whether to include uppercase letters.
     #[serde(default = "default_true")]
     pub use_uppercase: bool,
-    /// Whether to include numbers.
     #[serde(default = "default_true")]
     pub use_numbers: bool,
-    /// Whether to include special characters.
     #[serde(default = "default_true")]
     pub use_special_chars: bool,
-    /// Whether to exclude ambiguous characters.
     #[serde(default)]
     pub use_non_ambiguous_chars: bool,
-    /// Characters that must never appear in the password (user supplied).
+    /// Characters that must never appear in the password.
     #[serde(default)]
     pub excluded_chars: String,
 
-    /// Number of words in the passphrase.
     #[serde(default = "default_word_count")]
     pub word_count: u32,
-    /// Wordlist language code (free text, case-insensitive). Unknown codes fall back to English, so the TypeScript model and
-    /// apps never need updating to add a language.
+    /// Wordlist language code, case-insensitive; unknown codes fall back to English.
     #[serde(default = "default_language")]
     pub language: String,
-    /// Capitalization applied to each word.
     #[serde(default)]
     pub capitalization: Capitalization,
-    /// Separator between words.
     #[serde(default)]
     pub separator: Separator,
-    /// Optional random salt character.
     #[serde(default)]
     pub salt: Salt,
 
-    /// Optional 32-byte RNG seed as 64 hex characters; the same seed gives the same output, absent means a fresh OS random seed.
+    /// Optional 32-byte RNG seed as 64 hex characters; the same seed gives the same output.
     #[serde(default)]
     pub seed: Option<String>,
 }
@@ -144,11 +121,6 @@ fn default_word_count() -> u32 {
     defaults::DEFAULT_WORD_COUNT
 }
 
-/// Minimum password length.
-const HARD_MIN_PASSWORD_LENGTH: u32 = 1;
-/// Minimum passphrase word count.
-const HARD_MIN_WORD_COUNT: u32 = 1;
-
 fn default_true() -> bool {
     true
 }
@@ -157,24 +129,25 @@ fn default_language() -> String {
     "en".to_string()
 }
 
-/// List the language codes of all bundled Diceware wordlists (first is the default, English).
+// The floors the generator clamps to; the UI sliders start higher (`defaults::MIN_*`).
+const HARD_MIN_PASSWORD_LENGTH: u32 = 1;
+const HARD_MIN_WORD_COUNT: u32 = 1;
+
+/// The language codes of the bundled Diceware wordlists, English first.
 pub fn available_languages() -> Vec<String> {
     wordlists::available_codes().into_iter().map(|c| c.to_string()).collect()
 }
 
 /// Generate a password or passphrase from a JSON-serialized [`PasswordSettings`].
-///
-/// Returns the generated string, or a [`VaultError`] if the settings JSON is invalid.
 pub fn generate_password(settings_json: &str) -> Result<String, VaultError> {
     let settings: PasswordSettings = serde_json::from_str(settings_json)?;
     Ok(generate_from_settings(&settings))
 }
 
-/// Generate a password or passphrase from already-parsed settings.
+/// Generate a password or passphrase from parsed settings.
 fn generate_from_settings(settings: &PasswordSettings) -> String {
     let mut rng = make_rng(settings.seed.as_deref());
 
-    // Clamp length and word count.
     let mut settings = settings.clone();
     settings.length = settings.length.clamp(HARD_MIN_PASSWORD_LENGTH, defaults::MAX_PASSWORD_LENGTH);
     settings.word_count = settings.word_count.clamp(HARD_MIN_WORD_COUNT, defaults::MAX_WORD_COUNT);
@@ -184,4 +157,3 @@ fn generate_from_settings(settings: &PasswordSettings) -> String {
         GeneratorType::Diceware => diceware::generate(&settings, &mut rng),
     }
 }
-

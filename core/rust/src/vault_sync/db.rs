@@ -5,12 +5,12 @@ use std::collections::HashMap;
 use serde_json::{json, Map, Value};
 
 use super::errors::{SyncError, SyncResult};
+use super::legacy;
 use super::session::Host;
 use super::types::{Ack, Command, Db, DbRows, LogLevel};
-use super::legacy;
 use crate::common::encoding::uuid_from_bytes;
-use crate::sqlite_host::{MemoryDatabase, SqlStatement};
 use crate::common::timestamp::{now_iso_utc, now_vault_datetime};
+use crate::sqlite_host::{MemoryDatabase, SqlStatement};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
 use crate::vault_codec::{is_skip_table, manifest_scoped_tables, CodecRecord, CodecTableData, MaterializedTables};
 use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL, UNSTAMPED_MANIFEST_ID};
@@ -129,12 +129,13 @@ pub(crate) enum SchemaState {
     Current,
 }
 
-/// Classify the local vault's schema against the current one (whose stamp the staging database carries).
+/// Where the local vault's schema stands against `current_migration_id`.
 pub(crate) async fn schema_state(host: &Host, current_migration_id: &str) -> SyncResult<SchemaState> {
     let local = latest_migration_id(host, Db::Local).await?;
     if local.is_empty() {
         return Err(SyncError::Other("No migrations found in the database.".to_string()));
     }
+    // LEGACY: a pre-2.0.0 stamp still walks the frozen sqlite-blob chain. TODO: remove with `legacy.rs`.
     if legacy::stamp_predates_manifest_schema(&local)? {
         return Ok(SchemaState::LegacyChain);
     }
@@ -169,8 +170,7 @@ pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec
     Ok(ids)
 }
 
-/// Load materialized tables into the (fresh) staging database, re-embedding blob bytes, and verify its
-/// referential integrity.
+/// Load materialized tables into the fresh staging database, re-embedding blob bytes, and check its foreign keys.
 pub(crate) async fn insert_materialized(host: &Host, materialized: &MaterializedTables, schema_columns: &HashMap<String, Vec<String>>, blobs: &HashMap<String, Vec<u8>>) -> SyncResult<()> {
     for table in &materialized.tables {
         if table.records.is_empty() {
@@ -248,24 +248,20 @@ const PRIMARY_KEY_IDS_FOR_MANIFEST: &str = "SELECT Id FROM EncryptionKeys WHERE 
 const DELETE_KEY: &str = "DELETE FROM EncryptionKeys WHERE Id = ?";
 const PROMOTE_KEY: &str = "UPDATE EncryptionKeys SET IsPrimary = 1 WHERE Id = ?";
 
-/// [`set_active_key_for_manifest`], remembering what it changed so [`undo_active_key_change`] can put it back.
+/// Make a keypair the manifest's active one, remembering what changed so it can be undone.
 pub(crate) async fn rotate_active_key_for_manifest(host: &Host, manifest_id: &str, public_key: &str, private_key: &str) -> SyncResult<DeliveryKeyChange> {
     let previous_primary_ids = query(host, Db::Local, PRIMARY_KEY_IDS_FOR_MANIFEST, vec![json!(manifest_id)]).await?.iter().filter_map(|row| row.get("Id").and_then(Value::as_str)).map(str::to_string).collect();
     let new_key_id = new_id();
     let now = now_vault_datetime();
-    exec(
-        host,
-        Db::Local,
-        vec![
-            SqlStatement { sql: DEMOTE_KEYS_FOR_MANIFEST.to_string(), params: vec![json!(now), json!(manifest_id)] },
-            SqlStatement { sql: INSERT_KEY_FOR_MANIFEST.to_string(), params: vec![json!(new_key_id), json!(manifest_id), json!(public_key), json!(private_key), json!(now), json!(now)] },
-        ],
-    )
-    .await?;
+    let statements = vec![
+        SqlStatement { sql: DEMOTE_KEYS_FOR_MANIFEST.to_string(), params: vec![json!(now), json!(manifest_id)] },
+        SqlStatement { sql: INSERT_KEY_FOR_MANIFEST.to_string(), params: vec![json!(new_key_id), json!(manifest_id), json!(public_key), json!(private_key), json!(now), json!(now)] },
+    ];
+    exec(host, Db::Local, statements).await?;
     Ok(DeliveryKeyChange { new_key_id, previous_primary_ids })
 }
 
-/// Put the delivery keypair back the way it was before [`rotate_active_key_for_manifest`].
+/// Undo a delivery keypair change.
 pub(crate) async fn undo_active_key_change(host: &Host, change: &DeliveryKeyChange) -> SyncResult<()> {
     let mut statements = vec![SqlStatement { sql: DELETE_KEY.to_string(), params: vec![json!(change.new_key_id)] }];
     statements.extend(change.previous_primary_ids.iter().map(|id| SqlStatement { sql: PROMOTE_KEY.to_string(), params: vec![json!(id)] }));
@@ -275,20 +271,16 @@ pub(crate) async fn undo_active_key_change(host: &Host, change: &DeliveryKeyChan
 /// Make a keypair the manifest's active one, demoting (never deleting) whatever it supersedes.
 pub(crate) async fn set_active_key_for_manifest(host: &Host, manifest_id: &str, public_key: &str, private_key: &str) -> SyncResult<()> {
     let now = now_vault_datetime();
-    exec(
-        host,
-        Db::Local,
-        vec![
-            SqlStatement { sql: DEMOTE_KEYS_FOR_MANIFEST.to_string(), params: vec![json!(now), json!(manifest_id)] },
-            SqlStatement { sql: INSERT_KEY_FOR_MANIFEST.to_string(), params: vec![json!(new_id()), json!(manifest_id), json!(public_key), json!(private_key), json!(now), json!(now)] },
-        ],
-    )
-    .await
+    let statements = vec![
+        SqlStatement { sql: DEMOTE_KEYS_FOR_MANIFEST.to_string(), params: vec![json!(now), json!(manifest_id)] },
+        SqlStatement { sql: INSERT_KEY_FOR_MANIFEST.to_string(), params: vec![json!(new_id()), json!(manifest_id), json!(public_key), json!(private_key), json!(now), json!(now)] },
+    ];
+    exec(host, Db::Local, statements).await
 }
 
 /// What each manifest is called, keyed by lower-cased id.
 pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<String, String>> {
-    // A vault whose schema predates the table names none.
+    // A vault whose schema predates the Manifests table names none.
     if !has_column(host, Db::Local, "Manifests", "Name").await? {
         return Ok(HashMap::new());
     }

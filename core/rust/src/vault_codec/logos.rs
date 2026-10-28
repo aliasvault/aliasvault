@@ -1,16 +1,5 @@
-//! Logo identity: one `Logos` row per `(ManifestId, Kind, Source)` per *manifest*.
-//!
-//! One row shape covers every logo an item can have, and `Items.LogoId` is the single pointer to it:
-//!   - `Kind = "favicon"`, `Source` = the domain the logo was fetched from (`github.com`);
-//!   - `Kind = "builtin"`, `Source` = a key into the shared built-in catalog (`shopping`), no image bytes:
-//!     every platform draws that logo itself;
-//!   - `Kind = "custom"`, `Source` = the sha256 of the image the user uploaded.
-//!
-//! A logo belongs to the manifest that owns it: `ManifestId` is that manifest's id, and `Id` derives from
-//! `(manifest id, Kind, Source)` (see [`logo_id_for`]), so every writer derives the same id for the same logo in
-//! the same manifest and the uniqueness invariant is self-enforcing rather than repaired after the fact. A logo
-//! is never shared across manifests: an item that moves into another manifest gets a copy under that manifest's
-//! id, and a favicon nothing references any more is dropped, since the client can fetch it again.
+//! Logo identity: one `Logos` row per `(ManifestId, Kind, Source)`, its `Id` derived from that key so every writer
+//! derives the same id, and no logo shared across manifests: an item moving into another manifest gets a copy there.
 
 use std::collections::{HashMap, HashSet};
 
@@ -24,19 +13,17 @@ use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL};
 
 type Tables = HashMap<String, Vec<CodecRecord>>;
 
-/// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept as-is so every favicon row
-/// that already exists keeps its id: changing it would re-derive the logo id of every item in every vault.
+/// Domain-separation prefix for favicon ids; it predates the `Kind` column, and changing it would re-derive the logo
+/// id of every item in every vault.
 const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 
-/// The `Id` of the logo `(manifest id, kind, source)`: a UUIDv8 whose bytes come from
-/// `sha256(namespace | manifest id | source)`, with a namespace per kind so the three key spaces (a domain, a
-/// catalog key, a content hash) can never collide. `source` is matched case-insensitively.
+/// The `Id` of the logo `(manifest id, kind, source)`: a UUIDv8 of `sha256(namespace | manifest id | source)`, with
+/// `source` matched case-insensitively.
 pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
     super::hash::derived_uuid(&format!("{}\n{}\n{}", namespace_for_kind(kind), id_key(manifest_id), source.to_lowercase()))
 }
 
-/// The derivation namespace for a kind. An unknown kind gets one derived from its own name, so a newer client
-/// can add a kind without this one having to know about it.
+/// The derivation namespace of a kind; an unknown kind derives one from its own name.
 fn namespace_for_kind(kind: &str) -> String {
     match normalize_logo_kind(kind) {
         k if k == LOGO_KIND_FAVICON => FAVICON_ID_NAMESPACE.to_string(),
@@ -44,7 +31,7 @@ fn namespace_for_kind(kind: &str) -> String {
     }
 }
 
-/// True when a row holds an image the user supplied themselves, which the client cannot produce again.
+/// True when a row holds an image the user uploaded, which the client cannot produce again.
 fn is_custom_logo(row: &CodecRecord) -> bool {
     logo_kind(row) == LOGO_KIND_CUSTOM
 }
@@ -55,9 +42,8 @@ fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
     Some((logo_kind(row), source))
 }
 
-/// Bring one manifest's logos into that manifest: clone in the logos its items reference from elsewhere, derive every
-/// row's id from `(manifest id, Kind, Source)` and collapse rows that then share one, repoint `Items.LogoId`, and drop
-/// the favicons nothing references. `all_logos` is the vault-wide snapshot the clones come from.
+/// Bring one manifest's logos into that manifest: clone the logos its items reference from elsewhere, derive every
+/// row's id, repoint `Items.LogoId` and drop the favicons nothing references. `all_logos` is the vault-wide snapshot.
 pub(super) fn localize_logos(tables: &mut Tables, manifest_id: &str, all_logos: &[CodecRecord]) {
     reconcile_logo_references(tables, manifest_id, all_logos);
     let remap = rewrite_logo_rows(tables, manifest_id);
@@ -65,8 +51,7 @@ pub(super) fn localize_logos(tables: &mut Tables, manifest_id: &str, all_logos: 
     prune_unreferenced_logos(tables);
 }
 
-/// Stamp and re-derive one manifest's logos without cloning or pruning: the combine direction, where a manifest
-/// written before logos were per manifest (random ids, no stamps) has to land in its own uniqueness bucket.
+/// Stamp and re-derive one manifest's logos without cloning or pruning: the combine direction.
 pub(super) fn restamp_logos(tables: &mut Tables, manifest_id: &str) {
     let remap = rewrite_logo_rows(tables, manifest_id);
     repoint_items(tables, &remap);
@@ -81,7 +66,7 @@ fn rewrite_logo_rows(tables: &mut Tables, manifest_id: &str) -> HashMap<String, 
         _ => return remap,
     };
 
-    // (kind, source) -> index of the row that survives (deterministic, see `is_better_logo`).
+    // (kind, source) -> index of the row whose content survives.
     let mut survivor_idx: HashMap<(String, String), usize> = HashMap::new();
     for (idx, row) in logos.iter().enumerate() {
         let Some(key) = natural_key(row) else { continue };
@@ -93,7 +78,6 @@ fn rewrite_logo_rows(tables: &mut Tables, manifest_id: &str) -> HashMap<String, 
         }
     }
 
-    // Every row with a natural key maps onto that key's survivor id, and the survivor itself is rewritten in place.
     let survivors: HashSet<usize> = survivor_idx.values().copied().collect();
     for (idx, row) in logos.iter().enumerate() {
         let (Some((kind, source)), Some(old_id)) = (natural_key(row), str_col(row, ID_COL)) else { continue };
@@ -123,8 +107,7 @@ fn rewrite_logo_rows(tables: &mut Tables, manifest_id: &str) -> HashMap<String, 
     remap
 }
 
-/// Repair every `Items.LogoId` in this table set: follow `remap`, then null a reference that resolves to no logo
-/// present here (dangling, like the FK's `ON DELETE SET NULL`).
+/// Follow `remap` for every `Items.LogoId` and null a reference that resolves to no logo present here.
 fn repoint_items(tables: &mut Tables, remap: &HashMap<String, String>) {
     let valid_ids = logo_ids(tables);
     let Some(items) = tables.get_mut(ITEMS_TABLE) else { return };
@@ -155,7 +138,6 @@ fn reconcile_logo_references(tables: &mut Tables, manifest_id: &str, all_logos: 
     let mut clones: Vec<CodecRecord> = Vec::new();
     let manifest_id_value = json!(manifest_id);
     for missing_id in missing {
-        // The referenced row as it exists in its original manifest, if it exists at all.
         let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL).is_some_and(|id| ids_equal(id, &missing_id))) else { continue };
         let Some((kind, source)) = natural_key(origin) else { continue };
 
@@ -191,8 +173,8 @@ fn refill_empty_logo_row(tables: &mut Tables, existing_id: &str, origin: &CodecR
         return;
     }
 
-    // Take the origin's content, keep this manifest's identity, and never move the row's clock backwards: the healed
-    // row has to win last-writer-wins against the empty one still sitting on other devices.
+    // Keep this manifest's identity and never move the row's clock backwards: the healed row has to win
+    // last-writer-wins against the empty one still sitting on other devices.
     let (previous, previous_at) = (existing.get(UPDATED_AT_COL).cloned(), updated_at(existing));
     for (column, value) in origin.iter() {
         if column == ID_COL || column == MANIFEST_ID_COL {
@@ -205,8 +187,8 @@ fn refill_empty_logo_row(tables: &mut Tables, existing_id: &str, origin: &CodecR
     }
 }
 
-/// Drop the logos no item in this table set references, except the ones the user uploaded: a favicon or built-in
-/// logo can be produced again, an uploaded image cannot.
+/// Drop the logos no item in this table set references, except the ones the user uploaded, which cannot be produced
+/// again.
 fn prune_unreferenced_logos(tables: &mut Tables) {
     let referenced: HashSet<String> = tables.get(ITEMS_TABLE).map(|rows| rows.iter().filter_map(|r| str_col(r, LOGO_ID_COL)).map(id_key).collect()).unwrap_or_default();
     if let Some(logos) = tables.get_mut(LOGOS_TABLE) {
@@ -219,8 +201,8 @@ fn logo_ids(tables: &Tables) -> HashSet<String> {
     tables.get(LOGOS_TABLE).map(|rows| rows.iter().filter_map(|r| str_col(r, ID_COL).map(id_key)).collect()).unwrap_or_default()
 }
 
-/// Which row's *content* survives a natural-key collision within one manifest (the id is derived either way): a live
-/// row beats a tombstoned one, a row with image bytes beats an empty one, and the highest `Id` breaks the tie.
+/// Which row's content survives a natural-key collision within one manifest: a live row beats a tombstoned one, a row
+/// with image bytes beats an empty one, and the highest `Id` breaks the tie.
 fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
     let (cand_live, inc_live) = (!is_deleted(candidate), !is_deleted(incumbent));
     if cand_live != inc_live {
@@ -233,7 +215,7 @@ fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
     str_col(candidate, ID_COL).unwrap_or("") > str_col(incumbent, ID_COL).unwrap_or("")
 }
 
-/// True when `FileData` holds actual bytes; a tombstoned row's NULL must not beat a row with an image.
+/// True when `FileData` holds bytes.
 fn has_file_data(row: &CodecRecord) -> bool {
     has_bytes(row.get(FILE_DATA_COL))
 }

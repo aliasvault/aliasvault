@@ -1,14 +1,12 @@
-//! Sync related error definitions.
+//! The engine's errors and the codes the host reports them as.
 
 use serde::{Deserialize, Serialize};
 
 use crate::common::error::VaultError;
 
-/// Client error codes, shared with the client apps (`AppErrorCodes` in the client core).
+/// The client error codes the engine reports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ErrorCode {
-    #[serde(rename = "E-001")]
-    UnknownError,
     /// No encryption key in the session.
     #[serde(rename = "E-202")]
     VaultLocked,
@@ -48,17 +46,15 @@ pub enum ErrorCode {
     /// The engine hit a state it has no rule for; the message says which.
     #[serde(rename = "E-509")]
     SyncEngineFailed,
-    /// The host failed a read command (state, database, at-rest blob).
+    /// The host failed a read command.
     #[serde(rename = "E-601")]
     StorageReadFailed,
-    /// The host failed a write command (state, database, at-rest blob, dirty flag).
+    /// The host failed a write command.
     #[serde(rename = "E-602")]
     StorageWriteFailed,
     /// The engine's staging database failed.
     #[serde(rename = "E-603")]
     DatabaseInitFailed,
-    #[serde(rename = "E-701")]
-    MergeFailed,
     /// The server kept refusing the write as outdated after the re-sync limit.
     #[serde(rename = "E-702")]
     MergeConflict,
@@ -69,14 +65,14 @@ pub enum ErrorCode {
     UploadTooLarge,
     #[serde(rename = "E-805")]
     UploadTimeout,
-    /// LEGACY: a migration cannot run yet (the vault is not on the latest pre-manifest-v1 schema).
+    /// LEGACY: the vault is not on the latest pre-manifest-v1 schema, so the migration cannot run yet.
     #[serde(rename = "E-901")]
     MigrationCheckFailed,
     #[serde(rename = "E-903")]
     ServerUpdateRequired,
 }
 
-/// Why the sync has to end and host needs to logout user session.
+/// Why the host has to log the user out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum LogoutReason {
@@ -96,13 +92,13 @@ pub enum Failure {
 
 #[derive(Debug, thiserror::Error)]
 pub enum SyncError {
-    /// The server could not be reached (transport failure).
+    /// The server could not be reached.
     #[error("Network error: {0}")]
     Network(String),
     /// A request exceeded its timeout.
     #[error("Request timed out: {0}")]
     Timeout(String),
-    /// The session is no longer valid (401/403 after the host's token refresh).
+    /// The session is no longer valid.
     #[error("Session expired")]
     Auth,
     /// The server refuses this client version (HTTP 426).
@@ -165,7 +161,7 @@ pub enum SyncError {
     /// The engine's in-process staging database failed.
     #[error("Staging database failed: {0}")]
     Staging(String),
-    /// The host reported a failure for a command (named by its wire tag, `dbExec`).
+    /// The host reported a failure for a command.
     #[error("Host command {command} failed: {message}")]
     Host { command: &'static str, message: String },
     #[error("JSON error: {0}")]
@@ -181,7 +177,7 @@ pub enum SyncError {
 impl From<crate::crypto::KeyChainError> for SyncError {
     fn from(error: crate::crypto::KeyChainError) -> Self {
         match error {
-            // The engine opens chains with the unlock key only; either rejection is the same E-206 "wrong key" to the host.
+            // Either rejection is a wrong key to the host.
             crate::crypto::KeyChainError::UnlockKeyRejected | crate::crypto::KeyChainError::AccountKeyRejected => SyncError::UnlockKeyRejected,
             crate::crypto::KeyChainError::KeyChainUnreadable(message) => SyncError::KeyChainUnreadable(message),
         }
@@ -232,7 +228,7 @@ impl SyncError {
     }
 }
 
-/// The client error code a host failure of the named command maps to; the error detail names the command.
+/// The error code a failed host command maps to.
 fn storage_error_code(command: &str) -> ErrorCode {
     match command {
         "stateGet" | "dbQuery" | "dbExport" | "vaultLoad" => ErrorCode::StorageReadFailed,

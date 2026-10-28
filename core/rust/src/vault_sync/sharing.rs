@@ -1,16 +1,9 @@
-//! The sharing operations that take vault keys or sign something: creating a group's shared manifest, updating one,
-//! inviting to a group or a shared manifest, accepting those invitations, moving an email alias to another manifest, and
-//! approving a Login with Mobile request.
-//!
-//! Trust between two accounts rests on key certifications: once a user has checked another account's signing key (outside
-//! AliasVault) against that account's account fingerprint (the key's fingerprint), a client signs a
-//! statement that the served key belongs to that account. A certification is only ever checked under the certifier's own signing key, 
-//! derived from their private key, so the server can hide one but not forge one. An admin certifies a member before inviting them anywhere; 
-//! a member certifies the admin before accepting anything from them. A grant opens only once signed by its holder.
+//! The sharing operations that take vault keys or sign something: creating and updating a shared manifest, inviting to
+//! one, accepting an invitation, moving an email alias to another manifest and approving a Login with Mobile request.
 
 use std::collections::HashMap;
-use secrecy::ExposeSecret;
 
+use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
 
 use super::errors::{SyncError, SyncResult};
@@ -24,35 +17,36 @@ use crate::vault_model::{id_key, ids_equal};
 /// The role of a group member who may not administer it.
 const ROLE_MEMBER: &str = "member";
 
-/// The API error code for a recipient whose account has no keypair yet (legacy non-migrated user account).
+/// The API error code for a recipient whose account has no keypair yet.
 const INVITE_RECIPIENT_NOT_READY: &str = "INVITE_RECIPIENT_NOT_READY";
 
-/// The API error code for a member whose signing key this account has not certified with their account fingerprint.
+/// The API error code for a member whose signing key this account has not certified.
 const MEMBER_NOT_VERIFIED: &str = "MEMBER_NOT_VERIFIED";
 
-/// The API error code for an inviter whose signing key this account has not certified with their account fingerprint.
+/// The API error code for an inviter whose signing key this account has not certified.
 const INVITER_NOT_VERIFIED: &str = "INVITER_NOT_VERIFIED";
 
 /// The refusal code for an account fingerprint that is not the fingerprint of the key the server served.
 const ACCOUNT_FINGERPRINT_MISMATCH: &str = "ACCOUNT_FINGERPRINT_MISMATCH";
 
-/// The refusal code for an account fingerprint that is this account's own, typed where the other person's code was asked for.
+/// The refusal code for an account fingerprint that is this account's own.
 const ACCOUNT_FINGERPRINT_IS_OWN: &str = "ACCOUNT_FINGERPRINT_IS_OWN";
 
-/// The longest name an invitation can carry: RSA-2048 OAEP-SHA256 fits 190 bytes. The UI caps names well below this.
+/// The longest name an invitation can carry, the RSA-2048 OAEP-SHA256 plaintext limit.
 const MAX_SHARED_MANIFEST_NAME_BYTES: usize = 190;
 
+/// `GET v2/Groups`.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GroupOverview {
-    /// The caller's own user id, which the certifications and grants it signs name.
+    /// The caller's own user id.
     #[serde(default)]
     user_id: String,
     #[serde(default)]
     groups: Vec<GroupInfo>,
     #[serde(default)]
     received_invitations: Vec<ReceivedManifestInvitation>,
-    /// The people whose current signing key the caller certified, who can be invited without their account fingerprint.
+    /// The people whose current signing key the caller certified.
     #[serde(default)]
     verified_people: Vec<GroupMemberInfo>,
 }
@@ -80,7 +74,7 @@ struct ReceivedManifestInvitation {
     recipient_account_public_key: Option<String>,
     #[serde(default)]
     algorithm: String,
-    /// This account's certification of `signer_public_key`, when it certified the inviter before.
+    /// This account's certification of `signer_public_key`, if it made one.
     #[serde(default)]
     inviter_certification: Option<String>,
 }
@@ -91,6 +85,7 @@ struct AccountFingerprintLookupRequest<'a> {
     code: &'a str,
 }
 
+/// `POST v2/Groups/lookup`.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct AccountFingerprintLookupResponse {
@@ -104,16 +99,6 @@ struct AccountFingerprintLookupResponse {
     account_public_key: Option<String>,
     #[serde(default)]
     account_public_key_signature: Option<String>,
-}
-
-/// The account a shared manifest's key is encrypted for: a group member, or an account found by its account fingerprint.
-struct Recipient {
-    user_id: String,
-    username: String,
-    account_public_key: Option<String>,
-    account_public_key_id: Option<String>,
-    account_public_key_signature: Option<String>,
-    signing_public_key: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -170,6 +155,7 @@ struct GroupManifestInfo {
     key_version: i64,
 }
 
+/// A group member or verified person, and the recipient a shared manifest's key is encrypted for.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GroupMemberInfo {
@@ -184,7 +170,7 @@ struct GroupMemberInfo {
     account_public_key_signature: Option<String>,
     #[serde(default)]
     signing_public_key: Option<String>,
-    /// This account's certification of `signing_public_key`, made when it checked the member's account fingerprint.
+    /// This account's certification of `signing_public_key`, if it made one.
     #[serde(default)]
     key_certification: Option<String>,
 }
@@ -207,6 +193,7 @@ struct UpdateSharedManifestRequest<'a> {
     encrypted_name: Option<&'a str>,
 }
 
+/// `POST v2/Groups/manifests`.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateSharedManifestResponse {
@@ -318,7 +305,7 @@ async fn finish(ctx: &Ctx, what: &str, outcome: Outcome) -> SharingOperationResu
     }
 }
 
-/// A refusal the sharing screen has words for: only the API error code, no engine failure.
+/// A result that carries only an API error code.
 fn refused(code: String) -> SharingOperationResult {
     SharingOperationResult { failure: FailureFields { api_error_code: Some(code), ..Default::default() }, ..Default::default() }
 }
@@ -338,7 +325,7 @@ fn invitation_id(target: &SharingParams) -> SyncResult<String> {
     target.invitation_id.clone().ok_or_else(|| SyncError::Other("The sharing operation names no invitation".to_string()))
 }
 
-/// `GET Groups`: the caller's groups and open invitations, with the caller's own user id.
+/// `GET v2/Groups`: the caller's groups, open invitations and own user id.
 async fn fetch_overview(ctx: &Ctx) -> SyncResult<GroupOverview> {
     let overview: GroupOverview = http::get(&ctx.host, "Groups", false).await?;
     if overview.user_id.is_empty() {
@@ -366,10 +353,18 @@ fn check_name_length(name: &str) -> SyncResult<()> {
     Ok(())
 }
 
-/// This account as a signer: its user id, which everything it signs names, and its signing keys (public key derived from the private one).
+/*
+ * Trust between two accounts rests on key certifications: after checking another account's signing key against the
+ * account fingerprint that person gave them outside AliasVault, a user signs that the served key belongs to that
+ * account. A certification is only ever checked under the certifier's own signing key, derived from their private key,
+ * so the server can hide one but not forge one. An admin certifies a member before inviting them anywhere; a member
+ * certifies the admin before accepting anything from them. A grant opens only once signed by its holder.
+ */
+
+/// This account as a signer: its user id and its signing keypair.
 struct OwnIdentity {
     user_id: String,
-    signing_key: secrecy::SecretString,
+    signing_key: SecretString,
     signing_public_key: String,
 }
 
@@ -395,8 +390,7 @@ impl OwnIdentity {
         certification.is_some_and(|certification| crypto::signing::verify(&self.signing_public_key, &crypto::signing::key_certification_message(&self.user_id, subject_user_id, subject_key), certification))
     }
 
-    /// Make sure this account certified `subject_key` as `subject_user_id`'s: before (`certification`), or now from the
-    /// typed `account_fingerprint`. Without either, the refusal says whose fingerprint is needed (`not_verified`).
+    /// Make sure this account certified `subject_key` as `subject_user_id`'s, before or now from `account_fingerprint`; refuse with `not_verified` otherwise.
     async fn ensure_certified(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, certification: Option<&str>, account_fingerprint: Option<&str>, not_verified: &str) -> SyncResult<Result<(), Refusal>> {
         if self.certified(subject_user_id, subject_key, certification) {
             return Ok(Ok(()));
@@ -407,7 +401,7 @@ impl OwnIdentity {
         }
     }
 
-    /// Certify `subject_key` as `subject_user_id`'s after checking it against the account fingerprint the user typed, and store the certification.
+    /// Check `subject_key` against the typed account fingerprint and store this account's certification of it.
     async fn certify_with_fingerprint(&self, ctx: &Ctx, subject_user_id: &str, subject_key: &str, code: &str) -> SyncResult<Result<(), Refusal>> {
         if self.is_own_fingerprint(code) {
             return Ok(Err(Refusal::Api(ACCOUNT_FINGERPRINT_IS_OWN.to_string())));
@@ -422,7 +416,7 @@ impl OwnIdentity {
     }
 }
 
-/// The VEK generation a new shared manifest starts at; its self-grant is signed over it.
+/// The key version a new shared manifest starts at.
 const NEW_MANIFEST_KEY_VERSION: i64 = 0;
 
 async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
@@ -433,8 +427,6 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     let overview = fetch_overview(ctx).await?;
 
-    // The new manifest's VEK is encrypted only for this account's own public key upon creation, other users are invited separately.
-    // The server creates a group for it, owned by this account.
     let Some(self_public_key) = keys::own_account_public_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_none() {
@@ -444,18 +436,14 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
         return Ok(Err(Refusal::VaultUpgradeRequired));
     }
 
+    // The VEK is encrypted for this account's own key only; other members are invited separately.
     let manifest_vek = crypto::aes_gcm::generate_key();
     let requested_id = db::new_id();
     let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
     let self_grant_signature = me.sign(&crypto::signing::grant_message(&requested_id, NEW_MANIFEST_KEY_VERSION, &me.user_id, &self_public_key, ALGORITHM_RSA_OAEP_SHA256, &self_encrypted_vek))?;
     let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
-    let response: CreateSharedManifestResponse = http::post(
-        &ctx.host,
-        "Groups/manifests",
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: Some(&encrypted_name) },
-        false,
-    )
-    .await?;
+    let request = CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_account_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, self_grant_signature: &self_grant_signature, encrypted_name: Some(&encrypted_name) };
+    let response: CreateSharedManifestResponse = http::post(&ctx.host, "Groups/manifests", &request, false).await?;
     let manifest_id = response.manifest_id;
     if !ids_equal(&manifest_id, &requested_id) {
         return Err(SyncError::Other(format!("The server created shared manifest {} instead of the requested {}, whose key and name are bound to the requested id", manifest_id, requested_id)));
@@ -487,14 +475,14 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let delivery_keys = crypto::generate_rsa_key_pair()?;
     db::set_active_key_for_manifest(&ctx.host, &manifest_id, &delivery_keys.public_key, &delivery_keys.private_key).await?;
 
-    // The name and keypair ride out on the host's next sync, which the dirty flag asks for.
+    // The dirty flag makes the host's next sync push the name and keypair.
     ctx.persist_local_vault(true).await?;
 
     ctx.log(format!("[Sharing] Created shared manifest {} with group {}.", manifest_id, response.group_id)).await;
     Ok(Ok(Done::manifest(manifest_id)))
 }
 
-/// The details an update can change (e.g. the name of a shared manifest).
+/// Rename a shared manifest.
 async fn update_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let key = ctx.encryption_key()?;
     let target = params(ctx)?;
@@ -535,10 +523,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest = group.manifests.iter().find(|candidate| ids_equal(&candidate.manifest_id, &manifest_id)).ok_or_else(|| SyncError::Other("The shared manifest does not belong to the group".to_string()))?;
     let Some(me) = OwnIdentity::open(ctx, &overview).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
 
-    /*
-     * The recipient is either an account found by the account fingerprint the user typed, whose key is certified with it now
-     * (accepting then also makes them a member), or a member this account certified before.
-     */
+    // The recipient is an account found by a typed account fingerprint, certified with it now, or a member or verified person certified before.
     let recipient = match target.account_fingerprint.as_deref().map(str::trim).filter(|code| !code.is_empty()) {
         Some(code) => {
             if me.is_own_fingerprint(code) {
@@ -548,43 +533,34 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
             if let Err(refusal) = me.certify_with_fingerprint(ctx, &account.user_id, &account.signing_public_key, code).await? {
                 return Ok(Err(refusal));
             }
-            Recipient {
+            GroupMemberInfo {
                 user_id: account.user_id,
                 username: account.username,
-                account_public_key: account.account_public_key,
                 account_public_key_id: account.account_public_key_id,
+                account_public_key: account.account_public_key,
                 account_public_key_signature: account.account_public_key_signature,
                 signing_public_key: Some(account.signing_public_key),
+                key_certification: None,
             }
         }
         None => {
-            // A member of the group, or a person verified before who is not in it yet.
             let user_id = target.user_id.clone().ok_or_else(|| SyncError::Other("The invitation names no recipient".to_string()))?;
             let member = group.members.iter().chain(overview.verified_people.iter()).find(|candidate| candidate.user_id == user_id).ok_or_else(|| SyncError::Other("The recipient is neither in the group nor verified".to_string()))?;
-            // The served signing key is trusted only through this account's own certification of it, made with the member's account fingerprint.
             if member.signing_public_key.as_deref().is_some_and(|key| !me.certified(&member.user_id, key, member.key_certification.as_deref())) {
                 return Ok(Err(Refusal::Api(MEMBER_NOT_VERIFIED.to_string())));
             }
-            Recipient {
-                user_id: member.user_id.clone(),
-                username: member.username.clone(),
-                account_public_key: member.account_public_key.clone(),
-                account_public_key_id: member.account_public_key_id.clone(),
-                account_public_key_signature: member.account_public_key_signature.clone(),
-                signing_public_key: member.signing_public_key.clone(),
-            }
+            member.clone()
         }
     };
     let (Some(recipient_public_key), Some(recipient_public_key_id), Some(signature), Some(signing_public_key)) = (recipient.account_public_key.clone(), recipient.account_public_key_id.clone(), recipient.account_public_key_signature.as_deref(), recipient.signing_public_key.as_deref()) else {
         return Ok(Err(Refusal::Api(INVITE_RECIPIENT_NOT_READY.to_string())));
     };
 
-    // Only encrypt the key for a public key its owner signed with their (certified) signing key.
+    // Only encrypt the key for a public key its owner signed with their certified signing key.
     if !crypto::signing::verify(signing_public_key, &crypto::signing::account_public_key_message(&recipient_public_key), signature) {
         return Err(SyncError::Other(format!("The public key of {} carries no valid signature by their signing key", recipient.user_id)));
     }
 
-    // Find this account's own grant on the manifest.
     let mut record = held_record(ctx, &manifest.manifest_id).await?;
     if record.is_none() {
         ctx.warn(format!("[Sharing] No key record stored for shared manifest {}; pulling to re-record it before inviting.", manifest.manifest_id)).await;
@@ -608,20 +584,15 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
         encrypted_name,
     };
 
-    http::post_no_content(
-        &ctx.host,
-        &format!("Groups/{}/manifests/{}/access", group.group_id, manifest.manifest_id),
-        &GrantManifestAccessRequest { user_id: &recipient.user_id, grant, algorithm: ALGORITHM_RSA_OAEP_SHA256 },
-    )
-    .await?;
+    let request = GrantManifestAccessRequest { user_id: &recipient.user_id, grant, algorithm: ALGORITHM_RSA_OAEP_SHA256 };
+    http::post_no_content(&ctx.host, &format!("Groups/{}/manifests/{}/access", group.group_id, manifest.manifest_id), &request).await?;
 
     ctx.log(format!("[Sharing] Invited {} to shared manifest {} with its key encrypted for them.", recipient.user_id, manifest.manifest_id)).await;
     Ok(Ok(Done { manifest_id: Some(manifest.manifest_id.clone()), username: Some(recipient.username), ..Default::default() }))
 }
 
-/// Look up the account behind an account fingerprint and check the fingerprint against the key the server returns, so the user can
-/// confirm who they invite, also before the folder they invite to is shared. Nothing is certified or invited;
-/// `invite_to_shared_manifest` looks the fingerprint up again. With a group, the result says whether the account is in it.
+/// Look up the account behind an account fingerprint and check the fingerprint against the served key, without certifying
+/// or inviting it; with a group, the result says whether the account is in it.
 async fn lookup_account_fingerprint(ctx: &mut Ctx) -> Outcome {
     let target = params(ctx)?;
     let code = target.account_fingerprint.as_deref().map(str::trim).filter(|code| !code.is_empty()).ok_or_else(|| SyncError::Other("The lookup carries no account fingerprint".to_string()))?;
@@ -658,7 +629,7 @@ async fn transfer_email_claim(ctx: &mut Ctx) -> Outcome {
 }
 
 /// Hand the Account Key, encrypted for the requesting client, to a Login with Mobile request, signed with this account's
-/// own key so a stolen session token alone cannot approve a request. An account without a signing key yet sends it unsigned.
+/// own key so a stolen session token alone cannot approve a request.
 async fn approve_mobile_login(ctx: &mut Ctx) -> Outcome {
     let target = params(ctx)?;
     let request_id = target.request_id.as_deref().ok_or_else(|| SyncError::Other("The approval names no request".to_string()))?;
@@ -666,6 +637,7 @@ async fn approve_mobile_login(ctx: &mut Ctx) -> Outcome {
     let algorithm = target.algorithm.as_deref().ok_or_else(|| SyncError::Other("The approval names no algorithm".to_string()))?;
     let signature = match keys::signing_private_key(ctx).await? {
         Some(signing_key) => Some(crypto::signing::sign(signing_key.expose_secret(), &crypto::signing::mobile_login_approval_message(request_id, algorithm, encrypted_account_key))?),
+        // LEGACY: an account without a signing key yet sends the approval unsigned. TODO: remove once every account has upgraded.
         None => None,
     };
     http::post_no_content(&ctx.host, "Auth/mobile-login/submit", &MobileLoginSubmitRequest { request_id, encrypted_account_key, algorithm, signature }).await?;
@@ -673,8 +645,8 @@ async fn approve_mobile_login(ctx: &mut Ctx) -> Outcome {
     Ok(Ok(Done::default()))
 }
 
-/// Accept an invitation to a shared manifest: check the certified inviter signed it and the key inside opens for this
-/// account, then sign the grant as this account's own.
+/// Accept an invitation to a shared manifest: check that the certified inviter signed it and that the key inside opens for
+/// this account, then sign the grant as this account's own.
 async fn accept_shared_manifest_invitation(ctx: &mut Ctx) -> Outcome {
     ctx.encryption_key()?;
     let target = params(ctx)?;
@@ -695,7 +667,7 @@ async fn accept_shared_manifest_invitation(ctx: &mut Ctx) -> Outcome {
         return Ok(Err(refusal));
     }
 
-    // The offer has to be the certified inviter's own work, made out to this account's key, and the key inside has to open.
+    // The grant and the name have to be signed by the certified inviter, made out to this account's key, and the key inside has to open.
     let grant_message = crypto::signing::grant_message(&invitation.manifest_id, invitation.key_version, &invitation.inviter_user_id, recipient_public_key, &invitation.algorithm, encrypted_vek);
     if !crypto::signing::verify(signer_public_key, &grant_message, grant_signature) {
         return Err(SyncError::Other(format!("The grant in invitation {} is not signed by the inviter", invitation.id)));

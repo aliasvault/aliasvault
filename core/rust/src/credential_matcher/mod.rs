@@ -28,7 +28,7 @@ use stop_words::STOP_WORD_SET;
 /// Default per-priority cap on returned matches when the caller does not supply `max_results`.
 const DEFAULT_MAX_RESULTS: usize = 10;
 
-/// Matching mode for credential filtering.
+/// How far a URL match may reach: subdomains and root domain words, subdomains only, or the exact domain.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum AutofillMatchingMode {
@@ -38,49 +38,43 @@ pub enum AutofillMatchingMode {
     UrlSubdomain,
 }
 
-/// A credential record for matching.
+/// An item as the matcher sees it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Credential {
     pub id: String,
     pub item_name: Option<String>,
-    /// List of URLs associated with this item (supports multi-value URL fields)
     #[serde(default)]
     pub item_urls: Vec<String>,
     #[serde(default)]
     pub username: Option<String>,
 }
 
-/// Input for credential filtering.
+/// What to match against what.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CredentialMatcherInput {
-    /// List of credentials to filter
     pub credentials: Vec<Credential>,
-    /// Current URL or app package name
+    /// The current URL, app package name or search text.
     pub current_url: String,
-    /// Current page title (optional)
     #[serde(default)]
     pub page_title: String,
-    /// Matching mode
     #[serde(default)]
     pub matching_mode: AutofillMatchingMode,
-    /// When true, skip port matching entirely (useful for Android where port info is unavailable).
-    /// All domain matches will be treated equally regardless of port.
+    /// Match domains regardless of port (Android has no port information).
     #[serde(default)]
     pub ignore_port: bool,
-    /// Per-priority cap on returned matches, 10 when omitted by the caller.
+    /// Cap on returned matches, 10 when omitted.
     #[serde(default)]
     pub max_results: Option<usize>,
 }
 
-/// Output from credential filtering.
+/// The matches of the best matching stage.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CredentialMatcherOutput {
-    /// IDs of matched credentials, in priority order, capped at `input.max_results` (10 by default).
     pub matched_ids: Vec<String>,
-    /// Which priority level matched (1-4, or 0 if no match).
+    /// The priority of the stage that matched (1 to 4), or 0 for no match.
     pub matched_priority: u8,
 }
 
@@ -91,9 +85,14 @@ impl CredentialMatcherOutput {
     }
 }
 
-/// Filter credentials based on current URL and page context with anti-phishing protection.
-///
-/// Returns the credentials of the best matching priority stage, capped per `input.max_results` (10 by default).
+/*
+ * The stages run in order and the first one with a match wins: app package name (priority 1), URL domain (2), root
+ * domain words or page title words against item names (3), the search text against item names (4).
+ * Anti-phishing: the name stages only consider items without URLs, and a URL whose host cannot be extracted matches
+ * nothing instead of falling through to them.
+ */
+
+/// The credentials of the best matching stage.
 pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOutput {
     let CredentialMatcherInput { credentials, current_url, page_title, matching_mode, ignore_port, max_results } = input;
     let max_results = max_results.unwrap_or(DEFAULT_MAX_RESULTS);
@@ -103,27 +102,22 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
     }
 
     if is_app_package_name(&current_url) {
-        // Stage 1: app package name exact match (e.g. com.coolblue.app).
+        // Stage 1: app package name. A package name that matches nothing falls through to the text stages.
         let ids = match_package_name(&credentials, &current_url, max_results);
         if !ids.is_empty() {
             return CredentialMatcherOutput::matched(1, ids);
         }
-        // A package name that matched nothing skips URL matching and falls through to the text stages.
     } else {
         let current = extract_domain_with_port(&current_url);
         if !current.domain.is_empty() {
-            // Stage 2: URL domain matching (exact domain+port, exact domain, then subdomain/root domain).
+            // Stage 2: URL domain.
             let allow_subdomain = matches!(matching_mode, AutofillMatchingMode::Default | AutofillMatchingMode::UrlSubdomain);
             let ids = match_domains(&credentials, &current, allow_subdomain, ignore_port, max_results);
             if !ids.is_empty() {
                 return CredentialMatcherOutput::matched(2, ids);
             }
 
-            /*
-             * Stage 3: words from only the root domain against item names, e.g. outlook.office.com contributes "office" but not
-             * "outlook". Only credentials with no URLs are eligible. This is what Default mode adds on top of URL matching, so the
-             * URL-only modes must not fall back to it.
-             */
+            // Stage 3: root domain words against item names, in Default mode only; the URL-only modes must not fall back to it.
             if matching_mode == AutofillMatchingMode::Default {
                 let domain_words = extract_words(&extract_root_domain(&current.domain));
                 let ids = match_item_names(&credentials, &domain_words, max_results);
@@ -142,16 +136,14 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
         }
     }
 
-    // Stage 4: page title against item names for input that is neither a URL nor a linked app package.
-    // Anti-phishing: only credentials with no URLs are eligible.
+    // Stage 4: page title words against item names.
     let title_words = extract_words(&page_title);
     let ids = match_item_names(&credentials, &title_words, max_results);
     if !ids.is_empty() {
         return CredentialMatcherOutput::matched(3, ids);
     }
 
-    // Stage 5: the search string itself against item names. Anti-phishing: only credentials with no URLs
-    // are eligible, so an app package like "com.paypal.rewards" never gets the PayPal website credential.
+    // Stage 5: the search text against item names.
     let search_words = extract_words(&current_url);
     let ids = match_item_names(&credentials, &search_words, max_results);
     if !ids.is_empty() {
@@ -171,19 +163,15 @@ fn match_package_name(credentials: &[Credential], package_name: &str, max_result
         .collect()
 }
 
-/// Ids of the credentials at the best domain match rank; only that rank is returned.
-///
-/// Ranks: 1 exact domain+port, 2 exact domain ignoring port, 3 subdomain/root domain. If any credential
-/// matches on domain+port, credentials on the same domain with another port are left out.
+/// Ids of the credentials at the best domain match rank (1 domain and port, 2 domain, 3 subdomain or root domain);
+/// lower ranks are left out.
 fn match_domains(credentials: &[Credential], current: &DomainWithPort, allow_subdomain: bool, ignore_port: bool, max_results: usize) -> Vec<String> {
     let ranked: Vec<(&str, u8)> = credentials
         .iter()
         .filter_map(|cred| domain_match_rank(cred, current, allow_subdomain, ignore_port).map(|rank| (cred.id.as_str(), rank)))
         .collect();
 
-    let Some(best) = ranked.iter().map(|(_, rank)| *rank).min() else {
-        return vec![];
-    };
+    let Some(best) = ranked.iter().map(|(_, rank)| *rank).min() else { return vec![] };
 
     ranked.into_iter().filter(|(_, rank)| *rank == best).map(|(id, _)| id.to_string()).take(max_results).collect()
 }
@@ -198,8 +186,7 @@ fn domain_match_rank(cred: &Credential, current: &DomainWithPort, allow_subdomai
             continue;
         }
 
-        // Rank 1 needs the same domain AND the same port (or both no port). Android does not provide
-        // port information, so with ignore_port the plain domain match is the best available.
+        // Rank 1 needs the same domain and port (or both none); with ignore_port the plain domain match is the best there is.
         if !ignore_port && current.domain == item.domain && current.port == item.port {
             return Some(1);
         }
@@ -219,9 +206,8 @@ fn domain_match_rank(cred: &Credential, current: &DomainWithPort, allow_subdomai
     best
 }
 
-/// Ids of credentials without URLs whose item name shares a complete word with `words`.
-///
-/// Credentials that have any URL are skipped: a name match must never surface a credential bound to another site (anti-phishing).
+/// Ids of credentials without URLs whose item name shares a complete word with `words`; a credential with a URL never
+/// matches by name (anti-phishing).
 fn match_item_names(credentials: &[Credential], words: &[String], max_results: usize) -> Vec<String> {
     if words.is_empty() {
         return vec![];
@@ -241,10 +227,10 @@ fn match_item_names(credentials: &[Credential], words: &[String], max_results: u
         .collect()
 }
 
-/// Title words of this many characters or fewer are too generic to match on.
+/// Words of this many characters or fewer are too generic to match on.
 const MAX_IGNORED_WORD_CHARS: usize = 3;
 
-/// Extract meaningful words from text, removing punctuation and filtering stop words.
+/// The lowercase words of a text, without punctuation, short words and stop words.
 fn extract_words(text: &str) -> Vec<String> {
     if text.is_empty() {
         return vec![];
@@ -260,7 +246,7 @@ fn extract_words(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// JSON sibling of [`filter_credentials`]. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.
+/// [`filter_credentials`] over JSON, for the uniffi bindings.
 pub fn filter_credentials_json(input_json: &str) -> crate::common::error::VaultResult<String> {
     crate::common::error::json_call(input_json, |input| Ok(filter_credentials(input)))
 }

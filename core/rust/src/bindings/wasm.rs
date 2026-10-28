@@ -41,9 +41,7 @@ pub fn vault_codec_logo_id_for_js(manifest_id: String, kind: String, source: Str
 #[wasm_bindgen(js_name = filterCredentials)]
 pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
     let input: CredentialMatcherInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-
     let output: CredentialMatcherOutput = filter_credentials(input);
-
     to_js(&output)
 }
 
@@ -98,22 +96,19 @@ pub fn get_diceware_languages_js() -> Vec<String> {
     available_languages()
 }
 
-/// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
-/// returns `Identity` JSON.
+/// Generate a random identity from `IdentityRequest` JSON; returns `Identity` JSON.
 #[wasm_bindgen(js_name = generateIdentity)]
 pub fn generate_identity_js(request_json: &str) -> Result<String, JsValue> {
     crate::identity_generator::generate_identity(request_json).map_err(js_err)
 }
 
-/// Generate a username from a JSON-serialized name input
-/// (`firstName`, `lastName`, `birthDate`).
+/// Generate a username from name input JSON (`firstName`, `lastName`, `birthDate`).
 #[wasm_bindgen(js_name = generateIdentityUsername)]
 pub fn generate_identity_username_js(input_json: &str) -> Result<String, JsValue> {
     crate::identity_generator::generate_username(input_json).map_err(js_err)
 }
 
-/// Generate an email prefix from a JSON-serialized name input
-/// (`firstName`, `lastName`, `birthDate`).
+/// Generate an email prefix from name input JSON (`firstName`, `lastName`, `birthDate`).
 #[wasm_bindgen(js_name = generateIdentityEmailPrefix)]
 pub fn generate_identity_email_prefix_js(input_json: &str) -> Result<String, JsValue> {
     crate::identity_generator::generate_email_prefix(input_json).map_err(js_err)
@@ -137,23 +132,19 @@ pub fn get_identity_age_ranges_js() -> Vec<String> {
     crate::identity_generator::available_age_ranges()
 }
 
-/// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
-/// Input that starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the
-/// decrypted `MessageSource` of both legacy and source-only emails can be passed as-is.
+/// Parse a stored email source into its bodies and attachment metadata.
 #[wasm_bindgen(js_name = parseEmailSource)]
 pub fn parse_email_source_js(source: &[u8]) -> Result<JsValue, JsValue> {
     to_js(&crate::email_parser::parse_email_source(source).map_err(js_err)?)
 }
 
-/// Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
+/// The raw RFC 822 bytes of a stored email source.
 #[wasm_bindgen(js_name = decodeEmailSource)]
 pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
     crate::email_parser::decode_email_source(source).map_err(js_err)
 }
 
-/// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
-/// An attachment the parse result flagged as `detached` carries no body in the source; pass its separately
-/// fetched body as `detachedBody`. It is ignored for attachments that are still inline.
+/// The decoded bytes of the attachment at `index`, with its separately fetched body when it is `detached`.
 #[wasm_bindgen(js_name = extractEmailAttachment)]
 pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: Option<Box<[u8]>>) -> Result<Vec<u8>, JsValue> {
     crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref()).map_err(js_err)
@@ -371,15 +362,13 @@ pub fn srp_derive_verifier_js(private_key: &str) -> Result<String, JsValue> {
 /// A client ephemeral pair as `{ public, secret }` (uppercase hex).
 #[wasm_bindgen(js_name = srpGenerateEphemeral)]
 pub fn srp_generate_ephemeral_js() -> Result<JsValue, JsValue> {
-    let ephemeral = crate::crypto::srp::srp_generate_ephemeral();
-    to_js(&ephemeral)
+    to_js(&crate::crypto::srp::srp_generate_ephemeral())
 }
 
 /// The client session as `{ proof, key }` (uppercase hex) from the server's public ephemeral; hex inputs.
 #[wasm_bindgen(js_name = srpDeriveSession)]
 pub fn srp_derive_session_js(client_secret: &str, server_public: &str, salt: &str, identity: &str, private_key: &str) -> Result<JsValue, JsValue> {
-    let session = crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key).map_err(js_err)?;
-    to_js(&session)
+    to_js(&crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key).map_err(js_err)?)
 }
 
 /// Whether the server's proof (M2) matches, which confirms it derived the same session key; hex inputs.
@@ -432,7 +421,7 @@ mod sqlite_js {
     /// JavaScript's `Number.MAX_SAFE_INTEGER` (2^53 - 1).
     const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
 
-    /// An in-memory SQLite database that can be used by host applications to have uniform access to the database.
+    /// An in-memory SQLite database the host reads and writes through.
     #[wasm_bindgen(js_name = SqliteMemoryDatabase)]
     pub struct SqliteMemoryDatabaseJs {
         inner: Option<MemoryDatabase>,

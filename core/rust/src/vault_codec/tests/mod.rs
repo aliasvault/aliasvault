@@ -184,7 +184,7 @@ fn unknown_top_level_manifest_fields_round_trip() {
 
 #[test]
 fn canonicalize_repairs_what_validation_would_refuse() {
-    // Dangling references are nulled or dropped on the way out, so a push is never refused for them; a manifest
+    // Unresolved references are nulled or dropped on the way out, so a push is never refused for them; a manifest
     // handed to validation with them still in place is refused, with a stable rule id per reference.
     let out = canonicalize(vec![
         table("Items", vec![row(&[("Id", json!("i1")), ("FolderId", json!("missing"))]), row(&[("Id", json!("i2")), ("FolderId", json!(""))])]),

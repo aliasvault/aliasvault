@@ -206,7 +206,7 @@ fn age_range_conversion_matches_reference_values() {
         ("20-24", 2003, 2),
     ];
     for (range, target_year, year_deviation) in cases {
-        let options = age_range_to_birthdate_options_at(range, 2025).unwrap();
+        let options = age_range_to_birthdate_options(range, 2025).unwrap();
         assert_eq!(options.target_year, target_year, "range {range}");
         assert_eq!(options.year_deviation, year_deviation, "range {range}");
     }
@@ -216,7 +216,7 @@ fn age_range_conversion_matches_reference_values() {
 fn age_range_conversion_rejects_invalid_input() {
     for input in ["random", "", "2125", "21-25-30", "abc-def", "21-abc"] {
         assert!(
-            age_range_to_birthdate_options_at(input, 2025).is_none(),
+            age_range_to_birthdate_options(input, 2025).is_none(),
             "expected None for {input:?}"
         );
     }

@@ -1,13 +1,11 @@
-//! Domain extraction and matching utilities.
+//! Domain extraction and matching.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
 use super::public_suffix;
 
-/// Common top-level domains (TLDs) used for app package name detection.
-/// When a search string starts with one of these TLDs followed by a dot (e.g., "com.coolblue.app"),
-/// it's identified as a reversed domain name (app package name) rather than a regular URL.
+/// The TLDs that, as the first label of a dotted string, mark it as an app package name (a reversed domain).
 static COMMON_TLDS: &[&str] = &[
     // Generic TLDs
     "com", "net", "org", "edu", "gov", "mil", "int",
@@ -25,22 +23,18 @@ static COMMON_TLDS: &[&str] = &[
 /// [`COMMON_TLDS`] as a set for constant-time lookup.
 static COMMON_TLD_SET: LazyLock<HashSet<&'static str>> = LazyLock::new(|| COMMON_TLDS.iter().copied().collect());
 
-/// Check if a string is likely an app package name (reversed domain).
-/// Package names start with TLD followed by dot (e.g., "com.example", "nl.app").
+/// Whether the text is an app package name: a reversed domain whose first label is a TLD.
 pub fn is_app_package_name(text: &str) -> bool {
     if !text.contains('.') || text.starts_with("http://") || text.starts_with("https://") {
         return false;
     }
 
-    // A first label that is a TLD indicates a reversed domain (package name).
     let first_part = text.split('.').next().unwrap_or("").to_lowercase();
     COMMON_TLD_SET.contains(first_part.as_str())
 }
 
-/// Split a URL into its scheme, authority (host and port) and the path/query/fragment remainder.
-///
-/// The scheme is returned as written; use [`is_web_scheme`] to test it. A host followed by a
-/// numeric port ("example.com:8080") is not mistaken for a scheme.
+/// Split a URL into its scheme (as written), authority (host and port) and the rest; a host with a numeric port is not
+/// mistaken for a scheme.
 pub(crate) fn split_url(url: &str) -> (Option<&str>, &str, &str) {
     let (scheme, after_scheme) = match url.split_once(':') {
         Some((scheme, rest)) if is_scheme(scheme) && !is_port(rest) => (Some(scheme), rest.strip_prefix("//").unwrap_or(rest)),
@@ -68,7 +62,7 @@ fn is_port(rest: &str) -> bool {
     !port.is_empty() && port.chars().all(|c| c.is_ascii_digit())
 }
 
-/// Result of domain extraction containing both the domain and optional port.
+/// A domain and its port, as extracted from a URL.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct DomainWithPort {
     pub domain: String,
@@ -76,7 +70,7 @@ pub struct DomainWithPort {
 }
 
 impl DomainWithPort {
-    /// Returns the domain with port if present (e.g., "example.com:8080")
+    /// The domain with its port when it has one.
     pub fn with_port(&self) -> String {
         match &self.port {
             Some(p) => format!("{}:{}", self.domain, p),
@@ -85,24 +79,21 @@ impl DomainWithPort {
     }
 }
 
-/// Extract domain and port from URL, handling both full URLs and partial domains.
-/// Returns DomainWithPort with empty domain if not a valid URL/domain.
+/// The domain and port of a URL or partial domain; an empty domain when it is neither.
 pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
     let lowered = url.trim().to_lowercase();
 
-    // A blob URL ("blob:https://example.com/<uuid>") belongs to the origin it wraps.
+    // A blob URL belongs to the origin it wraps.
     let lowered = lowered.strip_prefix("blob:").unwrap_or(&lowered);
     let (scheme, authority, _) = split_url(lowered);
 
-    // A web scheme is what allows single-word hostnames like "http://plex" or "https://nas",
-    // common in self-hosted setups. Any other scheme names something that is not a website.
+    // A web scheme allows single-word hostnames (self-hosted "https://nas"); any other scheme is not a website.
     let has_protocol = match scheme {
         Some(scheme) if is_web_scheme(scheme) => true,
         Some(_) => return DomainWithPort::default(),
         None => false,
     };
 
-    // Without a scheme, text starting with a TLD and a dot is an app package name, not a domain.
     if !has_protocol && is_app_package_name(authority) {
         return DomainWithPort::default();
     }
@@ -130,7 +121,6 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
 
 /// The host and numeric port of a URL authority, without userinfo and without the trailing dot of a fully qualified name.
 pub(crate) fn authority_host_port(authority: &str) -> (&str, Option<String>) {
-    // The host is what follows any userinfo: "https://user@example.com" opens example.com.
     let host_and_port = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
     let (host, port) = split_host_port(host_and_port);
     (host.strip_suffix('.').unwrap_or(host), port)
@@ -152,15 +142,12 @@ fn split_host_port(authority: &str) -> (&str, Option<String>) {
     (host, port)
 }
 
-/// Extract domain from URL, handling both full URLs and partial domains.
-/// Returns empty string if not a valid URL/domain.
-/// This strips port numbers; use extract_domain_with_port() to preserve port info.
+/// The domain of a URL or partial domain without its port; empty when it is neither.
 pub fn extract_domain(url: &str) -> String {
     extract_domain_with_port(url).domain
 }
 
-/// Check if a host string is an IP address literal (IPv4 with an optional trailing dot, or IPv6, optionally bracketed).
-/// IP addresses have no domain hierarchy, so they must never be reduced to a "root domain".
+/// Whether a host is an IP literal (IPv4 with an optional trailing dot, or IPv6, optionally bracketed).
 fn is_ip_literal(host: &str) -> bool {
     let bare = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')).unwrap_or(host);
     let bare = bare.strip_suffix('.').unwrap_or(bare);
@@ -182,8 +169,7 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
         return false;
     }
 
-    // IP address literals have no subdomain structure: only the exact same address matches.
-    // Without this guard, "192.168.1.5" and "10.0.1.5" would both reduce to root "1.5" and match.
+    // An IP literal has no domain hierarchy: only the same address matches, never a shared "root" like "1.5".
     if is_ip_literal(domain1) || is_ip_literal(domain2) {
         return domain1 == domain2;
     }
@@ -192,17 +178,14 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
         return true;
     }
 
-    /*
-     * Anti-phishing: only a shared registrable domain matches. Two hosts under a public suffix ("victim.vercel.app",
-     * "attacker.vercel.app") never match, and neither do a suffix and a host under it (it has no registrable domain).
-     */
+    // Anti-phishing: only a shared registrable domain matches, so two hosts under a public suffix never do.
     match (public_suffix::registrable_domain(domain1), public_suffix::registrable_domain(domain2)) {
         (Some(root1), Some(root2)) => root1 == root2,
         _ => false,
     }
 }
 
-/// Check if a WebAuthn rpId is allowed for a host based on the Public Suffix List.
+/// Whether a page on `host` may use `rp_id` as its WebAuthn relying party id: the host or a parent that is not a public suffix.
 pub fn is_rp_id_allowed_for_host(rp_id: &str, host: &str) -> bool {
     let (Some(rp_id), Some(host)) = (normalize_rp_host(rp_id), normalize_rp_host(host)) else {
         return false;
@@ -224,7 +207,7 @@ pub fn is_rp_id_allowed_for_host(rp_id: &str, host: &str) -> bool {
 /// At most this many distinct registrable domain labels are read from a `/.well-known/webauthn` file.
 pub(super) const MAX_RELATED_ORIGIN_LABELS: usize = 10;
 
-/// WebAuthn related origins validation.
+/// Whether `caller_origin` is listed in the `origins` of an rp id's `/.well-known/webauthn` file, within the label cap.
 pub fn is_related_origin_allowed(caller_origin: &str, origins: &[String]) -> bool {
     let mut labels_seen: Vec<&str> = Vec::new();
     for origin in origins {

@@ -1,7 +1,8 @@
-//! The local storage-model migrations: where the vault's schema stands, the rebuild of a stale one, and the
-//! operations the upgrade gate drives (`migrationStatus`, `migrateManifest`).
+//! The local storage-model migrations: where the vault's schema stands, the rebuild of a stale one, and the operations
+//! behind the upgrade gate.
 
 use std::collections::HashMap;
+
 use secrecy::ExposeSecret;
 
 use super::db::{self, SchemaState};
@@ -54,6 +55,7 @@ pub(crate) async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
         if schema_state(ctx).await? == SchemaState::LegacyChain {
             return Ok(MigrationKind::None);
         }
+        // LEGACY: an account without a key chain is still on sqlite-blob. TODO: remove with `legacy.rs`.
         if !keys::has_cached_key_chain(&ctx.host).await? && !legacy::accept_upgrade_done_elsewhere(ctx).await? {
             return Ok(MigrationKind::StorageFormatUpgrade);
         }
@@ -71,10 +73,11 @@ pub(crate) async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
     MigrationStatusResult { kind }
 }
 
-/// Bring the local vault onto the current storage model and push it: a schema rebuild for a migrated account, the
-/// one-time account upgrade (`legacy::upgrade_account_to_manifest_v1`) for an account without a key hierarchy yet.
+/// Bring the local vault onto the current storage model and push it: a schema rebuild, or the one-time account upgrade
+/// for an account without a key chain yet.
 pub(crate) async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     let migrated: SyncResult<bool> = async {
+        // LEGACY: an account without a key chain is still on sqlite-blob. TODO: remove with `legacy.rs`.
         if !keys::has_cached_key_chain(&ctx.host).await? {
             ensure_server_ready(ctx).await?;
             return legacy::upgrade_account_to_manifest_v1(ctx).await;
@@ -91,7 +94,7 @@ pub(crate) async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     }
 }
 
-/// Refuse the one-time account upgrade before it touches the local vault unless the server is reachable and serves the v2 API.
+/// Refuse the account upgrade before it touches the local vault unless the server is reachable.
 async fn ensure_server_ready(ctx: &Ctx) -> SyncResult<()> {
     if http::get_status(&ctx.host).await?.server_version == http::SERVER_UNREACHABLE_VERSION {
         return Err(SyncError::Network("the server is unreachable; the migration needs it".to_string()));
@@ -99,8 +102,8 @@ async fn ensure_server_ready(ctx: &Ctx) -> SyncResult<()> {
     Ok(())
 }
 
-/// The permanent migration: rebuild a stale local schema onto the current one and push it. Returns whether the
-/// push reached the server; a vault already on the current schema counts as pushed.
+/// Rebuild a stale local schema onto the current one and push it; returns whether the push reached the server, with a
+/// vault already on the current schema counting as pushed.
 pub(crate) async fn migrate_schema(ctx: &mut Ctx) -> SyncResult<bool> {
     match schema_state(ctx).await? {
         SchemaState::Current => Ok(true),
@@ -112,8 +115,8 @@ pub(crate) async fn migrate_schema(ctx: &mut Ctx) -> SyncResult<bool> {
     }
 }
 
-/// Rebuild the local vault onto the current schema locally and store it as a pending change; `stamp_unstamped_into`
-/// stamps rows that carry no manifest yet (sqlite-blob vaults only).
+/// Rebuild the local vault onto the current schema and store it as a pending change; `stamp_unstamped_into` stamps
+/// rows that carry no manifest yet.
 pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, stamp_unstamped_into: Option<String>) -> SyncResult<()> {
     ctx.log("[Migration] Migrating local vault onto the current schema (local round-trip, no server involved)...").await;
     let set = push::canonicalize_vault(ctx, stamp_unstamped_into).await?;
@@ -134,8 +137,8 @@ pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, stamp_unstamped_into: Op
     Ok(())
 }
 
-/// Push the migrated vault and clear the dirty flag. A refused or failed push leaves the vault dirty for the next sync,
-/// except a failure that ends the session. Returns whether the push reached the server.
+/// Push the migrated vault and clear the dirty flag; returns whether the push reached the server, a refused or failed push
+/// leaving the vault dirty for the next sync unless the failure ends the session.
 pub(crate) async fn push_migrated_vault(ctx: &mut Ctx, kind: WriteKind) -> SyncResult<bool> {
     match push::upload_vault(ctx, None, kind).await {
         Ok(upload) if upload.status == PushStatus::Ok => {

@@ -256,7 +256,7 @@ export async function handleWebAuthnGetAssertion(
     const sqliteClient = await createVaultSqliteClient();
     const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId, manifestId);
 
-    // Signing an assertion is a use of the item the passkey hangs off.
+    // Signing an assertion is a use of the item the passkey belongs to.
     const itemId = sqliteClient.passkeys.getById(passkeyId, manifestId)?.ItemId;
     if (itemId) {
       void handleRecordItemUsage({ itemId, manifestId, action: 'passkey' });

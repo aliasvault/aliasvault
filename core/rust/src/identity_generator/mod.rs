@@ -21,98 +21,85 @@ use serde::{Deserialize, Serialize};
 use crate::common::error::{json_call, VaultError};
 use crate::common::rng::{make_rng, unbiased_index};
 
-/// Gender value used in generated identities.
 pub const GENDER_MALE: &str = "Male";
-/// Gender value used in generated identities.
 pub const GENDER_FEMALE: &str = "Female";
 
-/// Default minimum age (in years) for generated birth dates.
+// The age window of a generated birth date when the request names no age range or birth year.
 const DEFAULT_MIN_AGE: i32 = 21;
-/// Default maximum age (in years) for generated birth dates.
 const DEFAULT_MAX_AGE: i32 = 65;
 
 /// The age range option values offered by the settings UIs; "random" means the default 21-65 range.
 const AGE_RANGES: &[&str] = &["random", "21-25", "26-30", "31-35", "36-40", "41-45", "46-50", "51-55", "56-60", "61-65"];
 
-/// A generated identity, serialized with camelCase field names to match the JSON contract shared by all clients.
+/// A generated identity.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
-    /// First name, matching the requested language and the birth decade where available.
     pub first_name: String,
-    /// Last name, matching the requested language.
     pub last_name: String,
-    /// Gender the first name was drawn from: "Male" or "Female".
+    /// "Male" or "Female".
     pub gender: String,
-    /// Birth date in `yyyy-MM-dd` format.
+    /// `yyyy-MM-dd`.
     pub birth_date: String,
-    /// Email prefix derived from the name and birth year.
     pub email_prefix: String,
-    /// Username derived from the name and birth year (alphanumeric only).
+    /// ASCII alphanumeric only.
     pub nick_name: String,
 }
 
-/// Explicit birth year window for generation: a target year plus/minus a deviation.
+/// A birth year window: a target year plus or minus a deviation.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BirthdateOptions {
-    /// The central birth year.
     pub target_year: i32,
-    /// Allowed deviation in years around the target (0 = within the target year only).
+    /// 0 keeps the birth date within the target year.
     pub year_deviation: i32,
 }
 
-/// Request controlling identity generation. Every field is optional; unknown languages fall back to English.
+/// Request controlling identity generation; every field is optional.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 pub struct IdentityRequest {
-    /// Dictionary language code (e.g. "en", "nl"). Empty or unknown falls back to English.
+    /// Dictionary language code; empty or unknown falls back to English.
     pub language: String,
-    /// Gender preference: "male", "female" or "random" (default).
+    /// "male", "female" or anything else for a coin flip.
     pub gender: Option<String>,
-    /// Age range preference as stored in settings (e.g. "21-25" or "random"). Ignored when `birthdate_options` is set.
+    /// An [`AGE_RANGES`] value; ignored when `birthdate_options` is set.
     pub age_range: Option<String>,
-    /// Explicit birth year window. Takes precedence over `age_range`.
     pub birthdate_options: Option<BirthdateOptions>,
-    /// Optional 32-byte RNG seed as a 64-character hex string for deterministic output (used by tests).
+    /// Optional 32-byte RNG seed as 64 hex characters; the same seed gives the same output.
     pub seed: Option<String>,
 }
 
-/// Name and birth date input for username/email prefix generation, from a generated identity or persona fields typed by the user.
+/// Name and birth date input for username and email prefix generation.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 pub struct NameInput {
-    /// First name.
     pub first_name: String,
-    /// Last name.
     pub last_name: String,
-    /// Birth date; only the leading `yyyy` year part is used.
+    /// Only the leading `yyyy` year is used.
     pub birth_date: String,
-    /// Optional 32-byte RNG seed as a 64-character hex string (used by tests).
+    /// Optional 32-byte RNG seed as 64 hex characters; the same seed gives the same output.
     pub seed: Option<String>,
 }
 
-/// Generate a random identity from a JSON-serialized [`IdentityRequest`].
-///
-/// Returns the generated [`Identity`] as a JSON string, or a [`VaultError`] if the request JSON is invalid.
+/// Generate a random identity from a JSON-serialized [`IdentityRequest`], as JSON.
 pub fn generate_identity(request_json: &str) -> Result<String, VaultError> {
     json_call(request_json, |request: IdentityRequest| Ok(generate_from_request(&request)))
 }
 
-/// Generate a random identity from an already-parsed request.
+/// Generate a random identity from a parsed request.
 fn generate_from_request(request: &IdentityRequest) -> Identity {
     let mut rng = make_rng(request.seed.as_deref());
     let dictionary = dictionaries::resolve(&request.language);
 
-    // Determine gender: explicit "male"/"female" wins, anything else is a coin flip.
     let is_male = match request.gender.as_deref() {
         Some("male") => true,
         Some("female") => false,
         _ => unbiased_index(&mut rng, 2) == 0,
     };
 
-    // Generate the birth date first: decade-based languages select first names by birth year.
-    let birthdate_options = request.birthdate_options.or_else(|| age_range_to_birthdate_options(request.age_range.as_deref().unwrap_or("")));
+    // The birth date comes first: decade-based dictionaries select first names by birth year.
+    let birthdate_options = request.birthdate_options.or_else(|| age_range_to_birthdate_options(request.age_range.as_deref().unwrap_or(""), Utc::now().year()));
     let birth_date = random_birth_date(&mut rng, birthdate_options, Utc::now().date_naive());
 
     let first_names = select_firstnames_for_birth_year(dictionary, birth_date.year(), is_male);
@@ -122,7 +109,6 @@ fn generate_from_request(request: &IdentityRequest) -> Identity {
     let last_name = last_names[unbiased_index(&mut rng, last_names.len())].to_string();
     let birth_year = Some(birth_date.year());
 
-    // The email prefix and nickname are generated independently (separate random rolls).
     let email_prefix = username_email::generate_email_prefix(&mut rng, &first_name, &last_name, birth_year);
     let nick_name = username_email::generate_username(&mut rng, &first_name, &last_name, birth_year);
 
@@ -150,45 +136,36 @@ pub fn generate_email_prefix(input_json: &str) -> Result<String, VaultError> {
     Ok(username_email::generate_email_prefix(&mut rng, &input.first_name, &input.last_name, parse_birth_year(&input.birth_date)))
 }
 
-/// Generate a random alphanumeric email prefix that is not based on any identity, for credentials without persona fields.
+/// Generate a random alphanumeric email prefix of `length` characters (1 to 64), not based on any identity.
 pub fn generate_random_email_prefix(length: u32) -> String {
     let mut rng = make_rng(None);
     username_email::generate_random_string(&mut rng, length.clamp(1, 64) as usize)
 }
 
-/// List the language codes of all bundled identity dictionaries.
+/// The language codes of the bundled name dictionaries.
 pub fn available_languages() -> Vec<String> {
     dictionaries::available_codes().into_iter().map(|c| c.to_string()).collect()
 }
 
-/// List the age range option values offered by the settings UIs ("random" plus 5-year ranges from 21-25 to 61-65).
+/// The age range option values offered by the settings UIs.
 pub fn available_age_ranges() -> Vec<String> {
     AGE_RANGES.iter().map(|r| r.to_string()).collect()
 }
 
-/// Birth year options for an age range (e.g. "21-25") relative to the current year; `None` (default 21-65) for anything else.
-fn age_range_to_birthdate_options(age_range: &str) -> Option<BirthdateOptions> {
-    age_range_to_birthdate_options_at(age_range, Utc::now().year())
-}
-
-/// [`age_range_to_birthdate_options`] with an explicit current year, for testability.
-fn age_range_to_birthdate_options_at(age_range: &str, current_year: i32) -> Option<BirthdateOptions> {
+/// The birth year window of an age range like "21-25" relative to `current_year`; `None` for anything else.
+fn age_range_to_birthdate_options(age_range: &str, current_year: i32) -> Option<BirthdateOptions> {
     let (min_part, max_part) = age_range.split_once('-')?;
     let min_age: i32 = min_part.parse().ok()?;
     let max_age: i32 = max_part.parse().ok()?;
 
     let middle_age = (min_age + max_age).div_euclid(2);
-    Some(BirthdateOptions {
-        target_year: current_year - middle_age,
-        year_deviation: (max_age - min_age).div_euclid(2),
-    })
+    Some(BirthdateOptions { target_year: current_year - middle_age, year_deviation: (max_age - min_age).div_euclid(2) })
 }
 
 /// A random birth date, uniform within the options' year window, or else between 65 and 21 years before `today`.
 fn random_birth_date<R: Rng + ?Sized>(rng: &mut R, options: Option<BirthdateOptions>, today: NaiveDate) -> NaiveDate {
     let (start, end) = match options {
         Some(BirthdateOptions { target_year, year_deviation }) => {
-            // Sanity check for overflows in the calculation.
             let deviation = year_deviation.saturating_abs();
             (first_day_of_year(target_year.saturating_sub(deviation)), last_day_of_year(target_year.saturating_add(deviation)))
         }
@@ -209,7 +186,6 @@ fn select_firstnames_for_birth_year(dictionary: &'static dictionaries::LanguageD
             return matching;
         }
 
-        // No decade covers this birth year: fall back to all decade names combined.
         let all: Vec<&'static str> = decades.iter().flat_map(|d| d.names()).collect();
         if !all.is_empty() {
             return all;
@@ -219,7 +195,7 @@ fn select_firstnames_for_birth_year(dictionary: &'static dictionaries::LanguageD
     if is_male { dictionary.firstnames_male() } else { dictionary.firstnames_female() }
 }
 
-/// The leading `yyyy` year of a date string like `1990-05-15` or an ISO 8601 timestamp, or `None` when absent.
+/// The leading `yyyy` year of a date string or ISO 8601 timestamp, or `None` when absent.
 fn parse_birth_year(birth_date: &str) -> Option<i32> {
     let digits: String = birth_date.trim().chars().take(4).collect();
     if digits.len() == 4 && digits.chars().all(|c| c.is_ascii_digit()) {
@@ -229,18 +205,17 @@ fn parse_birth_year(birth_date: &str) -> Option<i32> {
     }
 }
 
-/// January 1 of the given year.
+/// January 1 of a year.
 fn first_day_of_year(year: i32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, 1, 1).unwrap_or(NaiveDate::MIN)
 }
 
-/// December 31 of the given year.
+/// December 31 of a year.
 fn last_day_of_year(year: i32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, 12, 31).unwrap_or(NaiveDate::MAX)
 }
 
 /// The same calendar day `years` years before `date` (Feb 29 maps to Feb 28).
 fn years_ago(date: NaiveDate, years: i32) -> NaiveDate {
-    date.with_year(date.year() - years)
-        .unwrap_or_else(|| NaiveDate::from_ymd_opt(date.year() - years, 2, 28).unwrap_or(NaiveDate::MIN))
+    date.with_year(date.year() - years).unwrap_or_else(|| NaiveDate::from_ymd_opt(date.year() - years, 2, 28).unwrap_or(NaiveDate::MIN))
 }

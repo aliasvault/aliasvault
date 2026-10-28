@@ -11,7 +11,7 @@ fn tables(entries: &[(&str, Vec<CodecRecord>)]) -> HashMap<String, Vec<CodecReco
 }
 
 #[test]
-fn a_reference_that_resolves_only_in_another_manifest_dangles() {
+fn a_reference_that_resolves_only_in_another_manifest_is_unresolved() {
     let mut set = tables(&[
         ("Folders", vec![row(&[("ManifestId", json!("m-other")), ("Id", json!("f-1"))])]),
         ("Items", vec![stamped(M, &[("Id", json!("i-1")), ("FolderId", json!("f-1"))])]),

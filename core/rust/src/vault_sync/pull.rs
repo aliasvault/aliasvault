@@ -51,13 +51,13 @@ impl OpenedManifestSet {
     }
 }
 
-/// A pulled vault, encrypted for local storage, with the revisions that become the local truth once it is stored.
+/// A pulled vault, encrypted for local storage, with the revisions it was pulled at.
 pub(crate) struct PulledVault {
     pub encrypted_vault: String,
     pub personal_revision: i64,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,
-    /// The vault is new and has never been written to the server; it is stored dirty and pushed by the same sync.
+    /// The vault was never written to the server; it is stored dirty and pushed by the same sync.
     pub needs_first_write: bool,
 }
 
@@ -67,11 +67,11 @@ const STORAGE_FORMAT_MANIFEST: &str = "manifest";
 /// A server snapshot by storage format.
 pub(crate) enum Snapshot {
     Manifest(GetResponse),
-    /// LEGACY: the account's vault is still one sqlite blob.
+    /// LEGACY: the account's vault is still one sqlite blob. TODO: remove once every account has upgraded to manifest-v1.
     LegacySqliteBlob(GetResponse),
 }
 
-/// `GET v2/Vault`. A snapshot in a storage format newer than this build knows is refused, never read as legacy.
+/// `GET v2/Vault`; a storage format newer than this build knows is refused, never read as legacy.
 pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<Snapshot> {
     let snapshot: GetResponse = http::with_outdated_server_guard(http::get_frame(&ctx.host, http::VAULT_ENDPOINT).await)?;
     match snapshot.storage_format.as_deref() {
@@ -96,7 +96,7 @@ pub(crate) fn verify_decrypt_unpack(ciphertext: &[u8], vek: &str, aad: &[u8], ex
     }
 }
 
-/// Refuse a manifest or data bucket written at a format version this build cannot read: the app is outdated.
+/// Refuse a payload written at a format version this build cannot read.
 fn ensure_readable(schema_version: u32, label: &str) -> SyncResult<()> {
     if vault_codec::is_readable_schema_version(schema_version) {
         return Ok(());
@@ -127,6 +127,7 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
     let vek = ctx.encryption_key()?;
     ctx.log("[Pull] Fetching vault snapshot (GET /v2/Vault)...").await;
     let snapshot = match fetch_snapshot(ctx).await? {
+        // LEGACY: a sqlite-blob account's vault is opened as one blob. TODO: remove once every account has upgraded to manifest-v1.
         Snapshot::LegacySqliteBlob(snapshot) => return legacy::open_legacy_snapshot(ctx, &snapshot).await,
         Snapshot::Manifest(snapshot) => snapshot,
     };
@@ -139,7 +140,6 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
 }
 
 /// Open every manifest a snapshot carries, personal first, and record the snapshot as this device's sync state.
-/// The revision maps travel on the result for the caller to commit once the pulled vault is stored.
 pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot: &GetResponse, vek: &str) -> SyncResult<OpenedManifestSet> {
     let personal_dto = select_personal_manifest(snapshot).ok_or_else(|| SyncError::Snapshot("server returned no personal manifest, refusing to assemble".to_string()))?;
     // Registration creates the personal manifest without content at revision 0; any later revision without content is damage.
@@ -173,7 +173,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
             continue;
         }
         if !dto.has_content() {
-            // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
+            // A shared manifest created but never written; its grant and revision are still tracked.
             if dto.revision != 0 {
                 return Err(SyncError::Snapshot(format!("shared manifest {} was served without content at revision {}, nothing to assemble", dto.manifest_id, dto.revision)));
             }
@@ -255,7 +255,7 @@ pub(crate) fn encrypt_manifest_name(name: &str, manifest_id: &str, manifest_key:
     Ok(crypto::aes_gcm::encrypt_text(name, manifest_key, &crypto::aad::manifest_name(manifest_id))?)
 }
 
-/// Commit a pulled vault's revisions as the local believed-current revisions, manifests and buckets together.
+/// Commit a pulled vault's manifest and bucket revisions as the local ones.
 pub(crate) async fn commit_revisions(ctx: &Ctx, pulled: &PulledVault) -> SyncResult<()> {
     state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &pulled.manifest_revisions).await?;
     state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, &pulled.bucket_revisions).await?;
@@ -263,7 +263,7 @@ pub(crate) async fn commit_revisions(ctx: &Ctx, pulled: &PulledVault) -> SyncRes
     Ok(())
 }
 
-/// Open every data bucket a snapshot carries, record the snapshot's bucket revisions.
+/// Open every data bucket a snapshot carries, with their fingerprints and revisions.
 async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[ResolvedManifest]) -> SyncResult<(Vec<DataBucket>, HashMap<String, String>, HashMap<String, i64>)> {
     let key_by_manifest: HashMap<&str, &str> = resolved.iter().map(|m| (m.manifest_id.as_str(), m.vek.expose_secret())).collect();
     let mut buckets = Vec::new();
@@ -359,7 +359,6 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
         ctx.warn(format!("[Pull] Newer-schema data preserved as overflow: {} unknown table(s), unknown columns on [{}].", overflow_tables, materialized.overflow.columns.keys().cloned().collect::<Vec<_>>().join(", "))).await;
     }
 
-    // Use a fresh staging database for every materialize.
     ctx.host.open_staging()?;
     db::insert_materialized(&ctx.host, &materialized, &schema.columns, blob_map).await?;
 
@@ -404,7 +403,8 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
 
 /// The key that opens one snapshot manifest.
 async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool, own_signing_public_key: Option<&str>) -> SyncResult<SecretString> {
-    // Only a personal manifest that predates the account key hierarchy has no key type; a shared one always states it.
+    // LEGACY: a personal manifest written before the account key hierarchy states no key type. TODO: remove the
+    // `None if is_personal` arm once every account has upgraded.
     let key_type = match dto.key_type.clone() {
         Some(key_type) => key_type,
         None if is_personal => types::KEY_TYPE_ACCOUNT_KEY.to_string(),
@@ -432,7 +432,7 @@ async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto, own_signing_public_ke
     if !keys::grant_signed_by_self(dto, signing_public_key, &public_key, &algorithm, &encrypted_vek) {
         return Err(SyncError::ServerVaultUnreadable(format!("the grant on shared manifest {} is not signed by this account, refusing to assemble", dto.manifest_id)));
     }
-    // Sanity check: no key this session holds opens the grant, so the session is behind the server.
+    // No key this session holds opens the grant: the session is behind the server.
     let private_key = keys::resolve_grant_private_key(ctx, &public_key).await?.ok_or(SyncError::KeyOutOfSync)?;
     keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, private_key.expose_secret()).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
 }

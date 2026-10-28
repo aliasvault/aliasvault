@@ -1,6 +1,5 @@
-//! Reading cells out of a row as the platforms hand them over: SQLite booleans arrive as 0/1
-//! numbers, JSON booleans or "1"/"true" strings, byte cells as `{ "__b64" }` (inline bytes) or
-//! `{ "__blobRef", "__blobKind" }` (an extracted blob) markers, and a missing table reads as no rows.
+//! Reading cells out of a row as the platforms hand them over: booleans as 0/1 numbers, JSON booleans or "1"/"true"
+//! strings, bytes as `{ "__b64" }` (inline) or `{ "__blobRef", "__blobKind" }` (an extracted blob) markers.
 
 use std::collections::HashMap;
 
@@ -44,14 +43,14 @@ pub(crate) fn rows_of<'a>(tables: &'a HashMap<String, Vec<CodecRecord>>, table: 
     tables.get(table).map(Vec::as_slice).unwrap_or(&[])
 }
 
-/// A logo `Kind` in its comparison form: trimmed and lowercased, empty meaning [`LOGO_KIND_FAVICON`]
-/// (the row was written before the column existed, when every logo was a favicon).
+/// A logo `Kind` in its comparison form: trimmed and lowercased, empty meaning favicon, as every logo was before the
+/// column existed.
 pub(crate) fn normalize_logo_kind(kind: &str) -> String {
     let trimmed = kind.trim();
     if trimmed.is_empty() { LOGO_KIND_FAVICON.to_string() } else { trimmed.to_lowercase() }
 }
 
-/// A logo row's `Kind`, normalized (see [`normalize_logo_kind`]).
+/// A logo row's `Kind`, normalized.
 pub(crate) fn logo_kind(row: &CodecRecord) -> String {
     normalize_logo_kind(str_col(row, KIND_COL).unwrap_or(""))
 }
@@ -77,9 +76,8 @@ pub(crate) fn blob_ref_of(value: &Value) -> Option<(&str, Option<&str>)> {
     Some((hash, value.get(BLOB_KIND_KEY).and_then(Value::as_str)))
 }
 
-/// True when a cell holds bytes: a non-empty inline `{ __b64 }`, an extracted `{ __blobRef }`, or any
-/// other non-empty string, array or object (the 1-byte presence marker the prune queries select).
-/// A tombstoned row drops its bytes (NULL), which is present but carries nothing.
+/// True when a cell holds bytes: a non-empty inline `{ __b64 }`, an extracted `{ __blobRef }`, or any other non-empty
+/// string, array or object (the presence marker the prune queries select).
 pub(crate) fn has_bytes(value: Option<&Value>) -> bool {
     match value {
         None | Some(Value::Null) => false,

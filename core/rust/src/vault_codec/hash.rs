@@ -1,9 +1,4 @@
 //! Hashing and canonical JSON for the vault_codec format.
-//!
-//! Each encrypted payload embeds an integrity envelope `{ schemaVersion, contentHash, payload }` where
-//! `contentHash = sha256(canonical(payload))`. [`canonical_json`] is the canonical form: object keys sorted
-//! ascending, recursively; arrays kept in order; primitives as serde_json renders them. Every client hashes through
-//! this crate, so the form only has to stay stable against itself, and stored vaults depend on it staying so.
 
 use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
@@ -24,8 +19,8 @@ pub fn sha256_hex(bytes: &[u8]) -> String {
     hex_encode_lower(&Sha256::digest(bytes))
 }
 
-/// Canonicalize a JSON value into a stable string for hashing: object keys sorted recursively, arrays
-/// kept in order, primitives as `serde_json::to_string` renders them.
+/// The canonical JSON a content hash covers: object keys sorted recursively, arrays in order, primitives as
+/// `serde_json::to_string` renders them. Every stored vault depends on this form staying stable.
 pub fn canonical_json(value: &serde_json::Value) -> String {
     match value {
         serde_json::Value::Object(map) => {
@@ -36,7 +31,6 @@ pub fn canonical_json(value: &serde_json::Value) -> String {
                 if i > 0 {
                     s.push(',');
                 }
-                // Key rendered the same way JSON.stringify renders a string key.
                 s.push_str(&serde_json::to_string(k).unwrap_or_else(|_| String::from("\"\"")));
                 s.push(':');
                 s.push_str(&canonical_json(&map[*k]));
@@ -55,18 +49,17 @@ pub fn canonical_json(value: &serde_json::Value) -> String {
             s.push(']');
             s
         }
-        // Strings, numbers, booleans, null: serde_json's output matches JSON.stringify here.
         other => serde_json::to_string(other).unwrap_or_else(|_| String::from("null")),
     }
 }
 
-/// Content hash = `sha256(canonical(payload))`, lowercase hex.
+/// Content hash `sha256(canonical(payload))`, lowercase hex.
 pub fn content_hash(value: &serde_json::Value) -> String {
     sha256_hex(canonical_json(value).as_bytes())
 }
 
-/// Per-manifest blob address `HMAC-SHA256(key = salt_bytes, plaintext_bytes)`, lowercase hex.
-/// A missing or malformed salt is an error, since hashing without it would break the per-manifest separation.
+/// Per-manifest blob address `HMAC-SHA256(key = salt_bytes, plaintext_bytes)`, lowercase hex. A missing or malformed
+/// salt is an error, since hashing without it would break the per-manifest separation.
 pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> VaultResult<String> {
     let salt_bytes = hex_decode(manifest_salt).filter(|salt| !salt.is_empty()).ok_or_else(|| VaultError::General("manifest salt is missing or not valid hex".to_string()))?;
     let mut mac = Hmac::<Sha256>::new_from_slice(&salt_bytes).expect("HMAC takes a key of any length");

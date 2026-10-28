@@ -1,51 +1,48 @@
-//! Email MIME parsing for source-only stored emails.
+//! Email MIME parsing: the bodies and attachment metadata of a stored RFC 822 source.
+
+#[cfg(test)]
+mod tests;
+
 use mail_parser::{GetHeader, Message, MessageParser, MessagePart, MimeHeaders};
 use serde::Serialize;
 
 use crate::common::error::{VaultError, VaultResult};
 use crate::common::gzip::{gunzip, is_gzip};
 
-/// Header the server stamps on an attachment whose body it detached from the source at ingest, carrying the
-/// index that body is stored and requested under. Reading the index from the message itself keeps it
-/// independent of how any given MIME parser happens to order a message's attachments.
+/// Header the server stamps on an attachment whose body it detached from the source, carrying the index that body is stored under.
 const DETACHED_PART_INDEX_HEADER: &str = "X-AliasVault-Part";
 
-/// Header the server stamps on a detached attachment carrying its decoded size, so the size can be shown in
-/// the attachment list without downloading the body.
+/// Header the server stamps on a detached attachment, carrying its decoded size.
 const DETACHED_PART_LENGTH_HEADER: &str = "X-AliasVault-Detached-Length";
 
 /// Cap on a gunzipped email source or detached part, with headroom over the ~14 MB the SMTP service accepts.
 const MAX_DECOMPRESSED_EMAIL_BYTES: u64 = 64 * 1024 * 1024;
 
-/// A single attachment of a parsed email message. Metadata only: fetch the bytes with
-/// [`extract_email_attachment`] using this attachment's index in [`ParsedEmail::attachments`].
+/// An attachment of a parsed email, metadata only.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParsedEmailAttachment {
     pub filename: String,
     pub mime_type: String,
-    /// The decoded attachment size in bytes.
+    /// The decoded size in bytes.
     pub size: u64,
-    /// Whether this attachment's body lives outside the message source and has to be fetched separately
-    /// before [`extract_email_attachment`] can return its bytes.
+    /// Whether the body lives outside the source and has to be fetched separately.
     pub detached: bool,
-    /// The index the detached body is stored under, to request it by. `None` for an attachment whose body
-    /// is still inline in the source.
+    /// The index a detached body is stored under; None while the body is inline.
     pub part_index: Option<u32>,
 }
 
-/// The result of parsing a raw RFC 822 email source.
+/// The bodies and attachments of a parsed email.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParsedEmail {
     pub html_body: Option<String>,
     pub text_body: Option<String>,
-    /// The attachments contained in the message, in the index order [`extract_email_attachment`] expects.
+    /// In the order [`extract_email_attachment`] indexes them.
     pub attachments: Vec<ParsedEmailAttachment>,
 }
 
-/// Parse a raw RFC 822 email source into its bodies and attachment metadata, transparently
-/// gunzipping gzip-compressed input.
+/// Parse a stored email source into its bodies and attachment metadata.
 pub fn parse_email_source(source: &[u8]) -> VaultResult<ParsedEmail> {
     let raw = decode_email_source(source)?;
     let message = parse_message(&raw)?;
@@ -68,7 +65,7 @@ pub fn parse_email_source(source: &[u8]) -> VaultResult<ParsedEmail> {
                         None => content_type.ctype().to_string(),
                     })
                     .unwrap_or_else(|| "application/octet-stream".to_string()),
-                // The real size of a detached attachment comes from the header the server stamped on it.
+                // A detached body is not in the source, so its size comes from the stamped header.
                 size: header_u64(part, DETACHED_PART_LENGTH_HEADER).unwrap_or_else(|| part.contents().len() as u64),
                 detached: part_index.is_some(),
                 part_index,
@@ -79,99 +76,76 @@ pub fn parse_email_source(source: &[u8]) -> VaultResult<ParsedEmail> {
     Ok(ParsedEmail { html_body, text_body, attachments })
 }
 
-/// Turn a stored email source into the raw RFC 822 message bytes: gunzip the source-only storage
-/// format, repair the double encoding of the legacy format. Clients use this for the source view.
+/// The raw RFC 822 bytes of a stored email source.
 pub fn decode_email_source(source: &[u8]) -> VaultResult<Vec<u8>> {
     if is_gzip(source) {
         return gunzip(source, MAX_DECOMPRESSED_EMAIL_BYTES);
     }
+    // LEGACY: sources stored before 0.31.0 are not gzipped and are double encoded. TODO: remove once no such sources are served.
     Ok(repair_legacy_double_encoding(source.to_vec()))
 }
 
-/// Extract the decoded bytes of a single attachment, identified by its index in
-/// [`ParsedEmail::attachments`].
+/// The decoded bytes of the attachment at `index`, with its detached body when it has one.
 pub fn extract_email_attachment(source: &[u8], index: usize, detached_body: Option<&[u8]>) -> VaultResult<Vec<u8>> {
     let raw = decode_email_source(source)?;
 
-    // Resolve what the attachment needs before splicing: the parsed message borrows `raw`, so nothing that
-    // borrows it may outlive this block.
+    // The parsed message borrows `raw`, so what the splice needs is read out before `raw` is used again.
     let (body_range, detached_body) = {
         let message = parse_message(&raw)?;
         let part = attachment_at(&message, index)?;
 
         match (detached_part_index(part).is_some(), detached_body) {
             (false, _) => return Ok(part.contents().to_vec()),
-            (true, None) => {
-                return Err(VaultError::General(format!(
-                    "Attachment at index {} was detached from the source at ingest; its body has to be fetched separately",
-                    index
-                )))
-            }
+            (true, None) => return Err(VaultError::General(format!("Attachment at index {} is detached; its body has to be fetched separately", index))),
             (true, Some(body)) => (part.offset_body as usize..part.offset_end as usize, body),
         }
     };
 
-    let body = decode_detached_part(detached_body)?;
+    let body = gunzip(detached_body, MAX_DECOMPRESSED_EMAIL_BYTES)?;
     let mut spliced = Vec::with_capacity(raw.len() + body.len());
     spliced.extend_from_slice(&raw[..body_range.start]);
     spliced.extend_from_slice(&body);
     spliced.extend_from_slice(&raw[body_range.end..]);
 
     let message = parse_message(&spliced)?;
-    let extracted = attachment_at(&message, index)?.contents().to_vec();
-
-    Ok(extracted)
+    Ok(attachment_at(&message, index)?.contents().to_vec())
 }
 
-/// Parse a raw RFC 822 email source and return the result as a JSON string (for uniffi/ffi callers).
+/// [`parse_email_source`] as JSON, for the uniffi bindings.
 pub fn parse_email_source_json(source: &[u8]) -> VaultResult<String> {
     Ok(serde_json::to_string(&parse_email_source(source)?)?)
 }
 
-/// Parse raw RFC 822 bytes into a message, turning the parser's `None` into a proper error.
+/// Parse raw RFC 822 bytes into a message.
 fn parse_message(raw: &[u8]) -> VaultResult<Message<'_>> {
-    MessageParser::default()
-        .parse(raw)
-        .ok_or_else(|| VaultError::General("Failed to parse email source as a MIME message".to_string()))
+    MessageParser::default().parse(raw).ok_or_else(|| VaultError::General("Failed to parse email source as a MIME message".to_string()))
 }
 
-/// Look up an attachment by its index in the message's attachment list.
+/// The attachment at `index` in the message's attachment list.
 fn attachment_at<'x>(message: &'x Message<'x>, index: usize) -> VaultResult<&'x MessagePart<'x>> {
-    message
-        .attachments()
-        .nth(index)
-        .ok_or_else(|| VaultError::General(format!("Email has no attachment at index {}", index)))
+    message.attachments().nth(index).ok_or_else(|| VaultError::General(format!("Email has no attachment at index {}", index)))
 }
 
-/// Read the index a detached attachment's body is stored under, or `None` when the body is still inline.
+/// The index a detached attachment's body is stored under, or None while the body is inline.
 fn detached_part_index(part: &MessagePart<'_>) -> Option<u32> {
     header_u64(part, DETACHED_PART_INDEX_HEADER).and_then(|index| u32::try_from(index).ok())
 }
 
-/// Read a header of a part as an unsigned number, ignoring it when absent or not numeric.
+/// A header of a part as an unsigned number, or None when absent or not numeric.
 fn header_u64(part: &MessagePart<'_>, name: &str) -> Option<u64> {
-    part.headers
-        .header(name)
-        .and_then(|header| header.value().as_text())
-        .and_then(|value| value.trim().parse::<u64>().ok())
+    part.headers.header(name).and_then(|header| header.value().as_text()).and_then(|value| value.trim().parse::<u64>().ok())
 }
 
-/// Decompress a stored detached attachment body. Unlike the message source there is no legacy encoding to
-/// repair: detached parts only exist in the source-only storage format.
-fn decode_detached_part(body: &[u8]) -> VaultResult<Vec<u8>> {
-    gunzip(body, MAX_DECOMPRESSED_EMAIL_BYTES)
-}
-
-/// Undo the Latin-1 then UTF-8 double encoding of legacy (pre-0.31.0) stored sources, where `é` (`C3 A9`) became `C3 83 C2 A9`.
-/// A no-op for anything that is not valid UTF-8 made only of characters up to U+00FF, such as an already correct source.
+/// LEGACY: undo the Latin-1 then UTF-8 double encoding of sources stored before 0.31.0, where `C3 A9` became `C3 83 C2 A9`.
+/// A no-op for bytes that are not valid UTF-8 or contain a character above U+00FF, such as a correct source.
 fn repair_legacy_double_encoding(raw: Vec<u8>) -> Vec<u8> {
     let text = match std::str::from_utf8(&raw) {
         Ok(text) => text,
         Err(_) => return raw,
     };
 
+    // Pure ASCII was not changed by the double encoding.
     if !text.chars().any(|c| c as u32 > 0x7f) {
-        // Pure ASCII: the double encoding was a no-op, so there is nothing to undo.
         return raw;
     }
 
@@ -181,6 +155,3 @@ fn repair_legacy_double_encoding(raw: Vec<u8>) -> Vec<u8> {
 
     text.chars().map(|c| c as u8).collect()
 }
-
-#[cfg(test)]
-mod tests;

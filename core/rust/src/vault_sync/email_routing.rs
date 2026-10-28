@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::Value;
 
-use super::types::{ClaimedEmailAddress, EmailRoutingPush, ManifestRevision};
 use super::db::value_string;
+use super::types::{ClaimedEmailAddress, EmailRoutingPush, ManifestRevision};
 use crate::vault_codec::row::{is_deleted, rows_of, str_col, truthy};
 use crate::vault_codec::Manifest;
 use crate::vault_model::names::{DELETED_AT_COL, FIELD_KEY_COL, FIELD_VALUES_TABLE, ID_COL, ITEMS_TABLE, ITEM_ID_COL};

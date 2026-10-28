@@ -1,12 +1,4 @@
-//! Item deletes in the canonical merge, decided once per item instead of row by row.
-//!
-//! A permanent delete tombstones the item and takes the rows hanging off it along, so the item and
-//! its children are one unit. Row-level LWW breaks that unit both ways: children the deleting side
-//! removed come back from the other side under a tombstoned item, and child tombstones stamped at
-//! delete time wipe the untouched fields of an item whose delete lost. So a delete only one side made
-//! is settled here first, against everything the other side did to that item (a field edit does not
-//! touch the item row), and the losing side's rows of the item leave the merge. A delete that stands
-//! needs nothing more: the merged output drops a tombstoned item's children when it is normalized.
+//! Item deletes in the canonical merge, resolved for the item and all of its child rows together.
 
 use std::collections::{HashMap, HashSet};
 
@@ -21,8 +13,21 @@ use crate::vault_model::{MANIFEST_ID_COL, SYNCABLE_TABLES};
 
 type Tables = HashMap<String, Vec<CodecRecord>>;
 
-/// Settle every delete only one side made: a delete the other side outlived is taken out of the deleting
-/// side's input together with that side's rows of the item, so the surviving side's rows pass through whole.
+/*
+ * An item is its Items row plus its rows in the child tables (field values, attachments, TOTP codes, passkeys, tags).
+ * Merging every row on its own (last write wins) splits that unit when one side deleted the item and the other side
+ * kept changing it:
+ * - child rows the other side edited after the delete come back, under a deleted item;
+ * - when the other side's edit wins the Items row, the child tombstones written at delete time still wipe every child
+ *   row that side did not touch.
+ * So a delete only one side made is resolved first, for the item as a whole: the delete is compared with the other
+ * side's latest change to the item, counting its child rows too (a field edit updates the FieldValues row, not the
+ * Items row). When that change is later, the delete loses and the deleting side's Items row and child rows leave the
+ * merge. When the delete wins, nothing more is needed: normalizing the merged output drops a deleted item's children.
+ */
+
+/// Resolve every item delete only one side made: when the other side changed the item or its child rows later, the
+/// deleting side's rows of that item are removed from its input, so the kept item comes through whole.
 pub(super) fn resolve_item_deletes(base: &mut Tables, incoming: &mut Tables) {
     // The base keeps ties, exactly as it does for a single row.
     let lost_in_base = lost_deletes(base, incoming, |delete, activity| activity > delete);
@@ -43,8 +48,8 @@ fn lost_deletes(deleting: &Tables, other: &Tables, outlives: impl Fn(Option<Date
         return HashSet::new();
     }
 
-    // What the surviving side last did to the item: its own row, or any row hanging off it. Bucketed
-    // tables stay out, since a usage counter ticking is not an edit.
+    // What the surviving side last did to the item: its own row, or any of its child rows. Bucketed tables stay out,
+    // since a usage counter ticking is not an edit.
     for child in SYNCABLE_TABLES.iter().filter(|table| table.item_child && !is_bucketed_table(table.name)) {
         for row in rows_of(other, child.name) {
             if let Some(activity) = live.get_mut(&item_key(row, child.item_ref_column())) {
@@ -56,7 +61,7 @@ fn lost_deletes(deleting: &Tables, other: &Tables, outlives: impl Fn(Option<Date
     live.into_iter().filter(|(key, activity)| outlives(tombstones[key], *activity)).map(|(key, _)| key).collect()
 }
 
-/// Remove the item rows named by `keys` and every row hanging off them.
+/// Remove the item rows named by `keys` and all of their child rows.
 fn remove_items(tables: &mut Tables, keys: &HashSet<String>) {
     if keys.is_empty() {
         return;

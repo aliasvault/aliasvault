@@ -27,13 +27,11 @@ const MANIFEST_SCOPE: &str = "Main";
 /// What a push writes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum WriteKind {
-    /// What changed against the last known server state. With `buckets_only`, a host that recorded only
-    /// bucket-scoped mutations gets away with writing those buckets, never canonicalizing the manifests.
+    /// What changed against the last known server state; `buckets_only` writes the dirty buckets without canonicalizing the manifests.
     Changes { buckets_only: bool },
     /// Every manifest and bucket, whatever the fingerprints say: the server never saw this vault.
     Everything,
-    /// The one-time account upgrade: creates the key hierarchy and encrypts every personal blob again under the
-    /// new key, so the whole vault is written.
+    /// The one-time account upgrade, which creates the key hierarchy and writes the whole vault under it.
     AccountKeyMigration,
 }
 
@@ -63,7 +61,7 @@ pub(crate) enum PushStatus {
 pub(crate) struct UploadOutcome {
     pub status: PushStatus,
     pub mutation_seq_at_start: u64,
-    /// Whether the stored vault was rewritten under the upload (pruned or keypair added).
+    /// Whether the stored vault was rewritten under the upload.
     pub vault_changed: bool,
 }
 
@@ -105,7 +103,7 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
     Ok(records)
 }
 
-/// The personal manifest id as the last pull recorded it. Pushing without one is impossible.
+/// The personal manifest id the last pull recorded.
 pub(crate) async fn resolve_personal_manifest_id(ctx: &Ctx) -> SyncResult<String> {
     state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.ok_or_else(|| SyncError::Other("no personal manifest id available (no snapshot baseline recorded); pull once before pushing".to_string()))
 }
@@ -117,8 +115,7 @@ async fn resolve_write_keys(ctx: &Ctx) -> SyncResult<HashMap<String, SecretStrin
     Ok(keys_by_manifest)
 }
 
-/// Whether the local vault is canonically identical to the last-known server state. Returns the canonicalize
-/// result too, so a push right after does not canonicalize a second time.
+/// Whether the local vault equals the last known server state, with the canonicalize result for the push.
 pub(crate) async fn detect_no_op_mutation(ctx: &Ctx) -> SyncResult<(bool, CanonicalizedSet)> {
     let set = canonicalize_vault(ctx, None).await?;
     let baselines = PushBaselines::load(ctx).await?;
@@ -164,8 +161,7 @@ pub(crate) async fn vault_holds_unwritable_manifests(ctx: &Ctx) -> bool {
  * The upload as the flow drives it.
  */
 
-/// Upload the stored vault. Fails with `KeyOutOfSync` when the session key does not open a hierarchy another
-/// device created meanwhile; an account without a hierarchy gets the migration write whatever `kind` asked for.
+/// Upload the stored vault; an account without a key hierarchy gets the migration write whatever `kind` asked for.
 pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, kind: WriteKind) -> SyncResult<UploadOutcome> {
     let mutation_seq_at_start = ctx.mutation_sequence;
     let kind = if keys::ensure_key_chain_accepted(ctx).await? { kind } else { WriteKind::AccountKeyMigration };
@@ -181,8 +177,7 @@ pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, Canonicalize
     Ok(UploadOutcome { status, mutation_seq_at_start, vault_changed })
 }
 
-/// The bucket categories a bucket-only write covers, or `None` when the write has to go through the manifests: no
-/// scopes recorded, a manifest scope among them, an unknown scope, or a personal delivery key still to be published.
+/// The bucket categories a bucket-only write covers, or `None` when the write has to go through the manifests.
 async fn bucket_only_categories(ctx: &Ctx) -> SyncResult<Option<Vec<String>>> {
     let scopes = &ctx.request.dirty_scopes;
     if scopes.is_empty() || scopes.iter().any(|s| s == MANIFEST_SCOPE) {
@@ -235,8 +230,8 @@ async fn write_dirty_buckets(ctx: &Ctx, categories: &[String]) -> SyncResult<Pus
     Ok(PushStatus::Ok)
 }
 
-/// Write the whole vault: prune expired trash and create a missing personal delivery keypair first, then the gated
-/// write. Returns the status and whether the stored vault was rewritten (pruned or keypair added).
+/// Write the whole vault after pruning expired trash and creating a missing delivery keypair; returns the status and
+/// whether the stored vault was rewritten.
 async fn write_whole_vault(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, bool)> {
     let key_before = ctx.encryption_key()?;
     let mut cached = cached;
@@ -266,19 +261,15 @@ async fn write_whole_vault(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind
         ctx.set_encryption_key(new_key);
     }
 
-    // Store the vault again only when it changed or its key did.
     if vault_rewritten || ctx.encryption_key()?.expose_secret() != key_before.expose_secret() {
         ctx.persist_local_vault(false).await?;
     }
     Ok((status, vault_rewritten))
 }
 
-/// Whether the personal manifest has no active mail delivery keypair. Without one the server has no public key to
-/// encrypt incoming mail with, and rejects every email sent to the vault's aliases.
+/// Whether the personal manifest has no active mail delivery keypair.
 async fn personal_delivery_key_missing(ctx: &Ctx) -> SyncResult<bool> {
-    let Some(personal_manifest_id) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? else {
-        return Ok(false);
-    };
+    let Some(personal_manifest_id) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? else { return Ok(false) };
     Ok(db::active_public_key_for_manifest(&ctx.host, &personal_manifest_id).await?.is_none())
 }
 
@@ -325,11 +316,7 @@ struct Candidate<'a> {
 
 impl Candidate<'_> {
     fn label(&self) -> String {
-        if self.record.is_personal {
-            "Personal manifest".to_string()
-        } else {
-            format!("Shared manifest {}", self.record.manifest_id)
-        }
+        if self.record.is_personal { "Personal manifest".to_string() } else { format!("Shared manifest {}", self.record.manifest_id) }
     }
 }
 
@@ -353,7 +340,7 @@ impl UploadBlobs {
         self.order.iter().filter(|h| self.entries[*h].from_personal == from_personal).cloned().collect()
     }
 
-    /// The given hashes grouped by the manifest that owns them, in first-seen order; the server stores blobs per manifest.
+    /// The given hashes grouped by the manifest that owns them, in first-seen order.
     fn by_manifest(&self, hashes: &[String]) -> Vec<(String, Vec<String>)> {
         let mut groups: Vec<(String, Vec<String>)> = Vec::new();
         for hash in hashes {
@@ -367,28 +354,12 @@ impl UploadBlobs {
     }
 }
 
-/// The freshly generated key hierarchy for one migration push.
-#[derive(zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
-struct LegacyAccountKeyMigration {
-    content_key: SecretString,
-
-    /// Ciphertext only, so there is nothing here to wipe.
-    #[zeroize(skip)]
-    account_keys: crypto::AccountKeyBlobs,
-    account_private_key: String,
-    signing_private_key: String,
-}
-
-/// The content fingerprints one write carried, keyed like the baselines, to become the new baselines on success.
+/// The content fingerprints one write carried, which become the baselines on success.
 type WrittenFingerprints = HashMap<String, String>;
 
 /// A byte or character count for log lines.
 fn format_kb(chars: usize) -> String {
-    if chars < 1024 {
-        format!("{} B", chars)
-    } else {
-        format!("{:.1} KB", chars as f64 / 1024.0)
-    }
+    if chars < 1024 { format!("{} B", chars) } else { format!("{:.1} KB", chars as f64 / 1024.0) }
 }
 
 /// A payload as JSON text plus its content fingerprint.
@@ -413,8 +384,7 @@ pub(crate) async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key
     Ok(EncryptedPayload { ciphertext, hash })
 }
 
-/// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a
-/// migration push, the new content key the session switches to.
+/// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`; a migration push also returns the new content key.
 async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind: WriteKind) -> SyncResult<(PushStatus, Option<SecretString>)> {
     let vek = ctx.encryption_key()?;
 
@@ -425,7 +395,7 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
     }
 
     let migration = start_account_key_migration(ctx, vek.expose_secret(), kind).await?;
-    let content_key = migration.as_ref().map(|m| m.content_key.clone()).unwrap_or_else(|| vek.clone());
+    let content_key = migration.as_ref().map(|m| SecretString::from(m.vault_encryption_key.as_str())).unwrap_or_else(|| vek.clone());
 
     let set = match cached {
         Some(set) => {
@@ -466,7 +436,6 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
     let response = write_vault(ctx, &mut payload, &blobs, overwrite_personal_blobs, &mut uploaded).await?;
 
     if response.status != VaultWriteStatus::Ok {
-        // All-or-nothing: a single stale manifest or bucket rejected the whole write; the caller pulls, merges and retries.
         return Ok((PushStatus::Outdated, None));
     }
 
@@ -476,23 +445,17 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
         complete_account_key_migration(ctx, migration).await?;
         ctx.log("[Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.").await;
     }
-    Ok((PushStatus::Ok, migration.map(|m| m.content_key.clone())))
+    Ok((PushStatus::Ok, migration.map(|_| content_key)))
 }
 
-/// Generate the account key hierarchy for a migration push. The session key of a legacy account is its unlock key,
-/// which the hierarchy derives its KEK from.
-async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKind) -> SyncResult<Option<LegacyAccountKeyMigration>> {
+/// The key hierarchy a migration push creates, with its KEK derived from the legacy session key (the unlock key).
+async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKind) -> SyncResult<Option<crypto::AccountKeyHierarchy>> {
     if kind != WriteKind::AccountKeyMigration {
         return Ok(None);
     }
     let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
     ctx.log("[Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
-    Ok(Some(LegacyAccountKeyMigration {
-        content_key: SecretString::from(hierarchy.vault_encryption_key.as_str()),
-        account_keys: hierarchy.account_keys.clone(),
-        account_private_key: hierarchy.account_private_key.clone(),
-        signing_private_key: hierarchy.signing_private_key.clone(),
-    }))
+    Ok(Some(hierarchy))
 }
 
 /// Every canonicalized manifest a record exists for, with the key it encrypts under.
@@ -523,8 +486,7 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
     Ok(blobs)
 }
 
-/// A migration push uploads every personal blob again under the new key. A blob whose bytes are not loaded on this
-/// device would keep its old server copy under the old key, never to open again, while its manifest moves on: refuse.
+/// Refuse a migration push when a personal blob is not loaded on this device, since its server copy would stay under the old key.
 fn refuse_overwrite_without_bytes(candidates: &[Candidate], blobs: &UploadBlobs) -> SyncResult<()> {
     let not_loaded = candidates.iter().filter(|c| c.record.is_personal).flat_map(|c| c.manifest.referenced_blobs()).filter(|(hash, _)| !blobs.entries.contains_key(hash)).count();
     if not_loaded == 0 {
@@ -614,8 +576,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
     Ok(writes)
 }
 
-/// Encrypt and upload only the blobs the server does not already have. On a migration push every personal
-/// blob is re-encrypted under the new key and overwritten. Returns hash to ciphertext for the local cache.
+/// Encrypt and upload the blobs the server lacks, or every personal blob on a migration push; returns hash to ciphertext.
 async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBaselines, overwrite_personal_blobs: bool) -> SyncResult<HashMap<String, EncryptedBlob>> {
     let personal_hashes = blobs.hashes(true);
     let shared_hashes = blobs.hashes(false);
@@ -646,8 +607,7 @@ async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) ->
     Ok(missing)
 }
 
-/// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
-/// them and retry the identical write once; blobs this client cannot supply fail the push.
+/// `POST v2/Vault`, uploading the blobs the server reports missing and retrying the same write once.
 async fn write_vault(ctx: &Ctx, payload: &mut VaultWriteRequest, blobs: &UploadBlobs, overwrite_personal_blobs: bool, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
     let response: VaultWriteResponse = http::post_frame(&ctx.host, http::VAULT_ENDPOINT, payload).await?;
     if response.missing_blob_hashes.is_empty() {
@@ -701,7 +661,7 @@ async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMa
 }
 
 /// Store the hierarchy a migration push just committed: cache the encrypted chain and stage the private keys.
-async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccountKeyMigration) -> SyncResult<()> {
+async fn complete_account_key_migration(ctx: &mut Ctx, migration: &crypto::AccountKeyHierarchy) -> SyncResult<()> {
     let blobs = &migration.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;
@@ -715,8 +675,7 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
     Ok(())
 }
 
-/// Encrypt the given blobs (each under its own key) and upload them in size-capped batches per owning manifest.
-/// Returns hash to ciphertext for the local encrypted blob cache.
+/// Encrypt and upload the given blobs in batches per owning manifest; returns hash to ciphertext.
 async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, EncryptedBlob>> {
     let mut encrypted_blobs = HashMap::new();
     for (manifest_id, hashes) in blobs.by_manifest(hashes) {

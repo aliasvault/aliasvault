@@ -18,10 +18,10 @@ use crate::sqlite_host::MemoryDatabase;
 #[derive(Default)]
 pub(crate) struct Slot {
     pub pending: Option<Command>,
-    /// Raw bytes sent with the pending command (the body of a binary `http` request), until the host takes them.
+    /// Raw bytes sent with the pending command, until the host takes them.
     pub pending_bytes: Option<Vec<u8>>,
     pub response: Option<Value>,
-    /// Raw bytes the host handed back with the response (a `dbExport` file or a binary `http` response).
+    /// Raw bytes the host handed back with the response.
     pub response_bytes: Option<Vec<u8>>,
 }
 
@@ -52,12 +52,12 @@ impl Host {
         f(db).map_err(|e| SyncError::Staging(e.to_string()))
     }
 
-    /// Send a command and wait for the host's typed response. A `{ "error": ... }` response becomes an error.
+    /// Send a command and wait for the host's typed response.
     pub async fn call<R: DeserializeOwned>(&self, command: Command) -> SyncResult<R> {
         Ok(self.call_with_bytes(command, None).await?.0)
     }
 
-    /// Like [`Host::call`], with raw bytes sent alongside the command and those the host attached to its response.
+    /// Send a command with raw bytes and wait for the host's typed response plus the bytes it attached.
     pub async fn call_with_bytes<R: DeserializeOwned>(&self, command: Command, command_bytes: Option<Vec<u8>>) -> SyncResult<(R, Option<Vec<u8>>)> {
         let kind = command.name();
         let (response, bytes) = CommandFuture { slot: self.slot.clone(), command: Some(command), command_bytes, sent: false }.await;
@@ -148,14 +148,14 @@ impl SyncSession {
         }
     }
 
-    /// Take the raw bytes attached to the last command (the body of a binary `http` request), if any.
+    /// Take the raw bytes attached to the last command, if any.
     pub fn command_bytes(&self) -> VaultResult<Option<Vec<u8>>> {
         let inner = self.inner.lock().map_err(|_| VaultError::General("sync session poisoned".to_string()))?;
         let mut slot = inner.slot.lock().map_err(|_| VaultError::General("sync host slot poisoned".to_string()))?;
         Ok(slot.pending_bytes.take())
     }
 
-    /// Hand the host's response to the last command back, with raw bytes for a `dbExport` or a binary `http` response.
+    /// Hand the host's response to the last command back, with any raw bytes the host attached.
     pub fn resume(&self, response_json: &str, bytes: Option<Vec<u8>>) -> VaultResult<()> {
         let response: Value = if response_json.trim().is_empty() {
             Value::Object(Default::default())
