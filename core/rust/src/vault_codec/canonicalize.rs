@@ -1,14 +1,5 @@
-//! Canonicalize a SQLite source dataset into the manifest-v1 persisted representation: normalized tables plus a
-//! salt per manifest > one manifest per declared manifest, data buckets and content-addressed blob maps.
-//!
-//! The input rows are already JSON-normalized by the platform read. Every SQLite byte column arrives as
-//! `{ "__b64": <base64> }`. This module applies the *format* rules:
-//!   - skip-tables are dropped and the codec overflow row is folded back into the rows it came from;
-//!   - every row routes to the manifest its `ManifestId` names (see [`sharing`](super::sharing));
-//!   - each bucketed table is split out into a data bucket per manifest;
-//!   - the blob columns (`Logos.FileData`, `Attachments.Blob`) have their bytes extracted into a content-addressed
-//!     blob map (hash = `HMAC-SHA256(salt, bytes)`) and the cell replaced with `{ "__blobRef": hash, "__blobKind": kind }`;
-//!   - every other column (including non-blob `{ "__b64" }` inline bytes) is copied as-is.
+//! Canonicalize the local SQLite tables into the manifest-v1 representation: one manifest per declared manifest, data
+//! buckets, and a content-addressed blob map per manifest.
 
 use std::collections::HashMap;
 
@@ -27,8 +18,8 @@ use crate::vault_model::{ids_equal, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
 type Tables = HashMap<String, Vec<CodecRecord>>;
 
-/// Canonicalize normalized tables into the split resources: one manifest per spec (in spec order), one data
-/// bucket per declared category per manifest, and the content-addressed blob map of each manifest.
+/// Canonicalize normalized tables into one manifest per spec (in spec order), one data bucket per declared category
+/// per manifest, and the content-addressed blob map of each manifest.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
     if input.manifests.is_empty() {
         return Err(VaultError::General("canonicalize input declares no manifests".to_string()));
@@ -37,9 +28,8 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         return Err(VaultError::General("canonicalize requires a manifest id on every manifest".to_string()));
     }
 
-    // Collect every non-skip table into a name > rows map (row order preserved per table). The OVERFLOW_TABLE row
-    // carries a newer writer's tables/columns this client's schema could not hold (written by the last materialize);
-    // it is consumed here, folded back below, and never emitted into a manifest itself.
+    // The overflow row carries a newer writer's tables and columns this schema could not hold; it is folded back into
+    // the rows below and never emitted into a manifest itself.
     let mut all_tables = Tables::new();
     let mut overflow = CodecOverflow::default();
     for table in &input.tables {
@@ -57,7 +47,8 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         normalize_id_spelling(bucket_tables);
     }
 
-    // LEGACY: stamp unstamped rows with the manifest named by the sqlite-blob migration. Remove with that migration.
+    // LEGACY: the sqlite-blob migration hands over rows without a manifest stamp and names the manifest they belong to.
+    // TODO: remove once every account has migrated to manifest-v1.
     if let Some(stamp_into) = input.stamp_unstamped_into.as_deref() {
         stamp_unstamped_rows(&mut all_tables, stamp_into);
     }
@@ -105,8 +96,7 @@ fn bucket_with_extra(manifest_id: String, category: &str, tables: Tables, overfl
     DataBucket { extra, ..DataBucket::new(manifest_id, category, tables) }
 }
 
-/// Every bucket category to emit: the declared ones plus any a newer writer put in the overflow (a category this
-/// client's schema does not know yet still has to be carried forward). Sorted, so output stays stable.
+/// Every bucket category to emit: the declared ones, then any a newer writer put in the overflow, sorted.
 fn categories_present(overflow: &CodecOverflow) -> Vec<String> {
     let mut categories: Vec<String> = bucket_categories().into_iter().map(str::to_string).collect();
     let mut extra: Vec<String> = overflow.bucket_tables.keys().filter(|category| !categories.contains(category)).cloned().collect();
@@ -115,23 +105,21 @@ fn categories_present(overflow: &CodecOverflow) -> Vec<String> {
     categories
 }
 
-/// The tables read for one bucket category: the ones the local schema holds, plus whole tables a newer writer put
-/// in that bucket which this client's schema cannot hold (carried in the overflow). Local rows win.
+/// The tables of one bucket category: the local ones plus the whole tables the overflow carries for it; local rows win.
 fn category_tables(category: &str, bucketed_rows: &Tables, overflow: &CodecOverflow) -> Tables {
     let mut tables: Tables = bucketed_rows.iter().filter(|(name, _)| bucket_category_for(name) == Some(category)).map(|(name, rows)| (name.clone(), rows.clone())).collect();
     fold_overflow_tables(&mut tables, overflow.bucket_tables.get(category));
     tables
 }
 
-/// Split one bucket category's tables into the table set each manifest owns: the single grouping rule behind both
-/// the full push ([`build_data_buckets`]) and the bucket-only push ([`extract_buckets`]).
+/// Split one bucket category's tables into the table set each manifest owns.
 fn group_category_rows(tables: Tables, manifest_ids: &[String]) -> HashMap<String, Tables> {
     let empty: Tables = tables.keys().map(|name| (name.clone(), Vec::new())).collect();
     let mut grouped: HashMap<String, Tables> = manifest_ids.iter().map(|id| (id.clone(), empty.clone())).collect();
     for (name, rows) in tables {
         for mut row in rows {
             let Some(owner) = owning_manifest(&row, manifest_ids) else { continue };
-            // Normalize the stamp to the spelling the bucket declares the id with.
+            // The stamp takes the spelling the bucket declares the id with.
             row.insert(MANIFEST_ID_COL.to_string(), json!(owner));
             grouped.entry(owner).or_default().entry(name.clone()).or_default().push(row);
         }
@@ -139,8 +127,8 @@ fn group_category_rows(tables: Tables, manifest_ids: &[String]) -> HashMap<Strin
     grouped
 }
 
-/// The manifest a bucketed row belongs to, spelled the way `manifest_ids` spells it, or `None` when the row names
-/// no manifest or one this vault does not carry.
+/// The manifest a bucketed row belongs to, spelled as `manifest_ids` spells it, or `None` when the row names no
+/// manifest or one this vault does not carry.
 fn owning_manifest(row: &CodecRecord, manifest_ids: &[String]) -> Option<String> {
     let stamp = str_col(row, MANIFEST_ID_COL)?;
     if is_unstamped_manifest_id(Some(stamp)) {
@@ -149,8 +137,8 @@ fn owning_manifest(row: &CodecRecord, manifest_ids: &[String]) -> Option<String>
     manifest_ids.iter().find(|id| ids_equal(id, stamp)).cloned()
 }
 
-/// LEGACY: stamp every unstamped row of a manifest-scoped table with `manifest_id`. Only the sqlite-blob migration
-/// stamps rows; remove once every account has migrated to manifest-v1.
+/// LEGACY: stamp every unstamped row of a manifest-scoped table with `manifest_id`, for the sqlite-blob migration.
+/// TODO: remove once every account has migrated to manifest-v1.
 fn stamp_unstamped_rows(tables: &mut Tables, manifest_id: &str) {
     for name in manifest_scoped_tables() {
         let Some(rows) = tables.get_mut(name) else { continue };
@@ -175,7 +163,7 @@ fn reject_unstamped_rows(tables: &Tables) -> VaultResult<()> {
     Ok(())
 }
 
-/// True when a row carries no usable `ManifestId`: absent, JSON null, a non-string, or the empty string.
+/// True when a row carries no usable `ManifestId`.
 fn is_unstamped(row: &CodecRecord) -> bool {
     is_unstamped_manifest_id(str_col(row, MANIFEST_ID_COL))
 }
@@ -199,8 +187,8 @@ fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &s
     Ok(out_rows)
 }
 
-/// Extract a blob column cell: non-empty `{ "__b64" }` bytes are hashed and registered and the cell becomes a
-/// blob reference; anything else becomes JSON null.
+/// Extract a blob cell: non-empty inline bytes are registered in `blobs` and replaced by a blob reference; anything
+/// else becomes JSON null.
 fn extract_blob_cell(cell: Option<&Value>, manifest_salt: &str, kind: &str, blobs: &mut HashMap<String, BlobEntry>) -> VaultResult<Value> {
     let Some(b64) = cell.and_then(inline_b64) else { return Ok(Value::Null) };
     let bytes = match crate::common::encoding::base64_decode(b64) {
@@ -246,10 +234,9 @@ fn primary_key_of<'a>(table_name: &str, identity: &'a str) -> &'a str {
     identity.rmatch_indices('\u{1f}').nth(parts - 1).map_or(identity, |(at, _)| &identity[at + 1..])
 }
 
-/// Build `category`'s data buckets, one per manifest in `manifest_ids`, from the category's tables as the platform
-/// reads them out of its local vault (name > rows): the bucket-only push path. Rows route by the manifest each one
-/// names, exactly as the full push routes them. Include the [`OVERFLOW_TABLE`] row in `tables` so a newer writer's
-/// columns and tables re-merge and survive; it is consumed and never emitted into a bucket.
+/// Build `category`'s data buckets, one per manifest in `manifest_ids`, from the category's tables as read out of the
+/// local vault: the bucket-only push path. `tables` should include the `OVERFLOW_TABLE` row so a newer writer's columns
+/// and tables survive; it is consumed and never emitted into a bucket.
 pub fn extract_buckets(category: String, manifest_ids: Vec<String>, mut tables: Tables) -> VaultResult<Vec<DataBucket>> {
     if manifest_ids.is_empty() {
         return Err(VaultError::General("extract_buckets declares no manifests; a bucket write needs the manifests it may be addressed to".to_string()));

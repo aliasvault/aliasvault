@@ -1,11 +1,5 @@
-//! Vault merge: Last-Write-Wins over manifest JSON + data buckets, rows in, rows out.
-//!
-//! Both sides arrive in canonical form and the output is the merged canonical form, which the platform then
-//! materializes once.
-//!
-//! Each manifest is merged independently (the server manifest set is the universe), so a broken
-//! manifest can never affect another manifest's rows, and blob columns carry `__blobRef` markers
-//! rather than bytes, so no byte payload ever crosses the merge.
+//! Last-write-wins merge of the canonical vault (manifests and data buckets), one manifest at a time, rows in and
+//! rows out. Both sides arrive in canonical form and the output is the merged canonical form.
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -24,13 +18,13 @@ mod tests;
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MergeStats {
-    /// Rows both sides hold where the base row stood (older or same-aged incoming row).
+    /// Rows both sides hold where the base row stood.
     pub base_kept: u32,
     /// Rows both sides hold where the newer incoming row replaced the base row.
     pub incoming_won: u32,
     /// Rows only the base holds.
     pub base_only: u32,
-    /// Rows only the incoming side holds (made offline).
+    /// Rows only the incoming side holds.
     pub incoming_only: u32,
 }
 
@@ -44,8 +38,7 @@ impl MergeStats {
     }
 }
 
-/// Input of the canonical merge. The server side is the base (kept on ties); the local side is the
-/// incoming set produced by `canonicalize_from_sqlite`.
+/// Input of the canonical merge: the server side is the base (kept on ties), the local side the incoming set.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalMergeInput {
@@ -123,21 +116,14 @@ fn group_buckets(buckets: Vec<DataBucket>) -> HashMap<String, Vec<DataBucket>> {
     grouped
 }
 
-/// Merge one manifest: LWW over the flattened table view of both sides, then split the bucketed
-/// tables back out. The merged `Manifest` is the server one with only its tables replaced.
-fn merge_manifest_pair(
-    server: Manifest,
-    server_buckets: Vec<DataBucket>,
-    local: Option<Manifest>,
-    local_buckets: Vec<DataBucket>,
-    schema_columns: &HashMap<String, Vec<String>>,
-) -> CanonicalManifestMerge {
+/// Merge one manifest: LWW over the flattened table view of both sides, then split the bucketed tables back out. The
+/// merged `Manifest` is the server one with only its tables replaced.
+fn merge_manifest_pair(server: Manifest, server_buckets: Vec<DataBucket>, local: Option<Manifest>, local_buckets: Vec<DataBucket>, schema_columns: &HashMap<String, Vec<String>>) -> CanonicalManifestMerge {
     let manifest_id = server.manifest_id.clone();
     let mut stats = MergeStats::default();
 
-    // A bucket of a category this build does not know cannot be flattened without losing its
-    // category; the server's ride through as-is and the local ones are dropped with the rest of
-    // the local carrier, exactly as the base-wins rule treats every unknown table.
+    // A bucket of a category this build does not know cannot be flattened without losing its category: the server's
+    // ride through as-is and the local ones are dropped, exactly as the base-wins rule treats every unknown table.
     let server_bucket_extras: HashMap<String, HashMap<String, serde_json::Value>> = server_buckets.iter().map(|bucket| (bucket.category.clone(), bucket.extra.clone())).collect();
     let (server_bucket_tables, unknown_server_buckets) = split_known_buckets(server_buckets);
     let (local_bucket_tables, _) = split_known_buckets(local_buckets);
@@ -147,7 +133,6 @@ fn merge_manifest_pair(
     let mut incoming_tables = local.map(|m| m.tables).unwrap_or_default();
     incoming_tables.extend(local_bucket_tables);
 
-    // An item is deleted as a unit including any child rows.
     item_deletes::resolve_item_deletes(&mut base_tables, &mut incoming_tables);
 
     let table_names: BTreeSet<String> = base_tables.keys().chain(incoming_tables.keys()).cloned().collect();
@@ -163,23 +148,19 @@ fn merge_manifest_pair(
             // Not a syncable table (a skip table, or one from a newer writer): the base wins as-is.
             None => base_rows,
         };
-        /*
-         * A table the base carried stays in the output even when it merged to nothing, so the merged
-         * manifest keeps the base's shape.
-         */
+        // A table the base carried stays in the output even when it merged to nothing, so the manifest keeps the base's shape.
         if base_carried_table || !merged_rows.is_empty() {
             merged.insert(name, merged_rows);
         }
     }
 
     // A delete that won can leave the other side's children under a tombstoned item, and a union of concurrently
-    // added multi-value rows can leave two rows at the same ValueIndex: repair and normalize the output like any
-    // canonicalized manifest.
+    // added multi-value rows can leave two rows at the same ValueIndex: repair and normalize like any canonicalized manifest.
     crate::vault_codec::integrity::repair(&mut merged);
     crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
 
     // One bucket per category: the merged rows of the tables this build buckets, plus the server's tables of that
-    // category it does not know. A merged bucket keeps the server's extra top-level keys.
+    // category it does not know; a merged bucket keeps the server's extra top-level keys.
     let mut buckets: Vec<DataBucket> = Vec::new();
     for category in bucket_categories() {
         let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -202,8 +183,8 @@ fn merge_manifest_pair(
     CanonicalManifestMerge { manifest_id, manifest, buckets, stats }
 }
 
-/// Split buckets into the flattened rows of the tables this build buckets itself, and leftover
-/// buckets holding every other table (a newer writer's), kept under their served category.
+/// Split buckets into the flattened rows of the tables this build buckets itself, and leftover buckets holding every
+/// other table (a newer writer's), kept under their served category.
 fn split_known_buckets(buckets: Vec<DataBucket>) -> (HashMap<String, Vec<CodecRecord>>, Vec<DataBucket>) {
     let mut tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     let mut unknown: Vec<DataBucket> = Vec::new();
@@ -223,8 +204,7 @@ fn split_known_buckets(buckets: Vec<DataBucket>) -> (HashMap<String, Vec<CodecRe
     (tables, unknown)
 }
 
-/// A contentless server manifest's local counterpart passes through whole: every row is an
-/// offline-kept row.
+/// A contentless server manifest's local counterpart passes through whole: every row is an incoming-only row.
 fn pass_through(local: Manifest, local_buckets: Vec<DataBucket>) -> CanonicalManifestMerge {
     let row_count = |tables: &HashMap<String, Vec<CodecRecord>>| tables.values().map(|rows| rows.len() as u32).sum::<u32>();
     let stats = MergeStats { incoming_only: row_count(&local.tables) + local_buckets.iter().map(|b| row_count(&b.tables)).sum::<u32>(), ..MergeStats::default() };
@@ -232,18 +212,11 @@ fn pass_through(local: Manifest, local_buckets: Vec<DataBucket>) -> CanonicalMan
     CanonicalManifestMerge { manifest_id: local.manifest_id.clone(), manifest: local, buckets: local_buckets, stats }
 }
 
-/// LWW one table, rows out: base rows in order (replaced where the incoming row is strictly
-/// newer), then incoming-only rows in first-occurrence order.
-fn merge_rows(
-    config: &TableConfig,
-    base_rows: Vec<CodecRecord>,
-    incoming_rows: Vec<CodecRecord>,
-    schema_columns: &HashMap<String, Vec<String>>,
-    stats: &mut MergeStats,
-) -> Vec<CodecRecord> {
+/// LWW one table, rows out: base rows in order (replaced where the incoming row is strictly newer), then
+/// incoming-only rows in first-occurrence order.
+fn merge_rows(config: &TableConfig, base_rows: Vec<CodecRecord>, incoming_rows: Vec<CodecRecord>, schema_columns: &HashMap<String, Vec<String>>, stats: &mut MergeStats) -> Vec<CodecRecord> {
     let identity_columns = config.identity_columns();
-    // Rows arrive normalized to the wire shape here, so a canonical-only key may rely on stripped
-    // derived ids (see the FieldValues registry comment).
+    // Rows arrive in wire shape, so a canonical key may rely on stripped derived ids.
     let match_columns: &[&str] = if config.canonical_key_columns.is_empty() { &identity_columns } else { config.canonical_key_columns };
     let known_columns: Option<HashSet<&str>> = schema_columns.get(config.name).map(|cols| cols.iter().map(String::as_str).collect());
 
@@ -304,10 +277,8 @@ fn overlay_winner(mut winner: CodecRecord, base: &CodecRecord, identity_columns:
     winner
 }
 
-/// Stable string key over `columns`. A column the record does not carry contributes an empty part,
-/// so a row missing one still matches its counterpart rather than dropping out of the merge; that is
-/// why this is not `vault_codec::row_identity`, which skips absent parts. Ids compare
-/// case-insensitively (see [`identity_part`]), everything else exactly as spelled.
+/// Stable string key over `columns`, ids compared case-insensitively. Unlike `vault_codec::row_identity`, a column the
+/// record does not carry contributes an empty part, so a row missing one still matches its counterpart.
 fn get_key(record: &CodecRecord, columns: &[&str]) -> String {
     let parts: Vec<String> = columns.iter().map(|column| record.get(*column).filter(|v| !v.is_null()).map(identity_part).unwrap_or_default()).collect();
     parts.join("\u{1f}")

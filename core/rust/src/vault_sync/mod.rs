@@ -1,10 +1,10 @@
-//! The vault sync engine that all AliasVault clients use to synchronize their vaults with the server.
+//! The vault sync engine every client runs its vault synchronization with the server through.
 
 mod blob_keys;
-pub(crate) mod db;
+mod db;
 mod email_routing;
 mod engine;
-pub(crate) mod errors;
+mod errors;
 mod frame;
 mod http;
 pub(crate) mod keys;
@@ -16,8 +16,8 @@ mod push;
 mod rotation;
 mod session;
 mod sharing;
-pub(crate) mod state;
-pub(crate) mod types;
+mod state;
+mod types;
 mod write_set;
 
 #[cfg(test)]

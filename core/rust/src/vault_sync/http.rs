@@ -8,14 +8,14 @@ use super::frame::{self, FrameBody};
 use super::session::Host;
 use super::types::{Command, HttpMethod, HttpResponse, LogLevel, StatusResponse};
 
-/// A request body: none, JSON text, or a binary frame the host sends as `application/octet-stream`.
+/// A request body.
 enum Body {
     None,
     Json(String),
     Frame(Vec<u8>),
 }
 
-/// Send a request; with `binary_response` a successful response comes back as raw bytes instead of as `body` text.
+/// Send a request, reading a `binary_response` as raw bytes instead of `body` text.
 async fn send(host: &Host, method: HttpMethod, path: &str, body: Body, large_transfer: bool, binary_response: bool) -> SyncResult<(HttpResponse, Option<Vec<u8>>)> {
     let (body, binary_body, bytes) = match body {
         Body::None => (None, false, None),
@@ -43,24 +43,24 @@ async fn send_json(host: &Host, method: HttpMethod, path: &str, body: Body, larg
 async fn send_for_frame<T: FrameBody + DeserializeOwned>(host: &Host, method: HttpMethod, path: &str, body: Body) -> SyncResult<T> {
     let (response, bytes) = send(host, method, path, body, true, true).await?;
     check(response)?;
-    // A host that could not read the body hands back no bytes: a transfer failure, not a damaged vault.
+    // No bytes means the host could not read the body: a transfer failure, not a damaged vault.
     frame::decode(&bytes.ok_or_else(|| SyncError::Network(format!("{} answered without a body", path)))?)
 }
 
-/// The body of a successful response, or the error a refused or failed request maps to.
+/// The body of a successful response, or the error the status maps to.
 pub(super) fn check(response: HttpResponse) -> SyncResult<String> {
     let code = api_error_code(&response.body);
     match response.status {
         200..=299 => Ok(response.body),
         401 => Err(SyncError::Auth),
-        // A coded 403 is a refusal (e.g. `CAPABILITY_NOT_AVAILABLE`), not a dead session.
+        // A coded 403 is a refusal, not a dead session.
         403 if code.is_none() => Err(SyncError::Auth),
         413 => Err(SyncError::PayloadTooLarge),
         status => Err(SyncError::Http { status, code, body: response.body }),
     }
 }
 
-/// The API error code a v2 error body (`{"code": "...", "statusCode": ...}`) names.
+/// The API error code an error body names.
 pub(crate) fn api_error_code(body: &str) -> Option<String> {
     let parsed: serde_json::Value = serde_json::from_str(body).ok()?;
     parsed.get("code")?.as_str().filter(|code| is_api_error_code(code)).map(str::to_string)
@@ -106,20 +106,21 @@ pub(crate) async fn post_frame<B: FrameBody + Serialize, T: DeserializeOwned>(ho
     parse(&send_json(host, HttpMethod::Post, path, Body::Frame(frame::encode(body)?), true).await?)
 }
 
-/// The v2 vault endpoint (`GET`/`POST v2/Vault`).
+/// `GET`/`POST v2/Vault`.
 pub(crate) const VAULT_ENDPOINT: &str = "Vault";
 
-/// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's key chain encrypted under the password.
-// TODO: switch to "UnlockMethod/Password" after minimum API is 0.32.0+ that has the new URL.
+/// `GET v2/VaultKey/Password`: the account's key chain encrypted under the password.
+// LEGACY: servers before 0.32.0 serve the key chain at this URL only. TODO: switch to "UnlockMethod/Password" once the
+// minimum API version is 0.32.0+.
 pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
 
 /// Max ciphertext bytes in one blob transfer request or response body.
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_BYTES: usize = 4 * 1024 * 1024;
 
-/// Upper bound on the number of blobs in one transfer batch (the server's `VaultWriteLimits.MaxBlobsPerUpload`).
+/// The server's cap on blobs per transfer batch.
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_COUNT: usize = 100;
 
-/// Upper bound on the number of hashes in one `blobs/missing` or `blobs/download` request (the server's `VaultWriteLimits.MaxHashesPerRequest`).
+/// The server's cap on hashes per `blobs/missing` or `blobs/download` request.
 pub(crate) const BLOB_HASH_REQUEST_MAX_COUNT: usize = 1000;
 
 /// Split items into transfer batches bounded by both blob transfer limits.
@@ -142,7 +143,7 @@ pub(crate) fn batch_by_transfer_cost<T>(items: Vec<T>, cost_of: impl Fn(&T) -> u
     batches
 }
 
-/// Turn an uncoded 404 (a route miss) from a v2 vault endpoint into "the server predates the v2 API".
+/// Read an uncoded 404 as a server that predates the v2 API.
 pub(crate) fn with_outdated_server_guard<T>(result: SyncResult<T>) -> SyncResult<T> {
     match result {
         Err(SyncError::Http { status: 404, code: None, .. }) => Err(SyncError::ServerUpdateRequired),
@@ -153,8 +154,7 @@ pub(crate) fn with_outdated_server_guard<T>(result: SyncResult<T>) -> SyncResult
 /// The server version a status call reports when the server cannot be reached.
 pub(crate) const SERVER_UNREACHABLE_VERSION: &str = "0.0.0";
 
-/// `GET v2/Status`. A transport failure or a 5xx reads as "server unreachable", reported as server version
-/// [`SERVER_UNREACHABLE_VERSION`] so the caller can go offline; every other failure is returned.
+/// `GET v2/Status`; a transport failure or a 5xx reads as server version [`SERVER_UNREACHABLE_VERSION`].
 pub(crate) async fn get_status(host: &Host) -> SyncResult<StatusResponse> {
     match with_outdated_server_guard(get::<StatusResponse>(host, "Status", false).await) {
         Err(error @ (SyncError::Network(_) | SyncError::Timeout(_) | SyncError::Http { status: 500..=599, .. })) => {

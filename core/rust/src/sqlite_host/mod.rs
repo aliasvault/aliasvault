@@ -1,7 +1,4 @@
-//! An in-memory SQLite database that host applications use for uniform access to the database.
-//!
-//! The database lives in SQLite's own memory and is never persisted to the filesystem; temporary tables and the
-//! scratch copy a VACUUM builds stay in memory too (`temp_store = MEMORY`), so no plaintext page spills to disk.
+//! An in-memory SQLite database that host applications use for uniform access to the vault database.
 
 use std::sync::Mutex;
 
@@ -20,10 +17,10 @@ const VACUUM_MIN_FREE_PAGES: i64 = 64;
 /// A VACUUM runs when the freelist holds at least this fraction (1/n) of the database's pages.
 const VACUUM_FREE_PAGE_RATIO: i64 = 10;
 
-/// The complete client vault schema, generated from `core/vault/src/sql/SqlConstants.ts` by `core/vault/build.sh`.
+/// The complete client vault schema, generated into `vault_schema.sql`.
 pub const VAULT_SCHEMA_SQL: &str = include_str!("vault_schema.sql");
 
-/// One parameterized SQL statement, as the bindings and the sync engine hand it to a host.
+/// One parameterized SQL statement.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SqlStatement {
     pub sql: String,
@@ -31,7 +28,7 @@ pub struct SqlStatement {
     pub params: Vec<Value>,
 }
 
-/// A SQLite value as the bindings see it, typed and without JSON encoding.
+/// A typed SQLite value.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum SqlValue {
@@ -114,7 +111,7 @@ impl MemoryDatabase {
         Ok(SqlResult { columns, rows: out })
     }
 
-    /// Run one DML statement with typed parameters and return the rows it changed (stale for a SELECT, which changes nothing).
+    /// Run one DML statement with typed parameters and return the number of rows it changed.
     pub fn execute(&self, sql: &str, params: &[SqlValue]) -> VaultResult<u64> {
         let conn = self.lock();
         let mut statement = conn.prepare_cached(sql).map_err(sql_error_at(sql))?;
@@ -147,7 +144,7 @@ fn open_connection() -> VaultResult<Connection> {
     Ok(conn)
 }
 
-/// Rebuild the database to reclaim free pages if there are enough free pages to make it worth it.
+/// VACUUM when the freelist is large enough to be worth a full rewrite; a no-op inside an open transaction.
 fn vacuum_if_fragmented(conn: &Connection) -> VaultResult<()> {
     if !conn.is_autocommit() {
         return Ok(());
@@ -168,6 +165,7 @@ pub fn deserialize_into(conn: &mut Connection, bytes: &[u8]) -> VaultResult<()> 
     conn.deserialize_read_exact(MAIN_DB, bytes, bytes.len(), false).map_err(sql_error)
 }
 
+/// A rusqlite error as a `VaultError`.
 pub(crate) fn sql_error(error: rusqlite::Error) -> VaultError {
     VaultError::General(error.to_string())
 }
@@ -246,18 +244,13 @@ pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> VaultResult<Vec<
 /// Run statements on a connection atomically.
 pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> VaultResult<()> {
     conn.execute_batch("SAVEPOINT exec_batch").map_err(sql_error)?;
-    for statement in statements {
-        let values = match statement.params.iter().map(to_sql).collect::<VaultResult<Vec<RsValue>>>() {
-            Ok(values) => values,
-            Err(error) => {
-                let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
-                return Err(error);
-            }
-        };
-        if let Err(error) = conn.execute(&statement.sql, params_from_iter(values.iter())) {
-            let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
-            return Err(sql_error_at(&statement.sql)(error));
-        }
+    let result = statements.iter().try_for_each(|statement| {
+        let values = statement.params.iter().map(to_sql).collect::<VaultResult<Vec<RsValue>>>()?;
+        conn.execute(&statement.sql, params_from_iter(values.iter())).map(drop).map_err(sql_error_at(&statement.sql))
+    });
+    if let Err(error) = result {
+        let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
+        return Err(error);
     }
     conn.execute_batch("RELEASE exec_batch").map_err(sql_error)
 }

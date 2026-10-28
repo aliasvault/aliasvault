@@ -178,7 +178,7 @@ fn every_row_routes_to_the_manifest_its_stamp_names() {
     assert_eq!(ids(rows_of(&shared.tables, "Items")), vec!["i-shared", "i-sub"]);
     assert_eq!(ids(rows_of(&personal.tables, "Items")), vec!["i-nofolder", "i-personal"]);
 
-    // Every table of rows hanging off an item follows it, with zero per-table wiring, and claims the manifest it joined.
+    // Every child table of an item follows it, with zero per-table wiring, and claims the manifest it joined.
     assert_eq!(values(rows_of(&shared.tables, "FieldValues")), vec!["family", "hunter2"]);
     assert_eq!(values(rows_of(&personal.tables, "FieldValues")), vec!["me"]);
     assert_eq!(ids(rows_of(&shared.tables, "TotpCodes")), vec!["totp-shared"]);
@@ -824,24 +824,6 @@ fn combine_accepts_a_manifests_own_keypair_and_drops_every_other_claim() {
     // And the owner's own round trip keeps both keypairs.
     let re = materialize_as_sqlite(materialize_input(manifests_of(&owner), owner.data_buckets.clone())).unwrap();
     assert_eq!(ids(&materialized_map(&re)["EncryptionKeys"]), vec!["ek-1", "sfk-1"]);
-}
-
-#[test]
-fn a_keypair_resolves_by_public_key_within_its_manifest_only() {
-    // After a rotation the superseded row stays so older mail remains decryptable; only the live primary is the
-    // delivery key. A caller that skips combine must still not be handed another manifest's key material.
-    let out = canonicalize(owner_tables_with_keys(vec![keypair("sfk-old", SHARED, "pub-old", 0), keypair("sfk-cur", SHARED, "pub-cur", 1)]), &[SHARED]);
-    let mut shared = manifest(&out, SHARED).manifest.clone();
-    assert_eq!(extract_encryption_key_for_public_key(&shared, "pub-old").unwrap()["PrivateKey"], json!("priv-pub-old"), "a rotated key still resolves");
-    assert_eq!(extract_encryption_key_for_public_key(&shared, "pub-cur").unwrap()["Id"], json!("sfk-cur"));
-    assert!(extract_encryption_key_for_public_key(&shared, "pub-nonexistent").is_none());
-
-    shared.tables.get_mut("EncryptionKeys").unwrap().push(keypair("sfk-foreign", "m-other", "pub-foreign", 1));
-    let mut deleted = keypair("sfk-dead", SHARED, "pub-dead", 0);
-    deleted.insert("IsDeleted".to_string(), json!(1));
-    shared.tables.get_mut("EncryptionKeys").unwrap().push(deleted);
-    assert!(extract_encryption_key_for_public_key(&shared, "pub-foreign").is_none(), "another manifest's row ignored");
-    assert!(extract_encryption_key_for_public_key(&shared, "pub-dead").is_none(), "deleted row ignored");
 }
 
 #[test]

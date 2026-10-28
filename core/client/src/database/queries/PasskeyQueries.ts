@@ -81,7 +81,7 @@ export class PasskeyQueries {
     ORDER BY p.CreatedAt DESC`;
 
   /**
-   * Insert a new passkey into the manifest of the item it hangs off.
+   * Insert a new passkey into the manifest of the item it belongs to.
    */
   public static readonly INSERT = `
     INSERT INTO Passkeys (

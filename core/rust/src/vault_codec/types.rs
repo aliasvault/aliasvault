@@ -1,9 +1,6 @@
-//! Format constants for the manifest-v1 storage layout.
-//!
-//! The datamodel registry data (tables, keys, bucket layout, blob columns, sentinels) lives in
-//! [`crate::vault_model`], generated from the TypeScript source of truth in
-//! core/models/src/vault/VaultTableRegistry.ts; this module adds the codec-owned accessors on top.
+//! Format constants and table classification for the manifest-v1 storage layout.
 
+use crate::common::error::{VaultError, VaultResult};
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_MANIFEST_ID};
 
@@ -16,15 +13,14 @@ pub fn is_readable_schema_version(schema_version: u32) -> bool {
 }
 
 /// Refuse a manifest or data bucket written at a format version this build cannot read.
-pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> crate::common::error::VaultResult<()> {
+pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> VaultResult<()> {
     if is_readable_schema_version(schema_version) {
         return Ok(());
     }
-    Err(crate::common::error::VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
+    Err(VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
 }
 
-/// One identity component of a row, as a string: a GUID lowercased, any other string as-is,
-/// anything else canonical JSON.
+/// One identity component of a row, as a string: a GUID lowercased, any other string as-is, anything else canonical JSON.
 pub fn identity_part(value: &serde_json::Value) -> String {
     match value.as_str() {
         Some(text) if is_guid(text) => text.to_ascii_lowercase(),
@@ -52,7 +48,7 @@ pub fn blob_spec_for(table_name: &str) -> Option<&'static BlobColumn> {
     BLOB_COLUMNS.iter().find(|spec| spec.table == table_name)
 }
 
-/// True when a table must never be serialized into / inserted from the manifest.
+/// True when a table must never be serialized into or inserted from the manifest.
 pub fn is_skip_table(table_name: &str) -> bool {
     SKIP_TABLES.contains(&table_name)
 }
@@ -67,8 +63,7 @@ pub fn bucket_category_for(table_name: &str) -> Option<&'static str> {
     BUCKET_TABLES.iter().find(|(t, _)| *t == table_name).map(|(_, c)| *c)
 }
 
-/// All distinct bucket categories, in declaration order. Lets the codec always emit a stable set of
-/// buckets even when a bucket's tables are empty.
+/// All distinct bucket categories, in declaration order.
 pub fn bucket_categories() -> Vec<&'static str> {
     let mut out: Vec<&'static str> = Vec::new();
     for (_, category) in BUCKET_TABLES {
@@ -79,7 +74,7 @@ pub fn bucket_categories() -> Vec<&'static str> {
     out
 }
 
-/// The tables that make up a bucket category, in declaration order. Empty if the category is unknown.
+/// The tables of a bucket category, in declaration order; empty for an unknown category.
 pub fn tables_for_category(category: &str) -> Vec<&'static str> {
     BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
 }
@@ -92,17 +87,17 @@ pub fn is_unstamped_manifest_id(manifest_id: Option<&str>) -> bool {
     }
 }
 
-/// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared manifest.
+/// True when a table is personal-only: never part of a shared manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
     PERSONAL_TABLES.contains(&table_name)
 }
 
-/// True when a table syncs in a data bucket (see [`BUCKET_TABLES`]) rather than inside the manifest.
+/// True when a table syncs in a data bucket rather than inside the manifest.
 pub fn is_bucketed_table(table_name: &str) -> bool {
     bucket_category_for(table_name).is_some()
 }
 
-/// Get the primary key columns for a table.
+/// The primary key columns of a table.
 pub(crate) fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
     SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&[ID_COL])
 }
@@ -122,22 +117,15 @@ pub(crate) fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
     SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.identity_columns()).unwrap_or_else(|| vec![ID_COL])
 }
 
-/// Stable string key identifying `row` within `table_name`: the identity parts joined by `\u{1f}`, a
-/// null or absent column skipped. See also `vault_merge::get_key`, whose empty-part rule the merge relies on.
+/// Stable string key identifying `row` within `table_name`: the identity parts joined by `\u{1f}`, a null or absent
+/// column skipped; `None` for a row missing a primary key column, which cannot be addressed at all.
 pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Option<String> {
     let mut columns = identity_columns_for(table_name);
     if !columns.contains(&MANIFEST_ID_COL) && row.get(MANIFEST_ID_COL).filter(|value| !value.is_null()).is_some() {
         columns.insert(0, MANIFEST_ID_COL);
     }
-    // A row missing any primary key column cannot be addressed at all.
     for column in primary_key_columns_for(table_name) {
         row.get(*column)?;
     }
-    Some(
-        columns
-            .iter()
-            .filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(identity_part))
-            .collect::<Vec<_>>()
-            .join("\u{1f}"),
-    )
+    Some(columns.iter().filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(identity_part)).collect::<Vec<_>>().join("\u{1f}"))
 }

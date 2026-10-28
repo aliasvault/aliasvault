@@ -1,7 +1,4 @@
-//! Basic character-set password generator.
-//!
-//! Builds a character set from the enabled options and constructs the password so that it is guaranteed to contain at least
-//! one character from every enabled set (as some websites require this).
+//! Character-set password generator; the result contains at least one character of every enabled class.
 
 use rand::Rng;
 
@@ -12,25 +9,21 @@ const UPPERCASE_CHARS: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const NUMBER_CHARS: &str = "0123456789";
 const SPECIAL_CHARS: &str = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
-/// Ambiguous characters that look similar and are easy to confuse when typing.
+/// Characters that are easy to confuse when reading or typing.
 const AMBIGUOUS_CHARS: &str = "Il1O0oZzSsBbGg2568|[]{}()<>;:,.`'\"_-";
 
-/// Generate a basic password based on the supplied settings.
+/// Generate a password from the supplied settings.
 pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
     let chars = build_character_set(settings);
     let length = settings.length as usize;
 
-    // Reserve one mandatory character per enabled class so the result is guaranteed to contain at least one of each.
+    // When the length cannot fit one character per enabled class, a random subset of the classes wins.
     let mut mandatory = mandatory_characters(settings, rng);
-
-    // If the requested length cannot fit every mandatory character (e.g. length 2 with four enabled classes), shuffle and
-    // truncate so we never exceed the requested length. Which classes "win" is then random rather than always the same ones.
     if mandatory.len() > length {
         shuffle(&mut mandatory, rng);
         mandatory.truncate(length);
     }
 
-    // Fill the remaining positions from the full character set, then shuffle so the mandatory characters are not clustered at the front.
     let mut password = mandatory;
     while password.len() < length {
         password.push(chars[unbiased_index(rng, chars.len())]);
@@ -40,7 +33,7 @@ pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> St
     password.into_iter().collect()
 }
 
-/// Build the character set based on the selected options.
+/// The character set of the enabled classes, lowercase when none is enabled.
 fn build_character_set(settings: &PasswordSettings) -> Vec<char> {
     let mut chars = String::new();
 
@@ -57,7 +50,6 @@ fn build_character_set(settings: &PasswordSettings) -> Vec<char> {
         chars.push_str(SPECIAL_CHARS);
     }
 
-    // Ensure at least one character set is selected, otherwise default to lowercase.
     if chars.is_empty() {
         chars.push_str(LOWERCASE_CHARS);
     }
@@ -71,7 +63,7 @@ fn build_character_set(settings: &PasswordSettings) -> Vec<char> {
     chars.chars().filter(|c| !settings.use_non_ambiguous_chars || !AMBIGUOUS_CHARS.contains(*c)).collect()
 }
 
-/// Collect one mandatory character per enabled class, so the password contains at least one character from each.
+/// One random character per enabled class.
 fn mandatory_characters<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> Vec<char> {
     let mut mandatory = Vec::new();
     if settings.use_lowercase {
@@ -89,7 +81,7 @@ fn mandatory_characters<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut 
     mandatory
 }
 
-/// Pick one random character from the (ambiguity-filtered) class set and push it onto `out`.
+/// Push one random character of `char_set` onto `out`, unless the settings exclude the whole set.
 fn push_one<R: Rng + ?Sized>(out: &mut Vec<char>, char_set: &str, settings: &PasswordSettings, rng: &mut R) {
     let safe = safe_character_set(char_set, settings);
     if !safe.is_empty() {
@@ -97,7 +89,7 @@ fn push_one<R: Rng + ?Sized>(out: &mut Vec<char>, char_set: &str, settings: &Pas
     }
 }
 
-/// Get a character set with the user's excluded characters removed, and the ambiguous ones if that option is enabled.
+/// A character set without the excluded characters, and without the ambiguous ones when that option is on.
 fn safe_character_set(char_set: &str, settings: &PasswordSettings) -> Vec<char> {
     char_set
         .chars()
@@ -106,7 +98,7 @@ fn safe_character_set(char_set: &str, settings: &PasswordSettings) -> Vec<char> 
         .collect()
 }
 
-/// Shuffle a slice in place with an unbiased Fisher-Yates shuffle, reusing [`unbiased_index`] so a fixed seed stays deterministic.
+/// Fisher-Yates shuffle over `unbiased_index`, so a seed keeps giving the same password.
 fn shuffle<R: Rng + ?Sized>(items: &mut [char], rng: &mut R) {
     for i in (1..items.len()).rev() {
         let j = unbiased_index(rng, i + 1);

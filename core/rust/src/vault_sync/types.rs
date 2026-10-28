@@ -15,7 +15,7 @@ use crate::sqlite_host::SqlStatement;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SyncOperation {
-    /// Status check, server-directed changes, then pull (and merge) or push based on the revision counters.
+    /// Pull (and merge) or push, as the revisions decide.
     FullSync,
     /// Classify the pending local migration.
     MigrationStatus,
@@ -23,29 +23,27 @@ pub enum SyncOperation {
     MigrateManifest,
     /// Run a status check.
     StatusCheck,
-    /// Open the account's key chain with the password-derived key right after login; see `ResolveVaultKeyResult`.
+    /// Open the account's key chain with the password-derived key right after login.
     ResolveVaultKey,
-    /// Create a shared manifest, with a group of its own that this account owns; see `SharingParams`.
+    /// Create a shared manifest, with a group of its own that this account owns.
     CreateSharedManifest,
-    /// Invite somebody to a shared manifest (by account fingerprint, or a person verified before), handing them its key encrypted
-    /// for their account keypair.
+    /// Invite somebody to a shared manifest, handing them its key encrypted for their account keypair.
     InviteToSharedManifest,
-    /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
+    /// Change the name of a shared manifest.
     UpdateSharedManifest,
-    /// Find the account behind an account fingerprint and check the fingerprint against its key, without certifying or inviting it.
+    /// Find the account behind an account fingerprint and check the fingerprint against its key.
     LookupAccountFingerprint,
     /// Accept an invitation to a shared manifest, signing the grant with this account's own key.
     AcceptSharedManifestInvitation,
-    /// Rotate the account's keys and re-encrypt the personal vault under them; see `KeyRotationParams`.
+    /// Rotate the account's keys and re-encrypt the personal vault under them.
     RotateAccountKeys,
-    /// Move an email alias to another manifest (`SharingParams.manifest_id`), signed with this account's own key.
+    /// Move an email alias to another manifest, signed with this account's own key.
     TransferEmailClaim,
     /// Approve a Login with Mobile request with the Account Key encrypted for the requesting client, signed with this account's own key.
     ApproveMobileLogin,
 }
 
-/// What a key rotation needs from the host: the proof of the current password and the new unlock method, both
-/// derived from the master password on the host.
+/// What a key rotation needs from the host: the proof of the current password and the new unlock method.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KeyRotationParams {
@@ -98,7 +96,7 @@ pub struct SharingParams {
     pub algorithm: Option<String>,
 }
 
-/// Sync request.
+/// What the host starts a session with.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncRequest {
@@ -224,8 +222,7 @@ pub struct MigrateManifestResult {
     pub failure: FailureFields,
 }
 
-/// Outcome of the login-time key resolution: the vault key the host stores as its session key (the VEK behind
-/// the account's key chain, or the password-derived key itself for a legacy account without a chain).
+/// Outcome of the login-time key resolution: the vault key the host stores as its session key.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ResolveVaultKeyResult {
@@ -253,8 +250,8 @@ pub struct SharingOperationResult {
     pub already_member: bool,
     /// The vault (or the account's key hierarchy) has to finish upgrading before it can be shared.
     pub vault_upgrade_required: bool,
-    /// A refusal carries only `failure.api_error_code` (e.g. `INVITATION_ALREADY_EXISTS`), which the sharing screen has
-    /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
+    /// A refusal carries only `failure.api_error_code`; the engine reports `INVITE_RECIPIENT_NOT_READY` itself when the
+    /// recipient has no key yet.
     #[serde(flatten)]
     pub failure: FailureFields,
 }
@@ -320,7 +317,6 @@ pub struct StatusCheckResult {
 pub enum HttpMethod {
     Get,
     Post,
-    Delete,
 }
 
 /// The databases the engine reads and writes.
@@ -328,13 +324,11 @@ pub enum HttpMethod {
 pub enum Db {
     /// The vault the host has open, reached through the `db*` commands.
     Local,
-    /// A throwaway database the engine keeps in-process: it materializes a pulled vault into it before that
-    /// becomes the new local vault, and probes the current client schema by opening a fresh one.
+    /// A throwaway in-process database a pulled vault is materialized into, which also probes the current client schema.
     Staging,
 }
 
-/// The levels of a `log` command. `Phase` carries a sync phase (`pull` or `push`) for a host that shows what
-/// the sync is doing; the others are development logging a host may ignore.
+/// The levels of a `log` command; `Phase` carries the sync phase (`pull` or `push`) for the host to show.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
@@ -354,12 +348,12 @@ pub enum Command {
         #[serde(skip_serializing_if = "Option::is_none")]
         body: Option<String>,
         auth: bool,
-        /// A vault transfer, which the host may give a longer timeout than a status call (which uses default).
+        /// A vault transfer, which the host may give a longer timeout.
         large_transfer: bool,
-        /// On success the host returns the body as raw bytes (the `bytes` argument of `SyncSession::resume`), not as `body` text.
+        /// On success the host returns the body as raw bytes through `SyncSession::resume`, not as `body` text.
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         binary_response: bool,
-        /// The request body is raw bytes, which the host takes with `SyncSession::command_bytes` and sends as `application/octet-stream`.
+        /// The request body is raw bytes, taken with `SyncSession::command_bytes` and sent as `application/octet-stream`.
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         binary_body: bool,
     },
@@ -373,8 +367,7 @@ pub enum Command {
     DbQuery { sql: String, params: Vec<Value> },
     /// Run statements on the local vault inside one transaction; response [`Ack`]. A `{ "__b64": ... }` parameter binds a BLOB.
     DbExec { statements: Vec<SqlStatement> },
-    /// Serialize the local vault; response [`Ack`], with the SQLite file handed back as raw bytes through
-    /// `SyncSession::resume` (never base64 inside the JSON).
+    /// Serialize the local vault; response [`Ack`], with the SQLite file as raw bytes through `SyncSession::resume`.
     DbExport,
     /// Persist the at-rest vault blob; response [`StoreOutcome`].
     VaultStore {
@@ -398,7 +391,7 @@ pub enum Command {
 }
 
 impl Command {
-    /// The command's wire tag (`dbExec`), as error reports name it.
+    /// The command's wire tag, as error reports name it.
     pub fn name(&self) -> &'static str {
         match self {
             Command::Http { .. } => "http",
@@ -709,11 +702,11 @@ impl FrameBody for VaultWriteRequest {
     }
 }
 
-/// One-time migrations applied atomically with a vault write (optional field).
+/// One-time migrations applied with a vault write.
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VaultWriteMigration {
-    /// The newly created key hierarchy for a legacy vault's first manifest-v1 push (pre-0.31.0).
+    /// LEGACY: the key hierarchy a pre-0.31.0 account's first manifest-v1 push creates.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account_keys: Option<crate::crypto::AccountKeyBlobs>,
 }
@@ -819,7 +812,9 @@ pub struct VaultKeyResponse {
 pub struct SharedManifestDto {
     pub manifest_id: String,
     pub encrypted_vek: String,
-    /// The account public key the grant was encrypted to (stored as `encryptionPublicKey` before 0.31.0 shipped).
+    /// The account public key the grant was encrypted to.
+    // LEGACY: builds before 0.31.0 stored this record with `encryptionPublicKey`. TODO: remove the alias once every
+    // client has re-stored its records on 0.31.0+.
     #[serde(alias = "encryptionPublicKey")]
     pub account_public_key: String,
     pub algorithm: String,

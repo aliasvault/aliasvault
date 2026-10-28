@@ -13,11 +13,9 @@
 //!   (e.g. `firstnames_male_1980_1989.txt`), so generated first names match names
 //!   that were popular around the generated birth year. Used by de, it and ro.
 
-/// First names that were popular for births within `[start_year, end_year]`.
+/// First names popular for births in `start_year..=end_year`.
 pub(crate) struct DecadeNames {
-    /// First birth year covered by this list (inclusive).
     pub start_year: i32,
-    /// Last birth year covered by this list (inclusive).
     pub end_year: i32,
     raw: &'static str,
 }
@@ -29,26 +27,26 @@ impl DecadeNames {
     }
 }
 
-/// All embedded name lists for one language.
+/// The name lists of one language.
 pub(crate) struct LanguageDictionary {
-    /// Two-letter ISO 639-1 language code.
+    /// The ISO 639-1 language code.
     pub code: &'static str,
     firstnames_male: &'static str,
     firstnames_female: &'static str,
     lastnames: &'static str,
-    /// Decade-based male first names; empty for languages with flat lists.
+    /// Empty for a language with flat lists.
     pub firstnames_male_by_decade: &'static [DecadeNames],
-    /// Decade-based female first names; empty for languages with flat lists.
+    /// Empty for a language with flat lists.
     pub firstnames_female_by_decade: &'static [DecadeNames],
 }
 
 impl LanguageDictionary {
-    /// Flat male first names (empty for decade-based languages).
+    /// Flat male first names; empty for a decade-based language.
     pub fn firstnames_male(&self) -> Vec<&'static str> {
         parse_names(self.firstnames_male).collect()
     }
 
-    /// Flat female first names (empty for decade-based languages).
+    /// Flat female first names; empty for a decade-based language.
     pub fn firstnames_female(&self) -> Vec<&'static str> {
         parse_names(self.firstnames_female).collect()
     }
@@ -59,7 +57,7 @@ impl LanguageDictionary {
     }
 }
 
-/// Shorthand for a flat-list language entry.
+/// A language with flat first name lists.
 macro_rules! flat_language {
     ($code:literal) => {
         LanguageDictionary {
@@ -73,20 +71,14 @@ macro_rules! flat_language {
     };
 }
 
-/// Shorthand for one decade entry of a decade-based language.
+/// One decade list of a decade-based language.
 macro_rules! decade {
     ($code:literal, $gender:literal, $start:literal, $end:literal) => {
-        DecadeNames {
-            start_year: $start,
-            end_year: $end,
-            raw: include_str!(concat!(
-                $code, "/firstnames_", $gender, "_", $start, "_", $end, ".txt"
-            )),
-        }
+        DecadeNames { start_year: $start, end_year: $end, raw: include_str!(concat!($code, "/firstnames_", $gender, "_", $start, "_", $end, ".txt")) }
     };
 }
 
-/// Shorthand for a decade-based language entry (no flat first name lists).
+/// A language with first name lists per birth decade.
 macro_rules! decade_language {
     ($code:literal, $(($start:literal, $end:literal)),+ $(,)?) => {
         LanguageDictionary {
@@ -94,18 +86,13 @@ macro_rules! decade_language {
             firstnames_male: "",
             firstnames_female: "",
             lastnames: include_str!(concat!($code, "/lastnames.txt")),
-            firstnames_male_by_decade: &[
-                $(decade!($code, "male", $start, $end)),+
-            ],
-            firstnames_female_by_decade: &[
-                $(decade!($code, "female", $start, $end)),+
-            ],
+            firstnames_male_by_decade: &[$(decade!($code, "male", $start, $end)),+],
+            firstnames_female_by_decade: &[$(decade!($code, "female", $start, $end)),+],
         }
     };
 }
 
-/// The registry of bundled language dictionaries. The order here is the order returned
-/// by the language list APIs. English is the fallback for unknown codes.
+/// The bundled languages, in the order the language list reports them.
 pub(crate) static DICTIONARIES: &[LanguageDictionary] = &[
     flat_language!("da"),
     decade_language!(
@@ -148,28 +135,18 @@ pub(crate) static DICTIONARIES: &[LanguageDictionary] = &[
     flat_language!("fa"),
 ];
 
-/// Resolve a language code (case-insensitive) to its dictionary, falling back to
-/// English for any unknown or empty code.
+/// The dictionary of a language (case-insensitive code); an unknown or empty code gives English.
 pub(crate) fn resolve(code: &str) -> &'static LanguageDictionary {
-    DICTIONARIES
-        .iter()
-        .find(|d| d.code.eq_ignore_ascii_case(code))
-        .unwrap_or_else(|| {
-            DICTIONARIES
-                .iter()
-                .find(|d| d.code == "en")
-                .expect("English dictionary must be registered")
-        })
+    let by_code = |wanted: &str| DICTIONARIES.iter().find(|d| d.code.eq_ignore_ascii_case(wanted));
+    by_code(code).unwrap_or_else(|| by_code("en").expect("English dictionary must be registered"))
 }
 
-/// List the codes of all bundled languages, in registry order.
+/// The codes of the bundled languages, in registry order.
 pub(crate) fn available_codes() -> Vec<&'static str> {
     DICTIONARIES.iter().map(|d| d.code).collect()
 }
 
-/// Split raw embedded text into trimmed, non-empty names.
+/// The trimmed, non-empty lines of an embedded name file.
 fn parse_names(raw: &'static str) -> impl Iterator<Item = &'static str> {
-    raw.lines()
-        .map(|line| line.trim())
-        .filter(|line| !line.is_empty())
+    raw.lines().map(|line| line.trim()).filter(|line| !line.is_empty())
 }

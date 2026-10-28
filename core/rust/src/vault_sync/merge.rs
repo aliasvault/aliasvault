@@ -17,9 +17,9 @@ use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMerge
 /// What a dirty pull (pull and merge) produced.
 pub(crate) enum PullAndMergeOutcome {
     /// LEGACY: the server's vault is still a sqlite blob at this revision; the caller pushes the local vault over it.
+    /// TODO: remove once every account has upgraded to manifest-v1.
     LegacyServer { revision: i64 },
-    /// The merged vault, with the canonical set the push right after it writes from (none when a manifest fell back
-    /// to the server's version, which the push then has to canonicalize again).
+    /// The merged vault, with the canonical set the push writes from unless a manifest fell back to the server's version.
     Merged { pulled: PulledVault, push_canonical: Option<CanonicalizedSet> },
     /// The merge failed, so the server's vault stands as pulled and the local changes are dropped.
     ServerOnly(PulledVault),
@@ -30,7 +30,8 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
     let vek = ctx.encryption_key()?;
     ctx.log("[Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...").await;
     let snapshot = match pull::fetch_snapshot(ctx).await? {
-        // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
+        // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault, so the caller pushes
+        // over it. TODO: remove once every account has upgraded to manifest-v1.
         Snapshot::LegacySqliteBlob(snapshot) => {
             let legacy = legacy::open_legacy_snapshot(ctx, &snapshot).await?;
             pull::commit_revisions(ctx, &legacy).await?;
@@ -52,7 +53,6 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
     match merge_onto_opened_manifests(ctx, &opened, local_side, vek.expose_secret()).await {
         Ok(outcome) => Ok(outcome),
         Err(merge_error) => {
-            // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
             ctx.warn(format!("[Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
             let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
             Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, vek.expose_secret())?)))
@@ -176,8 +176,7 @@ fn validate_merged_manifest(entry: &CanonicalManifestMerge) -> Option<String> {
     None
 }
 
-/// The bytes at hand for the blobs the merged manifests reference, per manifest. A blob without bytes is not loaded
-/// (yet) by the client: its row keeps the reference, and the push only uploads what the server lacks and this device has.
+/// The bytes at hand for the blobs the merged manifests reference, per manifest; a blob without bytes keeps its reference.
 fn collect_merged_blobs(manifests: &[Manifest], blob_map: &HashMap<String, Vec<u8>>, local_blobs: &HashMap<String, BlobEntry>) -> HashMap<String, HashMap<String, BlobEntry>> {
     let mut by_manifest: HashMap<String, HashMap<String, BlobEntry>> = HashMap::new();
     for manifest in manifests {

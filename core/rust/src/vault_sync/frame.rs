@@ -1,14 +1,12 @@
 //! The binary body of the v2 vault transfers: a 4-byte big-endian header length, a JSON header, then the raw
-//! ciphertexts. Each header entry that carries a ciphertext gives its `offset` (counted from the first byte after the
-//! header) and `size`, so a reader skips entries and bytes it does not know, as it skips unknown JSON fields.
-//! Mirrors the server's `BinaryFrame`.
+//! ciphertexts, each located by the `offset` (from the first byte after the header) and `size` its header entry carries.
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
 use super::errors::{SyncError, SyncResult};
 
-/// A ciphertext sent after the frame header; the header carries its `offset` and `size`.
+/// A ciphertext sent after the frame header.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct FramePart {
     #[serde(default)]
@@ -25,7 +23,7 @@ impl From<Vec<u8>> for FramePart {
     }
 }
 
-/// A frame header: the entries whose ciphertext follows it, in frame order.
+/// A frame header, which lists its ciphertext parts in frame order.
 pub(crate) trait FrameBody {
     fn parts(&mut self) -> Vec<&mut FramePart>;
 }

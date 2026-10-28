@@ -1,7 +1,9 @@
 //! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
 //! ([`upgrade_account_to_manifest_v1`]). TODO: remove this module once every account has upgraded, together with the
-//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check, the
-//! branch without a vault key in `migration::migrate_manifest` and the upgrade-elsewhere check in `migration::migration_status`.
+//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check, the branch
+//! without a key chain in `keys::resolve_vault_key`, `keys::accept_hierarchy_created_elsewhere`, the branch without a
+//! vault key in `migration::migrate_manifest`, the upgrade-elsewhere check in `migration::migration_status` and the
+//! unsigned approval in `sharing::approve_mobile_login`.
 
 use std::collections::HashMap;
 
@@ -9,12 +11,12 @@ use serde_json::Value;
 
 use super::db::{self, SchemaState};
 use super::errors::{SyncError, SyncResult};
+use super::keys;
 use super::migration;
 use super::pull::{self, PulledVault};
 use super::push::{resolve_personal_manifest_id, WriteKind};
 use super::state::{self, Ctx};
 use super::types::{Db, GetResponse};
-use super::keys;
 use crate::common::encoding::base64_decode;
 use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::inline_bytes;
@@ -22,10 +24,9 @@ use crate::vault_codec::row::inline_bytes;
 /// The `storageFormat` of a legacy sqlite-blob snapshot; an absent value means the same.
 pub(crate) const STORAGE_FORMAT_SQLITE_BLOB: &str = "sqlite-blob";
 
-/// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 fingerprints
-/// are reset, and the personal manifest id is recorded for the migration push.
+/// Take a legacy snapshot apart for local storage: the blob passes through as-is and the personal manifest id is recorded for the upgrade push.
 pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> SyncResult<PulledVault> {
-    // Sanity check: a server that serves a sqlite-blob vault to a device holding a key chain is behind the session.
+    // A server that serves a sqlite-blob vault to a device holding a key chain is behind the session.
     if keys::has_cached_key_chain(&ctx.host).await? {
         return Err(SyncError::KeyOutOfSync);
     }
@@ -47,9 +48,8 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
 /// Every column declared BLOB, as (TableName, ColumnName) rows.
 const BLOB_TYPED_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnName FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table' AND upper(p.type) = 'BLOB'";
 
-/// Upgrade a sqlite-blob account to manifest-v1: the local vault is rebuilt onto the current schema with its unstamped
-/// rows stamped with the personal manifest, and the push that carries it creates the account key hierarchy. Returns
-/// whether that push reached the server.
+/// Upgrade a sqlite-blob account to manifest-v1: rebuild the local vault onto the current schema with its unstamped rows
+/// stamped with the personal manifest, and push it, which creates the key hierarchy; returns whether the push reached the server.
 pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<bool> {
     if accept_upgrade_done_elsewhere(ctx).await? {
         return migration::migrate_schema(ctx).await;
@@ -58,12 +58,11 @@ pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<
         return Err(SyncError::LegacyUpgradePending);
     }
     record_server_baseline_if_missing(ctx).await?;
+    // The baseline pull may have stored an upgraded vault, or one still on the chain.
     if keys::has_cached_key_chain(&ctx.host).await? {
-        // The baseline pull turned up an account that is upgraded already; a schema rebuild is all that can remain.
         return migration::migrate_schema(ctx).await;
     }
     if migration::schema_state(ctx).await? == SchemaState::LegacyChain {
-        // The baseline pull stored a server vault that is still on the chain.
         return Err(SyncError::LegacyUpgradePending);
     }
     let personal = resolve_personal_manifest_id(ctx).await?;
@@ -72,9 +71,8 @@ pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<
     migration::push_migrated_vault(ctx, WriteKind::AccountKeyMigration).await
 }
 
-/// Accept a key hierarchy another device created since this session logged in, and replace the local sqlite-blob vault
-/// with the server's: that device already upgraded the account, and the local rows that name no manifest cannot be
-/// canonicalized. Returns whether that happened. Call only while no key chain is cached.
+/// Replace the local sqlite-blob vault with the server's when another device upgraded the account since this session
+/// logged in; returns whether that happened. Call only while no key chain is cached.
 pub(crate) async fn accept_upgrade_done_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
     // Accepting swaps the session key to the VEK, which the pull below needs.
     if !keys::ensure_key_chain_accepted(ctx).await? {
@@ -108,8 +106,7 @@ async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
     pull::commit_revisions(ctx, &pulled).await
 }
 
-/// Decode base64 TEXT in BLOB columns back to bytes, in place; text that is not base64 is left as-is.
-/// The 0.30.x merges (Android, iOS, Blazor) bound every value as text, storing BLOB cells as base64 TEXT.
+/// Decode the base64 TEXT the 0.30.x merges wrote into BLOB columns back to bytes, in place; text that is not base64 is left as-is.
 async fn decode_base64_text_in_blob_columns(ctx: &Ctx) -> SyncResult<()> {
     let mut decoded = 0usize;
     for column in db::query(&ctx.host, Db::Local, BLOB_TYPED_COLUMNS, vec![]).await? {
@@ -131,8 +128,7 @@ async fn decode_base64_text_in_blob_columns(ctx: &Ctx) -> SyncResult<()> {
     Ok(())
 }
 
-/// The frozen sqlite-blob upgrade chain: (revision, data version). It ends at 2.0.0, the first schema compatible
-/// with manifest-v1; later schema changes ship through the full schema only, which every materialization uses directly.
+/// The frozen sqlite-blob upgrade chain as (revision, data version), ending at 2.0.0, the first schema compatible with manifest-v1.
 const LEGACY_VAULT_VERSIONS: &[(u32, &str)] = &[
     (1, "1.0.0"),
     (2, "1.0.1"),
@@ -167,8 +163,7 @@ fn is_well_formed_version(version: &str) -> bool {
     version.split('.').count() == 3 && version.split('.').all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()))
 }
 
-/// The legacy-chain revision a database version maps to. A known version maps to its entry; an unknown but
-/// well-formed version is treated as the latest (backwards compatible); a malformed version is incompatible.
+/// The legacy-chain revision of a database version; an unknown but well-formed version counts as the latest, a malformed one is incompatible.
 pub(super) fn legacy_revision_for(database_version: &str) -> Result<u32, String> {
     if let Some((revision, _)) = LEGACY_VAULT_VERSIONS.iter().find(|(_, version)| *version == database_version) {
         return Ok(*revision);

@@ -208,7 +208,7 @@ async fn rotate(ctx: &mut Ctx) -> Outcome {
     let posted = build_and_post(ctx, &params, &personal_manifest_id, &rotated, signing_key.expose_secret(), &new_vek, &vek, &shared_records, &shared_veks, &blob_keys.blob_keys, &certifications, &delivery_pair.public_key).await;
     match posted {
         Ok(Ok((applied, reencrypted_blob_keys, reencrypted_grants, fingerprints))) => {
-            adopt(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &applied, &reencrypted_blob_keys, &reencrypted_grants, &fingerprints).await?;
+            store_rotated_keys(ctx, &params, &personal_manifest_id, &rotated, &new_vek, &applied, &reencrypted_blob_keys, &reencrypted_grants, &fingerprints).await?;
             ctx.log("[KeyRotation] The server applied the rotation; this device now holds the new keys.").await;
             Ok(Ok((SecretString::from(rotated.account_key.as_str()), new_vek)))
         }
@@ -402,10 +402,10 @@ fn ensure_opens(opens: bool, what: &str) -> SyncResult<()> {
     Err(SyncError::Other(format!("The rotation was not sent: {} does not open under the new keys.", what)))
 }
 
-/// Take the new keys over: the cached chain, the derivation parameters, the revisions and fingerprints the server
+/// Store the new keys: the cached chain, the derivation parameters, the revisions and fingerprints the server
 /// now holds, the blob keys and grants under the new keys, and the stored vault under the new VEK.
 #[allow(clippy::too_many_arguments)]
-async fn adopt(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::AccountKeyHierarchy, new_vek: &SecretString, applied: &Applied, reencrypted_blob_keys: &HashMap<String, String>, reencrypted_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
+async fn store_rotated_keys(ctx: &mut Ctx, params: &KeyRotationParams, personal_manifest_id: &str, rotated: &crypto::AccountKeyHierarchy, new_vek: &SecretString, applied: &Applied, reencrypted_blob_keys: &HashMap<String, String>, reencrypted_grants: &HashMap<String, SharedManifestDto>, fingerprints: &HashMap<String, String>) -> SyncResult<()> {
     let blobs = &rotated.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;

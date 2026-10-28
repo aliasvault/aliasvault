@@ -21,27 +21,25 @@ const FIELD_VALUE_ID_NAMESPACE: &str = "aliasvault:fieldvalue:v1";
 /// Domain-separation prefix for derived field history ids.
 const FIELD_HISTORY_ID_NAMESPACE: &str = "aliasvault:fieldhistory:v1";
 
-/// The `FieldValues.Id` of the single-value row `(manifest, item, field, position)`: a UUIDv8 whose
-/// bytes come from `sha256(namespace | manifest | item | field | position)`.
+/// The `FieldValues.Id` of the row `(manifest, item, field, position)`: a UUIDv8 of
+/// `sha256(namespace | manifest | item | field | position)`.
 pub fn field_value_id_for(manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, value_index: i64) -> String {
     derived_field_id(FIELD_VALUE_ID_NAMESPACE, manifest_id, item_id, field_key, field_definition_id, &value_index.to_string())
 }
 
-/// The `FieldHistories.Id` of the history row `(manifest, item, field, changed at)`; two snapshots of one field in the
-/// same millisecond collapse to one.
+/// The `FieldHistories.Id` of the row `(manifest, item, field, changed at)`; two snapshots of one field in the same
+/// millisecond collapse to one.
 pub fn field_history_id_for(manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, changed_at: &str) -> String {
     derived_field_id(FIELD_HISTORY_ID_NAMESPACE, manifest_id, item_id, field_key, field_definition_id, changed_at)
 }
 
-/// A UUIDv8 from `sha256(namespace | manifest | item | field | tail)`, ids lowercased.
+/// A UUIDv8 of `sha256(namespace | manifest | item | field | tail)`, ids lowercased.
 fn derived_field_id(namespace: &str, manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, tail: &str) -> String {
     let field = field_discriminator_of(field_key, field_definition_id);
     super::hash::derived_uuid(&format!("{}\n{}\n{}\n{}\n{}", namespace, id_key(manifest_id), id_key(item_id), field, tail))
 }
 
-/// Lowercase every id in `tables` which is the normalized spelling expected by all AliasVault clients.
-///
-/// Only [`is_id_column`] columns are touched.
+/// Lowercase every id column of every row.
 pub(crate) fn normalize_id_spelling(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     for rows in tables.values_mut() {
         for row in rows.iter_mut() {
@@ -50,7 +48,7 @@ pub(crate) fn normalize_id_spelling(tables: &mut HashMap<String, Vec<CodecRecord
     }
 }
 
-/// Lowercase every id of one row. See [`normalize_id_spelling`].
+/// Lowercase every id column of one row.
 pub(crate) fn normalize_row_id_spelling(row: &mut CodecRecord) {
     for (column, value) in row.iter_mut() {
         if !is_id_column(column) {
@@ -63,8 +61,8 @@ pub(crate) fn normalize_row_id_spelling(row: &mut CodecRecord) {
     }
 }
 
-/// Normalize the rows of the tables whose wire shape differs from their SQLite shape. The caller repairs
-/// referential integrity first (see [`integrity`](super::integrity)); this only reshapes rows.
+/// Normalize the rows of the tables whose wire shape differs from their SQLite shape; the caller repairs referential
+/// integrity first.
 pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     let multi_value_defs = multi_value_definition_ids(tables);
     if let Some(rows) = tables.get_mut(FIELD_VALUES_TABLE) {
@@ -79,17 +77,15 @@ pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>
     drop_deviceless_item_stats(tables);
 }
 
-/// Drop ItemStats rows written before stats were kept per device. They carry no DeviceId, so on materialize they
-/// would take the column default and collide with the same item's other device-less row.
+/// Drop `ItemStats` rows without a `DeviceId` (written before stats were kept per device): on materialize they would
+/// take the column default and collide with the same item's other device-less row.
 pub(crate) fn drop_deviceless_item_stats(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     if let Some(rows) = tables.get_mut(ITEM_STATS_TABLE) {
         rows.retain(|row| str_col(row, DEVICE_ID_COL).is_some_and(|device| !device.is_empty()));
     }
 }
 
-/// The materialize direction: a FieldValues or FieldHistories row without an `Id` is a row whose
-/// derived id the wire omits; derive it from the row's own natural key so every device materializes
-/// the same SQLite row.
+/// Give every FieldValues or FieldHistories row without an `Id` the one derived from its natural key.
 pub(crate) fn derive_missing_ids(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     if let Some(rows) = tables.get_mut(FIELD_VALUES_TABLE) {
         for row in rows.iter_mut().filter(|row| !has_id(row)) {
@@ -108,18 +104,15 @@ pub(crate) fn derive_missing_ids(tables: &mut HashMap<String, Vec<CodecRecord>>)
 /// The `(manifest, definition id)` pairs (lowercased) of every custom field definition marked multi-value.
 fn multi_value_definition_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> HashSet<(String, String)> {
     let Some(rows) = tables.get(FIELD_DEFINITIONS_TABLE) else { return HashSet::new() };
-    rows.iter()
-        .filter(|row| truthy(row.get(IS_MULTI_VALUE_COL)))
-        .filter_map(|row| Some((lower_str(row, MANIFEST_ID_COL)?, lower_str(row, ID_COL)?)))
-        .collect()
+    rows.iter().filter(|row| truthy(row.get(IS_MULTI_VALUE_COL))).filter_map(|row| Some((lower_str(row, MANIFEST_ID_COL)?, lower_str(row, ID_COL)?))).collect()
 }
 
 /// How many values a field holds, which decides the shape its rows take on the wire.
 enum FieldShape {
     MultiValue,
     SingleValue,
-    /// Nothing says: a system field this build's registry does not list, or a custom field whose definition is gone.
-    /// Its rows keep the ids they carry, so none of their values is lost.
+    /// A system field this registry does not list, or a custom field whose definition is gone; its rows keep the ids
+    /// they carry.
     Unknown,
 }
 
@@ -139,7 +132,6 @@ fn field_shape(row: &CodecRecord, manifest: &str, multi_value_defs: &HashSet<(St
 
 /// Renumber, collapse and re-id one FieldValues row set, per `(manifest, item, field)` group.
 fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSet<(String, String)>) {
-    // Group row positions by natural key, preserving read order within each group.
     let mut groups: HashMap<(String, String, String), Vec<usize>> = HashMap::new();
     for (position, row) in rows.iter().enumerate() {
         let manifest = lower_str(row, MANIFEST_ID_COL).unwrap_or_default();
@@ -151,7 +143,7 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
     for ((manifest, _, _), mut positions) in groups {
         match field_shape(&rows[positions[0]], &manifest, multi_value_defs) {
             FieldShape::MultiValue => {
-                // Stable order: declared position first (a row written before the column existed sorts last), read order breaks ties.
+                // Declared position first (a row written before the column existed sorts last), read order breaks ties.
                 positions.sort_by_key(|p| value_index_of(&rows[*p]).unwrap_or(i64::MAX));
                 for (index, position) in positions.iter().enumerate() {
                     let row = &mut rows[*position];
@@ -163,8 +155,7 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
                 }
             }
             FieldShape::SingleValue => {
-                // A single-value field is one row; duplicates collapse to the newest UpdatedAt instead of
-                // materializing into a primary-key violation.
+                // Duplicates collapse to the newest UpdatedAt instead of materializing into a primary-key violation.
                 let winner = *positions.iter().max_by_key(|p| (updated_at(&rows[**p]), std::cmp::Reverse(**p))).unwrap();
                 removed.extend(positions.iter().filter(|p| **p != winner));
                 let row = &mut rows[winner];
@@ -172,7 +163,7 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
                 row.remove(ID_COL);
             }
             FieldShape::Unknown => {
-                // Only rows naming one row collapse (one carrying the id the other would derive), since they would materialize into one primary key.
+                // Only rows that would materialize into one primary key collapse.
                 let mut newest: HashMap<String, usize> = HashMap::new();
                 for position in positions {
                     let id = materialized_id(&rows[position]);
@@ -199,8 +190,8 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
     }
 }
 
-/// Strip every history row's id (all of them derive it) and collapse rows sharing a natural key,
-/// which takes two same-millisecond snapshots of one field, to the newest `UpdatedAt`.
+/// Strip every history row's id and collapse rows sharing a natural key (two same-millisecond snapshots of one field)
+/// to the newest `UpdatedAt`.
 fn normalize_field_histories(rows: &mut Vec<CodecRecord>) {
     strip_ids(rows);
     collapse_newest_by_key(rows, |row| {
@@ -209,7 +200,7 @@ fn normalize_field_histories(rows: &mut Vec<CodecRecord>) {
     });
 }
 
-/// Drop the legacy surrogate `Id` and collapse duplicates to the newest `UpdatedAt` per natural key.
+/// Drop the surrogate `Id` and collapse duplicates to the newest `UpdatedAt` per natural key.
 fn normalize_item_tags(rows: &mut Vec<CodecRecord>) {
     strip_ids(rows);
     collapse_newest_by_key(rows, |row| {
@@ -224,8 +215,7 @@ fn strip_ids(rows: &mut [CodecRecord]) {
     }
 }
 
-/// Keep one row per `key_of` value: the newest `UpdatedAt`, ties keeping the earlier row (matching
-/// the single-value collapse rule). Row order is preserved.
+/// Keep one row per `key_of` value, the newest `UpdatedAt`, ties keeping the earlier row; row order is preserved.
 fn collapse_newest_by_key<K: std::hash::Hash + Eq>(rows: &mut Vec<CodecRecord>, key_of: impl Fn(&CodecRecord) -> K) {
     let mut winners: HashMap<K, usize> = HashMap::new();
     for (position, row) in rows.iter().enumerate() {
@@ -250,18 +240,18 @@ fn retain_positions(rows: &mut Vec<CodecRecord>, keep: &HashSet<usize>) {
     });
 }
 
-/// The derived id for a normalized FieldValues row at `value_index`.
+/// The derived id of a normalized FieldValues row at `value_index`.
 fn derive_row_id(row: &CodecRecord, value_index: i64) -> String {
     let [manifest, item, field_key, field_def] = field_key_parts(row);
     field_value_id_for(manifest, item, field_key, field_def, value_index)
 }
 
-/// The id a row materializes under: the one it carries, or the one [`derive_missing_ids`] would give it.
+/// The id a row materializes under: the one it carries, or the one it would derive.
 fn materialized_id(row: &CodecRecord) -> String {
     lower_str(row, ID_COL).unwrap_or_else(|| derive_row_id(row, value_index_of(row).unwrap_or(0)))
 }
 
-/// The derived id for a normalized FieldHistories row.
+/// The derived id of a normalized FieldHistories row.
 fn derive_history_row_id(row: &CodecRecord) -> String {
     let [manifest, item, field_key, field_def] = field_key_parts(row);
     field_history_id_for(manifest, item, field_key, field_def, str_col(row, CHANGED_AT_COL).unwrap_or_default())
@@ -272,7 +262,7 @@ fn field_key_parts(row: &CodecRecord) -> [&str; 4] {
     [MANIFEST_ID_COL, ITEM_ID_COL, FIELD_KEY_COL, FIELD_DEFINITION_ID_COL].map(|column| str_col(row, column).unwrap_or_default())
 }
 
-/// The field half of a FieldValues row's natural key, see [`field_discriminator_of`].
+/// The field half of a FieldValues row's natural key.
 fn field_discriminator(row: &CodecRecord) -> String {
     let [_, _, field_key, field_def] = field_key_parts(row);
     field_discriminator_of(field_key, field_def)
@@ -288,6 +278,7 @@ pub(super) fn has_id(row: &CodecRecord) -> bool {
     str_col(row, ID_COL).is_some_and(|s| !s.is_empty())
 }
 
+/// The `ValueIndex` of a row, from a number or a numeric string.
 fn value_index_of(row: &CodecRecord) -> Option<i64> {
     match row.get(VALUE_INDEX_COL)? {
         serde_json::Value::Number(n) => n.as_i64(),

@@ -196,7 +196,7 @@ struct Concurrent {
 }
 
 #[test]
-fn concurrent_edits_to_an_item_and_its_children_settle_row_by_row() {
+fn concurrent_edits_to_an_item_and_its_children_resolve_row_by_row() {
     let bank = || trashable("Bank", None, T_OLD);
     let code = |secret: &str, deleted: bool, updated_at: &str| totp("totp-1", secret, deleted, updated_at);
     let case = |what: &str, server: (CodecRecord, Vec<CodecRecord>), local: (CodecRecord, Vec<CodecRecord>), item: &str, live_secrets: Vec<&'static str>| Concurrent { what: what.to_string(), server, local, item: item.to_string(), live_secrets };
@@ -313,7 +313,7 @@ fn manifests_merge_independently_and_a_lost_one_is_reported() {
 }
 
 /*
- * An item is deleted as a unit: a permanent delete only one side made is settled against everything the other
+ * An item is deleted as a unit: a permanent delete only one side made is resolved against everything the other
  * side did to the item (a field edit does not touch the item row), both ways, and the losing side's rows leave.
  */
 
@@ -326,7 +326,7 @@ fn live_values(merged: &CanonicalManifestMerge) -> Vec<&str> {
 }
 
 #[test]
-fn a_permanent_delete_is_settled_against_the_item_as_a_unit_both_ways() {
+fn a_permanent_delete_is_resolved_against_the_item_as_a_unit_both_ways() {
     let deleting = item_manifest(vec![tombstone("item-1", T_MID)], vec![field("login.username", "user", true, T_MID), field("login.password", "old-secret", true, T_MID)]);
     for (edit_at, survives) in [(T_NEW, true), (T_OLD, false)] {
         let editing = item_manifest(vec![item("item-1", "item", T_OLD)], vec![field("login.username", "user", false, T_OLD), field("login.password", "new-secret", false, edit_at)]);

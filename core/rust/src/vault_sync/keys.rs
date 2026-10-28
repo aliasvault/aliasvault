@@ -2,19 +2,19 @@
 
 use std::collections::HashMap;
 
+use secrecy::{ExposeSecret, SecretString};
 use zeroize::Zeroizing;
 
 use super::errors::{SyncError, SyncResult};
+use super::http;
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
-use super::http;
 use crate::common::error::{VaultError, VaultResult};
 use crate::common::secret::from_zeroizing;
-use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 
-/// Whether this device has the account's key chain cached (the encrypted Account Key).
+/// Whether this device has the account's key chain cached.
 pub(crate) async fn has_cached_key_chain(host: &Host) -> SyncResult<bool> {
     Ok(state::get::<String>(host, state::ENCRYPTED_ACCOUNT_KEY).await?.is_some())
 }
@@ -36,7 +36,7 @@ fn ensure_known_unlock_algorithm(vault_key: &VaultKeyResponse) -> SyncResult<()>
     Err(SyncError::VaultVersionIncompatible(format!("the Account Key is encrypted with '{}', which this app cannot open; update the app", vault_key.algorithm)))
 }
 
-/// The state keys the key chain is cached under; `cache_vault_key_blobs` pairs them with the server fields by position.
+/// The state keys the key chain is cached under, paired by position with the server fields in `cache_vault_key_blobs`.
 const CHAIN_STATE: [&str; 6] = [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, state::SIGNING_PUBLIC_KEY, state::ENCRYPTED_SIGNING_PRIVATE_KEY];
 
 /// Cache a server vault-key response's encrypted blobs; a half the server does not hold is removed.
@@ -51,7 +51,7 @@ async fn cache_vault_key_blobs(host: &Host, vault_key: &VaultKeyResponse) -> Syn
     Ok(())
 }
 
-/// Clear the cached key chain: the account has none (legacy), so the unlock key is the vault key.
+/// Clear the cached key chain.
 async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     for key in CHAIN_STATE {
         state::remove(host, key).await?;
@@ -59,8 +59,7 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     Ok(())
 }
 
-/// Open a key chain with the unlock key: stages the Account Key and the account private key for this run and returns
-/// the VEK, which the caller makes the session key.
+/// Open a key chain with the unlock key, keep the Account Key and account private key on the session, and return the VEK.
 async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<SecretString> {
     let mut opened = crypto::open_key_chain_with_unlock_key(unlock_key, encrypted_account_key, encrypted_vek, None)?;
     let account_key = from_zeroizing(std::mem::take(&mut opened.account_key));
@@ -74,8 +73,7 @@ async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &
     Ok(from_zeroizing(std::mem::take(&mut opened.vault_encryption_key)))
 }
 
-/// Open the chain of a server vault-key response with `unlock_key`, refusing an unknown unlock algorithm first and a
-/// served account public key that is not the public half of the private key.
+/// Open the chain of a server vault-key response with `unlock_key`.
 async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<SecretString> {
     ensure_known_unlock_algorithm(vault_key)?;
     let vek = open_chain(ctx, &vault_key.encrypted_account_key, vault_key.encrypted_vek.as_deref().unwrap_or_default(), vault_key.encrypted_account_private_key.as_deref(), unlock_key).await?;
@@ -86,7 +84,7 @@ async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_k
     Ok(vek)
 }
 
-/// Refuse an account public key the server serves as this account's unless it is the public half of the held private key.
+/// Refuse a served account public key that is not the public half of the private key this session holds.
 fn ensure_own_key_pair(public_key: &str, private_key: &str) -> SyncResult<()> {
     let pair = crypto::RsaKeyPair { public_key: public_key.to_string(), private_key: private_key.to_string() };
     crypto::rsa_oaep::validate_rsa_key_pair(&pair).map_err(|_| SyncError::AccountKeyMismatch)
@@ -106,8 +104,7 @@ pub(crate) async fn own_account_public_key(ctx: &Ctx) -> SyncResult<Option<Strin
     Ok(Some(public_key))
 }
 
-/// The login-time key resolution (the `resolveVaultKey` operation): open the server's chain with the session key,
-/// cache it for offline unlock, and make the VEK the session key. Returns whether the account has a chain.
+/// Open the account's key chain at login with the session key, cache it, and make the VEK the session key; returns whether the account has a chain.
 pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     let unlock_key = ctx.encryption_key()?;
     ctx.vault_key_probed = true;
@@ -120,6 +117,8 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
             Ok(true)
         }
         Ok(_) => {
+            // LEGACY: a sqlite-blob account has no key chain, so the unlock key stays the vault key. TODO: remove once
+            // every account has upgraded.
             clear_cached_chain(&ctx.host).await?;
             ctx.log("[Keys] The account has no key chain yet (legacy vault); the unlock key is the vault key.").await;
             Ok(false)
@@ -136,9 +135,10 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     }
 }
 
-/// Accept a key hierarchy another device created since this legacy-login device last looked (probed once per run).
-/// False only when the session key does not open it, which needs a re-login.
+/// Accept a key hierarchy another device created since this device logged in; false when the session key does not open it.
 pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
+    // LEGACY: only a device that logged in to a sqlite-blob account, before another device upgraded it, gets here.
+    // TODO: remove once every account has upgraded.
     if ctx.vault_key_probed {
         return Ok(true);
     }
@@ -156,7 +156,6 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
             ctx.warn("[Keys] The session key does not open the key hierarchy the server holds; a re-login is needed.").await;
             return Ok(false);
         }
-        // A storage failure or an unreadable stored vault is its own failure, not a key mismatch.
         Err(error) => return Err(error),
     };
     // The chain is cached before the vault is stored under the VEK: hosts hold the unlock key and derive the vault key from it.
@@ -182,7 +181,7 @@ pub(crate) async fn ensure_key_chain_accepted(ctx: &mut Ctx) -> SyncResult<bool>
     has_cached_key_chain(&ctx.host).await
 }
 
-/// This account's signing public key, derived from the private key so that it never depends on what the server serves.
+/// This account's signing public key, derived from the private key and never taken from what the server serves.
 pub(crate) async fn own_signing_public_key(ctx: &mut Ctx) -> SyncResult<Option<String>> {
     match signing_private_key(ctx).await? {
         Some(private_key) => Ok(Some(crypto::signing::signing_public_key_of(private_key.expose_secret())?)),
@@ -190,8 +189,7 @@ pub(crate) async fn own_signing_public_key(ctx: &mut Ctx) -> SyncResult<Option<S
     }
 }
 
-/// The account signing private key, opened on first use from the cached encrypted copy with the session's Account Key.
-/// None when that key or the cached copy is missing or does not open it.
+/// The account signing private key, opened once per run from the cached encrypted copy; `None` when it is missing or does not open.
 pub(crate) async fn signing_private_key(ctx: &mut Ctx) -> SyncResult<Option<SecretString>> {
     if ctx.signing_private_key.is_some() {
         return Ok(ctx.signing_private_key.clone());
@@ -246,7 +244,7 @@ pub(crate) async fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Sy
     Ok(ctx.account_private_key.clone())
 }
 
-/// Encrypt a manifest's VEK for one recipient key, bound to the manifest (see [`crypto::aad::grant`]).
+/// Encrypt a manifest's VEK for one recipient key, bound to the manifest.
 pub(crate) fn encrypt_manifest_vek(manifest_vek: &str, manifest_id: &str, recipient_public_key_jwk: &str) -> SyncResult<String> {
     Ok(crypto::rsa_oaep::encrypt(manifest_vek.as_bytes(), recipient_public_key_jwk, &crypto::aad::grant(manifest_id))?)
 }
@@ -257,12 +255,12 @@ pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, priva
     std::str::from_utf8(&plaintext).map(SecretString::from).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
 }
 
-/// Encrypt a shared manifest's name into an invitation for one recipient key, bound to the manifest (see [`crypto::aad::invitation_name`]).
+/// Encrypt a shared manifest's name into an invitation for one recipient key, bound to the manifest.
 pub(crate) fn encrypt_manifest_invitation_name(name: &str, manifest_id: &str, recipient_public_key_jwk: &str) -> VaultResult<String> {
     crypto::rsa_oaep::encrypt(name.as_bytes(), recipient_public_key_jwk, &crypto::aad::invitation_name(manifest_id))
 }
 
-/// Decrypt the shared manifest name encrypted into an invitation for this JWK private key, as UTF-8 text.
+/// Decrypt a shared manifest's name from an invitation made out to this private key.
 pub(crate) fn decrypt_manifest_invitation_name(encrypted_name: &str, manifest_id: &str, private_key_jwk: &str) -> VaultResult<String> {
     let plaintext = crypto::rsa_oaep::decrypt(encrypted_name, private_key_jwk, &crypto::aad::invitation_name(manifest_id))?;
     String::from_utf8(plaintext).map_err(|_| VaultError::General("Decrypted invitation name is not valid text".to_string()))
@@ -287,7 +285,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
     }
 }
 
-/// The VEK of every shared manifest this account holds a grant on, keyed by manifest id. Decrypted once per run.
+/// The VEK of every shared manifest this account holds a grant on, keyed by manifest id; decrypted once per run.
 pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<String, SecretString>> {
     if let Some(cached) = ctx.cached_shared_veks() {
         return Ok(cached);

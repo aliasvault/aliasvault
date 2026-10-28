@@ -15,8 +15,7 @@ use super::types::{FailureFields, FullSyncResult, LogLevel, ResolveVaultKeyResul
 use super::{db, http, keys, migration, rotation, sharing};
 use crate::vault_model::id_key;
 
-/// How many times a chain of syncs may re-sync after an outdated push before giving up. Two clients pushing at the
-/// same time race on the server's revision gate; the loser pulls, merges and pushes again, up to this many times.
+/// How many times a sync may pull, merge and push again after an outdated push before giving up.
 const MAX_OUTDATED_RESYNCS: u32 = 3;
 
 /// Run one operation to completion; the value is the `done` command's result.
@@ -40,7 +39,7 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
     finish(&ctx, result.unwrap_or(Value::Null))
 }
 
-/// Attach the sync outcome (what every operation reports on top of its own) onto a serialized result.
+/// Add `vaultChanged` to a serialized result.
 fn finish(ctx: &Ctx, mut result: Value) -> Value {
     if let Some(object) = result.as_object_mut() {
         object.insert("vaultChanged".to_string(), Value::Bool(ctx.vault_changed));
@@ -74,14 +73,11 @@ fn logout(reason: LogoutReason) -> FullSyncResult {
     FullSyncResult { failure: FailureFields::logout(reason), ..Default::default() }
 }
 
-/// Turn an error thrown during a sync into the outcome the host acts on. A transport failure with a local vault
-/// to fall back on is not a failure but puts the host in offline mode instead.
+/// The outcome of an error thrown during a sync: offline mode when the server is unreachable and a local vault exists.
 async fn map_sync_failure(ctx: &mut Ctx, error: SyncError) -> FullSyncResult {
     ctx.warn(format!("[Sync] Sync failed: {}", error)).await;
-    if let SyncError::Network(_) = &error {
-        if let Ok(true) = ctx.has_local_vault().await {
-            return offline();
-        }
+    if matches!(error, SyncError::Network(_)) && ctx.has_local_vault().await.is_ok_and(|has_vault| has_vault) {
+        return offline();
     }
     failure(&error)
 }
@@ -105,7 +101,6 @@ pub(crate) async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
                 if dropped_local_vault || !matches!(error, SyncError::VaultDecryptFailed(_)) {
                     return Err(error);
                 }
-                // A stored vault that does not decrypt is useless to every reader, so it is dropped and the server's vault pulled over it, once.
                 ctx.warn(format!("[Sync] The stored vault does not decrypt with the session key; dropping it and pulling the server's vault. {}", error)).await;
                 dropped_local_vault = true;
                 ctx.discard_local_vault();
@@ -144,7 +139,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     let mut needs_pull = ctx.request.force_pull || server_state_needs_pull(ctx, &status).await?;
     ctx.log(format!("[Sync] Status received (needsPull {}, isDirty {})", needs_pull, ctx.is_dirty)).await;
 
-    // A hierarchy another device created since this legacy login shows up as a revision change, so it is checked here.
+    // A key hierarchy another device created shows up as a revision change, so it is checked here.
     if needs_pull || ctx.is_dirty {
         keys::ensure_key_chain_accepted(ctx).await?;
     }
@@ -152,8 +147,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
 
     let server_directed_changes = refresh_manifest_names(ctx, &status, needs_pull).await?;
 
-    // A dirty vault on the current schema: drop the dirty flag when nothing changed, and pull first when it holds
-    // rows this session cannot write (a share that was revoked), since a push would refuse them.
+    // A dirty vault: drop the dirty flag when nothing changed, and pull first when it holds rows this session cannot write.
     let mut canonicalize_cache = None;
     if !needs_pull && ctx.is_dirty && !migration::vault_predates_current_schema(ctx).await? {
         canonicalize_cache = clear_no_op_mutation(ctx).await;
@@ -166,13 +160,11 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     let flow = if needs_pull {
         pull_and_materialize_server_vault(ctx, server_directed_changes).await?
     } else if ctx.is_dirty && !migration::vault_predates_current_schema(ctx).await? {
-        // Server and client agree on every revision, so the pending local changes upload as-is.
         match push_local_changes(ctx, canonicalize_cache, WriteKind::Changes { buckets_only: true }).await? {
             Some(vault_changed) => Flow::Done(FullSyncResult { success: true, has_new_vault: vault_changed || server_directed_changes, ..Default::default() }),
             None => Flow::Resync { outdated: true },
         }
     } else {
-        // A vault the codec cannot canonicalize has no way to the server; the upgrade gate takes it from here.
         Flow::Done(migration::pending_migration_result(ctx).await?.unwrap_or_else(success))
     };
 
@@ -189,8 +181,7 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     })
 }
 
-/// The checks before the sync touches the vault: a usable session, a reachable server at a compatible version, and
-/// an unchanged password. `Err` carries the final outcome of a sync that stops here.
+/// The checks before the sync touches the vault; `Err` carries the outcome of a sync that stops here.
 async fn check_session(ctx: &mut Ctx) -> SyncResult<Result<StatusResponse, FullSyncResult>> {
     if ctx.request.username.is_empty() {
         return Ok(Err(failure(&SyncError::Other("no username in the sync request".to_string()))));
@@ -205,12 +196,11 @@ async fn check_session(ctx: &mut Ctx) -> SyncResult<Result<StatusResponse, FullS
     if let Some(reason) = version_logout_reason(ctx, &status) {
         return Ok(Err(logout(reason)));
     }
-    // A changed server salt means the password was changed elsewhere, which warrants a logout.
     assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
     Ok(Ok(status))
 }
 
-/// Tell the host what the sync is about to do, so it can show a pull or push indicator.
+/// Tell the host which phase the sync enters.
 async fn announce_phase(ctx: &Ctx, needs_pull: bool, is_dirty: bool) {
     if needs_pull {
         ctx.host.log(LogLevel::Phase, "pull").await;
@@ -219,8 +209,7 @@ async fn announce_phase(ctx: &Ctx, needs_pull: bool, is_dirty: bool) {
     }
 }
 
-/// Clear the dirty flag of a vault whose content equals the last known server state. Returns the canonicalize result
-/// when the vault did change, so the push right after does not canonicalize again.
+/// Clear the dirty flag of a vault that equals the last known server state, else return the canonicalize result for the push.
 async fn clear_no_op_mutation(ctx: &mut Ctx) -> Option<(u64, CanonicalizedSet)> {
     match push::detect_no_op_mutation(ctx).await {
         Ok((true, _)) => {
@@ -246,8 +235,7 @@ fn version_logout_reason(ctx: &Ctx, status: &StatusResponse) -> Option<LogoutRea
     server_too_old.then_some(LogoutReason::ServerVersionNotSupported)
 }
 
-/// Whether `version1 >= version2` under the client's SemVer rules: a pre-release sorts below its release, and
-/// two pre-releases compare lexically.
+/// Whether `version1 >= version2`, a pre-release sorting below its release.
 pub(super) fn version_gte(version1: &str, version2: &str) -> bool {
     let (core1, pre1) = split_version(version1);
     let (core2, pre2) = split_version(version2);
@@ -270,7 +258,7 @@ pub(super) fn version_gte(version1: &str, version2: &str) -> bool {
     }
 }
 
-/// A version's `core` and optional pre-release tag (`0.12.0-dev`).
+/// A version's core and optional pre-release tag.
 fn split_version(version: &str) -> (&str, Option<&str>) {
     match version.split_once('-') {
         Some((core, pre)) if !pre.is_empty() => (core, Some(pre)),
@@ -279,7 +267,7 @@ fn split_version(version: &str) -> (&str, Option<&str>) {
     }
 }
 
-/// Whether the client has to pull and re-materialize: any manifest or data bucket changed on the server.
+/// Whether any manifest or data bucket changed on the server.
 pub(crate) async fn server_state_needs_pull(ctx: &Ctx, status: &StatusResponse) -> SyncResult<bool> {
     let server_manifests: HashMap<String, i64> = status.manifest_revisions.iter().map(|m| (m.manifest_id.clone(), m.revision)).collect();
     let server_buckets: HashMap<String, i64> = status.bucket_revisions.iter().map(|b| (state::bucket_revision_key(&b.manifest_id, &b.category), b.revision)).collect();
@@ -301,6 +289,7 @@ fn requiring_pull(server: &HashMap<String, i64>, local: &HashMap<String, i64>) -
     server.iter().filter(|(id, revision)| local.get(*id) != Some(revision)).count() + local.keys().filter(|id| !server.contains_key(*id)).count()
 }
 
+/// Fail with `PasswordChangedElsewhere` when the server's salt differs from the one this device derived its keys from.
 pub(crate) async fn assert_salt_unchanged(ctx: &Ctx, server_salt: Option<&str>) -> SyncResult<()> {
     let stored: Option<Value> = state::get(&ctx.host, state::UNLOCK_KEY_DERIVATION_PARAMS).await?;
     let stored_salt = stored.as_ref().and_then(|params| params.get("salt")).and_then(Value::as_str).map(str::to_string);
@@ -358,8 +347,7 @@ async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncR
     Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required: legacy_chain, manifest_migration_required: migration_required, pulled_revision: Some(pulled.personal_revision), ..Default::default() })
 }
 
-/// Store a pulled vault, then commit its revisions; a refused store (a mutation raced the pull) returns a resync.
-/// A never-written new vault is stored dirty, so a push that does not land now is retried by the next sync.
+/// Store a pulled vault and commit its revisions; a store refused by a raced mutation returns a resync.
 async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Option<Flow>> {
     let stored = ctx.store_vault(&pulled.encrypted_vault, pulled.needs_first_write, Some(ctx.mutation_sequence), Some(pulled.personal_revision)).await?;
     if !stored.success {
@@ -398,7 +386,6 @@ async fn pull_and_materialize_server_vault(ctx: &mut Ctx, server_directed_change
         let pulled = pull::pull(ctx).await?;
         return store_server_vault(ctx, &pulled).await;
     }
-    // A dirty vault the codec cannot canonicalize is not merged.
     if migration::vault_predates_current_schema(ctx).await? {
         ctx.warn("[Sync] The local vault predates the current storage model, so its pending changes can be neither merged nor uploaded; taking the server's vault.").await;
         let pulled = pull::pull(ctx).await?;
@@ -440,7 +427,7 @@ async fn push_local_changes(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)
     }
 }
 
-/// The login-time key resolution; see `keys::resolve_vault_key`.
+/// The login-time key resolution.
 async fn resolve_vault_key(ctx: &mut Ctx) -> ResolveVaultKeyResult {
     match keys::resolve_vault_key(ctx).await {
         Ok(has_vault_key) => ResolveVaultKeyResult { success: true, has_vault_key, encryption_key: ctx.encryption_key.clone(), ..Default::default() },

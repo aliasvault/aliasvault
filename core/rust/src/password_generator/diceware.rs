@@ -1,8 +1,5 @@
-//! Diceware passphrase generator.
-//!
-//! Ported from the MIT-licensed `SpamOK.PasswordGenerator` Diceware algorithm. Picks `word_count` words uniformly at random
-//! from the selected language wordlist, applies capitalization, joins them with a separator, and optionally adds a random
-//! alphanumeric "salt" character.
+//! Diceware passphrase generator: random words from a language wordlist, capitalized, joined and optionally salted.
+//! Ported from the MIT-licensed SpamOK.PasswordGenerator Diceware algorithm.
 
 use rand::Rng;
 
@@ -10,7 +7,7 @@ use super::{unbiased_index, wordlists, Capitalization, PasswordSettings, Salt, S
 
 const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-/// Generate a Diceware passphrase based on the supplied settings.
+/// Generate a passphrase from the supplied settings.
 pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
     let words = wordlists::list(&settings.language);
 
@@ -29,7 +26,7 @@ pub fn generate<R: Rng + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> St
     add_salt(passphrase, settings.salt, rng)
 }
 
-/// Map a separator option to its character (`None` means no separator at all).
+/// The character of a separator option.
 fn separator_char(separator: Separator) -> Option<char> {
     match separator {
         Separator::None => None,
@@ -40,7 +37,7 @@ fn separator_char(separator: Separator) -> Option<char> {
     }
 }
 
-/// Apply the configured capitalization to a single word.
+/// Apply a capitalization to one word.
 fn capitalize_word<R: Rng + ?Sized>(word: &str, capitalization: Capitalization, rng: &mut R) -> String {
     match capitalization {
         Capitalization::None => word.to_string(),
@@ -66,7 +63,7 @@ fn capitalize_word<R: Rng + ?Sized>(word: &str, capitalization: Capitalization, 
     }
 }
 
-/// Add a random alphanumeric salt character to the passphrase based on the salt option.
+/// Add a random alphanumeric character where the salt option says.
 fn add_salt<R: Rng + ?Sized>(passphrase: String, salt: Salt, rng: &mut R) -> String {
     match salt {
         Salt::None => passphrase,
@@ -82,7 +79,7 @@ fn add_salt<R: Rng + ?Sized>(passphrase: String, salt: Salt, rng: &mut R) -> Str
     }
 }
 
-/// Pick one random alphanumeric character.
+/// One random alphanumeric character.
 fn random_alphanumeric<R: Rng + ?Sized>(rng: &mut R) -> char {
     char::from(ALPHANUMERIC.as_bytes()[unbiased_index(rng, ALPHANUMERIC.len())])
 }

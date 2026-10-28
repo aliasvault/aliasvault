@@ -1,5 +1,4 @@
-//! Which manifests a push writes, and which rows it may not: a row stamped for a manifest this session cannot
-//! write has no namespace to go to, so a push holding one is refused until a pull restores the vault.
+//! Which manifests a push writes, and which manifests in the vault it cannot.
 
 use std::collections::HashMap;
 
@@ -23,14 +22,13 @@ pub(crate) struct ManifestRecord {
 /// Why a held shared manifest is left out of a write.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SkipReason {
-    /// The vault holds no rows for it, so writing it would empty it server-side.
+    /// The vault holds no rows for it.
     NoRowsInVault,
-    /// Its grant did not decrypt in this session.
+    /// Its grant did not open in this session.
     KeyDidNotOpen,
 }
 
-/// The manifests the next push writes, personal first, plus the held shared manifests left out and why. A shared
-/// manifest is written when the vault holds rows for it (`stamped`) and its key opened (`opened`, id to VEK).
+/// The manifests the next push writes, personal first, plus the held shared manifests left out and why.
 pub(crate) fn resolve_write_set(personal_manifest_id: &str, personal_salt: &str, stamped: &[String], opened: &HashMap<String, SecretString>, held: &HashMap<String, SharedManifestDto>) -> (Vec<ManifestRecord>, Vec<(String, SkipReason)>) {
     let mut records = vec![ManifestRecord { manifest_id: personal_manifest_id.to_string(), is_personal: true, salt: personal_salt.to_string(), can_administer: false, vek: None }];
     let mut skipped = Vec::new();

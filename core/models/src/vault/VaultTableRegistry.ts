@@ -26,7 +26,7 @@ export type VaultTableDefinition = {
    * tables keyed differently (Settings by Key, ItemTags by its natural key) override this.
    */
   PrimaryKey: string[];
-  /** True when the table's rows hang off an Item row (re-stamped with their item, cascaded on delete). */
+  /** True when the table's rows are child rows of an Item row (re-stamped with their item, cascaded on delete). */
   ItemChild: boolean;
   /**
    * Merge match columns, applied after both sides are normalized to the manifest shape (see the

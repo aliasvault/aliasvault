@@ -1,4 +1,4 @@
-//! The pruner: expired trash is tombstoned with everything hanging off it, orphan favicons and the bytes of
+//! The pruner: expired trash items are tombstoned with their child rows, orphan favicons and the bytes of
 //! tombstoned blob rows are reclaimed, and every statement names the manifest it addresses.
 
 use super::*;
@@ -11,7 +11,7 @@ fn item(id: &str, trashed_days_ago: Option<i64>, deleted: bool, logo_id: Option<
     row(&[("ManifestId", json!(M)), ("Id", json!(id)), ("UpdatedAt", json!("2024-01-01T00:00:00Z")), ("IsDeleted", json!(deleted as i32)), ("DeletedAt", trashed_days_ago.map(days_ago_iso).map(Value::String).unwrap_or(Value::Null)), ("LogoId", logo_id.map(|l| json!(l)).unwrap_or(Value::Null))])
 }
 
-/// A row hanging off `item_id` in manifest `M`, with a `Blob` cell when given.
+/// A child row of `item_id` in manifest `M`, with a `Blob` cell when given.
 fn child(id: &str, item_id: &str, deleted: bool, blob: Option<Value>) -> CodecRecord {
     let mut r = row(&[("ManifestId", json!(M)), ("Id", json!(id)), ("ItemId", json!(item_id)), ("IsDeleted", json!(deleted as i32))]);
     if let Some(blob) = blob {

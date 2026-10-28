@@ -1,6 +1,6 @@
-//! Serde structs for the manifest-v1 data format shapes.
+//! Serde structs of the manifest-v1 data format.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ use super::types::SCHEMA_VERSION;
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::OVERFLOW_ROW_ID;
 
-/// A codec record is a map of column names to JSON values.
+/// A row: column name to JSON value.
 pub type CodecRecord = HashMap<String, serde_json::Value>;
 
 /// Manifest-v1 manifest.
@@ -17,24 +17,19 @@ pub type CodecRecord = HashMap<String, serde_json::Value>;
 #[serde(rename_all = "camelCase")]
 pub struct Manifest {
     pub schema_version: u32,
-    /// Per-manifest salt for blob hashing (hex). For a shared manifest this salt is shared by
-    /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
-    /// same content-addressed blob hashes.
+    /// Per-manifest blob-hashing salt (hex), shared by every participant of a shared manifest.
     pub manifest_salt: String,
-    /// Timestamp when this canonical snapshot was produced (ISO-8601).
     pub canonicalized_at: String,
-    /// The server-side id of the manifest this snapshot belongs to.
     pub manifest_id: String,
-    /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
+    /// Tables to rows; blob columns hold `{ "__blobRef", "__blobKind" }` references.
     #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
-    /// Unknown top-level keys from a newer writer, carried through the local vault in [`CodecOverflow`].
+    /// Unknown top-level keys from a newer writer.
     #[serde(flatten)]
     pub extra: HashMap<String, serde_json::Value>,
 }
 
-/// One data bucket: a part of one manifest (one or more tables) kept out of the manifest blob so it can
-/// sync on its own server revision without rewriting the manifest.
+/// One data bucket: tables of one manifest kept out of the manifest blob so they sync on their own server revision.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DataBucket {
@@ -48,15 +43,9 @@ pub struct DataBucket {
 }
 
 impl DataBucket {
-    /// Build the `(manifest_id, category)` data bucket from its already-normalized tables.
+    /// The `(manifest_id, category)` data bucket of already-normalized tables.
     pub fn new(manifest_id: impl Into<String>, category: impl Into<String>, tables: HashMap<String, Vec<CodecRecord>>) -> Self {
-        Self {
-            schema_version: SCHEMA_VERSION,
-            manifest_id: manifest_id.into(),
-            category: category.into(),
-            tables,
-            extra: HashMap::new(),
-        }
+        Self { schema_version: SCHEMA_VERSION, manifest_id: manifest_id.into(), category: category.into(), tables, extra: HashMap::new() }
     }
 }
 
@@ -72,7 +61,6 @@ pub struct BucketLayoutEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobEntry {
-    /// "favicon" | "attachment".
     pub kind: String,
     pub bytes: Vec<u8>,
 }
@@ -82,21 +70,19 @@ pub struct BlobEntry {
 #[serde(rename_all = "camelCase")]
 pub struct ManifestSpec {
     pub manifest_id: String,
-    /// Per-manifest salt for this manifest's blob hashing.
     pub manifest_salt: String,
 }
 
-/// One manifest produced by canonicalize: the manifest blob and the blob map hashed with its own salt.
+/// One manifest produced by canonicalize: the manifest and the blob map hashed with its own salt.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedManifest {
     pub manifest: Manifest,
-    /// hash > blob plaintext (base64), hashed with this manifest's salt.
+    /// Hash to blob, hashed with this manifest's salt.
     pub blobs: HashMap<String, BlobEntry>,
 }
 
-/// Result of canonicalizing a vault: one entry per manifest, in the order the specs were given, plus
-/// the data buckets, each addressed by the manifest that owns it.
+/// Result of canonicalizing a vault: one entry per manifest in spec order, plus the data buckets.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
@@ -104,7 +90,7 @@ pub struct CanonicalizedVault {
     pub data_buckets: Vec<DataBucket>,
 }
 
-/// A single table's rows for reassembly.
+/// One table's rows.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CodecTableData {
     pub name: String,
@@ -116,41 +102,40 @@ pub struct CodecTableData {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodecOverflow {
-    /// Whole manifest tables the local schema doesn't know: name > rows, re-emitted as-is.
+    /// Unknown manifest tables: name > rows.
     #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
-    /// Whole bucket tables the local schema doesn't know: category > (name > rows). Kept per
-    /// category so both full pushes and bucket-only pushes re-emit them into the right bucket.
+    /// Unknown bucket tables: category > name > rows.
     #[serde(default)]
     pub bucket_tables: HashMap<String, HashMap<String, Vec<CodecRecord>>>,
-    /// Unknown columns split off rows of known tables: table > row identity > {column: value}.
+    /// Unknown columns of known tables: table > row identity > column > value.
     #[serde(default)]
     pub columns: HashMap<String, HashMap<String, CodecRecord>>,
-    /// Unknown top-level manifest keys: lowercased manifest id > {key: value}.
+    /// Unknown top-level manifest keys: lowercased manifest id > key > value.
     #[serde(default)]
     pub manifest_extras: HashMap<String, HashMap<String, serde_json::Value>>,
-    /// Unknown top-level data bucket keys: lowercased manifest id > category > {key: value}.
+    /// Unknown top-level data bucket keys: lowercased manifest id > category > key > value.
     #[serde(default)]
     pub bucket_extras: HashMap<String, HashMap<String, HashMap<String, serde_json::Value>>>,
 }
 
 impl CodecOverflow {
-    /// True when nothing was split off (the common case: reader and writer share a schema).
+    /// True when nothing was split off.
     pub fn is_empty(&self) -> bool {
         self.tables.is_empty() && self.bucket_tables.is_empty() && self.columns.is_empty() && self.manifest_extras.is_empty() && self.bucket_extras.is_empty()
     }
 
-    /// The unknown top-level keys last seen on `manifest_id`, to write back into it.
+    /// The unknown top-level keys last seen on `manifest_id`.
     pub fn manifest_extra(&self, manifest_id: &str) -> HashMap<String, serde_json::Value> {
         self.manifest_extras.get(&crate::vault_model::id_key(manifest_id)).cloned().unwrap_or_default()
     }
 
-    /// The unknown top-level keys last seen on the `category` bucket of `manifest_id`, to write back into it.
+    /// The unknown top-level keys last seen on the `category` bucket of `manifest_id`.
     pub fn bucket_extra(&self, manifest_id: &str, category: &str) -> HashMap<String, serde_json::Value> {
         self.bucket_extras.get(&crate::vault_model::id_key(manifest_id)).and_then(|by_category| by_category.get(category)).cloned().unwrap_or_default()
     }
 
-    /// Render this overflow as the single `OVERFLOW_TABLE` row the platform inserts into the vault DB.
+    /// This overflow as the single `OVERFLOW_TABLE` row the platform inserts into the vault DB.
     pub fn to_table_records(&self) -> Vec<CodecRecord> {
         let mut row: CodecRecord = HashMap::new();
         row.insert(ID_COL.to_string(), serde_json::Value::String(OVERFLOW_ROW_ID.to_string()));
@@ -158,22 +143,17 @@ impl CodecOverflow {
         vec![row]
     }
 
-    /// Parse an `OVERFLOW_TABLE` row set read back from the vault DB. Tolerant to: no rows, a missing
-    /// `Data` column, or unparseable JSON all yield an empty overflow (better to push what we have
-    /// than refuse to push at all).
+    /// Parse the `OVERFLOW_TABLE` row set read back from the vault DB; anything unreadable is an empty overflow, so a
+    /// push is never refused for it.
     pub fn from_table_records(records: &[CodecRecord]) -> Self {
-        records
-            .first()
-            .and_then(|row| str_col(row, "Data"))
-            .and_then(|json| serde_json::from_str(json).ok())
-            .unwrap_or_default()
+        records.first().and_then(|row| str_col(row, "Data")).and_then(|json| serde_json::from_str(json).ok()).unwrap_or_default()
     }
 }
 
 impl Manifest {
     /// Every blob this manifest's rows reference as `(hash, kind)`, sorted by hash, each hash once.
     pub fn referenced_blobs(&self) -> Vec<(String, String)> {
-        let mut refs: std::collections::BTreeMap<String, String> = std::collections::BTreeMap::new();
+        let mut refs: BTreeMap<String, String> = BTreeMap::new();
         for (name, rows) in &self.tables {
             let Some(spec) = super::types::blob_spec_for(name) else { continue };
             for cell in rows.iter().filter_map(|row| row.get(spec.column)) {
@@ -186,8 +166,8 @@ impl Manifest {
     }
 }
 
-/// Materialized tables the platform inserts into a fresh schema DB, the overflow included as the `OVERFLOW_TABLE` row.
-/// `overflow` is a diagnostics copy of that row, not something the platform must store.
+/// The tables the platform inserts into a fresh schema DB, the overflow included as the `OVERFLOW_TABLE` row;
+/// `overflow` is a diagnostics copy of that row.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {
@@ -199,14 +179,12 @@ pub struct MaterializedTables {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizeInput {
-    /// All local vault tables (a plain `SELECT *` read from the vault DB). When the read includes the
-    /// [`OVERFLOW_TABLE`](crate::vault_model::OVERFLOW_TABLE) row written by the last materialize, its overflow
-    /// (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
+    /// All local vault tables, the `OVERFLOW_TABLE` row included so its overflow is re-merged.
     pub tables: Vec<CodecTableData>,
     pub canonicalized_at: String,
     pub manifests: Vec<ManifestSpec>,
-    /// LEGACY: for the sqlite-blob migration, the manifest that unstamped rows are stamped with. Remove once every
-    /// account has migrated to manifest-v1.
+    /// LEGACY: the manifest the sqlite-blob migration stamps unstamped rows with. TODO: remove once every account has
+    /// migrated to manifest-v1.
     #[serde(default)]
     pub stamp_unstamped_into: Option<String>,
 }
@@ -215,9 +193,9 @@ pub struct CanonicalizeInput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
-    /// Every manifest to combine, the caller's own manifest first: the others are combined into it.
+    /// Every manifest to combine, the caller's own manifest first.
     pub manifests: Vec<Manifest>,
     pub data_buckets: Vec<DataBucket>,
-    /// The caller's local schema, table name > column names; what it cannot hold goes to [`CodecOverflow`].
+    /// The caller's local schema, table name > column names.
     pub schema_columns: HashMap<String, Vec<String>>,
 }

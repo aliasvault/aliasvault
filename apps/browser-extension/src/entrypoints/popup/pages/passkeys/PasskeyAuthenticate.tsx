@@ -152,7 +152,7 @@ const PasskeyAuthenticate: React.FC = () => {
       // Build the assertion from the selected passkey using the shared service.
       const credential = await buildPasskeyAssertion(dbContext.sqliteClient, request, selected.id, selected.manifestId);
 
-      // Signing an assertion is a use of the item the passkey hangs off.
+      // Signing an assertion is a use of the item the passkey belongs to.
       sendMessage('RECORD_ITEM_USAGE', { itemId: selected.itemId, manifestId: selected.manifestId, action: 'passkey' }).catch(() => {
         // Ignore errors
       });

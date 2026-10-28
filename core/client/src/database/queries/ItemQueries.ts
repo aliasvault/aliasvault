@@ -351,7 +351,7 @@ export class FieldValueQueries {
     ORDER BY ValueIndex`;
 
   /**
-   * Insert a new field value, into the manifest of the item it hangs off.
+   * Insert a new field value, into the manifest of the item it belongs to.
    */
   public static readonly INSERT = `
     INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted)
@@ -424,7 +424,7 @@ export class FieldDefinitionQueries {
  */
 export class FieldHistoryQueries {
   /**
-   * Insert a history record, into the manifest of the item it hangs off.
+   * Insert a history record, into the manifest of the item it belongs to.
    */
   public static readonly INSERT = `
     INSERT INTO FieldHistories (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, ValueSnapshot, ChangedAt, CreatedAt, UpdatedAt, IsDeleted)
@@ -492,7 +492,7 @@ export class TotpCodeQueries {
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new TOTP code, into the manifest of the item it hangs off.
+   * Insert a new TOTP code, into the manifest of the item it belongs to.
    */
   public static readonly INSERT = `
     INSERT INTO TotpCodes (Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
@@ -542,7 +542,7 @@ export class AttachmentQueries {
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new attachment, into the manifest of the item it hangs off.
+   * Insert a new attachment, into the manifest of the item it belongs to.
    */
   public static readonly INSERT = `
     INSERT INTO Attachments (Id, Filename, Blob, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)

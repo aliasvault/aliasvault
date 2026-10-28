@@ -19,9 +19,9 @@ const MIN_MANIFEST_SALT_LEN: usize = 32;
 #[serde(rename_all = "camelCase")]
 pub struct ValidationResult {
     pub ok: bool,
-    /// Stable rule identifiers that failed. Empty when ok.
+    /// Stable rule identifiers that failed, empty when ok.
     pub failed_rules: Vec<String>,
-    /// Human-readable explanation. Empty when ok.
+    /// Human-readable explanation, empty when ok.
     pub message: String,
 }
 
@@ -51,7 +51,6 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         return ValidationResult::from_failures(failed);
     }
 
-    // A bucketed table syncs as its own resource, so no manifest may carry it; a personal table may not leave the user's own vault.
     let carried = |predicate: fn(&str) -> bool| manifest.tables.iter().find(|(name, rows)| !rows.is_empty() && predicate(name)).map(|(name, _)| name.clone());
     if let Some(name) = carried(is_bucketed_table) {
         fail("manifest-carries-bucketed-table", format!("Manifest carries bucketed table {}, which belongs in its data bucket", name));
@@ -82,7 +81,7 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
             fail(rule, String::new());
         }
     }
-    // A logo belongs to exactly one manifest: (ManifestId, Kind, Source) is UNIQUE in the client schema.
+    // (ManifestId, Kind, Source) is UNIQUE in the client schema.
     let logos = rows_of(&manifest.tables, LOGOS_TABLE);
     let logo_keys: HashSet<(String, String)> = logos.iter().filter_map(|l| Some((logo_kind(l), str_col(l, SOURCE_COL)?.to_lowercase()))).collect();
     if logo_keys.len() != logos.iter().filter(|l| str_col(l, SOURCE_COL).is_some()).count() {

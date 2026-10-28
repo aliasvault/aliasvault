@@ -1,7 +1,5 @@
 //! The manifest-v1 storage format: `canonicalize` maps the local SQLite tables to manifests, data buckets and
-//! content-addressed blobs, `materialize` maps them back. The codec knows the format rules (routing by manifest,
-//! `integrity`, `logos`, `normalize`), the payload envelope (`hash`, gzip) and `validate`; encryption and
-//! storage stay with the caller.
+//! content-addressed blobs, `materialize` maps them back. Encryption and storage stay with the caller.
 
 mod canonicalize;
 pub(crate) mod integrity;
@@ -29,7 +27,6 @@ pub use manifest::{
 };
 pub use materialize::materialize_as_sqlite;
 pub use logos::logo_id_for;
-pub use sharing::extract_encryption_key_for_public_key;
 pub(crate) use hash::salted_blob_hash;
 pub(crate) use types::{blob_spec_for, ensure_readable_schema_version};
 pub use types::{bucket_categories, identity_part, is_bucketed_table, is_readable_schema_version, is_skip_table, manifest_scoped_tables, tables_for_category};
@@ -46,19 +43,17 @@ pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
         .collect()
 }
 
-/// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a
-/// [`LOGO_KIND_CUSTOM`](crate::vault_model::names::LOGO_KIND_CUSTOM) row. Exposed so every platform hashes identically.
+/// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a custom logo row.
 pub fn logo_content_hash(bytes: &[u8]) -> String {
     hash::sha256_hex(bytes)
 }
 
-/// Generate a fresh 32-byte per-manifest blob-hashing salt as a lowercase hex string.
+/// A new 32-byte per-manifest blob-hashing salt as lowercase hex.
 pub fn generate_manifest_salt() -> String {
     hex_encode_lower(&crate::common::rng::random_array::<32>())
 }
 
-/// Wrap a payload JSON string in an integrity envelope (`{ schemaVersion, contentHash, payload }`)
-/// and gzip it.
+/// Wrap a payload JSON string in the integrity envelope `{ schemaVersion, contentHash, payload }` and gzip it.
 pub fn pack_payload(payload_json: &str) -> VaultResult<Vec<u8>> {
     let payload: serde_json::Value = serde_json::from_str(payload_json)?;
     let content_hash = hash::content_hash(&payload);
@@ -71,9 +66,8 @@ pub fn pack_payload(payload_json: &str) -> VaultResult<Vec<u8>> {
     gzip(envelope_json.as_bytes())
 }
 
-/// Cap on a decompressed payload, so a gzip bomb in a shared manifest cannot exhaust memory. Derived from the
-/// server's default `MAX_UPLOAD_SIZE_MB` (100 MB per vault write, compressed): 5x that leaves room for highly
-/// compressible JSON.
+/// Cap on a decompressed payload, so a gzip bomb in a shared manifest cannot exhaust memory: 5x the server's default
+/// 100 MB upload cap, which leaves room for highly compressible JSON.
 const MAX_DECOMPRESSED_PAYLOAD_BYTES: u64 = 512 * 1024 * 1024;
 
 /// A decompressed payload envelope: its content, or the format version of one this build cannot read.
@@ -82,14 +76,13 @@ pub enum UnpackedPayload {
     NewerFormat(u32),
 }
 
-/// Unpack a payload: gunzip > parse envelope > verify the embedded content hash. A newer format version is reported
-/// as a value instead of an error, read before the content hash, since a newer format may hash differently and must not
-/// read as corruption.
+/// Unpack a payload: gunzip, parse the envelope and verify the embedded content hash.
 pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
     let decompressed = gunzip(plain_bytes, MAX_DECOMPRESSED_PAYLOAD_BYTES)?;
     let envelope_json = std::str::from_utf8(&decompressed).map_err(|e| VaultError::General(format!("payload is not valid UTF-8: {}", e)))?;
     let envelope: serde_json::Value = serde_json::from_str(envelope_json)?;
 
+    // The version is checked before the content hash: a newer format may hash differently and must not read as corruption.
     let version = envelope.get("schemaVersion").and_then(|v| v.as_u64()).ok_or_else(|| VaultError::General("envelope missing schemaVersion".to_string()))?;
     let version = u32::try_from(version).unwrap_or(u32::MAX);
     if !types::is_readable_schema_version(version) {
@@ -104,30 +97,23 @@ pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
         .and_then(|v| v.as_str())
         .filter(|s| s.len() == 64)
         .ok_or_else(|| VaultError::General("envelope missing or malformed contentHash".to_string()))?;
-
-    let payload = envelope
-        .get("payload")
-        .ok_or_else(|| VaultError::General("envelope missing payload".to_string()))?;
+    let payload = envelope.get("payload").ok_or_else(|| VaultError::General("envelope missing payload".to_string()))?;
 
     let expected = hash::content_hash(payload);
     if expected != content_hash {
-        return Err(VaultError::General(format!(
-            "contentHash mismatch (expected {}, got {}). Vault may be corrupt, do not load.",
-            content_hash, expected
-        )));
+        return Err(VaultError::General(format!("contentHash mismatch (expected {}, got {}). Vault may be corrupt, do not load.", content_hash, expected)));
     }
 
     Ok(UnpackedPayload::Readable(serde_json::to_string(payload)?))
 }
 
-/// SHA-256 (lowercase hex) of a ciphertext: storage-layer integrity.
+/// SHA-256 (lowercase hex) of a ciphertext.
 pub fn compute_ciphertext_hash(ciphertext: &[u8]) -> String {
     hash::sha256_hex(ciphertext)
 }
 
-/// Content fingerprint of a manifest / data-bucket payload for client-side change detection: SHA-256
-/// (lowercase hex) of the canonical JSON with the volatile top-level `canonicalizedAt` timestamp removed
-/// (it is regenerated on every canonicalize and must not read as a content change).
+/// Content fingerprint of a manifest or data bucket payload for change detection: SHA-256 (lowercase hex) of the
+/// canonical JSON without the volatile top-level `canonicalizedAt`.
 pub fn compute_content_fingerprint(payload_json: &str) -> String {
     match serde_json::from_str::<serde_json::Value>(payload_json) {
         Ok(mut value) => {
@@ -136,8 +122,7 @@ pub fn compute_content_fingerprint(payload_json: &str) -> String {
             }
             hash::content_hash(&value)
         }
-        // An unparsable payload hashes to a stable but obviously-wrong value; callers compare equality, so
-        // a malformed input simply reads as "changed" (safe: it only forces an upload).
+        // An unparsable payload hashes to a stable value that reads as changed, which only forces an upload.
         Err(_) => hash::sha256_hex(payload_json.as_bytes()),
     }
 }

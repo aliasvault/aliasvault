@@ -1,5 +1,4 @@
-//! Stop words for filtering page titles during credential matching.
-//!
+//! Stop words left out of the words a credential name is matched on.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;

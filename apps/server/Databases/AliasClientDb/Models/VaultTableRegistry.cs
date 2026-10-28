@@ -44,5 +44,5 @@ public static class VaultTableRegistry
 /// <param name="Name">Table name in the client SQLite database.</param>
 /// <param name="PrimaryKey">The columns that name a row within its manifest, excluding ManifestId.</param>
 /// <param name="ManifestScoped">True when the table's rows are namespaced per manifest.</param>
-/// <param name="ItemChild">True when the table's rows hang off an Item row.</param>
+/// <param name="ItemChild">True when the table's rows are child rows of an Item row.</param>
 public sealed record VaultTableDefinition(string Name, IReadOnlyList<string> PrimaryKey, bool ManifestScoped, bool ItemChild);

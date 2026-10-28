@@ -1,6 +1,4 @@
-//! UniFFI API module for Swift and Kotlin bindings.
-//!
-//! This module exposes the core vault operations via UniFFI for mobile platforms.
+//! UniFFI bindings for the iOS and Android apps.
 
 use crate::crypto::argon2::Argon2Error;
 use crate::crypto::{KeyChainError, SrpInputError};
@@ -40,17 +38,13 @@ pub fn is_related_origin_allowed(caller_origin: String, origins: Vec<String>) ->
     crate::credential_matcher::is_related_origin_allowed(&caller_origin, &origins)
 }
 
-/// Pick the favicon target for an item from its URLs, in the order the item lists them.
-///
-/// Returns the URL to fetch from and the `Logos.Source` key to store the result under, or
-/// `None` when no URL qualifies.
+/// The favicon target for an item's URLs (in item order): the URL to fetch and the `Logos.Source` key, or None.
 #[uniffi::export]
 pub fn select_favicon_target(urls: Vec<String>) -> Option<crate::favicon::FaviconTarget> {
     crate::favicon::select_favicon_target(&urls)
 }
 
-/// Derive the `Logos.Source` key for a URL.
-/// Returns an empty string when the URL is not something a favicon can be fetched from.
+/// The `Logos.Source` key of a URL, or an empty string when no favicon can be fetched for it.
 #[uniffi::export]
 pub fn favicon_source_key(url: String) -> String {
     crate::favicon::favicon_source_key(&url)
@@ -75,22 +69,19 @@ pub fn get_diceware_languages() -> Vec<String> {
     crate::password_generator::available_languages()
 }
 
-/// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
-/// returns `Identity` JSON with camelCase fields.
+/// Generate a random identity from `IdentityRequest` JSON; returns `Identity` JSON.
 #[uniffi::export]
 pub fn generate_identity(request_json: String) -> Result<String, VaultError> {
     crate::identity_generator::generate_identity(&request_json)
 }
 
-/// Generate a username from a JSON-serialized name input
-/// (`{"firstName":"...","lastName":"...","birthDate":"1990-05-15"}`).
+/// Generate a username from name input JSON (`firstName`, `lastName`, `birthDate`).
 #[uniffi::export]
 pub fn generate_identity_username(input_json: String) -> Result<String, VaultError> {
     crate::identity_generator::generate_username(&input_json)
 }
 
-/// Generate an email prefix from a JSON-serialized name input
-/// (`{"firstName":"...","lastName":"...","birthDate":"1990-05-15"}`).
+/// Generate an email prefix from name input JSON (`firstName`, `lastName`, `birthDate`).
 #[uniffi::export]
 pub fn generate_identity_email_prefix(input_json: String) -> Result<String, VaultError> {
     crate::identity_generator::generate_email_prefix(&input_json)
@@ -114,22 +105,19 @@ pub fn get_identity_age_ranges() -> Vec<String> {
     crate::identity_generator::available_age_ranges()
 }
 
-/// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata, returned as
-/// a JSON string (`{htmlBody, textBody, attachments: [{filename, mimeType, size, detached, partIndex}]}`). Input that
-/// starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the decrypted
-/// `MessageSource` of both legacy and source-only emails can be passed as-is.
+/// Parse a stored email source into its bodies and attachment metadata, as `ParsedEmail` JSON.
 #[uniffi::export]
 pub fn parse_email_source(source: Vec<u8>) -> Result<String, VaultError> {
     crate::email_parser::parse_email_source_json(&source)
 }
 
-/// Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
+/// The raw RFC 822 bytes of a stored email source.
 #[uniffi::export]
 pub fn decode_email_source(source: Vec<u8>) -> Result<Vec<u8>, VaultError> {
     crate::email_parser::decode_email_source(&source)
 }
 
-/// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+/// The decoded bytes of the attachment at `index`, with its separately fetched body when it is detached.
 #[uniffi::export]
 pub fn extract_email_attachment(source: Vec<u8>, index: u32, detached_body: Option<Vec<u8>>) -> Result<Vec<u8>, VaultError> {
     crate::email_parser::extract_email_attachment(&source, index as usize, detached_body.as_deref())
@@ -394,7 +382,7 @@ impl VaultSyncSession {
     }
 }
 
-/// An in-memory SQLite database that can be used by host applications to have uniform access to the database.
+/// An in-memory SQLite database the host reads and writes through.
 #[derive(uniffi::Object)]
 pub struct SqliteMemoryDatabase {
     inner: MemoryDatabase,
@@ -440,7 +428,6 @@ impl SqliteMemoryDatabase {
         self.inner.export()
     }
 }
-
 
 /// Item, passkey and usage-statistics operations on the open vault. Writes open no transaction of their own:
 /// the host wraps each call in the transaction whose commit persists the vault.

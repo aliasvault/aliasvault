@@ -32,13 +32,13 @@ pub(crate) struct Ctx {
     pub vault_key_probed: bool,
     pub served_manifest_names: HashMap<String, String>,
     has_local_vault: bool,
-    /// The stored vault did not decrypt with the session key, so this run treats it as absent until a store replaces it.
+    /// The stored vault did not decrypt, so this run treats it as absent until a store replaces it.
     local_vault_discarded: bool,
     /// The VEK of every shared manifest this account holds a grant on, decrypted once per run.
     shared_veks: Mutex<Option<HashMap<String, SecretString>>>,
 }
 
-/// What a fresh staging database tells about the current client schema.
+/// The current client schema.
 #[derive(Debug, Clone)]
 pub(crate) struct SchemaInfo {
     pub columns: HashMap<String, Vec<String>>,
@@ -105,7 +105,7 @@ impl Ctx {
         Ok(stored)
     }
 
-    /// Re-read a failed local database command as `VaultDecryptFailed` when the stored vault does not decrypt with the session key.
+    /// Report a failed local database command as `VaultDecryptFailed` when the stored vault does not decrypt.
     pub async fn diagnose_local_vault_failure(&self, error: SyncError) -> SyncError {
         if !matches!(error, SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) {
             return error;
@@ -118,8 +118,7 @@ impl Ctx {
         }
     }
 
-    /// Write the local database as the at-rest vault under the session key. `dirty` records it as a pending change
-    /// the next push carries; a clean store only refreshes what the host shows.
+    /// Write the local database as the at-rest vault under the session key, `dirty` marking it as a pending change.
     pub async fn persist_local_vault(&mut self, dirty: bool) -> SyncResult<()> {
         let key = self.encryption_key()?;
         let bytes = db::export(&self.host, Db::Local).await?;
@@ -148,7 +147,7 @@ impl Ctx {
         self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).clone()
     }
 
-    /// Remember the decrypted shared-manifest keys; `None` forgets them (the records changed).
+    /// Remember the decrypted shared-manifest keys; `None` forgets them.
     pub fn cache_shared_veks(&self, veks: Option<HashMap<String, SecretString>>) {
         *self.shared_veks.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = veks;
     }
