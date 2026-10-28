@@ -538,10 +538,10 @@ Where each part of this document lives in the repository, for reviewers.
 
 | Term | Meaning |
 |---|---|
-| **Unlock key** | The Argon2id output of the master password. Never used directly. |
-| **KEK** | Key Encryption Key: derived from the unlock key with HKDF, decrypts the Account Key. |
+| **Unlock key** | The Argon2id output of the master password. Never used as-is: HKDF splits it into the SRP input for login and the KEK. |
+| **Key Encryption Key (KEK)** | Derived from the unlock key with HKDF, decrypts the Account Key. |
 | **Account Key (AK)** | Random key that opens everything the account owns: the personal VEK and the account private keys. |
-| **VEK** | Vault Encryption Key: random key of one vault, personal or shared. |
+| **Vault Encryption Key (VEK)** | Random key of one vault, personal or shared. |
 | **Manifest** | The encrypted document on the server that holds one vault's items. |
 | **Data bucket** | A separately encrypted part of a vault for data that changes often. |
 | **Blob** | The encrypted bytes of one attachment or logo, with its own key. |
@@ -549,7 +549,7 @@ Where each part of this document lives in the repository, for reviewers.
 | **Vault Delivery Keypair** | The RSA keypair of a vault that incoming email is encrypted to. |
 | **Email claim** | The server-side record that an alias address belongs to a vault. |
 | **Group** | A set of accounts that can hold shared vaults; a group holds no keys. |
-| **Account fingerprint** | 20 digits derived from an account's signing public key, compared outside AliasVault before sharing. |
+| **Account fingerprint** | 20 digits derived from an account's signing public key, compared outside AliasVault to verify an account (e.g. before sharing a vault). |
 | **Key certification** | An account's signature stating that a signing public key belongs to another account, made after checking its fingerprint. |
 | **Account unlock method** | A server-stored copy of the Account Key under a KEK; today the master password. |
 | **Device unlock method** | A device-only copy of the Account Key protected by biometrics, a PIN or a passkey. |
