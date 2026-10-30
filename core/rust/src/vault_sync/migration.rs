@@ -42,6 +42,8 @@ pub(crate) async fn pending_migration_result(ctx: &mut Ctx) -> SyncResult<Option
     match checked {
         Ok(result) => Ok(result),
         Err(error @ SyncError::VaultVersionIncompatible(_)) => Err(error),
+        // A failed local database command can mean the stored vault does not decrypt; the sync diagnoses it.
+        Err(error @ SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) => Err(error),
         Err(error) => {
             ctx.warn(format!("[Migration] Ignoring failed pending migration check: {}", error)).await;
             Ok(None)
