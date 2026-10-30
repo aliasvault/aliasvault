@@ -174,6 +174,7 @@ pub struct FullSyncResult {
     pub success: bool,
     pub has_new_vault: bool,
     pub was_offline: bool,
+    /// LEGACY: the local vault is still on the frozen sqlite-blob upgrade chain, which the host walks first.
     pub sqlite_blob_upgrade_required: bool,
     pub manifest_migration_required: bool,
     #[serde(flatten)]

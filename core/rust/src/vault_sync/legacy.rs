@@ -1,12 +1,11 @@
 //! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
-//! ([`upgrade_account_to_manifest_v1`]). TODO: remove this module once every account has upgraded, together with the
-//! `Snapshot::LegacySqliteBlob` arm in `pull.rs` and `merge.rs`, `db::schema_state`'s frozen chain check, the branch
-//! without a key chain in `keys::resolve_vault_key`, `keys::accept_hierarchy_created_elsewhere`, the branch without a
-//! vault key in `migration::migrate_manifest`, the upgrade-elsewhere check in `migration::migration_status` and the
-//! unsigned approval in `sharing::approve_mobile_login`.
+//! ([`upgrade_account_to_manifest_v1`]). An account registered on 0.31.0 or later has a key chain from the start and
+//! never reaches this module. TODO: remove it once every account has upgraded, together with the call sites labelled
+//! `LEGACY:` in the other modules.
 
 use std::collections::HashMap;
 
+use secrecy::{ExposeSecret, SecretString};
 use serde_json::Value;
 
 use super::db::{self, SchemaState};
@@ -18,6 +17,7 @@ use super::push::{resolve_personal_manifest_id, WriteKind};
 use super::state::{self, Ctx};
 use super::types::{Db, GetResponse};
 use crate::common::encoding::base64_decode;
+use crate::crypto;
 use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::inline_bytes;
 
@@ -88,6 +88,31 @@ pub(crate) async fn accept_upgrade_done_elsewhere(ctx: &mut Ctx) -> SyncResult<b
     Ok(true)
 }
 
+/// The key hierarchy the upgrade push creates, with its KEK derived from the unlock key; `None` for any other write.
+pub(crate) async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKind) -> SyncResult<Option<crypto::AccountKeyHierarchy>> {
+    if kind != WriteKind::AccountKeyMigration {
+        return Ok(None);
+    }
+    let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
+    ctx.log("[Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
+    Ok(Some(hierarchy))
+}
+
+/// Store the hierarchy the upgrade push just committed: cache the encrypted chain and stage the private keys.
+pub(crate) async fn complete_account_key_migration(ctx: &mut Ctx, migration: &crypto::AccountKeyHierarchy) -> SyncResult<()> {
+    let blobs = &migration.account_keys;
+    state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
+    state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;
+    state::set(&ctx.host, state::ACCOUNT_PUBLIC_KEY, &blobs.account_public_key).await?;
+    state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, &blobs.encrypted_account_private_key).await?;
+    state::set(&ctx.host, state::SIGNING_PUBLIC_KEY, &blobs.signing_public_key).await?;
+    state::set(&ctx.host, state::ENCRYPTED_SIGNING_PRIVATE_KEY, &blobs.encrypted_signing_private_key).await?;
+    ctx.account_public_key = Some(blobs.account_public_key.clone());
+    ctx.account_private_key = Some(migration.account_private_key.as_str().into());
+    ctx.signing_private_key = Some(migration.signing_private_key.as_str().into());
+    Ok(())
+}
+
 /// Pull the personal manifest id and revision baseline the upgrade push needs, when a pre-manifest session lacks them.
 async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_some() {
@@ -104,6 +129,54 @@ async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
     }
     ctx.vault_changed = true;
     pull::commit_revisions(ctx, &pulled).await
+}
+
+/*
+ * An upgrade done on another device: this device logged in while the account was still sqlite-blob, so it holds the
+ * unlock key as its session key and no cached key chain.
+ */
+
+/// Accept the key chain another device created since this device logged in; false when the session key does not open it.
+pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
+    if ctx.vault_key_probed {
+        return Ok(true);
+    }
+    let unlock_key = ctx.encryption_key()?;
+    // A failed probe fails the run: assuming "no hierarchy" would send a migration write that creates a second one.
+    let Some(vault_key) = keys::fetch_vault_key(&ctx.host).await?.filter(|vault_key| vault_key.encrypted_vek.is_some()) else {
+        ctx.vault_key_probed = true;
+        return Ok(true);
+    };
+    let vek = match keys::open_server_chain(ctx, &vault_key, unlock_key.expose_secret()).await {
+        Ok(vek) => vek,
+        Err(SyncError::UnlockKeyRejected) => {
+            ctx.warn("[Keys] The session key does not open the key hierarchy the server holds; a re-login is needed.").await;
+            ctx.vault_key_probed = true;
+            return Ok(false);
+        }
+        Err(error) => return Err(error),
+    };
+    // Read before anything is cached: a stored vault the unlock key does not open fails the run here, and the sync's retry drops it and accepts again.
+    let plaintext = stored_vault_plaintext(ctx, &unlock_key).await?;
+    ctx.vault_key_probed = true;
+    // The chain is cached before the vault is stored under the VEK: hosts hold the unlock key and derive the vault key from it.
+    keys::cache_vault_key_blobs(&ctx.host, &vault_key).await?;
+    if let Some(plaintext) = plaintext {
+        state::store_vault_with_key(&ctx.host, &state::encrypt_vault_blob(&plaintext, vek.expose_secret())?, false, None, None, Some(vek.clone())).await?;
+    }
+    keys::re_encrypt_shared_manifest_records(ctx, vek.expose_secret()).await?;
+    ctx.set_encryption_key(vek);
+    ctx.log("[Keys] Another device created the account's key hierarchy; accepted it and swapped the session key to the VEK.").await;
+    Ok(true)
+}
+
+/// The stored vault decrypted with the unlock key; `None` without a stored vault or after the sync dropped it.
+async fn stored_vault_plaintext(ctx: &mut Ctx, unlock_key: &SecretString) -> SyncResult<Option<Vec<u8>>> {
+    if !ctx.has_local_vault().await? {
+        return Ok(None);
+    }
+    let Some(encrypted_vault) = state::load_vault(&ctx.host).await? else { return Ok(None) };
+    Ok(Some(state::decrypt_vault_blob(&encrypted_vault, unlock_key.expose_secret())?))
 }
 
 /// Decode the base64 TEXT the 0.30.x merges wrote into BLOB columns back to bytes, in place; text that is not base64 is left as-is.

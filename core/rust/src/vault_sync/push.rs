@@ -13,7 +13,7 @@ use super::state::{self, Ctx};
 use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus, ALGORITHM_RSA_OAEP_SHA256};
 use super::blob_keys::{self, EncryptedBlob};
 use super::write_set::{self, ManifestRecord, SkipReason};
-use super::{db, http, keys};
+use super::{db, http, keys, legacy};
 use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
@@ -31,7 +31,7 @@ pub(crate) enum WriteKind {
     Changes { buckets_only: bool },
     /// Every manifest and bucket, whatever the fingerprints say: the server never saw this vault.
     Everything,
-    /// The one-time account upgrade, which creates the key hierarchy and writes the whole vault under it.
+    /// LEGACY: the one-time account upgrade, which creates the key hierarchy and writes the whole vault under it.
     AccountKeyMigration,
 }
 
@@ -164,6 +164,7 @@ pub(crate) async fn vault_holds_unwritable_manifests(ctx: &Ctx) -> bool {
 /// Upload the stored vault; an account without a key hierarchy gets the migration write whatever `kind` asked for.
 pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, kind: WriteKind) -> SyncResult<UploadOutcome> {
     let mutation_seq_at_start = ctx.mutation_sequence;
+    // LEGACY: an account without a key chain is still on sqlite-blob, so its first write is the account upgrade.
     let kind = if keys::ensure_key_chain_accepted(ctx).await? { kind } else { WriteKind::AccountKeyMigration };
 
     if kind == (WriteKind::Changes { buckets_only: true }) {
@@ -256,7 +257,7 @@ async fn write_whole_vault(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, kind
 
     let (status, new_key) = http::with_outdated_server_guard(write_manifests_and_buckets(ctx, cached, kind).await)?;
     if let Some(new_key) = new_key {
-        // Migration succeeded: from now on the session key is the VEK, not the password-derived key.
+        // LEGACY: the account upgrade succeeded; from now on the session key is the VEK, not the unlock key.
         keys::re_encrypt_shared_manifest_records(ctx, new_key.expose_secret()).await?;
         ctx.set_encryption_key(new_key);
     }
@@ -394,7 +395,8 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
         return Ok((PushStatus::Outdated, None));
     }
 
-    let migration = start_account_key_migration(ctx, vek.expose_secret(), kind).await?;
+    // LEGACY: the one-time account upgrade creates the key hierarchy and writes the whole vault under its VEK.
+    let migration = legacy::start_account_key_migration(ctx, vek.expose_secret(), kind).await?;
     let content_key = migration.as_ref().map(|m| SecretString::from(m.vault_encryption_key.as_str())).unwrap_or_else(|| vek.clone());
 
     let set = match cached {
@@ -442,20 +444,10 @@ async fn write_manifests_and_buckets(ctx: &mut Ctx, cached: Option<Canonicalized
     commit_push_baselines(ctx, baselines, &response.manifest_revisions, &response.bucket_revisions, written).await?;
     commit_blob_baselines(ctx, &blobs, &uploaded).await?;
     if let Some(migration) = &migration {
-        complete_account_key_migration(ctx, migration).await?;
+        legacy::complete_account_key_migration(ctx, migration).await?;
         ctx.log("[Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.").await;
     }
     Ok((PushStatus::Ok, migration.map(|_| content_key)))
-}
-
-/// The key hierarchy a migration push creates, with its KEK derived from the legacy session key (the unlock key).
-async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, kind: WriteKind) -> SyncResult<Option<crypto::AccountKeyHierarchy>> {
-    if kind != WriteKind::AccountKeyMigration {
-        return Ok(None);
-    }
-    let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
-    ctx.log("[Push] Account-key migration: generated new VEK, AK, account keypair and signing keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
-    Ok(Some(hierarchy))
 }
 
 /// Every canonicalized manifest a record exists for, with the key it encrypts under.
@@ -658,21 +650,6 @@ async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMa
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &new_cache).await
-}
-
-/// Store the hierarchy a migration push just committed: cache the encrypted chain and stage the private keys.
-async fn complete_account_key_migration(ctx: &mut Ctx, migration: &crypto::AccountKeyHierarchy) -> SyncResult<()> {
-    let blobs = &migration.account_keys;
-    state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;
-    state::set(&ctx.host, state::ENCRYPTED_VEK, &blobs.encrypted_vek).await?;
-    state::set(&ctx.host, state::ACCOUNT_PUBLIC_KEY, &blobs.account_public_key).await?;
-    state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, &blobs.encrypted_account_private_key).await?;
-    state::set(&ctx.host, state::SIGNING_PUBLIC_KEY, &blobs.signing_public_key).await?;
-    state::set(&ctx.host, state::ENCRYPTED_SIGNING_PRIVATE_KEY, &blobs.encrypted_signing_private_key).await?;
-    ctx.account_public_key = Some(blobs.account_public_key.clone());
-    ctx.account_private_key = Some(migration.account_private_key.as_str().into());
-    ctx.signing_private_key = Some(migration.signing_private_key.as_str().into());
-    Ok(())
 }
 
 /// Encrypt and upload the given blobs in batches per owning manifest; returns hash to ciphertext.

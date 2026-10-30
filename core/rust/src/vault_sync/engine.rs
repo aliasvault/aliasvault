@@ -101,13 +101,8 @@ pub(crate) async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
                 if dropped_local_vault || !matches!(error, SyncError::VaultDecryptFailed(_)) {
                     return Err(error);
                 }
-                ctx.warn(format!("[Sync] The stored vault does not decrypt with the session key; dropping it and pulling the server's vault. {}", error)).await;
+                drop_local_vault_for_pull(ctx, &error).await?;
                 dropped_local_vault = true;
-                ctx.discard_local_vault();
-                if ctx.is_dirty && state::mark_clean(&ctx.host, ctx.mutation_sequence).await? {
-                    ctx.is_dirty = false;
-                }
-                ctx.request.force_pull = true;
                 continue;
             }
         };
@@ -125,6 +120,17 @@ pub(crate) async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
             }
         }
     }
+}
+
+/// Treat a stored vault the session key does not open as absent and force the retry to pull the server's vault in its place.
+async fn drop_local_vault_for_pull(ctx: &mut Ctx, error: &SyncError) -> SyncResult<()> {
+    ctx.warn(format!("[Sync] The stored vault does not decrypt with the session key; dropping it and pulling the server's vault. {}", error)).await;
+    ctx.discard_local_vault();
+    if ctx.is_dirty && state::mark_clean(&ctx.host, ctx.mutation_sequence).await? {
+        ctx.is_dirty = false;
+    }
+    ctx.request.force_pull = true;
+    Ok(())
 }
 
 async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
@@ -343,6 +349,7 @@ async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pu
 /// Outcome for a sync that stored a freshly pulled vault.
 async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<FullSyncResult> {
     let migration_required = migration::vault_requires_manifest_migration(ctx).await?;
+    // LEGACY: a pulled sqlite-blob vault can still be on the frozen upgrade chain.
     let legacy_chain = migration::schema_state(ctx).await? == db::SchemaState::LegacyChain;
     Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required: legacy_chain, manifest_migration_required: migration_required, pulled_revision: Some(pulled.personal_revision), ..Default::default() })
 }

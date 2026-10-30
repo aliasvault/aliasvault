@@ -29,6 +29,7 @@ pub(crate) struct Ctx {
     pub new_encryption_key: Option<SecretString>,
     pub vault_changed: bool,
     pub schema: Option<SchemaInfo>,
+    /// LEGACY: whether this run already asked the server for a key chain this device has not cached.
     pub vault_key_probed: bool,
     pub served_manifest_names: HashMap<String, String>,
     has_local_vault: bool,
@@ -107,7 +108,7 @@ impl Ctx {
 
     /// Report a failed local database command as `VaultDecryptFailed` when the stored vault does not decrypt.
     pub async fn diagnose_local_vault_failure(&self, error: SyncError) -> SyncError {
-        if !matches!(error, SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) {
+        if self.local_vault_discarded || !matches!(error, SyncError::Host { command: "dbQuery" | "dbExec" | "dbExport", .. }) {
             return error;
         }
         let (Some(key), Ok(Some(blob))) = (self.encryption_key.as_ref(), load_vault(&self.host).await) else { return error };

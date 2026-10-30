@@ -7,6 +7,7 @@ use zeroize::Zeroizing;
 
 use super::errors::{SyncError, SyncResult};
 use super::http;
+use super::legacy;
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{ManifestDto, SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_AES256_GCM, ALGORITHM_RSA_OAEP_SHA256};
@@ -20,7 +21,7 @@ pub(crate) async fn has_cached_key_chain(host: &Host) -> SyncResult<bool> {
 }
 
 /// `GET v2/VaultKey/Password`: the account's vault key, `None` when the server holds none.
-async fn fetch_vault_key(host: &Host) -> SyncResult<Option<VaultKeyResponse>> {
+pub(super) async fn fetch_vault_key(host: &Host) -> SyncResult<Option<VaultKeyResponse>> {
     match http::get::<VaultKeyGetResponse>(host, http::VAULT_KEY_PASSWORD_ENDPOINT, false).await {
         Ok(response) => Ok(response.vault_key),
         Err(SyncError::Http { status: 404, .. }) => Ok(None),
@@ -40,7 +41,7 @@ fn ensure_known_unlock_algorithm(vault_key: &VaultKeyResponse) -> SyncResult<()>
 const CHAIN_STATE: [&str; 6] = [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, state::SIGNING_PUBLIC_KEY, state::ENCRYPTED_SIGNING_PRIVATE_KEY];
 
 /// Cache a server vault-key response's encrypted blobs; a half the server does not hold is removed.
-async fn cache_vault_key_blobs(host: &Host, vault_key: &VaultKeyResponse) -> SyncResult<()> {
+pub(super) async fn cache_vault_key_blobs(host: &Host, vault_key: &VaultKeyResponse) -> SyncResult<()> {
     let values = [Some(&vault_key.encrypted_account_key), vault_key.encrypted_vek.as_ref(), vault_key.account_public_key.as_ref(), vault_key.encrypted_account_private_key.as_ref(), vault_key.signing_public_key.as_ref(), vault_key.encrypted_signing_private_key.as_ref()];
     for (key, value) in CHAIN_STATE.iter().zip(values) {
         match value {
@@ -74,7 +75,7 @@ async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &
 }
 
 /// Open the chain of a server vault-key response with `unlock_key`.
-async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<SecretString> {
+pub(super) async fn open_server_chain(ctx: &mut Ctx, vault_key: &VaultKeyResponse, unlock_key: &str) -> SyncResult<SecretString> {
     ensure_known_unlock_algorithm(vault_key)?;
     let vek = open_chain(ctx, &vault_key.encrypted_account_key, vault_key.encrypted_vek.as_deref().unwrap_or_default(), vault_key.encrypted_account_private_key.as_deref(), unlock_key).await?;
     if let (Some(public_key), Some(private_key)) = (&vault_key.account_public_key, &ctx.account_private_key) {
@@ -135,47 +136,14 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     }
 }
 
-/// Accept a key hierarchy another device created since this device logged in; false when the session key does not open it.
-pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
-    // LEGACY: only a device that logged in to a sqlite-blob account, before another device upgraded it, gets here.
-    // TODO: remove once every account has upgraded.
-    if ctx.vault_key_probed {
-        return Ok(true);
-    }
-    let session_key = ctx.encryption_key()?;
-    // A failed probe fails the run: assuming "no hierarchy" would send a migration write that creates a second one.
-    let fetched = fetch_vault_key(&ctx.host).await?;
-    ctx.vault_key_probed = true;
-    let vault_key = match fetched {
-        Some(vault_key) if vault_key.encrypted_vek.is_some() => vault_key,
-        _ => return Ok(true),
-    };
-    let vek = match open_server_chain(ctx, &vault_key, session_key.expose_secret()).await {
-        Ok(vek) => vek,
-        Err(SyncError::UnlockKeyRejected) => {
-            ctx.warn("[Keys] The session key does not open the key hierarchy the server holds; a re-login is needed.").await;
-            return Ok(false);
-        }
-        Err(error) => return Err(error),
-    };
-    // The chain is cached before the vault is stored under the VEK: hosts hold the unlock key and derive the vault key from it.
-    cache_vault_key_blobs(&ctx.host, &vault_key).await?;
-    if let Some(encrypted_vault) = state::load_vault(&ctx.host).await? {
-        let plaintext = state::decrypt_vault_blob(&encrypted_vault, session_key.expose_secret())?;
-        state::store_vault_with_key(&ctx.host, &state::encrypt_vault_blob(&plaintext, vek.expose_secret())?, false, None, None, Some(vek.clone())).await?;
-    }
-    re_encrypt_shared_manifest_records(ctx, vek.expose_secret()).await?;
-    ctx.set_encryption_key(vek);
-    ctx.log("[Keys] Another device created the account's key hierarchy; accepted it and swapped the session key to the VEK.").await;
-    Ok(true)
-}
-
 /// Whether this device holds the key chain, after accepting one another device created; `KeyOutOfSync` when the session key does not open it.
 pub(crate) async fn ensure_key_chain_accepted(ctx: &mut Ctx) -> SyncResult<bool> {
     if has_cached_key_chain(&ctx.host).await? {
         return Ok(true);
     }
-    if !accept_hierarchy_created_elsewhere(ctx).await? {
+    // LEGACY: only an account upgraded on another device since this one logged in has no chain cached here.
+    // This can be removed once all accounts are on 0.31.0+ manifest-v1 storage.
+    if !legacy::accept_hierarchy_created_elsewhere(ctx).await? {
         return Err(SyncError::KeyOutOfSync);
     }
     has_cached_key_chain(&ctx.host).await
