@@ -218,6 +218,7 @@
     "attachments": "Atașamente",
     "back": "Înapoi",
     "backspace": "Spațiu",
+    "beforeYouContinue": "Înainte să continui:",
     "cancel": "Anulează",
     "clipboardCountdown": {
       "clearClipboardButton": "Golește clipboardul"
@@ -284,6 +285,7 @@
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
     "hidePassword": "Ascunde parola",
+    "highRiskAction": "Această acțiune prezintă riscuri ridicate.",
     "home": "Acasă",
     "loadMore": "Încarcă mai multe",
     "loading": "Se încarcă...",
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Parolă copiată",
     "passwordUnlockError": "Verificarea parolei a eșuat",
     "pinConfirmSubtitle": "Reintrodu PIN-ul pentru confirmare",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Dispozitivul tău nu a confirmat că este deblocat. Blochează dispozitivul, deblochează-l cu PIN-ul, modelul sau parola și încearcă din nou.",
     "pinIncorrectAttemptsRemaining": "PIN incorect. Mai ai {{count}} încercări",
     "pinLockedMaxAttempts": "PIN blocat după prea multe încercări eșuate",
     "pinMismatch": "Codurile PIN nu coincid. Încearcă din nou.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Site-uri unde fereastra pop-up de completare automată nu va apărea.",
     "enabledForThisSite": "Activat pentru acest site",
     "exportConfirmTitle": "Exportă seiful",
-    "exportCsvButton": "Exportă seiful în fișier CSV",
-    "exportSectionDescription": "Exportă datele din seif într-un fișier CSV. Acest fișier poate fi folosit ca backup sau pentru import în alte aplicații.",
     "exportSectionTitle": "Export",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
-    "exporting": "Se exportă...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
       "aliasGenerationGenderDescription": "Setează preferința implicită de gen pentru generarea noilor identități.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Schimbarea parolei a eșuat. Încearcă din nou.",
         "failedToChangePassword": "Schimbarea parolei a eșuat. Reîncarcă pagina și încearcă din nou.",
         "fillAllFields": "Completează toate câmpurile tale",
-        "headerText": "Schimbarea parolei principale modifică cheile de criptare ale seifului. Îți recomandăm să îți schimbi periodic parola principală.",
+        "headerText": "Schimbarea parolei principale te deconectează de pe celelalte dispozitive.",
         "initiatingChange": "Se inițiază schimbarea parolei...",
         "newPassword": "Parolă nouă",
         "passwordChangedSuccessfully": "Parola a fost schimbată cu succes",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Autentificarea cu doi factori a fost activată cu succes. La următoarea autentificare va trebui să introduci codul 2FA.",
         "verificationCodePlaceholder": "Introdu codul de verificare",
         "verifyAndEnableButton": "Verifică și activează"
+      },
+      "keyRotation": {
+        "acknowledge": "Mi-am făcut o copie de rezervă a seifului și m-am deconectat de pe celelalte dispozitive",
+        "changePasswordAndRotate": "Schimbă parola și rotește cheile",
+        "optionRotateKeys": "Rotește toate cheile de criptare",
+        "optionRotateKeysDescription": "Este necesar doar dacă suspectezi că cheile tale au fost expuse, de exemplu, dacă dispozitivul tău a fost compromis sau furat. Criptează din nou seiful și te deconectează de pe toate celelalte dispozitive.",
+        "riskAfterwards": "După aceea, conectează-te din nou pe celelalte dispozitive și configurează din nou deblocarea prin cod PIN, passkey sau date biometrice.",
+        "riskBackup": "Exportă mai întâi o copie de rezervă a seifului (Setări > Import / Export). Operațiunea de rotire a cheilor nu poate fi anulată.",
+        "riskSignOut": "Lasă celelalte dispozitive să termine sincronizarea, apoi deconectează-te de pe ele. Modificările nesincronizate de pe dispozitivele pe care rămâi conectat se vor pierde."
       },
       "passkeyUnlock": {
         "disableButton": "Dezactivează deblocarea prin Passkey",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmă PIN",
       "confirmPinDescription": "Introdu PIN-ul din nou pentru confirmare",
-      "enterNewPinDescription": "Introdu un cod PIN de cel puțin 6 cifre",
+      "enterNewPinDescription": "Introdu un PIN de cel puțin 6 caractere. Poți folosi litere și simboluri.",
       "incorrectPin": "PIN incorect. {{attemptsRemaining}} încercări rămase.",
       "incorrectPinSingular": "PIN incorect. 1 încercare rămasă.",
       "introText": "Alege cum dorești să îți deblochezi seiful. Poți folosi parola principală (întotdeauna disponibilă) sau poți configura un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola principală.",

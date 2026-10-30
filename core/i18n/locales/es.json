@@ -218,6 +218,7 @@
     "attachments": "Archivos adjuntos",
     "back": "Atrás",
     "backspace": "Borrar el último dígito",
+    "beforeYouContinue": "Antes de continuar:",
     "cancel": "Cancelar",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpiar portapapeles"
@@ -284,6 +285,7 @@
     "hide": "Esconder",
     "hideDetails": "Ocultar detalles",
     "hidePassword": "Ocultar contraseña",
+    "highRiskAction": "Esta es una acción de alto riesgo.",
     "home": "Inicio",
     "loadMore": "Cargar más",
     "loading": "Cargando...",
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Contraseña copiada",
     "passwordUnlockError": "Error al verificar la contraseña",
     "pinConfirmSubtitle": "Vuelva a introducir tu PIN para confirmar",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Tu dispositivo no ha confirmado que esté desbloqueado. Bloquea tu dispositivo, desbloquéalo con el PIN, el patrón o la contraseña del dispositivo e inténtalo de nuevo.",
     "pinIncorrectAttemptsRemaining": "PIN incorrecto, {{count}} intentos restantes",
     "pinLockedMaxAttempts": "PIN bloqueado tras demasiados intentos fallidos",
     "pinMismatch": "Los PIN no coinciden. Por favor, inténtalo de nuevo.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sitios donde el popup de autorrelleno no aparecerá.",
     "enabledForThisSite": "Habilitado para este sitio",
     "exportConfirmTitle": "Exportar bóveda",
-    "exportCsvButton": "Exportar bóveda a archivo CSV",
-    "exportSectionDescription": "Exportar tus datos de bóveda a un archivo CSV. Este archivo puede ser utilizado como copia de seguridad y también puede ser importado a otros gestores de contraseñas.",
     "exportSectionTitle": "Exportar",
     "exportWarning": "Advertencia: Exportando tu bóveda a un archivo no cifrado expondrás todas tus contraseñas e información sensible en texto plano. Solo haz esto en dispositivos de confianza y asegúrate de:\n\n• Almacenar el archivo exportado en una ubicación segura\n• Eliminar el archivo cuando ya no lo necesites\n• Nunca compartir el archivo exportado con otros\n\n¿Realmente deseass continuar con la exportación?",
-    "exporting": "Exportando...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Establecer el rango de edad por defecto para generar nuevas identidades. Esto afecta a la fecha de nacimiento asignada a la identidad generada.",
       "aliasGenerationGenderDescription": "Establecer la preferencia de género por defecto para generar nuevas identidades.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Error al cambiar la contraseña. Por favor, inténtalo de nuevo.",
         "failedToChangePassword": "Error al cambiar la contraseña. Por favor, actualiza la página e inténtalo de nuevo.",
         "fillAllFields": "Por favor, rellene todos los campos",
-        "headerText": "Cambiar tu contraseña maestra también cambia las claves de cifrado de bóveda. Se recomienda cambiar periódicamente tu contraseña maestra para mantener tus bóvedas seguras.",
+        "headerText": "Cambiando su contraseña maestra cierra sus otros dispositivos.",
         "initiatingChange": "Iniciando cambio de contraseña...",
         "newPassword": "Nueva contraseña",
         "passwordChangedSuccessfully": "Contraseña cambiada con éxito",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "La autenticación de doble factor está habilitada con éxito. En tu próximo inicio de sesión necesitarás introducir tu código 2FA.",
         "verificationCodePlaceholder": "Introduce el código de verificación",
         "verifyAndEnableButton": "Verificar y Habilitar"
+      },
+      "keyRotation": {
+        "acknowledge": "He hecho una copia de seguridad de mi bóveda y he cerrado la sesión de mis otros dispositivos",
+        "changePasswordAndRotate": "Cambiar contraseña y rotar claves",
+        "optionRotateKeys": "También rotar todas las claves de cifrado",
+        "optionRotateKeysDescription": "Sólo es necesario si sospechas que tus claves fueron expuestas, por ejemplo si tu dispositivo fue comprometido o robado. Vuelve a cifrar tu bóveda y desconecta el resto de dispositivos.",
+        "riskAfterwards": "Después, inicie sesión de nuevo en sus otros dispositivos y vuelva a configurar el PIN, la clave de acceso o el desbloqueo biométrico.",
+        "riskBackup": "Exportar primero una copia de seguridad de su bóveda (Ajustes > Importar / Exportar). Una operación de rotación de claves no se puede deshacer.",
+        "riskSignOut": "Deja que tus otros dispositivos terminen de sincronizar, luego cierra la sesión de ellos. Los cambios no sincronizados en los dispositivos que permanecen conectados se perderán."
       },
       "passkeyUnlock": {
         "disableButton": "Desactivar el desbloqueo con llave de acceso",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Introduce tu PIN de nuevo para confirmar",
-      "enterNewPinDescription": "Introduce un código PIN que contenga un mínimo de 6 dígitos",
+      "enterNewPinDescription": "Introduzca un PIN de al menos 6 caracteres. Se permiten letras y símbolos.",
       "incorrectPin": "PIN incorrecto, {{attemptsRemaining}} intentos restantes.",
       "incorrectPinSingular": "PIN incorrecto. 1 intento restante.",
       "introText": "Elige cómo deseas desbloquear tu bóveda. Puede utilizar tu contraseña maestra (siempre disponible) o configurar un código PIN para un acceso más rápido. Después de 3 intentos fallidos de PIN, necesitarás usar tu contraseña maestra.",

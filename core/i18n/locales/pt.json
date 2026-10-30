@@ -218,6 +218,7 @@
     "attachments": "Anexos",
     "back": "Voltar",
     "backspace": "Backspace",
+    "beforeYouContinue": "Before you continue:",
     "cancel": "Cancelar",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpar área de transferência"
@@ -284,6 +285,7 @@
     "hide": "Esconder",
     "hideDetails": "Esconder detalhes",
     "hidePassword": "Ocultar senha",
+    "highRiskAction": "This is a high-risk action.",
     "home": "Início",
     "loadMore": "Carregar mais",
     "loading": "Carregando...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
     "enabledForThisSite": "Habilitado para este site",
     "exportConfirmTitle": "Exportar Cofre",
-    "exportCsvButton": "Exportar cofre para arquivo CSV",
-    "exportSectionDescription": "Exporte seu cofre para um arquivo CSV. Este arquivo pode ser utilizado como backup e também pode ser importado em outros gerenciadores de senhas.",
     "exportSectionTitle": "Exportar",
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto. Realize isso apenas em dispositivos confiados e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
-    "exporting": "Exportando...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Selecione a faixa etária padrão para geração de novas identidades. Isto afeta a data de nascimento associada à identidade gerada.",
       "aliasGenerationGenderDescription": "Configure o gênero padrão que será utilizado para gerar novas identidades.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Falha ao atualizar senha. Por favor tente novamente.",
         "failedToChangePassword": "Falha ao alterar senha. Por favor, atualize a página e tente novamente.",
         "fillAllFields": "Por favor preencha todos os campos",
-        "headerText": "Alterar sua senha mestre também irá alterar as chaves de criptografia do cofre. É aconselhável alterar sua senha mestre periodicamente para manter seu cofre seguro.",
+        "headerText": "Changing your master password signs out your other devices.",
         "initiatingChange": "Iniciando troca de senha...",
         "newPassword": "Nova Senha",
         "passwordChangedSuccessfully": "Senha atualizada com sucesso",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Autenticação de dois fatores foi habilitada com sucesso. No seu próximo login, você precisará digitar seu código 2FA.",
         "verificationCodePlaceholder": "Digite o código de verificação",
         "verifyAndEnableButton": "Verificar e Habilitar"
+      },
+      "keyRotation": {
+        "acknowledge": "I have backed up my vault and signed out of my other devices",
+        "changePasswordAndRotate": "Change password and rotate keys",
+        "optionRotateKeys": "Also rotate all encryption keys",
+        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
+        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
+        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
+        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
         "disableButton": "Desabilitar Desbloqueio com Passkey",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Digite seu PIN novamente para confirmar",
-      "enterNewPinDescription": "Digite um PIN que consista de, pelo menos, 6 dígitos",
+      "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN incorreto. {{attemptsRemaining}} tentativas restantes.",
       "incorrectPinSingular": "PIN incorreto. 1 tentativa restante.",
       "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar sua senha mestre (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, você deverá utilizar sua senha mestre.",

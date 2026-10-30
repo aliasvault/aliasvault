@@ -218,6 +218,7 @@
     "attachments": "Allegati",
     "back": "Indietro",
     "backspace": "Backspace",
+    "beforeYouContinue": "Prima di continuare:",
     "cancel": "Annulla",
     "clipboardCountdown": {
       "clearClipboardButton": "Cancella appunti"
@@ -284,6 +285,7 @@
     "hide": "Nascondi",
     "hideDetails": "Nascondi dettagli",
     "hidePassword": "Nascondi password",
+    "highRiskAction": "Questa è un'azione ad alto rischio.",
     "home": "Home",
     "loadMore": "Carica altro",
     "loading": "Caricamento...",
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Password copiata",
     "passwordUnlockError": "Verifica della password non riuscita",
     "pinConfirmSubtitle": "Reinserisci il tuo PIN per confermare.",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Il dispositivo non ha confermato che è stato sbloccato. Blocca il dispositivo, sbloccarlo con il PIN, la sequenza o la password del dispositivo e riprova.",
     "pinIncorrectAttemptsRemaining": "PIN errato, {{count}} tentativi rimasti",
     "pinLockedMaxAttempts": "PIN bloccato dopo troppi tentativi falliti",
     "pinMismatch": "I PIN non corrispondono. Riprova.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Siti in cui non apparirà il popup di riempimento automatico.",
     "enabledForThisSite": "Abilitato per questo sito",
     "exportConfirmTitle": "Esporta cassaforte",
-    "exportCsvButton": "Esporta la cassaforte in CSV",
-    "exportSectionDescription": "Esporta i dati della tua cassaforte in un file CSV. Questo file può essere usato come backup e può anche essere importato in altri gestori di password.",
     "exportSectionTitle": "Esporta",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
-    "exporting": "Esportazione...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Imposta l'intervallo di età predefinito per generare nuove identità. Ciò influisce sulla data di nascita assegnata all'identità generata.",
       "aliasGenerationGenderDescription": "Imposta la preferenza di genere predefinita per generare nuove identità.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Cambio password fallito. Riprova.",
         "failedToChangePassword": "Impossibile cambiare la password. Si prega di aggiornare la pagina e riprovare.",
         "fillAllFields": "Per favore compila tutti i campi",
-        "headerText": "Cambiare la password principale cambia anche le chiavi di crittografia della cassaforte. È consigliato cambiare la password periodicamente per mantenere le cassaforti sicure.",
+        "headerText": "Cambiare la tua password principale effettuerà la disconnessione dai tuoi altri dispositivi.",
         "initiatingChange": "Inizio cambio password...",
         "newPassword": "Nuova password",
         "passwordChangedSuccessfully": "Password cambiata con successo",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "L'autenticazione a due fattori è ora abilitata con successo. Al tuo prossimo login dovrai inserire il tuo codice 2FA.",
         "verificationCodePlaceholder": "Inserisci il codice di verifica",
         "verifyAndEnableButton": "Verifica e Abilita"
+      },
+      "keyRotation": {
+        "acknowledge": "Ho eseguito il backup della mia cassaforte ed effettuato la disconnessione dai miei altri dispositivi",
+        "changePasswordAndRotate": "Cambia la password e ruota le chiavi",
+        "optionRotateKeys": "Ruota anche tutte le chiavi di cifratura",
+        "optionRotateKeysDescription": "Necessario solo se si sospetta che le chiavi siano state esposte, ad esempio se il dispositivo è stato compromesso o rubato. Ri-crittografa la cassaforte e firma tutti gli altri dispositivi.",
+        "riskAfterwards": "Successivamente, accedi di nuovo sugli altri dispositivi e imposta nuovamente il PIN, la chiave di accesso o lo sblocco biometrico.",
+        "riskBackup": "Esporta prima un backup della tua cassaforte (Impostazioni > Importa / Esporta). Non è possibile annullare un'operazione di rotazione dei delle chiavi.",
+        "riskSignOut": "Lascia terminare la sincronizzazione degli altri dispositivi, quindi effettua la disconnessione da questi. Le modifiche non sincronizzate sui dispositivi che rimangono connessi sono perse."
       },
       "passkeyUnlock": {
         "disableButton": "Disabilita Sblocco con Passkey",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Conferma PIN",
       "confirmPinDescription": "Inserisci di nuovo il tuo PIN per confermare",
-      "enterNewPinDescription": "Inserisci un codice PIN composto da almeno 6 cifre",
+      "enterNewPinDescription": "Inserisci un PIN di almeno 6 caratteri. Sono ammessi lettere e simboli.",
       "incorrectPin": "PIN errato. {{attemptsRemaining}} tentativi rimanenti.",
       "incorrectPinSingular": "Pin non corretto. 1 tentativo rimanente.",
       "introText": "Scegli come sbloccare la cassaforte. Puoi usare la tua password principale (sempre disponibile) o impostare un codice PIN per un accesso più veloce. Dopo 3 tentativi di PIN falliti, è necessario utilizzare la password principale.",

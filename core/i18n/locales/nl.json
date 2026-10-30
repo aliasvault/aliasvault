@@ -218,6 +218,7 @@
     "attachments": "Bijlagen",
     "back": "Terug",
     "backspace": "Backspace",
+    "beforeYouContinue": "Voordat je verdergaat:",
     "cancel": "Annuleren",
     "clipboardCountdown": {
       "clearClipboardButton": "Klembord wissen"
@@ -284,6 +285,7 @@
     "hide": "Verberg",
     "hideDetails": "Verberg details",
     "hidePassword": "Wachtwoord verbergen",
+    "highRiskAction": "Dit is een zeer riskante actie.",
     "home": "Home",
     "loadMore": "Laad meer",
     "loading": "Laden...",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
     "enabledForThisSite": "Ingeschakeld voor deze site",
     "exportConfirmTitle": "Vault exporteren",
-    "exportCsvButton": "Exporteer vault naar CSV-bestand",
-    "exportSectionDescription": "Exporteer je vault inhoud naar een CSV-bestand. Dit bestand kan als back-up worden gebruikt en kan ook in andere wachtwoordmanagers worden geïmporteerd.",
     "exportSectionTitle": "Exporteren",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
-    "exporting": "Exporteren...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationGenderDescription": "Stel de standaard geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Wachtwoord wijzigen mislukt. Probeer het opnieuw.",
         "failedToChangePassword": "Wachtwoord wijzigen mislukt. Vernieuw de pagina en probeer het opnieuw.",
         "fillAllFields": "Vul alle velden in",
-        "headerText": "Het wijzigen van je hoofdwachtwoord wijzigt ook de encryptie sleutels. Het wordt aanbevolen om je hoofdwachtwoord periodiek te wijzigen om je vault veilig te houden.",
+        "headerText": "Het wijzigen van je hoofdwachtwoord meldt je bij andere apparaten af.",
         "initiatingChange": "Wachtwoord wijziging starten...",
         "newPassword": "Nieuwe wachtwoord",
         "passwordChangedSuccessfully": "Wachtwoord succesvol gewijzigd",
@@ -1416,6 +1415,15 @@
         "verificationCodePlaceholder": "Voer verificatiecode in",
         "verifyAndEnableButton": "Verifiëren en inschakelen"
       },
+      "keyRotation": {
+        "acknowledge": "Ik heb mijn kluis geback-upt en uitgelogd op mijn andere apparaten",
+        "changePasswordAndRotate": "Wachtwoord wijzigen en sleutels roteren",
+        "optionRotateKeys": "Ook alle encryptiesleutels roteren",
+        "optionRotateKeysDescription": "Alleen nodig als je vermoedt dat je sleutels zijn blootgesteld, bijvoorbeeld als je apparaat gecompromitteerd of gestolen is. Het versleutelt je kluis opnieuw en meldt alle andere apparaten af.",
+        "riskAfterwards": "Daarna log je opnieuw in op je andere apparaten en stel je opnieuw een pincode, toegangssleutel of biometrische ontgrendeling in.",
+        "riskBackup": "Exporteer eerst een back-up van je kluis (Instellingen > Importeren / Exporteren). Een sleutelrotatie-operatie kan niet ongedaan worden gemaakt.",
+        "riskSignOut": "Laat je andere apparaten het synchroniseren afronden en log dan uit bij hen. Niet-gesynchroniseerde wijzigingen op apparaten die ingelogd blijven, gaan verloren."
+      },
       "passkeyUnlock": {
         "disableButton": "Passkey ontgrendeling uitschakelen",
         "disabledDescription": "Als je de AliasVault pagina of het tabblad ververst, moet je je hoofdwachtwoord opnieuw invoeren. Met een passkey kun je je vault direct ontgrendelen. Wanneer ingeschakeld, is jouw hoofdwachtwoord lokaal versleuteld met behulp van de PRF-extensie van de passkey. Opmerking: de passkey zal alleen werken voor het huidige apparaat en de browser waar je deze hebt ingeschakeld.",
@@ -1438,7 +1446,7 @@
       "twoFactor": {
         "disabledMessage": "Tweestapsverificatie is momenteel uitgeschakeld. Om de beveiliging van je account te verbeteren raden wij je aan dit in te schakelen.",
         "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld.",
-        "notEnabledWarning": "Je vault is momenteel alleen toegankelijk via je hoofdwachtwoord. We raden je aan om tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
+        "notEnabledWarning": "Je vault is momenteel toegankelijk met alleen je hoofdwachtwoord. We raden je aan om ook tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
       }
     },
     "selectLanguage": "Selecteer taal",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bevestig pincode",
       "confirmPinDescription": "Voer je pincode nogmaals in om te bevestigen",
-      "enterNewPinDescription": "Voer een pincode in van minimaal 6 cijfers",
+      "enterNewPinDescription": "Voer een pincode van minstens 6 tekens in. Letters en symbolen zijn toegestaan.",
       "incorrectPin": "Onjuiste PIN. {{attemptsRemaining}} pogingen resterend.",
       "incorrectPinSingular": "Onjuiste PIN. 1 poging resterend.",
       "introText": "Kies hoe je je vault wilt ontgrendelen. Je kunt je hoofdwachtwoord gebruiken (altijd beschikbaar) of een pincode instellen voor snellere toegang. Na 3 mislukte PIN-pogingen moet je je hoofdwachtwoord gebruiken.",

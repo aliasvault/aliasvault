@@ -46,7 +46,7 @@
       "version": "Version: {{version}}"
     },
     "navigation": {
-      "login": "Logga in",
+      "login": "Inloggning",
       "loginSettings": "Inloggningsinställningar"
     },
     "notFound": {
@@ -218,6 +218,7 @@
     "attachments": "Bilagor",
     "back": "Tillbaka",
     "backspace": "Baksteg",
+    "beforeYouContinue": "Innan du fortsätter:",
     "cancel": "Avbryt",
     "clipboardCountdown": {
       "clearClipboardButton": "Rensa urklipp"
@@ -284,6 +285,7 @@
     "hide": "Dölj",
     "hideDetails": "Dölj detaljer",
     "hidePassword": "Dölj lösenord",
+    "highRiskAction": "Detta är en riskfylld åtgärd.",
     "home": "Hem",
     "loadMore": "Läs in fler",
     "loading": "Laddar...",
@@ -584,7 +586,7 @@
       "url": "Webbadress"
     },
     "login": {
-      "title": "Logga in"
+      "title": "Inloggning"
     },
     "note": {
       "title": "Anteckning"
@@ -823,7 +825,7 @@
       "namePlaceholderNote": "T.ex. Passinformation",
       "newAliasButtonText": "+ Nytt",
       "typeCard": "Kort",
-      "typeLogin": "Logga in"
+      "typeLogin": "Inloggning"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Alla objekt raderades permanent",
@@ -1025,7 +1027,7 @@
     "passwordCopied": "Lösenord kopierat",
     "passwordUnlockError": "Kunde inte verifiera lösenord",
     "pinConfirmSubtitle": "Ange din PIN-kod igen för att bekräfta",
-    "pinDeviceNotUnlocked": "Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.",
+    "pinDeviceNotUnlocked": "Din enhet har inte bekräftat att den är upplåst. Lås enheten, lås upp den med enhetens PIN-kod, mönster eller lösenord och försök sedan igen.",
     "pinIncorrectAttemptsRemaining": "Felaktig PIN-kod. {{count}} försök återstår",
     "pinLockedMaxAttempts": "PIN-koden låst efter för många misslyckade försök",
     "pinMismatch": "PIN-koderna matchar inte. Var god försök igen.",
@@ -1193,11 +1195,8 @@
     "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
     "enabledForThisSite": "Aktiverad för denna webbplats",
     "exportConfirmTitle": "Exportera valv",
-    "exportCsvButton": "Exportera valv till CSV-fil",
-    "exportSectionDescription": "Exportera dina valvdata till en CSV-fil. Denna fil kan användas som en säkerhetskopiering och kan även importeras till andra lösenordshanterare.",
     "exportSectionTitle": "Exportera",
     "exportWarning": "Varning: Exportering av ditt valv till en okrypterad fil kommer exponera alla dina lösenord och känslig information i ren text. Gör endast detta på enheter du litar på och se till att du:\n\n• Lagrar den exporterade filen på en säker plats\n• Raderar filen när du inte behöver den längre\n• Aldrig delar den exporterade filen med andra\n\nÄr du säker på att du vill fortsätta med exporteringen?",
-    "exporting": "Exporterar...",
     "general": {
       "aliasGenerationAgeRangeDescription": "Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.",
       "aliasGenerationGenderDescription": "Ställ in föredragen könspreferens för generering av nya identiteter.",
@@ -1361,7 +1360,7 @@
         "failedToChange": "Det gick inte att ändra lösenord. Försök igen.",
         "failedToChangePassword": "Det gick inte att ändra lösenord. Uppdatera sidan och försök igen.",
         "fillAllFields": "Var god fyll i alla fält",
-        "headerText": "Förändringar av ditt huvudlösenord ändrar också krypteringsnycklarna för valvet. Det rekommenderas att du regelbundet ändrar ditt huvudlösenord för att hålla dina valv säkra.",
+        "headerText": "Ändrar du huvudlösenordet så loggas du ut på övriga enheter.",
         "initiatingChange": "Initierar lösenordsändring...",
         "newPassword": "Nytt lösenord",
         "passwordChangedSuccessfully": "Lösenordet har ändrats.",
@@ -1415,6 +1414,15 @@
         "twoFactorEnabledSuccess": "Tvåfaktorsautentisering är nu aktiverat. På din nästa inloggning måste du ange din 2FA-kod.",
         "verificationCodePlaceholder": "Ange verifieringskod",
         "verifyAndEnableButton": "Verifiera och Aktivera"
+      },
+      "keyRotation": {
+        "acknowledge": "Jag har säkerhetskopierat mitt valv och loggat ut från mina övriga enheter",
+        "changePasswordAndRotate": "Ändra lösenord och rotera nycklar",
+        "optionRotateKeys": "Rotera även alla krypteringsnycklar",
+        "optionRotateKeysDescription": "Detta behövs endast om du misstänker att dina nycklar blivit exponerade, exempelvis om din enhet äventyrats eller blivit stulen. Åtgärden krypterar om ditt valv och loggar ut dig från övriga enheter.",
+        "riskAfterwards": "Efter detta loggar du in på dina övriga enheter och ställer in PIN, passkey eller biometrisk upplåsning igen.",
+        "riskBackup": "Exportera först en säkerhetskopia av ditt valv (Inställningar > Importera/Export). En nyckelrotation kan inte ångras.",
+        "riskSignOut": "Låt dina övriga enheter synka färdigt och logga sedan ut från dem. Osynkade förändringar, på enheter som förblir inloggade, går förlorade."
       },
       "passkeyUnlock": {
         "disableButton": "Inaktivera Passkey upplåsning",
@@ -1487,7 +1495,7 @@
     "unlockMethod": {
       "confirmPin": "Bekräfta PIN-kod",
       "confirmPinDescription": "Ange din PIN-kod igen för att bekräfta",
-      "enterNewPinDescription": "Ange en PIN-kod som består av minst 6 siffror",
+      "enterNewPinDescription": "Ange en PIN-kod på minst 6 tecken. Bokstäver och symboler är tillåtna.",
       "incorrectPin": "Felaktig PIN-kod. {{attemptsRemaining}} försök återstår.",
       "incorrectPinSingular": "Felaktig PIN-kod. 1 försök återstår.",
       "introText": "Välj hur du vill låsa upp ditt valv. Du kan använda ditt huvudlösenord (alltid tillgängligt) eller ange en PIN-kod för snabbare åtkomst. Efter 3 misslyckade PIN-försök måste du använda ditt huvudlösenord.",
