@@ -5,7 +5,7 @@ import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
+import { generateTotpCode, getTotpElapsedPercentage, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
 import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -42,21 +42,6 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
   const dbContext = useDb();
   const { t } = useTranslation();
   const recordItemCopy = useRecordItemCopy();
-
-  /**
-   * Get the remaining seconds in the current TOTP window.
-   */
-  const getRemainingSeconds = (step = 30): number => {
-    return step - (Math.floor(Date.now() / 1000) % step);
-  };
-
-  /**
-   * Get the remaining percentage.
-   */
-  const getRemainingPercentage = (): number => {
-    const remaining = getRemainingSeconds();
-    return Math.floor(((30.0 - remaining) / 30.0) * 100);
-  };
 
   /**
    * Copy the totp code to the clipboard.
@@ -209,13 +194,13 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
             </View>
             <View style={styles.timerContainer}>
               <ThemedText style={styles.timer}>
-                {getRemainingSeconds()}s
+                {getTotpRemainingSeconds(totpCode)}s
               </ThemedText>
               <View style={styles.progressBar}>
                 <View
                   style={[
                     styles.progressFill,
-                    { width: `${getRemainingPercentage()}%` }
+                    { width: `${getTotpElapsedPercentage(totpCode)}%` }
                   ]}
                 />
               </View>
