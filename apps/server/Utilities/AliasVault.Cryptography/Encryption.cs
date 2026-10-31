@@ -18,8 +18,8 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
 /// <summary>
-/// The server's encryption: AES-256-GCM (.NET) over email contents and RSA-OAEP-SHA256 (BouncyCastle, for the label
-/// support) of the symmetric keys for client public keys. The server never holds a private key.
+/// Server-side encryption for incoming email and the Login with Mobile payload.
+/// Actual vault contents are encrypted only on the clients and do not depend on this server-side logic.
 /// </summary>
 public static class Encryption
 {

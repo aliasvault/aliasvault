@@ -13,9 +13,9 @@ namespace AliasVault.Api.Helpers;
 public static class CiphertextHelper
 {
     /// <summary>
-    /// Smallest byte length a payload can have and still be AES-GCM ciphertext (IV + auth tag overhead).
+    /// Smallest byte length a payload can have and still be AES-GCM ciphertext (12-byte IV + 16-byte auth tag).
     /// </summary>
-    private const int MinCiphertextLength = 16;
+    private const int MinCiphertextLength = 28;
 
     /// <summary>
     /// Checks that the bytes are long enough to be AES-GCM ciphertext.

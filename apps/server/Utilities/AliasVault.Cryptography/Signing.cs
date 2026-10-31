@@ -12,8 +12,7 @@ using System.Text;
 using Org.BouncyCastle.Math.EC.Rfc8032;
 
 /// <summary>
-/// Verifies Ed25519 signatures made by account signing keys. Clients sign in the Rust core
-/// (<c>core/rust/src/crypto/signing.rs</c>); the message encoding and the labels here must match it byte for byte.
+/// Verifies Ed25519 signatures made by account signing keys via the Rust core.
 /// </summary>
 public static class Signing
 {

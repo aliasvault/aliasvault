@@ -14,17 +14,11 @@ export type KeyDerivationUpgradeApi = {
 
 /** What a host passes in right after a password login. */
 export type KeyDerivationUpgradeInput = {
-  /** The API client, holding the new session's tokens. */
   webApi: KeyDerivationUpgradeApi;
-  /** The derivation parameters the login used. */
   params: UnlockKeyDerivationParams;
-  /** The unlock key the login derived. */
   unlockKeyBase64: string;
-  /** The Account Key encrypted with the KEK of that unlock key. */
   encryptedAccountKey: string;
-  /** Derives the unlock key from the master password under the given salt and settings. */
   deriveUnlockKey: (salt: string, encryptionSettings: string) => Promise<string>;
-  /** The username, the SRP identity fallback for older servers. */
   username: string;
 };
 
@@ -38,8 +32,7 @@ export type KeyDerivationUpgradeResult = {
 
 /**
  * Raises the key derivation settings of an account created before the current defaults, right after a password login.
- * The password and salt stay the same, so other devices are not affected. The new settings are always the client's own
- * defaults, never settings the server suggests.
+ * The password and salt stay the same, so other devices are not affected.
  */
 export class KeyDerivationUpgradeService {
   /**

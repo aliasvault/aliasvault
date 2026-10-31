@@ -1,8 +1,11 @@
+/*
+ * Polyfill for crypto.randomUUID, which the shared TypeScript core (core/client) calls but
+ * React Native does not provide.
+ */
 import 'react-native-get-random-values';
 
-/*
- * The part of Web Crypto the client core calls that Hermes lacks: randomUUID.
- * getRandomValues comes from react-native-get-random-values.
+/**
+ * The crypto global as it exists on mobile, before randomUUID is added.
  */
 type MobileCrypto = {
   getRandomValues<T extends ArrayBufferView | null>(array: T): T;

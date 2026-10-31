@@ -184,6 +184,11 @@ extension VaultStore {
         return try? RustCoreFramework.accountSigningKeyFingerprint(encryptedSigningPrivateKey: encryptedSigningPrivateKey, accountKey: accountKey)
     }
 
+    /// Encrypts the Account Key with a mobile login request's RSA public key (JWK JSON) for the receiving client, as base64.
+    public func encryptAccountKeyForMobileLogin(publicKeyJWK: String) throws -> String {
+        return try RustCoreFramework.mobileLoginEncryptAccountKey(accountKey: try getAccountKey(), publicKeyJwk: publicKeyJWK)
+    }
+
     /// Verify the password offline and return its unlock key (base64), or nil when it does not open the key chain.
     public func verifyPassword(_ password: String) -> String? {
         do {
