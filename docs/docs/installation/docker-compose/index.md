@@ -211,3 +211,21 @@ If you have multiple mail domains, use a single certificate with Subject Alterna
 
 ## 4. Troubleshooting
 For more detailed troubleshooting information, please refer to the [troubleshooting guide](./troubleshooting.md).
+
+---
+
+## 5. Support the project
+Enjoying AliasVault? Please consider helping out the project by leaving a review for our apps, so more people get to discover AliasVault:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/aliasvault/bmoggiinmnodjphdjnmpcnlleamkfedj)
+- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aliasvault/)
+- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aliasvault/kabaanafahnjkfkplbnllebdmppdemfo)
+- [Safari extension (Mac App Store)](https://apps.apple.com/app/id6743163173)
+- [iOS App Store](https://apps.apple.com/us/app/aliasvault/id6745490915)
+- [Google Play Store](https://play.google.com/store/apps/details?id=net.aliasvault.app)
+
+AliasVault is fully free to self-host, with no license fees. If you wish to financially support the further development and maintenance of AliasVault, we welcome voluntary donations via [Open Collective](https://opencollective.com/aliasvault) or [Buy Me a Coffee](https://www.buymeacoffee.com/lanedirt). Donations help us keep AliasVault free for those who can't afford it, making privacy accessible to more people.
+
+To hear about new releases and updates, follow AliasVault on [Mastodon](https://mastodon.social/@aliasvault), [Reddit](https://www.reddit.com/r/AliasVault/), [X](https://x.com/AliasVault), [YouTube](https://www.youtube.com/@AliasVault) or [Facebook](https://www.facebook.com/aliasvault), join the [Discord](https://discord.gg/DsaXMTEtpF) community, and star the project on [GitHub](https://github.com/aliasvault/aliasvault).
+
+Found an issue or have a suggestion? [Create a new issue](https://github.com/aliasvault/aliasvault/issues/new/choose) on GitHub, or upvote an [existing issue](https://github.com/aliasvault/aliasvault/issues) so we know what matters most to you.
