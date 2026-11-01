@@ -6,7 +6,7 @@
 //!
 //! An identity consists of a first name, last name, gender, birth date, email prefix and nickname (username). Names are drawn
 //! from embedded per-language dictionaries; for languages with decade-based dictionaries (de, it, ro) the first name is
-//! matched to names that were popular around the generated birth year.
+//! matched to names that were popular in the decade nearest to the generated birth year.
 
 pub(crate) mod dictionaries;
 mod username_email;
@@ -29,7 +29,7 @@ const DEFAULT_MIN_AGE: i32 = 21;
 const DEFAULT_MAX_AGE: i32 = 65;
 
 /// The age range option values offered by the settings UIs; "random" means the default 21-65 range.
-const AGE_RANGES: &[&str] = &["random", "21-25", "26-30", "31-35", "36-40", "41-45", "46-50", "51-55", "56-60", "61-65"];
+const AGE_RANGES: &[&str] = &["random", "21-25", "26-30", "31-35", "36-40", "41-45", "46-50", "51-55", "56-60", "61-65", "66-70", "71-75", "76-80"];
 
 /// A generated identity.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -176,23 +176,16 @@ fn random_birth_date<R: Rng + ?Sized>(rng: &mut R, options: Option<BirthdateOpti
     start.checked_add_days(Days::new(unbiased_index(rng, days) as u64)).unwrap_or(start)
 }
 
-/// The first name pool for a birth year: matching decade lists, else all decade names, else the flat per-gender list.
+/// The first name pool for a birth year: the decade list nearest to it, else the flat per-gender list.
 fn select_firstnames_for_birth_year(dictionary: &'static dictionaries::LanguageDictionary, birth_year: i32, is_male: bool) -> Vec<&'static str> {
     let decades = if is_male { dictionary.firstnames_male_by_decade } else { dictionary.firstnames_female_by_decade };
+    let distance = |d: &dictionaries::DecadeNames| (d.start_year - birth_year).max(birth_year - d.end_year).max(0);
 
-    if !decades.is_empty() {
-        let matching: Vec<&'static str> = decades.iter().filter(|d| (d.start_year..=d.end_year).contains(&birth_year)).flat_map(|d| d.names()).collect();
-        if !matching.is_empty() {
-            return matching;
-        }
-
-        let all: Vec<&'static str> = decades.iter().flat_map(|d| d.names()).collect();
-        if !all.is_empty() {
-            return all;
-        }
+    match decades.iter().min_by_key(|d| distance(d)) {
+        Some(nearest) => nearest.names().collect(),
+        None if is_male => dictionary.firstnames_male(),
+        None => dictionary.firstnames_female(),
     }
-
-    if is_male { dictionary.firstnames_male() } else { dictionary.firstnames_female() }
 }
 
 /// The leading `yyyy` year of a date string or ISO 8601 timestamp, or `None` when absent.
