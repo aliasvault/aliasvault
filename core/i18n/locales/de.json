@@ -328,6 +328,7 @@
     "saving": "Wird gespeichert ...",
     "serviceName": "Name des Dienstes",
     "settings": "Einstellungen",
+    "share": "Share",
     "show": "Anzeigen",
     "showDetails": "Details anzeigen",
     "showPassword": "Passwort anzeigen",
@@ -586,7 +587,7 @@
       "url": "URL"
     },
     "login": {
-      "title": "Anmelden"
+      "title": "Anmeldedaten"
     },
     "note": {
       "title": "Notiz"
@@ -825,7 +826,7 @@
       "namePlaceholderNote": "z.B. Pass-Informationen",
       "newAliasButtonText": "+ Neu",
       "typeCard": "Karte",
-      "typeLogin": "Anmelden"
+      "typeLogin": "Anmeldedaten"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Alle Elemente endgültig gelöscht",
