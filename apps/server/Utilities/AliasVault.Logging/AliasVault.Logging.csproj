@@ -18,19 +18,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.14" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.14" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-      <PackageReference Include="Serilog" Version="4.4.0" />
-      <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-      <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-      <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" />
+      <PackageReference Include="Newtonsoft.Json" />
+      <PackageReference Include="Serilog" />
+      <PackageReference Include="Serilog.Extensions.Hosting" />
+      <PackageReference Include="Serilog.Settings.Configuration" />
+      <PackageReference Include="Serilog.Sinks.Console" />
+      <PackageReference Include="Serilog.Sinks.File" />
+      <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>

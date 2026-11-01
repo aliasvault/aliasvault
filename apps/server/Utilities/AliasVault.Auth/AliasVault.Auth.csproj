@@ -18,8 +18,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.14" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.14" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
       <AdditionalFiles Include="..\..\stylecop.json">
         <Link>stylecop.json</Link>
       </AdditionalFiles>
