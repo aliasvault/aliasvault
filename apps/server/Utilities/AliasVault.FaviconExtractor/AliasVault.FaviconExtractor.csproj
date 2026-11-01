@@ -26,14 +26,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
-      <PackageReference Include="SkiaSharp" Version="4.153.1" />
-      <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
-      <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PackageReference Include="HtmlAgilityPack" />
+      <PackageReference Include="SkiaSharp" />
+      <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+      <PackageReference Include="StyleCop.Analyzers">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="System.Drawing.Common" Version="10.0.14" />
+      <PackageReference Include="System.Drawing.Common" />
     </ItemGroup>
 
 </Project>
