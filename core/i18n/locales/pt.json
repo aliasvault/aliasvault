@@ -3,7 +3,7 @@
     "ACCOUNT_BLOCKED": "A sua conta foi desativada. Se acredita que foi um erro, por favor, entre em contacto com o suporte.",
     "ACCOUNT_LOCKED": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Conta eliminada com sucesso.",
-    "ALIAS_LIMIT_REACHED": "Atingiu o limite para criar pseudónimos de e-mail. Por favor, tente novamente mais tarde ou contacte o suporte se precisar de mais.",
+    "ALIAS_LIMIT_REACHED": "Atingiu o limite para criar aliases de e-mail. Por favor, tente novamente mais tarde ou contacte o suporte se precisar de mais.",
     "CLAIM_DOES_NOT_EXIST": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, tente editar e guardar a credencial para sincronizar com a base de dados, e tente novamente.",
     "CLAIM_TAKEN": "Este endereço de e-mail já está é usado por outra conta. Edite este item e escolha um endereço de e-mail diferente.",
     "INTERNAL_SERVER_ERROR": "Erro interno do servidor.",
@@ -55,7 +55,7 @@
       "title": "Página não encontrada"
     },
     "reinitialize": {
-      "attemptingToUnlockMessage": "Tentando desbloquear.",
+      "attemptingToUnlockMessage": "A tentar desbloquear.",
       "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período."
     },
     "status": {
@@ -133,7 +133,7 @@
     "masterPassword": "Senha Mestra",
     "maxAttemptsReached": "Muitas tentativas de desbloqueio falharam. Foi desconectado por motivos de segurança.",
     "mobileUnlock": {
-      "scanQrCodeDescription": "Digitalize este código QR com a sua aplicação AliasVault para o dispositivo móvel para entrar e desbloquear o seu cofre."
+      "scanQrCodeDescription": "Leia este código QR com a sua aplicação AliasVault para o dispositivo móvel para entrar e desbloquear o seu cofre."
     },
     "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "noAccountYet": "Não possui conta?",
@@ -148,7 +148,7 @@
       "usernameOrEmailLabel": "O seu nome de utilizador ou e-mail"
     },
     "rememberMe": "Lembrar-me",
-    "scanQrCode": "Digitalize este código QR com a sua aplicação AliasVault para o dispositivo móvel para entrar e desbloquear o seu cofre.",
+    "scanQrCode": "Leia este código QR com a sua aplicação AliasVault para o dispositivo móvel para entrar e desbloquear o seu cofre.",
     "setup": {
       "createAccountButton": "Criar Conta",
       "creatingStepTitle": "Criando Cofre",
@@ -803,7 +803,7 @@
       "includeSpecialCharsLabel": "Incluir caracteres especiais (!@#$%^&*)",
       "includeUppercaseLabel": "Incluir letras maiúsculas (A-Z)",
       "passwordLengthLabel": "Tamanho da Senha: {{length}}",
-      "previewLabel": "Prévia",
+      "previewLabel": "Pré-visualização",
       "saveGloballyButton": "Guardar Globalmente",
       "settingsUpdatedMessage": "Configurações do gerador de senhas atualizadas globalmente.",
       "useJustOnceButton": "Usar Apenas Uma Vez"
@@ -813,10 +813,10 @@
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
     "privateEmailTitle": "E-mail Privado",
-    "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
+    "publicEmailDescription": "Anónimo, mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "quickCreate": {
-      "createItemErrorMessage": "Erro ao criar um novo item. Por favor, tente novamente (mais tarde), ou saia e entre novamente.",
+      "createItemErrorMessage": "Erro ao criar um item. Por favor, tente novamente (mais tarde), ou saia e entre novamente.",
       "createNewAliasTitle": "Criar Novo Alias",
       "createNewCreditCardTitle": "Criar Novo Cartão",
       "createNewLoginTitle": "Criar Novo Login",
@@ -1099,7 +1099,7 @@
   },
   "settings": {
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Ativado em todos os sites (a menos que esteja desabilitado abaixo)",
+    "activeOnAllSites": "Ativado em todos os sites (a menos que esteja desativado abaixo)",
     "advancedOptions": "Opções Avançadas",
     "androidAutofillSettings": {
       "buttonTip": "Se o botão acima não funcionar pode estar bloqueado pelas configurações de segurança. Pode ir manualmente às Configurações do Android → Configurações Gerais → Senhas e preenchimento automático.",
@@ -1107,7 +1107,7 @@
       "headerText": "Pode configurar o AliasVault para prover a funcionalidade de preenchimento automático de senhas e passkeys no Android. Siga as instruções abaixo para ativar.",
       "openAutofillSettings": "Abrir Configurações de Preenchimento Automático",
       "showSearchText": "Mostrar busca por texto",
-      "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e que é usado para pesquisar credenciais relacionadas",
+      "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e é usado para pesquisar credenciais relacionadas",
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de preenchimento automático preferido\" para \"AliasVault\"",
       "step2": "2. Algumas aplicações, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para ativar preenchimento automático de aplicações terceiros. Porém, a maioria dos (aplicações) deve funcionar com preenchimento automático por padrão."
     },
@@ -1115,10 +1115,10 @@
     "appVersion": "App version",
     "appearance": "Aparência",
     "apps": {
-      "browserExtensionsDescription": "A extensão de navegador do AliasVault permite que você realize o preenchimento automático de credenciais existentes em qualquer site. Ela também permite que você crie novos aliases enquanto se registra, acesse e-mails em todos os seus aliases, e visualize seus aliases e identidades.",
+      "browserExtensionsDescription": "A extensão de navegador do AliasVault permite que realize o preenchimento automático de credenciais existentes em qualquer site. Ela também permite que você crie novos aliases enquanto se regista, acesse e-mails em todos os seus aliases, e visualize os seus aliases e identidades.",
       "browserExtensionsTitle": "Extensão de Navegador",
       "comingSoonText": "Em breve",
-      "downloadButton": "Bransferir",
+      "downloadButton": "Transferir",
       "installButton": "Instalar",
       "mobileAppsDescription": "As aplicações móveis do AliasVault permitem aceder aos seus aliases e identidades, visualizar e gerar os e-mails recebidos, e gerir novos aliases a qualquer momento. Os seus dados estão totalmente protegidos com a autenticação biométrica do dispositivo.",
       "mobileAppsTitle": "Aplicações Móveis",
@@ -1144,7 +1144,7 @@
     "autoLockTimeoutDescription": "Bloquear o cofre automaticamente após período de inatividade",
     "autoLockTimeoutHelp": "O cofre será bloqueado apenas após o período de inatividade especificado (nenhuma utilização de preenchimento automático ou pop-up da extensão abertos). O cofre sempre será bloqueado quando o navegador for fechado, independentemente desta configuração.",
     "autofill": "Preenchimento Automático & Passkeys",
-    "autofillDisabledDescription": "Sugestões de preenchimento automático estão desabilitadas globalmente",
+    "autofillDisabledDescription": "Sugestões de preenchimento automático estão desativadas globalmente",
     "autofillEnabled": "Ativar o Preenchimento Automático",
     "autofillEnabledDescription": "Sugestões de preenchimento automático aparecerão em formulários de login",
     "autofillMatching": "Correspondência de Preenchimento Automático",
@@ -1154,22 +1154,22 @@
     "autofillMatchingUrlExact": "Apenas URL exato do domínio",
     "autofillMatchingUrlSubdomain": "URL + subdomínio",
     "autofillSettings": "Configurações de Preenchimento Automático",
-    "autofillSettingsDescription": "Ative ou desabilite o popup de preenchimento automático em páginas web",
+    "autofillSettingsDescription": "Ative ou desative o popup de preenchimento automático em páginas web",
     "autofillSetup": {
       "alreadyConfigured": "Já configurei",
       "howToEnable": "Como ativar Preenchimento Automático & Passkeys:"
     },
     "batteryOptimizationActive": "Otimização de bateria está bloqueando tarefas em background",
     "batteryOptimizationDisabled": "Limpeza da área de transferência em background ativada",
-    "batteryOptimizationHelpDescription": "A otimização de bateria do Android previne a limpeza correta da área de transferência enquanto a aplicação está em background. Desabilitar a otimização de bateria para o AliasVault permite a limpeza correta da área de transferência em background e automaticamente autoriza as permissões de alarme.",
+    "batteryOptimizationHelpDescription": "A otimização de bateria do Android previne a limpeza correta da área de transferência enquanto a aplicação está em background. Desativar a otimização de bateria para o AliasVault permite a limpeza correta da área de transferência em background e automaticamente autoriza as permissões de alarme.",
     "batteryOptimizationHelpTitle": "Ativar Limpeza de Área de Transferência no Background",
-    "clearAllDisabledSites": "Limpar todos os sites desabilitados",
+    "clearAllDisabledSites": "Limpar todos os sites desativados",
     "clientUrlHint": "O URL da interface web da sua instância self-hosted",
     "clipboardClear": "Limpar área de transferência",
     "clipboardClear10Seconds": "Limpar após 10 segundos",
     "clipboardClear15Seconds": "Limpar após 15 segundos",
     "clipboardClear5Seconds": "Limpar após 5 segundos",
-    "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência ativado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desabilitar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
+    "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência ativado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desativadar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
     "clipboardClearDescription": "Limpa automaticamente as senhas e dados sensíveis copiados da sua área de transferência após o tempo especificado.",
     "clipboardClearDisabled": "Nunca limpar",
     "clipboardClearOptions": {
@@ -1178,21 +1178,21 @@
     "clipboardClearTimeout": "Limpar área de transferência após copiar",
     "clipboardClearTimeoutDescription": "Limpar automaticamente a área de transferência após copiar dados sensíveis",
     "clipboardLocalOnly": "Apenas área de transferência local",
-    "clipboardLocalOnlyDescription": "Mantenha as credenciais copiadas neste dispositivo ao invés de sincronizá-las para seus outros dispositivos Apple através da Área de Transferência Universal.",
-    "clipboardLocalOnlyDisabledWarning": "Com esta opção desativada, credenciais copiadas podem ser sincronizadas para seus dispositivos Apple (Mac, iPad, etc.) através da Área de Transferência Universal.",
+    "clipboardLocalOnlyDescription": "Mantenha as credenciais copiadas neste dispositivo ao invés de sincronizá-las para os seus outros dispositivos Apple através da Área de Transferência Universal.",
+    "clipboardLocalOnlyDisabledWarning": "Com esta opção desativada, credenciais copiadas podem ser sincronizadas para os seus dispositivos Apple (Mac, iPad, etc.) através da Área de Transferência Universal.",
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
     "contextMenuSettings": "Configurações do Menu de Contexto",
-    "copyTotpOnFill": "Copiar código de dois fatores ao autopreencher",
+    "copyTotpOnFill": "Copiar código de dois fatores ao auto preencher",
     "copyTotpOnFillDescription": "Quando utilizar o preenchimento automático com uma credencial que tenha 2FA, copia automaticamente o código de dois fatores para a área de transferência para você poder colar no próximo campo.",
     "credentialAutofill": "Preenchimento automático de credenciais",
-    "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
+    "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detetados",
     "customApiUrl": "URL da API",
     "customClientUrl": "URL do Cliente",
     "dark": "Escuro",
-    "disableBatteryOptimization": "Desabilitar otimização de bateria",
-    "disabledForThisSite": "Desabilitado para este site",
+    "disableBatteryOptimization": "Desativar otimização de bateria",
+    "disabledForThisSite": "Desativado para este site",
     "disabledOnAllSites": "Desativado em todos os sites",
-    "disabledSites": "Sites desabilitados",
+    "disabledSites": "Sites desativados",
     "disabledSitesDescription": "Sites onde o popup de preenchimento automático não vão aparecer.",
     "enabledForThisSite": "Ativado para este site",
     "exportConfirmTitle": "Exportar Cofre",
@@ -1200,7 +1200,7 @@
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto. Realize isso apenas em dispositivos confiados e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Selecione a faixa etária padrão para geração de novas identidades. Isto afeta a data de nascimento associada à identidade gerada.",
-      "aliasGenerationGenderDescription": "Configure o gênero padrão que será utilizado para gerar novas identidades.",
+      "aliasGenerationGenderDescription": "Configure o género padrão que será utilizado para gerar novas identidades.",
       "aliasGenerationLanguageDescription": "Configure o idioma padrão que será utilizado ao gerar novas identidades.",
       "appLanguageDescription": "Configure o idioma da interface da aplicação.",
       "appLanguageTitle": "Idioma da Aplicação",
@@ -1229,8 +1229,8 @@
     "identityGeneratorSettings": {
       "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
       "ageRangeSection": "Faixa Etária",
-      "description": "Configure o idioma padrão e preferência de gênero para geração de novas identidades.",
-      "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
+      "description": "Configure o idioma padrão e preferência de género para a geração de novas identidades.",
+      "genderDescription": "Defina a preferência de género para geração de novas identidades.",
       "genderOptions": {
         "female": "Feminino",
         "male": "Masculino",
@@ -1250,7 +1250,7 @@
       "step2": "2. Vá até \"Geral\"",
       "step3": "3. Clique \"Preenchimento Automático & Senhas\"",
       "step4": "4. Ative \"AliasVault\"",
-      "step5": "5. Desabilite outros provedores de senha (ex. \"iCloud Passwords\") para evitar conflitos"
+      "step5": "5. Desative outros provedores de senha (ex. \"iCloud Passwords\") para evitar conflitos"
     },
     "keyboardShortcuts": "Atalhos do Teclado",
     "language": "Idioma",
@@ -1261,7 +1261,7 @@
       "blockedSites": "Sites bloqueados",
       "blockedSitesDescription": "Sites onde o prompt para guardar nunca vão aparecer.",
       "clearAllBlockedSites": "Limpar todos os sites bloqueados",
-      "description": "Mostra um prompt para guardar credenciais de login quando você faz login em algum website.",
+      "description": "Mostra um prompt para guardar credenciais de login quando faz login em algum website.",
       "title": "Guardar Prompt de Login"
     },
     "openSettings": "Abrir Configurações",
@@ -1288,8 +1288,8 @@
         "selectCode": "Tap the number shown on the other device",
         "successDescription": "O login no dispositivo remoto foi feito com sucesso."
       },
-      "scanningMessage": "Escanear código QR do AliasVault",
-      "title": "Escaneador de Código QR"
+      "scanningMessage": "Leia o código QR do AliasVault",
+      "title": "Leitor de Código QR"
     },
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
     "resetVault": {
@@ -1297,7 +1297,7 @@
       "resetVaultConfirmButton": "Repor o meu cofre",
       "resetVaultConfirmUsernameLabel": "Para continuar, por favor insira o seu nome de utilizador para confirmar",
       "resetVaultContinueButton": "Continuar com a reposição do cofre",
-      "resetVaultDeletionIrreversibleNote": "Esta exclusão é irreversível e não pode ser desfeita",
+      "resetVaultDeletionIrreversibleNote": "A eliminação é irreversível e não pode ser desfeita",
       "resetVaultEmailAliasesKeptNote": "Os seus aliases de e-mail serão preservados e podem ser reutilizados após repor o seu cofre",
       "resetVaultEnterPasswordLabel": "Insira a sua senha para confirmar",
       "resetVaultErrorMessage": "Ocorreu um erro ao repor o cofre. Por favor, tente novamente.",
@@ -1327,7 +1327,7 @@
         "noSessions": "Nenhuma sessão ativa",
         "noSessionsMessage": "Nenhuma sessão ativa encontrada.",
         "revoke": "Revogar",
-        "revokeConfirmation": "Tem certeza que quer revogar esta sessão? Isso vai deslogar sua conta do dispositivo selecionado.",
+        "revokeConfirmation": "Tem certeza que quer revogar esta sessão? Isso vai fechar a sessão da sua conta no dispositivo selecionado.",
         "revokeExceptionMessage": "Falha ao revogar sessão: {{error}}.",
         "revokeSession": "Revogar Sessão",
         "revokeSuccessMessage": "Sessão revogada com sucesso.",
@@ -1337,18 +1337,18 @@
       "authLogs": {
         "client": "Cliente",
         "deviceColumn": "Dispositivo",
-        "eventTypeColumn": "Tipo de Evento",
+        "eventTypeColumn": "Categoria de Evento",
         "failed": "Falha",
-        "failedToLoad": "Falha ao carregar registros de autenticação",
-        "headerText": "Abaixo você pode ter uma visão de tentativas de login recentes na sua conta.",
+        "failedToLoad": "Falha ao carregar registos de autenticação",
+        "headerText": "Abaixo pode ter uma visão de tentativas de login recentes na sua conta.",
         "ipAddress": "Endereço IP",
-        "noLogs": "Nenhum registro de autenticação encontrado",
+        "noLogs": "Nenhum registo de autenticação encontrado",
         "noLogsMessage": "Não foram encontrados logs de autenticação.",
         "success": "Sucesso",
         "time": "Horário",
         "timestampColumn": "Horário"
       },
-      "changeMasterPassword": "Alterar Senha Mestre",
+      "changeMasterPassword": "Alterar Senha Mestra",
       "changePassword": {
         "changePassword": "Mudar Senha",
         "changingPasswordMessage": "Alterando senha...",
@@ -1367,11 +1367,11 @@
         "passwordChangedSuccessfully": "Senha atualizada com sucesso",
         "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Novas senhas não são iguais",
-        "userNotAuthenticated": "Usuário não está autenticado"
+        "userNotAuthenticated": "Utilizador não está autenticado"
       },
       "deleteAccount": {
-        "accountDeleted": "Conta excluída com sucesso",
-        "confirmUsernameLabel": "Confirmar nome de usuário",
+        "accountDeleted": "Conta eliminada com sucesso",
+        "confirmUsernameLabel": "Confirmar nome de utilizador",
         "confirmationMessage": "Tem certeza que deseja eliminar a sua conta? Esta operação não pode ser desfeita.",
         "continueWithAccountDeletion": "Continuar com Exclusão de Conta",
         "deleteAccount": "Eliminar Conta",
@@ -1384,27 +1384,27 @@
         "failedToDelete": "Falha ao eliminar conta. Por favor tente novamente.",
         "finalWarning": "Aviso final: Insira a sua senha para eliminar a sua conta permanentemente.",
         "headerText": "Eliminar a sua conta eliminará imediatamente e permanentemente todos os seus dados.",
-        "initiatingDeletion": "Inicializando exclusão de conta",
+        "initiatingDeletion": "A iniciar a eliminação da conta",
         "irreversibleWarning": "Exclusão de conta é irreversível e não pode ser desfeita. Pressionado o botão abaixo eliminará a sua conta imediatamente e permanentemente.",
         "permanentActionWarning": "Aviso: Esta ação é permanente e não poderá ser desfeita. Todos os seus dados serão permanentemente eliminados.",
-        "usernameDoesNotMatch": "Usuário não coincide",
+        "usernameDoesNotMatch": "Utilizador não coincide",
         "usernameMismatchDescription": "O nome de utilizador inserido não corresponde ao seu nome de utilizador atual. Por favor, tente novamente.",
         "verifyingWithServer": "Verificando com o servidor",
-        "warningAliases": "Seus alias de e-mail ficarão órfãos e não poderão ser utilizados por outros usuários",
-        "warningRecovery": "Sua conta não pode ser recuperada após excluída",
+        "warningAliases": "Seus aliases de e-mail ficarão órfãos e não poderão ser utilizados por outros utilizadores",
+        "warningRecovery": "A sua conta não pode ser recuperada após excluída",
         "warningText": "Aviso: Esta ação não pode ser desfeita. Todos os seus dados serão eliminados permanentemente.",
         "warningVaults": "Todos os cofres criptografados que incluem todas as suas credenciais serão permanentemente eliminados"
       },
       "deleteAccountSection": {
         "description": "Eliminar permanentemente a sua conta e todos os dados associados. Isto não pode ser desfeito."
       },
-      "description": "Gerencie as configurações de sua conta e de segurança do seu cofre.",
+      "description": "Gere as configurações da sua conta e de segurança do seu cofre.",
       "disable2fa": {
-        "confirmDisableButton": "Confirmar Desabilitar a Autenticação de Dois Fatores",
-        "failedToDisable2Fa": "Falha ao desabilitar autenticação de dois fatores.",
-        "pageDescription": "Desabilitar a autenticação de dois fatores significa que você poderá fazer login apenas com sua senha.",
-        "pageTitle": "Desabilitar autenticação de dois fatores",
-        "twoFactorDisabledSuccess": "Autenticação de dois fatores foi desabilitada com sucesso.",
+        "confirmDisableButton": "Confirmar Desativar a Autenticação de Dois Fatores",
+        "failedToDisable2Fa": "Falha ao desativar autenticação de dois fatores.",
+        "pageDescription": "Desativar a autenticação de dois fatores significa que poderá fazer login apenas com a sua senha.",
+        "pageTitle": "Desativar autenticação de dois fatores",
+        "twoFactorDisabledSuccess": "Autenticação de dois fatores foi desativada com sucesso.",
         "twoFactorNotEnabled": "Autenticação de dois fatores não está ativada."
       },
       "enable2fa": {
@@ -1426,23 +1426,23 @@
         "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
       },
       "passkeyUnlock": {
-        "disableButton": "Desabilitar Desbloqueio com Passkey",
+        "disableButton": "Desativar Desbloqueio com Passkey",
         "disabledDescription": "Por padrão, atualizar a página ou aba do AliasVault requer que você insire a sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando ativado, sua senha mestre é criptografada localmente usando a extensão PRF da passkey. Nota: a passkey funcionará apenas no dispositivo atual e navegador em que você ativar.",
         "enableButton": "Ativar Desbloqueio com Passkey",
         "enableErrorMessage": "Ocorreu um erro ao tentar ativar o Desbloqueio Rápido do Cofre. Por favor, tente novamente (mais tarde).",
-        "enabledDescription": "Sua senha mestre é criptografada com passkey PRF e armazenada localmente. Quando você atualiza a página ou aba do AliasVault, você pode desbloquear seu cofre com sua passkey. Se você deseja desabilitar o desbloqueio por passkey, você pode utilizar o botão abaixo. Sua senha mestre ainda funcionará para desbloquear o cofre.",
-        "experimentalWarning": "Esta função é suportada pela extensão de navegador e aplicação iOS do AliasVault. Suporte para Android será adicionado em breve. Se você tiver qualquer problema, você pode desabilitar esta função a qualquer momento.",
-        "successDisabledMessage": "Desbloqueio por Passkey foi desabilitado com sucesso.",
-        "successEnabledMessage": "Desbloqueio com passkey foi ativado com sucesso. Na próxima vez que seu cofre for bloqueado, você poderá desbloqueá-lo com a passkey criada.",
+        "enabledDescription": "Sua senha mestre é criptografada com passkey PRF e armazenada localmente. Quando você atualiza a página ou aba do AliasVault, você pode desbloquear seu cofre com sua passkey. Se você deseja desativar o desbloqueio por passkey, você pode utilizar o botão abaixo. Sua senha mestre ainda funcionará para desbloquear o cofre.",
+        "experimentalWarning": "Esta função é suportada pela extensão de navegador e aplicação iOS do AliasVault. Suporte para Android será adicionado em breve. Se tiver qualquer problema, pode desativar esta função a qualquer momento.",
+        "successDisabledMessage": "Desbloqueio por Passkey foi desativado com sucesso.",
+        "successEnabledMessage": "Desbloqueio com passkey foi ativado com sucesso. Na próxima vez que o seu cofre for bloqueado, poderá desbloqueá-lo com a passkey criada.",
         "title": "Desbloqueio com Passkey",
-        "webAuthnNotSupportedError": "Seu navegador atual não tem suporte ao WebAthn com extensão PRF. Por favor, tente novamente em um navegador diferente."
+        "webAuthnNotSupportedError": "O navegador atual não tem suporte ao WebAthn com extensão PRF. Por favor, tente novamente num navegador diferente."
       },
       "recentAuthLogs": "Logs de Autenticação Recente",
       "recoveryCodes": {
-        "description": "Os códigos de recuperação abaixo são utilizados para acessar sua conta em caso de você perder acesso ao seu dispositivo autenticador. Faça uma foto ou escreva-os e armazene-os em um local seguro. Não compartilhe-os com ninguém.",
+        "description": "Os códigos de recuperação abaixo são utilizados para aceder à sua conta em caso de você perder acesso ao seu dispositivo autenticador. Faça uma foto ou escreva-os e armazene-os num local seguro. Não os compartilhe com ninguém.",
         "title": "Códigos de recuperação",
-        "warningDescription": "Se você perder seu dispositivo e não tiver os códigos de recuperação, você perderá acesso à sua conta. Estes códigos só serão mostrados uma única vez!",
-        "warningTitle": "Armazene estes códigos de recuperação em um local seguro."
+        "warningDescription": "Se perder o seu dispositivo e não tiver os códigos de recuperação, perderá acesso à sua conta. Estes códigos só serão mostrados uma única vez!",
+        "warningTitle": "Armazene estes códigos de recuperação num local seguro."
       },
       "twoFactor": {
         "disabledMessage": "A autenticação de dois fatores está desativada no momento. Para melhorar a segurança da sua conta, recomendamos que você a ative.",
@@ -1499,12 +1499,12 @@
       "enterNewPinDescription": "Enter a PIN of at least 6 characters. Letters and symbols are allowed.",
       "incorrectPin": "PIN incorreto. {{attemptsRemaining}} tentativas restantes.",
       "incorrectPinSingular": "PIN incorreto. 1 tentativa restante.",
-      "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar sua senha mestre (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, você deverá utilizar sua senha mestre.",
+      "introText": "Escolha como quer desbloquear o seu cofre. Pode utilizar a sua senha mestra (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, deverá utilizar a sua senha mestra.",
       "invalidPinFormat": "Formato de PIN inválido",
       "pinDescription": "Desbloquear cofre com código PIN",
-      "pinLocked": "Desbloqueio por PIN foi desabilitado. Por favor, utilize sua senha mestre para desbloquear o cofre.",
+      "pinLocked": "Desbloqueio por PIN foi desativado. Por favor, utilize a sua senha mestra para desbloquear o cofre.",
       "pinMismatch": "PINs não correspondem",
-      "pinSecurityWarning": "Desbloqueio por PIN na extensão de navegador pode ser menos segura que sua senha mestre, uma vez que PINs geralmente tem uma entropia menor e podem ser vulneráveis à tentativas forçadas caso seu dispositivo esteja comprometido. Utilize apenas em dispositivos que tenha total confiança.",
+      "pinSecurityWarning": "Desbloqueio por PIN na extensão de navegador pode ser menos segura que a sua senha mestra, visto que PINs geralmente tem uma entropia menor e podem ser vulneráveis à tentativas forçadas caso o seu dispositivo esteja comprometido. Utilize apenas em dispositivos que tenha total confiança.",
       "setupPin": "Configurar Código PIN"
     },
     "useDefault": "Utilizar padrão",
@@ -1518,7 +1518,7 @@
     "vaultUnlockSettings": {
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro ative nas configurações do seu dispositivo.",
       "biometricEnabled": "{{biometric}} foi ativado com sucesso",
-      "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
+      "biometricHelp": "Utilize biometria para desbloquear o seu cofre, que está protegido por {{keystore}}.",
       "biometricNotAvailable": "{{biometric}} Não Disponível",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para ativar e configurar.",
       "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
@@ -1529,10 +1529,10 @@
       "featureRequiresPasscode": "Este recurso requer uma senha para ser ativado no seu dispositivo.",
       "keystoreAndroid": "Android Keystore",
       "keystoreIOS": "iOS Keychain",
-      "passwordHelp": "Re-insira a sua senha mestra para desbloquear o seu cofre. Isso sempre estará disponível como uma opção alternativa.",
+      "passwordHelp": "Reinsira a sua senha mestra para desbloquear o seu cofre. Isso sempre estará disponível como uma opção alternativa.",
       "pin": "Código PIN",
-      "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
-      "pinDisabled": "Desbloqueio por PIN foi desabilitado",
+      "pinDescription": "Utilize um código PIN para desbloquear o seu cofre mais rapidamente.",
+      "pinDisabled": "Desbloqueio por PIN foi desativado",
       "pinEnabled": "Desbloqueio por PIN ativado com sucesso",
       "touchId": "Touch ID"
     },
@@ -1545,7 +1545,7 @@
       "errorTitle": "Erro ao descodificar o cofre."
     },
     "decrypting": {
-      "description": "Por favor, aguarde enquanto seu cofre é inicializado. Este processo pode demorar um pouco.",
+      "description": "Por favor, aguarde enquanto o seu cofre é inicializado. Este processo pode demorar um pouco.",
       "title": "Descodificação do cofre em andamento"
     },
     "offline": "Offline",
@@ -1554,8 +1554,8 @@
     },
     "pending": "Sincronização pendente",
     "stillOffline": "Ainda está offline",
-    "syncFailed": "Sincronização falhou",
-    "syncing": "Sincronizando...",
+    "syncFailed": "A sincronização falhou",
+    "syncing": "A sincronizar...",
     "tapToRetry": "Toque para tentar sincronizar novamente",
     "versionNotSupported": {
       "contactSupport": "If the issue persists, contact our support team for help.",
@@ -1580,17 +1580,17 @@
     "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
-      "scanFailed": "Falha ao escanear código QR. Por favor, tente novamente."
+      "scanFailed": "Falha ao ler código QR. Por favor, tente novamente."
     },
     "instructions": "Insira a chave secreta exibida pelo website onde quer adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
     "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
     "period": "Time step",
     "saveToViewCode": "Guardar para ver o código",
-    "scanQrCode": "Escanear Código QR",
+    "scanQrCode": "Ler Código QR",
     "secretKey": "Chave Secreta",
     "secretKeyPlaceholder": "Insira a chave secreta (manualmente)",
-    "totpInstructions": "Se o site oferece ou requer 2FA para sua conta, copie a chave secreta ou o URI do QR cole-o e cole abaixo.",
+    "totpInstructions": "Se o site oferece ou requer 2FA para a sua conta, copie a chave secreta ou o URI do QR cole-o e cole abaixo.",
     "viewer": {
       "noTotpCodesMessage": "Nenhum código de autenticação de dois fatores disponível"
     }
@@ -1600,7 +1600,7 @@
       "continueUpgrade": "Continuar Atualização",
       "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})",
       "selfHostedServer": "Servidor Self-Hosted",
-      "selfHostedWarning": "Se você está utilizando um servidor self-hosted, faça também a atualização da instância self-hosted, caso contrário o login no cliente web vai parar de funcionar.",
+      "selfHostedWarning": "Se você está a utilizar um servidor self-hosted, faça também a atualização da instância self-hosted, caso contrário o login no cliente web vai parar de funcionar.",
       "unableToGetVersionInfo": "Não foi possível solicitar informações da versão. Por favor, tente novamente.",
       "upgradeFailed": "Atualização Falhou"
     },
@@ -1611,8 +1611,8 @@
     "status": {
       "applyingDatabaseMigrations": "Aplicando migrações do banco de dados...",
       "applyingMigration": "Aplicando migração {{current}} de {{total}}...",
-      "committingChanges": "Confirmando mudanças...",
-      "preparingUpgrade": "Preparando atualização..."
+      "committingChanges": "A confirmar as mudanças...",
+      "preparingUpgrade": "A preparar atualização..."
     },
     "subtitle": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isso deve levar apenas alguns segundos.",
     "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
@@ -1620,10 +1620,10 @@
     "title": "Atualizar Cofre",
     "upgrade": "Atualizar",
     "upgradeDescription": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isto deve demorar apenas alguns segundos.",
-    "upgradeFailedError": "Falha ao atualizar banco de dados. Por favor, tente novamente ou entre em contato com o suporte.",
+    "upgradeFailedError": "Falha ao atualizar banco de dados. Por favor, tente novamente ou entre em contacto com o suporte.",
     "upgradeRequiredDescription": "Uma atualização é necessária para suportar as seguintes mudanças: {{changes}}",
     "upgradeSuccessMessage": "Cofre atualizado com sucesso.",
-    "upgrading": "Atualizando...",
+    "upgrading": "A atualizar...",
     "versionInformation": "Informação de Versão",
     "whatsNew": "O Que Há de Novo",
     "whatsNewDescription": "Uma atualização é necessária para utilizar as seguintes mudanças:",
@@ -1636,12 +1636,12 @@
     "serviceNameRequired": "Nome do serviço é obrigatório"
   },
   "vault": {
-    "checkingForVaultUpdates": "Verificando atualizações do cofre",
-    "checkingVaultUpdates": "Verificando atualizações do cofre",
-    "mergingVault": "Integrando mudanças do cofre...",
-    "savingChangesToVault": "Salvando mudanças no cofre",
-    "syncingUpdatedVault": "Sincronizando cofre atualizado",
-    "syncingVault": "Sincronizando cofre"
+    "checkingForVaultUpdates": "A verificar atualizações do cofre",
+    "checkingVaultUpdates": "A verificar atualizações do cofre",
+    "mergingVault": "A integrar mudanças do cofre...",
+    "savingChangesToVault": "A guardar mudanças no cofre",
+    "syncingUpdatedVault": "A sincronizar cofre atualizado",
+    "syncingVault": "A sincronizar cofre"
   },
   "web": {
     "footer": {
@@ -1659,26 +1659,26 @@
     },
     "welcome": {
       "createFirstIdentityButton": "Criar Primeira Identidade",
-      "extensionsAppsTipContent": "Instale a extensão de navegador AliasVault e o aplicação móvel para criar aliases e preencher formulários automaticamente diretamente do seu navegador e smartphone.",
+      "extensionsAppsTipContent": "Instale a extensão de navegador AliasVault e a aplicação móvel para criar aliases e preencher formulários automaticamente diretamente do seu navegador e dispositivo móvel.",
       "extensionsAppsTipTitle": "Extensões de Navegador e Aplicações Móveis",
       "finishingTutorialMessage": "Finalizando tutorial...",
       "getStartedButton": "Iniciar",
       "howAliasVaultWorksStepTitle": "Como o AliasVault Funciona",
-      "howItWorksIntro": "Quando você precisar se cadastrar em um novo serviço:",
+      "howItWorksIntro": "Quando você precisar se registar num novo serviço:",
       "howItWorksStep1": "AliasVault irá gerar uma identidade aleatória com um endereço de e-mail privado e seguro",
-      "howItWorksStep2": "Use estas informações para realizar o cadastro no serivço",
-      "howItWorksStep3": "E-mails recebidos serão exibidos neste aplicação e podem ser abertos no seu navegador",
+      "howItWorksStep2": "Use estas informações para realizar o cadastro no serviço",
+      "howItWorksStep3": "E-mails recebidos serão exibidos nesta aplicação e podem ser abertos no seu navegador",
       "howItWorksStep4": "Seu endereço de e-mail real e outras informações pessoais serão mantidas privadas",
       "masterPasswordTipContent": "A sua senha mestra é necessária para descodificar o seu cofre. Nunca a compartilhe com ninguém, e a mantenha num local seguro. Aviso: se perder a sua senha mestra, seus dados não poderão ser recuperados -nem mesma pela nossa equipa.",
-      "masterPasswordTipTitle": "Mantenha Sua Senha Mestre Em Segurança",
-      "readyToStartMessage": "Agora que você sabe como o AliasVault funciona, vamos criar sua primeira identidade segura!",
+      "masterPasswordTipTitle": "Mantenha a sua Senha Mestra Em Segurança",
+      "readyToStartMessage": "Agora que sabe como o AliasVault funciona, vamos criar a sua primeira identidade segura!",
       "readyToStartTitle": "Pronto para Iniciar?",
       "soonSuffix": "(Em breve)",
       "tipsStepTitle": "Dicas",
       "tutorialStepTitle": "Tutorial",
       "twoFactorTipContent": "Autenticação de dois fatores adiciona uma camada extra de segurança para a sua conta. Ela requer que insira um código da sua aplicação de autenticação ou que forneça um código de recuperação antes que o seu cofre criptografado possa ser acedido.",
       "twoFactorTipTitle": "Ativar Autenticação de Dois Fatores nas Configurações de Segurança",
-      "welcomeMessage": "Seu cofre foi criado com sucesso! Proteja sua privacidade online criando aliases únicos para cada serviço que você realizar um cadastro. Vamos aprender como o AliasVault funciona e então criar seu primeiro alias seguro."
+      "welcomeMessage": "O seu cofre foi criado com sucesso! Proteja a sua privacidade online criando aliases únicos para cada serviço que você realizar um cadastro. Vamos aprender como o AliasVault funciona e então criar o seu primeiro alias seguro."
     }
   }
 }
