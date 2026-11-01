@@ -164,16 +164,13 @@ fn german_decade_names_follow_the_birth_year() {
 }
 
 #[test]
-fn decade_language_falls_back_to_all_decades_for_uncovered_years() {
-    // Italian decades stop at 2019, so a 2024 birth year has no direct match.
-    let mut req = request("it");
-    req.birthdate_options = Some(BirthdateOptions {
-        target_year: 2024,
-        year_deviation: 0,
-    });
-
-    let identity = generate_from_request(&req);
-    assert!(!identity.first_name.is_empty());
+fn decade_language_uses_the_nearest_decade_for_uncovered_years() {
+    // Decade lists cover 1950-2019 for Italian, so 1940 and 2024 have no direct match.
+    let dictionary = dictionaries::resolve("it");
+    for (birth_year, expected) in [(1940, &dictionary.firstnames_male_by_decade[0]), (2024, dictionary.firstnames_male_by_decade.last().unwrap())] {
+        let names = select_firstnames_for_birth_year(dictionary, birth_year, true);
+        assert_eq!(names, expected.names().collect::<Vec<_>>(), "birth year {birth_year}");
+    }
 }
 
 #[test]
@@ -202,6 +199,8 @@ fn age_range_conversion_matches_reference_values() {
         ("21-25", 2002, 2),
         ("26-30", 1997, 2),
         ("61-65", 1962, 2),
+        ("71-75", 1952, 2),
+        ("76-80", 1947, 2),
         ("25-25", 2000, 0),
         ("20-24", 2003, 2),
     ];
@@ -227,8 +226,8 @@ fn available_age_ranges_starts_with_random() {
     let ranges = available_age_ranges();
     assert_eq!(ranges[0], "random");
     assert!(ranges.contains(&"21-25".to_string()));
-    assert!(ranges.contains(&"61-65".to_string()));
-    assert_eq!(ranges.len(), 10);
+    assert!(ranges.contains(&"76-80".to_string()));
+    assert_eq!(ranges.len(), 13);
 }
 
 #[test]
