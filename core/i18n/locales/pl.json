@@ -218,7 +218,7 @@
     "attachments": "Załączniki",
     "back": "Powrót",
     "backspace": "Usuń znak",
-    "beforeYouContinue": "Before you continue:",
+    "beforeYouContinue": "Zanim przejdziesz dalej:",
     "cancel": "Anuluj",
     "clipboardCountdown": {
       "clearClipboardButton": "Wyczyść schowek"
@@ -285,7 +285,7 @@
     "hide": "Ukryj",
     "hideDetails": "Ukryj szczegóły",
     "hidePassword": "Ukryj hasło",
-    "highRiskAction": "This is a high-risk action.",
+    "highRiskAction": "Jest to działanie wysokiego ryzyka.",
     "home": "Panel główny",
     "loadMore": "Załaduj więcej",
     "loading": "Wczytywanie...",
@@ -328,7 +328,7 @@
     "saving": "Zapisywanie...",
     "serviceName": "Nazwa usługi",
     "settings": "Ustawienia",
-    "share": "Share",
+    "share": "Udostępnij",
     "show": "Pokaż",
     "showDetails": "Pokaż szczegóły",
     "showPassword": "Pokaż hasło",
@@ -1361,7 +1361,7 @@
         "failedToChange": "Nie udało się zmienić hasła. Spróbuj ponownie.",
         "failedToChangePassword": "Nie udało się zmienić hasła. Odśwież stronę i spróbuj ponownie.",
         "fillAllFields": "Proszę wypełnić wszystkie pola",
-        "headerText": "Changing your master password signs out your other devices.",
+        "headerText": "Zmiana hasła głównego wyloguje twoje inne urządzenia.",
         "initiatingChange": "Rozpoczynanie zmiany hasła...",
         "newPassword": "Nowe hasło",
         "passwordChangedSuccessfully": "Hasło zostało pomyślnie zmienione",
@@ -1417,13 +1417,13 @@
         "verifyAndEnableButton": "Zweryfikuj i włącz"
       },
       "keyRotation": {
-        "acknowledge": "I have backed up my vault and signed out of my other devices",
-        "changePasswordAndRotate": "Change password and rotate keys",
-        "optionRotateKeys": "Also rotate all encryption keys",
-        "optionRotateKeysDescription": "Only needed if you suspect your keys were exposed, for example if your device was compromised or stolen. Re-encrypts your vault and signs out all other devices.",
-        "riskAfterwards": "Afterwards, log in again on your other devices and set up PIN, passkey or biometric unlock again.",
-        "riskBackup": "Export a backup of your vault first (Settings > Import / Export). A key rotation operation cannot be undone.",
-        "riskSignOut": "Let your other devices finish syncing, then sign out from them. Unsynced changes on devices that stay signed in are lost."
+        "acknowledge": "Wykonałem kopię zapasową mojego sejfu i wylogowałem się z moich innych urządzeń",
+        "changePasswordAndRotate": "Zmień hasło i obróć klucze",
+        "optionRotateKeys": "Obróć również wszystkie klucze szyfrowania",
+        "optionRotateKeysDescription": "Wymagane tylko wtedy, gdy podejrzewasz, że Twoje klucze zostały wyświetlone, na przykład, jeśli urządzenie zostało uszkodzone lub skradzione. Ponownie zaszyfruje twój sejf i wyloguje wszystkie inne urządzenia.",
+        "riskAfterwards": "Następnie zaloguj się ponownie na innych urządzeniach i ponownie skonfiguruj kod PIN, hasło lub odblokowanie biometryczne.",
+        "riskBackup": "Eksportuj najpierw kopię zapasową sejfu (Ustawienia > Import / Eksport). Operacja rotacji klucza nie może zostać cofnięta.",
+        "riskSignOut": "Pozwól innym urządzeniom zakończyć synchronizację, a następnie wylogować się z nich. Niezsynchronizowane zmiany na urządzeniach, które pozostają zalogowane, zostają utracone."
       },
       "passkeyUnlock": {
         "disableButton": "Wyłącz odblokowywanie kluczem dostępu",
