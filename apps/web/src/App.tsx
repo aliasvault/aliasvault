@@ -22,6 +22,7 @@ import IdentityGeneratorSettings from '@/pages/settings/IdentityGenerator';
 import ImportExport from '@/pages/settings/importexport/ImportExport';
 import ResetVault from '@/pages/settings/importexport/ResetVault';
 import PasswordGeneratorSettings from '@/pages/settings/PasswordGenerator';
+import AutoLock from '@/pages/settings/security/AutoLock';
 import ChangePassword from '@/pages/settings/security/ChangePassword';
 import Clipboard from '@/pages/settings/security/Clipboard';
 import DeleteAccount from '@/pages/settings/security/DeleteAccount';
@@ -71,6 +72,7 @@ const App: React.FC = () => (
         <Route path="/settings/security" element={<Navigate to="/settings" replace />} />
         <Route path="/settings/security/change-password" element={<ChangePassword />} />
         <Route path="/settings/security/vault-unlock" element={<VaultUnlock />} />
+        <Route path="/settings/security/auto-lock" element={<AutoLock />} />
         <Route path="/settings/security/clipboard" element={<Clipboard />} />
         <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
         <Route path="/settings/sessions" element={<SessionsAndLogs />} />

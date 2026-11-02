@@ -92,6 +92,7 @@ const Settings: React.FC = () => {
       { to: '/settings/two-factor', label: t('common.twoFactorAuthentication'), description: t('settings.securitySettings.enable2fa.pageDescription'), icon: 'twoFactor', reminder: reminders.enableTwoFactor },
       { to: '/settings/sessions', label: t('settings.sessionsAndLogs'), description: t('settings.sessionsAndLogsDescription'), icon: 'sessions' },
       { to: '/settings/security/vault-unlock', label: t('settings.vaultUnlock'), description: t('settings.vaultUnlockSettings.description'), icon: 'vaultUnlock' },
+      { to: '/settings/security/auto-lock', label: t('settings.autoLock'), description: t('settings.autoLockTimeoutDescription'), icon: 'autoLock' },
       { to: '/settings/security/clipboard', label: t('settings.clipboardClear'), description: t('settings.clipboardClearDescription'), icon: 'clipboard' },
     ],
   };

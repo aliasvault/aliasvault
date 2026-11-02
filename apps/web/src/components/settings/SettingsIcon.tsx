@@ -7,7 +7,7 @@ import type { UiIconName } from '@aliasvault/models/icons';
 /**
  * The icons of the settings pages, shared by the settings overview rows and the page headers.
  */
-export type SettingsIconName = 'twoFactor' | 'security' | 'changePassword' | 'vaultUnlock' | 'clipboard' | 'deleteAccount' | 'sessions' | 'passwordGenerator' | 'identityGenerator' | 'importExport' | 'storage' | 'general' | 'apps' | 'themeLight' | 'themeDark' | 'lock' | 'securityWarning' | 'logout' | 'warning' | 'vault' | 'emails' | 'sharing';
+export type SettingsIconName = 'twoFactor' | 'security' | 'changePassword' | 'vaultUnlock' | 'clipboard' | 'autoLock' | 'deleteAccount' | 'sessions' | 'passwordGenerator' | 'identityGenerator' | 'importExport' | 'storage' | 'general' | 'apps' | 'themeLight' | 'themeDark' | 'lock' | 'securityWarning' | 'logout' | 'warning' | 'vault' | 'emails' | 'sharing';
 
 /** The catalog icon of each settings icon. */
 const SETTINGS_ICONS: Record<SettingsIconName, UiIconName> = {
@@ -16,6 +16,7 @@ const SETTINGS_ICONS: Record<SettingsIconName, UiIconName> = {
   changePassword: 'lock-closed',
   vaultUnlock: 'shield-check',
   clipboard: 'clipboard',
+  autoLock: 'clock',
   deleteAccount: 'trash',
   sessions: 'desktop-computer',
   passwordGenerator: 'key',

@@ -41,4 +41,6 @@ export const LocalPreferenceKeys = {
   RETURN_URL: 'returnUrl',
   /** Whether the items page groups items by folder. */
   ITEMS_SHOW_FOLDERS: 'items-show-folders',
+  /** Seconds of inactivity before the vault locks, 0 means never; unset means the default. */
+  AUTO_LOCK_TIMEOUT: 'auto-lock-timeout',
 } as const;
