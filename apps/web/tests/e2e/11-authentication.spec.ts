@@ -4,6 +4,13 @@
 import { test, expect } from '../fixtures';
 import { createTestUser, TEST_LOGIN_RATE_LIMIT_BUCKET_HEADER, TEST_LOGIN_RATE_LIMIT_HEADER } from '../helpers/test-api';
 
+import type { Page } from '@playwright/test';
+
+/**
+ * Whether the auto-lock has started, which stores the return URL before it locks the vault.
+ */
+const autoLockStarted = async (page: Page): Promise<boolean> => (await page.evaluate(() => localStorage.getItem('returnUrl'))) !== null;
+
 test.describe('11. Authentication', () => {
   test('11.1 should log in and log out', async ({ app, testUser }) => {
     await test.step('log in', async () => {
@@ -141,6 +148,56 @@ test.describe('11. Authentication', () => {
     await test.step('the second account logs in outside the limited bucket', async () => {
       const other = await newApp();
       await other.login(otherUser.username, otherUser.password);
+    });
+  });
+
+  test('11.6 should auto-lock an idle vault and return to the open page after unlocking', async ({ app, testUser }) => {
+    const { page } = app;
+    await page.clock.install();
+    await app.login(testUser.username, testUser.password);
+
+    await test.step('the timeout defaults to 1 hour and can be shortened to 1 minute', async () => {
+      await app.openSettingsPage('Auto-lock Timeout');
+      await expect(page).toHaveURL(/\/settings\/security\/auto-lock$/);
+      await expect(page.locator('#autoLockTimeout')).toHaveValue('3600');
+      await page.locator('#autoLockTimeout').selectOption('60');
+    });
+
+    await test.step('the vault stays open before the timeout passes', async () => {
+      await page.clock.runFor('00:50');
+      expect(await autoLockStarted(page)).toBe(false);
+    });
+
+    await test.step('the vault locks once the timeout passes without input', async () => {
+      await page.clock.runFor('00:20');
+      await expect(page).toHaveURL(/\/unlock\/true$/);
+    });
+
+    await test.step('unlocking returns to the settings page', async () => {
+      await page.locator('#password').fill(testUser.password);
+      await page.locator('#unlock-button').click();
+      await expect(page).toHaveURL(/\/settings\/security\/auto-lock$/);
+      await expect(page.locator('#autoLockTimeout')).toHaveValue('60');
+    });
+  });
+
+  test('11.7 should restart the auto-lock timeout on user input', async ({ app, testUser }) => {
+    const { page } = app;
+    await page.clock.install();
+    await app.login(testUser.username, testUser.password);
+    await app.openSettingsPage('Auto-lock Timeout');
+    await page.locator('#autoLockTimeout').selectOption('60');
+
+    await test.step('input halfway the timeout keeps the vault open past it', async () => {
+      await page.clock.runFor('00:30');
+      await page.keyboard.press('Shift');
+      await page.clock.runFor('00:40');
+      expect(await autoLockStarted(page)).toBe(false);
+    });
+
+    await test.step('the vault locks once the timeout passes after the last input', async () => {
+      await page.clock.runFor('00:30');
+      await expect(page).toHaveURL(/\/unlock\/true$/);
     });
   });
 });

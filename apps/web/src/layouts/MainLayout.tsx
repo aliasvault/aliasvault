@@ -11,6 +11,7 @@ import { AccountReminderProvider } from '@/context/AccountReminderContext';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { QuickCreateProvider } from '@/context/QuickCreateContext';
+import { useAutoLock } from '@/hooks/useAutoLock';
 import { useVaultLanguage } from '@/hooks/useVaultLanguage';
 import { useVaultSync } from '@/hooks/useVaultSync';
 import { setLocalPreference } from '@/utils/LocalPreferences';
@@ -31,6 +32,7 @@ const MainLayout: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
   const hasSynced = useRef(false);
   useVaultLanguage(isReady);
+  useAutoLock(isReady);
 
   useEffect(() => {
     if (!isInitialized || !dbInitialized) {
