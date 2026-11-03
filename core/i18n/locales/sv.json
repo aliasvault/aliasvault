@@ -328,7 +328,7 @@
     "saving": "Sparar...",
     "serviceName": "Tjänstens namn",
     "settings": "Inställningar",
-    "share": "Share",
+    "share": "Dela",
     "show": "Visa",
     "showDetails": "Visa detaljer",
     "showPassword": "Visa lösenord",
@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Rensning av urklipp i bakgrunden aktiverad",
     "batteryOptimizationHelpDescription": "Androids batterioptimering förhindrar tillförlitlig rensning av urklipp när appen är i bakgrunden. Inaktivering av batterioptimering för AliasVault tillåter exakt rensning av urklipp och ger automatiskt nödvändiga larmbehörigheter.",
     "batteryOptimizationHelpTitle": "Aktivera rensning av urklipp i bakgrunden",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
     "clientUrlHint": "Webbgränssnittets URL för din egenhostade instans",
     "clipboardClear": "Rensa urklipp",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofyll",
       "general": "Allmänt",
-      "generators": "Generatorer"
+      "generators": "Generatorer",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
