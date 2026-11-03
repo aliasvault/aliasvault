@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Brug browser-passkey"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Websted"
+    },
     "accountSecurity": "Konto Sikkerhed",
     "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "advancedOptions": "Avancerede indstillinger",
