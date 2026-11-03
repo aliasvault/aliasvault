@@ -438,6 +438,20 @@ public class NativeVaultManager: NSObject {
     }
 
     @objc
+    func getScreenCaptureProtection(_ resolve: @escaping RCTPromiseResolveBlock,
+                                    rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(ScreenCaptureProtection.isEnabled)
+    }
+
+    @objc
+    func setScreenCaptureProtection(_ enabled: Bool,
+                                    resolver resolve: @escaping RCTPromiseResolveBlock,
+                                    rejecter reject: @escaping RCTPromiseRejectBlock) {
+        ScreenCaptureProtection.setEnabled(enabled)
+        resolve(nil)
+    }
+
+    @objc
     func copyToClipboardWithExpiration(_ text: String,
                                       expirationSeconds: Double,
                                       localOnly: Bool,

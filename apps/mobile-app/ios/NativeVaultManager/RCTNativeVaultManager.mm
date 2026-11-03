@@ -171,6 +171,14 @@
     [vaultManager setAutofillCopyTotpOnFill:enabled resolver:resolve rejecter:reject];
 }
 
+- (void)getScreenCaptureProtection:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getScreenCaptureProtection:resolve rejecter:reject];
+}
+
+- (void)setScreenCaptureProtection:(BOOL)enabled resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setScreenCaptureProtection:enabled resolver:resolve rejecter:reject];
+}
+
 - (void)copyToClipboardWithExpiration:(NSString *)text expirationSeconds:(double)expirationSeconds localOnly:(BOOL)localOnly resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds localOnly:localOnly resolver:resolve rejecter:reject];
 }

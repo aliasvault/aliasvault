@@ -1225,6 +1225,8 @@
       "general": "General",
       "generators": "Generators"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher and while your screen is being recorded or mirrored.",
     "identityGenerator": "Identity Generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Set the age range for generating new identities.",

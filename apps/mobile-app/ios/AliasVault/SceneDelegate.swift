@@ -1,9 +1,11 @@
 import UIKit
 import React
+import VaultUtils
 
 /// UIKit requires the UIScene lifecycle for apps linked against the iOS 27 SDK, otherwise the app will crash on boot with iOS 27+ while it still works with iOS 26.
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   var window: UIWindow?
+  private var screenCaptureProtection: ScreenCaptureProtection?
 
   func scene(
     _ scene: UIScene,
@@ -35,6 +37,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       in: window,
       launchOptions: launchOptions
     )
+
+    screenCaptureProtection = ScreenCaptureProtection(scene: windowScene)
+  }
+
+  // MARK: - Screen capture protection
+
+  func sceneWillResignActive(_ scene: UIScene) {
+    screenCaptureProtection?.sceneWillResignActive()
+  }
+
+  func sceneDidBecomeActive(_ scene: UIScene) {
+    screenCaptureProtection?.sceneDidBecomeActive()
   }
 
   // MARK: - Linking API
