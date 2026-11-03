@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Das Löschen der Zwischenablage im Hintergrund ist aktiviert",
     "batteryOptimizationHelpDescription": "Die Akkuoptimierung von Android verhindert, dass die Zwischenablage zuverlässig gelöscht wird, wenn die App im Hintergrund ist. Das Deaktivieren der Akkuoptimierung für AliasVault ermöglicht das zuverlässige Löschen der Zwischenablage und gewährt automatisch die notwendigen Alarmberechtigungen.",
     "batteryOptimizationHelpTitle": "Löschen der Zwischenablage im Hintergrund aktivieren",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "List der deaktivierten Webseiten leeren",
     "clientUrlHint": "Die URL der Webschnittstelle Deiner selbst gehosteten Instanz",
     "clipboardClear": "Zwischenablage leeren",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofill",
       "general": "Allgemein",
-      "generators": "Generatoren"
+      "generators": "Generatoren",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identitätsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Lege die Altersspanne für die Erstellung neuer Identitäten fest.",
