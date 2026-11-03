@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Cumasaíodh glanadh gearrthaisce cúlra",
     "batteryOptimizationHelpDescription": "Cuireann optamú ceallraí Android cosc ​​ar ghlanadh iontaofa an ghearrthaisce nuair a bhíonn an aip sa chúlra. Trí optamú ceallraí a dhíchumasú le haghaidh AliasVault, is féidir an ghearrthaisce cúlra a ghlanadh go beacht agus deonaítear na ceadanna aláraim riachtanacha go huathoibríoch.",
     "batteryOptimizationHelpTitle": "Cumasaigh Glanadh an Ghearrthaisce Cúlra",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Glan gach suíomh díchumasaithe",
     "clientUrlHint": "URL an chomhéadain gréasáin de do shampla féin-óstáilte",
     "clipboardClear": "Glan an Ghearrthaisce",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Uathlíonadh",
       "general": "Ginearálta",
-      "generators": "Gineadóirí"
+      "generators": "Gineadóirí",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Socraigh an raon aoise chun céannachtaí nua a ghiniúint.",
