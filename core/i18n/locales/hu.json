@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Böngészős azonosítókulcs használata"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Weblap"
+    },
     "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktív minden oldalon (hacsak nincs lent kikapcsolva)",
     "advancedOptions": "Haladó beállítások",
