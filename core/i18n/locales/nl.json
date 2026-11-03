@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Gebruik browser passkey"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Website"
+    },
     "accountSecurity": "Account beveiliging",
     "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
