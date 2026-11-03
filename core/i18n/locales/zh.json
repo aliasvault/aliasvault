@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "使用浏览器通行密钥"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "网站"
+    },
     "accountSecurity": "账户安全",
     "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "advancedOptions": "高级选项",
@@ -1163,8 +1172,8 @@
     "batteryOptimizationDisabled": "后台清除剪贴板已启用",
     "batteryOptimizationHelpDescription": "Android 的电池优化会在应用后台运行时降低清除剪贴板的可靠性。为 AliasVault 禁用电池优化后，即可实现精确的后台清除剪贴板，并自动授予必要的提醒权限。",
     "batteryOptimizationHelpTitle": "启用后台清除剪贴板",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "阻止屏幕截图",
+    "blockScreenshotsDescription": "阻止对应用进行截图和录屏。",
     "clearAllDisabledSites": "清除所有禁用的网站",
     "clientUrlHint": "您自托管实例的 Web 界面 URL",
     "clipboardClear": "清除剪贴板",
@@ -1226,10 +1235,10 @@
       "autofill": "自动填充",
       "general": "通用",
       "generators": "生成器",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "屏幕隐私"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "隐藏应用内容",
+    "hideAppContentsDescription": "在应用切换器中隐藏应用内容。",
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
       "ageRangeDescription": "设置生成新身份的年龄范围。",
