@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Folosește Passkey-ul Browserului"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Website"
+    },
     "accountSecurity": "Securitate cont",
     "activeOnAllSites": "Activ pe toate site-urile (cu excepția cazului în care este dezactivat mai jos)",
     "advancedOptions": "Opțiuni Avansate",
@@ -1163,8 +1172,8 @@
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal este activată",
     "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării bateriei pentru AliasVault permite ștergerea precisă a clipboard-ului în fundal și acordă automat permisiunile necesare.",
     "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blochează capturile de ecran",
+    "blockScreenshotsDescription": "Blochează capturile de ecran și înregistrările de ecran ale aplicației.",
     "clearAllDisabledSites": "Șterge toate site-urile dezactivate",
     "clientUrlHint": "URL-ul interfeței web a instanței tale",
     "clipboardClear": "Golește clipboardul",
@@ -1226,10 +1235,10 @@
       "autofill": "Completare automată",
       "general": "General",
       "generators": "Generatoare",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Confidențialitate ecran"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Ascunde Conținutul Aplicației",
+    "hideAppContentsDescription": "Ascunde conținutul aplicației în ecranul de comutare între aplicații.",
     "identityGenerator": "Generator de Identitate",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
