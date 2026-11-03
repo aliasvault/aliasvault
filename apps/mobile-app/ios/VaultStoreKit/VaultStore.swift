@@ -83,6 +83,7 @@ public class VaultStore {
     /// Initialize the VaultStore
     public init() {
         excludeSharedContainerFromBackup()
+        clearDataCopiedFromOtherDevice()
         loadSavedSettings()
         setupNotificationObservers()
     }

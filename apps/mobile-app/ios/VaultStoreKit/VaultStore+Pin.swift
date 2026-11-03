@@ -10,7 +10,7 @@ import VaultUtils
 extension VaultStore {
     // MARK: - PIN Constants
 
-    private static let pinEncryptedKeyKey = "pinEncryptedKey"
+    internal static let pinEncryptedKeyKey = "pinEncryptedKey"
     private static let pinSaltKey = "pinSalt"
     private static let pinLengthKey = "pinLength"
     private static let pinFailedAttemptsKey = "pinFailedAttempts"

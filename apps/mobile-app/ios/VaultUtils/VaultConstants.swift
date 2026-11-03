@@ -28,6 +28,7 @@ public struct VaultConstants {
     public static let dirtyScopesKey = "aliasvault_dirty_scopes"
     public static let syncLogsKey = "aliasvault_sync_logs"
     public static let deviceIdKey = "aliasvault_device_id"
+    public static let deviceMarkerSetKey = "aliasvault_device_marker_set"
 
     public static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds
 
