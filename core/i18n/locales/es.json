@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Limpieza del portapapeles en segundo plano habilitada",
     "batteryOptimizationHelpDescription": "La optimización de la batería de Android previene la limpieza segura del portapapeles cuando la aplicación está en segundo plano. Deshabilitar la optimización de la batería para AliasVault permite la limpieza precisa del portapapeles de fondo y automáticamente concede los permisos de alarma necesarios.",
     "batteryOptimizationHelpTitle": "Activar limpieza del portapapeles en segundo plano",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Borrar todos los sitios desactivados",
     "clientUrlHint": "La URL de la interfaz web de tu instancia self-hosted",
     "clipboardClear": "Limpiar portapapeles",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofill",
       "general": "General",
-      "generators": "Generadores"
+      "generators": "Generadores",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Generador de identidad",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Establecer el rango de edad para generar nuevas identidades.",
