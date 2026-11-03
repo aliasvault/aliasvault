@@ -26,6 +26,7 @@ import RecentlyDeleted from '@/entrypoints/popup/pages/items/RecentlyDeleted';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
+import AboutSettings from '@/entrypoints/popup/pages/settings/AboutSettings';
 import AppearanceSettings from '@/entrypoints/popup/pages/settings/AppearanceSettings';
 import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSettings';
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
@@ -217,6 +218,7 @@ const App: React.FC = () => {
     { path: '/settings/autofill', element: <AutofillSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/context-menu', element: <ContextMenuSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/clipboard', element: <ClipboardSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/about', element: <AboutSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/language', element: <LanguageSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('common.settings') },

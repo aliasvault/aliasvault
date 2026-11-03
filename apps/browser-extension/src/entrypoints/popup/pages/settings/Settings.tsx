@@ -2,7 +2,7 @@ import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,6 @@ import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
@@ -39,10 +38,8 @@ const Settings: React.FC = () => {
   const webApi = useWebApi();
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
-  const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,26 +84,9 @@ const Settings: React.FC = () => {
     return () => setHeaderButtons(null);
   }, [setHeaderButtons, t]);
 
-  /**
-   * Load settings.
-   */
-  const loadSettings = useCallback(async () : Promise<void> => {
-    // Load API URL
-    await loadApiUrl();
-
-    /*
-     * Load the last known server version (persisted on each status check) so it can be
-     * shown next to the app version. Useful for self-hosted troubleshooting.
-     */
-    const storedServerVersion = await storage.getItem(StorageKeys.SERVER_VERSION) as string | undefined;
-    setServerVersion(storedServerVersion ?? null);
-
-    setIsInitialLoading(false);
-  }, [setIsInitialLoading, loadApiUrl]);
-
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    setIsInitialLoading(false);
+  }, [setIsInitialLoading]);
 
   /**
    * Opens the browser's keyboard shortcut settings page and closes the popup,
@@ -322,14 +302,14 @@ const Settings: React.FC = () => {
             onClick={() => navigate('/settings/language')}
             icon="translate"
           />
+          <SettingsRow
+            id="about-settings-button"
+            label={t('settings.about.title')}
+            onClick={() => navigate('/settings/about')}
+            icon="information-circle"
+          />
         </SettingsGroup>
 
-        <div className="text-center text-[13px] text-gray-400 dark:text-gray-600">
-          <div><span className="font-bold">{t('settings.appVersion')}:</span> {AppInfo.VERSION}</div>
-          {serverVersion && (
-            <div><span className="font-bold">{t('settings.serverVersion')}:</span> {serverVersion} ({getDisplayUrl()})</div>
-          )}
-        </div>
       </div>
     </>
   );
