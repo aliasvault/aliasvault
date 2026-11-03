@@ -1,5 +1,5 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
@@ -20,14 +20,14 @@ export const useApiUrl = (): {
   /**
    * Load the API URL from storage.
    */
-  const loadApiUrl = async (): Promise<void> => {
+  const loadApiUrl = useCallback(async (): Promise<void> => {
     const storedUrl = await storage.getItem(StorageKeys.API_URL) as string;
     if (storedUrl && storedUrl.length > 0) {
       setApiUrl(storedUrl);
     } else {
       setApiUrl(AppInfo.DEFAULT_API_URL);
     }
-  };
+  }, []);
 
   /**
    * Get the display URL for UI presentation.
