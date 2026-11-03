@@ -229,6 +229,7 @@ const InviteMemberWizard: React.FC<InviteMemberWizardProps> = ({ isOpen, ownFing
                 setSelected(null);
               }}
               placeholder={sharingText.fingerprintPlaceholder}
+              autoComplete="off"
               autoFocus={people.length === 0}
             />
           </div>

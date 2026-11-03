@@ -462,7 +462,7 @@ export const SharedFolderAccessModal: React.FC<ISharedFolderAccessModalProps> = 
             {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownFingerprint && (
               <View style={styles.codeTip}>
                 <ThemedText style={styles.tipText}>{sharingText.pendingFingerprintTip}</ThemedText>
-                <AccountFingerprint code={shared.ownFingerprint} isSmall />
+                <AccountFingerprint code={shared.ownFingerprint} variant="small" />
               </View>
             )}
 

@@ -12,17 +12,21 @@ import { ThemedText } from '@/components/themed/ThemedText';
 
 const COPIED_FEEDBACK_MS = 2000;
 
+/**
+ * How the fingerprint is shown.
+ */
+export type AccountFingerprintVariant = 'pill' | 'small' | 'bar';
+
 interface IAccountFingerprintProps {
-  /** The account's own fingerprint. */
   code: string;
-  /** A smaller pill without the copy and share buttons, for showing the fingerprint inside other content. */
-  isSmall?: boolean;
+  variant?: AccountFingerprintVariant;
 }
 
 /**
  * The account's own fingerprint, with buttons to copy and share it; tapping the fingerprint itself copies it too. The fingerprint is not secret, so it is never cleared from the clipboard.
  */
-export const AccountFingerprint: React.FC<IAccountFingerprintProps> = ({ code, isSmall = false }) => {
+export const AccountFingerprint: React.FC<IAccountFingerprintProps> = ({ code, variant = 'pill' }) => {
+  const isSmall = variant === 'small';
   const { t } = useTranslation();
   const colors = useColors();
   const [copied, setCopied] = useState(false);
@@ -80,6 +84,24 @@ export const AccountFingerprint: React.FC<IAccountFingerprintProps> = ({ code, i
       fontSize: 14,
       fontWeight: '500',
     },
+    bar: {
+      alignItems: 'center',
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.primary,
+      borderRadius: 10,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 10,
+      paddingLeft: 14,
+      paddingRight: 4,
+      paddingVertical: 4,
+    },
+    barButton: {
+      padding: 8,
+    },
+    barCode: {
+      flex: 1,
+    },
     pill: {
       alignItems: 'center',
       alignSelf: 'flex-start',
@@ -116,6 +138,23 @@ export const AccountFingerprint: React.FC<IAccountFingerprintProps> = ({ code, i
       paddingVertical: 5,
     },
   });
+
+  if (variant === 'bar') {
+    return (
+      <View style={styles.bar}>
+        <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} />
+        <TouchableOpacity style={styles.barCode} onPress={() => void copy()} activeOpacity={0.7} accessibilityRole="button" accessibilityHint={t('common.copyToClipboard')}>
+          <ThemedText style={styles.pillCode} numberOfLines={1} adjustsFontSizeToFit>{code}</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.barButton} onPress={() => void copy()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('common.copyToClipboard')}>
+          <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={20} color={colors.primary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.barButton} onPress={() => void share()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t('common.share')}>
+          <Ionicons name="share-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View>

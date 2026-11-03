@@ -15,42 +15,44 @@ export const MAX_SHARED_VAULT_NAME_LENGTH = 60;
  * so we don't let the translation platform see this yet until its finalized. TODO: move these strings to locale files.
  */
 export const sharingText = {
-  /** Title of the people dialog of a folder. */
   peopleTitle: 'People with access',
-  /** Shown in the people dialog of a folder that is not shared yet. */
   shareFolderHint: 'Invite people to share this folder with them. Everyone you invite can see, change and delete its items.',
-  /** A pending invitation shown in the folder list. */
   invitationPending: 'Invitation',
-  /** Title of the dialog of an invitation to a shared folder. */
   sharedWithYou: (username: string, folder: string): string => `${username} shared “${folder}” with you`,
   sharedWithYouHint: 'Accept to see this folder and everything in it in your vault.',
-  yourFingerprintSettingsHint: 'Someone who shares a folder with you needs your account fingerprint to invite you. It is not secret.',
-  /** Title of the step that asks for the inviter's account fingerprint before accepting. */
+  yourFingerprintSettingsHint: "To share a folder, you and the other person need each other's account fingerprint.",
+  folderSharingTitle: 'Folder sharing',
+  folderSharingDescription: 'Share folders with other people and find your account fingerprint',
+  folderSharingIntro: 'Sharing a folder allows you to share items within a folder (including email aliases) with one or more other people.',
+  shareFolderStepsTitle: 'Share a folder',
+  shareFolderSteps: [
+    'Create a folder in your vault, or open an existing one.',
+    'Press the people icon at the top of the folder and choose Invite someone.',
+    'Enter the account fingerprint of the person you invite. They find it on this page in their own app.',
+    'Send them your account fingerprint (above), so they can accept your invitation.',
+  ],
+  joinFolderStepsTitle: 'Join a folder someone shares with you',
+  joinFolderSteps: [
+    'Send your account fingerprint (above) to the person who wants to share a folder with you.',
+    'Their invitation appears in your vault. Open it and enter their account fingerprint to accept.',
+  ],
   inviterFingerprintTitle: (username: string): string => `Confirm the invitation from ${username}`,
-  /** Explains why the inviter's account fingerprint is asked for. */
-  inviterFingerprintExplanation: (username: string): string => `For your security, enter the account fingerprint of ${username}. It confirms that this invitation really comes from them. ${username} finds it in Settings on their device.`,
-  /** Who sent an invitation. */
+  inviterFingerprintExplanation: (username: string): string => `For your security, enter the account fingerprint of ${username}. It confirms that this invitation really comes from them. ${username} finds it in Settings > Folder sharing on their device.`,
   invitedBy: (username: string): string => `Invited by ${username}`,
   invitePeople: 'Invite someone',
-  /** Shown with this account's fingerprint while an invitation waits for an answer. */
   pendingFingerprintTip: 'Tip: looking for your account fingerprint to send to the people you invited? Here it is:',
   notSharedYet: 'This folder is not shared with anyone yet. Invite someone to start sharing it.',
   inviteWizardChooseTitle: 'Who do you want to invite?',
   inviteWizardNewFingerprintTitle: 'Or invite someone new with their account fingerprint',
   inviteWizardFingerprintTitle: 'Enter the account fingerprint of the person you invite',
-  inviteWizardFingerprintHint: 'Ask the person to copy their account fingerprint from Settings and send it to you. It creates a secure link between your accounts. You only need to do this once per person.',
+  inviteWizardFingerprintHint: 'Ask the person to copy their account fingerprint from Settings > Folder sharing and send it to you. It creates a secure link between your accounts. You only need to do this once per person.',
   inviteWizardConfirmTitle: 'Confirm the invitation',
-  /** Asks to confirm who a personal folder is shared with, which makes it a shared folder. */
   inviteWizardConfirmShare: (username: string, folder: string): string => `You are about to share “${folder}” with ${username}. They can see, change and delete everything in it.`,
-  /** Asks to confirm who is invited to a shared folder. */
   inviteWizardConfirmFolder: (username: string, folder: string): string => `You are about to invite ${username} to “${folder}”.`,
-  /** Confirms the invitation went out. */
   inviteWizardInvited: (username: string): string => `${username} has been invited`,
   inviteWizardNextStep: 'Next step: share your account fingerprint',
-  /** Asks to send this account's fingerprint to the person invited. */
   inviteWizardShareHint: (username: string): string => `Send your account fingerprint to ${username}. They need to enter it to accept your invitation.`,
   inviteWizardShareNotSecret: 'Your account fingerprint is not secret. It only confirms that the invitation comes from you, so you can send it by email or in a chat app.',
-  /** A close button that is enabled after a short countdown. */
   closeCountdown: (seconds: number): string => `Close (${seconds})`,
   fingerprintPlaceholder: '1234-5678-9012-3456-7890',
   yourFingerprint: 'Account fingerprint',
@@ -60,7 +62,6 @@ export const sharingText = {
   admin: 'Admin',
   member: 'Member',
   you: 'You',
-  /** Progress line of the create shared folder wizard. */
   wizardStep: (step: number, total: number): string => `Step ${step} of ${total}`,
   wizardCreating: 'Creating the shared folder and sending the invitations...',
   sharedVault: 'Shared folder',
@@ -69,31 +70,20 @@ export const sharingText = {
   withdraw: 'Withdraw',
   invite: 'Invite',
   leaveVault: 'Leave folder',
-  /** Confirmation for leaving a shared folder. */
   leaveVaultConfirm: (vault: string): string => `Leave “${vault}”? You lose access to it right away.`,
-  /** Notice after an invitation was sent. */
   invitationSent: (username: string): string => `Invitation sent to ${username}.`,
-  /** Confirmation for taking a member's access away. */
   revokeAccessConfirm: (username: string, vault: string): string => `Take ${username} out of “${vault}”? They lose access to it right away.`,
   deleteVault: 'Delete folder',
-  /** Confirmation for deleting a shared folder. */
   deleteVaultConfirm: (vault: string): string => `Permanently delete “${vault}”? Everyone with access loses this folder and everything in it. This cannot be undone.`,
-  /** Password prompt for taking a member's access to a shared folder away. */
   revokeAccessPasswordPrompt: (username: string, vault: string): string => `Enter your master password to confirm taking ${username} out of “${vault}”.`,
-  /** Password prompt for leaving a shared folder. */
   leaveVaultPasswordPrompt: (vault: string): string => `Enter your master password to confirm leaving “${vault}”.`,
-  /** Password prompt for deleting a shared folder. */
   deleteVaultPasswordPrompt: (vault: string): string => `Enter your master password to confirm deleting “${vault}” for everyone.`,
   vaultDeleted: 'The shared folder has been deleted.',
-  /** An item's email alias that receives its emails in another place than the item's own vault or shared folder. */
   aliasOwner: {
     inPersonalVault: 'This email alias receives its emails in your personal vault.',
-    /** The alias receives its emails in a shared folder. */
     inSharedFolder: (folder: string): string => `This email alias receives its emails in the shared folder “${folder}”.`,
     moveHere: 'Move alias here',
-    /** Confirmation for moving the alias into a shared folder. */
     moveToSharedFolderConfirm: (email: string, folder: string): string => `From now on, new emails for ${email} go to the shared folder “${folder}”, where everyone with access to it can read them. Emails received before stay where they are.`,
-    /** Confirmation for moving the alias into the personal vault. */
     moveToPersonalVaultConfirm: (email: string): string => `From now on, new emails for ${email} go to your personal vault, where only you can read them. Emails received before stay where they are.`,
   },
   errors: {

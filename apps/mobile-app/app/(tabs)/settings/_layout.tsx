@@ -1,3 +1,4 @@
+import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Platform, Text } from 'react-native';
@@ -39,6 +40,14 @@ export default function SettingsLayout(): React.ReactNode {
         name="android-autofill"
         options={{
           title: t('settings.autofill'),
+          headerBackTitle: t('common.settings'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="sharing"
+        options={{
+          title: sharingText.folderSharingTitle,
           headerBackTitle: t('common.settings'),
           ...defaultHeaderOptions,
         }}

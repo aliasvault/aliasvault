@@ -1,11 +1,9 @@
-import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import AccountFingerprint from '@/components/settings/AccountFingerprint';
 import SettingsIcon, { type SettingsIconName } from '@/components/settings/SettingsIcon';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
@@ -75,11 +73,6 @@ const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { username } = useAuth();
   const hasCapability = useCapabilities();
-  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
-
-  useEffect(() => {
-    void SharingService.ownAccountFingerprint().then(setOwnFingerprint);
-  }, []);
   const confirmLogout = useConfirmLogout();
   const { reminders } = useAccountReminders();
 
@@ -111,6 +104,7 @@ const Settings: React.FC = () => {
   const vault: SettingsGroup = {
     title: t('navigation.vault'),
     rows: [
+      ...(hasCapability(CapabilityKeys.VaultSharing) ? [{ to: '/settings/sharing', label: sharingText.folderSharingTitle, description: sharingText.folderSharingDescription, icon: 'sharing' as const }] : []),
       { to: '/settings/import-export', label: t('settings.importExport'), description: t('importExport.pageDescription'), icon: 'importExport' },
       { to: '/settings/storage-insights', label: t('settings.storageInsights.breadcrumbTitle'), description: t('settings.storageInsights.pageDescription'), icon: 'storage' },
     ],
@@ -148,13 +142,6 @@ const Settings: React.FC = () => {
               </button>
             </div>
           </section>
-          {/* The account fingerprint someone who shares a folder with this account needs to invite it. */}
-          {hasCapability(CapabilityKeys.VaultSharing) && ownFingerprint && (
-            <section className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <AccountFingerprint id="own-account-fingerprint" code={ownFingerprint} className="self-start" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">{sharingText.yourFingerprintSettingsHint}</p>
-            </section>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_1fr] gap-4 items-start">
             <Group group={security} className="md:col-start-1 md:row-start-1" />
             <div className="space-y-4 md:col-start-2 md:row-start-1 md:row-span-2">

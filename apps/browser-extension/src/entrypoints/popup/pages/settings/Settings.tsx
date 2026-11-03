@@ -1,5 +1,4 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useEffect, useState } from 'react';
@@ -12,7 +11,6 @@ import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { SettingsGroup, SettingsRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
-import AccountFingerprint from '@/entrypoints/popup/components/Sharing/AccountFingerprint';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
@@ -40,11 +38,6 @@ const Settings: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
-
-  useEffect(() => {
-    void SharingService.ownAccountFingerprint().then(setOwnFingerprint);
-  }, []);
 
   /**
    * Open the client tab.
@@ -209,13 +202,6 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
-            {/* The account fingerprint someone who shares a folder with this account needs to invite it. */}
-            {hasCapability(CapabilityKeys.VaultSharing) && ownFingerprint && (
-              <div className="flex flex-col gap-2 p-4">
-                <AccountFingerprint id="own-account-fingerprint" code={ownFingerprint} className="self-start" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">{sharingText.yourFingerprintSettingsHint}</p>
-              </div>
-            )}
           </div>
         </section>
 
@@ -283,6 +269,14 @@ const Settings: React.FC = () => {
         </SettingsGroup>
 
         <SettingsGroup title={t('navigation.vault')}>
+          {hasCapability(CapabilityKeys.VaultSharing) && (
+            <SettingsRow
+              id="folder-sharing-settings-button"
+              label={sharingText.folderSharingTitle}
+              onClick={() => navigate('/settings/sharing')}
+              icon="users"
+            />
+          )}
           <SettingsRow
             id="import-export-settings-button"
             label={t('settings.importExport')}

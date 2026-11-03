@@ -352,6 +352,9 @@ export const InviteMemberWizard: React.FC<IInviteMemberWizardProps> = ({ isOpen,
               placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               autoCorrect={false}
+              autoComplete="off"
+              textContentType="none"
+              importantForAutofill="no"
               autoFocus={people.length === 0}
               returnKeyType="next"
               onSubmitEditing={() => canContinue && void lookup()}

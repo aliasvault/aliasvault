@@ -342,7 +342,7 @@ const SharedFolderAccessModal: React.FC<SharedFolderAccessModalProps> = ({ isOpe
           {current && canAdministerGroup(current.group) && pendingInvitees(current).length > 0 && shared.ownFingerprint && (
             <div className="space-y-1.5">
               <p className="text-xs text-gray-500 dark:text-gray-400">{sharingText.pendingFingerprintTip}</p>
-              <AccountFingerprint code={shared.ownFingerprint} isSmall />
+              <AccountFingerprint code={shared.ownFingerprint} variant="small" />
             </div>
           )}
 

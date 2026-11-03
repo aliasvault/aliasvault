@@ -7,10 +7,10 @@ import { createTestUser, enableCapability } from '../helpers/test-api';
 import type { WebApp } from '../fixtures/WebApp';
 
 /**
- * The viewer's own account fingerprint, shown on the settings overview.
+ * The viewer's own account fingerprint, shown on the folder sharing settings page.
  */
 async function ownAccountFingerprint(app: WebApp): Promise<string> {
-  await app.openSettings();
+  await app.openSettingsPage('Folder sharing');
   const code = (await app.page.locator('#own-account-fingerprint').innerText()).trim();
   expect(code).toMatch(/^\d{4}-\d{4}-\d{4}-\d{4}-\d{4}$/);
   return code;

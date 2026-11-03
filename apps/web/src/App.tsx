@@ -17,6 +17,7 @@ import RecentlyDeleted from '@/pages/items/RecentlyDeleted';
 import ItemView from '@/pages/items/View';
 import NotFound from '@/pages/NotFound';
 import AppsSettings from '@/pages/settings/Apps';
+import FolderSharingSettings from '@/pages/settings/FolderSharing';
 import GeneralSettings from '@/pages/settings/General';
 import IdentityGeneratorSettings from '@/pages/settings/IdentityGenerator';
 import ImportExport from '@/pages/settings/importexport/ImportExport';
@@ -67,6 +68,7 @@ const App: React.FC = () => (
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/settings" element={<SettingsOverview />} />
         <Route path="/settings/general" element={<GeneralSettings />} />
+        <Route path="/settings/sharing" element={<FolderSharingSettings />} />
         <Route path="/settings/password-generator" element={<PasswordGeneratorSettings />} />
         <Route path="/settings/identity-generator" element={<IdentityGeneratorSettings />} />
         <Route path="/settings/security" element={<Navigate to="/settings" replace />} />

@@ -32,6 +32,7 @@ import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSetting
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
+import FolderSharingSettings from '@/entrypoints/popup/pages/settings/FolderSharingSettings';
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import ImportExportSettings from '@/entrypoints/popup/pages/settings/ImportExportSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
@@ -217,6 +218,7 @@ const App: React.FC = () => {
     { path: '/settings/security/delete-account', element: <DeleteAccountSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/autofill', element: <AutofillSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/context-menu', element: <ContextMenuSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/sharing', element: <FolderSharingSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/clipboard', element: <ClipboardSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/about', element: <AboutSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/language', element: <LanguageSettings />, showBackButton: true, title: t('common.settings') },

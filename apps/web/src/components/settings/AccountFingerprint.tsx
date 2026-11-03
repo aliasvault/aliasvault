@@ -4,13 +4,16 @@ import { useTranslation } from 'react-i18next';
 
 import Icon from '@/components/shared/Icon';
 
+/**
+ * How the fingerprint is shown.
+ */
+export type AccountFingerprintVariant = 'pill' | 'small' | 'bar';
+
 type AccountFingerprintProps = {
   code: string;
-  /** The id of the code text, for the one copy on the page that tests read. */
   id?: string;
   className?: string;
-  /** A smaller pill, for showing the code inside other content. */
-  isSmall?: boolean;
+  variant?: AccountFingerprintVariant;
 };
 
 /** How long the copy button shows that the code was copied. */
@@ -20,7 +23,8 @@ const COPIED_MS = 2000;
  * The account's own fingerprint; clicking anywhere on it copies it. The fingerprint is not secret, so it is copied without the clipboard
  * clear timer that vault values get.
  */
-const AccountFingerprint: React.FC<AccountFingerprintProps> = ({ code, id, className = '', isSmall = false }) => {
+const AccountFingerprint: React.FC<AccountFingerprintProps> = ({ code, id, className = '', variant = 'pill' }) => {
+  const isSmall = variant === 'small';
   const { t } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
 
@@ -44,6 +48,24 @@ const AccountFingerprint: React.FC<AccountFingerprintProps> = ({ code, id, class
       // Clipboard access denied: the code stays visible to copy by hand.
     }
   };
+
+  if (variant === 'bar') {
+    return (
+      <button
+        type="button"
+        onClick={() => void copy()}
+        title={t('common.copyToClipboard')}
+        className={`w-full flex items-center gap-3 rounded-lg pl-4 pr-2 py-2 text-left bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 border border-primary-200 dark:border-primary-800 ${className}`}
+      >
+        <Icon name="shield-check" className="w-5 h-5 shrink-0 text-primary-500" />
+        <span id={id} className="flex-1 min-w-0 font-mono text-base font-semibold tracking-wider whitespace-nowrap overflow-x-auto text-gray-900 dark:text-white">{code}</span>
+        <span className="inline-flex shrink-0 items-center gap-1.5 px-3 py-1 text-sm font-medium text-primary-700 dark:text-primary-300">
+          <Icon name={isCopied ? 'check' : 'duplicate'} className="w-4 h-4" />
+          {isCopied && t('common.copiedShort')}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <button

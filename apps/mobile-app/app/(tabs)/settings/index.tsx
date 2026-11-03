@@ -15,7 +15,6 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
-import { AccountFingerprint } from '@/components/sharing/AccountFingerprint';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
@@ -26,7 +25,6 @@ import { useApp } from '@/context/AppContext';
 import { useCapabilities } from '@/context/CapabilityContext';
 import { useDialog } from '@/context/DialogContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
-import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Settings screen.
@@ -48,16 +46,7 @@ export default function SettingsScreen() : React.ReactNode {
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
-  const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
   const isSharingEnabled = hasCapability(CapabilityKeys.VaultSharing);
-
-  // The own fingerprint is derived natively from the signing private key, which only the native layer can open.
-  useFocusEffect(useCallback(() => {
-    if (!isSharingEnabled) {
-      return;
-    }
-    NativeVaultManager.getSigningKeyFingerprint().then(setOwnFingerprint).catch(() => setOwnFingerprint(null));
-  }, [isSharingEnabled]));
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
   const { isEnabled: isDeveloperToolsEnabled, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
 
@@ -255,14 +244,6 @@ export default function SettingsScreen() : React.ReactNode {
       marginTop: 8,
       overflow: 'hidden',
     },
-    ownCodeHint: {
-      color: colors.textMuted,
-      fontSize: 13,
-      marginTop: 8,
-    },
-    ownCodeSection: {
-      padding: 16,
-    },
     groupTitle: {
       color: colors.textMuted,
       fontSize: 13,
@@ -384,14 +365,6 @@ export default function SettingsScreen() : React.ReactNode {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* The account fingerprint people need to invite this account to a shared folder. */}
-        {isSharingEnabled && ownFingerprint && (
-          <View style={[styles.groupSection, styles.ownCodeSection]}>
-            <AccountFingerprint code={ownFingerprint} />
-            <ThemedText style={styles.ownCodeHint}>{sharingText.yourFingerprintSettingsHint}</ThemedText>
-          </View>
-        )}
 
         <ThemedText style={styles.groupTitle}>{t('settings.groups.autofill')}</ThemedText>
         <View style={styles.groupSection}>
@@ -537,6 +510,24 @@ export default function SettingsScreen() : React.ReactNode {
 
         <ThemedText style={styles.groupTitle}>{t('navigation.vault')}</ThemedText>
         <View style={styles.groupSection}>
+          {isSharingEnabled && (
+            <>
+              <TouchableOpacity
+                testID="folder-sharing-link"
+                style={styles.settingItem}
+                onPress={() => router.push('/(tabs)/settings/sharing')}
+              >
+                <View style={styles.settingItemIcon}>
+                  <Ionicons name="people-outline" size={20} color={colors.text} />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={styles.settingItemText}>{sharingText.folderSharingTitle}</ThemedText>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </View>
+              </TouchableOpacity>
+              <View style={styles.separator} />
+            </>
+          )}
           <TouchableOpacity
             style={styles.settingItem}
             onPress={() => router.push('/(tabs)/settings/import-export')}
