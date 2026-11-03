@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Pulizia in background degli appunti abilitata",
     "batteryOptimizationHelpDescription": "L'ottimizzazione della batteria di Android impedisce la rimozione affidabile degli appunti quando l'applicazione è in background. La disattivazione dell'ottimizzazione della batteria per AliasVault consente una pulizia precisa degli appunti in background e garantisce automaticamente le necessarie autorizzazioni di allarme.",
     "batteryOptimizationHelpTitle": "Abilita Pulizia degli Appunti in Background",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Cancella tutti i siti disabilitati",
     "clientUrlHint": "L'URL dell'interfaccia web della tua istanza self-hosted",
     "clipboardClear": "Cancella appunti",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Compilazione automatica",
       "general": "Generale",
-      "generators": "Generatori"
+      "generators": "Generatori",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Generatore di identità",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Imposta la fascia di età per generare nuove identità.",
