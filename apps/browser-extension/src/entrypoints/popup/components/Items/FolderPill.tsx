@@ -41,7 +41,7 @@ const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = fa
         {folder.name}
       </span>
       {folder.itemCount > 0 && (
-        <span className="text-gray-400 dark:text-gray-500 text-xs">
+        <span className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">
           {folder.itemCount}
         </span>
       )}

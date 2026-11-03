@@ -45,11 +45,14 @@ export const FolderPill: React.FC<IFolderPillProps> = ({ folder, onPress }) => {
       color: colors.text,
       fontSize: 14,
       fontWeight: '500',
+      includeFontPadding: false,
       maxWidth: 120,
     },
     itemCount: {
       color: colors.textMuted,
       fontSize: 12,
+      includeFontPadding: false,
+      marginTop: 1,
     },
   });
 
