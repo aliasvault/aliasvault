@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Browser-Passkey verwenden"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Webseite"
+    },
     "accountSecurity": "Kontosicherheit",
     "activeOnAllSites": "Auf allen Seiten aktiv (sofern nicht unten deaktiviert)",
     "advancedOptions": "Erweiterte Einstellungen",
