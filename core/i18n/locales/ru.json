@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Использовать ключ доступа из браузера﻿"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Сайт"
+    },
     "accountSecurity": "Безопасность аккаунта",
     "activeOnAllSites": "Активен на всех сайтах (если не отключен ниже)",
     "advancedOptions": "Дополнительные параметры",
