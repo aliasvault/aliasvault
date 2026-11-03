@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "פינוי לוח גזירים ברקע פעיל",
     "batteryOptimizationHelpDescription": "מיטוב הסוללה של Android מונע פינוי אמין של לוח הגזירים כשהיישום פועל ברקע. השבתת מיטוב הסוללה ל־AliasVault מאפשרת פינוי מדויק של לוח הגזירים ברקע ומאשרת אוטומטית הרשאות התראות הכרחיות.",
     "batteryOptimizationHelpTitle": "הפעלת פינוי לוח הגזירים ברקע",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "איפוס כל האתרים המושבתים",
     "clientUrlHint": "כתובת ממשק המשתמש הדפדפני של העותק באירוע העצמי שלך",
     "clipboardClear": "פינוי לוח הגזירים",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "השלמה אוטומטית",
       "general": "כללי",
-      "generators": "מחוללים"
+      "generators": "מחוללים",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "מייצר זהויות",
     "identityGeneratorSettings": {
       "ageRangeDescription": "הגדרת טווח גילים ליצירת זהויות חדשות.",
