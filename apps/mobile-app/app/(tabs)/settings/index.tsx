@@ -218,6 +218,13 @@ export default function SettingsScreen() : React.ReactNode {
   };
 
   /**
+   * Handle the advanced settings press.
+   */
+  const handleAdvancedPress = () : void => {
+    navigate(() => router.push('/(tabs)/settings/advanced'));
+  };
+
+  /**
    * Handle the language settings press.
    */
   const handleLanguagePress = (): void => {
@@ -596,6 +603,20 @@ export default function SettingsScreen() : React.ReactNode {
             </View>
             <View style={styles.settingItemContent}>
               <ThemedText style={styles.settingItemText}>{t('settings.language')}</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </View>
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity
+            testID="advanced-settings-link"
+            style={styles.settingItem}
+            onPress={handleAdvancedPress}
+          >
+            <View style={styles.settingItemIcon}>
+              <Ionicons name="options-outline" size={20} color={colors.text} />
+            </View>
+            <View style={styles.settingItemContent}>
+              <ThemedText style={styles.settingItemText}>{t('settings.advancedOptions')}</ThemedText>
               <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>

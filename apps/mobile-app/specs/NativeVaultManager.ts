@@ -84,6 +84,10 @@ export interface Spec extends TurboModule {
   getAutofillCopyTotpOnFill(): Promise<boolean>;
   setAutofillCopyTotpOnFill(enabled: boolean): Promise<void>;
 
+  // Screen capture protection
+  getScreenCaptureProtection(): Promise<boolean>;
+  setScreenCaptureProtection(enabled: boolean): Promise<void>;
+
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 
