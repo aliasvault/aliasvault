@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Włączono czyszczenie schowka w tle",
     "batteryOptimizationHelpDescription": "Optymalizacja baterii systemu Android uniemożliwia niezawodne czyszczenie schowka, gdy aplikacja działa w tle. Wyłączenie optymalizacji baterii dla AliasVault umożliwia precyzyjne czyszczenie schowka w tle i automatycznie przyznaje niezbędne uprawnienia alarmowe.",
     "batteryOptimizationHelpTitle": "Włącz czyszczenie schowka w tle",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
     "clientUrlHint": "Adres URL interfejsu sieci web dla twojej samodzielnej instancji",
     "clipboardClear": "Wyczyść schowek",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autouzupełnianie",
       "general": "Ogólne",
-      "generators": "Generatory"
+      "generators": "Generatory",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Generator tożsamości",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ustaw zakres wieku dla generowania nowych tożsamości.",
