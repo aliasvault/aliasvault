@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Usar llave de acceso del navegador"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Sitio Web"
+    },
     "accountSecurity": "Seguridad de la cuenta",
     "activeOnAllSites": "Activo en todos los sitios (a menos que se deshabilite debajo)",
     "advancedOptions": "Opciones Avanzadas",
