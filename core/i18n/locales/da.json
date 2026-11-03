@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Rydning af udklipsholder i baggrunden er aktiveret",
     "batteryOptimizationHelpDescription": "Androids batterioptimering forhindrer pålidelig rydning af udklipsholderen, når appen er i baggrunden. Ved at deaktivere batterioptimering for AliasVault muliggøres præcis rydning af udklipsholderen i baggrunden, og nødvendige alarmtilladelser tildeles automatisk.",
     "batteryOptimizationHelpTitle": "Aktiver rydning af udklipsholder i baggrunden",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Ryd alle deaktiverede websteder",
     "clientUrlHint": "Web-interfacets URL for din selv-hostede instans",
     "clipboardClear": "Ryd udklipsholder",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofyld",
       "general": "Generelt",
-      "generators": "Generatorer"
+      "generators": "Generatorer",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Indstil aldersgruppen for generering af nye identiteter.",
