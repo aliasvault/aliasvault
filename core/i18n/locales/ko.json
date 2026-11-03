@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "브라우저 패스키 사용"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "웹사이트"
+    },
     "accountSecurity": "Account Security",
     "activeOnAllSites": "모든 사이트에서 활성 (아래에서 비활성화된 경우 제외)",
     "advancedOptions": "고급 옵션",
