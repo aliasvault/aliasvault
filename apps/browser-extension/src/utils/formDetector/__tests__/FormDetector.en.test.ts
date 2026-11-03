@@ -430,6 +430,24 @@ describe('FormDetector English tests', () => {
    * The "passcode" term alone must not turn a type="password" field
    * with a "Password" label into a 2FA field.
    */
+  describe('English login form 7 detection (position:fixed dropdown inside an off-screen header)', () => {
+    const htmlFile = 'en-login-form7.html';
+
+    testField(FormField.Email, 'ta-header-username', htmlFile);
+    testField(FormField.Password, 'ta-header-password', htmlFile);
+
+    it('should detect a login form and classify the clicked email field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('ta-header-username');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+      expect(formDetector.getDetectedFieldType()).toBe(DetectedFieldType.Email);
+    });
+  });
+
   describe('English login form 6 detection (password input named "passcode")', () => {
     const htmlFile = 'en-login-form6.html';
 

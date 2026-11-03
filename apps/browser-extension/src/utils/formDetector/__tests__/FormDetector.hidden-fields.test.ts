@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { JSDOM } from 'jsdom';
+import { describe, it, expect, vi } from 'vitest';
 
 import { FormDetector } from '../FormDetector';
+import { DetectedFieldType } from '../types/FormFields';
 
 import { createTestDom } from './TestUtils';
 
@@ -55,6 +57,35 @@ describe('FormDetector - Various hidden field techniques', () => {
     expect(form).toBeTruthy();
     expect(form?.emailField?.name).not.toBe('fake3');
     expect(form?.passwordField?.name).not.toBe('fake3pass');
+  });
+
+  describe('position:fixed field inside an off-screen container', () => {
+    /**
+     * Build a login form whose fields sit in a fixed box inside an off-screen ancestor.
+     */
+    const createDocument = (): Document => new JSDOM(`
+      <div style="position:absolute; left:-9999px;">
+        <form style="position:fixed; top:0; left:0;">
+          <label for="email">Email</label><input type="email" id="email">
+          <label for="password">Password</label><input type="password" id="password">
+        </form>
+      </div>`).window.document;
+
+    it('should treat the field as visible when the fixed box escapes the off-screen ancestor', () => {
+      const document = createDocument();
+      const formDetector = new FormDetector(document, document.getElementById('password') as HTMLElement);
+
+      expect(formDetector.getDetectedFieldType()).toBe(DetectedFieldType.Password);
+    });
+
+    it('should treat the field as hidden when the fixed box still renders off-screen', () => {
+      const document = createDocument();
+      // Simulate an ancestor (e.g. with a transform) that captures the fixed box; jsdom has no layout.
+      vi.spyOn(document.querySelector('form')!, 'getBoundingClientRect').mockReturnValue({ left: -9999, top: 0 } as DOMRect);
+      const formDetector = new FormDetector(document, document.getElementById('password') as HTMLElement);
+
+      expect(formDetector.getDetectedFieldType()).toBeNull();
+    });
   });
 
   it('should ignore honeypot fields', () => {

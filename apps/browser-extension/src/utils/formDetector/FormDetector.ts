@@ -47,17 +47,12 @@ export class FormDetector {
      * Only trust clickedElement if it and its ancestors are visible.
      */
     if (clickedElement) {
-      // Check parents strictly (including opacity)
-      let parent = getComposedParentElement(clickedElement) as HTMLElement | null;
-      let parentVisible = true;
-
-      while (parent && parent !== this.document.body) {
-        if (!this.isElementVisible(parent, true)) {
-          parentVisible = false;
-          break;
-        }
-        parent = getComposedParentElement(parent) as HTMLElement | null;
-      }
+      /*
+       * Check parents strictly (including opacity) in one walk up from the direct parent, so a
+       * position:fixed ancestor is seen before the off-screen ancestors it escapes from.
+       */
+      const parent = getComposedParentElement(clickedElement) as HTMLElement | null;
+      const parentVisible = !parent || parent === this.document.body || this.isElementVisible(parent, true);
 
       // Check element itself without opacity check (allow opacity:0 for transitions)
       const style = document.defaultView?.getComputedStyle(clickedElement);
@@ -68,7 +63,7 @@ export class FormDetector {
       } else {
         devLog('[FormDetector] Clicked element rejected as hidden:', describeElement(clickedElement),
           !parentVisible
-            ? `— failing check: ${this.lastHiddenReason ?? `unknown (walk broke at ${describeElement(parent)})`}`
+            ? `— failing check: ${this.lastHiddenReason ?? 'unknown'}`
             : `— element itself hidden (display=${style?.display}, visibility=${style?.visibility})`);
         this.clickedElement = null;
       }
@@ -547,6 +542,7 @@ export class FormDetector {
     }
 
     let current: HTMLElement | null = element;
+    let renderedOnScreenByFixed = false;
     while (current) {
       try {
         const style = this.document.defaultView?.getComputedStyle(current);
@@ -639,7 +635,7 @@ export class FormDetector {
          * Check for elements positioned off-screen using absolute/fixed positioning
          * Common technique: position:absolute; left:-9999px or top:-9999px
          */
-        if (style.position === 'absolute' || style.position === 'fixed') {
+        if (!renderedOnScreenByFixed && (style.position === 'absolute' || style.position === 'fixed')) {
           const left = parseFloat(style.left);
           const top = parseFloat(style.top);
 
@@ -680,6 +676,12 @@ export class FormDetector {
               return false;
             }
           }
+        }
+
+        // Once a fixed element renders on-screen, the offsets of its ancestors no longer matter.
+        if (style.position === 'fixed') {
+          const rect = current.getBoundingClientRect();
+          renderedOnScreenByFixed = rect.left >= -5000 && rect.top >= -5000;
         }
       } catch {
         // If we can't get computed style, cache and return true for this element and all its parents
