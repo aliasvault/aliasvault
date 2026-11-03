@@ -135,9 +135,7 @@ class AutofillUnlockActivity : FragmentActivity() {
     private fun buildFillResponse(): FillResponse {
         val allItems = vaultStore.getAllItems()
 
-        val filteredByApp = appInfo?.let {
-            RustItemMatcher.filterItemsByAppInfo(allItems, it)
-        } ?: allItems
+        val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(allItems, it) } ?: emptyList()
 
         val matchingItems = filteredByApp.filter { item ->
             val hasIdentifier = !item.username.isNullOrEmpty() || !item.email.isNullOrEmpty()
