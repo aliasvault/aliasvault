@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Background clipboard clearing enabled",
     "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
     "batteryOptimizationHelpTitle": "Enable Background Clipboard Clearing",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
     "clientUrlHint": "The web interface URL of your self-hosted instance",
     "clipboardClear": "Clear Clipboard",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofill",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identity Generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Set the age range for generating new identities.",
