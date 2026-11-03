@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Achtergrond klembord wissen ingeschakeld",
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "batteryOptimizationHelpTitle": "Achtergrond klembord wissen inschakelen",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
     "clientUrlHint": "De webinterface URL van je self-hosted omgeving",
     "clipboardClear": "Klembord wissen",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Automatisch invullen",
       "general": "Algemeen",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identiteit generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
