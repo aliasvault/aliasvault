@@ -262,7 +262,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */ = {
+		CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -272,73 +272,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE77825E2EA1822400A75E6F /* VaultUtils */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUtils;
-			sourceTree = "<group>";
-		};
-		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKit;
-			sourceTree = "<group>";
-		};
-		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKitTests;
-			sourceTree = "<group>";
-		};
-		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUI;
-			sourceTree = "<group>";
-		};
-		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultModels;
-			sourceTree = "<group>";
-		};
-		CEE909812DA548C7008D568F /* Autofill */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = Autofill;
-			sourceTree = "<group>";
-		};
+		CE77825E2EA1822400A75E6F /* VaultUtils */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUtils; sourceTree = "<group>"; };
+		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKit; sourceTree = "<group>"; };
+		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKitTests; sourceTree = "<group>"; };
+		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUI; sourceTree = "<group>"; };
+		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultModels; sourceTree = "<group>"; };
+		CEE909812DA548C7008D568F /* Autofill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Autofill; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -490,7 +429,7 @@
 			path = Generated;
 			sourceTree = "<group>";
 		};
-		6114AD0A31612EA499210371 /*  */ = {
+		6114AD0A31612EA499210371 = {
 			isa = PBXGroup;
 			children = (
 				8F8258CE46969A87661E0302 /* RustCore.swift */,
@@ -525,7 +464,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				83CBBA001A601CBA00E9B192 /* Products */,
-				6114AD0A31612EA499210371 /*  */,
+				6114AD0A31612EA499210371,
 				CE5212B62F0C061800F4C835 /* Recovered References */,
 				3AD00C41DD88E219A26C2E41 /* RustCoreFramework */,
 			);
@@ -699,7 +638,6 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
-				CE3AE6012F1E0A0100E7745E /* Allow local networking in Debug */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				CEE9098C2DA548C7008D568F /* Embed Foundation Extensions */,
 				CEE480A12DBE86DD00F4A367 /* Embed Frameworks */,
@@ -861,7 +799,6 @@
 				CEE9097A2DA548C7008D568F /* Sources */,
 				CEE9097B2DA548C7008D568F /* Frameworks */,
 				CEE9097C2DA548C7008D568F /* Resources */,
-				CE3AE6022F1E0A0100E7745E /* Allow local networking in Debug */,
 				CEE480B02DBE88AB00F4A367 /* Embed Frameworks */,
 				CE3AE50F2DC7FB5500E7745E /* ShellScript */,
 			);
@@ -1032,44 +969,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		CE3AE6012F1E0A0100E7745E /* Allow local networking in Debug */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Allow local networking in Debug";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Debug builds may reach a local dev API over http://; release builds require TLS.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  /usr/libexec/PlistBuddy -c \"Set :NSAppTransportSecurity:NSAllowsLocalNetworking true\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
-		};
-		CE3AE6022F1E0A0100E7745E /* Allow local networking in Debug */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Allow local networking in Debug";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Debug builds may reach a local dev API over http://; release builds require TLS.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  /usr/libexec/PlistBuddy -c \"Set :NSAppTransportSecurity:NSAllowsLocalNetworking true\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nfi\n";
-		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1571,6 +1470,8 @@
 				INFOPLIST_FILE = AliasVault/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AliasVault;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_PREPROCESS = YES;
+				INFOPLIST_PREPROCESSOR_DEFINITIONS = "ALLOW_LOCAL_NETWORKING=true";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1611,6 +1512,8 @@
 				INFOPLIST_FILE = AliasVault/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AliasVault;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_PREPROCESS = YES;
+				INFOPLIST_PREPROCESSOR_DEFINITIONS = "ALLOW_LOCAL_NETWORKING=false";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1696,10 +1599,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -1762,10 +1662,7 @@
 					"$(inherited)",
 					"-DRCT_REMOVE_LEGACY_ARCH=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
@@ -2377,6 +2274,8 @@
 				INFOPLIST_FILE = autofill/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AliasVault AutoFill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_PREPROCESS = YES;
+				INFOPLIST_PREPROCESSOR_DEFINITIONS = "ALLOW_LOCAL_NETWORKING=true";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2426,6 +2325,8 @@
 				INFOPLIST_FILE = autofill/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AliasVault AutoFill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_PREPROCESS = YES;
+				INFOPLIST_PREPROCESSOR_DEFINITIONS = "ALLOW_LOCAL_NETWORKING=false";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
