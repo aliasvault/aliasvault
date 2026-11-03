@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Använd webbläsarens Passkey"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Webbplats"
+    },
     "accountSecurity": "Kontosäkerhet",
     "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "advancedOptions": "Avancerade inställningar",
@@ -1163,8 +1172,8 @@
     "batteryOptimizationDisabled": "Rensning av urklipp i bakgrunden aktiverad",
     "batteryOptimizationHelpDescription": "Androids batterioptimering förhindrar tillförlitlig rensning av urklipp när appen är i bakgrunden. Inaktivering av batterioptimering för AliasVault tillåter exakt rensning av urklipp och ger automatiskt nödvändiga larmbehörigheter.",
     "batteryOptimizationHelpTitle": "Aktivera rensning av urklipp i bakgrunden",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blockera skärmdumpar",
+    "blockScreenshotsDescription": "Blockerar skärmbilder och skärminspelningar av appen.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
     "clientUrlHint": "Webbgränssnittets URL för din egenhostade instans",
     "clipboardClear": "Rensa urklipp",
@@ -1226,10 +1235,10 @@
       "autofill": "Autofyll",
       "general": "Allmänt",
       "generators": "Generatorer",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Skärmsekretess"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Dölj appens innehåll",
+    "hideAppContentsDescription": "Döljer appens innehåll i appväxlaren.",
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
