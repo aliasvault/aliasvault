@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
+import net.aliasvault.app.utils.ScreenCaptureProtection
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
@@ -974,6 +975,26 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             Log.e(TAG, "Error setting autofill copy-TOTP-on-fill setting", e)
             promise.reject("ERR_SET_AUTOFILL_SETTING", "Failed to set autofill copy-TOTP-on-fill setting: ${e.message}", e)
         }
+    }
+
+    /**
+     * Get whether screen capture protection is enabled.
+     * @param promise The promise to resolve with boolean result
+     */
+    @ReactMethod
+    override fun getScreenCaptureProtection(promise: Promise) {
+        promise.resolve(ScreenCaptureProtection.isEnabled(reactApplicationContext))
+    }
+
+    /**
+     * Enable or disable screen capture protection and apply it to the current activity.
+     * @param enabled Whether screen capture protection is enabled
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setScreenCaptureProtection(enabled: Boolean, promise: Promise) {
+        ScreenCaptureProtection.setEnabled(reactApplicationContext, enabled, currentActivity)
+        promise.resolve(null)
     }
 
     /**
