@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal este activată",
     "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării bateriei pentru AliasVault permite ștergerea precisă a clipboard-ului în fundal și acordă automat permisiunile necesare.",
     "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Șterge toate site-urile dezactivate",
     "clientUrlHint": "URL-ul interfeței web a instanței tale",
     "clipboardClear": "Golește clipboardul",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Completare automată",
       "general": "General",
-      "generators": "Generatoare"
+      "generators": "Generatoare",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Generator de Identitate",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
