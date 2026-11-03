@@ -7,60 +7,94 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
+import androidx.core.content.edit
 
 /**
- * Screen capture protection: sets FLAG_SECURE on the app's windows, which blocks screenshots and screen recordings
- * and hides the app content in the recent apps screen.
+ * Screen capture protection with two preferences: hiding the app contents in the recent apps screen, and blocking
+ * screenshots and screen recordings via FLAG_SECURE (which hides the recent apps snapshot too).
  *
  * Other platform implementations: ScreenCaptureProtection.swift (iOS).
  */
 object ScreenCaptureProtection {
     private const val PREFS_NAME = "AliasVaultPrefs"
     private const val KEY_ENABLED = "screen_capture_protection"
+    private const val KEY_BLOCK_SCREENSHOTS = "block_screenshots"
 
     /**
-     * Whether screen capture protection is enabled. Defaults to true.
+     * Whether the app contents are hidden in the recent apps screen. Defaults to true.
      * @param context The context to read the preference with.
-     * @return Whether the protection is enabled.
+     * @return Whether the app contents are hidden.
      */
     fun isEnabled(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(KEY_ENABLED, true)
+        return prefs(context).getBoolean(KEY_ENABLED, true)
     }
 
     /**
-     * Store the preference and apply it to the given activity right away.
+     * Store whether the app contents are hidden in the recent apps screen and apply it right away.
      * @param context The context to store the preference with.
-     * @param enabled Whether the protection is enabled.
+     * @param enabled Whether the app contents are hidden.
      * @param activity The activity currently shown, if any.
      */
     fun setEnabled(context: Context, enabled: Boolean, activity: Activity?) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_ENABLED, enabled).apply()
-        activity?.runOnUiThread { applyToWindow(activity, enabled) }
+        prefs(context).edit { putBoolean(KEY_ENABLED, enabled) }
+        activity?.runOnUiThread { apply(activity) }
     }
 
     /**
-     * Apply the stored preference to the activity's window, again after a theme change so the recent apps color follows it.
-     * @param activity The activity to apply the preference to.
+     * Whether screenshots and screen recordings are blocked. Defaults to true.
+     * @param context The context to read the preference with.
+     * @return Whether screenshots are blocked.
      */
-    fun apply(activity: Activity) {
-        applyToWindow(activity, isEnabled(activity))
+    fun isBlockScreenshotsEnabled(context: Context): Boolean {
+        return prefs(context).getBoolean(KEY_BLOCK_SCREENSHOTS, true)
     }
 
-    private fun applyToWindow(activity: Activity, enabled: Boolean) {
-        if (enabled) {
+    /**
+     * Store whether screenshots and screen recordings are blocked and apply it right away.
+     * @param context The context to store the preference with.
+     * @param enabled Whether screenshots are blocked.
+     * @param activity The activity currently shown, if any.
+     */
+    fun setBlockScreenshotsEnabled(context: Context, enabled: Boolean, activity: Activity?) {
+        prefs(context).edit { putBoolean(KEY_BLOCK_SCREENSHOTS, enabled) }
+        activity?.runOnUiThread { apply(activity) }
+    }
+
+    /**
+     * Apply the stored preferences to the activity's window, again after a theme change so the recent apps color follows it.
+     * @param activity The activity to apply the preferences to.
+     */
+    fun apply(activity: Activity) {
+        val hideContents = isEnabled(activity)
+        val secure = isBlockScreenshotsEnabled(activity) || (hideContents && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+
+        if (secure) {
             activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val isDarkMode = (activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-                val background = if (isDarkMode) Color.BLACK else Color.WHITE
-                val description = ActivityManager.TaskDescription.Builder()
-                    .setBackgroundColor(background)
-                    .setStatusBarColor(background)
-                    .setNavigationBarColor(background)
-                    .build()
-                activity.setTaskDescription(description)
-            }
         } else {
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity.setRecentsScreenshotEnabled(!hideContents)
+            if (hideContents || secure) {
+                setRecentsBackground(activity)
+            }
+        }
     }
+
+    /** Show a plain white or black tile in the recent apps screen, following the device theme. */
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun setRecentsBackground(activity: Activity) {
+        val isDarkMode = (activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        val background = if (isDarkMode) Color.BLACK else Color.WHITE
+        val description = ActivityManager.TaskDescription.Builder()
+            .setBackgroundColor(background)
+            .setStatusBarColor(background)
+            .setNavigationBarColor(background)
+            .build()
+        activity.setTaskDescription(description)
+    }
+
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

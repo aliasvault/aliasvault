@@ -998,6 +998,26 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Get whether screenshots and screen recordings are blocked.
+     * @param promise The promise to resolve with boolean result
+     */
+    @ReactMethod
+    override fun getBlockScreenshots(promise: Promise) {
+        promise.resolve(ScreenCaptureProtection.isBlockScreenshotsEnabled(reactApplicationContext))
+    }
+
+    /**
+     * Enable or disable blocking screenshots and screen recordings and apply it to the current activity.
+     * @param enabled Whether screenshots are blocked
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setBlockScreenshots(enabled: Boolean, promise: Promise) {
+        ScreenCaptureProtection.setBlockScreenshotsEnabled(reactApplicationContext, enabled, currentActivity)
+        promise.resolve(null)
+    }
+
+    /**
      * Get the current fragment activity.
      * @return The fragment activity
      */

@@ -87,6 +87,8 @@ export interface Spec extends TurboModule {
   // Screen capture protection
   getScreenCaptureProtection(): Promise<boolean>;
   setScreenCaptureProtection(enabled: boolean): Promise<void>;
+  getBlockScreenshots(): Promise<boolean>; // Android only
+  setBlockScreenshots(enabled: boolean): Promise<void>; // Android only
 
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
