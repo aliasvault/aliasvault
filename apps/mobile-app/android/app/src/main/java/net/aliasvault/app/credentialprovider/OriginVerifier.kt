@@ -45,7 +45,7 @@ class OriginVerifier {
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
         // Last refreshed: 2026-10-11
-        private val PRIVILEGED_ALLOWLIST_JSON = """
+        internal val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
             {

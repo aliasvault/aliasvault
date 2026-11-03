@@ -72,7 +72,7 @@ class AutofillService : AutofillService() {
             val structure = context.structure
 
             // Find any autofillable fields in the form
-            val fieldFinder = FieldFinder(structure)
+            val fieldFinder = FieldFinder(structure, this)
             fieldFinder.parseStructure()
 
             // If no password field was found, return an empty response
@@ -91,7 +91,7 @@ class AutofillService : AutofillService() {
                 val contexts = request.fillContexts
                 val context = contexts.last()
                 val structure = context.structure
-                val fieldFinder = FieldFinder(structure)
+                val fieldFinder = FieldFinder(structure, this)
                 fieldFinder.parseStructure()
 
                 val responseBuilder = FillResponse.Builder()
@@ -129,7 +129,7 @@ class AutofillService : AutofillService() {
         callback: (FillResponse?) -> Unit,
     ) {
         // Get the app/website information from assist structure.
-        val appInfo = fieldFinder.getAppInfo()
+        val appInfo = fieldFinder.appInfo
 
         // Ignore requests from our own unlock page as this would cause a loop
         if (appInfo == "net.aliasvault.app") {
@@ -152,12 +152,8 @@ class AutofillService : AutofillService() {
                                 return
                             }
 
-                            // Filter items based on app/website info
-                            val filteredByApp = if (appInfo != null) {
-                                RustItemMatcher.filterItemsByAppInfo(result, appInfo)
-                            } else {
-                                result
-                            }
+                            // Filter items based on app/website info; no matches when the site is unknown
+                            val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(result, it) } ?: emptyList()
 
                             // Further filter to only include items with autofillable data.
                             // This prevents from showing non-autofillable items like passkeys.
@@ -384,7 +380,7 @@ class AutofillService : AutofillService() {
         addInlineIfAvailable(dataSetBuilder, inlinePool, searchText)
 
         // Get the app/website information to use as item URL
-        val appInfo = fieldFinder.getAppInfo()
+        val appInfo = fieldFinder.appInfo
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
         // Create deep link URL to items page with item URL
@@ -435,7 +431,7 @@ class AutofillService : AutofillService() {
 
         // Open the action picker so the user can choose between linking this app
         // to an existing credential or creating a new one.
-        val appInfo = fieldFinder.getAppInfo()
+        val appInfo = fieldFinder.appInfo
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
         val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"
 
@@ -479,7 +475,7 @@ class AutofillService : AutofillService() {
         }
 
         val addSearchDebug = {
-            val searchText = fieldFinder.getAppInfo() ?: "unknown"
+            val searchText = fieldFinder.appInfo ?: "unknown"
             responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, searchText, inlinePool))
         }
         if (inlinePool.isInline) {

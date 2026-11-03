@@ -180,26 +180,28 @@ export default function AutofillOpenAppScreen(): React.ReactNode {
           </View>
         )}
 
-        <RobustPressable
-          style={styles.optionCard}
-          onPress={handleFindExisting}
-          testID="autofill-find-existing-button"
-        >
-          <View style={styles.actionRow}>
-            <View style={styles.optionPrimaryIconWrapper}>
-              <MaterialIcons name="link" size={26} color={colors.primary} />
+        {decodedAppInfo.length > 0 && (
+          <RobustPressable
+            style={styles.optionCard}
+            onPress={handleFindExisting}
+            testID="autofill-find-existing-button"
+          >
+            <View style={styles.actionRow}>
+              <View style={styles.optionPrimaryIconWrapper}>
+                <MaterialIcons name="link" size={26} color={colors.primary} />
+              </View>
+              <View style={styles.actionTextWrapper}>
+                <ThemedText style={styles.actionTitle}>
+                  {t('items.autofillLinkExisting.title')}
+                </ThemedText>
+                <ThemedText style={styles.actionDescription}>
+                  {t('items.autofillOpenApp.findExistingDescription')}
+                </ThemedText>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={colors.textMuted} />
             </View>
-            <View style={styles.actionTextWrapper}>
-              <ThemedText style={styles.actionTitle}>
-                {t('items.autofillLinkExisting.title')}
-              </ThemedText>
-              <ThemedText style={styles.actionDescription}>
-                {t('items.autofillOpenApp.findExistingDescription')}
-              </ThemedText>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={colors.textMuted} />
-          </View>
-        </RobustPressable>
+          </RobustPressable>
+        )}
 
         <RobustPressable
           style={styles.optionCard}

@@ -131,7 +131,7 @@ task_passkeys_allowlist() {
     {
         echo "        // Source: $url"
         echo "        // Last refreshed: $TODAY"
-        echo '        private val PRIVILEGED_ALLOWLIST_JSON = """'
+        echo '        internal val PRIVILEGED_ALLOWLIST_JSON = """'
         awk '{ if (length($0) > 0) print "        " $0; else print "" }' "$raw"
         echo '        """.trimIndent()'
     } > "$block"
