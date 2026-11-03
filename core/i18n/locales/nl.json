@@ -1100,11 +1100,11 @@
   "settings": {
     "about": {
       "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "documentation": "Documentatie",
+      "privacyPolicy": "Privacybeleid",
+      "reportIssue": "Meld een probleem",
+      "sourceCode": "Broncode",
+      "title": "Over",
       "website": "Website"
     },
     "accountSecurity": "Account beveiliging",
@@ -1172,8 +1172,8 @@
     "batteryOptimizationDisabled": "Achtergrond klembord wissen ingeschakeld",
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "batteryOptimizationHelpTitle": "Achtergrond klembord wissen inschakelen",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blokkeer schermafbeeldingen",
+    "blockScreenshotsDescription": "Blokkeert schermafbeeldingen en schermopnames van de app.",
     "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
     "clientUrlHint": "De webinterface URL van je self-hosted omgeving",
     "clipboardClear": "Klembord wissen",
@@ -1235,10 +1235,10 @@
       "autofill": "Automatisch invullen",
       "general": "Algemeen",
       "generators": "Generators",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Scherm privacy"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Verberg App inhoud",
+    "hideAppContentsDescription": "Verbergt de inhoud van de app in de app switcher.",
     "identityGenerator": "Identiteit generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
