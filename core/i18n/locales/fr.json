@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Effacement du presse-papiers en arrière-plan activé",
     "batteryOptimizationHelpDescription": "L'optimisation de la batterie d'Android empêche le nettoyage fiable du presse-papiers lorsque l'application est en arrière-plan. La désactivation de l'optimisation de la batterie pour AliasVault permet un nettoyage précis du presse-papiers et accorde automatiquement les autorisations d'alarme nécessaires.",
     "batteryOptimizationHelpTitle": "Activer le nettoyage du presse-papier en arrière-plan",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Effacer tous les sites désactivés",
     "clientUrlHint": "L'URL de l'interface web de votre instance auto-hébergée",
     "clipboardClear": "Effacer le presse-papiers",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Remplissage automatique",
       "general": "Général",
-      "generators": "Générateurs"
+      "generators": "Générateurs",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Générateur d'identité",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
