@@ -1,12 +1,11 @@
-import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect, useNavigation } from 'expo-router';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -19,7 +18,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AccountFingerprint } from '@/components/sharing/AccountFingerprint';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
@@ -41,15 +39,15 @@ export default function SettingsScreen() : React.ReactNode {
   const { getAutoLockTimeout } = useApp();
   const hasCapability = useCapabilities();
   const { logoutUserInitiated } = useLogout();
-  const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigationDebounce();
-  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  // On iOS the tab bar floats over the content, on Android it takes its own space.
+  const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 80 : 16;
   const [scrollY] = useState(() => new Animated.Value(0));
   const scrollViewRef = useRef<ScrollView>(null);
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
-  const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [ownFingerprint, setOwnFingerprint] = useState<string | null>(null);
   const isSharingEnabled = hasCapability(CapabilityKeys.VaultSharing);
 
@@ -61,7 +59,7 @@ export default function SettingsScreen() : React.ReactNode {
     NativeVaultManager.getSigningKeyFingerprint().then(setOwnFingerprint).catch(() => setOwnFingerprint(null));
   }, [isSharingEnabled]));
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
-  const { isEnabled: isDeveloperToolsEnabled, registerTap, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
+  const { isEnabled: isDeveloperToolsEnabled, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
 
   useFocusEffect(
     useCallback(() => {
@@ -128,45 +126,17 @@ export default function SettingsScreen() : React.ReactNode {
       };
 
       /**
-       * Load the server version stored on the last sync so it can be shown next to the app version.
-       */
-      const loadServerVersion = async () : Promise<void> => {
-        const version = await NativeVaultManager.getServerVersion();
-        setServerVersion(version ?? null);
-      };
-
-      /**
        * Load all settings data.
        */
       const loadData = async () : Promise<void> => {
-        await Promise.all([loadAutoLockDisplay(), loadClipboardClearDisplay(), loadAuthMethodDisplay(), loadApiUrl(), loadServerVersion()]);
+        await Promise.all([loadAutoLockDisplay(), loadClipboardClearDisplay(), loadAuthMethodDisplay()]);
         setIsFirstLoad(false);
       };
 
       loadData();
       refreshDeveloperTools();
-    }, [getAutoLockTimeout, setIsFirstLoad, loadApiUrl, refreshDeveloperTools, t])
+    }, [getAutoLockTimeout, setIsFirstLoad, refreshDeveloperTools, t])
   );
-
-  /*
-   * Replace the header declared in the settings layout, so the logo can carry the hidden
-   * developer tools unlock gesture. Android only, on iOS the TitleContainer logo carries it.
-   */
-  useEffect(() => {
-    if (Platform.OS !== 'android') {
-      return;
-    }
-
-    navigation.setOptions({
-      /**
-       * Define the custom Android header, matching the one in the settings layout.
-       * @returns {React.ReactNode} The header component
-       */
-      headerTitle: (): React.ReactNode => (
-        <AndroidHeader title={t('common.settings')} onLogoPress={registerTap} />
-      ),
-    });
-  }, [navigation, registerTap, t]);
 
   /**
    * Handle the vault unlock press.
@@ -222,6 +192,13 @@ export default function SettingsScreen() : React.ReactNode {
    */
   const handleAdvancedPress = () : void => {
     navigate(() => router.push('/(tabs)/settings/advanced'));
+  };
+
+  /**
+   * Handle the about press.
+   */
+  const handleAboutPress = (): void => {
+    navigate(() => router.push('/(tabs)/settings/about'));
   };
 
   /**
@@ -295,7 +272,7 @@ export default function SettingsScreen() : React.ReactNode {
       textTransform: 'uppercase',
     },
     scrollContent: {
-      paddingBottom: 80,
+      paddingBottom,
       paddingTop: Platform.OS === 'ios' ? 42 : 16,
     },
     scrollView: {
@@ -369,24 +346,6 @@ export default function SettingsScreen() : React.ReactNode {
     skeletonLoader: {
       marginRight: 8,
     },
-    versionContainer: {
-      alignItems: 'center',
-      marginTop: 20,
-      opacity: 0.6,
-      paddingBottom: 16,
-    },
-    versionText: {
-      color: colors.textMuted,
-      fontSize: 12,
-      lineHeight: 20,
-      textAlign: 'center',
-    },
-    versionLabel: {
-      color: colors.textMuted,
-      fontSize: 12,
-      lineHeight: 20,
-      fontWeight: 'bold',
-    },
   });
 
   return (
@@ -404,10 +363,10 @@ export default function SettingsScreen() : React.ReactNode {
         )}
         scrollEventThrottle={16}
         contentContainerStyle={styles.scrollContent}
-        scrollIndicatorInsets={{ bottom: 40 }}
+        scrollIndicatorInsets={{ bottom: paddingBottom }}
         style={styles.scrollView}
       >
-        <TitleContainer title={t('common.settings')} onLogoPress={registerTap} />
+        <TitleContainer title={t('common.settings')} />
         <View style={styles.accountSection}>
           <UsernameDisplay />
           <View style={styles.separator} />
@@ -622,6 +581,20 @@ export default function SettingsScreen() : React.ReactNode {
           </TouchableOpacity>
           <View style={styles.separator} />
           <TouchableOpacity
+            testID="about-settings-link"
+            style={styles.settingItem}
+            onPress={handleAboutPress}
+          >
+            <View style={styles.settingItemIcon}>
+              <Ionicons name="information-circle-outline" size={20} color={colors.text} />
+            </View>
+            <View style={styles.settingItemContent}>
+              <ThemedText style={styles.settingItemText}>{t('settings.about.title')}</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </View>
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity
             style={styles.settingItem}
             onPress={logoutUserInitiated}
           >
@@ -652,16 +625,6 @@ export default function SettingsScreen() : React.ReactNode {
           </View>
         )}
 
-        <TouchableOpacity style={styles.versionContainer} onPress={registerTap} activeOpacity={1}>
-          <ThemedText style={styles.versionText}>
-            <ThemedText style={styles.versionLabel}>{t('settings.appVersion')}:</ThemedText> {AppInfo.VERSION}
-          </ThemedText>
-          {serverVersion && (
-            <ThemedText style={styles.versionText}>
-              <ThemedText style={styles.versionLabel}>{t('settings.serverVersion')}:</ThemedText> {serverVersion} ({getDisplayUrl()})
-            </ThemedText>
-          )}
-        </TouchableOpacity>
       </Animated.ScrollView>
 
     </ThemedContainer>

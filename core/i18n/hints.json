@@ -377,6 +377,8 @@
   "navigation.vault": "Main navigation link for vault section",
   "passkeys.passkey": "Label for passkey",
   "passkeys.site": "Label for passkey site/relying party ID",
+  "settings.about.sourceCode": "Link to the public source code repository on GitHub",
+  "settings.about.title": "Settings row and page title for the screen with app version, server info and links to website, docs, GitHub and privacy policy",
   "settings.accountSecurity": "Settings page for server-side account actions: change master password, active sessions, recent auth logs, delete account",
   "settings.apps.browserExtensionsDescription": "Description for browser extensions",
   "settings.apps.browserExtensionsTitle": "Title for browser extensions section",

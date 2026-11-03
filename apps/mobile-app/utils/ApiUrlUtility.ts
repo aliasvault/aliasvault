@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -18,7 +18,7 @@ export const useApiUrl = (): {
   /**
    * Load the API URL from native storage.
    */
-  const loadApiUrl = async (): Promise<void> => {
+  const loadApiUrl = useCallback(async (): Promise<void> => {
     try {
       const storedUrl = await NativeVaultManager.getApiUrl();
       if (storedUrl && storedUrl.length > 0) {
@@ -29,7 +29,7 @@ export const useApiUrl = (): {
     } catch (error) {
       console.warn('Failed to get API URL from native layer:', error);
     }
-  };
+  }, []);
 
   /**
    * Get the display URL for UI presentation.

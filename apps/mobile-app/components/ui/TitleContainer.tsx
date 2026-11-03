@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import Logo from '@/assets/images/logo.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -6,13 +6,12 @@ import { ThemedText } from '@/components/themed/ThemedText';
 type TitleContainerProps = {
   title: string;
   showLogo?: boolean;
-  onLogoPress?: () => void;
 };
 
 /**
  * Title container component.
  */
-export function TitleContainer({ title, showLogo = true, onLogoPress }: TitleContainerProps): React.ReactNode {
+export function TitleContainer({ title, showLogo = true }: TitleContainerProps): React.ReactNode {
   // On Android, we don't show the title container as the native header is used
   if (Platform.OS === 'android') {
     return null;
@@ -20,15 +19,7 @@ export function TitleContainer({ title, showLogo = true, onLogoPress }: TitleCon
 
   return (
     <View style={styles.titleContainer}>
-      {showLogo && (
-        onLogoPress ? (
-          <TouchableOpacity onPress={onLogoPress} activeOpacity={1}>
-            <Logo width={40} height={40} style={styles.logo} />
-          </TouchableOpacity>
-        ) : (
-          <Logo width={40} height={40} style={styles.logo} />
-        )
-      )}
+      {showLogo && <Logo width={40} height={40} style={styles.logo} />}
       <ThemedText type="title">{title}</ThemedText>
     </View>
   );

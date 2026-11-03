@@ -76,6 +76,14 @@ export default function SettingsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
+        name="about"
+        options={{
+          title: t('settings.about.title'),
+          headerBackTitle: t('common.settings'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
         name="password-generator"
         options={{
           title: t('settings.passwordGenerator'),
