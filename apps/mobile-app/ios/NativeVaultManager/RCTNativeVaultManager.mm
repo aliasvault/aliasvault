@@ -195,6 +195,16 @@
     resolve(@"Not applicable on iOS");
 }
 
+- (void)getBlockScreenshots:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    // Only used by Android.
+    resolve(@(NO));
+}
+
+- (void)setBlockScreenshots:(BOOL)enabled resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    // Only used by Android.
+    resolve(nil);
+}
+
 - (void)recordItemCopy:(NSString *)itemId manifestId:(NSString *)manifestId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager recordItemCopy:itemId manifestId:manifestId resolver:resolve rejecter:reject];
 }

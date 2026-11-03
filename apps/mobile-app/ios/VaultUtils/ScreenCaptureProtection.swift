@@ -1,17 +1,13 @@
 import UIKit
 
-/// Screen capture protection: covers the app while its scene is inactive (app switcher snapshot) or while the screen is
-/// recorded or mirrored.
+/// Screen capture protection: covers the app while its scene is in the background, so the app switcher snapshot shows the launch screen.
 ///
 /// Other platform implementations: ScreenCaptureProtection.kt (Android).
 @MainActor
 public final class ScreenCaptureProtection {
-    /// The instances attached to a connected scene, so a changed preference applies right away.
-    private static let attached = NSHashTable<ScreenCaptureProtection>.weakObjects()
-
     private weak var scene: UIWindowScene?
     private var coverWindow: UIWindow?
-    private var isInactive = false
+    private var isInBackground = false
 
     /// Whether screen capture protection is enabled. Defaults to `true`.
     nonisolated public static var isEnabled: Bool {
@@ -20,40 +16,31 @@ public final class ScreenCaptureProtection {
         return defaults.bool(forKey: VaultConstants.screenCaptureProtectionKey)
     }
 
-    /// Store the preference and apply it to every connected scene.
+    /// Store the preference, which applies the next time the scene enters the background.
     nonisolated public static func setEnabled(_ enabled: Bool) {
         UserDefaults(suiteName: VaultConstants.userDefaultsSuite)?.set(enabled, forKey: VaultConstants.screenCaptureProtectionKey)
-        Task { @MainActor in
-            attached.allObjects.forEach { $0.update() }
-        }
     }
 
-    /// Start protecting the given scene, covering it whenever its screen is captured.
+    /// Start protecting the given scene.
     public init(scene: UIWindowScene) {
         self.scene = scene
-        scene.registerForTraitChanges([UITraitSceneCaptureState.self]) { [weak self] (_: UIWindowScene, _: UITraitCollection) in
-            self?.update()
-        }
-        Self.attached.add(self)
-        update()
     }
 
     /// Cover the scene before iOS takes the app switcher snapshot.
-    public func sceneWillResignActive() {
-        isInactive = true
+    public func sceneDidEnterBackground() {
+        isInBackground = true
         update()
     }
 
-    /// Remove the cover once the scene is active again, unless the screen is still captured.
-    public func sceneDidBecomeActive() {
-        isInactive = false
+    /// Remove the cover as the scene returns to the foreground.
+    public func sceneWillEnterForeground() {
+        isInBackground = false
         update()
     }
 
     private func update() {
         guard let scene else { return }
-        let isCaptured = scene.traitCollection.sceneCaptureState == .active
-        if Self.isEnabled && (isInactive || isCaptured) {
+        if Self.isEnabled && isInBackground {
             showCover(in: scene)
         } else {
             coverWindow?.isHidden = true

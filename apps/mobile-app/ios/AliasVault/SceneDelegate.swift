@@ -43,12 +43,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
   // MARK: - Screen capture protection
 
-  func sceneWillResignActive(_ scene: UIScene) {
-    screenCaptureProtection?.sceneWillResignActive()
+  func sceneDidEnterBackground(_ scene: UIScene) {
+    screenCaptureProtection?.sceneDidEnterBackground()
   }
 
-  func sceneDidBecomeActive(_ scene: UIScene) {
-    screenCaptureProtection?.sceneDidBecomeActive()
+  func sceneWillEnterForeground(_ scene: UIScene) {
+    screenCaptureProtection?.sceneWillEnterForeground()
   }
 
   // MARK: - Linking API
