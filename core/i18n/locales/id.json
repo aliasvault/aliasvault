@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Fitur penghapusan clipboard latar belakang diaktifkan",
     "batteryOptimizationHelpDescription": "Fitur pengoptimalan baterai Android menghalangi penghapusan clipboard yang andal saat aplikasi berada di latar belakang. Menonaktifkan pengoptimalan baterai untuk AliasVault memungkinkan penghapusan clipboard di latar belakang secara akurat dan secara otomatis memberikan izin alarm yang diperlukan.",
     "batteryOptimizationHelpTitle": "Aktifkan Pembersihan Papan Klip di Latar Belakang",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Hapus semua situs yang dinonaktifkan",
     "clientUrlHint": "URL antarmuka web dari instans yang dihosting mandiri milik Anda",
     "clipboardClear": "Bersihkan Clipboard",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofill",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Pembuat identitas",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Atur rentang usia untuk membuat identitas baru.",
