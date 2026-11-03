@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "后台清除剪贴板已启用",
     "batteryOptimizationHelpDescription": "Android 的电池优化会在应用后台运行时降低清除剪贴板的可靠性。为 AliasVault 禁用电池优化后，即可实现精确的后台清除剪贴板，并自动授予必要的提醒权限。",
     "batteryOptimizationHelpTitle": "启用后台清除剪贴板",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "清除所有禁用的网站",
     "clientUrlHint": "您自托管实例的 Web 界面 URL",
     "clipboardClear": "清除剪贴板",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "自动填充",
       "general": "通用",
-      "generators": "生成器"
+      "generators": "生成器",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
       "ageRangeDescription": "设置生成新身份的年龄范围。",
