@@ -13,6 +13,7 @@ import expo.modules.splashscreen.SplashScreenManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.aliasvault.app.utils.ScreenCaptureProtection
 
 /**
  * The main activity of the app.
@@ -41,12 +42,14 @@ class MainActivity : ReactActivity() {
         super.onResume()
         // Reapply system bar configuration when app resumes
         configureSystemBars()
+        ScreenCaptureProtection.apply(this)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // Reapply system bar configuration when theme changes
         configureSystemBars()
+        ScreenCaptureProtection.apply(this)
     }
 
     /**

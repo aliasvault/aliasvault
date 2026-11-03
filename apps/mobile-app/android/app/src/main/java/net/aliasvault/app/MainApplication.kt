@@ -1,7 +1,9 @@
 package net.aliasvault.app
 
+import android.app.Activity
 import android.app.Application
 import android.content.res.Configuration
+import android.os.Bundle
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -14,6 +16,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ExpoReactHostFactory
 import net.aliasvault.app.nativevaultmanager.NativeVaultManagerPackage
+import net.aliasvault.app.utils.ScreenCaptureProtection
 import net.aliasvault.app.vaultstore.VaultStore
 
 /**
@@ -45,6 +48,22 @@ class MainApplication : Application(), ReactApplication {
 
         // Setup process lifecycle observer for auto-lock functionality
         setupProcessLifecycleObserver()
+
+        // Apply screen capture protection to every activity
+        registerActivityLifecycleCallbacks(ScreenCaptureProtectionCallbacks)
+    }
+
+    /**
+     * Applies the screen capture protection preference to each activity when it is created.
+     */
+    private object ScreenCaptureProtectionCallbacks : ActivityLifecycleCallbacks {
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = ScreenCaptureProtection.apply(activity)
+        override fun onActivityStarted(activity: Activity) = Unit
+        override fun onActivityResumed(activity: Activity) = Unit
+        override fun onActivityPaused(activity: Activity) = Unit
+        override fun onActivityStopped(activity: Activity) = Unit
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+        override fun onActivityDestroyed(activity: Activity) = Unit
     }
 
     /**
