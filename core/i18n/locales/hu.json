@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Háttér vágólap törlés bekapcsolva",
     "batteryOptimizationHelpDescription": "Az Android rendszer akkumulátor optimalizálása akadályozza a megfelelő vágólap ürítést ha az app a háttérben van. Az AliasVault akkumulátor optimalizálás kikapcsolásával biztosíthatja a megfelelő vágólap használatot és a szükséges riasztási engedélyeket.",
     "batteryOptimizationHelpTitle": "Háttér vágólap tisztítás bekapcsolása",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Minden kikapcsolt oldal visszaállítása",
     "clientUrlHint": "A saját üzemeltetésű szerver webes felülete",
     "clipboardClear": "Vágólap ürítése",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Autofill",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Személyiség Generátor",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Állítsa be a személyiség generáláshoz használt kor intervallumot.",
