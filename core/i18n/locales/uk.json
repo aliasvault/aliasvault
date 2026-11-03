@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Вебсайт"
+    },
     "accountSecurity": "Account Security",
     "activeOnAllSites": "Активно на всіх сайтах (якщо не вимкнено нижче)",
     "advancedOptions": "Додаткові параметри",
