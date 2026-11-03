@@ -9,7 +9,7 @@ import Toast from 'react-native-toast-message';
 const STORAGE_KEY = 'developer_tools_enabled';
 
 /**
- * Taps needed on the settings logo or version footer to reveal the developer tools.
+ * Taps needed on the app version in the About screen to reveal the developer tools.
  */
 const REQUIRED_TAPS = 20;
 
