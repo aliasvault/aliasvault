@@ -1099,12 +1099,12 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "contactSupport": "Kontakta supporten",
+      "documentation": "Dokumentation",
+      "privacyPolicy": "Integritetspolicy",
+      "reportIssue": "Rapportera ett problem",
+      "sourceCode": "Källkod",
+      "title": "Om",
       "website": "Webbplats"
     },
     "accountSecurity": "Kontosäkerhet",
