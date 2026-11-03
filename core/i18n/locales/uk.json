@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Увімкнено очищення буфера обміну у фоновому режимі",
     "batteryOptimizationHelpDescription": "Оптимізація батареї Android перешкоджає надійному очищенню буфера обміну, коли додаток працює у фоновому режимі. Вимкнення оптимізації батареї для AliasVault дозволяє точно очищати буфер обміну у фоновому режимі та автоматично надає необхідні дозволи на сигнали.",
     "batteryOptimizationHelpTitle": "Увімкнути очищення буфера обміну у фоновому режимі",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
     "clientUrlHint": "URL-адреса вебінтерфейсу вашого самостійного екземпляра",
     "clipboardClear": "Очистити буфер обміну",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Автозаповнення",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Генератор ідентифікаційних даних",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Встановіть віковий діапазон для створення нових ідентифікаційних даних.",
