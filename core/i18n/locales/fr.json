@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Utiliser la clé d'accès du navigateur"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Site internet"
+    },
     "accountSecurity": "Sécurité du Compte",
     "activeOnAllSites": "Activé sur tous les sites (sauf si désactivé ci-dessous)",
     "advancedOptions": "Options avancées",
@@ -1163,8 +1172,8 @@
     "batteryOptimizationDisabled": "Effacement du presse-papiers en arrière-plan activé",
     "batteryOptimizationHelpDescription": "L'optimisation de la batterie d'Android empêche le nettoyage fiable du presse-papiers lorsque l'application est en arrière-plan. La désactivation de l'optimisation de la batterie pour AliasVault permet un nettoyage précis du presse-papiers et accorde automatiquement les autorisations d'alarme nécessaires.",
     "batteryOptimizationHelpTitle": "Activer le nettoyage du presse-papier en arrière-plan",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Bloquer les captures d'écran",
+    "blockScreenshotsDescription": "Bloque les captures d'écran et les enregistrements d'écran de l'application.",
     "clearAllDisabledSites": "Effacer tous les sites désactivés",
     "clientUrlHint": "L'URL de l'interface web de votre instance auto-hébergée",
     "clipboardClear": "Effacer le presse-papiers",
@@ -1226,10 +1235,10 @@
       "autofill": "Remplissage automatique",
       "general": "Général",
       "generators": "Générateurs",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Confidentialité de l'écran"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Masquer le contenu de l'application",
+    "hideAppContentsDescription": "Masque le contenu de l'application dans le sélecteur d'application.",
     "identityGenerator": "Générateur d'identité",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
