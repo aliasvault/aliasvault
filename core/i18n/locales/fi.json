@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Käytä selaimen sala-avainta"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Verkkosivusto"
+    },
     "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktiivisena kaikilla sivustoilla (ellei sitä ole poistettu käytöstä alla)",
     "advancedOptions": "Lisäasetukset",
