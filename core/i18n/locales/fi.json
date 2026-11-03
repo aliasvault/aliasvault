@@ -1163,6 +1163,8 @@
     "batteryOptimizationDisabled": "Leikepöydän tyhjennys taustalla otettu käyttöön.",
     "batteryOptimizationHelpDescription": "Androidin akun optimointi estää leikepöydän luotettavan tyhjennyksen, kun sovellus on taustalla. AliasVaultin akun optimoinnin poistaminen käytöstä mahdollistaa tarkan taustalla tapahtuvan leikepöydän tyhjennyksen ja myöntää automaattisesti tarvittavat hälytysluvat.",
     "batteryOptimizationHelpTitle": "Ota Taustan leikepöydän tyhjennys käyttöön",
+    "blockScreenshots": "Block Screenshots",
+    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
     "clientUrlHint": "Web-käyttöliittymän URL-osoite itse isännöidyssä instanssissa",
     "clipboardClear": "Tyhjennä leikepöytä",
@@ -1223,8 +1225,11 @@
     "groups": {
       "autofill": "Automaattinen täyttö",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generators",
+      "screenPrivacy": "Screen privacy"
     },
+    "hideAppContents": "Hide App Contents",
+    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
     "identityGenerator": "Identiteetin luonti",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Aseta ikähaarukka uusia henkilöllisyyksien luomisessa",
