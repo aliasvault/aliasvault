@@ -30,7 +30,7 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
-		<false/>
+		<ALLOW_LOCAL_NETWORKING/>
 	</dict>
 	<key>NSExtension</key>
 	<dict>
