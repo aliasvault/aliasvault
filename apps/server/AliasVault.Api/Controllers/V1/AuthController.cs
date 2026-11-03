@@ -800,6 +800,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return (false, ApiErrorCode.USERNAME_ALREADY_IN_USE);
         }
 
+        if (!username.All(userManager.Options.User.AllowedUserNameCharacters.Contains))
+        {
+            return (false, ApiErrorCode.USERNAME_INVALID_CHARACTERS);
+        }
+
         // Check if it's a valid email address
         if (username.Contains('@'))
         {

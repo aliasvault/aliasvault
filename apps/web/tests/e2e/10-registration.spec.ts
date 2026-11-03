@@ -38,6 +38,16 @@ test.describe('10. Registration', () => {
     // A new vault starts out empty.
     await expect(page.getByText('No items yet')).toBeVisible();
   });
+
+  test('10.5 should reject an accented username at the username step', async ({ app, credentials }) => {
+    const { page } = app;
+
+    await app.openStart();
+    await page.getByRole('link', { name: 'Create new vault' }).click();
+    await page.locator('#username').fill(`${credentials.username}é`);
+    await expect(page.getByText('Username is invalid, can only contain letters or digits.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  });
 });
 
 test.describe('10. Registration with public registration disabled', () => {
