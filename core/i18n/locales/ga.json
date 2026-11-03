@@ -1098,6 +1098,15 @@
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
   },
   "settings": {
+    "about": {
+      "contactSupport": "Contact support",
+      "documentation": "Documentation",
+      "privacyPolicy": "Privacy policy",
+      "reportIssue": "Report an issue",
+      "sourceCode": "Source code",
+      "title": "About",
+      "website": "Suíomh Gréasáin"
+    },
     "accountSecurity": "Slándáil Cuntais",
     "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
