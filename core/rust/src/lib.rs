@@ -10,6 +10,7 @@
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
 //! - **email_parser**: RFC 822 email parsing into bodies and attachment metadata
 //! - **favicon**: Favicon handling and source selection
+//! - **svg_logo**: SVG logo normalization for native (non-browser) renderers
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **totp**: RFC 6238 TOTP code generation
 //! - **identity_generator**: Random identity (alias persona) generation
@@ -25,6 +26,8 @@ pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod email_parser;
 pub mod favicon;
+#[cfg(feature = "svg-logo")]
+pub mod svg_logo;
 pub mod password_generator;
 pub mod totp;
 pub mod identity_generator;

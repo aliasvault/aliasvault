@@ -50,6 +50,12 @@ pub fn favicon_source_key(url: String) -> String {
     crate::favicon::favicon_source_key(&url)
 }
 
+/// An SVG logo rewritten into simplified SVG to make it easier to draw by native (non-browser) renderers.
+#[uniffi::export]
+pub fn normalize_svg_logo(svg: Vec<u8>, dark: bool) -> Option<Vec<u8>> {
+    crate::svg_logo::normalize_svg_logo(&svg, dark)
+}
+
 /// The RFC 6238 code for a Base32 secret at `unix_seconds`, or `None` for an unusable secret. Unknown parameters fall back to SHA1, 6 digits, 30 seconds.
 #[uniffi::export]
 pub fn generate_totp_code(secret: String, unix_seconds: i64, algorithm: String, digits: u32, period: u32) -> Option<String> {

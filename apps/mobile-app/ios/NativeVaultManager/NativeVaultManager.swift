@@ -1530,6 +1530,11 @@ private enum RustCoreDispatcher {
             return value.int64Value
         }
 
+        func bool(_ index: Int) throws -> Bool {
+            guard index < values.count, let value = values[index] as? Bool else { throw DispatchError.badArgument(index) }
+            return value
+        }
+
         func strings(_ index: Int) throws -> [String] {
             guard index < values.count, let value = values[index] as? [String] else { throw DispatchError.badArgument(index) }
             return value
@@ -1560,6 +1565,9 @@ private enum RustCoreDispatcher {
             guard let target = RustCoreFramework.selectFaviconTarget(urls: try args.strings(0)) else { return "null" }
             return try json(["url": target.url, "source": target.source])
         case "filterCredentialsJson": return try RustCoreFramework.filterCredentialsJson(inputJson: try args.string(0))
+        case "normalizeSvgLogo":
+            guard let svg = RustCoreFramework.normalizeSvgLogo(svg: try args.data(0), dark: try args.bool(1)) else { return "null" }
+            return try json(bytes: svg)
         case "generateTotpCode":
             guard let code = RustCoreFramework.generateTotpCode(secret: try args.string(0), unixSeconds: try args.int64(1), algorithm: try args.string(2), digits: try args.uint32(3), period: try args.uint32(4)) else { return "null" }
             return try json(code)
