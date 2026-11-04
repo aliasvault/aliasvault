@@ -3,7 +3,7 @@
 // references (core/client, core/models, core/vault).
 //
 // Usage, from the app directory (npm runs `preinstall` there):
-//   node ../../core/scripts/install-linked-deps.mjs
+//   node ../../core/_tools/scripts/install-linked-deps.mjs
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";

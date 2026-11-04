@@ -1,0 +1,51 @@
+# This workflow runs the unit tests of the core libraries: Rust core, models, vault, i18n and client.
+name: Core Tests
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'core/**'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/workflows/core-tests.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'core/**'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/workflows/core-tests.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Build core libraries
+      uses: ./.github/actions/build-core-libraries
+      with:
+        target: browser-extension
+
+    - name: Run Rust tests
+      working-directory: core/rust
+      run: cargo test --lib --features uniffi
+
+    - name: Install i18n dependencies
+      working-directory: core/i18n
+      run: npm ci
+
+    - name: Check i18n
+      working-directory: core/i18n
+      run: npm run compile && npm run lint && npm test
+
+    - name: Install client dependencies
+      working-directory: core/client
+      run: npm ci
+
+    - name: Check client
+      working-directory: core/client
+      run: npm run compile && npm test

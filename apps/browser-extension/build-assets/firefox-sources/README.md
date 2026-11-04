@@ -14,7 +14,7 @@ which also holds the server and mobile app sources that are not needed to build 
 | `core/models` | Shared data models, linked as a `file:` dependency |
 | `core/vault` | Shared vault schema definitions, linked as a `file:` dependency |
 | `core/rust` | Rust sources of the WebAssembly module that the extension bundles |
-| `core/scripts` | Install helper that `npm install` runs to install the dependencies of the linked packages |
+| `core/_tools/scripts` | Install helper that `npm install` runs to install the dependencies of the linked packages |
 
 ## How to build
 
