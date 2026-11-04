@@ -1,9 +1,11 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
-import { nullIfBlank } from '../../../shared/StringUtils';
+import { nonBlank, nullIfBlank } from '../../../shared/StringUtils';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { mapItemType, parseUrls } from '../../readers/FieldParsers';
+
+import { getProtonPassLoginUrls, parseProtonPassAutofillUrls } from './ProtonPassJson';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 
@@ -11,6 +13,7 @@ const COLUMNS = {
   type: text,
   name: text,
   url: text,
+  autofillUrls: optionalText,
   email: text,
   username: text,
   password: text,
@@ -36,7 +39,7 @@ const ITEM_TYPES = {
 export function importProtonPassCsv(fileContent: string): ImportedCredential[] {
   return readImportCsv(fileContent, COLUMNS).map(record => ({
     ServiceName: record.name,
-    ServiceUrls: parseUrls(record.url),
+    ServiceUrls: readUrls(record.url, record.autofillUrls),
     Email: record.email,
     Username: record.username,
     Password: record.password,
@@ -46,4 +49,15 @@ export function importProtonPassCsv(fileContent: string): ImportedCredential[] {
     FolderPath: nullIfBlank(record.vault),
     ItemType: mapItemType(record.type, ITEM_TYPES),
   }));
+}
+
+/**
+ * The website URLs of a row, from the autofillUrls column when it has any.
+ * @param url - The url column, comma separated
+ * @param autofillUrls - The autofillUrls column
+ * @returns The URLs, or null when there are none
+ */
+function readUrls(url: string, autofillUrls: string | null): string[] | null {
+  const urls = nonBlank(getProtonPassLoginUrls(parseProtonPassAutofillUrls(autofillUrls), parseUrls(url)));
+  return urls.length > 0 ? urls : null;
 }

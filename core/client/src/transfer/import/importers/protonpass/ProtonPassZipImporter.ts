@@ -1,13 +1,14 @@
 import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 
 import { fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
+import { buildFolderPath, type FolderNode } from '../../../shared/FolderPaths';
 import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { mapItemType } from '../../readers/FieldParsers';
 import { readStringAtPath } from '../../readers/JsonReader';
 
-import { ProtonPassItemStates, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassContent, type ProtonPassItem } from './ProtonPassJson';
+import { ProtonPassItemStates, getProtonPassLoginUrls, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassContent, type ProtonPassItem } from './ProtonPassJson';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportedCreditcard } from '../../models/ImportedCreditcard';
@@ -20,6 +21,9 @@ const FILES_PATH = 'Proton Pass/files/';
 /** The default vault; its items go to the root folder instead of a "Personal" folder. */
 const DEFAULT_VAULT_NAME = 'personal';
 
+/** The ".<hex export id>" Proton Pass inserts before the extension of an exported attachment name. */
+const EXPORT_ID_PATTERN = /\.[0-9a-f]+(\.[^.]+)?$/;
+
 /** A Proton Pass alias is an email alias, not an identity, so it imports as a Login. */
 const ITEM_TYPES = {
   login: ItemTypes.Login,
@@ -30,7 +34,7 @@ const ITEM_TYPES = {
 };
 
 /**
- * Import a Proton Pass .zip export. Every vault except the default one becomes a folder.
+ * Import a Proton Pass .zip export. Every vault except the default one becomes a folder, with its own folders below it.
  * @param archiveBytes - The archive bytes
  * @returns The credentials and the items that could not be read
  * @throws {ImportException} When the archive cannot be opened, data.json cannot be read or the export is encrypted.
@@ -48,15 +52,19 @@ export function importProtonPassZip(archiveBytes: Uint8Array): ImportFileResult 
 
   const vaults = [...exportData.Vaults.values()];
   const rootVault = vaults.find(vault => vault.Name?.toLowerCase() === DEFAULT_VAULT_NAME);
-  const entries = vaults.flatMap(vault => vault.Items.map(element => ({ element, folderPath: vault === rootVault ? null : vault.Name })));
+  const entries = vaults.flatMap(vault => {
+    const foldersById = new Map<string, FolderNode>(vault.Folders.map(folder => [folder.FolderId ?? '', folder]));
+    return vault.Items.map(element => ({ element, vaultPath: vault === rootVault ? null : vault.Name, foldersById }));
+  });
   const files = archive.filesUnder(FILES_PATH);
 
-  return convertArchiveItems(entries, ({ element, folderPath }) => {
+  return convertArchiveItems(entries, ({ element, vaultPath, foldersById }) => {
     const item = parseProtonPassItem(element);
     if (item.State === ProtonPassItemStates.Trashed || !item.Data) {
       return null;
     }
-    const credential = convertItem(item, folderPath);
+    const folderPath = [vaultPath, buildFolderPath(item.FolderId, foldersById)].filter(part => !isBlank(part)).join('/');
+    const credential = convertItem(item, nullIfBlank(folderPath));
     addFiles(credential, item, files);
     return credential;
   }, ({ element }) => readStringAtPath(element, 'data', 'metadata', 'name'));
@@ -87,8 +95,9 @@ function convertItem(item: ProtonPassItem, folderPath: string | null): ImportedC
         credential.Email = nullIfBlank(content.ItemEmail);
         credential.Password = nullIfBlank(content.Password);
         credential.TwoFactorSecret = nullIfBlank(content.TotpUri);
-        if (content.Urls && content.Urls.length > 0) {
-          credential.ServiceUrls = nonBlank(content.Urls);
+        const urls = nonBlank(getProtonPassLoginUrls(content.AutofillUrls, content.Urls));
+        if (urls.length > 0) {
+          credential.ServiceUrls = urls;
         }
       }
       break;
@@ -170,25 +179,20 @@ function applyIdentity(credential: ImportedCredential, content: ProtonPassConten
 }
 
 /**
- * Attach the files an item references. The layout under "Proton Pass/files/" is not documented, so
- * files/<id>, files/<id>/<name> and files/<id>.<ext> all match.
+ * Attach the files an item references.
  * @param credential - The credential to fill
  * @param item - The item
  * @param files - The archive's files under the files folder
  */
 function addFiles(credential: ImportedCredential, item: ProtonPassItem, files: Map<string, Uint8Array>): void {
-  for (const file of item.Files ?? []) {
-    if (isBlank(file.FileId)) {
+  for (const name of item.Files ?? []) {
+    if (isBlank(name)) {
       continue;
     }
 
-    const id = file.FileId.toLowerCase();
-    const match = [...files].find(([path]) => {
-      const relative = path.substring(FILES_PATH.length).toLowerCase();
-      return relative === id || relative.startsWith(`${id}/`) || relative.startsWith(`${id}.`);
-    });
-    if (match) {
-      addAttachment(credential, isBlank(file.Name) ? file.FileId : file.Name, match[1]);
+    const data = files.get(FILES_PATH + name.replace(/[/\\]/g, '_').trim());
+    if (data) {
+      addAttachment(credential, nullIfBlank(name.replace(EXPORT_ID_PATTERN, '$1')) ?? name, data);
     }
   }
 }
