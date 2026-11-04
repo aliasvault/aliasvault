@@ -116,4 +116,74 @@ describe('BitwardenZipImporter', () => {
     expect((caught as ImportException).message).toContain('Encrypted Bitwarden');
     expect((caught as ImportException).message).toContain('unencrypted');
   });
+
+  it('reads attachments from the folder named after the item, numbering items with the same name', () => {
+    /**
+     * A login item.
+     * @param id - The item id
+     * @param name - The item name
+     * @returns The item JSON
+     */
+    const login = (id: string, name: string): object => ({ id, folderId: null, type: 1, name, notes: null, fields: [], login: { uris: [], username: 'user', password: 'pw', totp: null } });
+    const dataJson = JSON.stringify({
+      encrypted: false,
+      folders: [],
+      items: [login('id-1', 'Bank: main/backup?'), login('id-2', 'Server'), login('id-3', 'Server'), login('id-4', 'No attachments')],
+    });
+    const zipBytes = createZipArchive({
+      'data.json': textToZipBytes(dataJson),
+      'attachments/Bank_ main_backup_/statement.pdf': textToZipBytes('statement'),
+      'attachments/Server/key.pem': textToZipBytes('first'),
+      'attachments/Server_1/key.pem': textToZipBytes('second'),
+    });
+
+    const imported = importBitwardenZip(zipBytes).Credentials;
+
+    /**
+     * The attachments of an imported item as "name=content".
+     * @param index - The item index
+     * @returns The attachments, or undefined when it has none
+     */
+    const attachmentsOf = (index: number): string[] | undefined => imported[index].Attachments?.map(attachment => `${attachment.Filename}=${new TextDecoder().decode(attachment.Blob)}`);
+    expect(attachmentsOf(0)).toEqual(['statement.pdf=statement']);
+    expect(attachmentsOf(1)).toEqual(['key.pem=first']);
+    expect(attachmentsOf(2)).toEqual(['key.pem=second']);
+    expect(attachmentsOf(3)).toBeUndefined();
+  });
+
+  it('imports SSH key, bank account, driver\'s license and passport items as notes with their fields', () => {
+    /**
+     * An item of a type AliasVault has no type for.
+     * @param type - The Bitwarden item type
+     * @param name - The item name
+     * @param property - The JSON property holding the type's data
+     * @param data - The type's data
+     * @returns The item JSON
+     */
+    const item = (type: number, name: string, property: string, data: object): object => ({ id: name, type, name, notes: 'note', fields: [], [property]: data });
+    const dataJson = JSON.stringify({
+      encrypted: false,
+      folders: [],
+      items: [
+        item(5, 'SSH key', 'sshKey', { privateKey: '-----BEGIN OPENSSH PRIVATE KEY-----', publicKey: 'ssh-ed25519 AAAA', keyFingerprint: 'SHA256:abc' }),
+        item(6, 'Bank', 'bankAccount', { bankName: 'Example Bank', accountNumber: '12345678', iban: 'NL00BANK0123456789', pin: null }),
+        item(7, 'License', 'driversLicense', { firstName: 'John', lastName: 'Doe', licenseNumber: 'D123' }),
+        item(8, 'Passport', 'passport', { surname: 'Doe', givenName: 'John', passportNumber: 'X123' }),
+      ],
+    });
+
+    const imported = importBitwardenZip(createZipArchive({ 'data.json': textToZipBytes(dataJson) })).Credentials;
+
+    expect(imported.every(credential => credential.ItemType === ItemTypes.Note && credential.Notes === 'note')).toBe(true);
+    /**
+     * The custom fields of an imported item as "label=value (type)".
+     * @param name - The item name
+     * @returns The fields
+     */
+    const fieldsOf = (name: string): string[] | undefined => byName(imported, name).CustomFieldValues?.map(field => `${field.Label}=${field.Value} (${field.FieldType})`);
+    expect(fieldsOf('SSH key')).toEqual(['Private key=-----BEGIN OPENSSH PRIVATE KEY----- (Hidden)', 'Public key=ssh-ed25519 AAAA (Text)', 'Fingerprint=SHA256:abc (Text)']);
+    expect(fieldsOf('Bank')).toEqual(['Bank name=Example Bank (Text)', 'Account number=12345678 (Hidden)', 'IBAN=NL00BANK0123456789 (Hidden)']);
+    expect(fieldsOf('License')).toEqual(['First name=John (Text)', 'Last name=Doe (Text)', 'License number=D123 (Text)']);
+    expect(fieldsOf('Passport')).toEqual(['Surname=Doe (Text)', 'Given name=John (Text)', 'Passport number=X123 (Text)']);
+  });
 });
