@@ -21,9 +21,11 @@ name = "aliasvault_core"
 [features]
 default = []
 # Feature for UniFFI bindings (Swift/Kotlin) - runtime only, no CLI tools
-uniffi = ["dep:uniffi"]
+uniffi = ["dep:uniffi", "svg-logo"]
 # Feature for UniFFI CLI bindgen tool (only for generating bindings, not for library)
 uniffi-cli = ["uniffi/cli"]
+# Feature for SVG logo normalization, needed only by the native renderers on mobile (the web draws SVG in the browser)
+svg-logo = ["dep:usvg"]
 # Feature for WASM builds (web app and browser extension)
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook", "dep:js-sys"]
 
@@ -90,6 +92,9 @@ mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
 # SQLite client which can be used by all host apps for uniform access
 rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
+
+# SVG logo normalization for the native renderers (writer only: no text shaping, no system fonts)
+usvg = { version = "0.49", default-features = false, features = ["writer"], optional = true }
 
 # Ed25519 account signing keys
 ed25519-dalek = { version = "2", default-features = false, features = ["std", "zeroize"] }

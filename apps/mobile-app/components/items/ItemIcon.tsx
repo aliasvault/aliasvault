@@ -1,6 +1,4 @@
-import { Buffer } from 'buffer';
-
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, ImageStyle, StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
@@ -11,6 +9,9 @@ import {
 } from '@aliasvault/models/vault';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
+
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { normalizeSvgLogo } from '@/platform/NativeRustCore';
 
 // Import centralized icon components (auto-generated from core/models/src/icons)
 import { builtinLogoComponents, type BuiltinLogoComponentKey } from './BuiltinLogoComponents';
@@ -30,6 +31,59 @@ const SVG_DATA_URI_PREFIX = 'data:image/svg+xml;base64,';
  * Corner radius of a logo.
  */
 const LOGO_RADIUS_RATIO = 0.17;
+
+/**
+ * Most normalized SVG logos kept in memory.
+ */
+const MAX_CACHED_SVG_LOGOS = 500;
+
+/**
+ * Normalized SVG logos by color scheme and base64 source, null for a logo that cannot be drawn.
+ */
+const normalizedSvgLogos = new Map<string, string | null>();
+
+/**
+ * Normalizations in flight, so items sharing a logo make one native call.
+ */
+const pendingSvgLogos = new Map<string, Promise<string | null>>();
+
+/**
+ * The SVG logo as simplified markup react-native-svg draws like a browser: undefined while normalizing, null when it cannot be drawn.
+ */
+function useNormalizedSvgLogo(svgBase64: string | null, dark: boolean): string | null | undefined {
+  const key = svgBase64 === null ? null : `${dark ? 'dark' : 'light'}:${svgBase64}`;
+  const [, setResolvedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (key === null || svgBase64 === null || normalizedSvgLogos.has(key)) {
+      return;
+    }
+    let active = true;
+    let request = pendingSvgLogos.get(key);
+    if (!request) {
+      request = normalizeSvgLogo(svgBase64, dark).catch(() => null);
+      pendingSvgLogos.set(key, request);
+    }
+    void request.then((svg) => {
+      pendingSvgLogos.delete(key);
+      if (normalizedSvgLogos.size >= MAX_CACHED_SVG_LOGOS) {
+        normalizedSvgLogos.delete(normalizedSvgLogos.keys().next().value as string);
+      }
+      normalizedSvgLogos.set(key, svg);
+      if (active) {
+        setResolvedKey(key);
+      }
+    });
+    return (): void => {
+      active = false;
+    };
+  }, [key, svgBase64, dark]);
+
+  if (key === null) {
+    return null;
+  }
+  return normalizedSvgLogos.has(key) ? normalizedSvgLogos.get(key) ?? null : undefined;
+}
 
 /**
  * Item icon props.
@@ -140,35 +194,23 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
   const isSvg = dataUri.startsWith(SVG_DATA_URI_PREFIX);
   const borderRadius = Math.round(svgWidth * LOGO_RADIUS_RATIO);
 
-  // Decode and sanitize an SVG once per logo and size, not on every render.
-  const svgXml = useMemo(() => {
-    if (!isSvg) {
-      return null;
-    }
-    return sanitizeSvg(Buffer.from(dataUri.slice(SVG_DATA_URI_PREFIX.length), 'base64').toString('utf-8'), svgWidth, svgHeight);
-  }, [dataUri, isSvg, svgWidth, svgHeight]);
+  const svg = useNormalizedSvgLogo(isSvg ? dataUri.slice(SVG_DATA_URI_PREFIX.length) : null, useColorScheme() === 'dark');
 
   if (!isSvg) {
     return <Image source={{ uri: dataUri }} style={[styles.logo, style, { borderRadius }]} />;
   }
 
-  const fallback = (
+  const placeholder = (
     <View style={[styles.iconContainer, style]}>
       <PlaceholderIcon width={svgWidth} height={svgHeight} />
     </View>
   );
 
-  // If sanitization failed (returned null), fall back to the placeholder icon.
-  if (!svgXml) {
-    return fallback;
+  // An SVG that cannot be drawn shows the placeholder; while it is normalized the space stays empty.
+  if (svg === null) {
+    return placeholder;
   }
 
-  /*
-   * Use SvgXml instead of SvgUri to render SVG logos. SvgXml accepts raw XML
-   * and supports onError/fallback props, which lets us gracefully handle
-   * malformed SVGs that would otherwise crash the native renderer
-   * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
-   */
   // react-native-svg does not clip to a border radius, so a wrapping view does the rounding.
   return (
     <View
@@ -183,118 +225,9 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
         marginBottom: Number(style?.marginBottom ?? 0),
       }}
     >
-      <SvgXml
-        xml={svgXml}
-        width={svgWidth}
-        height={svgHeight}
-        onError={() => {
-          console.warn('SvgXml failed to render SVG logo');
-        }}
-        fallback={fallback}
-      />
+      {svg !== undefined && <SvgXml xml={svg} width={svgWidth} height={svgHeight} fallback={placeholder} />}
     </View>
   );
-}
-
-/**
- * Sanitize SVG XML for react-native-svg compatibility.
- *
- * Addresses several crash vectors:
- * 1. Zero/missing dimensions on the root <svg> tag cause iOS native renderer to crash
- *    with: UIGraphicsBeginImageContext() failed to allocate CGBitmapContext: size={0, 0}.
- * 2. Nested <svg> elements create nested Svg components with no layout dimensions,
- *    triggering the same zero-size crash.
- * 3. Namespaced elements (sodipodi:*, inkscape:*, metadata, rdf:*, cc:*, dc:*) are not
- *    supported by react-native-svg and can cause parse/render failures.
- *
- * Returns null if the SVG is fundamentally broken and should not be rendered.
- */
-function sanitizeSvg(xml: string, targetWidth: number, targetHeight: number): string | null {
-  try {
-    if (!xml || xml.trim().length === 0) {
-      return null;
-    }
-
-    let sanitized = xml;
-
-    // Remove unsupported namespaced elements and metadata that react-native-svg cannot handle.
-    // These include Inkscape/Sodipodi editor elements, RDF metadata, Creative Commons, etc.
-    // Use [\s\S] instead of . to match across newlines.
-    sanitized = sanitized.replace(/<sodipodi:[^>]*\/>/gi, '');
-    sanitized = sanitized.replace(/<sodipodi:[^>]*>[\s\S]*?<\/sodipodi:[^>]*>/gi, '');
-    sanitized = sanitized.replace(/<inkscape:[^>]*\/>/gi, '');
-    sanitized = sanitized.replace(/<inkscape:[^>]*>[\s\S]*?<\/inkscape:[^>]*>/gi, '');
-    sanitized = sanitized.replace(/<metadata[\s>][\s\S]*?<\/metadata>/gi, '');
-
-    // Replace nested <svg> elements (not the root) with <g> elements.
-    // Nested <svg> tags create nested Svg root components in react-native-svg
-    // that inherit no layout dimensions, causing the zero-size native crash.
-    // We preserve the first (root) <svg> and convert inner ones to <g>.
-    let isFirst = true;
-    sanitized = sanitized.replace(/<svg\b([^>]*)>/gi, (match, attrs) => {
-      if (isFirst) {
-        isFirst = false;
-        return match;
-      }
-      // Convert inner <svg> to <g>, preserving transform attribute if present
-      const transformMatch = (attrs as string).match(/\btransform\s*=\s*["'][^"']*["']/i);
-      const transform = transformMatch ? ` ${transformMatch[0]}` : '';
-      return `<g${transform}>`;
-    });
-    // Replace matching closing </svg> tags (all except the last one, which closes the root)
-    // Count remaining </svg> tags and replace all but the last with </g>
-    const closingTags: number[] = [];
-    const closingRegex = /<\/svg>/gi;
-    let closeMatch;
-    while ((closeMatch = closingRegex.exec(sanitized)) !== null) {
-      closingTags.push(closeMatch.index);
-    }
-    // Replace all closing </svg> except the last one (root) with </g>
-    if (closingTags.length > 1) {
-      for (let i = closingTags.length - 2; i >= 0; i--) {
-        const idx = closingTags[i];
-        sanitized = sanitized.substring(0, idx) + '</g>' + sanitized.substring(idx + 6);
-      }
-    }
-
-    // Ensure root <svg> has valid, non-zero dimensions
-    const svgTagMatch = sanitized.match(/<svg\b([^>]*)>/i);
-    if (!svgTagMatch) {
-      return null;
-    }
-
-    const attrs = svgTagMatch[1];
-    const widthMatch = attrs.match(/\bwidth\s*=\s*["']([^"']*)["']/i);
-    const heightMatch = attrs.match(/\bheight\s*=\s*["']([^"']*)["']/i);
-
-    const hasZeroWidth = widthMatch && (parseFloat(widthMatch[1]) === 0 || widthMatch[1].trim() === '');
-    const hasZeroHeight = heightMatch && (parseFloat(heightMatch[1]) === 0 || heightMatch[1].trim() === '');
-    const hasMissingWidth = !widthMatch;
-    const hasMissingHeight = !heightMatch;
-
-    if (hasZeroWidth || hasMissingWidth || hasZeroHeight || hasMissingHeight) {
-      let newAttrs = attrs;
-
-      if (hasZeroWidth && widthMatch) {
-        newAttrs = newAttrs.replace(widthMatch[0], `width="${targetWidth}"`);
-      } else if (hasMissingWidth) {
-        newAttrs = ` width="${targetWidth}"` + newAttrs;
-      }
-
-      if (hasZeroHeight && heightMatch) {
-        newAttrs = newAttrs.replace(heightMatch[0], `height="${targetHeight}"`);
-      } else if (hasMissingHeight) {
-        newAttrs = ` height="${targetHeight}"` + newAttrs;
-      }
-
-      sanitized = sanitized.replace(svgTagMatch[0], `<svg${newAttrs}>`);
-    }
-
-    return sanitized;
-  } catch (error) {
-    console.warn('Failed to sanitize SVG:', error);
-    return null;
-  }
 }
 
 const styles = StyleSheet.create({

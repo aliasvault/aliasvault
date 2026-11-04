@@ -1,5 +1,6 @@
 import SwiftUI
 import Macaw
+import RustCoreFramework
 import VaultModels
 
 /// Item logo view - displays logos or type-based icons for items
@@ -45,6 +46,8 @@ public struct ItemLogoView: View {
     let itemType: String?
     let cardNumber: String?
 
+    @Environment(\.colorScheme) private var colorScheme
+
     public init(logoData: Data?, itemType: String? = nil, cardNumber: String? = nil) {
         self.logoData = logoData
         self.itemType = itemType
@@ -70,10 +73,12 @@ public struct ItemLogoView: View {
     }
 
     private func renderSVGNode(_ data: Data) -> Node? {
-        if let svgString = String(data: data, encoding: .utf8) {
-            return try? SVGParser.parse(text: svgString)
+        // Normalize SVG to improve drawing by native (non-browser) renderers.
+        guard let normalized = RustCoreFramework.normalizeSvgLogo(svg: data, dark: colorScheme == .dark),
+              let svgString = String(data: normalized, encoding: .utf8) else {
+            return nil
         }
-        return nil
+        return try? SVGParser.parse(text: svgString)
     }
 
     struct SVGImageView: UIViewRepresentable {
@@ -92,6 +97,10 @@ public struct ItemLogoView: View {
             uiView.backgroundColor = .clear
             uiView.contentMode = .scaleAspectFit
             uiView.node.place = Transform.identity
+        }
+
+        func sizeThatFits(_ proposal: ProposedViewSize, uiView: MacawView, context: Context) -> CGSize? {
+            proposal.replacingUnspecifiedDimensions(by: CGSize(width: 32, height: 32))
         }
     }
 

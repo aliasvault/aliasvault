@@ -111,3 +111,11 @@ export const nativeRustCore: IRustCore = {
   createVaultSyncSession: () => notImplementedOnMobile('createVaultSyncSession', 'the vault sync engine is driven natively'),
 };
 
+
+/**
+ * A base64 SVG logo rewritten into simplified SVG markup that react-native-svg draws like a browser, or null when it cannot be drawn.
+ */
+export async function normalizeSvgLogo(svgBase64: string, dark: boolean): Promise<string | null> {
+  const normalized = await call<string | null>('normalizeSvgLogo', svgBase64, dark);
+  return normalized === null ? null : Buffer.from(normalized, 'base64').toString('utf-8');
+}

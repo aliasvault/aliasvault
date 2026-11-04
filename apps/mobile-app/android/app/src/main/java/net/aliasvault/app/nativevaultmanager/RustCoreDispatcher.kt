@@ -27,6 +27,7 @@ import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.mobileLoginPublicKeyHash
 import uniffi.aliasvault_core.mobileLoginVerificationCode
+import uniffi.aliasvault_core.normalizeSvgLogo
 import uniffi.aliasvault_core.openKeyChainWithAccountKey
 import uniffi.aliasvault_core.openKeyChainWithUnlockKey
 import uniffi.aliasvault_core.parseEmailSource
@@ -71,6 +72,7 @@ object RustCoreDispatcher {
                 JSONObject().put("url", target.url).put("source", target.source).toString()
             }
             "filterCredentialsJson" -> filterCredentialsJson(args.string(0))
+            "normalizeSvgLogo" -> normalizeSvgLogo(args.bytes(0), args.boolean(1))?.let { json(it) } ?: "null"
             "generateTotpCode" -> generateTotpCode(args.string(0), args.long(1), args.string(2), args.uint(3), args.uint(4))?.let { json(it) } ?: "null"
 
             "generatePassword" -> json(generatePassword(args.string(0)))
@@ -131,6 +133,8 @@ object RustCoreDispatcher {
         fun uint(index: Int): UInt = values.getInt(index).toUInt()
 
         fun long(index: Int): Long = values.getLong(index)
+
+        fun boolean(index: Int): Boolean = values.getBoolean(index)
 
         fun strings(index: Int): List<String> {
             val array = values.getJSONArray(index)

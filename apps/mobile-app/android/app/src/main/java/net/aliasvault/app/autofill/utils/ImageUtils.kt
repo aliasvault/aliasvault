@@ -1,5 +1,6 @@
 package net.aliasvault.app.autofill.utils
 
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -7,6 +8,8 @@ import android.graphics.Canvas
 import android.util.Base64
 import android.util.Log
 import com.caverock.androidsvg.SVG
+import net.aliasvault.app.rustcore.JnaInitializer
+import uniffi.aliasvault_core.normalizeSvgLogo
 import java.io.ByteArrayOutputStream
 
 /**
@@ -116,7 +119,10 @@ object ImageUtils {
      */
     private fun svgToBitmap(bytes: ByteArray): Bitmap? {
         return try {
-            val svg = SVG.getFromString(String(bytes, Charsets.UTF_8))
+            // Normalize SVG to improve drawing by native (non-browser) renderers.
+            JnaInitializer.ensureInitialized()
+            val normalized = normalizeSvgLogo(bytes, isDarkMode()) ?: return null
+            val svg = SVG.getFromString(String(normalized, Charsets.UTF_8))
 
             // Convert dp to pixels based on screen density
             val density = Resources.getSystem().displayMetrics.density
@@ -137,6 +143,14 @@ object ImageUtils {
             Log.e(TAG, "Error rendering SVG to bitmap", e)
             null
         }
+    }
+
+    /**
+     * Whether the system is in dark mode, which picks a logo's dark mode colors.
+     */
+    private fun isDarkMode(): Boolean {
+        val nightMode = Resources.getSystem().configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return nightMode == Configuration.UI_MODE_NIGHT_YES
     }
 
     /**
