@@ -6,7 +6,7 @@ import { getProperty, readBoolean, readNumber, readObject, readObjectArray, read
  */
 
 /** Bitwarden item types. */
-export const BitwardenItemTypes = { Login: 1, SecureNote: 2, Card: 3, Identity: 4 } as const;
+export const BitwardenItemTypes = { Login: 1, SecureNote: 2, Card: 3, Identity: 4, SshKey: 5, BankAccount: 6, DriversLicense: 7, Passport: 8 } as const;
 
 /** Bitwarden custom field types. */
 export const BitwardenFieldTypes = { Text: 0, Hidden: 1, Boolean: 2, Linked: 3 } as const;
@@ -59,6 +59,10 @@ export type BitwardenItem = {
   SecureNote: BitwardenSecureNote | null;
   Card: BitwardenCard | null;
   Identity: BitwardenIdentity | null;
+  SshKey: JsonObject | null;
+  BankAccount: JsonObject | null;
+  DriversLicense: JsonObject | null;
+  Passport: JsonObject | null;
   CollectionIds: (string | null)[] | null;
 };
 
@@ -199,6 +203,10 @@ export function parseBitwardenItem(element: unknown): BitwardenItem {
     SecureNote: parseBitwardenSecureNote(readObject(obj, 'secureNote')),
     Card: parseBitwardenCard(readObject(obj, 'card')),
     Identity: parseBitwardenIdentity(readObject(obj, 'identity')),
+    SshKey: readObject(obj, 'sshKey'),
+    BankAccount: readObject(obj, 'bankAccount'),
+    DriversLicense: readObject(obj, 'driversLicense'),
+    Passport: readObject(obj, 'passport'),
     CollectionIds: readStringArray(obj, 'collectionIds'),
   };
 }
