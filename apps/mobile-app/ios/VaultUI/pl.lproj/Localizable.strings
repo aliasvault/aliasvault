@@ -13,12 +13,12 @@
 "no_items_match" = "Żadne istniejące elementy nie pasują do Twojego wyszukiwania";
 "create_new_item" = "Stwórz nowy element";
 "open_aliasvault" = "Otwórz AliasVault";
-"untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link do logowania?";
+"untitled_credential" = "te dane logowania";
+"link_url_prompt_title" = "Link do uwierzytelniania?";
 "link_url_prompt_message" = "Dodać \"{{url}}\" do {{name}} więc AliasVault rozpozna tę aplikację lub stronę internetową następnym razem?";
 "link_url_prompt_link_action" = "Połącz i wypełnij";
-"link_url_prompt_skip_action" = "Just fill";
-"linking_url" = "Linking...";
+"link_url_prompt_skip_action" = "Wypełnij";
+"linking_url" = "Łączenie...";
 "select_item" = "Wybierz elementy";
 "select_text_to_insert" = "Wybierz tekst do wstawienia";
 "choose_username" = "Wybierz nazwę użytkownika";
@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Zarejestruj nowy klucz dostępu do tej witryny internetowej. Zostanie on bezpiecznie zapisany w Twoim sejfie i automatycznie zsynchronizowany ze wszystkimi urządzeniami za pomocą AliasVault.";
 "create_passkey_button_confirm" = "Utwórz klucz dostępu";
 "passkey" = "Klucz dostępu";
+"passkeys" = "Klucze dostępu";
+"credentials" = "Dane logowania";
 "loading_passkeys" = "Ładowanie kluczy dostępu...";
 "no_passkeys_found" = "Nie znaleziono kluczy dostępu";
 "no_passkeys_match" = "Nie ma żadnych pasujących kluczy dostępu pasujących do Twojego wyszukiwania";
@@ -60,7 +62,7 @@
 "unlock_vault" = "Odblokuj sejf";
 "enter_pin_to_unlock_vault" = "Wprowadź swój kod PIN, aby odblokować sejf";
 "pin_locked_max_attempts" = "PIN zablokowany po zbyt wielu nieudanych próbach";
-"pin_incorrect_attempts_remaining" = "Nieprawidłowy kod PIN. Pozostało %d prób.";
+"pin_incorrect_attempts_remaining" = "Nieprawidłowy kod PIN. Pozostało %d prób";
 "enter_password_to_unlock" = "Wprowadź swoje hasło główne";
 "unlock" = "Odblokuj sejf";
 "incorrect_password" = "Nieprawidłowe hasło. Spróbuj ponownie.";

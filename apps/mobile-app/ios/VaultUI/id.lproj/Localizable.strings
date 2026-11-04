@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Daftarkan passkey baru untuk situs web ini. Kunci tersebut akan disimpan dengan aman di brankas Anda dan secara otomatis disinkronkan ke seluruh perangkat Anda melalui AliasVault.";
 "create_passkey_button_confirm" = "Buat Kunci akses";
 "passkey" = "Kunci Akses";
+"passkeys" = "Kunci Akses";
+"credentials" = "Kredensial";
 "loading_passkeys" = "Memuat passkey...";
 "no_passkeys_found" = "Tidak ada passkey ditemukan";
 "no_passkeys_match" = "Tidak ada passkey yang ada yang sesuai dengan pencarian Anda";

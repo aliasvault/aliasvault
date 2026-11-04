@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Cláraigh eochair phas nua don suíomh Gréasáin seo. Stórálfar go slán é i do chruinneachán agus sioncrónófar go huathoibríoch é ar fud do ghléasanna le AliasVault.";
 "create_passkey_button_confirm" = "Cruthaigh Eochair phas";
 "passkey" = "Eochair phas";
+"passkeys" = "Eochracha pas";
+"credentials" = "Dintiúir";
 "loading_passkeys" = "Ag lódáil eochracha pas...";
 "no_passkeys_found" = "Níor aimsíodh aon eochracha pas";
 "no_passkeys_match" = "Níl aon eochracha pas ann a oireann do do chuardach";

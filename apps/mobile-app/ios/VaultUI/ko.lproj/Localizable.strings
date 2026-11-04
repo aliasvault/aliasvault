@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "이 웹사이트의 새 패스키를 등록하세요. 보관함에 안전하게 저장되며 AliasVault를 사용하는 모든 기기에 자동으로 동기화됩니다.";
 "create_passkey_button_confirm" = "패스키 생성";
 "passkey" = "패스키";
+"passkeys" = "패스키";
+"credentials" = "로그인 정보";
 "loading_passkeys" = "패스키를 불러오는 중...";
 "no_passkeys_found" = "패스키를 찾을 수 없음";
 "no_passkeys_match" = "검색과 일치하는 기존 패스키가 없습니다";

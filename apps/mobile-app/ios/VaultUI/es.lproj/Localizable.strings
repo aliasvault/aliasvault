@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Registre una nueva llave de acceso para este sitio web. Se almacenará de forma segura en tu bóveda y se sincronizará automáticamente en todos tus dispositivos con AliasVault.";
 "create_passkey_button_confirm" = "Crear llave de acceso";
 "passkey" = "Llave de acceso";
+"passkeys" = "Llaves de acceso";
+"credentials" = "Credenciales";
 "loading_passkeys" = "Cargando llaves de acceso...";
 "no_passkeys_found" = "No se encontraron claves de acceso";
 "no_passkeys_match" = "Ninguna llave de acceso existente coincide con la búsqueda";

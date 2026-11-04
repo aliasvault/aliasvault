@@ -13,8 +13,23 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
 
     // MARK: - CredentialProviderDelegate Implementation
     func setupCredentialView(vaultStore: VaultStore, serviceUrl: String?) throws -> UIViewController {
-        // Create the ViewModel with injected behaviors
-        let viewModel = CredentialProviderViewModel(
+        let viewModel = makeCredentialViewModel(vaultStore: vaultStore, serviceUrl: serviceUrl)
+
+        // Set text insertion mode if needed
+        if isChoosingTextToInsert {
+            viewModel.isChoosingTextToInsert = true
+        }
+
+        let hostingController = UIHostingController(
+            rootView: CredentialProviderView(viewModel: viewModel)
+        )
+
+        return hostingController
+    }
+
+    /// Create the credential picker view model, wired to fill, link the URL and record usage.
+    internal func makeCredentialViewModel(vaultStore: VaultStore, serviceUrl: String?) -> CredentialProviderViewModel {
+        return CredentialProviderViewModel(
             loader: {
                 return try await vaultStore.getAllAutofillCredentials()
             },
@@ -74,17 +89,6 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 }
             }
         )
-
-        // Set text insertion mode if needed
-        if isChoosingTextToInsert {
-            viewModel.isChoosingTextToInsert = true
-        }
-
-        let hostingController = UIHostingController(
-            rootView: CredentialProviderView(viewModel: viewModel)
-        )
-
-        return hostingController
     }
 
     func handleCredentialSelection(identifier: String, password: String) {

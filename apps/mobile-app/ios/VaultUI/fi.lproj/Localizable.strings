@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Rekisteröi uusi todennusavain tälle sivustolle. Se tallennetaan turvallisesti holveen ja synkronoidaan automaattisesti eri laitteissa AliasVaultin kanssa.";
 "create_passkey_button_confirm" = "Luo Passkey, todennusavain";
 "passkey" = "Todennusavain";
+"passkeys" = "Todennusavaimet";
+"credentials" = "Tunnistetiedot";
 "loading_passkeys" = "Ladataan sala-avaimia...";
 "no_passkeys_found" = "Sala-avaimia ei löytynyt";
 "no_passkeys_match" = "Hakusi ei vastaa olemassa olevia sala-avaimia";

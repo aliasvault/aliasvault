@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Regisztráljon egy új azonosítókulcsot az oldalhoz. Biztonságosan tárolásra kerül széfjében, és szinkronizálódik minden eszköze között.";
 "create_passkey_button_confirm" = "Azonosítókulcs létrehozása";
 "passkey" = "Azonosítókulcs";
+"passkeys" = "Azonosítókulcsok";
+"credentials" = "Bejegyzések";
 "loading_passkeys" = "Azonosítókulcsok betöltése...";
 "no_passkeys_found" = "Nem található azonosítókulcs";
 "no_passkeys_match" = "Egyik azonosítókulcs sem elégíti ki a keresést";

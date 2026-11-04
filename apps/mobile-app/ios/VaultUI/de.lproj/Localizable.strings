@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Hinterlege einen neuen Passkey für diese Webseite. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.";
 "create_passkey_button_confirm" = "Passkey erstellen";
 "passkey" = "Passkey";
+"passkeys" = "Passkeys";
+"credentials" = "Zugangsdaten";
 "loading_passkeys" = "Passkeys werden geladen...";
 "no_passkeys_found" = "Keine Passkeys gefunden";
 "no_passkeys_match" = "Keine existierenden Passkeys stimmen mit Deiner Suche überein";

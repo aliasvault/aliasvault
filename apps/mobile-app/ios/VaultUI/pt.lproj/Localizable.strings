@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Registre uma nova passkey para este website. Ela será armazenada com segurança no seu cofre e será sincronizada automaticamente em todos os seus dispositivos utilizando AliasVault.";
 "create_passkey_button_confirm" = "Criar Passkey";
 "passkey" = "Passkey";
+"passkeys" = "Passkeys";
+"credentials" = "Credenciais";
 "loading_passkeys" = "Carregando passkeys...";
 "no_passkeys_found" = "Nenhuma passkey foi encontrada";
 "no_passkeys_match" = "Nenhuma passkey corresponde à sua pesquisa";

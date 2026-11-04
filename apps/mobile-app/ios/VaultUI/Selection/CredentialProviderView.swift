@@ -13,8 +13,12 @@ public struct CredentialProviderView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var toastMessage: String?
 
-    public init(viewModel: CredentialProviderViewModel) {
-         self._viewModel = ObservedObject(wrappedValue: viewModel)
+    /// Passkeys/credentials switch, set when embedded in `PasskeyOrCredentialPickerView` (which then loads and cancels).
+    private let viewSwitch: AutofillViewSwitch?
+
+    public init(viewModel: CredentialProviderViewModel, viewSwitch: AutofillViewSwitch? = nil) {
+        self.viewSwitch = viewSwitch
+        self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
     private var colors: ColorConstants.Colors.Type {
@@ -28,6 +32,13 @@ public struct CredentialProviderView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    if let viewSwitch {
+                        AutofillViewSwitchBar(viewSwitch: viewSwitch)
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .padding(.bottom, 8)
+                    }
+
                     SearchBarView(text: $viewModel.searchText)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
@@ -179,10 +190,12 @@ public struct CredentialProviderView: View {
                 toastMessage = nil
             }
             .task {
+                guard viewSwitch == nil else { return }
                 try? await Task.sleep(nanoseconds: 100_000_000)
                 await viewModel.loadCredentials()
             }
             .onDisappear {
+                guard viewSwitch == nil else { return }
                 viewModel.cancel()
             }
         }

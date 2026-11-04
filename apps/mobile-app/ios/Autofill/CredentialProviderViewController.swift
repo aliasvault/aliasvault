@@ -13,7 +13,7 @@ protocol CredentialProviderDelegate: AnyObject {
 }
 
 protocol PasskeyProviderDelegate: AnyObject {
-    func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController
+    func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data, serviceUrl: String?) throws -> UIViewController
     func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String, vaultStore: VaultStore)
 }
 
@@ -286,7 +286,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             guard let passkeyDelegate = passkeyDelegate else {
                 throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Passkey delegate not set"])
             }
-            hostingController = try passkeyDelegate.setupPasskeyView(vaultStore: vaultStore, rpId: initialRpId ?? "", clientDataHash: clientDataHash ?? Data())
+            hostingController = try passkeyDelegate.setupPasskeyView(vaultStore: vaultStore, rpId: initialRpId ?? "", clientDataHash: clientDataHash ?? Data(), serviceUrl: initialServiceUrl)
         } else {
             // Use credential delegate to setup credential view
             guard let credentialDelegate = credentialDelegate else {
@@ -310,11 +310,16 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         self.currentHostingController = hostingController
     }
 
-    override public func prepareCredentialList(for: [ASCredentialServiceIdentifier], requestParameters: ASPasskeyCredentialRequestParameters) {
+    override public func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier], requestParameters: ASPasskeyCredentialRequestParameters) {
         self.isPasskeyAuthenticationMode = true
         self.currentPasskeyRequest = requestParameters
         self.initialRpId = requestParameters.relyingPartyIdentifier
         self.clientDataHash = requestParameters.clientDataHash
+
+        // The site also accepts a password, keep its domain for matching the credential list.
+        if let firstDomain = serviceIdentifiers.first?.identifier.lowercased() {
+            initialServiceUrl = AutofillUrlNormalizer.normalize(firstDomain)
+        }
     }
 
     override public func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {

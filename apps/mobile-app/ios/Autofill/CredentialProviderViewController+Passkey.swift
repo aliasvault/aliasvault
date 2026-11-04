@@ -13,8 +13,8 @@ import CryptoKit
 extension CredentialProviderViewController: PasskeyProviderDelegate {
     // MARK: - PasskeyProviderDelegate Implementation
 
-    func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController {
-        let viewModel = PasskeyProviderViewModel(
+    func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data, serviceUrl: String?) throws -> UIViewController {
+        let passkeyViewModel = PasskeyProviderViewModel(
             loader: {
                 return try vaultStore.getAllAutofillCredentialsWithPasskeys()
             },
@@ -28,10 +28,11 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             rpId: rpId
         )
 
-        let passkeyView = PasskeyProviderView(viewModel: viewModel)
-        let hostingController = UIHostingController(rootView: passkeyView)
+        // The request also accepts a password, so offer the credential list next to the passkeys.
+        let credentialViewModel = makeCredentialViewModel(vaultStore: vaultStore, serviceUrl: serviceUrl ?? AutofillUrlNormalizer.normalize(rpId))
+        let pickerView = PasskeyOrCredentialPickerView(passkeyViewModel: passkeyViewModel, credentialViewModel: credentialViewModel)
 
-        return hostingController
+        return UIHostingController(rootView: pickerView)
     }
 
     /**

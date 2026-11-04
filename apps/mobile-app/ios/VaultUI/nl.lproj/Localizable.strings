@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Registreer een nieuwe passkey voor deze website. Deze wordt veilig opgeslagen in je vault en wordt automatisch gesynchroniseerd met je andere apparaten.";
 "create_passkey_button_confirm" = "Passkey aanmaken";
 "passkey" = "Passkey";
+"passkeys" = "Passkeys";
+"credentials" = "Credentials";
 "loading_passkeys" = "Passkeys laden...";
 "no_passkeys_found" = "Geen passkeys gevonden";
 "no_passkeys_match" = "Er zijn geen passkeys gevonden die overeenkomen met je zoekopdracht";

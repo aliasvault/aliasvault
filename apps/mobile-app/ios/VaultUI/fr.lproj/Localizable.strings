@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Enregistrez une nouvelle clé d'accès pour ce site Web. Elle sera stockée de manière sécurisée dans votre coffre-fort et automatiquement synchronisée entre vos appareils avec AliasVault.";
 "create_passkey_button_confirm" = "Créer une clé d'accès";
 "passkey" = "Clé d'accès";
+"passkeys" = "Clés d'accès";
+"credentials" = "Identifiants";
 "loading_passkeys" = "Chargement des clés d'accès...";
 "no_passkeys_found" = "Aucune clé d'accès trouvée";
 "no_passkeys_match" = "Aucune clé d'accès existante ne correspond à votre recherche";

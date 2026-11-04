@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "Înregistrează un Passkey nou pentru acest site web. Acesta va fi stocat în siguranță în seif și sincronizat automat pe toate dispozitivele tale prin AliasVault.";
 "create_passkey_button_confirm" = "Creează Passkey";
 "passkey" = "Passkey";
+"passkeys" = "Passkeys";
+"credentials" = "Date de autentificare";
 "loading_passkeys" = "Se încarcă Passkey-urile...";
 "no_passkeys_found" = "Nu s-au găsit Passkey-uri";
 "no_passkeys_match" = "Niciun Passkey existent nu corespunde căutării tale";

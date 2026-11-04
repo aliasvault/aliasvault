@@ -44,6 +44,8 @@
 "create_passkey_subtitle" = "为此网站注册一个新的通行密钥。它将安全地存储在您的密码库中，并通过 AliasVault 在您的设备间自动同步。";
 "create_passkey_button_confirm" = "创建通行密钥";
 "passkey" = "通行密钥";
+"passkeys" = "通行密钥";
+"credentials" = "凭据";
 "loading_passkeys" = "加载通行密钥中…";
 "no_passkeys_found" = "未找到通行密钥";
 "no_passkeys_match" = "未找到符合搜索条件的通行密钥";

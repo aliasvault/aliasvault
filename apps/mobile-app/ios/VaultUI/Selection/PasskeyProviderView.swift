@@ -11,7 +11,11 @@ public struct PasskeyProviderView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
-    public init(viewModel: PasskeyProviderViewModel) {
+    /// Passkeys/credentials switch.
+    private let viewSwitch: AutofillViewSwitch?
+
+    public init(viewModel: PasskeyProviderViewModel, viewSwitch: AutofillViewSwitch? = nil) {
+        self.viewSwitch = viewSwitch
         self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
@@ -26,6 +30,13 @@ public struct PasskeyProviderView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    if let viewSwitch {
+                        AutofillViewSwitchBar(viewSwitch: viewSwitch)
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .padding(.bottom, 8)
+                    }
+
                     SearchBarView(text: $viewModel.searchText)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
@@ -98,10 +109,12 @@ public struct PasskeyProviderView: View {
                 Text(viewModel.errorMessage)
             }
             .task {
+                guard viewSwitch == nil else { return }
                 try? await Task.sleep(nanoseconds: 100_000_000)
                 await viewModel.loadCredentials()
             }
             .onDisappear {
+                guard viewSwitch == nil else { return }
                 viewModel.cancel()
             }
         }

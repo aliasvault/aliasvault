@@ -100,6 +100,8 @@
         "create_passkey_subtitle": "native.createPasskeySubtitle",
         "create_passkey_button_confirm": "passkeys.create.title",
         "passkey": "passkeys.passkey",
+        "passkeys": "common.passkeys",
+        "credentials": "common.credentials",
         "loading_passkeys": "native.loadingPasskeys",
         "no_passkeys_found": "native.noPasskeysFound",
         "no_passkeys_match": "native.noPasskeysMatch",
