@@ -266,6 +266,48 @@ describe('FormDetector TOTP tests', () => {
     });
   });
 
+  describe('Dutch TOTP form 1 detection (password and TOTP code on the same form)', () => {
+    const htmlFile = 'nl-totp-form1.html';
+    const passwordId = 'request_totp_with_password_form_password';
+    const totpId = 'request_totp_with_password_form_totp_token';
+    let document: Document;
+
+    beforeEach(() => {
+      document = createTestDom(htmlFile).window.document;
+    });
+
+    testField(FormField.Password, passwordId, htmlFile);
+    testField(FormField.Totp, totpId, htmlFile);
+
+    it('should detect the password field as password even though its id contains "totp"', () => {
+      const passwordInput = document.getElementById(passwordId) as HTMLInputElement;
+      expect(new FormDetector(document, passwordInput).getDetectedFieldType()).toBe(DetectedFieldType.Password);
+    });
+
+    it('should detect the code field as TOTP', () => {
+      const totpInput = document.getElementById(totpId) as HTMLInputElement;
+      expect(new FormDetector(document, totpInput).getDetectedFieldType()).toBe(DetectedFieldType.Totp);
+    });
+
+    it('should keep both detections after the original autocomplete moved to data-av-autocomplete', () => {
+      for (const input of document.querySelectorAll<HTMLInputElement>('input[autocomplete]')) {
+        input.setAttribute('data-av-autocomplete', input.getAttribute('autocomplete')!);
+        input.setAttribute('autocomplete', 'off');
+      }
+
+      const passwordInput = document.getElementById(passwordId) as HTMLInputElement;
+      const totpInput = document.getElementById(totpId) as HTMLInputElement;
+      expect(new FormDetector(document, passwordInput).getDetectedFieldType()).toBe(DetectedFieldType.Password);
+      expect(new FormDetector(document, totpInput).getDetectedFieldType()).toBe(DetectedFieldType.Totp);
+    });
+
+    it('should find both fields when searching from the form', () => {
+      const form = new FormDetector(document, document.body).getForm();
+      expect(form?.passwordField?.id).toBe(passwordId);
+      expect(form?.totpField?.id).toBe(totpId);
+    });
+  });
+
   describe('Single code fields are not split groups', () => {
     it('should return null for a regular TOTP field', () => {
       const document = createTestDom('en-totp-form1.html').window.document;

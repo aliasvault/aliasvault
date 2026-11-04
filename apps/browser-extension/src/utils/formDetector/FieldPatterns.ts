@@ -128,7 +128,7 @@ export const EnglishFieldPatterns: FieldPatterns = {
       generic: ['token', 'code', 'passcode']
     },
     // exclude: whole-word terms that if found negate the TOTP match.
-    exclude: ['test']
+    exclude: ['test', 'password', 'pwd']
   }
 };
 
@@ -237,7 +237,10 @@ export const DutchFieldPatterns: FieldPatterns = {
   birthDateDay: { include: { specific: ['dag'] } },
   birthDateMonth: { include: { specific: ['maand'] } },
   birthDateYear: { include: { specific: ['jaar'] } },
-  totp: { include: { specific: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode'] } }
+  totp: {
+    include: { specific: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode'] },
+    exclude: ['wachtwoord']
+  }
 };
 
 /**

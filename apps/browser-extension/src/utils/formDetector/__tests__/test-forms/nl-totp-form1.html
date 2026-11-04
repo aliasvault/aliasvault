@@ -1,0 +1,30 @@
+<!--
+  2FA setup form that asks for the account password and the TOTP code on the same page.
+  Both field names start with the form name "request_totp_with_password_form", so the field's own
+  last name segment ("password" vs "totp_token") must decide which one is the password and which the TOTP field.
+-->
+<html>
+  <body>
+    <div class="settingsContent columnwrapper full">
+      <div class="content 2fa">
+        <h2>Tweefactorauthenticatie verifiëren</h2>
+        <p>Vul je wachtwoord en de zescijferige code in uit je authenticatie-app:</p>
+        <form name="request_totp_with_password_form" method="post" class="twoFactorAuthenticationForm"><div></div>
+          <div id="row_request_totp_with_password_form_password" class="form-row label-baseline">
+            <div class="label"><span class="required" title="Dit veld is verplicht">*</span><label for="request_totp_with_password_form_password" class="required">Wachtwoord</label></div>
+            <div class="field"><input type="password" id="request_totp_with_password_form_password" name="request_totp_with_password_form[password]" required="required" autocomplete="current-password"></div>
+          </div>
+          <div id="row_request_totp_with_password_form_totp_token" class="form-row label-baseline">
+            <div class="label"><span class="required" title="Dit veld is verplicht">*</span><label for="request_totp_with_password_form_totp_token" class="required">Zescijferige code</label></div>
+            <div class="field"><label class="challengeResponse"><input type="text" id="request_totp_with_password_form_totp_token" name="request_totp_with_password_form[totp_token]" required="required" class="totpToken" maxlength="6" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*"></label></div>
+          </div>
+          <div id="row_request_totp_with_password_form_submit" class="form-row">
+            <div class="label"></div>
+            <div class="field"><span class="upperlabel">Na inschakelen moet je op elk apparaat of browser opnieuw inloggen.</span><button type="submit" id="request_totp_with_password_form_submit" name="request_totp_with_password_form[submit]" class="ctaButton">Tweefactorauthenticatie inschakelen</button></div>
+          </div>
+          <div class="nodisplay"><input type="hidden" id="request_totp_with_password_form__token" name="request_totp_with_password_form[_token]" value="token"></div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

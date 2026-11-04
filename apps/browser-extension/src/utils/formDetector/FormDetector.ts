@@ -332,6 +332,9 @@ export class FormDetector {
   /**
    * Check if an input matches a field-type-specific exclusion pattern (e.g. TOTP "test").
    * Whole-word matching is used so a pattern like "test" doesn't reject "latest".
+   *
+   * When an attribute holds both include and exclude terms, the one that comes last decides: 
+   * so "request_totp_form_password" is handled as a password field and not a 2FA field.
    */
   private matchesEntryExclude(input: HTMLInputElement, entry: FieldPatternEntry): boolean {
     if (!entry.exclude || entry.exclude.length === 0) {
@@ -355,15 +358,22 @@ export class FormDetector {
       }
     }
 
-    for (const attr of attributesToCheck) {
-      for (const pattern of entry.exclude) {
-        if (this.matchesWordBoundary(attr, pattern)) {
-          return true;
-        }
+    const includes = includeTerms(entry);
+    return attributesToCheck.some(attr => this.lastWordMatchEnd(attr, entry.exclude!) > this.lastWordMatchEnd(attr, includes));
+  }
+
+  /**
+   * End position of the last whole-word match (any non-alphanumeric is a boundary) of the patterns in the text, or -1 when none matches.
+   */
+  private lastWordMatchEnd(text: string, patterns: string[]): number {
+    let lastEnd = -1;
+    for (const pattern of patterns) {
+      const regex = new RegExp(`(?<![a-z0-9])${pattern}(?![a-z0-9])`, 'g');
+      for (const match of text.matchAll(regex)) {
+        lastEnd = Math.max(lastEnd, match.index + match[0].length);
       }
     }
-
-    return false;
+    return lastEnd;
   }
 
   /**
@@ -1569,7 +1579,7 @@ export class FormDetector {
       }
 
       // Check for autocomplete="one-time-code"
-      const autocomplete = input.getAttribute('autocomplete')?.toLowerCase() ?? '';
+      const autocomplete = (input.getAttribute('data-av-autocomplete') ?? input.getAttribute('autocomplete'))?.toLowerCase() ?? '';
       if (autocomplete === 'one-time-code') {
         return input;
       }
