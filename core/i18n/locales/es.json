@@ -1099,12 +1099,12 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "contactSupport": "Contactar con soporte",
+      "documentation": "Documentación",
+      "privacyPolicy": "Política de privacidad",
+      "reportIssue": "Reportar un problema",
+      "sourceCode": "Código fuente",
+      "title": "Acerca de",
       "website": "Sitio Web"
     },
     "accountSecurity": "Seguridad de la cuenta",
@@ -1172,8 +1172,8 @@
     "batteryOptimizationDisabled": "Limpieza del portapapeles en segundo plano habilitada",
     "batteryOptimizationHelpDescription": "La optimización de la batería de Android previene la limpieza segura del portapapeles cuando la aplicación está en segundo plano. Deshabilitar la optimización de la batería para AliasVault permite la limpieza precisa del portapapeles de fondo y automáticamente concede los permisos de alarma necesarios.",
     "batteryOptimizationHelpTitle": "Activar limpieza del portapapeles en segundo plano",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Bloquear capturas de pantalla",
+    "blockScreenshotsDescription": "Bloquea capturas de pantalla y grabaciones de pantalla de la aplicación.",
     "clearAllDisabledSites": "Borrar todos los sitios desactivados",
     "clientUrlHint": "La URL de la interfaz web de tu instancia self-hosted",
     "clipboardClear": "Limpiar portapapeles",
@@ -1235,10 +1235,10 @@
       "autofill": "Autofill",
       "general": "General",
       "generators": "Generadores",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Privacidad de pantalla"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Ocultar contenido de la aplicación",
+    "hideAppContentsDescription": "Oculta el contenido de la aplicación en el interruptor de la aplicación.",
     "identityGenerator": "Generador de identidad",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Establecer el rango de edad para generar nuevas identidades.",
