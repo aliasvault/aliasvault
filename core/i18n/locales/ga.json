@@ -1099,12 +1099,12 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "contactSupport": "Déan teagmháil leis an tacaíocht",
+      "documentation": "Doiciméadú",
+      "privacyPolicy": "Polasaí príobháideachais",
+      "reportIssue": "Tuairiscigh fadhb",
+      "sourceCode": "Cód foinse",
+      "title": "Maidir le",
       "website": "Suíomh Gréasáin"
     },
     "accountSecurity": "Slándáil Cuntais",
@@ -1172,8 +1172,8 @@
     "batteryOptimizationDisabled": "Cumasaíodh glanadh gearrthaisce cúlra",
     "batteryOptimizationHelpDescription": "Cuireann optamú ceallraí Android cosc ​​ar ghlanadh iontaofa an ghearrthaisce nuair a bhíonn an aip sa chúlra. Trí optamú ceallraí a dhíchumasú le haghaidh AliasVault, is féidir an ghearrthaisce cúlra a ghlanadh go beacht agus deonaítear na ceadanna aláraim riachtanacha go huathoibríoch.",
     "batteryOptimizationHelpTitle": "Cumasaigh Glanadh an Ghearrthaisce Cúlra",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blocáil Seat Scáileáin",
+    "blockScreenshotsDescription": "Blocann sé seat scáileáin agus taifeadtaí scáileáin den aip.",
     "clearAllDisabledSites": "Glan gach suíomh díchumasaithe",
     "clientUrlHint": "URL an chomhéadain gréasáin de do shampla féin-óstáilte",
     "clipboardClear": "Glan an Ghearrthaisce",
@@ -1235,10 +1235,10 @@
       "autofill": "Uathlíonadh",
       "general": "Ginearálta",
       "generators": "Gineadóirí",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Príobháideacht scáileáin"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Folaigh Ábhar an Aip",
+    "hideAppContentsDescription": "Folaíonn sé ábhar an aip sa roghnóir aipeanna.",
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Socraigh an raon aoise chun céannachtaí nua a ghiniúint.",
