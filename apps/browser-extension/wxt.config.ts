@@ -202,7 +202,7 @@ export default defineConfig({
       'core/i18n/**/*',
       'core/models/**/*',
       'core/vault/**/*',
-      'core/scripts/**/*',
+      'core/_tools/scripts/**/*',
       'core/rust/**/*',
       'core/rust/.cargo/**/*',
       'LICENSE.md',

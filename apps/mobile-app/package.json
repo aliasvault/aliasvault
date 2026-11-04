@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "compile": "tsc --noEmit",
-    "preinstall": "node ../../core/scripts/install-linked-deps.mjs",
+    "preinstall": "node ../../core/_tools/scripts/install-linked-deps.mjs",
     "i18n:export-native": "node ../../core/i18n/scripts/export-native.mjs"
   },
   "codegenConfig": {

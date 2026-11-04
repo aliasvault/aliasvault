@@ -158,7 +158,7 @@ export type LegacyVaultContent = {
 };
 
 /**
- * A vault written by an old client, with the login material of that time (core/test-fixtures/legacy-vaults).
+ * A vault written by an old client, with the login material of that time (core/_tools/test-fixtures/legacy-vaults).
  */
 export type LegacyVaultFixture = {
   password: string;
@@ -168,10 +168,10 @@ export type LegacyVaultFixture = {
 };
 
 /**
- * Read a legacy vault fixture by its file name in core/test-fixtures/legacy-vaults: the app version whose data model the vault has, e.g. "0.1.0" or "0.30.7".
+ * Read a legacy vault fixture by its file name in core/_tools/test-fixtures/legacy-vaults: the app version whose data model the vault has, e.g. "0.1.0" or "0.30.7".
  */
 export function readLegacyVaultFixture(version: string): LegacyVaultFixture {
-  const fixturePath = path.resolve(import.meta.dirname, '..', '..', '..', '..', 'core', 'test-fixtures', 'legacy-vaults', `${version}.json`);
+  const fixturePath = path.resolve(import.meta.dirname, '..', '..', '..', '..', 'core', '_tools', 'test-fixtures', 'legacy-vaults', `${version}.json`);
   return JSON.parse(readFileSync(fixturePath, 'utf8')) as LegacyVaultFixture;
 }
 

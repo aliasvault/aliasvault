@@ -5,7 +5,7 @@
   "version": "0.32.0",
   "type": "module",
   "scripts": {
-    "preinstall": "node ../../core/scripts/install-linked-deps.mjs",
+    "preinstall": "node ../../core/_tools/scripts/install-linked-deps.mjs",
     "build:rust": "cd ../../core/rust && bash ./build.sh --web",
     "dev": "vite",
     "build": "vite build",
