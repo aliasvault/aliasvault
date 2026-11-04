@@ -25,7 +25,7 @@ uniffi = ["dep:uniffi", "svg-logo"]
 # Feature for UniFFI CLI bindgen tool (only for generating bindings, not for library)
 uniffi-cli = ["uniffi/cli"]
 # Feature for SVG logo normalization, needed only by the native renderers on mobile (the web draws SVG in the browser)
-svg-logo = ["dep:usvg"]
+svg-logo = ["dep:usvg", "dep:imagesize"]
 # Feature for WASM builds (web app and browser extension)
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook", "dep:js-sys"]
 
@@ -95,6 +95,8 @@ rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
 
 # SVG logo normalization for the native renderers (writer only: no text shaping, no system fonts)
 usvg = { version = "0.49", default-features = false, features = ["writer"], optional = true }
+# Image dimensions from file headers, to bound what embedded logo images decode to (already a usvg dependency)
+imagesize = { version = "0.15", optional = true }
 
 # Ed25519 account signing keys
 ed25519-dalek = { version = "2", default-features = false, features = ["std", "zeroize"] }

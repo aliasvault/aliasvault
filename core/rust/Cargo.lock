@@ -58,6 +58,7 @@ dependencies = [
  "getrandom 0.4.3",
  "hkdf",
  "hmac 0.12.1",
+ "imagesize",
  "js-sys",
  "mail-parser",
  "num-bigint",
