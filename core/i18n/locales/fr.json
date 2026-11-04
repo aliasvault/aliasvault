@@ -1099,12 +1099,12 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
+      "contactSupport": "Contacter le support",
       "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "privacyPolicy": "Politique de confidentialité",
+      "reportIssue": "Signaler un problème",
+      "sourceCode": "Code source",
+      "title": "À propos",
       "website": "Site internet"
     },
     "accountSecurity": "Sécurité du Compte",
