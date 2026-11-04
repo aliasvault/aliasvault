@@ -1,3 +1,4 @@
+import { isBlank } from '../../../shared/StringUtils';
 import { getProperty, isJsonObject, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
 
 /*
@@ -6,6 +7,12 @@ import { getProperty, isJsonObject, readBoolean, readNumber, readObject, readObj
 
 /** Proton Pass item states; older exports leave the state out, which means active. */
 export const ProtonPassItemStates = { Active: 1, Trashed: 2 } as const;
+
+/** Proton Pass autofill URL modes. */
+export const ProtonPassAutofillModes = { Default: 0, Exact: 1, Never: 2, StartWith: 3, Pattern: 4, RegularExpression: 5, ExactPath: 6 } as const;
+
+/** Autofill modes whose URL is a website. */
+const URL_AUTOFILL_MODES: ReadonlySet<number> = new Set([ProtonPassAutofillModes.Default, ProtonPassAutofillModes.Exact, ProtonPassAutofillModes.StartWith, ProtonPassAutofillModes.ExactPath]);
 
 /**
  * The export root.
@@ -25,6 +32,7 @@ export type ProtonPassVault = {
   Name: string | null;
   Description: string | null;
   Display: ProtonPassDisplay | null;
+  Folders: ProtonPassFolder[];
   /** The items as raw JSON. */
   Items: unknown[];
 };
@@ -38,11 +46,21 @@ export type ProtonPassDisplay = {
 };
 
 /**
+ * A folder inside a vault.
+ */
+export type ProtonPassFolder = {
+  FolderId: string | null;
+  ParentFolderId: string | null;
+  Name: string | null;
+};
+
+/**
  * An item envelope.
  */
 export type ProtonPassItem = {
   ItemId: string | null;
   ShareId: string | null;
+  FolderId: string | null;
   Data: ProtonPassItemData | null;
   /** One of {@link ProtonPassItemStates}. */
   State: number | null;
@@ -53,7 +71,7 @@ export type ProtonPassItem = {
   ModifyTime: number | null;
   Pinned: boolean;
   ShareCount: number;
-  Files: ProtonPassFile[] | null;
+  Files: (string | null)[] | null;
 };
 
 /**
@@ -84,6 +102,7 @@ export type ProtonPassContent = {
   ItemEmail: string | null;
   Password: string | null;
   Urls: (string | null)[] | null;
+  AutofillUrls: ProtonPassAutofillUrl[] | null;
   TotpUri: string | null;
   Passkeys: ProtonPassPasskey[] | null;
   CardholderName: string | null;
@@ -96,6 +115,15 @@ export type ProtonPassContent = {
   LastName: string | null;
   FullName: string | null;
   Email: string | null;
+};
+
+/**
+ * A login URL with its autofill mode.
+ */
+export type ProtonPassAutofillUrl = {
+  Url: string | null;
+  /** One of {@link ProtonPassAutofillModes}. */
+  Mode: number | null;
 };
 
 /**
@@ -123,16 +151,6 @@ export type ProtonPassExtraField = {
  */
 export type ProtonPassExtraFieldData = {
   Content: string | null;
-};
-
-/**
- * A file attached to an item.
- */
-export type ProtonPassFile = {
-  FileId: string | null;
-  Name: string | null;
-  MimeType: string | null;
-  Size: number | null;
 };
 
 /**
@@ -169,8 +187,18 @@ function parseProtonPassVault(obj: JsonObject): ProtonPassVault {
     Name: readString(obj, 'name'),
     Description: readString(obj, 'description'),
     Display: display ? { Color: readNumber(display, 'color') ?? 0, Icon: readNumber(display, 'icon') ?? 0 } : null,
+    Folders: readObjectArray(obj, 'folders', parseProtonPassFolder) ?? [],
     Items: Array.isArray(items) ? items : [],
   };
+}
+
+/**
+ * Read a folder.
+ * @param obj - The folder JSON
+ * @returns The folder
+ */
+function parseProtonPassFolder(obj: JsonObject): ProtonPassFolder {
+  return { FolderId: readString(obj, 'folderId'), ParentFolderId: readString(obj, 'parentFolderId'), Name: readString(obj, 'name') };
 }
 
 /**
@@ -183,6 +211,7 @@ export function parseProtonPassItem(element: unknown): ProtonPassItem {
   return {
     ItemId: readString(obj, 'itemId'),
     ShareId: readString(obj, 'shareId'),
+    FolderId: readString(obj, 'folderId'),
     Data: parseProtonPassItemData(readObject(obj, 'data')),
     State: readNumber(obj, 'state'),
     AliasEmail: readString(obj, 'aliasEmail'),
@@ -191,7 +220,7 @@ export function parseProtonPassItem(element: unknown): ProtonPassItem {
     ModifyTime: readNumber(obj, 'modifyTime'),
     Pinned: readBoolean(obj, 'pinned') ?? false,
     ShareCount: readNumber(obj, 'shareCount') ?? 0,
-    Files: readObjectArray(obj, 'files', (file): ProtonPassFile => ({ FileId: readString(file, 'fileID'), Name: readString(file, 'name'), MimeType: readString(file, 'mimeType'), Size: readNumber(file, 'size') })),
+    Files: readStringArray(obj, 'files'),
   };
 }
 
@@ -241,9 +270,10 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
 
   return {
     ItemUsername: readString(obj, 'itemUsername'),
-    ItemEmail: readString(obj, 'itemEmail'),
+    ItemEmail: readString(obj, 'itemEmail') ?? readString(obj, 'username'),
     Password: readString(obj, 'password'),
     Urls: readStringArray(obj, 'urls'),
+    AutofillUrls: readObjectArray(obj, 'autofillUrls', parseProtonPassAutofillUrl),
     TotpUri: readString(obj, 'totpUri'),
     Passkeys: Array.isArray(passkeys)
       ? passkeys.filter(isJsonObject).map((passkey): ProtonPassPasskey => ({ CredentialId: readString(passkey, 'credentialId'), RpId: readString(passkey, 'rpId'), RpName: readString(passkey, 'rpName'), UserName: readString(passkey, 'userName') }))
@@ -259,4 +289,43 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
     FullName: readString(obj, 'fullName'),
     Email: readString(obj, 'email'),
   };
+}
+
+/**
+ * Read a login URL with its autofill mode.
+ * @param obj - The URL JSON
+ * @returns The URL
+ */
+function parseProtonPassAutofillUrl(obj: JsonObject): ProtonPassAutofillUrl {
+  return { Url: readString(obj, 'url'), Mode: readNumber(obj, 'mode') };
+}
+
+/**
+ * Read the JSON in the autofillUrls column of a CSV export.
+ * @param json - The column text
+ * @returns The URLs, or null when the column is blank or not a JSON array
+ */
+export function parseProtonPassAutofillUrls(json: string | null): ProtonPassAutofillUrl[] | null {
+  if (isBlank(json)) {
+    return null;
+  }
+  try {
+    const parsed: unknown = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed.filter(isJsonObject).map(parseProtonPassAutofillUrl) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The website URLs of a login: from autofillUrls when it has any, else from the Default-only urls.
+ * @param autofillUrls - The URLs with their autofill modes
+ * @param urls - The Default mode URLs
+ * @returns The URLs
+ */
+export function getProtonPassLoginUrls(autofillUrls: ProtonPassAutofillUrl[] | null, urls: (string | null)[] | null): (string | null)[] {
+  if (autofillUrls && autofillUrls.length > 0) {
+    return autofillUrls.filter(url => url.Mode !== null && URL_AUTOFILL_MODES.has(url.Mode)).map(url => url.Url);
+  }
+  return urls ?? [];
 }
