@@ -142,8 +142,116 @@ fn custom_properties_resolve_per_color_scheme() {
 
 #[test]
 fn custom_property_fallbacks_and_unknown_names() {
-    assert_eq!(resolve_css_variables(r##"<path fill="var(--missing, #123456)"/>"##), r##"<path fill="#123456"/>"##);
-    assert_eq!(resolve_css_variables(r#"<path fill="var(--missing)"/>"#), r#"<path fill="var(--missing)"/>"#);
-    assert_eq!(resolve_css_variables("<style>:root{--a:var(--b);--b:#abcdef}</style><path fill=\"var(--a)\"/>"), "<style>:root{--a:#abcdef;--b:#abcdef}</style><path fill=\"#abcdef\"/>");
-    assert_eq!(resolve_css_variables("<style>:root{--a:var(--a)}</style><path fill=\"var(--a)\"/>").matches("var(--a)").count(), 2);
+    let resolve = |svg: &str| resolve_css_variables(svg).expect("within the caps");
+    assert_eq!(resolve(r##"<path fill="var(--missing, #123456)"/>"##), r##"<path fill="#123456"/>"##);
+    assert_eq!(resolve(r#"<path fill="var(--missing)"/>"#), r#"<path fill="var(--missing)"/>"#);
+    assert_eq!(resolve("<style>:root{--a:var(--b);--b:#abcdef}</style><path fill=\"var(--a)\"/>"), "<style>:root{--a:#abcdef;--b:#abcdef}</style><path fill=\"#abcdef\"/>");
+    assert_eq!(resolve("<style>:root{--a:var(--a)}</style><path fill=\"var(--a)\"/>").matches("var(--a)").count(), 2);
+}
+
+/// Variables that each repeat the previous one, so one reference expands to `fanout ^ levels` copies of `leaf`.
+fn variable_bomb(leaf: &str, fanout: usize, levels: usize) -> String {
+    let mut sheet = format!("--v0: {leaf};");
+    for level in 1..=levels {
+        sheet.push_str(&format!("--v{level}: {};", vec![format!("var(--v{})", level - 1); fanout].join(" ")));
+    }
+    format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><style>:root{{{sheet}}}</style><path fill="var(--v{levels})" d="M0 0h1v1H0z"/></svg>"#)
+}
+
+#[test]
+fn exponential_variable_expansion_is_rejected() {
+    assert!(normalize_svg_logo(variable_bomb("#000", 40, 7).as_bytes(), false).is_none());
+    // Expanding to nothing never grows the output, so only the substitution count stops it.
+    assert!(normalize_svg_logo(variable_bomb("", 40, 7).as_bytes(), false).is_none());
+}
+
+/// A 1-bit grayscale PNG of `side` x `side` pixels, all black, as base64.
+fn blank_png(side: u32) -> String {
+    use base64::Engine;
+    use std::io::Write;
+    fn chunk(kind: &[u8], data: &[u8]) -> Vec<u8> {
+        let mut crc = flate2::Crc::new();
+        crc.update(kind);
+        crc.update(data);
+        [&(data.len() as u32).to_be_bytes()[..], kind, data, &crc.sum().to_be_bytes()].concat()
+    }
+    let row = vec![0u8; 1 + (side as usize).div_ceil(8)];
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::best());
+    for _ in 0..side {
+        encoder.write_all(&row).unwrap();
+    }
+    let header = [&side.to_be_bytes()[..], &side.to_be_bytes()[..], &[1, 0, 0, 0, 0]].concat();
+    let png = [&b"\x89PNG\r\n\x1a\n"[..], &chunk(b"IHDR", &header), &chunk(b"IDAT", &encoder.finish().unwrap()), &chunk(b"IEND", &[])].concat();
+    base64::engine::general_purpose::STANDARD.encode(png)
+}
+
+fn svg_with_images(png: &str, count: usize) -> String {
+    let images: String = (0..count).map(|_| format!(r#"<image width="1" height="1" href="data:image/png;base64,{png}"/>"#)).collect();
+    format!(r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">{images}<rect width="1" height="1" fill="#ff0000"/></svg>"##)
+}
+
+#[test]
+fn oversized_embedded_images_are_dropped() {
+    // About 100 KB of PNG that a decoder would expand to 900 million pixels.
+    let out = normalize(&svg_with_images(&blank_png(30_000), 1), false);
+    assert!(!out.contains("<image"), "{}", &out[..out.len().min(300)]);
+    assert!(out.contains("fill=\"#ff0000\""));
+
+    assert!(normalize(&svg_with_images(&blank_png(64), 1), false).contains("<image"));
+}
+
+#[test]
+fn embedded_images_share_one_pixel_budget() {
+    // Each 1024 x 1024 image fits on its own; the third goes past the budget for the logo.
+    let out = normalize(&svg_with_images(&blank_png(1024), 3), false);
+    assert_eq!(out.matches("<image").count(), 2);
+}
+
+#[test]
+fn embedded_image_format_is_read_from_the_bytes() {
+    let fake = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><image width="1" height="1" href="data:image/png;base64,{}"/></svg>"#, "PHN2Zy8+");
+    assert!(!normalize(&fake, false).contains("<image"));
+}
+
+#[test]
+fn filters_are_removed() {
+    let svg = r##"<svg xmlns="http://www.w3.org/2000/svg" width="100000" height="100000"><filter id="f" x="-1000000" width="3000000"><feGaussianBlur stdDeviation="100000"/><feTurbulence baseFrequency="0.9" numOctaves="1000000"/></filter><rect width="100000" height="100000" fill="#00ff00" filter="url(#f)"/></svg>"##;
+    let out = normalize(svg, false);
+    assert!(!out.contains("filter") && !out.contains("feTurbulence") && !out.contains("feGaussianBlur"), "{out}");
+    assert!(out.contains("fill=\"#00ff00\""), "{out}");
+}
+
+#[test]
+fn use_amplification_is_rejected() {
+    let mut defs = String::from(r#"<path id="u0" d="M0 0h1v1H0z"/>"#);
+    for level in 1..=4 {
+        defs.push_str(&format!(r#"<g id="u{level}">{}</g>"#, format!(r##"<use href="#u{}"/>"##, level - 1).repeat(30)));
+    }
+    let svg = format!(r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><defs>{defs}</defs><use href="#u4"/></svg>"##);
+    assert!(normalize_svg_logo(svg.as_bytes(), false).is_none());
+}
+
+#[test]
+fn entity_and_nesting_attacks_are_rejected() {
+    let entities: String = (1..10).map(|i| format!(r#"<!ENTITY l{i} "{}">"#, format!("&l{};", i - 1).repeat(10))).collect();
+    let laughs = format!(r#"<?xml version="1.0"?><!DOCTYPE svg [<!ENTITY l0 "lol">{entities}]><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><title>&l9;</title></svg>"#);
+    assert!(normalize_svg_logo(laughs.as_bytes(), false).is_none());
+
+    let external = r#"<?xml version="1.0"?><!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/passwd">]><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><title>&x;</title></svg>"#;
+    assert!(normalize_svg_logo(external.as_bytes(), false).is_none());
+
+    let nested = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">{}<rect width="1" height="1"/>{}</svg>"#, "<g>".repeat(20_000), "</g>".repeat(20_000));
+    assert!(normalize_svg_logo(nested.as_bytes(), false).is_none());
+
+    let recursive = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><g id="a"><use href="#b"/></g><g id="b"><use href="#a"/></g></svg>"##;
+    assert!(normalize_svg_logo(recursive.as_bytes(), false).map_or(true, |out| !String::from_utf8(out).unwrap().contains("<use")));
+}
+
+#[test]
+fn script_and_link_vectors_are_removed() {
+    let svg = r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><a xlink:href="javascript:alert(1)"><rect width="5" height="5" onclick="alert(1)"/></a><animate attributeName="href" to="javascript:alert(1)"/><set attributeName="onmouseover" to="alert(1)"/><rect x="5" width="5" height="5" style="fill:url(javascript:alert(1))"/></svg>"#;
+    let out = normalize(svg, false);
+    for banned in ["javascript", "onclick", "onmouseover", "<a", "<animate", "<set"] {
+        assert!(!out.contains(banned), "{banned} in {out}");
+    }
 }

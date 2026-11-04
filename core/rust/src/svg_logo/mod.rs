@@ -3,16 +3,26 @@
 //! Browsers apply a logo's CSS (`<style>`, `:root`, `@media`) and never load anything from an SVG shown as an image,
 //! but the native renderers (react-native-svg, Macaw, AndroidSVG) each skip different parts of CSS and react-native-svg
 //! fetches remote images. A logo is therefore rewritten into usvg's simplified SVG before a native renderer draws it:
-//! paths, groups, gradients, clip paths, masks and filters with resolved attributes, no CSS, only local references and
-//! embedded raster images. This only affects rendering, the stored bytes are not changed.
+//! paths, groups, gradients, clip paths and masks with resolved attributes, no CSS, no filters, only local references and
+//! small embedded raster images. This only affects rendering, the stored bytes are not changed.
 
 #[cfg(test)]
 mod tests;
 
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 /// Largest SVG logo accepted, in bytes.
 pub const MAX_SVG_LOGO_BYTES: usize = 256 * 1024;
+
+/// Largest SVG after CSS variables are substituted, and largest normalized output, in bytes.
+const MAX_EXPANDED_BYTES: usize = 1024 * 1024;
+
+/// Largest width or height of an embedded raster image, in pixels.
+const MAX_EMBEDDED_IMAGE_SIDE: usize = 1024;
+
+/// Most pixels all embedded raster images of one logo may decode to together.
+const MAX_EMBEDDED_IMAGE_PIXELS: u64 = 2 * 1024 * 1024;
 
 /// Rewrite an SVG logo into simplified SVG every renderer draws the way a browser does, or None when it cannot be drawn.
 ///
@@ -24,11 +34,16 @@ pub fn normalize_svg_logo(svg: &[u8], dark: bool) -> Option<Vec<u8>> {
     let text = std::str::from_utf8(svg).ok()?;
     let text = text.strip_prefix('\u{FEFF}').unwrap_or(text);
 
+    let decoded_pixels = Arc::new(AtomicU64::new(0));
+    let budget = Arc::clone(&decoded_pixels);
     let options = usvg::Options {
-        image_href_resolver: usvg::ImageHrefResolver { resolve_data: Box::new(resolve_embedded_raster), resolve_string: Box::new(|_, _| None) },
+        image_href_resolver: usvg::ImageHrefResolver {
+            resolve_data: Box::new(move |_, data, _| resolve_embedded_raster(data, &budget)),
+            resolve_string: Box::new(|_, _| None),
+        },
         ..usvg::Options::default()
     };
-    let tree = usvg::Tree::from_str(&resolve_css_variables(&rewrite_style_sheets(text, dark)), &options).ok()?;
+    let tree = usvg::Tree::from_str(&resolve_css_variables(&rewrite_style_sheets(text, dark))?, &options).ok()?;
 
     let size = tree.size();
     if size.width() <= 0.0 || size.height() <= 0.0 {
@@ -37,20 +52,57 @@ pub fn normalize_svg_logo(svg: &[u8], dark: bool) -> Option<Vec<u8>> {
 
     let written = tree.to_string(&usvg::WriteOptions { indent: usvg::Indent::None, attributes_indent: usvg::Indent::None, ..usvg::WriteOptions::default() });
 
+    // `<use>` copies its target, so a small input can still write a huge document.
+    if written.len() > MAX_EXPANDED_BYTES {
+        return None;
+    }
+
     // usvg folds the viewBox into a transform and writes only width and height, while renderers scale by the viewBox.
-    let body = written.strip_prefix("<svg")?;
+    let body = strip_filters(written.strip_prefix("<svg")?);
     Some(format!("<svg viewBox=\"0 0 {} {}\"{body}", size.width(), size.height()).into_bytes())
 }
 
-/// Keep an embedded PNG, JPEG, GIF or WebP image; anything else, such as an SVG inside the SVG, is dropped.
-fn resolve_embedded_raster(mime: &str, data: Arc<Vec<u8>>, _: &usvg::Options) -> Option<usvg::ImageKind> {
-    match mime.to_ascii_lowercase().as_str() {
-        "image/png" => Some(usvg::ImageKind::PNG(data)),
-        "image/jpeg" | "image/jpg" => Some(usvg::ImageKind::JPEG(data)),
-        "image/gif" => Some(usvg::ImageKind::GIF(data)),
-        "image/webp" => Some(usvg::ImageKind::WEBP(data)),
+/// Keep an embedded PNG, JPEG, GIF or WebP image within the pixel budget; anything else, such as an SVG inside the SVG, is dropped.
+fn resolve_embedded_raster(data: Arc<Vec<u8>>, decoded_pixels: &AtomicU64) -> Option<usvg::ImageKind> {
+    let size = imagesize::blob_size(&data).ok()?;
+    if size.width == 0 || size.height == 0 || size.width > MAX_EMBEDDED_IMAGE_SIDE || size.height > MAX_EMBEDDED_IMAGE_SIDE {
+        return None;
+    }
+    let pixels = (size.width * size.height) as u64;
+    if decoded_pixels.fetch_add(pixels, Ordering::Relaxed) + pixels > MAX_EMBEDDED_IMAGE_PIXELS {
+        return None;
+    }
+    match imagesize::image_type(&data).ok()? {
+        imagesize::ImageType::Png => Some(usvg::ImageKind::PNG(data)),
+        imagesize::ImageType::Jpeg => Some(usvg::ImageKind::JPEG(data)),
+        imagesize::ImageType::Gif => Some(usvg::ImageKind::GIF(data)),
+        imagesize::ImageType::Webp => Some(usvg::ImageKind::WEBP(data)),
         _ => None,
     }
+}
+
+/// Remove filters from usvg's output: the native renderers support them unevenly, and a filter region or effect can
+/// make a renderer allocate or compute far beyond what a logo needs.
+pub(super) fn strip_filters(svg: &str) -> String {
+    let mut result = String::with_capacity(svg.len());
+    let mut rest = svg;
+    while let Some(start) = rest.find("<filter ") {
+        result.push_str(&rest[..start]);
+        let Some(end) = rest[start..].find("</filter>").map(|i| start + i + "</filter>".len()) else { return String::new() };
+        rest = &rest[end..];
+    }
+    result.push_str(rest);
+
+    let mut stripped = String::with_capacity(result.len());
+    let mut rest = result.as_str();
+    while let Some(start) = rest.find(" filter=\"") {
+        stripped.push_str(&rest[..start]);
+        let value = &rest[start + " filter=\"".len()..];
+        let Some(end) = value.find('"') else { return String::new() };
+        rest = &value[end + 1..];
+    }
+    stripped.push_str(rest);
+    stripped
 }
 
 /// Rewrite the CSS of every `<style>` element into what usvg's CSS engine applies the way a browser would.
@@ -124,10 +176,13 @@ fn apply_color_scheme(css: &str, dark: bool) -> String {
 /// Deepest chain of variables referring to variables that is resolved.
 const MAX_VARIABLE_DEPTH: usize = 8;
 
+/// Most `var()` references substituted in one logo, counting those inside substituted values.
+const MAX_VARIABLE_SUBSTITUTIONS: usize = 10_000;
+
 /// Replace every `var(--name)` and `var(--name, fallback)` with its value, since usvg's CSS engine has no custom properties.
-pub(super) fn resolve_css_variables(svg: &str) -> String {
+pub(super) fn resolve_css_variables(svg: &str) -> Option<String> {
     if !svg.contains("var(") {
-        return svg.to_string();
+        return Some(svg.to_string());
     }
     let mut variables = std::collections::HashMap::new();
     let mut rest = svg;
@@ -143,12 +198,13 @@ pub(super) fn resolve_css_variables(svg: &str) -> String {
         }
         rest = &after[name_length..];
     }
-    substitute_variables(svg, &variables, 0)
+    let mut result = String::with_capacity(svg.len());
+    substitute_variables(svg, &variables, 0, &mut 0, &mut result)?;
+    Some(result)
 }
 
-/// Substitute the `var()` references in `text`, leaving one in place when it has no value and no fallback.
-fn substitute_variables(text: &str, variables: &std::collections::HashMap<&str, &str>, depth: usize) -> String {
-    let mut result = String::with_capacity(text.len());
+/// Append `text` to `result` with its `var()` references substituted.
+fn substitute_variables(text: &str, variables: &std::collections::HashMap<&str, &str>, depth: usize, substitutions: &mut usize, result: &mut String) -> Option<()> {
     let mut rest = text;
     while let Some(index) = rest.find("var(") {
         let Some(close) = matching_parenthesis(&rest[index + 3..]).map(|i| index + 3 + i) else { break };
@@ -156,14 +212,21 @@ fn substitute_variables(text: &str, variables: &std::collections::HashMap<&str, 
         let (name, fallback) = split_top_level_comma(inner);
         let value = variables.get(name.trim().trim_start_matches("--")).copied().or(fallback.map(str::trim));
         result.push_str(&rest[..index]);
+        *substitutions += 1;
+        if *substitutions > MAX_VARIABLE_SUBSTITUTIONS {
+            return None;
+        }
         match value {
-            Some(value) if depth < MAX_VARIABLE_DEPTH => result.push_str(&substitute_variables(value, variables, depth + 1)),
+            Some(value) if depth < MAX_VARIABLE_DEPTH => substitute_variables(value, variables, depth + 1, substitutions, result)?,
             _ => result.push_str(&rest[index..=close]),
+        }
+        if result.len() > MAX_EXPANDED_BYTES {
+            return None;
         }
         rest = &rest[close + 1..];
     }
     result.push_str(rest);
-    result
+    (result.len() <= MAX_EXPANDED_BYTES).then_some(())
 }
 
 /// Split a `var()` argument list into the name and the fallback after the first comma outside parentheses.
