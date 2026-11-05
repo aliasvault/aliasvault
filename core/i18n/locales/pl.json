@@ -1099,11 +1099,11 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
+      "contactSupport": "Skontaktuj się z pomocą techniczną",
+      "documentation": "Dokumentacja",
+      "privacyPolicy": "Polityka prywatności",
+      "reportIssue": "Zgłoś problem",
+      "sourceCode": "Kod źródłowy",
       "title": "O aplikacji",
       "website": "Strona www"
     },
@@ -1172,8 +1172,8 @@
     "batteryOptimizationDisabled": "Włączono czyszczenie schowka w tle",
     "batteryOptimizationHelpDescription": "Optymalizacja baterii systemu Android uniemożliwia niezawodne czyszczenie schowka, gdy aplikacja działa w tle. Wyłączenie optymalizacji baterii dla AliasVault umożliwia precyzyjne czyszczenie schowka w tle i automatycznie przyznaje niezbędne uprawnienia alarmowe.",
     "batteryOptimizationHelpTitle": "Włącz czyszczenie schowka w tle",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blokuj wykonywanie zrzutów ekranu",
+    "blockScreenshotsDescription": "Blokuje zrzuty ekranu i nagrywania ekranu aplikacji.",
     "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
     "clientUrlHint": "Adres URL interfejsu sieci web dla twojej samodzielnej instancji",
     "clipboardClear": "Wyczyść schowek",
@@ -1235,10 +1235,10 @@
       "autofill": "Autouzupełnianie",
       "general": "Ogólne",
       "generators": "Generatory",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Prywatność ekranu"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Ukryj zawartość aplikacji",
+    "hideAppContentsDescription": "Ukrywa zawartość aplikacji w przełączniku.",
     "identityGenerator": "Generator tożsamości",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ustaw zakres wieku dla generowania nowych tożsamości.",
