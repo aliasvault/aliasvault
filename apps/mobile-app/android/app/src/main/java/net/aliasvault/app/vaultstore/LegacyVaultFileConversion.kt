@@ -12,8 +12,7 @@ import java.io.File
  *
  * Other platform implementations: VaultStore+LegacyVaultFileConversion.swift (iOS).
  *
- * TODO: remove once all clients have upgraded past 0.31.1, together with its call in
- * [net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider.getEncryptedDatabaseFile] and its entry in `clearStorage`.
+ * TODO: remove once all clients have upgraded past 0.31.1.
  * An install that still holds only the old file then has no vault and logs in again.
  */
 internal object LegacyVaultFileConversion {

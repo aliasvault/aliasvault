@@ -23,9 +23,9 @@ interface StorageProvider {
 
     /**
      * Set the encrypted database file.
-     * @param encryptedData The encrypted database data as a base64 encoded string
+     * @param encryptedData The encrypted database bytes
      */
-    fun setEncryptedDatabaseFile(encryptedData: String)
+    fun setEncryptedDatabaseFile(encryptedData: ByteArray)
 
     /**
      * Get the key derivation parameters.

@@ -138,11 +138,12 @@ class VaultStoreTest {
         }
     }
 
-    private fun loadTestDatabase(): String {
+    /** The encrypted test vault; the fixture holds it as base64 text. */
+    private fun loadTestDatabase(): ByteArray {
         // Load the test database file from resources
         val inputStream = javaClass.classLoader?.getResourceAsStream("test-encrypted-vault.txt")
             ?: throw IllegalStateException("Test database file not found")
 
-        return inputStream.bufferedReader().use { it.readText() }
+        return java.util.Base64.getMimeDecoder().decode(inputStream.bufferedReader().use { it.readText() }.trim())
     }
 }

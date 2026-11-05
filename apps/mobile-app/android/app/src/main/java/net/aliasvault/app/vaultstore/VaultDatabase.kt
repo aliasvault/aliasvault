@@ -24,15 +24,15 @@ class VaultDatabase(
     /**
      * Store the encrypted database in the storage provider.
      */
-    fun storeEncryptedDatabase(encryptedData: String) {
+    fun storeEncryptedDatabase(encryptedData: ByteArray) {
         storageProvider.setEncryptedDatabaseFile(encryptedData)
     }
 
     /**
      * Get the encrypted database from the storage provider.
      */
-    fun getEncryptedDatabase(): String {
-        return storageProvider.getEncryptedDatabaseFile().readText()
+    fun getEncryptedDatabase(): ByteArray {
+        return storageProvider.getEncryptedDatabaseFile().readBytes()
     }
 
     /**

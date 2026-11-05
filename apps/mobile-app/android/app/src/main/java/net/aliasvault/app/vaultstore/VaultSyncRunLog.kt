@@ -109,12 +109,12 @@ class VaultSyncRunLog(private val operation: String) {
     }
 
     /**
-     * Count one handled command, and log it on its own when it is a transfer or slow.
+     * Count one handled command, and log it on its own when it is a transfer or slow. [rawBytes] are the bytes that crossed outside the JSON, either way.
      */
-    fun recordCommand(kind: String, command: JSONObject, response: JSONObject, responseBytes: ByteArray?, nanos: Long) {
+    fun recordCommand(kind: String, command: JSONObject, response: JSONObject, rawBytes: ByteArray?, nanos: Long) {
         commandNanos[kind] = (commandNanos[kind] ?: 0L) + nanos
         commandCounts[kind] = (commandCounts[kind] ?: 0) + 1
-        describe(kind, command, response, responseBytes, nanos / NANOS_PER_MS)?.let { note(it) }
+        describe(kind, command, response, rawBytes, nanos / NANOS_PER_MS)?.let { note(it) }
     }
 
     /**
@@ -139,7 +139,7 @@ class VaultSyncRunLog(private val operation: String) {
     /**
      * One line for a command relevant for performance analysis, or null for unrelated calls.
      */
-    private fun describe(kind: String, command: JSONObject, response: JSONObject, responseBytes: ByteArray?, ms: Long): String? {
+    private fun describe(kind: String, command: JSONObject, response: JSONObject, rawBytes: ByteArray?, ms: Long): String? {
         val took = "$kind took ${ms}ms"
         if (response.has("error")) {
             return "$took: failed (${response.optString("error")})"
@@ -156,9 +156,8 @@ class VaultSyncRunLog(private val operation: String) {
                     "$took: $request $status, sent ${formatSize(command.opt("body"))}, received ${formatSize(response.opt("body"))}"
                 }
             }
-            "vaultStore" -> "$took: ${formatSize(command.opt("encryptedBlob"))}"
-            "vaultLoad" -> "$took: ${formatSize(response.opt("encryptedBlob"))}"
-            "dbExport" -> "$took: $db ${formatByteCount(responseBytes?.size ?: 0)}"
+            "vaultStore", "vaultLoad" -> "$took: ${formatByteCount(rawBytes?.size ?: 0)}"
+            "dbExport" -> "$took: $db ${formatByteCount(rawBytes?.size ?: 0)}"
             "dbExec" -> if (slow) "$took: ${command.optJSONArray("statements")?.length() ?: 0} statement(s) on $db" else null
             "dbQuery" -> if (slow) "$took: ${response.optJSONArray("rows")?.length() ?: 0} row(s) from $db" else null
             else -> if (slow) took else null

@@ -362,14 +362,14 @@ class VaultStore(
     /**
      * Store the encrypted database.
      */
-    fun storeEncryptedDatabase(encryptedData: String) {
+    fun storeEncryptedDatabase(encryptedData: ByteArray) {
         database.storeEncryptedDatabase(encryptedData)
     }
 
     /**
      * Get the encrypted database.
      */
-    fun getEncryptedDatabase(): String {
+    fun getEncryptedDatabase(): ByteArray {
         return database.getEncryptedDatabase()
     }
 
@@ -728,7 +728,7 @@ class VaultStore(
      * 2. expectedMutationSeq provided: Sync operation - only succeeds if no mutations happened
      */
     fun storeEncryptedVaultWithSyncState(
-        encryptedVault: String,
+        encryptedVault: ByteArray,
         markDirty: Boolean = false,
         serverRevision: Int? = null,
         expectedMutationSeq: Int? = null,
