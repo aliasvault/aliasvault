@@ -84,6 +84,7 @@ class PasskeyFormFragment : Fragment() {
     // UI elements
     private lateinit var headerSubtitle: TextView
     private lateinit var infoExplanationText: TextView
+    private lateinit var displayNameLayout: View
     private lateinit var displayNameInput: TextInputEditText
     private lateinit var websiteText: TextView
     private lateinit var usernameContainer: View
@@ -131,6 +132,7 @@ class PasskeyFormFragment : Fragment() {
         val headerTitle = view.findViewById<TextView>(R.id.headerTitle)
         headerSubtitle = view.findViewById(R.id.headerSubtitle)
         infoExplanationText = view.findViewById(R.id.infoExplanationText)
+        displayNameLayout = view.findViewById(R.id.displayNameLayout)
         displayNameInput = view.findViewById(R.id.displayNameInput)
         websiteText = view.findViewById(R.id.websiteText)
         usernameContainer = view.findViewById(R.id.usernameContainer)
@@ -148,7 +150,7 @@ class PasskeyFormFragment : Fragment() {
                 headerTitle.text = getString(R.string.replace_passkey)
                 headerSubtitle.visibility = View.GONE
                 infoExplanationText.text = getString(R.string.passkey_replace_explanation)
-                displayNameInput.setText(passkeyToReplace?.passkey?.displayName)
+                displayNameLayout.visibility = View.GONE
                 saveButton.text = getString(R.string.replace_passkey)
             }
             isMerge && itemToMerge != null -> {
@@ -156,7 +158,7 @@ class PasskeyFormFragment : Fragment() {
                 headerSubtitle.visibility = View.VISIBLE
                 headerSubtitle.text = getString(R.string.add_passkey_subtitle)
                 infoExplanationText.text = getString(R.string.passkey_merge_explanation)
-                displayNameInput.setText(itemToMerge?.serviceName ?: viewModel.rpName ?: viewModel.rpId)
+                displayNameLayout.visibility = View.GONE
                 saveButton.text = getString(R.string.add_passkey)
             }
             else -> {
@@ -196,9 +198,12 @@ class PasskeyFormFragment : Fragment() {
     }
 
     private fun onSaveClicked() {
-        // Validate display name
-        val displayName = displayNameInput.text.toString().trim()
-        if (displayName.isEmpty()) {
+        val replaceTarget = passkeyToReplace.takeIf { isReplace }
+        val mergeTarget = itemToMerge.takeIf { isMerge }
+
+        // The title is only asked for a new item, replace and merge keep the item's name
+        val itemName = displayNameInput.text.toString().trim()
+        if (replaceTarget == null && mergeTarget == null && itemName.isEmpty()) {
             errorText.text = getString(R.string.passkey_error_empty_name)
             errorText.visibility = View.VISIBLE
             return
@@ -210,17 +215,16 @@ class PasskeyFormFragment : Fragment() {
         // Start passkey creation in coroutine
         lifecycleScope.launch {
             when {
-                isReplace && passkeyToReplace != null -> {
-                    replacePasskeyFlow(displayName, passkeyToReplace!!)
-                }
-                isMerge && itemToMerge != null -> {
-                    mergePasskeyFlow(displayName, itemToMerge!!)
-                }
-                else -> {
-                    createPasskeyFlow(displayName)
-                }
+                replaceTarget != null -> replacePasskeyFlow(replaceTarget)
+                mergeTarget != null -> mergePasskeyFlow(mergeTarget)
+                else -> createPasskeyFlow(itemName)
             }
         }
+    }
+
+    /** The passkey's own display name: the account name the site sent, not the item title. */
+    private fun passkeyDisplayName(): String {
+        return viewModel.userDisplayName ?: viewModel.userName?.takeIf { it.isNotEmpty() } ?: viewModel.rpId
     }
 
     private fun showLoading(message: String) {
@@ -247,7 +251,7 @@ class PasskeyFormFragment : Fragment() {
     /**
      * Create a new passkey flow.
      */
-    private suspend fun createPasskeyFlow(displayName: String) = withContext(Dispatchers.IO) {
+    private suspend fun createPasskeyFlow(itemName: String) = withContext(Dispatchers.IO) {
         try {
             // Step 1: Sync vault before creating passkey to ensure we have latest data
             withContext(Dispatchers.Main) {
@@ -330,7 +334,7 @@ class PasskeyFormFragment : Fragment() {
                 publicKey = passkeyResult.publicKey,
                 privateKey = passkeyResult.privateKey,
                 prfKey = passkeyResult.prfSecret,
-                displayName = displayName,
+                displayName = passkeyDisplayName(),
                 createdAt = now,
                 updatedAt = now,
                 isDeleted = false,
@@ -344,7 +348,7 @@ class PasskeyFormFragment : Fragment() {
             vaultStore.createItemWithPasskey(
                 url = url,
                 userName = viewModel.userName,
-                displayName = displayName,
+                itemName = itemName,
                 passkeyObj = passkey,
                 logo = logo,
             )
@@ -454,7 +458,7 @@ class PasskeyFormFragment : Fragment() {
     /**
      * Replace an existing passkey flow.
      */
-    private suspend fun replacePasskeyFlow(displayName: String, passkeyToReplace: PasskeyWithItem) = withContext(Dispatchers.IO) {
+    private suspend fun replacePasskeyFlow(passkeyToReplace: PasskeyWithItem) = withContext(Dispatchers.IO) {
         try {
             // Step 1: Sync vault before replacing passkey to ensure we have latest data
             withContext(Dispatchers.Main) {
@@ -535,7 +539,7 @@ class PasskeyFormFragment : Fragment() {
                 publicKey = passkeyResult.publicKey,
                 privateKey = passkeyResult.privateKey,
                 prfKey = passkeyResult.prfSecret,
-                displayName = displayName,
+                displayName = passkeyDisplayName(),
                 createdAt = now,
                 updatedAt = now,
                 isDeleted = false,
@@ -550,7 +554,6 @@ class PasskeyFormFragment : Fragment() {
                 oldPasskeyId = passkeyToReplace.passkey.id,
                 manifestId = requireNotNull(passkeyToReplace.passkey.manifestId),
                 newPasskey = newPasskey,
-                displayName = displayName,
                 url = url,
                 logo = logo,
             )
@@ -662,10 +665,7 @@ class PasskeyFormFragment : Fragment() {
      * Merge passkey into existing Item flow.
      * Adds a passkey to an existing credential (Item) that has user/pass but no passkey.
      */
-    private suspend fun mergePasskeyFlow(
-        displayName: String,
-        item: ItemWithCredentialInfo,
-    ) = withContext(Dispatchers.IO) {
+    private suspend fun mergePasskeyFlow(item: ItemWithCredentialInfo) = withContext(Dispatchers.IO) {
         try {
             // Step 1: Sync vault before adding passkey to ensure we have latest data
             withContext(Dispatchers.Main) {
@@ -748,7 +748,7 @@ class PasskeyFormFragment : Fragment() {
                 publicKey = passkeyResult.publicKey,
                 privateKey = passkeyResult.privateKey,
                 prfKey = passkeyResult.prfSecret,
-                displayName = displayName,
+                displayName = passkeyDisplayName(),
                 createdAt = now,
                 updatedAt = now,
                 isDeleted = false,

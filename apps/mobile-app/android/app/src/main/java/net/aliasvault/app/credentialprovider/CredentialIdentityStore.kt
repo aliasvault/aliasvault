@@ -12,13 +12,13 @@ import org.json.JSONObject
 /**
  * Android implementation of CredentialIdentityStore.
  *
- * This class stores passkey metadata (rpId, userName, displayName, credentialId, userHandle)
+ * This class stores passkey metadata (rpId, userName, item name, credentialId, userHandle)
  * in SharedPreferences so that passkeys can be displayed without unlocking the vault.
  *
  * Security features:
  * - Uses MODE_PRIVATE for app-private storage (no other apps can access)
  * - Excluded from device backups (see backup_rules.xml and data_extraction_rules.xml)
- * - Contains no passwords, only metadata (usernames, rpIds, displayNames)
+ * - Contains no passwords, only metadata (usernames, rpIds, item names)
  * - Cleared when credential provider is disabled by user
  *
  * Similar to iOS ASCredentialIdentityStore, but using SharedPreferences as Android's
@@ -55,7 +55,7 @@ class CredentialIdentityStore private constructor(context: Context) {
      * @property passkeyId UUID of the passkey
      * @property rpId Relying Party ID
      * @property userName Username (optional)
-     * @property displayName Display name for UI
+     * @property itemName Name of the item holding the passkey (optional)
      * @property credentialId Base64url-encoded credential ID (16-byte GUID)
      * @property userHandle Base64url-encoded user handle (optional)
      */
@@ -63,7 +63,7 @@ class CredentialIdentityStore private constructor(context: Context) {
         val passkeyId: String,
         val rpId: String,
         val userName: String?,
-        val displayName: String,
+        val itemName: String?,
         val credentialId: String,
         val userHandle: String?,
     ) {
@@ -76,7 +76,7 @@ class CredentialIdentityStore private constructor(context: Context) {
                     passkeyId = json.getString("passkeyId"),
                     rpId = json.getString("rpId"),
                     userName = if (json.isNull("userName")) null else json.getString("userName"),
-                    displayName = json.getString("displayName"),
+                    itemName = if (json.isNull("itemName")) null else json.optString("itemName").ifEmpty { null },
                     credentialId = json.getString("credentialId"),
                     userHandle = if (json.isNull("userHandle")) null else json.getString("userHandle"),
                 )
@@ -191,7 +191,7 @@ class CredentialIdentityStore private constructor(context: Context) {
             passkeyId = passkey.id.toString(),
             rpId = passkey.rpId,
             userName = userName,
-            displayName = passkey.displayName,
+            itemName = entry.serviceName?.takeIf { it.isNotBlank() },
             credentialId = credentialId,
             userHandle = userHandle,
         )
@@ -205,7 +205,7 @@ class CredentialIdentityStore private constructor(context: Context) {
             put("passkeyId", passkeyId)
             put("rpId", rpId)
             put("userName", userName ?: JSONObject.NULL)
-            put("displayName", displayName)
+            put("itemName", itemName ?: JSONObject.NULL)
             put("credentialId", credentialId)
             put("userHandle", userHandle ?: JSONObject.NULL)
         }
