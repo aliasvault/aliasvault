@@ -9,7 +9,7 @@ public struct VaultConstants {
 
     public static let vaultMetadataKey = "aliasvault_vault_metadata"
     public static let accountKeyKey = "aliasvault_encryption_key"
-    public static let encryptedDbFileName = "encrypted_db.sqlite"
+    public static let encryptedDbFileName = "encrypted_db.bin"
     public static let authMethodsKey = "aliasvault_auth_methods"
     public static let autoLockTimeoutKey = "aliasvault_auto_lock_timeout"
     public static let unlockKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"

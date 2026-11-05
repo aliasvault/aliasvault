@@ -88,8 +88,8 @@ final public class VaultStoreKitTests: XCTestCase {
         }
     }
 
-    // Helper method to load test database file
-    private func loadTestDatabase() throws -> String {
+    /// The encrypted test vault; the fixture holds it as base64 text.
+    private func loadTestDatabase() throws -> Data {
         // Look in the root of the test bundle Resources
         guard let testDbPath = Bundle(for: type(of: self))
                 .path(forResource: "test-encrypted-vault", ofType: "txt")
@@ -99,6 +99,10 @@ final public class VaultStoreKitTests: XCTestCase {
                           userInfo: [NSLocalizedDescriptionKey: "Test database file not found"])
         }
 
-        return try String(contentsOfFile: testDbPath, encoding: .utf8)
+        let text = try String(contentsOfFile: testDbPath, encoding: .utf8)
+        guard let bytes = Data(base64Encoded: text, options: .ignoreUnknownCharacters) else {
+            throw NSError(domain: "VaultStoreKitTests", code: 2, userInfo: [NSLocalizedDescriptionKey: "Test database file is not base64"])
+        }
+        return bytes
     }
 }

@@ -231,7 +231,7 @@ extension VaultStore {
     ///   - scope: What the mutation touched, when it marks the vault dirty
     /// - Returns: (success, mutationSequence) - success=false if expectedMutationSeq didn't match
     public func storeEncryptedVaultWithSyncState(
-        encryptedVault: String,
+        encryptedVault: Data,
         markDirty: Bool = false,
         serverRevision: Int? = nil,
         expectedMutationSeq: Int? = nil,
