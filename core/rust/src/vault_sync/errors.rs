@@ -92,7 +92,7 @@ pub enum Failure {
 
 #[derive(Debug, thiserror::Error)]
 pub enum SyncError {
-    /// The server could not be reached.
+    /// The server could not be reached, or its response did not arrive intact.
     #[error("Network error: {0}")]
     Network(String),
     /// A request exceeded its timeout.
