@@ -1281,6 +1281,7 @@
     "openSettings": "Ouvrir les paramètres",
     "openWebApp": "Ouvrir l’application web",
     "passkeySettings": "Paramètres de la clé d'accès",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
     },
