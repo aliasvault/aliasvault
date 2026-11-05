@@ -1281,6 +1281,7 @@
     "openSettings": "Open Instellingen",
     "openWebApp": "Web-app openen",
     "passkeySettings": "Passkey instellingen",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
