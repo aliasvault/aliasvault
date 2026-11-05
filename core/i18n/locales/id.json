@@ -1281,6 +1281,7 @@
     "openSettings": "Buka Pengaturan",
     "openWebApp": "Buka aplikasi web",
     "passkeySettings": "Pengaturan Kunci akses",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Demi alasan keamanan, silakan masukkan kata sandi utama Anda untuk mengonfirmasi proses ekspor ini."
     },
