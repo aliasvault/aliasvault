@@ -1281,6 +1281,7 @@
     "openSettings": "Deschide Setări",
     "openWebApp": "Deschide aplicația web",
     "passkeySettings": "Setări passkey",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
