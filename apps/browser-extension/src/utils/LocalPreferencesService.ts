@@ -158,6 +158,16 @@ export const LocalPreferencesService = {
   },
 
   /**
+   * Add a site to the list of sites where passkey provider is disabled.
+   */
+  async addPasskeyDisabledSite(domain: string): Promise<void> {
+    const sites = await this.getPasskeyDisabledSites();
+    if (!sites.includes(domain)) {
+      await this.setPasskeyDisabledSites([...sites, domain]);
+    }
+  },
+
+  /**
    * Get the clipboard clear timeout in seconds.
    * @returns Timeout in seconds. Defaults to 10.
    */
@@ -203,6 +213,21 @@ export const LocalPreferencesService = {
    */
   async setVaultLockedDismissUntil(timestamp: number): Promise<void> {
     await storage.setItem(StorageKeys.VAULT_LOCKED_DISMISS_UNTIL, timestamp);
+  },
+
+  /**
+   * Get the timestamp until which the vault locked passkey popup is dismissed. Defaults to 0.
+   */
+  async getPasskeyLockedDismissUntil(): Promise<number> {
+    const value = await storage.getItem(StorageKeys.PASSKEY_LOCKED_DISMISS_UNTIL) as number | null;
+    return value ?? 0;
+  },
+
+  /**
+   * Set the timestamp until which the vault locked passkey popup is dismissed.
+   */
+  async setPasskeyLockedDismissUntil(timestamp: number): Promise<void> {
+    await storage.setItem(StorageKeys.PASSKEY_LOCKED_DISMISS_UNTIL, timestamp);
   },
 
   /*

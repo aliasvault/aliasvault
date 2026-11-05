@@ -1,20 +1,27 @@
 import React, { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
+import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
+import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrollbar';
 import Logo from '@/entrypoints/popup/components/Logo';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 
 /**
  * PasskeyLayout - Minimal layout for passkey create/authenticate pages.
- * Shows only the AliasVault logo header, no navigation, no footer.
  */
 const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const mainRef = useRef<HTMLElement>(null);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useApp();
 
   return (
     <div className="min-h-screen min-w-[350px] bg-white dark:bg-gray-900 flex flex-col max-h-[600px]">
       {/* Minimal header with just logo */}
       <header className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-        <div className="flex items-center justify-center h-16 px-4">
+        <div className="relative flex items-center justify-center h-16 px-4">
           <Logo
             width={125}
             height={40}
@@ -24,6 +31,11 @@ const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           {/* Hide beta badge on Safari as it's not allowed to show non-production badges */}
           {!import.meta.env.SAFARI && (
             <span className="text-primary-500 text-[10px] font-normal">BETA</span>
+          )}
+          {!isLoggedIn && (
+            <div className="absolute right-4">
+              <HeaderButton id="settings" onClick={() => navigate('/auth-settings')} title={t('common.settings')} iconType={HeaderIconType.SETTINGS} />
+            </div>
           )}
         </div>
       </header>

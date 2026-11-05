@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
     await LocalPreferencesService.setVaultLockedDismissUntil(0);
+    await LocalPreferencesService.setPasskeyLockedDismissUntil(0);
 
     setUsername(username);
   }, []);

@@ -210,7 +210,7 @@ const Reinitialize: React.FC = () => {
 
       setIsInitialLoading(false);
 
-      // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
+      // Check for pending redirect URL in storage (set by the passkey popup before unlock or login)
       const pendingRedirectUrl = await consumePendingRedirectUrl();
       if (pendingRedirectUrl) {
         navigate(pendingRedirectUrl, { replace: true });

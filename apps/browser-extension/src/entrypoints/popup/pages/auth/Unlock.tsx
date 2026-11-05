@@ -505,6 +505,7 @@ const Unlock: React.FC = () => {
 
       // Clear dismiss until
       await LocalPreferencesService.setVaultLockedDismissUntil(0);
+      await LocalPreferencesService.setPasskeyLockedDismissUntil(0);
 
       // Reset PIN and password failed attempts on successful unlock
       await resetFailedAttempts();

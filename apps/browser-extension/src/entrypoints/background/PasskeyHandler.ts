@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { extractDomain } from '@aliasvault/client/rust/RustCore';
 
+import { getVaultLockedDismissUntil } from '@/entrypoints/background/ContentSettingsHandler';
 import { createVaultSqliteClient, handleGetEncryptionKey, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -68,9 +69,27 @@ export async function handleGetWebAuthnSettings(data: any): Promise<WebAuthnSett
 }
 
 /**
+ * Whether the vault is locked and the user chose to skip the locked prompt for now.
+ */
+async function isLockedPromptDismissed(): Promise<boolean> {
+  return Date.now() < await LocalPreferencesService.getPasskeyLockedDismissUntil() && !await handleGetEncryptionKey();
+}
+
+/**
+ * Hand passkey requests to the browser until the user logs in, for at most 7 days.
+ */
+export async function handleDismissPasskeyLockedPopup(): Promise<void> {
+  await LocalPreferencesService.setPasskeyLockedDismissUntil(await getVaultLockedDismissUntil());
+}
+
+/**
  * Handle WebAuthn create (registration) request
  */
 export async function handleWebAuthnCreate(data: any): Promise<any> {
+  if (await isLockedPromptDismissed()) {
+    return { fallback: true };
+  }
+
   const { publicKey, origin } = data as WebAuthnCreateRequest;
   const requestId = Math.random().toString(36).substr(2, 9);
 
@@ -133,6 +152,10 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
  * Note: Passkey retrieval is now handled in the popup via SqliteClient
  */
 export async function handleWebAuthnGet(data: any): Promise<any> {
+  if (await isLockedPromptDismissed()) {
+    return { fallback: true };
+  }
+
   const { publicKey, origin } = data as WebAuthnGetRequest;
   const requestId = Math.random().toString(36).substr(2, 9);
 

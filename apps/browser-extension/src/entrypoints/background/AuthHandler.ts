@@ -144,6 +144,7 @@ async function storeAccountKey(accountKey: string, offline: boolean, broadcast: 
 async function markUnlocked(offline: boolean, broadcast: boolean): Promise<void> {
   await storage.setItem(StorageKeys.IS_OFFLINE_MODE, offline);
   await LocalPreferencesService.setVaultLockedDismissUntil(0);
+  await LocalPreferencesService.setPasskeyLockedDismissUntil(0);
   if (broadcast) {
     void broadcastVaultUnlocked();
   }

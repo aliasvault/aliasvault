@@ -65,6 +65,8 @@ export const StorageKeys = {
   AUTO_LOCK_TIMEOUT: 'local:aliasvault_auto_lock_timeout',
   /** Timestamp until which the "vault locked" banner stays dismissed. */
   VAULT_LOCKED_DISMISS_UNTIL: 'local:aliasvault_vault_locked_dismiss_until',
+  /** Timestamp until which the "vault locked" passkey popup stays dismissed. */
+  PASSKEY_LOCKED_DISMISS_UNTIL: 'local:aliasvault_passkey_locked_dismiss_until',
   /** Whether TOTP codes are autofilled. */
   TOTP_AUTOFILL_ENABLED: 'local:aliasvault_totp_autofill_enabled',
   /** Whether the TOTP code is copied to the clipboard on autofill. */
@@ -147,6 +149,7 @@ export const LOCAL_PREFERENCE_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.CLIPBOARD_CLEAR_TIMEOUT,
   StorageKeys.AUTO_LOCK_TIMEOUT,
   StorageKeys.VAULT_LOCKED_DISMISS_UNTIL,
+  StorageKeys.PASSKEY_LOCKED_DISMISS_UNTIL,
   StorageKeys.TOTP_AUTOFILL_ENABLED,
   StorageKeys.AUTO_COPY_TOTP_ON_AUTOFILL,
   StorageKeys.AUTOFILL_MATCHING_MODE,

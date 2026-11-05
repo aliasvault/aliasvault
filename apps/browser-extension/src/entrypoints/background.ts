@@ -9,7 +9,7 @@ import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeou
 import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { handleBlockLoginSaveForDomain, handleDisableAutofillForSite, handleDismissVaultLockedPopup, handleGetContentSettings, handleGetLanguage, handleIsLoginSaveBlocked, restrictContentScriptStorage } from '@/entrypoints/background/ContentSettingsHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
-import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
+import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleDismissPasskeyLockedPopup, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleGetTwoFactorPrompt, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
@@ -398,6 +398,7 @@ export default defineBackground({
     // Passkey popup request/response flow
     onExtensionPageMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
     onExtensionPageMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
+    onExtensionPageMessage('DISMISS_PASSKEY_LOCKED_POPUP', () => handleDismissPasskeyLockedPopup());
 
     /*
      * Async setup (context menus, alarm restoration) runs in a fire-and-forget

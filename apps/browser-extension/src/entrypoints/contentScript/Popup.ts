@@ -1476,7 +1476,7 @@ export async function disableAutoShowPopup(temporary: boolean = false): Promise<
 }
 
 /**
- * Dismiss vault locked popup for 4 hours if user is logged in, or for 3 days if user is not logged in.
+ * Dismiss vault locked popup for 4 hours if user is logged in, or for 7 days if user is not logged in.
  */
 export async function dismissVaultLockedPopup(): Promise<void> {
   await sendMessage('DISMISS_VAULT_LOCKED_POPUP');

@@ -1281,6 +1281,7 @@
     "openSettings": "Open Settings",
     "openWebApp": "Open web app",
     "passkeySettings": "Passkey Settings",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },

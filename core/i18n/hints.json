@@ -412,6 +412,7 @@
   "settings.groups.general": "Heading of the settings group with app-wide preferences such as appearance and language",
   "settings.groups.generators": "Heading of the settings group for the password generator and identity generator",
   "settings.importExport": "Page title",
+  "settings.passkeysEnabled": "Toggle label: let AliasVault handle passkey requests on websites",
   "settings.passwordGeneratorSettings.configureButton": "Button text to configure settings",
   "settings.passwordGeneratorSettings.passwordGeneratorSettingsLabel": "Label for default password generator settings",
   "settings.resetVault.pageTitle": "Page title",

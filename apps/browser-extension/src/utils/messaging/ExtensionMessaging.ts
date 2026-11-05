@@ -79,6 +79,7 @@ export interface IExtensionMessageProtocol {
   CLIPBOARD_COUNTDOWN(data: { remaining: number; total: number; id: number }): void;
   DISABLE_AUTOFILL_FOR_SITE(data: { temporary: boolean }): void;
   DISMISS_VAULT_LOCKED_POPUP(): void;
+  DISMISS_PASSKEY_LOCKED_POPUP(): void;
   FULL_VAULT_SYNC(data: FullVaultSyncRequest): FullVaultSyncResult;
   GENERATE_TOTP_CODE(data: { itemId: string; manifestId: string; autofill?: boolean }): { success: boolean; code?: string; error?: string };
   GET_CLIPBOARD_COUNTDOWN_STATE(): { remaining: number; total: number; id: number } | null;

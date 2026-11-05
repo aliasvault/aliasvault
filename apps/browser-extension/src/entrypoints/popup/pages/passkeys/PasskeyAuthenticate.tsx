@@ -9,7 +9,7 @@ import PasskeyBypassDialog from '@/entrypoints/popup/components/Dialogs/PasskeyB
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
+import PasskeyVaultLocked from '@/entrypoints/popup/pages/passkeys/PasskeyVaultLocked';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -32,7 +32,7 @@ const PasskeyAuthenticate: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [availablePasskeys, setAvailablePasskeys] = useState<Array<{ id: string; itemId: string; manifestId: string; displayName: string; rpId: string; serviceName?: string | null }>>([]);
   const [showBypassDialog, setShowBypassDialog] = useState(false);
-  const { isLocked } = useVaultLockRedirect();
+  const isLocked = dbContext.dbInitialized && !dbContext.dbAvailable;
   const firstPasskeyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const PasskeyAuthenticate: React.FC = () => {
         return;
       }
 
-      // If vault is locked, the hook will handle redirect, we just return
+      // The locked view below handles a locked vault
       if (isLocked) {
         return;
       }
@@ -192,13 +192,7 @@ const PasskeyAuthenticate: React.FC = () => {
 
     if (choice === 'always') {
       // Add to permanent disabled list (for this specific subdomain)
-      const domain = await extractDomain(request.origin);
-
-      const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
-      if (!disabledSites.includes(domain)) {
-        disabledSites.push(domain);
-        await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
-      }
+      await LocalPreferencesService.addPasskeyDisabledSite(await extractDomain(request.origin));
     }
     // For 'once', we don't store anything - just bypass this one time
 
@@ -229,6 +223,10 @@ const PasskeyAuthenticate: React.FC = () => {
       cancelled: true
     });
   };
+
+  if (isLocked) {
+    return <PasskeyVaultLocked subtitle={t('passkeys.authenticate.signInFor')} />;
+  }
 
   if (!request) {
     return (

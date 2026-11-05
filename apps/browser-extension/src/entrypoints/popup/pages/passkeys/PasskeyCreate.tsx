@@ -16,8 +16,8 @@ import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
+import PasskeyVaultLocked from '@/entrypoints/popup/pages/passkeys/PasskeyVaultLocked';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -41,7 +41,7 @@ const PasskeyCreate: React.FC = () => {
   const [request, setRequest] = useState<PendingPasskeyCreateRequest | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { isLocked } = useVaultLockRedirect();
+  const isLocked = dbContext.dbInitialized && !dbContext.dbAvailable;
   const [existingPasskeys, setExistingPasskeys] = useState<Array<Passkey & { Username?: string | null; Email?: string | null; ServiceName?: string | null }>>([]);
   const [matchingItems, setMatchingItems] = useState<Item[]>([]);
   const [selectedPasskeyToReplace, setSelectedPasskeyToReplace] = useState<ItemRef | null>(null);
@@ -62,7 +62,7 @@ const PasskeyCreate: React.FC = () => {
         return;
       }
 
-      // If vault is locked, the hook will handle redirect, we just return
+      // The locked view below handles a locked vault
       if (isLocked) {
         return;
       }
@@ -527,13 +527,7 @@ const PasskeyCreate: React.FC = () => {
 
     if (choice === 'always') {
       // Add to permanent disabled list (for this specific subdomain)
-      const domain = await extractDomain(request.origin);
-
-      const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
-      if (!disabledSites.includes(domain)) {
-        disabledSites.push(domain);
-        await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
-      }
+      await LocalPreferencesService.addPasskeyDisabledSite(await extractDomain(request.origin));
     }
     // For 'once', we don't store anything - just bypass this one time
 
@@ -564,6 +558,10 @@ const PasskeyCreate: React.FC = () => {
       cancelled: true
     });
   };
+
+  if (isLocked) {
+    return <PasskeyVaultLocked subtitle={t('passkeys.create.createFor')} />;
+  }
 
   if (!request) {
     return (

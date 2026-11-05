@@ -15,7 +15,7 @@ import { browser } from '#imports';
 
 /** How long "dismiss" hides the vault locked popup while logged in, and while logged out. */
 const VAULT_LOCKED_DISMISS_LOGGED_IN_MS = 4 * 60 * 60 * 1000;
-const VAULT_LOCKED_DISMISS_LOGGED_OUT_MS = 3 * 24 * 60 * 60 * 1000;
+const VAULT_LOCKED_DISMISS_LOGGED_OUT_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** How long "disable for now" turns off the autofill popup on a site. */
 const TEMPORARY_SITE_DISABLE_MS = 60 * 60 * 1000;
@@ -82,11 +82,18 @@ export async function handleDisableAutofillForSite(hostname: string | null, temp
 }
 
 /**
- * Hide the vault locked popup for 4 hours when logged in, or 3 days when logged out.
+ * Timestamp until which a popup dismissed now stays hidden: 4 hours when logged in, 7 days when logged out.
+ */
+export async function getVaultLockedDismissUntil(): Promise<number> {
+  const { isLoggedIn } = await handleCheckAuthStatus();
+  return Date.now() + (isLoggedIn ? VAULT_LOCKED_DISMISS_LOGGED_IN_MS : VAULT_LOCKED_DISMISS_LOGGED_OUT_MS);
+}
+
+/**
+ * Hide the vault locked autofill popup for 4 hours when logged in, or 7 days when logged out.
  */
 export async function handleDismissVaultLockedPopup(): Promise<void> {
-  const { isLoggedIn } = await handleCheckAuthStatus();
-  await LocalPreferencesService.setVaultLockedDismissUntil(Date.now() + (isLoggedIn ? VAULT_LOCKED_DISMISS_LOGGED_IN_MS : VAULT_LOCKED_DISMISS_LOGGED_OUT_MS));
+  await LocalPreferencesService.setVaultLockedDismissUntil(await getVaultLockedDismissUntil());
 }
 
 /**

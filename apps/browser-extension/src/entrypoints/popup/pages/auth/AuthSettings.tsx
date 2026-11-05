@@ -63,6 +63,7 @@ const AuthSettings: React.FC = () => {
   const [customUrl, setCustomUrl] = useState<string>('');
   const [customClientUrl, setCustomClientUrl] = useState<string>('');
   const [isGloballyEnabled, setIsGloballyEnabled] = useState<boolean>(true);
+  const [isPasskeyProviderEnabled, setIsPasskeyProviderEnabled] = useState<boolean>(true);
   const [errors, setErrors] = useState<{ apiUrl?: string; clientUrl?: string }>({});
   const { setIsInitialLoading } = useLoading();
 
@@ -105,6 +106,8 @@ const AuthSettings: React.FC = () => {
       const clientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string;
       const globallyEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
       const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+      const passkeyDismissed = Date.now() < await LocalPreferencesService.getPasskeyLockedDismissUntil();
+      setIsPasskeyProviderEnabled(!passkeyDismissed && await LocalPreferencesService.getPasskeyProviderEnabled());
 
       if (dismissUntil) {
         setIsGloballyEnabled(false);
@@ -220,6 +223,20 @@ const AuthSettings: React.FC = () => {
     setIsGloballyEnabled(newGloballyEnabled);
   };
 
+  /**
+   * Toggle the passkey provider on all sites.
+   */
+  const togglePasskeyProvider = async () : Promise<void> => {
+    const newEnabled = !isPasskeyProviderEnabled;
+    await LocalPreferencesService.setPasskeyProviderEnabled(newEnabled);
+
+    if (newEnabled) {
+      await LocalPreferencesService.setPasskeyLockedDismissUntil(0);
+    }
+
+    setIsPasskeyProviderEnabled(newEnabled);
+  };
+
   return (
     <div className="p-4 space-y-6">
       {/* Server Configuration Section */}
@@ -326,6 +343,25 @@ const AuthSettings: React.FC = () => {
             }`}
           >
             {isGloballyEnabled ? t('common.enabled', 'Enabled') : t('common.disabled', 'Disabled')}
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.passkeysEnabled')}</p>
+            {!isPasskeyProviderEnabled && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings.disabledOnAllSites')}</p>
+            )}
+          </div>
+          <button
+            onClick={togglePasskeyProvider}
+            className={`px-4 py-2 rounded-md transition-colors font-medium text-sm ${
+              isPasskeyProviderEnabled
+                ? 'bg-green-200 text-green-800 hover:bg-green-300 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50'
+                : 'bg-red-200 text-red-800 hover:bg-red-300 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
+            }`}
+          >
+            {isPasskeyProviderEnabled ? t('common.enabled') : t('common.disabled')}
           </button>
         </div>
       </div>
