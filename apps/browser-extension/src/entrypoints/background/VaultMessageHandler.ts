@@ -40,7 +40,7 @@ import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
-import { vaultBlobToBase64, decryptVaultBlobBase64, encryptVaultBlobBase64, vaultBlobFromBase64 } from '@/utils/VaultBlobBase64Wrapper';
+import { decryptVaultBlobBase64, encryptVaultBlobBase64, vaultBlobFromBase64, vaultBlobToBase64 } from '@/utils/VaultBlobBase64Wrapper';
 
 import { t } from '@/i18n/StandaloneI18n';
 
