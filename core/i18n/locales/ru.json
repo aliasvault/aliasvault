@@ -1281,6 +1281,7 @@
     "openSettings": "Открыть настройки",
     "openWebApp": "Открыть веб-приложение",
     "passkeySettings": "Настройки ключа доступа",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Для безопасности введите мастер-пароль для подтверждения экспорта."
     },
