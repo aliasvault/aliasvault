@@ -137,11 +137,8 @@ class AutofillUnlockActivity : FragmentActivity() {
 
         val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(allItems, it) } ?: emptyList()
 
-        val matchingItems = filteredByApp.filter { item ->
-            val hasIdentifier = !item.username.isNullOrEmpty() || !item.email.isNullOrEmpty()
-            val hasPassword = !item.password.isNullOrEmpty()
-            hasIdentifier && hasPassword
-        }
+        // Filter out items with no password
+        val matchingItems = filteredByApp.filter { item -> !item.password.isNullOrEmpty() }
 
         Log.d(
             TAG,

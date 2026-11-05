@@ -155,15 +155,8 @@ class AutofillService : AutofillService() {
                             // Filter items based on app/website info; no matches when the site is unknown
                             val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(result, it) } ?: emptyList()
 
-                            // Further filter to only include items with autofillable data.
-                            // This prevents from showing non-autofillable items like passkeys.
-                            val filteredItems = filteredByApp.filter { item ->
-                                val hasUsername = !item.username.isNullOrEmpty()
-                                val hasEmail = !item.email.isNullOrEmpty()
-                                val hasPassword = !item.password.isNullOrEmpty()
-
-                                (hasUsername || hasEmail) && hasPassword
-                            }
+                            // Filter out items with no password
+                            val filteredItems = filteredByApp.filter { item -> !item.password.isNullOrEmpty() }
 
                             Log.d(
                                 TAG,
