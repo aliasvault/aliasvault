@@ -33,6 +33,8 @@ You'll be prompted to choose one of:
 | Private networks only | Only loopback and RFC1918 addresses are allowed (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). |
 | Custom CIDRs/IPs | Only the listed ranges are allowed (loopback is always allowed). |
 
+> **Note:** the allowlist only matches IPv4 clients. For IPv6 filtering, restrict `/admin` in your own reverse proxy in front of AliasVault.
+
 ## Behind another reverse proxy
 
 If AliasVault is itself running behind another reverse proxy (Cloudflare, Traefik, an upstream nginx, etc.), the allowlist is matched against the client IP forwarded via `X-Forwarded-For`. Make sure your upstream proxy is setting that header correctly, otherwise every request will appear to come from the proxy's own address.

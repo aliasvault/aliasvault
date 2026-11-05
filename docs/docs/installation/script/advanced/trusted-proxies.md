@@ -33,6 +33,8 @@ You'll be prompted to choose one of:
 | Custom CIDRs/IPs | Trust only the listed proxies (recommended when you know your upstream proxy address). |
 | None | Trust no upstream proxies. `X-Forwarded-For` is always ignored and the direct peer IP is logged. |
 
+> **Note:** only IPv4 proxy addresses are supported. IPv6 is not supported.
+
 ## Why narrow this down
 
 The default of all RFC1918 ranges is convenient. Most setups place AliasVault and its upstream proxy in the same private network. But it does mean that **any** request originating from a private IP can spoof `X-Forwarded-For` and appear in the logs as a different client. If you have other workloads on the same private network, set `TRUSTED_PROXIES` to your specific upstream proxy address(es) so only that proxy is trusted to set the header.

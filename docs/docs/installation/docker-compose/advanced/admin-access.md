@@ -27,6 +27,8 @@ Set `ADMIN_IP_ALLOWLIST` in the `environment:` section of your `docker-compose.y
 | `private` | Only loopback and RFC1918 addresses are allowed (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). |
 | Comma-separated list of CIDRs/IPs | Only the listed ranges are allowed (loopback is always allowed). |
 
+> **Note:** the allowlist only matches IPv4 clients. For IPv6 filtering, restrict `/admin` in your own reverse proxy in front of AliasVault.
+
 ### Examples
 
 ```yaml
