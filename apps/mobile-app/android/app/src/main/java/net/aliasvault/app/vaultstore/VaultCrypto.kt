@@ -322,9 +322,9 @@ class VaultCrypto(
     // region Encryption/Decryption
 
     /**
-     * Decrypt the stored vault blob (base64) into the SQLite database bytes. This can trigger biometric authentication.
+     * Decrypt the stored vault blob into the SQLite database bytes. This can trigger biometric authentication.
      */
-    fun decryptVaultBlob(encryptedBlob: String, authMethods: String): ByteArray {
+    fun decryptVaultBlob(encryptedBlob: ByteArray, authMethods: String): ByteArray {
         var decryptedResult: ByteArray? = null
         var error: Exception? = null
 
@@ -359,9 +359,9 @@ class VaultCrypto(
     }
 
     /**
-     * Encrypt the SQLite database bytes into the stored vault blob (base64).
+     * Encrypt the SQLite database bytes into the stored vault blob.
      */
-    fun encryptVaultBlob(sqliteBytes: ByteArray): String {
+    fun encryptVaultBlob(sqliteBytes: ByteArray): ByteArray {
         return rustVaultBlobEncrypt(sqliteBytes, encryptionKey!!)
     }
 

@@ -75,9 +75,10 @@ class VaultSyncEngine(
                     return result
                 }
                 val startNanos = System.nanoTime()
-                val commandBytes = if (kind == "http" && command.optBoolean("binaryBody", false)) log.engine { session.commandBytes() } else null
+                val takesBytes = (kind == "http" && command.optBoolean("binaryBody", false)) || kind == "vaultStore"
+                val commandBytes = if (takesBytes) log.engine { session.commandBytes() } else null
                 val (response, bytes) = respond(kind, command, commandBytes)
-                log.recordCommand(kind, command, response, bytes, System.nanoTime() - startNanos)
+                log.recordCommand(kind, command, response, bytes ?: commandBytes, System.nanoTime() - startNanos)
                 val responseJson = log.json { response.toString() }
                 log.engine { session.resume(responseJson, bytes) }
             }
@@ -117,18 +118,20 @@ class VaultSyncEngine(
     // region Commands
 
     /**
-     * The JSON response to one command.
+     * The JSON response to one command, plus raw bytes (the SQLite file, the vault blob) that travel outside the JSON.
      */
     @Suppress("TooGenericExceptionCaught")
     private suspend fun respond(kind: String, command: JSONObject, commandBytes: ByteArray?): Pair<JSONObject, ByteArray?> {
         if (kind == "http") {
             return http(command, commandBytes)
         }
-        if (kind != "dbExport") {
-            return Pair(handle(kind, command), null)
-        }
         return try {
-            Pair(JSONObject(), vaultStore.database.export())
+            when (kind) {
+                "dbExport" -> Pair(JSONObject(), vaultStore.database.export())
+                "vaultLoad" -> Pair(JSONObject(), if (vaultStore.hasEncryptedDatabase()) vaultStore.getEncryptedDatabase() else null)
+                "vaultStore" -> Pair(storeVault(command, checkNotNull(commandBytes) { "vaultStore command without a blob" }), null)
+                else -> Pair(handle(kind, command), null)
+            }
         } catch (e: Exception) {
             Pair(errorResponse(kind, e), null)
         }
@@ -156,8 +159,6 @@ class VaultSyncEngine(
                     localMutated = true
                     JSONObject()
                 }
-                "vaultStore" -> storeVault(command)
-                "vaultLoad" -> JSONObject().put("encryptedBlob", if (vaultStore.hasEncryptedDatabase()) vaultStore.getEncryptedDatabase() else JSONObject.NULL)
                 "markClean" -> {
                     val cleared = vaultStore.markVaultClean(command.optInt("mutationSeqAtStart"), vaultStore.metadata.getVaultRevisionNumber())
                     JSONObject().put("cleared", cleared)
@@ -265,8 +266,10 @@ class VaultSyncEngine(
 
     // region Vault storage
 
-    private fun storeVault(command: JSONObject): JSONObject {
-        val encryptedBlob = command.getString("encryptedBlob")
+    /**
+     * Persist the vault blob, which the engine sends as raw bytes outside the JSON.
+     */
+    private fun storeVault(command: JSONObject, encryptedBlob: ByteArray): JSONObject {
         val result = vaultStore.storeEncryptedVaultWithSyncState(
             encryptedVault = encryptedBlob,
             markDirty = command.optBoolean("markDirty", false),

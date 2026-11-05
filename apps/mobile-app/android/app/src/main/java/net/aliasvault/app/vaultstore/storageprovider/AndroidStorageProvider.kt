@@ -2,23 +2,34 @@ package net.aliasvault.app.vaultstore.storageprovider
 
 import android.content.Context
 import androidx.core.content.edit
+import net.aliasvault.app.vaultstore.LegacyVaultFileConversion
 import java.io.File
 
 /**
  * A file provider that returns the encrypted database file from the Android filesystem.
  */
 class AndroidStorageProvider(private val context: Context) : StorageProvider {
+    companion object {
+        /** The encrypted vault as raw bytes. */
+        private const val ENCRYPTED_DATABASE_FILE = "encrypted_database.bin"
+    }
+
     private var defaultAutoLockTimeout = 3600 // 1 hour default
 
     override fun getAppContext(): Context = context
 
     override fun getEncryptedDatabaseFile(): File {
-        return File(context.filesDir, "encrypted_database.db")
+        val file = File(context.filesDir, ENCRYPTED_DATABASE_FILE)
+        // LEGACY: see LegacyVaultFileConversion.
+        LegacyVaultFileConversion.convertLegacyBase64Database(context.filesDir, file, ::setEncryptedDatabaseFile)
+        return file
     }
 
-    override fun setEncryptedDatabaseFile(encryptedData: String) {
-        val file = File(context.filesDir, "encrypted_database.db")
-        file.writeText(encryptedData)
+    override fun setEncryptedDatabaseFile(encryptedData: ByteArray) {
+        // Written to a temp file and renamed, so a crash mid-write never leaves a truncated vault behind.
+        val temp = File(context.filesDir, "$ENCRYPTED_DATABASE_FILE.tmp")
+        temp.writeBytes(encryptedData)
+        check(temp.renameTo(File(context.filesDir, ENCRYPTED_DATABASE_FILE))) { "Failed to replace the encrypted database file" }
     }
 
     override fun setMetadata(metadata: String) {
@@ -98,10 +109,8 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         }
 
         // Clear encrypted database file
-        val encryptedDatabaseFile = File(context.filesDir, "encrypted_database.db")
-        if (encryptedDatabaseFile.exists()) {
-            encryptedDatabaseFile.delete()
-        }
+        File(context.filesDir, ENCRYPTED_DATABASE_FILE).delete()
+        File(context.filesDir, LegacyVaultFileConversion.LEGACY_BASE64_DATABASE_FILE).delete()
     }
 
     override fun setUsername(username: String) {

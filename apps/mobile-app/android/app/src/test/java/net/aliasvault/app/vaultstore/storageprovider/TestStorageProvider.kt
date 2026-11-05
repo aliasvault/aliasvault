@@ -30,8 +30,8 @@ class TestStorageProvider : StorageProvider {
 
     override fun getEncryptedDatabaseFile(): File = tempFile
 
-    override fun setEncryptedDatabaseFile(encryptedData: String) {
-        tempFile.writeText(encryptedData)
+    override fun setEncryptedDatabaseFile(encryptedData: ByteArray) {
+        tempFile.writeBytes(encryptedData)
     }
 
     override fun setMetadata(metadata: String) {
