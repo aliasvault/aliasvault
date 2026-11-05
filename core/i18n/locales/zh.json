@@ -1281,7 +1281,7 @@
     "openSettings": "打开设置",
     "openWebApp": "打开网页应用",
     "passkeySettings": "通行密钥设置",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "启用通行密钥",
     "passwordConfirm": {
       "exportDescription": "出于安全考虑，请输入您的主密码以确认导出。"
     },
