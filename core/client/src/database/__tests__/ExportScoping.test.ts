@@ -151,3 +151,31 @@ describe('vault export scoping', () => {
     expect(() => runSync(repository.exportToCsv(), client)).toThrow();
   });
 });
+
+describe('vault reset', () => {
+  it('tombstones the personal manifest so a merge cannot bring it back, and leaves shared manifests alone', async () => {
+    const { repository, client } = await vaultWithSharedManifest(PERSONAL);
+    const db = client.getDb();
+    db.run('UPDATE Logos SET FileData = ?, FileDataHash = ? WHERE ManifestId = ?', [new Uint8Array([1, 2, 3]), 'HASH', PERSONAL]);
+
+    await repository.deleteAllVaultData();
+
+    /**
+     * The rows of one manifest in a table.
+     * @param table - The table
+     * @param manifestId - The manifest
+     * @returns The rows
+     */
+    const rows = (table: string, manifestId: string): Record<string, SqliteValue>[] => db.query<Record<string, SqliteValue>>(`SELECT * FROM ${table} WHERE ManifestId = ?`, [manifestId]);
+    for (const table of ['Items', 'Folders', 'Tags', 'FieldDefinitions', 'Logos']) {
+      expect(rows(table, PERSONAL).map(row => row.IsDeleted), table).toEqual([1]);
+      expect(rows(table, SHARED).map(row => row.IsDeleted), table).toEqual([0]);
+    }
+    expect(rows('Items', PERSONAL)[0]).toMatchObject({ Name: null, FolderId: null, LogoId: null });
+    expect(rows('Logos', PERSONAL)[0]).toMatchObject({ FileData: null, FileDataHash: null });
+    for (const table of ['FieldValues', 'TotpCodes', 'ItemTags']) {
+      expect(rows(table, PERSONAL), table).toHaveLength(0);
+      expect(rows(table, SHARED), table).toHaveLength(1);
+    }
+  });
+});

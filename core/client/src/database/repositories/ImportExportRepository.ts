@@ -32,8 +32,11 @@ export function createImportWriteSession(): ImportWriteSession {
 /** A row of a manifest-scoped child table, with the key of the item it belongs to. */
 type ChildRow = { ItemId: string; ManifestId: string };
 
-/** The tables a vault reset empties, dependents first. */
-const RESET_TABLES = ['Attachments', 'FieldValues', 'FieldHistories', 'TotpCodes', 'Passkeys', 'ItemTags', 'ItemStats', 'FieldDefinitions', 'Tags', 'Items', 'Logos', 'Folders'];
+/** The item child tables a vault reset empties; a merge drops the child rows of a tombstoned item anyway. */
+const RESET_CHILD_TABLES = ['Attachments', 'FieldValues', 'FieldHistories', 'TotpCodes', 'Passkeys', 'ItemTags', 'ItemStats'];
+
+/** The other tables whose rows a vault reset tombstones. */
+const RESET_TOMBSTONE_TABLES = ['FieldDefinitions', 'Tags', 'Folders'];
 
 /**
  * Repository for the import/export logic: reads whole item graphs for an export and writes imported item graphs
@@ -499,23 +502,33 @@ export class ImportExportRepository extends BaseRepository {
   }
 
   /**
-   * Empty the user's own vault: every row of the personal manifest in every item-related table is hard deleted,
-   * dependents first. Rows of shared manifests are left alone. Settings and encryption keys are kept.
+   * Empty the user's own vault: items and their parent rows become tombstones, item child rows are hard deleted. Rows
+   * of shared manifests are left alone. Settings and encryption keys are kept.
+   * 
+   * Note: this delete does keep tombstone rows for all deleted items, which means it takes up a bit of storage permanently.
+   * TODO: add a future vault_prune call to remove older tombstone rows that do not have a real chance of coming back with a 
+   * vault merge by another device to save on long-term vault storage to increase storage and syncing efficiency.
    */
-  public async hardDeleteAllVaultData(): Promise<void> {
-    return this.withTransaction(() => this.run(this.deleteAllRows()));
+  public async deleteAllVaultData(): Promise<void> {
+    return this.withTransaction(() => this.run(this.tombstoneAllRows()));
   }
 
   /**
-   * Delete the rows of the reset.
+   * Write the rows of the reset.
    */
-  private *deleteAllRows(): DbOp<void> {
+  private *tombstoneAllRows(): DbOp<void> {
     const personalManifestId = yield* this.personalManifestId();
     if (!personalManifestId) {
       throw new Error('This client has no personal manifest recorded yet; sync once before resetting the vault.');
     }
-    for (const table of RESET_TABLES) {
+    const now = this.now();
+    for (const table of RESET_CHILD_TABLES) {
       yield* this.execute(`DELETE FROM ${table} WHERE ManifestId = ?`, [personalManifestId]);
+    }
+    yield* this.execute('UPDATE Items SET IsDeleted = 1, Name = NULL, LogoId = NULL, FolderId = NULL, ArchivedAt = NULL, UpdatedAt = ? WHERE ManifestId = ? AND IsDeleted = 0', [now, personalManifestId]);
+    yield* this.execute('UPDATE Logos SET IsDeleted = 1, FileData = NULL, FileDataHash = NULL, UpdatedAt = ? WHERE ManifestId = ? AND IsDeleted = 0', [now, personalManifestId]);
+    for (const table of RESET_TOMBSTONE_TABLES) {
+      yield* this.execute(`UPDATE ${table} SET IsDeleted = 1, UpdatedAt = ? WHERE ManifestId = ? AND IsDeleted = 0`, [now, personalManifestId]);
     }
   }
 }

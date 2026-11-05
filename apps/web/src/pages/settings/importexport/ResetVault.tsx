@@ -79,7 +79,7 @@ const ResetVault: React.FC = () => {
       }
 
       await executeVaultMutationAsync(async () => {
-        await sqliteClient.importExport.hardDeleteAllVaultData();
+        await sqliteClient.importExport.deleteAllVaultData();
         // The empty items page must not send the user back into the tutorial.
         sqliteClient.settings.updateSetting('TutorialDone', 'True');
       });
