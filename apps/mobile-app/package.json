@@ -108,7 +108,16 @@
   },
   "overrides": {
     "react-dom": "19.2.3",
-    "uuid": "^11.1.1"
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.4"
+    },
+    "glob": "^14.0.3",
+    "@expo/fingerprint": {
+      "minimatch": "^11.0.4"
+    },
+    "@expo/cli": {
+      "zod": "^4.6.7"
+    }
   },
   "expo": {
     "autolinking": {

@@ -52,7 +52,7 @@
     "react-hook-form": "^7.57.0",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.18.1",
-    "vitest": "^5.0.1",
+    "vitest": "^5.1.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
@@ -66,7 +66,7 @@
     "@types/yup": "^0.29.14",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
-    "@vitest/coverage-v8": "^5.0.1",
+    "@vitest/coverage-v8": "^5.1.0",
     "@webext-core/isolated-element": "^1.1.5",
     "@wxt-dev/module-react": "^1.2.2",
     "autoprefixer": "^10.4.20",
@@ -85,6 +85,8 @@
     "wxt": "^0.21.3"
   },
   "overrides": {
-    "postcss-selector-parser": "7.1.6"
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.4"
+    }
   }
 }

@@ -6,14 +6,19 @@
             "reason": "No patched release exists (affects <=3.0.3, the latest). Build-time only, via tailwindcss 3, chokidar and micromatch. Disputed, see https://github.com/micromatch/braces/issues/73."
         },
         {
-            "id": "GHSA-86w9-cpqp-85rv",
-            "package": "node-forge",
-            "reason": "No patched release exists (affects <=1.4.0, the latest). Build-time only, via @expo/cli (iOS signing identity lookup); not in the app bundle and expo-updates code signing is not used."
-        },
-        {
             "id": "GHSA-vcc3-ghjq-m6fr",
             "package": "decode-uri-component",
-            "reason": "Fixed only in 0.5.0, which is ESM-only and breaks the require() in query-string 7 used by expo-router (still on query-string 7 in SDK 57). Impact is a client-side CPU DoS from a crafted deep link query string; recheck on the next Expo SDK upgrade."
+            "reason": "Fixed only in 0.5.0, which is ESM-only and breaks the require() in query-string 7 used by expo-router (still on query-string 7 in SDK 58). Impact is a client-side CPU DoS from a crafted deep link query string; recheck on the next Expo SDK upgrade."
+        },
+        {
+            "id": "GHSA-qr28-fpjm-wq7f",
+            "package": "decode-uri-component",
+            "reason": "Fixed only in 0.5.1, which is ESM-only like 0.5.0 and breaks the require() in query-string 7 used by expo-router (still on query-string 7 in SDK 58). Impact is a client-side CPU DoS from a crafted deep link query string; recheck on the next Expo SDK upgrade."
+        },
+        {
+            "id": "GHSA-gcqx-w48m-w2h4",
+            "package": "deepmerge",
+            "reason": "No patched release exists (affects 4.2.0 to 4.3.1, the latest). Build-time only, via @react-native-community/cli and @svgr/plugin-svgo (mobile, docs), merging local config objects."
         }
     ],
     "nuget": [],
