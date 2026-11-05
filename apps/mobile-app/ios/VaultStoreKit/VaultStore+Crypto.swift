@@ -209,13 +209,13 @@ extension VaultStore {
         }
     }
 
-    /// Encrypt the SQLite database bytes into the stored vault blob (base64) with the encryption key.
-    internal func encryptVaultBlob(_ sqliteBytes: Data) throws -> String {
+    /// Encrypt the SQLite database bytes into the stored vault blob with the encryption key.
+    internal func encryptVaultBlob(_ sqliteBytes: Data) throws -> Data {
         return try RustCoreFramework.vaultBlobEncrypt(sqliteBytes: sqliteBytes, key: try getEncryptionKey())
     }
 
-    /// Decrypt the stored vault blob (base64) into the SQLite database bytes with the encryption key.
-    internal func decryptVaultBlob(_ encryptedBlob: String) throws -> Data {
+    /// Decrypt the stored vault blob into the SQLite database bytes with the encryption key.
+    internal func decryptVaultBlob(_ encryptedBlob: Data) throws -> Data {
         let encryptionKey = try getEncryptionKey()
         do {
             let decryptedData = try RustCoreFramework.vaultBlobDecrypt(encryptedBlob: encryptedBlob, key: encryptionKey)

@@ -10,30 +10,26 @@ extension VaultStore {
     }
 
     /// Store the encrypted database
-    public func storeEncryptedDatabase(_ base64EncryptedDb: String) throws {
-        try base64EncryptedDb.write(to: getEncryptedDbPath(), atomically: true, encoding: .utf8)
+    public func storeEncryptedDatabase(_ encryptedDb: Data) throws {
+        try encryptedDb.write(to: getEncryptedDbPath(), options: .atomic)
         loadedVaultStamp = storedVaultStamp()
     }
 
     /// Get the encrypted database
-    public func getEncryptedDatabase() -> String? {
-        do {
-            return try String(contentsOf: getEncryptedDbPath(), encoding: .utf8)
-        } catch {
-            return nil
-        }
+    public func getEncryptedDatabase() -> Data? {
+        return try? Data(contentsOf: getEncryptedDbPath())
     }
 
     /// Unlock the vault - decrypt the database and setup the database connection.
     public func unlockVault() throws {
         // Taken before the read: a write landing in between leaves the stamp behind, which only causes one extra reload.
         let stamp = storedVaultStamp()
-        guard let encryptedDbBase64 = getEncryptedDatabase() else {
+        guard let encryptedDb = getEncryptedDatabase() else {
             throw AppError.encryptionKeyNotFound
         }
 
         do {
-            try openDatabase(try decryptVaultBlob(encryptedDbBase64))
+            try openDatabase(try decryptVaultBlob(encryptedDb))
             loadedVaultStamp = stamp
         } catch let vaultError as AppError {
             // Pass through AppError types
@@ -61,17 +57,27 @@ extension VaultStore {
 
     /// Remove the encrypted database from the local filesystem
     public func removeEncryptedDatabase() throws {
-        let path = getEncryptedDbPath()
-        guard FileManager.default.fileExists(atPath: path.path) else { return }
-        try FileManager.default.removeItem(at: path)
+        for fileName in [VaultConstants.encryptedDbFileName, Self.legacyBase64EncryptedDbFileName] {
+            let path = sharedContainerURL().appendingPathComponent(fileName)
+            guard FileManager.default.fileExists(atPath: path.path) else { continue }
+            try FileManager.default.removeItem(at: path)
+        }
     }
 
     /// Get the path to the encrypted database file
     private func getEncryptedDbPath() -> URL {
+        let path = sharedContainerURL().appendingPathComponent(VaultConstants.encryptedDbFileName)
+        // LEGACY: see VaultStore+LegacyVaultFileConversion.
+        convertLegacyBase64Database(to: path)
+        return path
+    }
+
+    /// The app group container the app and the autofill extension share.
+    internal func sharedContainerURL() -> URL {
         guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: VaultConstants.keychainAccessGroup) else {
             fatalError("Failed to get shared container URL")
         }
-        return containerURL.appendingPathComponent(VaultConstants.encryptedDbFileName)
+        return containerURL
     }
 
     /// Open the decrypted SQLite database bytes in the Rust core's memory, without persisting them to the filesystem.

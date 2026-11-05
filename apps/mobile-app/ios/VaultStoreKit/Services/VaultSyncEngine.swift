@@ -63,11 +63,11 @@ public final class VaultSyncEngine {
             }
             let commandStartedAt = Date()
             var commandBytes: Data?
-            if kind == "http", command["binaryBody"] as? Bool == true {
+            if (kind == "http" && command["binaryBody"] as? Bool == true) || kind == "vaultStore" {
                 commandBytes = try log.engine { try session.commandBytes() }
             }
             let (response, bytes) = await respond(kind: kind, command: command, commandBytes: commandBytes)
-            log.recordCommand(kind, command: command, response: response, responseBytes: bytes, since: commandStartedAt)
+            log.recordCommand(kind, command: command, response: response, rawBytes: bytes ?? commandBytes, since: commandStartedAt)
             let responseJson = try log.json { try Self.serializeJson(response) }
             try log.engine { try session.resume(responseJson: responseJson, bytes: bytes) }
         }
@@ -109,16 +109,22 @@ public final class VaultSyncEngine {
 
     // MARK: - Commands
 
-    /// The JSON response to one command; `commandBytes` is the body of a binary `http` request.
+    /// The JSON response to one command, plus raw bytes (the SQLite file, the vault blob) that travel outside the JSON.
     private func respond(kind: String, command: [String: Any], commandBytes: Data?) async -> (json: [String: Any], bytes: Data?) {
         if kind == "http" {
             return await http(command, commandBytes: commandBytes)
         }
-        guard kind == "dbExport" else {
-            return (await handle(kind: kind, command: command), nil)
-        }
         do {
-            return ([:], try vaultStore.exportDatabase())
+            switch kind {
+            case "dbExport":
+                return ([:], try vaultStore.exportDatabase())
+            case "vaultLoad":
+                return ([:], vaultStore.getEncryptedDatabase())
+            case "vaultStore":
+                return (try storeVault(command, encryptedBlob: commandBytes), nil)
+            default:
+                return (await handle(kind: kind, command: command), nil)
+            }
         } catch {
             return (Self.errorResponse(error), nil)
         }
@@ -142,10 +148,6 @@ public final class VaultSyncEngine {
                 try localDatabase().exec(statementsJson: try Self.serializeJson(command["statements"] ?? []))
                 localMutated = true
                 return [:]
-            case "vaultStore":
-                return try storeVault(command)
-            case "vaultLoad":
-                return ["encryptedBlob": vaultStore.getEncryptedDatabase() ?? NSNull()]
             case "markClean":
                 let cleared = vaultStore.markVaultClean(mutationSeqAtStart: command["mutationSeqAtStart"] as? Int ?? 0, newServerRevision: vaultStore.getCurrentVaultRevisionNumber())
                 return ["cleared": cleared]
@@ -253,8 +255,9 @@ public final class VaultSyncEngine {
 
     // MARK: - Vault storage
 
-    private func storeVault(_ command: [String: Any]) throws -> [String: Any] {
-        guard let encryptedBlob = command["encryptedBlob"] as? String else {
+    /// Persist the vault blob, which the engine sends as raw bytes outside the JSON.
+    private func storeVault(_ command: [String: Any], encryptedBlob: Data?) throws -> [String: Any] {
+        guard let encryptedBlob else {
             throw AppError.vaultStoreFailed(message: "vaultStore command without a blob")
         }
         let result = try vaultStore.storeEncryptedVaultWithSyncState(

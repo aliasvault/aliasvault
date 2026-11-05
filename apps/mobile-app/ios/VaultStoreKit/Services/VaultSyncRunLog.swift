@@ -82,11 +82,11 @@ internal final class VaultSyncRunLog {
     }
 
     /// Count one handled command, and log it on its own when it is a transfer or slow.
-    func recordCommand(_ kind: String, command: [String: Any], response: [String: Any], responseBytes: Data?, since commandStartedAt: Date) {
+    func recordCommand(_ kind: String, command: [String: Any], response: [String: Any], rawBytes: Data?, since commandStartedAt: Date) {
         let durationMs = Date().timeIntervalSince(commandStartedAt) * 1000
         let timing = commandTimings[kind] ?? (count: 0, totalMs: 0)
         commandTimings[kind] = (count: timing.count + 1, totalMs: timing.totalMs + durationMs)
-        if let line = describe(kind: kind, command: command, response: response, responseBytes: responseBytes, durationMs: durationMs) {
+        if let line = describe(kind: kind, command: command, response: response, rawBytes: rawBytes, durationMs: durationMs) {
             note(line)
         }
     }
@@ -109,7 +109,7 @@ internal final class VaultSyncRunLog {
     }
 
     /// One line for a command relevant for performance analysis, or nil for unrelated calls.
-    private func describe(kind: String, command: [String: Any], response: [String: Any], responseBytes: Data?, durationMs: Double) -> String? {
+    private func describe(kind: String, command: [String: Any], response: [String: Any], rawBytes: Data?, durationMs: Double) -> String? {
         let took = "\(kind) took \(Int(durationMs))ms"
         if let error = response["error"] as? String {
             return "\(took): failed (\(error))"
@@ -123,12 +123,10 @@ internal final class VaultSyncRunLog {
                 return "\(took): \(request) failed (\(response["transportError"] as? String ?? "no response"))"
             }
             return "\(took): \(request) \(status), sent \(Self.formatSize(command["body"])), received \(Self.formatSize(response["body"]))"
-        case "vaultStore":
-            return "\(took): \(Self.formatSize(command["encryptedBlob"]))"
-        case "vaultLoad":
-            return "\(took): \(Self.formatSize(response["encryptedBlob"]))"
+        case "vaultStore", "vaultLoad":
+            return "\(took): \(Self.formatByteCount(rawBytes?.count ?? 0))"
         case "dbExport":
-            return "\(took): \(database) \(Self.formatByteCount(responseBytes?.count ?? 0))"
+            return "\(took): \(database) \(Self.formatByteCount(rawBytes?.count ?? 0))"
         case "dbExec":
             return slow ? "\(took): \((command["statements"] as? [Any])?.count ?? 0) statement(s) on \(database)" : nil
         case "dbQuery":
