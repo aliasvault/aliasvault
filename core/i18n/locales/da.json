@@ -1281,6 +1281,7 @@
     "openSettings": "Åbn indstillinger",
     "openWebApp": "Åbn web-app",
     "passkeySettings": "Indstillinger for passkey",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport."
     },
