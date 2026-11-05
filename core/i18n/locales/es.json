@@ -1281,6 +1281,7 @@
     "openSettings": "Abrir configuración",
     "openWebApp": "Abrir la aplicación web",
     "passkeySettings": "Ajustes de llaves de acceso",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Por razones de seguridad, por favor ingrese tu contraseña maestra para confirmar esta exportación."
     },
