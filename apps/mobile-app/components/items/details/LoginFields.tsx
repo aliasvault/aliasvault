@@ -1,8 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import type { Item, ItemField } from '@aliasvault/models/vault';
+import type { Item, ItemField, Passkey } from '@aliasvault/models/vault';
 import { FieldKey } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -10,6 +11,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import FieldBlock from '@/components/items/details/FieldBlock';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { useDb } from '@/context/DbContext';
 
 type LoginFieldsProps = {
   item: Item;
@@ -22,6 +24,28 @@ type LoginFieldsProps = {
 export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactNode => {
   const { t } = useTranslation();
   const colors = useColors();
+  const dbContext = useDb();
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
+
+  useEffect(() => {
+    if (!item.HasPasskey || !dbContext?.sqliteClient) {
+      setPasskeys([]);
+      return;
+    }
+
+    /**
+     * Load the passkeys of this item.
+     */
+    const loadPasskeys = async () : Promise<void> => {
+      try {
+        setPasskeys(await dbContext.sqliteClient!.passkeys.getByItemId(item));
+      } catch (error) {
+        console.error('Error loading passkeys:', error);
+      }
+    };
+
+    loadPasskeys();
+  }, [item, dbContext?.sqliteClient]);
 
   // Get login-related fields from the item
   const loginFields = item.Fields.filter(
@@ -106,8 +130,8 @@ export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactN
       ))}
 
       {/* Passkey display */}
-      {item.HasPasskey && (
-        <View style={passkeyStyles.container}>
+      {passkeys.map((passkey) => (
+        <View key={passkey.Id} style={passkeyStyles.container}>
           <View style={passkeyStyles.contentRow}>
             <MaterialIcons
               name="vpn-key"
@@ -119,13 +143,19 @@ export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactN
               <ThemedText style={passkeyStyles.label}>
                 {t('passkeys.passkey')}
               </ThemedText>
+              {!!passkey.RpId.trim() && (
+                <ThemedText style={passkeyStyles.metadataRow}>
+                  <ThemedText style={passkeyStyles.metadataLabel}>{t('passkeys.site')}: </ThemedText>
+                  <ThemedText style={passkeyStyles.metadataValue}>{passkey.RpId}</ThemedText>
+                </ThemedText>
+              )}
               <ThemedText style={passkeyStyles.helpText}>
                 {t('passkeys.helpText')}
               </ThemedText>
             </View>
           </View>
         </View>
-      )}
+      ))}
     </ThemedView>
   );
 };

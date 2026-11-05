@@ -49,7 +49,7 @@ import { useWebApi } from '@/context/WebApiContext';
 
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { Identity } from '@aliasvault/models/identity';
-import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
+import type { Attachment, Item, ItemField, Passkey, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
 
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
@@ -95,7 +95,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
   const totpShowAddFormRef = useRef<(() => void) | null>(null);
-  const [passkeyIds, setPasskeyIds] = useState<string[]>([]);
+  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [passkeyIdsMarkedForDeletion, setPasskeyIdsMarkedForDeletion] = useState<string[]>([]);
   // The favicon bytes the editor resolved, kept out of React state; the item only carries them as a data URI.
   const pendingLogoBytesRef = useRef<Uint8Array | undefined>(undefined);
@@ -480,7 +480,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
         // Load passkeys for this item
         const itemPasskeys = await dbContext.sqliteClient!.passkeys.getByItemId(existingItem);
-        setPasskeyIds(itemPasskeys.map(pk => pk.Id));
+        setPasskeys(itemPasskeys);
       }
     } catch (err) {
       console.error('Error loading item:', err);
@@ -1251,6 +1251,14 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       marginRight: 8,
       marginTop: 2,
     },
+    passkeyMetadata: {
+      color: colors.text,
+      fontSize: 12,
+    },
+    passkeyMetadataLabel: {
+      color: colors.textMuted,
+      fontSize: 12,
+    },
     passkeyTitleRow: {
       alignItems: 'center',
       flexDirection: 'row',
@@ -1416,75 +1424,66 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
             </FormSection>
 
             {/* Passkey Section - only in edit mode for items with passkeys */}
-            {isEditMode && hasPasskey && (
+            {isEditMode && hasPasskey && passkeys.length > 0 && (
               <FormSection title={t('passkeys.passkey')}>
-                {!passkeyIdsMarkedForDeletion.length ? (
-                  <View style={styles.passkeyContainer}>
-                    <View style={styles.passkeyHeader}>
-                      <MaterialIcons
-                        name="vpn-key"
-                        size={20}
-                        color={colors.primary}
-                        style={styles.passkeyIcon}
-                      />
-                      <View style={styles.passkeyHeaderRight}>
-                        <View style={styles.passkeyTitleRow}>
-                          <ThemedText style={styles.passkeyTitle}>
-                            {t('passkeys.passkey')}
+                {passkeys.map((passkey) => {
+                  const isMarkedForDeletion = passkeyIdsMarkedForDeletion.includes(passkey.Id);
+                  return (
+                    <View key={passkey.Id} style={[styles.passkeyContainer, isMarkedForDeletion && styles.passkeyDeletedContainer]}>
+                      <View style={styles.passkeyHeader}>
+                        <MaterialIcons
+                          name="vpn-key"
+                          size={20}
+                          color={isMarkedForDeletion ? colors.errorText : colors.primary}
+                          style={styles.passkeyIcon}
+                        />
+                        <View style={styles.passkeyHeaderRight}>
+                          <View style={styles.passkeyTitleRow}>
+                            <ThemedText style={[styles.passkeyTitle, isMarkedForDeletion && styles.passkeyTitleDeleted]}>
+                              {isMarkedForDeletion ? t('passkeys.passkeyMarkedForDeletion') : t('passkeys.passkey')}
+                            </ThemedText>
+                            {isMarkedForDeletion ? (
+                              <RobustPressable
+                                onPress={() => setPasskeyIdsMarkedForDeletion(ids => ids.filter(id => id !== passkey.Id))}
+                                style={{ padding: 4 }}
+                              >
+                                <MaterialIcons
+                                  name="undo"
+                                  size={18}
+                                  color={colors.textMuted}
+                                />
+                              </RobustPressable>
+                            ) : (
+                              <RobustPressable
+                                onPress={() => setPasskeyIdsMarkedForDeletion(ids => [...ids, passkey.Id])}
+                                style={{
+                                  padding: 6,
+                                  borderRadius: 4,
+                                  backgroundColor: colors.destructive + '15'
+                                }}
+                              >
+                                <MaterialIcons
+                                  name="delete"
+                                  size={18}
+                                  color={colors.destructive}
+                                />
+                              </RobustPressable>
+                            )}
+                          </View>
+                          {!isMarkedForDeletion && !!passkey.RpId.trim() && (
+                            <ThemedText style={styles.passkeyMetadata}>
+                              <ThemedText style={styles.passkeyMetadataLabel}>{t('passkeys.site')}: </ThemedText>
+                              {passkey.RpId}
+                            </ThemedText>
+                          )}
+                          <ThemedText style={[styles.passkeyHelpText, isMarkedForDeletion && { color: colors.errorText }]}>
+                            {isMarkedForDeletion ? t('passkeys.passkeyWillBeDeleted') : t('passkeys.helpText')}
                           </ThemedText>
-                          <RobustPressable
-                            onPress={() => setPasskeyIdsMarkedForDeletion(passkeyIds)}
-                            style={{
-                              padding: 6,
-                              borderRadius: 4,
-                              backgroundColor: colors.destructive + '15'
-                            }}
-                          >
-                            <MaterialIcons
-                              name="delete"
-                              size={18}
-                              color={colors.destructive}
-                            />
-                          </RobustPressable>
                         </View>
-                        <ThemedText style={styles.passkeyHelpText}>
-                          {t('passkeys.helpText')}
-                        </ThemedText>
                       </View>
                     </View>
-                  </View>
-                ) : (
-                  <View style={[styles.passkeyContainer, styles.passkeyDeletedContainer]}>
-                    <View style={styles.passkeyHeader}>
-                      <MaterialIcons
-                        name="vpn-key"
-                        size={20}
-                        color={colors.errorText}
-                        style={styles.passkeyIcon}
-                      />
-                      <View style={styles.passkeyHeaderRight}>
-                        <View style={styles.passkeyTitleRow}>
-                          <ThemedText style={[styles.passkeyTitle, styles.passkeyTitleDeleted]}>
-                            {t('passkeys.passkeyMarkedForDeletion')}
-                          </ThemedText>
-                          <RobustPressable
-                            onPress={() => setPasskeyIdsMarkedForDeletion([])}
-                            style={{ padding: 4 }}
-                          >
-                            <MaterialIcons
-                              name="undo"
-                              size={18}
-                              color={colors.textMuted}
-                            />
-                          </RobustPressable>
-                        </View>
-                        <ThemedText style={[styles.passkeyHelpText, { color: colors.errorText }]}>
-                          {t('passkeys.passkeyWillBeDeleted')}
-                        </ThemedText>
-                      </View>
-                    </View>
-                  </View>
-                )}
+                  );
+                })}
               </FormSection>
             )}
 

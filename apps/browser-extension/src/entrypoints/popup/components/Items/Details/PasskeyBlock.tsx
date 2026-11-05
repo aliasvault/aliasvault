@@ -60,9 +60,6 @@ const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId, manifestId }) => {
 
   return (
     <div className="space-y-2">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-        {t('passkeys.passkey')}
-      </h2>
       {passkeys.map((passkey) => (
         <div
           key={passkey.Id}
@@ -73,7 +70,7 @@ const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId, manifestId }) => {
             <div className="flex-1">
               <div className="mb-1">
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {passkey.DisplayName || t('passkeys.passkey')}
+                  {t('passkeys.passkey')}
                 </span>
               </div>
               <div className="space-y-1 mb-2">

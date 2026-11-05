@@ -230,15 +230,17 @@ const ItemView: React.FC = () => {
           </div>
 
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
-            {isLoginLike && loginFields.length > 0 && (
+            {isLoginLike && (loginFields.length > 0 || passkey) && (
               <Card variant="section">
                 <SectionTitle className="mb-2">{t('items.view.loginDetailsSection')}</SectionTitle>
                 <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <span>{domains.isAliasVaultSupportedDomain(emailAddress) ? t('items.view.generatedItemDescription') : t('items.view.storedItemDescription')}</span>
                 </p>
 
+                <FieldGrid fields={loginFields} item={item} fullWidth={f => shouldBeFullWidth(f, loginFields)} />
+
                 {passkey && (
-                  <div className="mb-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div className="mt-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-start gap-3">
                       <Icon name="key" className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
@@ -252,20 +254,12 @@ const ItemView: React.FC = () => {
                               <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
                             </div>
                           )}
-                          {(passkey.DisplayName ?? '').trim().length > 0 && (
-                            <div>
-                              <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
-                              <span className="text-sm text-gray-900 dark:text-white">{passkey.DisplayName}</span>
-                            </div>
-                          )}
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">{t('items.view.passkeyHelpText')}</p>
                       </div>
                     </div>
                   </div>
                 )}
-
-                <FieldGrid fields={loginFields} item={item} fullWidth={f => shouldBeFullWidth(f, loginFields)} />
               </Card>
             )}
 

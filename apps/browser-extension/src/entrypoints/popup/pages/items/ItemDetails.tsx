@@ -148,6 +148,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
 
   // Group fields by category for organized display (excluding URLs)
   const groupedFields = groupFieldsByCategory(itemWithoutUrls);
+  const showPasskeys = (item.ItemType === ItemTypes.Login || item.ItemType === ItemTypes.Alias) && !!item.HasPasskey;
 
   return (
     <div className="space-y-4">
@@ -212,11 +213,6 @@ const ItemDetails: React.FC = (): React.ReactElement => {
         <TotpBlock itemId={item.Id} manifestId={item.ManifestId} />
       )}
 
-      {/* Passkeys - only for Login and Alias types */}
-      {(item.ItemType === ItemTypes.Login || item.ItemType === ItemTypes.Alias) && item.HasPasskey && (
-        <PasskeyBlock itemId={item.Id} manifestId={item.ManifestId} />
-      )}
-
       {/* Notes - shown at top for Note type (primary content) */}
       {item.ItemType === ItemTypes.Note && groupedFields[FieldCategories.Notes] && groupedFields[FieldCategories.Notes].length > 0 && (
         groupedFields[FieldCategories.Notes].map((field) => (
@@ -230,16 +226,17 @@ const ItemDetails: React.FC = (): React.ReactElement => {
       )}
 
       {/* Render fields dynamically by category */}
-      {Object.keys(groupedFields).length > 0 && (
+      {(Object.keys(groupedFields).length > 0 || showPasskeys) && (
         <>
-          {groupedFields[FieldCategories.Login] && groupedFields[FieldCategories.Login].length > 0 && (
+          {(groupedFields[FieldCategories.Login]?.length > 0 || showPasskeys) && (
             <div className="space-y-2">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {t('common.credentials')}
               </h2>
-              {groupedFields[FieldCategories.Login].map((field) => (
+              {groupedFields[FieldCategories.Login]?.map((field) => (
                 <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} manifestId={item.ManifestId} />
               ))}
+              {showPasskeys && <PasskeyBlock itemId={item.Id} manifestId={item.ManifestId} />}
             </div>
           )}
 
