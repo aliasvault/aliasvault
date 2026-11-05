@@ -31,7 +31,7 @@ pub type Responder = Box<dyn Fn(&str, &str, Option<&Value>) -> Option<(u16, Valu
 pub struct TestHost {
     pub local: Connection,
     pub state: HashMap<String, Value>,
-    pub vault_blob: Option<String>,
+    pub vault_blob: Option<Vec<u8>>,
     /// The key the stored vault is encrypted under; the session key `sync` and `run` hand to the engine.
     pub vault_key: String,
     pub mutation_sequence: u64,
@@ -243,8 +243,9 @@ impl TestHost {
                     session.resume("{}", Some(bytes)).unwrap();
                     continue;
                 }
-                Command::VaultStore { encrypted_blob, mark_dirty, encryption_key, expected_mutation_seq, revision } => {
-                    self.store_calls.push(Command::VaultStore { encrypted_blob: String::new(), mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
+                Command::VaultStore { mark_dirty, encryption_key, expected_mutation_seq, revision } => {
+                    let encrypted_blob = session.command_bytes().unwrap().expect("a vault store carries the blob");
+                    self.store_calls.push(Command::VaultStore { mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
                     if let Some(key) = encryption_key {
                         // The app hosts hold the unlock key and derive the vault key from the cached chain.
                         let found_the_chain = self.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY) && self.state.contains_key(state::ENCRYPTED_VEK);
@@ -265,11 +266,14 @@ impl TestHost {
                             self.mutation_sequence += 1;
                             self.is_dirty = true;
                         }
-                        self.store_blob(&encrypted_blob);
+                        self.store_blob(encrypted_blob);
                         json!({ "success": true, "mutationSequence": self.mutation_sequence })
                     }
                 }
-                Command::VaultLoad => json!({ "encryptedBlob": self.vault_blob.clone() }),
+                Command::VaultLoad => {
+                    session.resume("{}", self.vault_blob.clone()).unwrap();
+                    continue;
+                }
                 Command::MarkClean { mutation_seq_at_start } => {
                     self.mark_clean_calls.push(mutation_seq_at_start);
                     let cleared = mutation_seq_at_start == self.mutation_sequence;
@@ -288,9 +292,9 @@ impl TestHost {
     }
 
     /// Store a blob and reload `local` from it, as the contract requires.
-    fn store_blob(&mut self, encrypted_blob: &str) {
-        self.vault_blob = Some(encrypted_blob.to_string());
-        let bytes = state::decrypt_vault_blob(encrypted_blob, &self.vault_key).expect("stored blob decrypts with the vault key");
+    fn store_blob(&mut self, encrypted_blob: Vec<u8>) {
+        let bytes = state::decrypt_vault_blob(&encrypted_blob, &self.vault_key).expect("stored blob decrypts with the vault key");
+        self.vault_blob = Some(encrypted_blob);
         self.local = open_from_bytes(&bytes);
     }
 

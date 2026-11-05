@@ -308,7 +308,7 @@ pub struct StatusCheckResult {
 }
 
 /*
- * Host commands. Variant names and their fields both travel in camelCase (`vaultStore`, `encryptedBlob`). Every field a
+ * Host commands. Variant names and their fields both travel in camelCase (`vaultStore`, `markDirty`). Every field a
  * host may leave out of a response has a default, so `{}` answers any command that returns nothing.
  */
 
@@ -372,7 +372,6 @@ pub enum Command {
     DbExport,
     /// Persist the at-rest vault blob; response [`StoreOutcome`].
     VaultStore {
-        encrypted_blob: String,
         mark_dirty: bool,
         #[serde(skip_serializing_if = "Option::is_none", serialize_with = "serialize_option")]
         encryption_key: Option<SecretString>,
@@ -381,7 +380,7 @@ pub enum Command {
         #[serde(skip_serializing_if = "Option::is_none")]
         revision: Option<i64>,
     },
-    /// Read the at-rest vault blob; response [`StoredVault`].
+    /// Read the at-rest vault blob; response [`Ack`], with the blob as raw bytes through `SyncSession::resume`, none when no vault is stored.
     VaultLoad,
     /// Clear the dirty flag when no mutation happened since; response [`CleanOutcome`].
     MarkClean { mutation_seq_at_start: u64 },
@@ -455,14 +454,6 @@ pub struct StoreOutcome {
     pub success: bool,
     #[serde(default)]
     pub mutation_sequence: u64,
-}
-
-/// Response of `vaultLoad`: the at-rest blob, null when none is stored.
-#[derive(Debug, Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct StoredVault {
-    #[serde(default)]
-    pub encrypted_blob: Option<String>,
 }
 
 /// Response of `markClean`: whether the dirty flag was cleared.

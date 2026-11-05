@@ -5,7 +5,6 @@ import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/Vau
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
-import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import { isSameItem, manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
@@ -41,6 +40,7 @@ import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
+import { vaultBlobToBase64, decryptVaultBlobBase64, encryptVaultBlobBase64, vaultBlobFromBase64 } from '@/utils/VaultBlobBase64Wrapper';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -100,12 +100,15 @@ const syncEngineHost: IVaultSyncEngineHost = {
   /**
    * The stored vault blob.
    */
-  loadVault: (): Promise<string | null> => handleGetEncryptedVault(),
+  loadVault: async (): Promise<Uint8Array | null> => {
+    const vaultBlobBase64 = await handleGetEncryptedVault();
+    return vaultBlobBase64 ? vaultBlobFromBase64(vaultBlobBase64) : null;
+  },
   /**
    * Persist a vault blob the engine produced (pulled, merged, reconciled, migrated or re-keyed).
    */
   storeVault: (request: VaultSyncStoreRequest): Promise<VaultSyncStoreOutcome> =>
-    handleStoreEncryptedVault({ vaultBlob: request.encryptedBlob, markDirty: request.markDirty, expectedMutationSeq: request.expectedMutationSeq }),
+    handleStoreEncryptedVault({ vaultBlob: vaultBlobToBase64(request.encryptedBlob), markDirty: request.markDirty, expectedMutationSeq: request.expectedMutationSeq }),
   /**
    * Clear the dirty flag unless a mutation raced the sync.
    */
@@ -602,7 +605,7 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * @param encryptionKey - the key the local blob is stored under
  */
 async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string) : Promise<void> {
-  const encryptedVault = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
+  const encryptedVault = await encryptVaultBlobBase64(sqliteClient.exportToBytes(), encryptionKey);
   const scopes = sqliteClient.takeMutationScopes();
   try {
     await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true, scopes });
@@ -644,7 +647,7 @@ export async function createVaultSqliteClient() : Promise<SqliteClient> {
 
   let decryptedVault: Uint8Array;
   try {
-    decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
+    decryptedVault = await decryptVaultBlobBase64(encryptedVault, encryptionKey);
   } catch {
     // E-203: the stored vault does not decrypt with the session key
     throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED));
