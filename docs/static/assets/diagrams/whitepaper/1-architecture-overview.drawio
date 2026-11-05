@@ -434,7 +434,7 @@
         <mxCell id="6F2B19X3ZkVbRV3rCgbW-160" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1" value="AliasVault" vertex="1">
           <mxGeometry x="120" y="1084" height="40" width="130" as="geometry" />
         </mxCell>
-        <mxCell id="6F2B19X3ZkVbRV3rCgbW-161" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="Architecture overview 0.31.0" vertex="1">
+        <mxCell id="6F2B19X3ZkVbRV3rCgbW-161" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="Architecture overview 0.31.2" vertex="1">
           <mxGeometry x="120" y="1112" height="30" width="170" as="geometry" />
         </mxCell>
         <mxCell id="6F2B19X3ZkVbRV3rCgbW-162" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=light-dark(#e3c800,#e3c800);fontColor=light-dark(#000000,#000000);strokeColor=light-dark(#B09500,#B09500);" value="Decrypted email" vertex="1">

@@ -268,7 +268,7 @@
         <mxCell id="key-hierarchy-79" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1" value="AliasVault" vertex="1">
           <mxGeometry x="120" y="1292" height="40" width="240" as="geometry" />
         </mxCell>
-        <mxCell id="key-hierarchy-80" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="Key hierarchy 0.31.0" vertex="1">
+        <mxCell id="key-hierarchy-80" parent="1" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="Key hierarchy 0.31.2" vertex="1">
           <mxGeometry x="120" y="1320" height="30" width="240" as="geometry" />
         </mxCell>
         <mxCell id="key-hierarchy-81" parent="1" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fontSize=16;align=left;verticalAlign=top;fillColor=light-dark(#0050ef,#0050ef);strokeColor=light-dark(#001DBC,#001DBC);fontColor=light-dark(#ffffff,#ffffff);fontStyle=1;spacingLeft=6;spacing=0;resizable=0;" value="Legend" vertex="1">
