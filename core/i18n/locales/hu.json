@@ -1281,6 +1281,7 @@
     "openSettings": "Beállítások megnyitása",
     "openWebApp": "Webalkalmazás megnyitása",
     "passkeySettings": "Azonosítókulcs beállítások",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
