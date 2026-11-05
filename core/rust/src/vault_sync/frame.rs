@@ -3,6 +3,7 @@
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
+use serde_json::error::Category;
 
 use super::errors::{SyncError, SyncResult};
 
@@ -47,13 +48,17 @@ pub(crate) fn encode<B: FrameBody + Serialize>(body: &mut B) -> SyncResult<Vec<u
 }
 
 /// Read a frame back into its header type, filling each part with its ciphertext.
+/// A body that is not a binary frame or is cut short is a network error, not a damaged vault.
 pub(crate) fn decode<T: FrameBody + DeserializeOwned>(frame: &[u8]) -> SyncResult<T> {
-    let malformed = |reason: &str| SyncError::ServerVaultUnreadable(format!("binary response is malformed: {}", reason));
-    let (length, rest) = frame.split_first_chunk::<4>().ok_or_else(|| malformed("no header length"))?;
-    let (header, data) = rest.split_at_checked(u32::from_be_bytes(*length) as usize).ok_or_else(|| malformed("header exceeds the body"))?;
-    let mut body: T = serde_json::from_slice(header).map_err(|e| malformed(&e.to_string()))?;
+    let not_a_frame = |reason: &str| SyncError::Network(format!("response is not a binary frame: {}", reason));
+    let (length, rest) = frame.split_first_chunk::<4>().ok_or_else(|| not_a_frame("no header length"))?;
+    let (header, data) = rest.split_at_checked(u32::from_be_bytes(*length) as usize).ok_or_else(|| not_a_frame("header exceeds the body"))?;
+    let mut body: T = serde_json::from_slice(header).map_err(|e| match e.classify() {
+        Category::Data => SyncError::Json(e),
+        _ => not_a_frame(&e.to_string()),
+    })?;
     for part in body.parts() {
-        let bytes = part.offset.checked_add(part.size).and_then(|end| data.get(part.offset..end)).ok_or_else(|| malformed("a ciphertext exceeds the body"))?;
+        let bytes = part.offset.checked_add(part.size).and_then(|end| data.get(part.offset..end)).ok_or_else(|| not_a_frame("a ciphertext exceeds the body"))?;
         part.bytes = bytes.to_vec();
     }
     Ok(body)

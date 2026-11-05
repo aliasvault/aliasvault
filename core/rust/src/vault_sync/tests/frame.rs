@@ -1,5 +1,6 @@
 use serde_json::{json, Value};
 
+use crate::vault_sync::errors::SyncError;
 use crate::vault_sync::frame::*;
 use crate::vault_sync::types::{BlobDownloadResponse, BlobDto, BlobUploadRequest, GetResponse};
 
@@ -42,10 +43,20 @@ fn a_download_reads_each_part_by_offset_and_skips_what_it_does_not_know() {
 }
 
 #[test]
-fn a_malformed_frame_is_refused() {
+fn a_body_that_is_not_a_binary_frame_is_a_network_error() {
+    let is_network = |bytes: &[u8]| matches!(decode::<BlobDownloadResponse>(bytes), Err(SyncError::Network(_)));
     let encoded = frame(json!({ "blobs": [{ "hash": "a", "category": "favicon", "encryptedBlobKey": "ka", "offset": 0, "size": 3 }] }), &[1, 2, 3]);
     assert!(decode::<BlobDownloadResponse>(&encoded).is_ok());
-    assert!(decode::<BlobDownloadResponse>(&encoded[..encoded.len() - 1]).is_err(), "a truncated ciphertext");
-    assert!(decode::<BlobDownloadResponse>(&[]).is_err(), "no header length");
-    assert!(decode::<BlobDownloadResponse>(&[0, 0, 1, 0, b'{']).is_err(), "a header longer than the body");
+    assert!(is_network(b"<!DOCTYPE html><html><body>Download blocked</body></html>"), "a proxy page");
+    assert!(is_network(&[]), "no header length");
+    assert!(is_network(&[0, 0, 1, 0, b'{']), "a header longer than the body");
+    assert!(is_network(&encoded[..10]), "a body cut off inside the header");
+    assert!(is_network(&encoded[..encoded.len() - 1]), "a body cut off inside a ciphertext");
+    assert!(is_network(&[0, 0, 0, 3, b'<', b'h', b'>']), "a header that is not JSON");
+}
+
+#[test]
+fn a_well_formed_header_of_the_wrong_shape_is_an_invalid_response() {
+    let encoded = frame(json!({ "blobs": "not a list" }), &[]);
+    assert!(matches!(decode::<BlobDownloadResponse>(&encoded), Err(SyncError::Json(_))));
 }
