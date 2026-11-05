@@ -1281,6 +1281,7 @@
     "openSettings": "설정 열기",
     "openWebApp": "웹 앱 열기",
     "passkeySettings": "패스키 설정",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "보안을 위해 이 내보내기를 확인하려면 마스터 비밀번호를 입력하세요."
     },
