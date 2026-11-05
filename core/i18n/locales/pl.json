@@ -1281,7 +1281,7 @@
     "openSettings": "Otwórz ustawienia",
     "openWebApp": "Otwórz aplikację internetową",
     "passkeySettings": "Ustawienia kluczy dostępu",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Włącz klucze dostępu",
     "passwordConfirm": {
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
