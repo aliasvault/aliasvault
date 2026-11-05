@@ -1281,6 +1281,7 @@
     "openSettings": "Öppna inställningar",
     "openWebApp": "Öppna webbapp",
     "passkeySettings": "Passkey-inställningar",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
