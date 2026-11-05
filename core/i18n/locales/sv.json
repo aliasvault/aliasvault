@@ -995,7 +995,7 @@
     "loadingError": "Inläsningsfel",
     "loadingErrorMessage": "Inläsning av uppgifter gick fel. Vänligen öppna AliasVault-appen för att söka efter uppdateringar.",
     "loadingItems": "Laddar objekt...",
-    "loadingPasskeys": "Laddar Passkeys...",
+    "loadingPasskeys": "Laddar passkeys...",
     "loginRequired": "Inloggning krävs",
     "loginRequiredMessage": "Logga in på ditt AliasVault-konto i appen AliasVault, för att använda Autofyll.",
     "mergePasskeyExplanation": "Detta kommer att lägga till en passkey till ditt befintliga objekt. Ditt lösenord och andra data kommer att bevaras.",
@@ -1004,7 +1004,7 @@
     "noItemSelected": "Inga objekt markerade",
     "noItemsFound": "Inga objekt hittades",
     "noItemsMatch": "Inga befintliga objekt matchar din sökning",
-    "noPasskeysFound": "Inga Passkeys hittades",
+    "noPasskeysFound": "Inga passkeys hittades",
     "noPasskeysMatch": "Inga befintliga passkeys matchar din sökning",
     "openAliasvault": "Öppna AliasVault",
     "passkeyAddToExisting": "Eller, lägg till passkey till ett befintligt objekt",
@@ -1281,7 +1281,7 @@
     "openSettings": "Öppna inställningar",
     "openWebApp": "Öppna webbapp",
     "passkeySettings": "Passkey-inställningar",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Aktivera passkeys",
     "passwordConfirm": {
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
