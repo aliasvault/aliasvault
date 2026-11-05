@@ -1281,6 +1281,7 @@
     "openSettings": "Avaa asetukset",
     "openWebApp": "Avaa verkkosovellus",
     "passkeySettings": "Todennusavainten asetukset",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
