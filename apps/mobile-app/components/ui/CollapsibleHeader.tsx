@@ -130,7 +130,7 @@ export function CollapsibleHeader({
           <AnimatedBlurView
             tint={colorScheme === 'dark' ? 'dark' : 'light'}
             intensity={colorScheme === 'dark' ? 80 : 100}
-            style={[StyleSheet.absoluteFill, { backgroundColor: colors.headerBackground }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: colors.headerBackgroundIos }]}
           />
           <View style={styles.headerBorder} />
         </Animated.View>

@@ -39,6 +39,11 @@ runs:
       shell: bash
       working-directory: apps/browser-extension
 
+    - name: Type check
+      run: npm run compile
+      shell: bash
+      working-directory: apps/browser-extension
+
     - name: Run linting
       run: npm run lint
       shell: bash

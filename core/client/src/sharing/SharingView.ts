@@ -14,6 +14,7 @@ export const MAX_SHARED_VAULT_NAME_LENGTH = 60;
  * The shared folders screen's text strings, in English only on purpose (temporary) as the UI is pending changes
  * so we don't let the translation platform see this yet until its finalized. TODO: move these strings to locale files.
  */
+/* eslint-disable jsdoc/require-jsdoc */
 export const sharingText = {
   peopleTitle: 'People with access',
   shareFolderHint: 'Invite people to share this folder with them. Everyone you invite can see, change and delete its items.',
@@ -107,6 +108,7 @@ export const sharingText = {
     aliasOwnedByOtherFolder: 'This email alias receives its emails in a shared folder you cannot open, or in the personal vault of someone else. Ask them to move it here.',
   },
 };
+/* eslint-enable jsdoc/require-jsdoc */
 
 /**
  * What the viewer can do about one member of a shared folder.

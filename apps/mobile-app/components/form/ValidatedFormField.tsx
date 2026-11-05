@@ -164,4 +164,4 @@ const ValidatedFormFieldComponent = forwardRef<ValidatedFormFieldRef, ValidatedF
 
 ValidatedFormFieldComponent.displayName = 'ValidatedFormField';
 
-export const ValidatedFormField = ValidatedFormFieldComponent as <T extends FieldValues>(props: ValidatedFormFieldProps<T> & { ref?: React.Ref<ValidatedFormFieldRef> }) => JSX.Element;
+export const ValidatedFormField = ValidatedFormFieldComponent as <T extends FieldValues>(props: ValidatedFormFieldProps<T> & { ref?: React.Ref<ValidatedFormFieldRef> }) => React.JSX.Element;

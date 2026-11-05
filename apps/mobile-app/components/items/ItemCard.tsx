@@ -350,7 +350,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
           }}
           activeOpacity={0.7}
           testID="item-card"
-          accessibilityLabel={item.Name}
+          accessibilityLabel={item.Name ?? undefined}
         >
           <View style={styles.itemContent}>
             <ItemIcon item={item} style={styles.logo} />

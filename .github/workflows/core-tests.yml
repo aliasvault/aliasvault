@@ -48,4 +48,4 @@ jobs:
 
     - name: Check client
       working-directory: core/client
-      run: npm run compile && npm test
+      run: npm run compile && npm run lint && npm test
