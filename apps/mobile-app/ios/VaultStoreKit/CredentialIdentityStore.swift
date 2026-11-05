@@ -84,10 +84,8 @@ public class CredentialIdentityStore {
                 return []
             }
 
+            // Empty for a password-only credential, which still fills the password field.
             let identifier = credential.identifier
-            guard !identifier.isEmpty else {
-                return [] // Skip credentials with no identifier
-            }
 
             // Create one identity per URL for multi-URL support
             let identities = credential.serviceUrls.compactMap { urlString -> ASPasswordCredentialIdentity? in
