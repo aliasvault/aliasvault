@@ -1099,12 +1099,12 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Contact support",
-      "documentation": "Documentation",
-      "privacyPolicy": "Privacy policy",
-      "reportIssue": "Report an issue",
-      "sourceCode": "Source code",
-      "title": "About",
+      "contactSupport": "Contatta l'assistenza",
+      "documentation": "Documentazione",
+      "privacyPolicy": "Informativa sulla privacy",
+      "reportIssue": "Segnala un problema",
+      "sourceCode": "Codice sorgente",
+      "title": "Informazioni",
       "website": "Sito web"
     },
     "accountSecurity": "Sicurezza Account",
@@ -1172,8 +1172,8 @@
     "batteryOptimizationDisabled": "Pulizia in background degli appunti abilitata",
     "batteryOptimizationHelpDescription": "L'ottimizzazione della batteria di Android impedisce la rimozione affidabile degli appunti quando l'applicazione è in background. La disattivazione dell'ottimizzazione della batteria per AliasVault consente una pulizia precisa degli appunti in background e garantisce automaticamente le necessarie autorizzazioni di allarme.",
     "batteryOptimizationHelpTitle": "Abilita Pulizia degli Appunti in Background",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Blocco screenshots",
+    "blockScreenshotsDescription": "Blocca screenshots e registrazioni dello schermo dell'app.",
     "clearAllDisabledSites": "Cancella tutti i siti disabilitati",
     "clientUrlHint": "L'URL dell'interfaccia web della tua istanza self-hosted",
     "clipboardClear": "Cancella appunti",
@@ -1235,10 +1235,10 @@
       "autofill": "Compilazione automatica",
       "general": "Generale",
       "generators": "Generatori",
-      "screenPrivacy": "Screen privacy"
+      "screenPrivacy": "Privacy schermo"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Nascondi Contenuti App",
+    "hideAppContentsDescription": "Nasconde i contenuti dell'app nel commutatore dell'app.",
     "identityGenerator": "Generatore di identità",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Imposta la fascia di età per generare nuove identità.",
@@ -1281,7 +1281,7 @@
     "openSettings": "Apri Impostazioni",
     "openWebApp": "Apri app web",
     "passkeySettings": "Impostazioni Passkey",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Abilita Passkeys",
     "passwordConfirm": {
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
