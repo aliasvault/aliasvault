@@ -1,5 +1,4 @@
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { decryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
 import { clearEmailKeyCache } from '@aliasvault/client/email/EmailDecryption';
 import { syncErrorMessage, toSyncErrorDetail } from '@aliasvault/client/sync/SyncErrorMessage';
@@ -12,6 +11,7 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { VAULT_STORE_SOURCE_ID } from '@/utils/messaging/VaultBlobTransfer';
+import { decryptVaultBlobBase64 } from '@/utils/VaultBlobBase64Wrapper';
 
 import { markOwnAccountKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';
@@ -297,7 +297,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
       let decryptedVault: Uint8Array;
       try {
-        decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
+        decryptedVault = await decryptVaultBlobBase64(encryptedVault, encryptionKey);
       } catch (error) {
         logFailure('Failed to decrypt the stored vault', error);
         throw new Error(formatErrorWithCode(t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED));

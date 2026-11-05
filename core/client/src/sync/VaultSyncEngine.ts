@@ -160,7 +160,7 @@ export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
 
 /** What the engine asks to persist as the at-rest vault blob. */
 export type VaultSyncStoreRequest = {
-  encryptedBlob: string;
+  encryptedBlob: Uint8Array;
   markDirty: boolean;
   expectedMutationSeq?: number;
   revision?: number;
@@ -187,7 +187,7 @@ export interface IVaultSyncEngineHost {
   /**
    * The at-rest vault blob, or null when none is stored.
    */
-  loadVault(): Promise<string | null>;
+  loadVault(): Promise<Uint8Array | null>;
 
   /**
    * Persist the at-rest vault blob.
@@ -226,13 +226,13 @@ type EngineCommand =
   | { kind: 'dbQuery'; sql: string; params: JsonValue[] }
   | { kind: 'dbExec'; statements: EngineSqlStatement[] }
   | { kind: 'dbExport' }
-  | { kind: 'vaultStore'; encryptedBlob: string; markDirty: boolean; encryptionKey?: string; expectedMutationSeq?: number; revision?: number }
+  | { kind: 'vaultStore'; markDirty: boolean; encryptionKey?: string; expectedMutationSeq?: number; revision?: number }
   | { kind: 'vaultLoad' }
   | { kind: 'markClean'; mutationSeqAtStart: number }
   | { kind: 'log'; level: 'log' | 'warn' | 'phase'; message: string }
   | { kind: 'done'; result: JsonValue };
 
-/** The host's response to one command: the JSON, plus the raw bytes of a `dbExport` or a binary `http` response. */
+/** The host's response to one command: the JSON, plus the raw bytes of a `dbExport`, a `vaultLoad` or a binary `http` response. */
 type HostResponse = { json: JsonValue; bytes: Uint8Array | null };
 
 /**
@@ -326,7 +326,7 @@ class EngineRun {
   /**
    * Carry out one command and return the host's response.
    * @param command - the command
-   * @param commandBytes - the raw bytes the engine attached to the command (the body of a binary `http` request)
+   * @param commandBytes - the raw bytes the engine attached to the command (the body of a binary `http` request, the blob of a `vaultStore`)
    */
   public async handle(command: Exclude<EngineCommand, { kind: 'done' }>, commandBytes: Uint8Array | null = null): Promise<HostResponse> {
     const started = now();
@@ -334,7 +334,7 @@ class EngineRun {
       if (command.kind === 'http') {
         return await this.http(command, commandBytes);
       }
-      const response = await this.dispatch(command);
+      const response = await this.dispatch(command, commandBytes);
       return response instanceof Uint8Array ? { json: {}, bytes: response } : { json: response, bytes: null };
     } catch (error) {
       return { json: { error: error instanceof Error ? error.message : String(error) }, bytes: null };
@@ -371,10 +371,11 @@ class EngineRun {
   }
 
   /**
-   * The command handlers. Raw bytes (a `dbExport`) go back to the engine outside the JSON.
+   * The command handlers. Raw bytes (a `dbExport`, the vault blob) go back to the engine outside the JSON.
    * @param command - the command
+   * @param commandBytes - the raw bytes the engine attached to the command
    */
-  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' | 'http' }>): Promise<JsonValue | Uint8Array> {
+  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' | 'http' }>, commandBytes: Uint8Array | null): Promise<JsonValue | Uint8Array> {
     switch (command.kind) {
       case 'stateGet':
         return { value: await getPlatform().storage.get<JsonValue>(stateKey(command.key)) };
@@ -395,9 +396,11 @@ class EngineRun {
       case 'dbExport':
         return (await this.database()).export();
       case 'vaultStore':
-        return this.storeVault(command);
-      case 'vaultLoad':
-        return { encryptedBlob: await this.host.loadVault() };
+        return this.storeVault(command, commandBytes);
+      case 'vaultLoad': {
+        const blob = await this.host.loadVault();
+        return blob?.length ? blob : {};
+      }
       case 'markClean':
         return { cleared: await this.host.markClean(command.mutationSeqAtStart) };
       case 'log':
@@ -429,10 +432,14 @@ class EngineRun {
   /**
    * Persist the blob.
    * @param command - the command
+   * @param blobBytes - the blob, which travels as raw bytes outside the JSON
    */
-  private async storeVault(command: Extract<EngineCommand, { kind: 'vaultStore' }>): Promise<JsonValue> {
+  private async storeVault(command: Extract<EngineCommand, { kind: 'vaultStore' }>, blobBytes: Uint8Array | null): Promise<JsonValue> {
+    if (!blobBytes) {
+      throw new Error('vaultStore command without a blob');
+    }
     const outcome = await this.host.storeVault({
-      encryptedBlob: command.encryptedBlob,
+      encryptedBlob: blobBytes,
       markDirty: command.markDirty,
       expectedMutationSeq: command.expectedMutationSeq,
       revision: command.revision,
@@ -490,7 +497,7 @@ export async function runVaultSyncEngine<T extends VaultSyncEngineResultBase>(ho
         devLog(run.summarize(request.operation, now() - started));
         return command.result as T;
       }
-      const commandBytes = command.kind === 'http' && command.binaryBody ? await session.commandBytes() : null;
+      const commandBytes = (command.kind === 'http' && command.binaryBody) || command.kind === 'vaultStore' ? await session.commandBytes() : null;
       const response = await run.handle(command, commandBytes);
       await session.resume(JSON.stringify(response.json), response.bytes);
     }

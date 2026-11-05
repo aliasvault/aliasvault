@@ -1,9 +1,9 @@
-//! The locally stored vault blob: base64 of AES-256-GCM `IV | ciphertext | tag` (no AAD) over the SQLite database bytes.
+//! The locally stored vault blob: AES-256-GCM `IV | ciphertext | tag` (no AAD) over the SQLite database bytes.
 //!
 //! This is the base format; the mobile apps call it through uniffi. The web app and browser extension use a WebCrypto
 //! native re-implementation (`core/client/src/crypto/VaultBlob.ts`) for performance reasons.
 
-use crate::common::encoding::{base64_decode, base64_encode};
+use crate::common::encoding::base64_decode;
 use crate::common::error::{VaultError, VaultResult};
 
 use super::aes_gcm;
@@ -12,13 +12,13 @@ use super::aes_gcm;
 const SQLITE_HEADER: &[u8] = b"SQLite format 3\0";
 
 /// Encrypt a plaintext SQLite database for local storage.
-pub fn vault_blob_encrypt(sqlite_bytes: &[u8], key_base64: &str) -> VaultResult<String> {
-    Ok(base64_encode(&aes_gcm::encrypt(sqlite_bytes, key_base64, &[])?))
+pub fn vault_blob_encrypt(sqlite_bytes: &[u8], key_base64: &str) -> VaultResult<Vec<u8>> {
+    aes_gcm::encrypt(sqlite_bytes, key_base64, &[])
 }
 
 /// Decrypt a stored vault blob into the SQLite database bytes.
-pub fn vault_blob_decrypt(encrypted_blob: &str, key_base64: &str) -> VaultResult<Vec<u8>> {
-    let plaintext = aes_gcm::decrypt(&base64_decode(encrypted_blob.trim())?, key_base64, &[])?;
+pub fn vault_blob_decrypt(encrypted_blob: &[u8], key_base64: &str) -> VaultResult<Vec<u8>> {
+    let plaintext = aes_gcm::decrypt(encrypted_blob, key_base64, &[])?;
     if plaintext.starts_with(SQLITE_HEADER) {
         return Ok(plaintext);
     }

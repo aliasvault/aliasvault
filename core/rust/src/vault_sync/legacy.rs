@@ -38,7 +38,12 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
         manifest_revisions.insert(personal.clone(), revision);
     }
     ctx.log("[Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
-    Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), personal_revision: revision, manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
+    // A sqlite-blob vault arrives as base64 text in `legacyVaultBlob`; local storage holds its bytes.
+    let encrypted_vault = match &snapshot.legacy_vault_blob {
+        Some(blob) => base64_decode(blob.trim()).map_err(|e| SyncError::Other(format!("the legacy vault blob is not base64: {}", e)))?,
+        None => Vec::new(),
+    };
+    Ok(PulledVault { encrypted_vault, personal_revision: revision, manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
 }
 
 /*

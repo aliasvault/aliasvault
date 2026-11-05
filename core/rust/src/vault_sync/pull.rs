@@ -46,14 +46,14 @@ impl OpenedManifestSet {
     }
 
     /// The opened set as a vault ready to become the local one.
-    pub fn pulled_vault(&self, encrypted_vault: String) -> PulledVault {
+    pub fn pulled_vault(&self, encrypted_vault: Vec<u8>) -> PulledVault {
         PulledVault { encrypted_vault, personal_revision: self.personal_revision, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
     }
 }
 
 /// A pulled vault, encrypted for local storage, with the revisions it was pulled at.
 pub(crate) struct PulledVault {
-    pub encrypted_vault: String,
+    pub encrypted_vault: Vec<u8>,
     pub personal_revision: i64,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,

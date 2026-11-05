@@ -1,4 +1,3 @@
-import { encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import { hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import { hasSyncError } from '@aliasvault/client/sync/VaultSync';
 import { useCallback, useRef } from 'react';
@@ -9,6 +8,7 @@ import { devLog } from '@/utils/devLogger/DevLogger';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { storeEncryptedVault } from '@/utils/messaging/VaultBlobTransfer';
+import { encryptVaultBlobBase64 } from '@/utils/VaultBlobBase64Wrapper';
 
 /** How many unanswered sync-state polls in a row before the poll gives up on the background context. */
 const MAX_POLL_FAILURES = 10;
@@ -60,7 +60,7 @@ export function useVaultMutate(): {
     try {
       // Export and encrypt the updated vault
       const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY') as string;
-      const encryptedVaultBlob = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
+      const encryptedVaultBlob = await encryptVaultBlobBase64(sqliteClient.exportToBytes(), encryptionKey);
 
       // Store the updated vault locally, mark dirty, increment mutation sequence.
       await storeEncryptedVault(encryptedVaultBlob, { markDirty: true, scopes });

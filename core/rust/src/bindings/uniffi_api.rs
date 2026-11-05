@@ -169,15 +169,15 @@ pub fn symmetric_encrypt_bytes(plaintext: Vec<u8>, key_base64: String) -> Result
     crate::crypto::aes_gcm::encrypt(&plaintext, &key_base64, &[])
 }
 
-/// Encrypt the SQLite database bytes into the locally stored vault blob (base64) under the raw 32-byte VEK.
+/// Encrypt the SQLite database bytes into the locally stored vault blob under the raw 32-byte VEK.
 #[uniffi::export]
-pub fn vault_blob_encrypt(sqlite_bytes: Vec<u8>, key: Vec<u8>) -> Result<String, VaultError> {
+pub fn vault_blob_encrypt(sqlite_bytes: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, VaultError> {
     crate::crypto::vault_blob_encrypt(&sqlite_bytes, &zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&key)))
 }
 
-/// Decrypt the locally stored vault blob (base64) into the SQLite database bytes under the raw 32-byte VEK.
+/// Decrypt the locally stored vault blob into the SQLite database bytes under the raw 32-byte VEK.
 #[uniffi::export]
-pub fn vault_blob_decrypt(encrypted_blob: String, key: Vec<u8>) -> Result<Vec<u8>, VaultError> {
+pub fn vault_blob_decrypt(encrypted_blob: Vec<u8>, key: Vec<u8>) -> Result<Vec<u8>, VaultError> {
     crate::crypto::vault_blob_decrypt(&encrypted_blob, &zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&key)))
 }
 

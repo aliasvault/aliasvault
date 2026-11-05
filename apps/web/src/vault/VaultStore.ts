@@ -13,6 +13,7 @@ import { DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, type VaultMutationSc
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type KeyRotationOperationResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type EmailClaimTransfer, type IVaultSyncEngineHost, type VaultSyncKeyRotationParams, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
+import { base64ToBytes } from '@aliasvault/client/utilities/Base64';
 
 import i18n from '@/i18n/i18n';
 import { devLog } from '@/utils/DevLogger';
@@ -40,7 +41,7 @@ export type VaultMetadata = {
 
 /** The local vault as it was before a mutation, to put back when the mutation could not be pushed. */
 export type LocalVaultSnapshot = {
-  vaultBlob: string | null;
+  vaultBlob: Uint8Array | null;
   isDirty: boolean;
   dirtyScopes: VaultMutationScope[];
 };
@@ -53,8 +54,11 @@ export type FullVaultSyncRequest = VaultSyncOptions & {
   waitForRunningSync?: boolean;
 };
 
+/** Length of the AES-GCM IV every vault blob starts with. */
+const VAULT_BLOB_IV_LENGTH = 12;
+
 let cachedSqliteClient: SqliteClient | null = null;
-let cachedVaultBlob: string | null = null;
+let cachedVaultBlob: Uint8Array | null = null;
 let isSyncInProgress = false;
 let runningSync: Promise<FullVaultSyncResult> | null = null;
 let hasPendingSync = false;
@@ -90,8 +94,32 @@ async function getEncryptionKey(): Promise<string | null> {
 /**
  * The stored encrypted vault blob.
  */
-async function getEncryptedVault(): Promise<string | null> {
-  return getPlatform().storage.get<string>(StorageKeys.ENCRYPTED_VAULT);
+async function getEncryptedVault(): Promise<Uint8Array | null> {
+  const storage = getPlatform().storage;
+  const stored = await storage.get<Uint8Array | string>(StorageKeys.ENCRYPTED_VAULT);
+
+  //return stored;
+
+  /*
+   * LEGACY: 0.31.1 and older stored the blob as base64 text; convert it to bytes once. Remove once all clients have
+   * upgraded past 0.31.1; a browser that still holds only the text then has no vault and logs in again.
+   */
+  if (typeof stored !== 'string') {
+    return stored;
+  }
+
+  const bytes = base64ToBytes(stored);
+  await storage.set(StorageKeys.ENCRYPTED_VAULT, bytes);
+  return bytes;
+}
+
+/**
+ * Whether two blobs are the same store; every encryption uses a fresh random IV, so length and IV identify a blob.
+ * @param a - one blob
+ * @param b - the other blob
+ */
+function isSameVaultBlob(a: Uint8Array, b: Uint8Array): boolean {
+  return a.length === b.length && a.subarray(0, VAULT_BLOB_IV_LENGTH).every((byte, index) => byte === b[index]);
 }
 
 /**
@@ -108,7 +136,7 @@ async function createVaultSqliteClient(): Promise<SqliteClient> {
     throw new Error(formatErrorWithCode(i18n.t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
   }
 
-  if (cachedSqliteClient && cachedVaultBlob === encryptedVault) {
+  if (cachedSqliteClient && cachedVaultBlob && isSameVaultBlob(cachedVaultBlob, encryptedVault)) {
     return cachedSqliteClient;
   }
 
@@ -129,7 +157,7 @@ async function createVaultSqliteClient(): Promise<SqliteClient> {
  * overwrites concurrent local changes.
  * @param request - the blob and how to record it
  */
-async function storeEncryptedVault(request: { vaultBlob: string; markDirty?: boolean; expectedMutationSeq?: number; scopes?: VaultMutationScope[] }): Promise<{ success: boolean; mutationSequence: number }> {
+async function storeEncryptedVault(request: { vaultBlob: Uint8Array; markDirty?: boolean; expectedMutationSeq?: number; scopes?: VaultMutationScope[] }): Promise<{ success: boolean; mutationSequence: number }> {
   const storage = getPlatform().storage;
   let mutationSequence = await storage.get<number>(StorageKeys.MUTATION_SEQUENCE) ?? 0;
 
@@ -202,7 +230,7 @@ const syncEngineHost: IVaultSyncEngineHost = {
   /**
    * The stored vault blob.
    */
-  loadVault: (): Promise<string | null> => getEncryptedVault(),
+  loadVault: (): Promise<Uint8Array | null> => getEncryptedVault(),
   /**
    * Persist a vault blob the engine produced.
    */

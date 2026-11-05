@@ -10,7 +10,7 @@ use serde_json::Value;
 use super::db;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
-use super::types::{Ack, CleanOutcome, Command, Db, LogLevel, StateValue, StoreOutcome, StoredVault, SyncRequest};
+use super::types::{Ack, CleanOutcome, Command, Db, LogLevel, StateValue, StoreOutcome, SyncRequest};
 use secrecy::{ExposeSecret, SecretString};
 use crate::crypto;
 
@@ -98,7 +98,7 @@ impl Ctx {
     }
 
     /// Persist the at-rest vault blob; a successful store replaces a discarded one.
-    pub async fn store_vault(&mut self, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
+    pub async fn store_vault(&mut self, encrypted_blob: &[u8], mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
         let stored = store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.new_encryption_key.clone()).await?;
         if stored.success {
             self.local_vault_discarded = false;
@@ -217,14 +217,15 @@ pub(crate) fn fingerprint_bucket_key(manifest_id: &str, category: &str) -> Strin
 }
 
 /// The at-rest vault blob.
-pub(crate) async fn load_vault(host: &Host) -> SyncResult<Option<String>> {
-    let stored: StoredVault = host.call(Command::VaultLoad).await?;
-    Ok(stored.encrypted_blob.filter(|blob| !blob.is_empty()))
+pub(crate) async fn load_vault(host: &Host) -> SyncResult<Option<Vec<u8>>> {
+    let (_, bytes): (Ack, _) = host.call_with_bytes(Command::VaultLoad, None).await?;
+    Ok(bytes.filter(|bytes| !bytes.is_empty()))
 }
 
 /// Persist the at-rest vault blob, telling the host the (new) key it is encrypted under.
-pub(crate) async fn store_vault_with_key(host: &Host, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>, encryption_key: Option<SecretString>) -> SyncResult<StoreOutcome> {
-    host.call(Command::VaultStore { encrypted_blob: encrypted_blob.to_string(), mark_dirty, encryption_key, expected_mutation_seq, revision }).await
+pub(crate) async fn store_vault_with_key(host: &Host, encrypted_blob: &[u8], mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>, encryption_key: Option<SecretString>) -> SyncResult<StoreOutcome> {
+    let command = Command::VaultStore { mark_dirty, encryption_key, expected_mutation_seq, revision };
+    Ok(host.call_with_bytes(command, Some(encrypted_blob.to_vec())).await?.0)
 }
 
 /// Clear the dirty flag unless a mutation happened since the given sequence.
@@ -234,11 +235,11 @@ pub(crate) async fn mark_clean(host: &Host, mutation_seq_at_start: u64) -> SyncR
 }
 
 /// Decrypt a stored vault blob into the plaintext SQLite database.
-pub(crate) fn decrypt_vault_blob(encrypted_blob: &str, key: &str) -> SyncResult<Vec<u8>> {
+pub(crate) fn decrypt_vault_blob(encrypted_blob: &[u8], key: &str) -> SyncResult<Vec<u8>> {
     crypto::vault_blob_decrypt(encrypted_blob, key).map_err(|e| SyncError::VaultDecryptFailed(e.to_string()))
 }
 
 /// Encrypt a plaintext SQLite database for local storage.
-pub(crate) fn encrypt_vault_blob(sqlite_bytes: &[u8], key: &str) -> SyncResult<String> {
+pub(crate) fn encrypt_vault_blob(sqlite_bytes: &[u8], key: &str) -> SyncResult<Vec<u8>> {
     Ok(crypto::vault_blob_encrypt(sqlite_bytes, key)?)
 }
