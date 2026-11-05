@@ -27,6 +27,8 @@ Set `TRUSTED_PROXIES` in the `environment:` section of your `docker-compose.yml`
 | Comma-separated list of CIDRs/IPs | Trust only the listed proxies. **Recommended** when you know your upstream proxy address(es). |
 | `none` | Trust no upstream proxies. `X-Forwarded-For` is always ignored and the direct peer IP is logged. |
 
+> **Note:** only IPv4 proxy addresses are supported. IPv6 is not supported.
+
 ### Examples
 
 ```yaml
