@@ -309,7 +309,7 @@ public class PasskeyRegistrationViewModel: ObservableObject {
     @Published public var origin: String
     @Published public var userName: String?
     @Published public var userDisplayName: String?
-    @Published public var displayName: String  // Editable title that defaults to rpId
+    @Published public var displayName: String  // Title of a new item, defaults to rpId
     @Published public var isLoading: Bool = false
     @Published public var loadingMessage: String = ""
     @Published public var existingPasskeys: [PasskeyWithCredentialInfo] = []
@@ -363,22 +363,18 @@ public class PasskeyRegistrationViewModel: ObservableObject {
         selectedPasskeyToReplace = passkey
         selectedItemToMerge = nil
         isMergeMode = false
-        // Pre-fill display name with the existing passkey's name
-        displayName = passkey.displayName
     }
 
     public func handleSelectMerge(_ item: ItemWithCredentialInfo) {
         selectedPasskeyToReplace = nil
         selectedItemToMerge = item
         isMergeMode = true
-        // Pre-fill display name with the existing item's service name
-        displayName = item.serviceName ?? rpId
     }
 
     public func createPasskey() {
-        // Validate title is not empty
-        let trimmedTitle = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTitle.isEmpty else {
+        // A new item needs a title; replace and merge keep the existing item's name
+        let isCreate = selectedPasskeyToReplace == nil && selectedItemToMerge == nil
+        guard !isCreate || !displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             print("PasskeyRegistration: Cannot create passkey with empty title")
             return
         }

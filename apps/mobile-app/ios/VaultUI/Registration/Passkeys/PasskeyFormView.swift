@@ -26,8 +26,13 @@ struct PasskeyFormView: View {
         mergingItemId != nil
     }
 
+    /// The title only names a new item; replace and merge keep the existing item's name.
+    var showsTitle: Bool {
+        !isReplaceMode && !isMergeMode
+    }
+
     var isTitleValid: Bool {
-        !viewModel.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !showsTitle || !viewModel.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var body: some View {
@@ -93,8 +98,10 @@ struct PasskeyFormView: View {
                         }
 
                         // Editable title field
-                        PasskeyTitleInput(title: $viewModel.displayName, focusState: $isTitleFocused)
-                            .padding(.top, 8)
+                        if showsTitle {
+                            PasskeyTitleInput(title: $viewModel.displayName, focusState: $isTitleFocused)
+                                .padding(.top, 8)
+                        }
 
                         // Request details (compact, read-only)
                         VStack(spacing: 8) {

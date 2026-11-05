@@ -498,7 +498,6 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                         oldPasskeyId: oldPasskey.id,
                         manifestId: oldPasskey.manifestId,
                         newPasskey: passkey,
-                        displayName: viewModel.displayName,
                         logo: logo
                     )
                 } else if let existingItem = viewModel.selectedItemToMerge {

@@ -101,7 +101,7 @@ extension VaultStore {
                 itemName: displayName,
                 url: "https://\(rpId)",
                 userName: userName,
-                passkey: try Self.newPasskey(from: passkey, displayName: passkey.displayName),
+                passkey: try Self.newPasskey(from: passkey),
                 logo: logo
             )
         }
@@ -109,12 +109,12 @@ extension VaultStore {
     }
 
     /// Replace an existing passkey with a new one on the same item, in the same manifest.
-    public func replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: Passkey, displayName: String, logo: Data? = nil) throws {
+    public func replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: Passkey, logo: Data? = nil) throws {
         try withTransaction {
             _ = try requireDatabase().replacePasskey(
                 oldPasskeyId: oldPasskeyId.uuidString.lowercased(),
                 manifestId: manifestId,
-                passkey: try Self.newPasskey(from: newPasskey, displayName: displayName),
+                passkey: try Self.newPasskey(from: newPasskey),
                 url: "https://\(newPasskey.rpId)",
                 logo: logo
             )
@@ -127,7 +127,7 @@ extension VaultStore {
             try requireDatabase().addPasskeyToItem(
                 itemId: itemId.uuidString.lowercased(),
                 manifestId: manifestId,
-                passkey: try Self.newPasskey(from: passkey, displayName: passkey.displayName),
+                passkey: try Self.newPasskey(from: passkey),
                 url: "https://\(passkey.rpId)",
                 logo: logo
             )
@@ -160,7 +160,7 @@ extension VaultStore {
     }
 
     /// A passkey to write, its keys as the JWK text they are stored as.
-    private static func newPasskey(from passkey: Passkey, displayName: String) throws -> NewPasskey {
+    private static func newPasskey(from passkey: Passkey) throws -> NewPasskey {
         guard let publicKey = String(data: passkey.publicKey, encoding: .utf8), let privateKey = String(data: passkey.privateKey, encoding: .utf8) else {
             throw VaultStoreError.databaseError("Passkey keys are not valid JWK text")
         }
@@ -171,7 +171,7 @@ extension VaultStore {
             publicKey: publicKey,
             privateKey: privateKey,
             prfKey: passkey.prfKey,
-            displayName: displayName
+            displayName: passkey.displayName
         )
     }
 
