@@ -1281,6 +1281,7 @@
     "openSettings": "Apri Impostazioni",
     "openWebApp": "Apri app web",
     "passkeySettings": "Impostazioni Passkey",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
