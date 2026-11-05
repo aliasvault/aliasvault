@@ -604,68 +604,52 @@ const ItemAddEditForm: React.FC = () => {
                       )}
                     </>
                   )}>
-                    {passkey ? (
-                      <>
-                        <div className="col-span-6">{usernameField}</div>
-                        {!passkeyMarkedForDeletion ? (
-                          <div className="col-span-6">
-                            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                              <div className="flex items-start gap-3">
-                                <PasskeyIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
-                                    <button type="button" onClick={() => setPasskeyMarkedForDeletion(true)} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" title={t('items.addEdit.deletePasskeyButton')}>
-                                      <Icon name="trash" className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                  <div className="space-y-1 mb-2">
-                                    {passkey.RpId.trim().length > 0 && (
-                                      <div>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
-                                        <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
-                                      </div>
-                                    )}
-                                    {(passkey.DisplayName ?? '').trim().length > 0 && (
-                                      <div>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
-                                        <span className="text-sm text-gray-900 dark:text-white">{passkey.DisplayName}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('items.addEdit.passkeyHelpText')}</p>
-                                </div>
+                    {shouldShowField(FieldKey.LoginEmail) && <div className="col-span-6">{emailField}</div>}
+                    <div className="col-span-6">{usernameField}</div>
+                    <div className="col-span-6">{passwordField}</div>
+                    {passkey && (!passkeyMarkedForDeletion ? (
+                      <div className="col-span-6">
+                        <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-start gap-3">
+                            <PasskeyIcon className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="mb-1 flex items-center justify-between">
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
+                                <button type="button" onClick={() => setPasskeyMarkedForDeletion(true)} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" title={t('items.addEdit.deletePasskeyButton')}>
+                                  <Icon name="trash" className="w-4 h-4" />
+                                </button>
                               </div>
+                              <div className="space-y-1 mb-2">
+                                {passkey.RpId.trim().length > 0 && (
+                                  <div>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
+                                    <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{t('items.addEdit.passkeyHelpText')}</p>
                             </div>
                           </div>
-                        ) : (
-                          <div className="col-span-6">
-                            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                              <div className="flex items-start gap-3">
-                                <PasskeyIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                                <div className="flex-1">
-                                  <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-red-900 dark:text-red-100">{t('passkeys.passkeyMarkedForDeletion')}</span>
-                                    <button type="button" onClick={() => setPasskeyMarkedForDeletion(false)} className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title={t('common.undo')}>
-                                      <Icon name="reply" className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                  <p className="text-sm text-red-800 dark:text-red-200">{t('items.addEdit.passkeyWillBeDeleted')}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        <div className="col-span-6">{emailField}</div>
-                        <div className="col-span-6">{passwordField}</div>
-                      </>
+                        </div>
+                      </div>
                     ) : (
-                      <>
-                        {shouldShowField(FieldKey.LoginEmail) && <div className="col-span-6">{emailField}</div>}
-                        <div className="col-span-6">{usernameField}</div>
-                        <div className="col-span-6">{passwordField}</div>
-                      </>
-                    )}
+                      <div className="col-span-6">
+                        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                          <div className="flex items-start gap-3">
+                            <PasskeyIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <div className="mb-1 flex items-center justify-between">
+                                <span className="text-sm font-semibold text-red-900 dark:text-red-100">{t('passkeys.passkeyMarkedForDeletion')}</span>
+                                <button type="button" onClick={() => setPasskeyMarkedForDeletion(false)} className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title={t('common.undo')}>
+                                  <Icon name="reply" className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <p className="text-sm text-red-800 dark:text-red-200">{t('items.addEdit.passkeyWillBeDeleted')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </Section>
                 )}
 

@@ -127,7 +127,7 @@ const PasskeyEditor: React.FC<PasskeyEditorProps> = ({
                 <div className="flex-1">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {passkey.DisplayName || t('passkeys.passkey')}
+                      {t('passkeys.passkey')}
                     </span>
                     <button
                       type="button"

@@ -329,12 +329,11 @@ const PasskeyCreate: React.FC = () => {
             // Get existing item to preserve its data
             const existingItem = dbContext.sqliteClient!.items.getById({ Id: existingPasskey.ItemId, ManifestId: existingPasskey.ManifestId });
             if (existingItem) {
-              // Update the parent item with new favicon and user-provided display name
+              // Update the parent item with the new favicon, URL and username; its name stays as-is
               await dbContext.sqliteClient!.items.update(
                 existingItem,
                 {
                   ...existingItem,
-                  Name: displayName,
                   Logo: faviconLogo ?? existingItem.Logo,
                   Fields: [
                     ...(existingItem.Fields || []).filter((f) => f.FieldKey !== FieldKey.LoginUrl && f.FieldKey !== FieldKey.LoginUsername),
@@ -571,6 +570,8 @@ const PasskeyCreate: React.FC = () => {
     );
   }
 
+  const passkeyToReplace = selectedPasskeyToReplace ? existingPasskeys.find(p => isSameItem(p, selectedPasskeyToReplace)) : undefined;
+
   return (
     <>
       <PasskeyBypassDialog
@@ -745,7 +746,7 @@ const PasskeyCreate: React.FC = () => {
             {selectedPasskeyToReplace && (
               <Alert variant="warning">
                 {t('passkeys.create.replacingPasskey', {
-                  displayName: existingPasskeys.find(p => isSameItem(p, selectedPasskeyToReplace))?.DisplayName || ''
+                  displayName: passkeyToReplace?.ServiceName || passkeyToReplace?.DisplayName || ''
                 })}
               </Alert>
             )}
@@ -758,7 +759,7 @@ const PasskeyCreate: React.FC = () => {
               </Alert>
             )}
 
-            {!selectedItemToAttach && (
+            {!selectedItemToAttach && !selectedPasskeyToReplace && (
               <FormInput
                 id="displayName"
                 label={t('passkeys.create.titleLabel')}

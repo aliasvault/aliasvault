@@ -134,7 +134,6 @@ async function expectLegacyItemContent(app: WebApp, item: LegacyVaultItem): Prom
 
   for (const passkey of item.passkeys) {
     await expect(main.getByText(passkey.rpId, { exact: true })).toBeVisible();
-    await expect(main.getByText(passkey.displayName, { exact: true })).toBeVisible();
   }
 
   if (item.passwordHistory) {
