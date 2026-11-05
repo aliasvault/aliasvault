@@ -8,7 +8,7 @@ import VaultUtils
 ///
 /// Other platform implementations: LegacyVaultFileConversion.kt (Android).
 ///
-/// TODO: remove once all clients have upgraded past 0.31.1. An install that still holds only 
+/// TODO: remove once all clients have upgraded past 0.31.1. An install that still holds only
 /// the old file then has no vault and logs in again.
 extension VaultStore {
     /// The vault file as base64 text, as 0.31.1 and older stored it.

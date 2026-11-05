@@ -98,8 +98,6 @@ async function getEncryptedVault(): Promise<Uint8Array | null> {
   const storage = getPlatform().storage;
   const stored = await storage.get<Uint8Array | string>(StorageKeys.ENCRYPTED_VAULT);
 
-  //return stored;
-
   /*
    * LEGACY: 0.31.1 and older stored the blob as base64 text; convert it to bytes once. Remove once all clients have
    * upgraded past 0.31.1; a browser that still holds only the text then has no vault and logs in again.
