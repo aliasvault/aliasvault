@@ -878,26 +878,18 @@ class VaultStore(
     fun createItemWithPasskey(
         url: String,
         userName: String?,
-        displayName: String,
+        itemName: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         logo: ByteArray? = null,
     ) {
-        passkey.createItemWithPasskey(url, userName, displayName, passkeyObj, logo)
+        passkey.createItemWithPasskey(url, userName, itemName, passkeyObj, logo)
     }
 
     /**
      * Replace an existing passkey with a new one on the same item. The url names the domain the favicon was fetched for.
      */
-    @Suppress("LongParameterList") // One argument per value the replacement writes
-    fun replacePasskey(
-        oldPasskeyId: UUID,
-        manifestId: String,
-        newPasskey: net.aliasvault.app.vaultstore.models.Passkey,
-        displayName: String,
-        url: String,
-        logo: ByteArray? = null,
-    ) {
-        passkey.replacePasskey(oldPasskeyId, manifestId, newPasskey, displayName, url, logo)
+    fun replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: net.aliasvault.app.vaultstore.models.Passkey, url: String, logo: ByteArray? = null) {
+        passkey.replacePasskey(oldPasskeyId, manifestId, newPasskey, url, logo)
     }
 
     /**

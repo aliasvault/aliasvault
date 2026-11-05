@@ -62,10 +62,10 @@ class VaultPasskey(
      *
      * @param url The item's login URL, which the favicon was fetched for.
      */
-    fun createItemWithPasskey(url: String, userName: String?, displayName: String, passkey: Passkey, logo: ByteArray? = null) {
+    fun createItemWithPasskey(url: String, userName: String?, itemName: String, passkey: Passkey, logo: ByteArray? = null) {
         val manifestId = database.getPersonalManifestId() ?: throw AppError.ManifestNotRecorded()
         database.withTransaction { db ->
-            db.createItemWithPasskey(manifestId, passkey.parentItemId.toString(), displayName, url, userName, toNewPasskey(passkey, passkey.displayName), logo)
+            db.createItemWithPasskey(manifestId, passkey.parentItemId.toString(), itemName, url, userName, toNewPasskey(passkey), logo)
         }
     }
 
@@ -74,10 +74,9 @@ class VaultPasskey(
      *
      * @param url The login URL the favicon was fetched for.
      */
-    @Suppress("LongParameterList") // One argument per value the replacement writes
-    fun replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: Passkey, displayName: String, url: String, logo: ByteArray? = null) {
+    fun replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: Passkey, url: String, logo: ByteArray? = null) {
         database.withTransaction { db ->
-            db.replacePasskey(oldPasskeyId.toString(), manifestId, toNewPasskey(newPasskey, displayName), url, logo)
+            db.replacePasskey(oldPasskeyId.toString(), manifestId, toNewPasskey(newPasskey), url, logo)
         }
     }
 
@@ -88,7 +87,7 @@ class VaultPasskey(
      */
     fun addPasskeyToExistingItem(itemId: UUID, manifestId: String, passkey: Passkey, url: String, logo: ByteArray? = null) {
         database.withTransaction { db ->
-            db.addPasskeyToItem(itemId.toString(), manifestId, toNewPasskey(passkey, passkey.displayName), url, logo)
+            db.addPasskeyToItem(itemId.toString(), manifestId, toNewPasskey(passkey), url, logo)
         }
     }
 
@@ -142,7 +141,7 @@ class VaultPasskey(
         }
     }
 
-    private fun toNewPasskey(passkey: Passkey, displayName: String): NewPasskey {
+    private fun toNewPasskey(passkey: Passkey): NewPasskey {
         return NewPasskey(
             id = passkey.id.toString(),
             rpId = passkey.rpId,
@@ -150,7 +149,7 @@ class VaultPasskey(
             publicKey = String(passkey.publicKey, Charsets.UTF_8),
             privateKey = String(passkey.privateKey, Charsets.UTF_8),
             prfKey = passkey.prfKey,
-            displayName = displayName,
+            displayName = passkey.displayName,
         )
     }
 

@@ -86,7 +86,7 @@ class PasskeySelectionFragment : Fragment() {
                 val displayNameView = itemView.findViewById<TextView>(R.id.passkeyDisplayName)
                 val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
 
-                displayNameView.text = passkeyInfo.passkey.displayName
+                displayNameView.text = passkeyInfo.serviceName ?: passkeyInfo.passkey.displayName
                 val subtitle = buildString {
                     passkeyInfo.accountLabel?.let { append(it) }
                     if (passkeyInfo.accountLabel != null && passkeyInfo.serviceName != null) {

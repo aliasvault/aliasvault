@@ -153,17 +153,13 @@ class AliasVaultCredentialProviderService : CredentialProviderService() {
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
-        // Use displayName for the UI
-        val displayName = identity.displayName.ifEmpty {
-            identity.userName ?: identity.rpId
-        }
-
+        // Account on the first line, the item name (which the user can rename) on the second
         return PublicKeyCredentialEntry.Builder(
             context = this,
-            username = displayName,
+            username = identity.userName?.takeIf { it.isNotBlank() } ?: identity.itemName ?: identity.rpId,
             pendingIntent = pendingIntent,
             beginGetPublicKeyCredentialOption = option,
-        ).build()
+        ).setDisplayName(identity.itemName).build()
     }
 
     /**
