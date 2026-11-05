@@ -1281,6 +1281,7 @@
     "openSettings": "Oscail Socruithe",
     "openWebApp": "Oscail an aip ghréasáin",
     "passkeySettings": "Pas eochair Socruithe",
+    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú."
     },
