@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Se ha actualizado el logotipo de {{count}} elementos.",
       "serverTotalDescription": "El tamaño exacto de tu bóveda cifrada tal y como está almacenada en el servidor, incluidos los archivos adjuntos y los logotipos.",
       "serverTotalTitle": "Tamaño de la bóveda en el servidor",
-      "title": "Storage insights",
+      "title": "Almacenamiento",
       "topAttachmentsDescription": "Top 10 archivos adjuntos más grandes. Elimina el archivo adjunto si ya no lo necesita.",
       "topAttachmentsTitle": "Adjuntos más grandes",
       "topLogosDescription": "Los 10 mejores logotipos de servicio. Logos son reutilizados para objetos con el mismo dominio.",
