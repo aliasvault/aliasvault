@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Aggiornato il logo di {{count}} oggetti.",
       "serverTotalDescription": "La dimensione esatta della cassaforte crittografata come memorizzata sul server, inclusi allegati e loghi.",
       "serverTotalTitle": "Dimensione cassaforte sul server",
-      "title": "Storage insights",
+      "title": "Analisi dell'archivio",
       "topAttachmentsDescription": "Top 10 allegati più grandi. Rimuovere l'allegato se non ne hai più bisogno.",
       "topAttachmentsTitle": "Allegati più grandi",
       "topLogosDescription": "Top 10 loghi più grandi. I loghi sono riutilizzati per oggetti con lo stesso dominio.",
