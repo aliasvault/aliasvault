@@ -1,0 +1,7 @@
+- Verbeterde weergave van favicon logo's
+- Meer leeftijdscategorieën in de identiteitsgenerator
+- Over-pagina toegevoegd aan instellingen
+- Mappen worden nu alfabetisch gesorteerd
+- Verbeterde compatibiliteit van autofill voor apps en browsers
+- Minder geheugengebruik bij grotere vaults
+- Beveiligingsverbeteringen

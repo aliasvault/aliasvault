@@ -1,0 +1,7 @@
+- Improve favicon logo rendering
+- Add more identity generator age ranges
+- Add about page to settings
+- Make folder sort alphabetical
+- Improve autofill compatibility for native apps and browsers
+- Reduce memory usage with larger vaults
+- Security hardening
