@@ -1,8 +1,8 @@
 package net.aliasvault.app.vaultstore
 
-import android.util.Base64
 import android.util.Log
 import java.io.File
+import java.util.Base64
 
 /**
  * Legacy conversion of the stored vault file from base64 text to raw bytes.
@@ -30,7 +30,7 @@ internal object LegacyVaultFileConversion {
             return
         }
         try {
-            store(Base64.decode(legacy.readBytes(), Base64.DEFAULT))
+            store(Base64.getMimeDecoder().decode(legacy.readBytes()))
         } catch (e: IllegalArgumentException) {
             Log.e(TAG, "The legacy base64 vault file does not decode; dropping it", e)
         }
