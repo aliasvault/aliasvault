@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Opdaterede logoet for {{count}} elementer.",
       "serverTotalDescription": "Den nøjagtige størrelse af din krypterede boks som er gemt på serveren, herunder vedhæftede filer og logoer.",
       "serverTotalTitle": "Boks størrelse på server",
-      "title": "Storage insights",
+      "title": "Indblik i lagring",
       "topAttachmentsDescription": "Top 10 største vedhæftede filer. Fjern vedhæftningen, hvis du ikke længere har brug for det.",
       "topAttachmentsTitle": "Største vedhæftede elementer",
       "topLogosDescription": "Top 10 største service logoer. Logoer genbruges for elementer med samme domæne.",
