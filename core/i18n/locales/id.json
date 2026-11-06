@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
       "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
       "serverTotalTitle": "Vault size on server",
-      "title": "Storage insights",
+      "title": "Wawasan tentang penyimpanan",
       "topAttachmentsDescription": "10 lampiran berkas terbesar. Hapus lampiran tersebut jika Anda tidak membutuhkannya lagi.",
       "topAttachmentsTitle": "Lampiran terbesar",
       "topLogosDescription": "10 logo layanan terbesar. Logo-logo tersebut digunakan kembali untuk item-item dengan domain yang sama.",
