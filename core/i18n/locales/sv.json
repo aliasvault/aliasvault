@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Uppdaterade logotypen för {{count}} objekt.",
       "serverTotalDescription": "Den exakta storleken på ditt krypterade valv som lagras på servern, inklusive bilagor och logotyper.",
       "serverTotalTitle": "Valvstorlek på servern",
-      "title": "Storage insights",
+      "title": "Insikter om lagring",
       "topAttachmentsDescription": "Topp 10 största bilagor. Ta bort bilagan om du inte längre behöver den.",
       "topAttachmentsTitle": "Största bilagor",
       "topLogosDescription": "Topp 10 största tjänst-logotyper. Logotyper återanvänds för objekt med samma domän.",
