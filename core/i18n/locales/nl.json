@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Het logo van {{count}} items is bijgewerkt.",
       "serverTotalDescription": "De exacte grootte van je versleutelde vault zoals opgeslagen op de server, inclusief bijlagen en logo's.",
       "serverTotalTitle": "Vault grootte op server",
-      "title": "Storage insights",
+      "title": "Opslaggebruik",
       "topAttachmentsDescription": "Top 10 grootste bestandsbijlagen. Verwijder de bijlage als je deze niet meer nodig hebt.",
       "topAttachmentsTitle": "Grootste bijlagen",
       "topLogosDescription": "Top 10 grootste logo's. Logo's worden hergebruikt voor items met hetzelfde domein.",
