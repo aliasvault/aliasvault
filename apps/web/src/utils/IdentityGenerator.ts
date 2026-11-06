@@ -52,11 +52,11 @@ export async function resolveDefaultEmailDomain(client: SqliteClient): Promise<s
 }
 
 /**
- * Prefix an email address with the default domain, when there is one.
+ * The email address for a prefix on the given domain, or on the default domain when none is given.
  */
-async function withDefaultDomain(client: SqliteClient, prefix: string): Promise<string> {
-  const domain = await resolveDefaultEmailDomain(client);
-  return domain.length > 0 ? `${prefix}@${domain}` : prefix;
+async function toEmailAddress(client: SqliteClient, prefix: string, domain?: string): Promise<string> {
+  const resolved = domain || await resolveDefaultEmailDomain(client);
+  return resolved.length > 0 ? `${prefix}@${resolved}` : prefix;
 }
 
 /**
@@ -72,7 +72,7 @@ async function generateAlias(client: SqliteClient): Promise<GeneratedAliasData> 
   const password = await RustCore.generatePassword(client.settings.getPasswordSettings());
 
   return {
-    email: await withDefaultDomain(client, identity.emailPrefix),
+    email: await toEmailAddress(client, identity.emailPrefix),
     firstName: identity.firstName,
     lastName: identity.lastName,
     gender: identity.gender,
@@ -131,23 +131,25 @@ export async function generateUsername(client: SqliteClient, edit: ItemEdit): Pr
 }
 
 /**
- * An email address on the default domain, based on the alias identity when the form has one.
+ * An email address based on the alias identity when the form has one.
  * @param client - the open vault
  * @param edit - the item form
+ * @param domain - the domain to use instead of the default domain
  */
-export async function generateAliasEmail(client: SqliteClient, edit: ItemEdit): Promise<string> {
+export async function generateAliasEmail(client: SqliteClient, edit: ItemEdit, domain?: string): Promise<string> {
   const firstName = getFieldValue(edit, FieldKey.AliasFirstName);
   const lastName = getFieldValue(edit, FieldKey.AliasLastName);
   const prefix = firstName.trim().length === 0 && lastName.trim().length === 0
     ? await RustCore.generateRandomEmailPrefix()
     : await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate: getFieldValue(edit, FieldKey.AliasBirthdate) });
-  return withDefaultDomain(client, prefix);
+  return toEmailAddress(client, prefix, domain);
 }
 
 /**
- * A random email address on the default domain.
+ * A random email address.
  * @param client - the open vault
+ * @param domain - the domain to use instead of the default domain
  */
-export async function generateRandomEmail(client: SqliteClient): Promise<string> {
-  return withDefaultDomain(client, await RustCore.generateRandomEmailPrefix());
+export async function generateRandomEmail(client: SqliteClient, domain?: string): Promise<string> {
+  return toEmailAddress(client, await RustCore.generateRandomEmailPrefix(), domain);
 }

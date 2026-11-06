@@ -38,9 +38,9 @@ type EmailDomainFieldProps = {
    */
   onRemove?: () => void;
   /**
-   * Callback to generate an alias email. When provided, clicking "Generate alias email" will call this instead of just toggling mode.
+   * Callback to generate an alias email, on the given domain when set (the domain the user picked) or else the default domain.
    */
-  onGenerateAlias?: () => void;
+  onGenerateAlias?: (domain?: string) => void;
   /**
    * Controlled mode: when provided, this controls whether the field is in "email" (free text) mode.
    * When true, shows free text input; when false, shows domain chooser.
@@ -402,7 +402,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
           {!isCustomDomain && onGenerateAlias && (
             <button
               type="button"
-              onClick={onGenerateAlias}
+              onClick={() => onGenerateAlias(selectedDomain || undefined)}
               className="px-3 text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm border-l border-gray-300 dark:border-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
               title={t('common.generate')}
             >

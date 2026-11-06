@@ -387,13 +387,13 @@ const ItemAddEditForm: React.FC = () => {
   };
 
   /**
-   * Regenerate the email address, from the identity for an alias and at random for a login.
+   * Regenerate the email address, from the identity for an alias and at random for a login, on the given domain if set.
    */
-  const onGenerateEmail = async (): Promise<void> => {
+  const onGenerateEmail = async (domain?: string): Promise<void> => {
     if (!dbContext.sqliteClient) {
       return;
     }
-    const email = edit.ItemType === ItemTypes.Alias ? await generateAliasEmail(dbContext.sqliteClient, edit) : await generateRandomEmail(dbContext.sqliteClient);
+    const email = edit.ItemType === ItemTypes.Alias ? await generateAliasEmail(dbContext.sqliteClient, edit, domain) : await generateRandomEmail(dbContext.sqliteClient, domain);
     update(current => setFieldValue(current, FieldKey.LoginEmail, email));
   };
 
@@ -464,7 +464,7 @@ const ItemAddEditForm: React.FC = () => {
       domains={emailDomains}
       defaultToEmailMode={edit.ItemType === ItemTypes.Login}
       onRemove={!passkey && canRemoveField(FieldKey.LoginEmail) ? (): void => removeOptionalField(FieldKey.LoginEmail) : undefined}
-      onGenerateAlias={() => void onGenerateEmail()}
+      onGenerateAlias={domain => void onGenerateEmail(domain)}
     />
   );
 

@@ -536,7 +536,7 @@ const ItemAddEdit: React.FC = () => {
    * Uses the current alias field values (first name, last name, birthdate) to derive the email prefix,
    * so the email stays consistent with the filled-in persona fields.
    */
-  const handleGenerateAliasEmail = useCallback(async (): Promise<void> => {
+  const handleGenerateAliasEmail = useCallback(async (domain?: string): Promise<void> => {
     if (!dbContext?.sqliteClient) {
       return;
     }
@@ -553,8 +553,8 @@ const ItemAddEdit: React.FC = () => {
       prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
-    const defaultEmailDomain = await resolveDefaultEmailDomain();
-    const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
+    const emailDomain = domain || await resolveDefaultEmailDomain();
+    const email = emailDomain ? `${prefix}@${emailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
@@ -567,14 +567,14 @@ const ItemAddEdit: React.FC = () => {
    * Uses random characters instead of identity-based prefixes since Login type
    * has no persona fields to base the email on.
    */
-  const handleGenerateRandomEmail = useCallback(async (): Promise<void> => {
+  const handleGenerateRandomEmail = useCallback(async (domain?: string): Promise<void> => {
     if (!dbContext?.sqliteClient) {
       return;
     }
 
     const prefix = await generateRandomEmailPrefix();
-    const defaultEmailDomain = await resolveDefaultEmailDomain();
-    const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
+    const emailDomain = domain || await resolveDefaultEmailDomain();
+    const email = emailDomain ? `${prefix}@${emailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
