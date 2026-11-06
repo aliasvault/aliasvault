@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Logo des {{count}} éléments mis à jour.",
       "serverTotalDescription": "La taille exacte de votre coffre chiffré tel qu'il est stocké sur le serveur, y compris les pièces jointes et les logos.",
       "serverTotalTitle": "Taille du coffre sur le serveur",
-      "title": "Storage insights",
+      "title": "Aperçu du stockage",
       "topAttachmentsDescription": "Top 10 des pièces jointes les plus volumineuses. Supprimez la pièce jointe si vous n'en avez plus besoin.",
       "topAttachmentsTitle": "Pièces jointes les plus volumineuses",
       "topLogosDescription": "Top 10 des logos de service les plus volumineux. Logos sont réutilisés pour les éléments avec le même domaine.",
