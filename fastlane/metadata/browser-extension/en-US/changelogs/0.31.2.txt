@@ -1,0 +1,6 @@
+- Allow letters and special characters in PIN code
+- Add more identity generator age ranges
+- Add about page to settings
+- Make folder sort alphabetical
+- Improve autofill
+- Security hardening

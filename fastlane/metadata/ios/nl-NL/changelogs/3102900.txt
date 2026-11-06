@@ -1,0 +1,5 @@
+- Verbeterde weergave van favicon logo's
+- Meer leeftijdscategorieën in de identiteitsgenerator
+- Over-pagina toegevoegd aan instellingen
+- Mappen worden nu alfabetisch gesorteerd
+- Beveiligingsverbeteringen

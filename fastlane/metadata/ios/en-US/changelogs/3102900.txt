@@ -1,0 +1,5 @@
+- Improve favicon logo rendering
+- Add more identity generator age ranges
+- Add about page to settings
+- Make folder sort alphabetical
+- Security hardening
