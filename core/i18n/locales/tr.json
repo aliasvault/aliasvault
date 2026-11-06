@@ -635,7 +635,7 @@
       "title": "Credential linked"
     },
     "avoidAmbiguousCharacters": "Avoid ambiguous characters (o, 0, etc.)",
-    "avoidAmbiguousChars": "Belirsiz Karakterler Kullanma",
+    "avoidAmbiguousChars": "Belirsiz Karakterler Kullanmayınız",
     "birthDatePlaceholder": "YYYY-AA-GG",
     "capitalization": "Capitalization",
     "cardInformation": "Card Information",
@@ -1365,7 +1365,7 @@
       },
       "changeMasterPassword": "Ana Parolayı Değiştir",
       "changePassword": {
-        "changePassword": "Parola Değiştir",
+        "changePassword": "Parolayı Değiştir",
         "changingPasswordMessage": "Changing password...",
         "confirmNewPassword": "Yeni Parolayı Onayla",
         "currentPassword": "Geçerli Parola",
