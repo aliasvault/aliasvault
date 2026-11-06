@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "更新了 {{count}} 个项目的徽标。",
       "serverTotalDescription": "服务器上存储的加密密码库的确切大小，包括附件和徽标。",
       "serverTotalTitle": "服务器上的密码库大小",
-      "title": "Storage insights",
+      "title": "存储洞察",
       "topAttachmentsDescription": "前 10 个最大的文件附件。不再需要的话可以删除。",
       "topAttachmentsTitle": "最大的附件",
       "topLogosDescription": "前 10 个最大的服务徽标。同一域名下的项目或服务会共用相同徽标。",
