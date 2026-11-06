@@ -959,7 +959,7 @@
     "NSFaceIDUsageDescription": "AliasVault uses Face ID to securely store your encryption key, allowing you to access your encrypted data with facial authentication.",
     "addPasskeySubtitle": "Adding passkey to existing item",
     "aliasvaultIcon": "AliasVault icon",
-    "attemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{count}} more times.",
+    "attemptsWarning": "Maling password. Mala-log out ka kung mali pa rin ang ilalagay mong password nang {{count}} pang beses.",
     "authRequired": "Authentication Required",
     "authRequiredMessage": "Please enable Biometrics or PIN unlock method in the main AliasVault app to use autofill.",
     "autofillFailedToRetrieve": "Failed to retrieve, open app",
