@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Logo-ul a fost actualizat pentru {{count}} elemente.",
       "serverTotalDescription": "Mărimea exactă a seifului tău criptat, așa cum este stocat pe server, inclusiv atașamentele și logo-urile.",
       "serverTotalTitle": "Mărimea seifului pe server",
-      "title": "Storage insights",
+      "title": "Informații despre stocare",
       "topAttachmentsDescription": "Top 10 cele mai mari atașamente de fișiere. Șterge-le dacă nu mai ai nevoie de ele.",
       "topAttachmentsTitle": "Cele mai mari atașamente",
       "topLogosDescription": "Top 10 cele mai utilizate logo-uri de servicii. Logo-urile sunt reutilizate pentru elementele cu același domeniu.",
