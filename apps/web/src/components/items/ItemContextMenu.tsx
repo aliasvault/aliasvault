@@ -25,12 +25,13 @@ type ItemContextMenuProps = {
   item: ItemRef;
   itemName: string | null;
   onMutated: () => void;
+  hideTrigger?: boolean;
 };
 
 /**
  * Ellipsis menu on an item with edit, duplicate and delete.
  */
-const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated }, ref) => {
+const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated, hideTrigger = false }, ref) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dbContext = useDb();
@@ -128,14 +129,14 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
   const menuStyle: React.CSSProperties | undefined = position ? { left: `min(${Math.round(position.x)}px, calc(100vw - 170px))`, top: `min(${Math.round(position.y)}px, calc(100vh - 140px))` } : undefined;
 
   return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
+    <div className="relative flex" onClick={(e) => e.stopPropagation()}>
       <button
         ref={buttonRef}
         type="button"
         onClick={toggleMenu}
         aria-label={t('items.contextMenu.title')}
         aria-haspopup="menu"
-        className={`px-0.5 py-1 rounded text-gray-400 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'} group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500`}>
+        className={`${hideTrigger ? 'hidden' : ''} px-0.5 py-1 rounded text-gray-400 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'} group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500`}>
         <Icon name="dots-vertical-narrow" className="w-2 h-4" />
       </button>
 

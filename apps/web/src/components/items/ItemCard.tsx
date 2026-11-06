@@ -6,12 +6,16 @@ import { useNavigate } from 'react-router-dom';
 import ItemContextMenu, { type ItemContextMenuHandle } from '@/components/items/ItemContextMenu';
 import ItemIcon from '@/components/items/ItemIcon';
 import type { ItemListEntry } from '@/components/items/ItemListEntry';
+import ItemSelectCheckbox from '@/components/items/ItemSelectCheckbox';
 import Icon from '@/components/shared/Icon';
 import { itemRoute } from '@/utils/ItemRoute';
 
 type ItemCardProps = {
   entry: ItemListEntry;
   onMutated: () => void;
+  isSelectionMode: boolean;
+  isSelected: boolean;
+  onSelect: (range: boolean) => void;
 };
 
 /**
@@ -31,21 +35,40 @@ const getDisplayText = (entry: ItemListEntry): string => {
 /**
  * Item card in the grid view.
  */
-const ItemCard: React.FC<ItemCardProps> = ({ entry, onMutated }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ entry, onMutated, isSelectionMode, isSelected, onSelect }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const menuRef = useRef<ItemContextMenuHandle>(null);
   const serviceName = entry.service && entry.service.length > 0 ? entry.service : t('items.untitled');
+  const colorClass = isSelected
+    ? 'bg-primary-50 border-primary-500 hover:bg-primary-100 dark:bg-primary-900/20 dark:border-primary-500 dark:hover:bg-primary-900/30'
+    : 'bg-white border-gray-200 hover:bg-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700';
+
+  /**
+   * Open the item, or toggle selection status when selection mode is active.
+   */
+  const handleClick = (e: React.MouseEvent): void => {
+    if (isSelectionMode || e.metaKey || e.ctrlKey || e.shiftKey) {
+      onSelect(isSelectionMode && e.shiftKey);
+      return;
+    }
+    navigate(itemRoute({ Id: entry.id, ManifestId: entry.manifestId }));
+  };
 
   return (
     <div
-      onClick={() => navigate(itemRoute({ Id: entry.id, ManifestId: entry.manifestId }))}
+      onClick={handleClick}
       onContextMenu={(e) => {
         e.preventDefault(); menuRef.current?.open(e.clientX, e.clientY); 
       }}
-      className="credential-card relative group px-3 py-2.5 md:p-4 md:space-y-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
-      <div className="absolute inset-y-0 right-2 flex items-center md:inset-y-auto md:top-2 md:block">
-        <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} />
+      className={`credential-card relative group px-3 py-2.5 md:p-4 md:space-y-2 border rounded-lg shadow-sm cursor-pointer transition-colors duration-200 ${isSelectionMode ? 'select-none pl-10 md:pl-4' : ''} ${colorClass}`}>
+      <ItemSelectCheckbox
+        isSelected={isSelected}
+        hoverOnly={!isSelectionMode}
+        onSelect={onSelect}
+        className={`absolute left-3 top-1/2 -translate-y-1/2 md:left-2.5 md:top-2.5 md:translate-y-0 ${isSelectionMode ? '' : 'hidden md:inline-flex'}`} />
+      <div className="absolute inset-y-0 right-2 flex items-center md:inset-y-auto md:top-[7px] md:right-1.5">
+        <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} />
       </div>
       <div className="flex flex-row items-center gap-3 pr-8 text-left md:flex-col md:gap-0 md:px-4 md:py-2 md:text-center text-gray-400 rounded">
         <div className="flex-shrink-0 md:mb-2">
