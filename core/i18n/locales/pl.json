@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Zaktualizowano logo {{count}} rzeczy.",
       "serverTotalDescription": "Dokładny rozmiar zaszyfrowanego sejfu zapisanego na serwerze, łącznie z załącznikami i logami.",
       "serverTotalTitle": "Rozmiar sejfu na serwerze",
-      "title": "Storage insights",
+      "title": "Wgląd do magazynu",
       "topAttachmentsDescription": "10 największych załączników pliku. Usuń załącznik, jeśli go już nie potrzebujesz.",
       "topAttachmentsTitle": "Największe załączniki",
       "topLogosDescription": "10 największych serwisów z logo. Loga są ponownie używane dla stron z tą samą domeną.",
