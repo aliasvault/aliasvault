@@ -1,7 +1,7 @@
 // Mozilla Public Suffix List, rules only: comments and blank lines stripped, internationalized rules in punycode.
 // Source: https://publicsuffix.org/list/public_suffix_list.dat
-// Upstream version: 2026-10-07_07-28-19_UTC
-// Last refreshed: 2026-10-11 by scripts/dependencies/refresh-external-dependencies.sh (task public-suffix-list)
+// Upstream version: 2026-11-04_19-07-29_UTC
+// Last refreshed: 2026-11-06 by scripts/dependencies/refresh-external-dependencies.sh (task public-suffix-list)
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6270,7 +6270,6 @@ hdfcbank
 health
 healthcare
 help
-helsinki
 here
 hermes
 hiphop
@@ -7012,6 +7011,7 @@ barsy.ca
 *.compute.estate
 *.alces.network
 alibabacloudcs.com
+*.ztna-dingtalk.com
 ms.fun
 ms.show
 kasserver.com
@@ -7052,6 +7052,28 @@ execute-api.us-gov-east-1.amazonaws.com
 execute-api.us-gov-west-1.amazonaws.com
 execute-api.us-west-1.amazonaws.com
 execute-api.us-west-2.amazonaws.com
+consent-portal.bedrock-agentcore.ap-northeast-1.amazonaws.com
+consent-portal.bedrock-agentcore.ap-northeast-2.amazonaws.com
+consent-portal.bedrock-agentcore.ap-south-1.amazonaws.com
+consent-portal.bedrock-agentcore.ap-south-2.amazonaws.com
+consent-portal.bedrock-agentcore.ap-southeast-1.amazonaws.com
+consent-portal.bedrock-agentcore.ap-southeast-2.amazonaws.com
+consent-portal.bedrock-agentcore.ap-southeast-5.amazonaws.com
+consent-portal.bedrock-agentcore.ap-southeast-7.amazonaws.com
+consent-portal.bedrock-agentcore.ca-central-1.amazonaws.com
+consent-portal.bedrock-agentcore.eu-central-1.amazonaws.com
+consent-portal.bedrock-agentcore.eu-north-1.amazonaws.com
+consent-portal.bedrock-agentcore.eu-south-1.amazonaws.com
+consent-portal.bedrock-agentcore.eu-south-2.amazonaws.com
+consent-portal.bedrock-agentcore.eu-west-1.amazonaws.com
+consent-portal.bedrock-agentcore.eu-west-2.amazonaws.com
+consent-portal.bedrock-agentcore.eu-west-3.amazonaws.com
+consent-portal.bedrock-agentcore.sa-east-1.amazonaws.com
+consent-portal.bedrock-agentcore.us-east-1.amazonaws.com
+consent-portal.bedrock-agentcore.us-east-2.amazonaws.com
+consent-portal.bedrock-agentcore.us-gov-west-1.amazonaws.com
+consent-portal.bedrock-agentcore.us-west-1.amazonaws.com
+consent-portal.bedrock-agentcore.us-west-2.amazonaws.com
 cloudfront.net
 auth.af-south-1.amazoncognito.com
 auth.ap-east-1.amazoncognito.com
@@ -7229,6 +7251,7 @@ amazonlightsail.com
 *.airflow.ap-southeast-3.on.aws
 *.airflow.ap-southeast-4.on.aws
 *.airflow.ap-southeast-5.on.aws
+*.airflow.ap-southeast-7.on.aws
 *.airflow.ca-central-1.on.aws
 *.airflow.ca-west-1.on.aws
 *.airflow.eu-central-1.on.aws
@@ -7853,6 +7876,7 @@ lambda-url.us-west-2.on.aws
 *.private.repost.aws
 transfer-webapp.af-south-1.on.aws
 transfer-webapp.ap-east-1.on.aws
+transfer-webapp.ap-east-2.on.aws
 transfer-webapp.ap-northeast-1.on.aws
 transfer-webapp.ap-northeast-2.on.aws
 transfer-webapp.ap-northeast-3.on.aws
@@ -7863,6 +7887,7 @@ transfer-webapp.ap-southeast-2.on.aws
 transfer-webapp.ap-southeast-3.on.aws
 transfer-webapp.ap-southeast-4.on.aws
 transfer-webapp.ap-southeast-5.on.aws
+transfer-webapp.ap-southeast-6.on.aws
 transfer-webapp.ap-southeast-7.on.aws
 transfer-webapp.ca-central-1.on.aws
 transfer-webapp.ca-west-1.on.aws
@@ -7889,6 +7914,7 @@ transfer-webapp.us-west-1.on.aws
 transfer-webapp.us-west-2.on.aws
 transfer-webapp.cn-north-1.on.amazonwebservices.com.cn
 transfer-webapp.cn-northwest-1.on.amazonwebservices.com.cn
+transfer-webapp.eusc-de-east-1.on.amazonwebservices.eu
 eero.online
 eero-stage.online
 opentunnel.xyz
@@ -7896,7 +7922,6 @@ antagonist.cloud
 claude.app
 claudeusercontent.com
 frame.claudeusercontent.com
-*.cursorusercontent.com
 apigee.io
 panel.dev
 siiites.com
@@ -7988,6 +8013,7 @@ radio.am
 radio.fm
 cdn.bubble.io
 bubbleapps.io
+manus.space
 *.bwcloud-os-instance.de
 cafjs.com
 canva-apps.cn
@@ -8241,6 +8267,7 @@ dnshome.it
 dyn.now
 heimdns.online
 ddns.wtf
+docsflowy.site
 online.th
 shop.th
 co.scot
@@ -8814,7 +8841,6 @@ futuremailing.at
 *.statics.cloud
 gadget.app
 gadget.host
-aliases121.com
 campaign.gov.uk
 service.gov.uk
 independent-commission.uk
@@ -8836,7 +8862,6 @@ githubusercontent.com
 githubpreview.dev
 github.io
 gitlab.io
-gitapp.si
 gitpage.si
 glideos.app
 nog.community
@@ -9232,11 +9257,9 @@ kiloapps.ai
 kiloapps.io
 kinghost.net
 uni5.net
-knightpoint.systems
 koobin.events
 webthings.io
 krellian.net
-oya.to
 co.de
 shiptoday.app
 shiptoday.build
@@ -9267,6 +9290,7 @@ co.place
 co.technology
 linkyard-cloud.ch
 linkyard.cloud
+linkyhost.page
 members.linode.com
 *.nodebalancer.linode.com
 *.linodeobjects.com
@@ -9290,6 +9314,7 @@ loginline.services
 loginline.site
 lohmus.me
 lovable.app
+auth.lovable.app
 lovableproject.com
 lovable.run
 lovable.sh
@@ -9509,6 +9534,45 @@ x.mythic-beasts.com
 yali.mythic-beasts.com
 cust.retrosnub.co.uk
 ui.nabu.casa
+kr.object.fin-ncloudstorage.com
+s3-website.kr.object.fin-ncloudstorage.com
+kr.object.private.fin-ncloudstorage.com
+kr.gov-ncloudstorage.com
+kr-private.gov-ncloudstorage.com
+kr.object.gov-ncloudstorage.com
+s3-website.kr.object.gov-ncloudstorage.com
+krs.object.gov-ncloudstorage.com
+s3-website.krs.object.gov-ncloudstorage.com
+kr.object.private.gov-ncloudstorage.com
+krs.object.private.gov-ncloudstorage.com
+kr.objectstorage.ncloud.com
+sg.objectstorage.ncloud.com
+kr.ncloudstorage.com
+kr-naver.ncloudstorage.com
+kr-naver-dev.ncloudstorage.com
+kr-private.ncloudstorage.com
+de.object.ncloudstorage.com
+s3-website.de.object.ncloudstorage.com
+kr.object.ncloudstorage.com
+s3-website.kr.object.ncloudstorage.com
+sg.object.ncloudstorage.com
+s3-website.sg.object.ncloudstorage.com
+us.object.ncloudstorage.com
+s3-website.us.object.ncloudstorage.com
+kr.object.private.ncloudstorage.com
+sg.object.private.ncloudstorage.com
+kr.website.ncloudstorage.com
+kr-naver.website.ncloudstorage.com
+kr-naver-dev.website.ncloudstorage.com
+jp.object.ncpstorage.com
+jp.jp4.object.ncpstorage.com
+jp.jp5.object.ncpstorage.com
+kr.object.ncpstorage.com
+s3-website-jp.object.ncpstorage.com
+jp.object.private.ncpstorage.com
+jp.jp4.object.private.ncpstorage.com
+jp.jp5.object.private.ncpstorage.com
+kr.object.private.ncpstorage.com
 needle.run
 co.site
 cloud.nospamproxy.com
@@ -9734,6 +9798,7 @@ own.pm
 *.owo.codes
 ox.rs
 oy.lc
+pagelemon.dev
 pgfog.com
 gotpantheon.com
 pantheonsite.io
@@ -9746,7 +9811,6 @@ gh.srv.us
 gl.srv.us
 mypep.link
 pplx.app
-perspecta.cloud
 forgeblocks.com
 id.forgerock.io
 support.site
@@ -9936,6 +10000,8 @@ sakura.tv
 *.we.crm.dev
 *.wf.crm.dev
 sandcats.io
+sanity.run
+sanity.studio
 sav.case
 logoip.com
 logoip.de
@@ -10032,6 +10098,7 @@ applinzi.com
 sinaapp.com
 vipsinaapp.com
 siteleaf.net
+sliplane.app
 small-web.org
 aeroport.fr
 avocat.fr
@@ -10060,6 +10127,10 @@ my.at
 my.de
 *.nxa.eu
 nx.gw
+*.apps.grok.bot
+*.pages.grok.bot
+*.cursorusercontent.com
+grok.me
 spawnbase.app
 customer.speedpartner.de
 myspreadshop.at
@@ -10315,7 +10386,6 @@ raffleentry.org.uk
 weeklylottery.org.uk
 wpenginepowered.com
 js.wpenginepowered.com
-grok.me
 *.xenonconnect.de
 half.host
 cistron.nl
