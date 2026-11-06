@@ -14,7 +14,7 @@ export class FolderQueries {
     SELECT Id, Name, ParentFolderId, Weight, ManifestId
     FROM Folders
     WHERE IsDeleted = 0
-    ORDER BY Weight, Name`;
+    ORDER BY Name COLLATE NOCASE`;
 
   /**
    * Whether a live folder exists under this manifest-qualified key.

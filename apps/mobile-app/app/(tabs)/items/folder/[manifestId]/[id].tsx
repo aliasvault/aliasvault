@@ -1,5 +1,5 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
-import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { canHaveSubfolders, compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -184,7 +184,7 @@ export default function FolderViewScreen(): React.ReactNode {
       name: f.Name,
       itemCount: getRecursiveItemCount(f, itemsForCount, allFolders),
       isShared: isSharedFolder(f, personalManifestId),
-    }));
+    })).sort((a, b) => compareFolderNames(a.name, b.name));
   }, [folderRef, allFolders, itemSummaries, filterType, personalManifestId]);
 
   /**

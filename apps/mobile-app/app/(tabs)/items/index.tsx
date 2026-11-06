@@ -1,6 +1,6 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -192,7 +192,7 @@ export default function ItemsScreen(): React.ReactNode {
         itemCount: getRecursiveItemCount(folder, itemsForCount, folders),
         isShared: isSharedFolder(folder, personalManifestId)
       }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .sort((a, b) => compareFolderNames(a.name, b.name));
   }, [folders, itemsList, searchQuery, filterType, personalManifestId]);
 
   /**
