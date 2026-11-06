@@ -1261,8 +1261,8 @@ const ItemAddEdit: React.FC = () => {
       case FieldTypes.Date:
       case FieldTypes.Text:
       default:
-        // Use UsernameField for login.username when alias fields are shown (Alias type)
-        if (fieldKey === 'login.username' && aliasFieldsShownByDefault) {
+        // Use UsernameField with a regenerate button for login.username
+        if (fieldKey === 'login.username') {
           return (
             <UsernameField
               id={fieldKey}
