@@ -1159,8 +1159,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       case FieldTypes.Number:
       case FieldTypes.Date:
       default:
-        // Use username field with regenerate button for login.username when alias fields are shown
-        if (fieldKey === 'login.username' && aliasFieldsShownByDefault) {
+        // Use username field with regenerate button for login.username
+        if (fieldKey === 'login.username') {
           return (
             <FormField
               value={stringValue}
