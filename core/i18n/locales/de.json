@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Das Logo von {{count}} Elementen wurde aktualisiert.",
       "serverTotalDescription": "Die exakte Größe Deines verschlüsselten Tresors auf dem Server, einschließlich Anhänge und Logos.",
       "serverTotalTitle": "Tresorgröße auf dem Server",
-      "title": "Storage insights",
+      "title": "Speichereinblicke",
       "topAttachmentsDescription": "Top 10 der größten Dateianhänge. Entferne Anhänge, wenn Du sie nicht mehr benötigst.",
       "topAttachmentsTitle": "Größte Anhänge",
       "topLogosDescription": "Top 10 der größten Logos. Logos werden für Elemente mit derselben Domain wiederverwendet.",
