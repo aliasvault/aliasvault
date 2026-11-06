@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
       "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
       "serverTotalTitle": "Vault size on server",
-      "title": "Storage insights",
+      "title": "Tároló áttekintő",
       "topAttachmentsDescription": "A 10 legnagyobb csatolmány. Törölje, ha már nincs rá szüksége.",
       "topAttachmentsTitle": "Legnagyobb csatolmányok",
       "topLogosDescription": "A 10 legnagyobb szolgáltatás logója. A tartományon belül ismétlődő logók újra felhasználásra kerülnek.",
