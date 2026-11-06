@@ -1,6 +1,6 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -708,7 +708,7 @@ const ItemsList: React.FC = () => {
       name: folder.Name,
       itemCount: getRecursiveItemCountLocal(folder),
       isShared: isSharedFolder(folder, personalManifestId)
-    })).sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
+    })).sort((a: { name: string }, b: { name: string }) => compareFolderNames(a.name, b.name));
 
     return result;
   }, [listSearchTerm, dbContext?.sqliteClient, currentFolderRef, items, filterType, folderRefreshKey]);

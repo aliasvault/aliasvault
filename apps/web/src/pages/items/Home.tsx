@@ -1,6 +1,6 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -280,7 +280,8 @@ const ItemsHome: React.FC = () => {
           itemCount: items.filter(e => e.manifestId === f.ManifestId && e.folderId !== null && folderIds.has(e.folderId) && typeFiltered.has(scopedKey(e.manifestId, e.id))).length,
           isShared: isSharedFolder(f, personalManifestId),
         };
-      });
+      })
+      .sort((a, b) => compareFolderNames(a.name, b.name));
   }, [allFolders, folderRef, items, filterType, dbContext.sqliteClient]);
 
   const canCreateSubfolder = !folderRef || (allFolders.length > 0 && canHaveSubfolders(folderRef, allFolders));

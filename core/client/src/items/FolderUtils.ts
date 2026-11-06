@@ -50,6 +50,23 @@ export function isSharedFolder(folder: Pick<Folder, 'ManifestId'>, personalManif
 }
 
 /**
+ * Compare two folder names for display order: alphabetical and case-insensitive.
+ * @param a - First folder name
+ * @param b - Second folder name
+ * @returns Negative, zero or positive, as for Array.prototype.sort
+ */
+export function compareFolderNames(a: string, b: string): number {
+  const byName = a.localeCompare(b, undefined, { sensitivity: 'base' });
+  if (byName !== 0) {
+    return byName;
+  }
+  if (a === b) {
+    return 0;
+  }
+  return a < b ? -1 : 1;
+}
+
+/**
  * Build a hierarchical tree from a flat array of folders.
  * @param folders - Flat array of folders
  * @returns Array of root-level folder tree nodes
@@ -97,13 +114,7 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
    * Sort children of a folder tree node recursively.
    */
   const sortChildren = (nodes: FolderTreeNode[]): void => {
-    nodes.sort((a, b) => {
-      // Sort by weight first, then by name (case-insensitive)
-      if (a.Weight !== b.Weight) {
-        return a.Weight - b.Weight;
-      }
-      return a.Name.localeCompare(b.Name, undefined, { sensitivity: 'base' });
-    });
+    nodes.sort((a, b) => compareFolderNames(a.Name, b.Name));
     nodes.forEach(node => sortChildren(node.children));
   };
 
