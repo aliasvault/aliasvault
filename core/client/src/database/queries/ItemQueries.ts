@@ -234,6 +234,17 @@ export class ItemQueries {
     WHERE Id = ? AND ManifestId = ?`;
 
   /**
+   * Move an item to another folder (potentially other manifest).
+   */
+  public static readonly MOVE_ITEM = `
+    UPDATE Items
+    SET FolderId = ?,
+        ManifestId = ?,
+        LogoId = ?,
+        UpdatedAt = ?
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
    * Move item to trash (set DeletedAt).
    */
   public static readonly TRASH_ITEM = `

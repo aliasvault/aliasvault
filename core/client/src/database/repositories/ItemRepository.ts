@@ -514,6 +514,67 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Move several items to "Recently Deleted" in one transaction.
+   * @param refs - The items, each named by its manifest and id
+   * @returns The number of items trashed
+   */
+  public async trashMany(refs: ItemRef[]): Promise<number> {
+    return this.withTransaction(async () => {
+      const currentDateTime = this.now();
+      let trashed = 0;
+      for (const ref of refs) {
+        trashed += await this.run(this.execute(ItemQueries.TRASH_ITEM, [currentDateTime, currentDateTime, ref.Id, ref.ManifestId]));
+      }
+      return trashed;
+    });
+  }
+
+  /**
+   * Move several items into one folder in one transaction. A target in another manifest moves the item there.
+   * @param refs - The items, each named by its manifest and id
+   * @param target - The folder to move them into, or null for the top level of the personal manifest
+   * @returns Where each item is after the move, in input order (unchanged for an item already in the target or no longer stored)
+   */
+  public async moveMany(refs: ItemRef[], target: FolderRef | null): Promise<ItemRef[]> {
+    return this.withTransaction(async () => {
+      const currentDateTime = this.now();
+      const manifestId = target?.ManifestId ?? await this.run(this.writeManifestId());
+      const folderId = multiManifestRendering.storedFolderId(target?.Id, manifestId);
+      await this.run(this.assertFolderInManifest(folderId, manifestId));
+
+      const moved: ItemRef[] = [];
+      for (const ref of refs) {
+        const existing = (await this.run(this.query<{ FolderId: string | null; LogoId: string | null }>(ItemQueries.GET_ITEM_FIELDS, [ref.Id, ref.ManifestId])))[0];
+        if (!existing || (existing.FolderId === folderId && ref.ManifestId === manifestId)) {
+          moved.push(ref);
+          continue;
+        }
+
+        const logoId = await this.logoIdInManifest(existing.LogoId, ref.ManifestId, manifestId, currentDateTime);
+        await this.run(this.execute(ItemQueries.MOVE_ITEM, [folderId, manifestId, logoId, currentDateTime, ref.Id, ref.ManifestId]));
+        moved.push({ Id: ref.Id, ManifestId: manifestId });
+      }
+      return moved;
+    });
+  }
+
+  /**
+   * The id an item's current logo has in the manifest the item moves into, copying the logo there when needed.
+   * @param logoId - The item's current logo, or null for none
+   * @param fromManifestId - The manifest the item and its logo are in now
+   * @param toManifestId - The manifest the item moves into
+   * @param currentDateTime - The current date/time string for timestamps
+   * @returns The logo id inside `toManifestId`, or null when the item has no logo
+   */
+  private async logoIdInManifest(logoId: string | null, fromManifestId: string, toManifestId: string, currentDateTime: string): Promise<string | null> {
+    if (!logoId || fromManifestId === toManifestId) {
+      return logoId;
+    }
+    const logo = await this.run(this.logoRepository.getById(logoId, fromManifestId));
+    return logo ? this.logoRepository.ensureInScope(toManifestId, logo.Kind, logo.Source, currentDateTime) : null;
+  }
+
+  /**
    * Restore an item from "Recently Deleted".
    * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
