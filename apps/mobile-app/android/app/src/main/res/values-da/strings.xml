@@ -64,7 +64,7 @@
   <string name="network_error_title">Netværksfejl</string>
   <string name="network_error_message">Der opstod en netværksfejl. Tjek venligst din forbindelse og prøv igen.</string>
   <string name="server_version_not_supported_title">Serveropdatering påkrævet</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">AliasVault-serveren skal opdateres for at arbejde med denne version af AliasVault. Prøv venligst igen senere. Hvis du bruger en selvhostede server, kontakt venligst din serveradministrator.</string>
   <string name="error_unlock_method_required">Aktiver venligst biometrisk- eller PIN-godkendelse i den primære AliasVault-app for at fortsætte</string>
   <string name="error_unlock_vault_first">Lås venligst boksen op i AliasVault-appen først</string>
   <string name="error_vault_decrypt_failed">Kunne ikke dekryptere boks</string>
@@ -79,7 +79,7 @@
   <string name="pin_confirm_title">Bekræft PIN-kode</string>
   <string name="pin_confirm_description">Indtast din PIN-kode igen for at bekræfte</string>
   <string name="pin_mismatch">PIN-koderne stemmer ikke overens. Prøv venligst igen.</string>
-  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
+  <string name="pin_device_not_unlocked">Din enhed bekræftede ikke, at den er låst op. Lås din enhed, lås op med din enheds pinkode, mønster eller adgangskode, og prøv igen.</string>
   <string name="password_unlock_title">Lås boks op</string>
   <string name="password_unlock_subtitle">Indtast din hovedadgangskode</string>
   <string name="password_unlock_password_hint">Adgangskode</string>

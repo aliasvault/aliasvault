@@ -64,7 +64,7 @@
   <string name="network_error_title">Error de red</string>
   <string name="network_error_message">Se produjo un error de red. Por favor, comprueba la conexión y vuelve a intentarlo.</string>
   <string name="server_version_not_supported_title">Actualización del servidor necesaria</string>
-  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.</string>
+  <string name="server_version_not_supported_message">El servidor AliasVault necesita ser actualizado para trabajar con esta versión de AliasVault. Vuelva a intentarlo más tarde. Si utiliza un servidor autoalojado, póngase en contacto con el administrador de su servidor.</string>
   <string name="error_unlock_method_required">Por favor, habilite la autenticación biométrica o PIN en la aplicación principal de AliasVault para continuar</string>
   <string name="error_unlock_vault_first">Por favor, primero desbloquea bóveda en la aplicación AliasVault</string>
   <string name="error_vault_decrypt_failed">Error al descifrar la bóveda</string>
@@ -79,7 +79,7 @@
   <string name="pin_confirm_title">Confirmar PIN</string>
   <string name="pin_confirm_description">Vuelva a introducir tu PIN para confirmar</string>
   <string name="pin_mismatch">Los PIN no coinciden. Por favor, inténtalo de nuevo.</string>
-  <string name="pin_device_not_unlocked">Your device did not confirm it is unlocked. Lock your device, unlock it with your device PIN, pattern or password and try again.</string>
+  <string name="pin_device_not_unlocked">Tu dispositivo no ha confirmado que esté desbloqueado. Bloquea tu dispositivo, desbloquéalo con el PIN, el patrón o la contraseña del dispositivo e inténtalo de nuevo.</string>
   <string name="password_unlock_title">Desbloquear bóveda</string>
   <string name="password_unlock_subtitle">Ingrese tu contraseña maestra</string>
   <string name="password_unlock_password_hint">Contraseña</string>

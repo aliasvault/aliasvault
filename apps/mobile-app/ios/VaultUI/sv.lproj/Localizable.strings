@@ -46,8 +46,8 @@
 "passkey" = "Passkey";
 "passkeys" = "Passkeys";
 "credentials" = "Inloggningsuppgifter";
-"loading_passkeys" = "Laddar Passkeys...";
-"no_passkeys_found" = "Inga Passkeys hittades";
+"loading_passkeys" = "Laddar passkeys...";
+"no_passkeys_found" = "Inga passkeys hittades";
 "no_passkeys_match" = "Inga befintliga passkeys matchar din sökning";
 "select_passkey" = "Välj Passkey";
 "passkeys_load_error" = "Det gick inte att läsa in passkeys. Vänligen öppna AliasVault-appen för att söka efter uppdateringar.";

@@ -22,12 +22,12 @@
 "password_changed_title" = "Hasło zostało zmienione";
 "password_changed_message" = "Twoje hasło zostało zmienione. Zaloguj się ponownie.";
 "version_not_supported_title" = "Wymagana aktualizacja";
-"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
+"version_not_supported_message" = "Ta wersja AliasVault nie jest już obsługiwana przez serwer. Proszę zaktualizować do najnowszej wersji.";
 "server_unavailable_title" = "Serwer niedostępny";
 "server_unavailable_message" = "Serwer jest obecnie niedostępny. Spróbuj ponownie później.";
 "network_error_title" = "Błąd sieci";
 "network_error_message" = "Wystąpił błąd sieci. Sprawdź połączenie i spróbuj ponownie.";
 "server_version_not_supported_title" = "Wymagana aktualizacja serwera";
-"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.";
+"server_version_not_supported_message" = "Serwer AliasVault musi zostać zaktualizowany, aby działać z tą wersją AliasVault. Spróbuj ponownie później. Jeśli korzystasz z własnego serwera, skontaktuj się z administratorem serwera.";
 "keychain_error_message" = "Nie udało się pobrać klucza szyfrującego";
 "no_encryption_key_message" = "Najpierw odblokuj sejf w aplikacji AliasVault";

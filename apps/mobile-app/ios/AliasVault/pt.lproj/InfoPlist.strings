@@ -1,4 +1,4 @@
 /* Info.plist strings of the AliasVault app. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "CFBundleDisplayName" = "AliasVault";
 "CFBundleName" = "AliasVault";
-"NSFaceIDUsageDescription" = "AliasVault utiliza o Face ID para armazenar com segurança sua chave de criptografia, permitindo que você acesse seus dados criptografados com reconhecimento facial.";
+"NSFaceIDUsageDescription" = "AliasVault utiliza o Face ID para armazenar com segurança sua chave de criptografia, permitindo que aceda aos seus dados criptografados com reconhecimento facial.";
