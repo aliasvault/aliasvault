@@ -1497,7 +1497,7 @@
       "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
       "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
       "serverTotalTitle": "Vault size on server",
-      "title": "Storage insights",
+      "title": "저장 공간 분석",
       "topAttachmentsDescription": "용량이 가장 큰 상위 10개 첨부 파일입니다. 더 이상 필요하지 않은 첨부 파일은 제거하세요.",
       "topAttachmentsTitle": "가장 큰 첨부 파일",
       "topLogosDescription": "용량이 가장 큰 상위 10개 서비스 로고입니다. 동일한 도메인의 항목에는 로고가 재사용됩니다.",
