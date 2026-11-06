@@ -106,7 +106,7 @@ const Settings: React.FC = () => {
     rows: [
       ...(hasCapability(CapabilityKeys.VaultSharing) ? [{ to: '/settings/sharing', label: sharingText.folderSharingTitle, description: sharingText.folderSharingDescription, icon: 'sharing' as const }] : []),
       { to: '/settings/import-export', label: t('settings.importExport'), description: t('importExport.pageDescription'), icon: 'importExport' },
-      { to: '/settings/storage-insights', label: t('settings.storageInsights.breadcrumbTitle'), description: t('settings.storageInsights.pageDescription'), icon: 'storage' },
+      { to: '/settings/storage-insights', label: t('settings.storageInsights.title'), description: t('settings.storageInsights.pageDescription'), icon: 'storage' },
     ],
   };
   const general: SettingsGroup = {

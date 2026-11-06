@@ -80,7 +80,7 @@ const formatDate = (value: string): string => {
 };
 
 /**
- * Vault storage insights page.
+ * Storage insights page.
  */
 const StorageInsights: React.FC = () => {
   const { t } = useTranslation();
@@ -90,7 +90,7 @@ const StorageInsights: React.FC = () => {
   const notifications = useNotifications();
   const { showConfirmation } = useConfirmModal();
   const { executeVaultMutationAsync } = useVaultMutate();
-  usePageTitle(t('settings.storageInsights.pageTitle'));
+  usePageTitle(t('settings.storageInsights.title'));
 
   const [localStats, setLocalStats] = useState<LocalStats | null>(null);
   const [serverStats, setServerStats] = useState<StorageStatisticsResponse | null>(null);
@@ -266,7 +266,7 @@ const StorageInsights: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="storage" title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
+      <SettingsPageHeader icon="storage" title={t('settings.storageInsights.title')} description={t('settings.storageInsights.pageDescription')} />
 
       <PageContent>
         <Card>
