@@ -39,8 +39,8 @@ type EmailDomainFieldProps = {
   testID?: string;
   /** Optional: default to email mode (free text) instead of alias mode (domain chooser). Defaults to false. */
   defaultEmailMode?: boolean;
-  /** Optional callback to generate an email alias. When provided, shows a regenerate button and is called when switching to alias mode. */
-  onGenerateAlias?: () => void;
+  /** Optional callback to generate an email alias, on the given domain when set (the domain the user picked) or else the default domain. */
+  onGenerateAlias?: (domain?: string) => void;
 }
 
 /**
@@ -495,7 +495,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         {!isCustomDomain && onGenerateAlias && (
           <TouchableOpacity
             style={styles.generateButton}
-            onPress={onGenerateAlias}
+            onPress={() => onGenerateAlias(selectedDomain || undefined)}
             accessibilityLabel={t('common.generate')}
           >
             <MaterialIcons name="refresh" size={20} color={colors.primary} />

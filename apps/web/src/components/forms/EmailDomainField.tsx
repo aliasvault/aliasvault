@@ -23,7 +23,8 @@ type EmailDomainFieldProps = {
   onRemove?: () => void;
   /** Start in free text email mode instead of alias mode when the value has no domain. */
   defaultToEmailMode?: boolean;
-  onGenerateAlias?: () => void;
+  /** Generate an alias email, on the given domain when set (the domain the user picked) or else the default domain. */
+  onGenerateAlias?: (domain?: string) => void;
 };
 
 /**
@@ -157,7 +158,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
    */
   const handleRegenerate = (): void => {
     modeToggledByUser.current = true;
-    onGenerateAlias?.();
+    onGenerateAlias?.(selectedDomain || undefined);
   };
 
   return (

@@ -353,7 +353,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
    * Uses the current alias field values (first name, last name, birthdate) to derive the email prefix,
    * so the email stays consistent with the filled-in persona fields.
    */
-  const handleGenerateAliasEmail = useCallback(async () => {
+  const handleGenerateAliasEmail = useCallback(async (domain?: string) => {
     const firstName = (fieldValues['alias.first_name'] as string) || '';
     const lastName = (fieldValues['alias.last_name'] as string) || '';
 
@@ -367,8 +367,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
-    const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
-    const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
+    const emailDomain = domain || await dbContext.sqliteClient!.getDefaultEmailDomain();
+    const email = emailDomain ? `${prefix}@${emailDomain}` : prefix;
 
     handleFieldChange('login.email', email);
   }, [fieldValues, dbContext.sqliteClient, handleFieldChange]);
@@ -378,11 +378,11 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
    * Uses random characters instead of identity-based prefixes since Login type
    * has no persona fields to base the email on.
    */
-  const handleGenerateRandomEmail = useCallback(async () => {
+  const handleGenerateRandomEmail = useCallback(async (domain?: string) => {
     const prefix = await RustCore.generateRandomEmailPrefix();
 
-    const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
-    const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
+    const emailDomain = domain || await dbContext.sqliteClient!.getDefaultEmailDomain();
+    const email = emailDomain ? `${prefix}@${emailDomain}` : prefix;
 
     handleFieldChange('login.email', email);
   }, [dbContext.sqliteClient, handleFieldChange]);
