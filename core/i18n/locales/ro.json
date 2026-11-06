@@ -1281,7 +1281,7 @@
     "openSettings": "Deschide Setări",
     "openWebApp": "Deschide aplicația web",
     "passkeySettings": "Setări passkey",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Activează cheile de acces",
     "passwordConfirm": {
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
@@ -1474,7 +1474,6 @@
     "sessionsAndLogsDescription": "Vezi unde ești autentificat și verifică încercările recente de autentificare.",
     "siteSpecificSettings": "Setări specifice site-ului",
     "storageInsights": {
-      "breadcrumbTitle": "Informații despre stocare",
       "breakdownLogosLabel": "Logo-uri",
       "breakdownTitle": "Detaliere utilizare stocare",
       "columnCreated": "Creat",
@@ -1492,13 +1491,13 @@
       "logoManagementDescription": "Logo-urile sunt preluate din favicon-ul fiecărui site al elementului. Poți șterge toate logo-urile pentru a elibera spațiu sau le poți descărca din nou pentru a obține versiuni îmbunătățite.",
       "logoManagementTitle": "Gestionează logo-urile",
       "pageDescription": "Vezi o estimare a dimensiunii seifului tău. Pentru performanță optimă la sincronizare, este recomandat să menții seiful cât mai mic și să ștergi elementele de care nu mai ai nevoie.",
-      "pageTitle": "Informații despre stocarea seifului",
       "redownloadAllLogosButton": "Descarcă din nou toate logo-urile",
       "redownloadAllLogosConfirmMessage": "Această acțiune reîncarcă favicon-ul pentru fiecare cont care are o adresă URL, înlocuind logo-ul existent. În funcție de dimensiunea seifului, acest proces poate dura ceva timp. Continui?",
       "redownloadAllLogosConfirmTitle": "Descarci din nou toate logo-urile?",
       "redownloadAllLogosSuccessMessage": "Logo-ul a fost actualizat pentru {{count}} elemente.",
       "serverTotalDescription": "Mărimea exactă a seifului tău criptat, așa cum este stocat pe server, inclusiv atașamentele și logo-urile.",
       "serverTotalTitle": "Mărimea seifului pe server",
+      "title": "Informații despre stocare",
       "topAttachmentsDescription": "Top 10 cele mai mari atașamente de fișiere. Șterge-le dacă nu mai ai nevoie de ele.",
       "topAttachmentsTitle": "Cele mai mari atașamente",
       "topLogosDescription": "Top 10 cele mai utilizate logo-uri de servicii. Logo-urile sunt reutilizate pentru elementele cu același domeniu.",
