@@ -108,6 +108,10 @@
       "source": "heroicons@1.0.6",
       "icon": "outline/document-text"
     },
+    "dots-horizontal": {
+      "source": "custom",
+      "note": "Three horizontal dots on a 24x24 grid, for overflow menu buttons."
+    },
     "dots-vertical-narrow": {
       "source": "custom",
       "note": "Three vertical dots on a 12x24 grid, for narrow overflow menu buttons."
