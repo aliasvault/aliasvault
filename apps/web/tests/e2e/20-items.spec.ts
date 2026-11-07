@@ -102,4 +102,57 @@ test.describe('20. Items', () => {
       await expect(page.locator('#username')).toHaveValue('jswitch');
     });
   });
+
+  test('20.5 should move and delete several items at once', async ({ app }) => {
+    const { page } = app;
+    const folderName = 'Bulk folder';
+    await app.createItem('Bulk one');
+    await app.createItem('Bulk two');
+    await app.createItem('Bulk keep');
+
+    /**
+     * The card of an item in the vault list.
+     */
+    const card = (name: string): ReturnType<typeof page.locator> => page.locator('.credential-card', { hasText: name });
+
+    await test.step('create a folder', async () => {
+      await app.openVault();
+      await page.locator('#new-folder-button').click();
+      await page.locator('#folder-name').fill(folderName);
+      await page.locator('#folder-name').press('Enter');
+      await expect(page.getByRole('button', { name: folderName })).toBeVisible();
+    });
+
+    await test.step('select two items and move them into the folder', async () => {
+      await card('Bulk one').hover();
+      await card('Bulk one').getByRole('checkbox').click();
+      await card('Bulk two').click();
+      await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
+      await page.locator('#selection-move').click();
+      await page.getByRole('button', { name: folderName }).last().click();
+      await expect(page.getByText('Moved 2 items')).toBeVisible();
+      await expect(page.locator('#selection-action-bar')).toHaveCount(0);
+      await expect(card('Bulk one')).toHaveCount(0);
+      await expect(card('Bulk keep')).toBeVisible();
+    });
+
+    await test.step('the folder holds both items', async () => {
+      await app.openFolder(folderName);
+      await expect(card('Bulk one')).toBeVisible();
+      await expect(card('Bulk two')).toBeVisible();
+    });
+
+    await test.step('select all in the folder and delete', async () => {
+      await card('Bulk one').hover();
+      await card('Bulk one').getByRole('checkbox').click();
+      await page.locator('#selection-action-bar').getByRole('button', { name: 'Select all' }).click();
+      await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
+      await page.locator('#selection-delete').click();
+      await expect(page.getByRole('heading', { name: 'Delete 2 items?' })).toBeVisible();
+      await page.getByRole('button', { name: 'Delete', exact: true }).last().click();
+      await expect(page.getByText('Deleted 2 items')).toBeVisible();
+      await expect(card('Bulk one')).toHaveCount(0);
+      await expect(card('Bulk two')).toHaveCount(0);
+    });
+  });
 });
