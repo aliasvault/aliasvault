@@ -17,6 +17,7 @@ import ItemCard from '@/components/items/ItemCard';
 import ItemFilterDropdown from '@/components/items/ItemFilterDropdown';
 import { type ItemListEntry, toItemListEntry } from '@/components/items/ItemListEntry';
 import ItemsTable from '@/components/items/ItemsTable';
+import SelectionActionBar from '@/components/items/SelectionActionBar';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
@@ -36,6 +37,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useQuickCreate } from '@/context/QuickCreateContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useItemSelection } from '@/hooks/useItemSelection';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
@@ -246,6 +248,23 @@ const ItemsHome: React.FC = () => {
       default: return [...filtered].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     }
   }, [items, folderRef, showFolders, filterType, viewMode, tableSortColumn, tableSortDirection, sortOrder]);
+
+  const selectableItems = useMemo((): Item[] => allFilteredAndSortedItems.map(entry => entry.item), [allFilteredAndSortedItems]);
+  const selection = useItemSelection(selectableItems);
+  const { exit: exitSelection } = selection;
+
+  // Leave selection mode when the list changes underneath it (folder, filter, grouping, reload).
+  useEffect(() => {
+    exitSelection();
+  }, [folderRef, filterType, showFolders, items, exitSelection]);
+
+  /**
+   * Refresh the list and leave selection mode after a bulk action.
+   */
+  const finishBulkAction = useCallback((): void => {
+    exitSelection();
+    loadItems();
+  }, [exitSelection, loadItems]);
 
   const totalFilteredItems = allFilteredAndSortedItems.length;
   const hasMoreItems = visibleItemCount < totalFilteredItems;
@@ -663,7 +682,15 @@ const ItemsHome: React.FC = () => {
           )}
 
           {isEmptyVault ? welcomeCard : viewMode === 'table' ? (
-            <ItemsTable entries={filteredAndSortedItems} sortColumn={tableSortColumn} sortDirection={tableSortDirection} onTableSortChanged={handleTableSortChanged} onMutated={loadItems} />
+            <ItemsTable
+              entries={filteredAndSortedItems}
+              sortColumn={tableSortColumn}
+              sortDirection={tableSortDirection}
+              onTableSortChanged={handleTableSortChanged}
+              onMutated={loadItems}
+              isSelectionMode={selection.isActive}
+              isSelected={entry => selection.isSelected(entry.item)}
+              onSelect={(entry, range) => selection.toggle(entry.item, range)} />
           ) : (
             <div className="grid gap-2 md:gap-4 md:grid-cols-4 xl:grid-cols-6">
               {filteredAndSortedItems.length === 0 && (
@@ -683,7 +710,13 @@ const ItemsHome: React.FC = () => {
                 </div>
               )}
               {filteredAndSortedItems.map(entry => (
-                <ItemCard key={scopedKey(entry.manifestId, entry.id)} entry={entry} onMutated={loadItems} />
+                <ItemCard
+                  key={scopedKey(entry.manifestId, entry.id)}
+                  entry={entry}
+                  onMutated={loadItems}
+                  isSelectionMode={selection.isActive}
+                  isSelected={selection.isSelected(entry.item)}
+                  onSelect={range => selection.toggle(entry.item, range)} />
               ))}
             </div>
           )}
@@ -697,6 +730,17 @@ const ItemsHome: React.FC = () => {
                 </div>
               )}
             </div>
+          )}
+
+          {selection.isActive && (
+            <SelectionActionBar
+              selection={selection.selection}
+              visibleCount={selectableItems.length}
+              currentFolder={folderRef}
+              onSelectAll={selection.selectAll}
+              onDeselectAll={selection.deselectAll}
+              onClose={selection.exit}
+              onDone={finishBulkAction} />
           )}
         </PageContent>
       )}
