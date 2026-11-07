@@ -100,6 +100,9 @@ public static class UiIcons
     /// <summary>Gets the "document-text" icon.</summary>
     public static UiIconDefinition DocumentText { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z""/>");
 
+    /// <summary>Gets the "dots-horizontal" icon.</summary>
+    public static UiIconDefinition DotsHorizontal { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "currentColor" } }, @"<circle cx=""5"" cy=""12"" r=""2""/><circle cx=""12"" cy=""12"" r=""2""/><circle cx=""19"" cy=""12"" r=""2""/>");
+
     /// <summary>Gets the "dots-vertical-narrow" icon.</summary>
     public static UiIconDefinition DotsVerticalNarrow { get; } = new("0 0 12 24", new Dictionary<string, object> { { "fill", "currentColor" } }, @"<circle cx=""6"" cy=""5"" r=""2""/><circle cx=""6"" cy=""12"" r=""2""/><circle cx=""6"" cy=""19"" r=""2""/>");
 
