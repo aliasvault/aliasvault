@@ -24,6 +24,9 @@ type ItemCardProps = {
   isHighlighted?: boolean;
   onDuplicate?: (item: ItemRef) => void;
   onDelete?: (item: ItemRef) => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (item: Item, range: boolean) => void;
 };
 
 /**
@@ -33,11 +36,12 @@ type ItemCardProps = {
  * It allows the user to navigate to the item details page when clicked.
  *
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId, isHighlighted = false, onDuplicate, onDelete }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId, isHighlighted = false, onDuplicate, onDelete, onSelect, selectionMode = false, isSelected = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
   const menuEnabled = Boolean(onDuplicate || onDelete);
+  const showEllipsis = menuEnabled && !selectionMode;
 
   /**
    * Get the display text for the item (username or email)
@@ -134,27 +138,41 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   return (
-    <li id={optionId} data-item-key={scopedKey(item.ManifestId, item.Id)} role="option" aria-selected={isActive} className="relative group" onContextMenu={handleContextMenu}>
+    <li id={optionId} data-item-key={scopedKey(item.ManifestId, item.Id)} role="option" aria-selected={selectionMode ? isSelected : isActive} className="relative group" onContextMenu={handleContextMenu}>
       <button
-        onClick={() => {
+        onClick={(e) => {
+          // Toggle selection status when selection mode is active or a modifier is held.
+          if (onSelect && (selectionMode || e.metaKey || e.ctrlKey || e.shiftKey)) {
+            onSelect(item, selectionMode && e.shiftKey);
+            return;
+          }
           // Build URL with search query parameter if present
           const url = searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item);
           navigate(url);
         }}
-        className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-          menuEnabled ? 'pr-7' : ''
+        className={`w-full p-2 border rounded flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+          isSelected ? 'bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
+        } ${
+          showEllipsis ? 'pr-7' : ''
         } ${
           isActive || isHighlighted
             ? 'border-primary-500 dark:border-primary-400 ring-2 ring-primary-500/40'
-            : 'border-gray-200 dark:border-gray-600'
+            : isSelected ? 'border-primary-300 dark:border-primary-700' : 'border-gray-200 dark:border-gray-600'
         }`}
       >
+        {selectionMode && (
+          <span aria-hidden className={`w-4 h-4 mr-2 flex-shrink-0 rounded border-2 flex items-center justify-center ${
+            isSelected ? 'bg-primary-500 border-primary-500 text-white' : 'bg-white border-gray-300 dark:bg-gray-800 dark:border-gray-500'
+          }`}>
+            {isSelected && <Icon name="check" className="w-3 h-3" strokeWidth={3} />}
+          </span>
+        )}
         <div className="w-8 h-8 mr-2 flex-shrink-0">
           <ItemIcon item={item} className="w-8 h-8" />
         </div>
-        <div className="text-left flex-1">
-          <div className="flex items-center gap-1.5">
-            <p className="font-medium text-gray-900 dark:text-white">
+        <div className="text-left flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="font-medium text-gray-900 dark:text-white truncate">
               {showFolderPath && item.FolderPath && item.FolderPath.length > 0 ? (
                 <>
                   {(() : React.ReactNode => {
@@ -172,19 +190,19 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
               )}
             </p>
             {item.HasPasskey && (
-              <Icon name="key" className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" aria-label={t('items.hasPasskey')} />
+              <Icon name="key" className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-label={t('items.hasPasskey')} />
             )}
             {item.HasAttachment && (
-              <Icon name="paper-clip" className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" aria-label={t('items.hasAttachments')} />
+              <Icon name="paper-clip" className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-label={t('items.hasAttachments')} />
             )}
             {item.HasTotp && (
-              <Icon name="pin-material" className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" aria-label={t('items.hasTotp')} />
+              <Icon name="pin-material" className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-label={t('items.hasTotp')} />
             )}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{getDisplayText(item)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{getDisplayText(item)}</p>
         </div>
       </button>
-      {menuEnabled && (
+      {showEllipsis && (
         <button
           onClick={handleEllipsisClick}
           aria-label={t('items.contextMenu.title')}
@@ -196,13 +214,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
           <Icon name="dots-vertical-narrow" className="w-2 h-4" />
         </button>
       )}
-      {menuPosition && (
+      {menuPosition && menuEnabled && (
         <ItemContextMenu
           position={menuPosition}
           onClose={() => setMenuPosition(null)}
           onEdit={() => navigate(itemRoute(item, true))}
           onDuplicate={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}
           onDelete={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}
+          isSelected={isSelected}
+          onToggleSelect={onSelect ? (): void => onSelect(item, false) : undefined}
         />
       )}
     </li>

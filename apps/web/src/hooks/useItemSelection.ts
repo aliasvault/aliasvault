@@ -1,5 +1,5 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
-import { toggleSelectedItem, type SelectedItem } from '@aliasvault/client/items/BulkItemActions';
+import { toSelectedItem, toggleSelectedItem, type SelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 /**
@@ -31,7 +31,7 @@ export function useItemSelection(items: SelectedItem[]): ItemSelection {
 
   const enter = useCallback((item?: SelectedItem): void => {
     setIsActive(true);
-    setSelection(item ? [item] : []);
+    setSelection(item ? [toSelectedItem(item)] : []);
     anchorRef.current = item ?? null;
   }, []);
 
@@ -51,14 +51,14 @@ export function useItemSelection(items: SelectedItem[]): ItemSelection {
       const between = items.slice(Math.min(from, to), Math.max(from, to) + 1);
       setSelection(current => (current.some(selected => isSameItem(selected, item))
         ? current.filter(selected => !between.some(entry => isSameItem(entry, selected)))
-        : [...current, ...between.filter(candidate => !current.some(selected => isSameItem(selected, candidate)))]));
+        : [...current, ...between.filter(candidate => !current.some(selected => isSameItem(selected, candidate))).map(toSelectedItem)]));
     } else {
-      setSelection(current => toggleSelectedItem(current, item));
+      setSelection(current => toggleSelectedItem(current, toSelectedItem(item)));
     }
     anchorRef.current = item;
   }, [items]);
 
-  const selectAll = useCallback((): void => setSelection(items), [items]);
+  const selectAll = useCallback((): void => setSelection(items.map(toSelectedItem)), [items]);
 
   const deselectAll = useCallback((): void => setSelection([]), []);
 

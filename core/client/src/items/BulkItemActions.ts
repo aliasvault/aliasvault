@@ -8,6 +8,15 @@ import type { FolderRef } from '../database/repositories/FolderRepository';
 export type SelectedItem = ItemRef & { FolderId?: string | null };
 
 /**
+ * Keep only the fields a selection needs, so a selection never holds whole items.
+ * @param item - The item to select
+ * @returns The selected item
+ */
+export function toSelectedItem(item: SelectedItem): SelectedItem {
+  return { Id: item.Id, ManifestId: item.ManifestId, FolderId: item.FolderId ?? null };
+}
+
+/**
  * What a bulk move changes, so a client can decide whether to confirm it.
  */
 export type BulkMoveSummary = {
