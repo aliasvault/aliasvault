@@ -26,12 +26,14 @@ type ItemContextMenuProps = {
   itemName: string | null;
   onMutated: () => void;
   hideTrigger?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 };
 
 /**
- * Ellipsis menu on an item with edit, duplicate and delete.
+ * Ellipsis menu on an item with select, edit, duplicate and delete.
  */
-const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated, hideTrigger = false }, ref) => {
+const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated, hideTrigger = false, isSelected = false, onToggleSelect }, ref) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dbContext = useDb();
@@ -126,7 +128,7 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
     }
   };
 
-  const menuStyle: React.CSSProperties | undefined = position ? { left: `min(${Math.round(position.x)}px, calc(100vw - 170px))`, top: `min(${Math.round(position.y)}px, calc(100vh - 140px))` } : undefined;
+  const menuStyle: React.CSSProperties | undefined = position ? { left: `min(${Math.round(position.x)}px, calc(100vw - 170px))`, top: `min(${Math.round(position.y)}px, calc(100vh - 182px))` } : undefined;
 
   return (
     <div className="relative flex" onClick={(e) => e.stopPropagation()}>
@@ -142,6 +144,16 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
 
       {isOpen && (
         <div ref={menuRef} role="menu" style={menuStyle} className={`${position ? 'fixed' : 'absolute right-0 top-full mt-1'} z-50 w-40 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100`}>
+          {onToggleSelect && (
+            <>
+              <button type="button" role="menuitem" onClick={() => {
+                setIsOpen(false); onToggleSelect();
+              }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                {isSelected ? t('common.deselect') : t('common.select')}
+              </button>
+              <div role="separator" className="h-px bg-gray-200 dark:bg-gray-700" />
+            </>
+          )}
           <button type="button" role="menuitem" onClick={() => navigate(itemRoute(item, true))} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             {t('common.edit')}
           </button>

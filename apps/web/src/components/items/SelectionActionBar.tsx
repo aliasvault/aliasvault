@@ -45,6 +45,7 @@ const SelectionActionBar: React.FC<SelectionActionBarProps> = ({ selection, visi
   const count = selection.length;
   const allSelected = count > 0 && count >= visibleCount;
   const sharedCount = countSharedItems(selection, personalManifestId);
+  const countLabel = t('items.selection.count', { count });
 
   const dialogOpenRef = useRef(false);
   dialogOpenRef.current = showMovePicker || showDeleteModal || pendingMove !== null;
@@ -141,16 +142,20 @@ const SelectionActionBar: React.FC<SelectionActionBarProps> = ({ selection, visi
     void performMove({ summary, target });
   };
 
-  const buttonClass = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors hover:bg-white/10 dark:hover:bg-gray-900/10 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400';
+  const baseButtonClass = 'inline-flex items-center gap-2 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500';
+  const buttonClass = `${baseButtonClass} px-3.5 text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`;
 
   return (
     <>
       {/* Room below the list so the bar never covers the last items. */}
       <div className="h-20" aria-hidden />
       <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] sm:w-auto">
-        <div id="selection-action-bar" role="toolbar" aria-label={t('items.selection.count', { count })} className="flex items-center gap-1 rounded-full bg-gray-900 text-white shadow-xl ring-1 ring-black/10 dark:bg-gray-100 dark:text-gray-900 dark:shadow-black/50 dark:ring-white/20 pl-4 pr-1.5 py-1.5">
-          <span className="text-sm font-medium whitespace-nowrap mr-auto sm:mr-2">{t('items.selection.count', { count })}</span>
-          <span aria-hidden className="h-5 w-px mx-1 bg-white/25 dark:bg-gray-900/20" />
+        <div id="selection-action-bar" role="toolbar" aria-label={countLabel} className="flex items-center gap-1.5 rounded-xl bg-white shadow-[0_12px_32px_-4px_rgba(0,0,0,0.25),0_4px_10px_-2px_rgba(0,0,0,0.12)] ring-1 ring-gray-300 dark:bg-gray-700 dark:shadow-[0_12px_32px_0_rgba(0,0,0,0.6),0_4px_10px_rgba(0,0,0,0.4)] dark:ring-gray-500 p-2">
+          <button type="button" onClick={onClose} aria-label={t('common.close')} title={t('common.close')} className={`${baseButtonClass} justify-center w-8 h-8 py-0 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white`}>
+            <Icon name="x" className="w-[18px] h-[18px]" />
+          </button>
+          <span aria-live="polite" className="pl-1 pr-1 text-sm font-medium whitespace-nowrap mr-auto sm:mr-0 text-gray-900 dark:text-white tabular-nums">{countLabel}</span>
+          <span aria-hidden className="h-5 w-px mx-1.5 bg-gray-300 dark:bg-gray-500" />
           <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} title={allSelected ? t('items.selection.deselectAll') : t('items.selection.selectAll')} className={buttonClass}>
             <Icon name={allSelected ? 'square-feather' : 'square-check'} className="w-4 h-4" />
             <span className="hidden sm:inline">{allSelected ? t('items.selection.deselectAll') : t('items.selection.selectAll')}</span>
@@ -159,12 +164,9 @@ const SelectionActionBar: React.FC<SelectionActionBarProps> = ({ selection, visi
             <Icon name="folder" className="w-4 h-4" />
             <span className="hidden sm:inline">{t('items.selection.move')}</span>
           </button>
-          <button type="button" id="selection-delete" onClick={() => setShowDeleteModal(true)} disabled={count === 0 || isWorking} title={t('common.delete')} className={`${buttonClass} text-red-400 hover:text-red-300 dark:text-red-600 dark:hover:text-red-700`}>
+          <button type="button" id="selection-delete" onClick={() => setShowDeleteModal(true)} disabled={count === 0 || isWorking} title={t('common.delete')} className={`${baseButtonClass} px-3.5 text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/20`}>
             <Icon name="trash" className="w-4 h-4" />
             <span className="hidden sm:inline">{t('common.delete')}</span>
-          </button>
-          <button type="button" onClick={onClose} aria-label={t('common.close')} title={t('common.close')} className={`${buttonClass} px-2`}>
-            <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
       </div>
