@@ -42,6 +42,7 @@ const EmailsList: React.FC = () => {
    * Loading state with minimum duration for more fluid UX.
    */
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 100);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   /**
    * Page size for pagination.
@@ -95,6 +96,7 @@ const EmailsList: React.FC = () => {
     } finally {
       setIsLoading(false);
       setIsInitialLoading(false);
+      setHasLoaded(true);
     }
   }, [dbContext, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
 
@@ -193,12 +195,14 @@ const EmailsList: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <LoadingSpinner />
-      </div>
-    );
+  const spinner = (
+    <div className="flex justify-center items-center p-8">
+      <LoadingSpinner />
+    </div>
+  );
+
+  if (isLoading && !hasLoaded) {
+    return spinner;
   }
 
   // Show offline message if in offline mode
@@ -224,9 +228,9 @@ const EmailsList: React.FC = () => {
           <PageTitle>{t('emails.title')}</PageTitle>
           <ReloadButton onClick={loadEmails} />
         </div>
-        {error ? (
-          <p className="text-sm text-red-500">{t('common.error')}: {error}</p>
-        ) : (
+        {isLoading && spinner}
+        {!isLoading && error && <p className="text-sm text-red-500">{t('common.error')}: {error}</p>}
+        {!isLoading && !error && (
           <div className="text-gray-500 dark:text-gray-400 space-y-2">
             <p className="text-sm">
               {t('emails.emptyMessage')}
@@ -245,47 +249,51 @@ const EmailsList: React.FC = () => {
         <PageTitle>{t('emails.title')}</PageTitle>
         <ReloadButton onClick={() => loadEmails(true)} />
       </div>
-      {error && <p className="mb-4 text-sm text-red-500">{t('common.error')}: {error}</p>}
-      <div className="space-y-2">
-        {emails.map((email) => (
-          <Link
-            key={email.id}
-            to={`/emails/${email.id}`}
-            className="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div className="text-gray-900 dark:text-white mb-1 font-bold">
-                {email.subject}
-              </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
-                {email.hasAttachments && <AttachmentIcon className="w-4 h-4" />}
-                <span>{formatEmailDate(email.dateSystem)}</span>
-              </div>
-            </div>
-            <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">
-              {email.messagePreview}
-            </div>
-          </Link>
-        ))}
-      </div>
+      {isLoading ? spinner : (
+        <div>
+          {error && <p className="mb-4 text-sm text-red-500">{t('common.error')}: {error}</p>}
+          <div className="space-y-2">
+            {emails.map((email) => (
+              <Link
+                key={email.id}
+                to={`/emails/${email.id}`}
+                className="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="text-gray-900 dark:text-white mb-1 font-bold">
+                    {email.subject}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
+                    {email.hasAttachments && <AttachmentIcon className="w-4 h-4" />}
+                    <span>{formatEmailDate(email.dateSystem)}</span>
+                  </div>
+                </div>
+                <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">
+                  {email.messagePreview}
+                </div>
+              </Link>
+            ))}
+          </div>
 
-      {/* Load More Button */}
-      {hasMoreEmails && emails.length > 0 && (
-        <div className="mt-4">
-          <button
-            onClick={loadMoreEmails}
-            disabled={isLoadingMore}
-            className="w-full px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:text-primary-400 dark:bg-primary-900/20 dark:border-primary-800 dark:hover:bg-primary-900/30"
-          >
-            {isLoadingMore ? (
-              <span className="flex items-center justify-center">
-                <Icon name="spinner" className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                {t('common.loading')}
-              </span>
-            ) : (
-              <span>{t('emails.loadMore', { count: totalRecords - emails.length })}</span>
-            )}
-          </button>
+          {/* Load More Button */}
+          {hasMoreEmails && emails.length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={loadMoreEmails}
+                disabled={isLoadingMore}
+                className="w-full px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:text-primary-400 dark:bg-primary-900/20 dark:border-primary-800 dark:hover:bg-primary-900/30"
+              >
+                {isLoadingMore ? (
+                  <span className="flex items-center justify-center">
+                    <Icon name="spinner" className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                    {t('common.loading')}
+                  </span>
+                ) : (
+                  <span>{t('emails.loadMore', { count: totalRecords - emails.length })}</span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
