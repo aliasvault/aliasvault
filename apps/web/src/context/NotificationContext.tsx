@@ -6,10 +6,20 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 export type Notification = {
   type: 'success' | 'error';
   message: string;
+  link?: NotificationLink;
+};
+
+/**
+ * A part of a notification's message shown as a link.
+ */
+export type NotificationLink = {
+  /** The text in the message that becomes the link. */
+  text: string;
+  onClick: () => void;
 };
 
 type NotificationContextType = {
-  addSuccessMessage: (message: string, notify?: boolean) => void;
+  addSuccessMessage: (message: string, notify?: boolean, link?: NotificationLink) => void;
   addErrorMessage: (message: string, notify?: boolean) => void;
   clearMessages: () => void;
   takeMessages: () => Notification[];
@@ -38,7 +48,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   /**
    * Queue a success message.
    */
-  const addSuccessMessage = useCallback((message: string, notify: boolean = false): void => add({ type: 'success', message }, notify), [add]);
+  const addSuccessMessage = useCallback((message: string, notify: boolean = false, link?: NotificationLink): void => add({ type: 'success', message, link }, notify), [add]);
 
   /**
    * Queue an error message.

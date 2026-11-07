@@ -71,7 +71,7 @@ const SortableTable: React.FC<SortableTableProps> = ({ columns, sortColumn, sort
 type SortableTableRowProps = {
   children: React.ReactNode;
   className?: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   onContextMenu?: (e: React.MouseEvent) => void;
 };
 

@@ -6,7 +6,7 @@ const CHORD_TIMEOUT_MS = 1000;
 /**
  * Whether the keyboard focus is in a text field, where chords must not fire.
  */
-const isTypingTarget = (): boolean => {
+export const isTypingTarget = (): boolean => {
   const element = document.activeElement;
   if (!element) {
     return false;
