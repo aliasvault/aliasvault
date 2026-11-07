@@ -19,7 +19,7 @@ export type BulkMoveSummary = {
 };
 
 /**
- * Whether an item lives in a shared manifest rather than the user's own.
+ * Whether an item lives in a shared manifest.
  * @param manifestId - The item's manifest
  * @param personalManifestId - The user's personal manifest
  */
@@ -65,15 +65,4 @@ export function countSharedItems(items: ItemRef[], personalManifestId: string | 
  */
 export function toggleSelectedItem<T extends ItemRef>(selection: T[], item: T): T[] {
   return selection.some(selected => isSameItem(selected, item)) ? selection.filter(selected => !isSameItem(selected, item)) : [...selection, item];
-}
-
-/**
- * Drop selected items that are no longer visible, e.g. after a search or filter change.
- * @param selection - The current selection
- * @param visible - The items currently shown
- * @returns The selection limited to visible items (the same array when nothing was dropped)
- */
-export function pruneSelection<T extends ItemRef>(selection: T[], visible: ItemRef[]): T[] {
-  const pruned = selection.filter(selected => visible.some(item => isSameItem(item, selected)));
-  return pruned.length === selection.length ? selection : pruned;
 }
