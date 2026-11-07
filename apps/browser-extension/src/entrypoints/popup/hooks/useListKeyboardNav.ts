@@ -11,6 +11,7 @@ interface IUseListKeyboardNavParams {
   onActivateItem: (index: number) => void;
   onGoBack: () => void;
   onClearSearch: () => void;
+  onToggleItem?: (index: number) => void;
 }
 
 interface IUseListKeyboardNavReturn {
@@ -30,7 +31,7 @@ const ID_PREFIX = 'kb-nav';
  *   ←      go up one folder (ignored while typing in the search input)
  */
 export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListKeyboardNavReturn => {
-  const { folderCount, itemCount, searchInputRef, resetKey, onActivateFolder, onActivateItem, onGoBack, onClearSearch } = params;
+  const { folderCount, itemCount, searchInputRef, resetKey, onActivateFolder, onActivateItem, onGoBack, onClearSearch, onToggleItem } = params;
 
   const [activeKind, setActiveKind] = useState<ActiveKind>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -129,7 +130,7 @@ export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListK
       if (activeKind === 'folder' && activeIndex < folderCount) {
         onActivateFolder(activeIndex);
       } else if (activeKind === 'item' && activeIndex < itemCount) {
-        onActivateItem(activeIndex);
+        (onToggleItem ?? onActivateItem)(activeIndex);
       }
     };
 
@@ -145,9 +146,14 @@ export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListK
         moveDown();
         return;
       }
+      if (e.key === ' ' && onToggleItem && activeKind === 'item' && !(e.target instanceof HTMLButtonElement)) {
+        e.preventDefault();
+        activate();
+        return;
+      }
       // Enter mirrors ArrowRight; from an empty selection it opens the first item.
       if (e.key === 'Enter') {
-        if (activeKind === null && itemCount > 0) {
+        if (activeKind === null && itemCount > 0 && !onToggleItem) {
           e.preventDefault();
           onActivateItem(0);
           return;
@@ -197,7 +203,7 @@ export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListK
 
     document.addEventListener('keydown', handleKeyDown);
     return (): void => document.removeEventListener('keydown', handleKeyDown);
-  }, [folderCount, itemCount, activeKind, activeIndex, onActivateFolder, onActivateItem, onGoBack, onClearSearch, searchInputRef]);
+  }, [folderCount, itemCount, activeKind, activeIndex, onActivateFolder, onActivateItem, onGoBack, onClearSearch, onToggleItem, searchInputRef]);
 
   const activeDescendantId =
     activeKind === 'item' ? itemIdFor(activeIndex)

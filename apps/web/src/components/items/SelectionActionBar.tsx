@@ -52,22 +52,16 @@ const SelectionActionBar: React.FC<SelectionActionBarProps> = ({ selection, visi
 
   useEffect(() => {
     /**
-     * Escape leaves selection mode, Cmd/Ctrl+A selects all visible items.
+     * Escape leaves selection mode.
      */
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (dialogOpenRef.current || isTypingTarget()) {
-        return;
-      }
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !dialogOpenRef.current && !isTypingTarget()) {
         onClose();
-      } else if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 'a') {
-        event.preventDefault();
-        onSelectAll();
       }
     };
     window.addEventListener('keydown', onKeyDown, true);
     return (): void => window.removeEventListener('keydown', onKeyDown, true);
-  }, [onClose, onSelectAll]);
+  }, [onClose]);
 
   /**
    * Run bulk action.

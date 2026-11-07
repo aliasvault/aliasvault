@@ -7,16 +7,18 @@ type ItemContextMenuProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 };
 
 const MENU_WIDTH = 160;
-const MENU_HEIGHT = 120;
+const MENU_HEIGHT = 165;
 
 /**
  * Context menu with actions for a single item in the items list.
  * Opened via right-click on an item row or via the row's ellipsis button.
  */
-const ItemContextMenu: React.FC<ItemContextMenuProps> = ({ position, onClose, onEdit, onDuplicate, onDelete }) => {
+const ItemContextMenu: React.FC<ItemContextMenuProps> = ({ position, onClose, onEdit, onDuplicate, onDelete, isSelected = false, onToggleSelect }) => {
   const { t } = useTranslation();
 
   // Close on Escape while the menu is open.
@@ -60,8 +62,16 @@ const ItemContextMenu: React.FC<ItemContextMenuProps> = ({ position, onClose, on
       <div
         role="menu"
         style={{ top, left }}
-        className="fixed z-40 w-40 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg"
+        className="fixed z-40 w-40 overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg"
       >
+        {onToggleSelect && (
+          <>
+            <button role="menuitem" onClick={runAction(onToggleSelect)} className={itemClass}>
+              {isSelected ? t('common.deselect') : t('common.select')}
+            </button>
+            <div role="separator" className="h-px bg-gray-200 dark:bg-gray-600" />
+          </>
+        )}
         <button role="menuitem" onClick={runAction(onEdit)} className={itemClass}>
           {t('common.edit')}
         </button>
