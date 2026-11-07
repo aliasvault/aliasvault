@@ -1,17 +1,12 @@
-import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { buildFolderTree, flattenFolderTree, getFolderIdPath, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
-import Icon from '@/entrypoints/popup/components/Icons/Icon';
+import FolderPickerModal from '@/entrypoints/popup/components/Items/FolderPickerModal';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
-
-/** Indent per folder level. */
-const FOLDER_INDENT_PX = 20;
 
 type ItemNameInputProps = {
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -42,54 +37,11 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const { t } = useTranslation();
   const dbContext = useDb();
   const [showFolderModal, setShowFolderModal] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   const selectedFolderId = selectedFolderRef?.Id ?? null;
   const selectedManifestId = selectedFolderRef?.ManifestId ?? null;
   const selectedFolder = folders.find(f => f.Id === selectedFolderId && f.ManifestId === selectedManifestId);
   const personalManifestId = dbContext?.sqliteClient?.getPersonalManifestId() ?? null;
-
-  const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
-  const visibleFolders = useMemo(() => flattenFolderTree(folderTree, expandedFolders), [folderTree, expandedFolders]);
-
-  /**
-   * Automatically expand parent folders when a folder is pre-selected.
-   * This ensures the selected folder is visible in the tree when the modal opens.
-   */
-  useEffect(() => {
-    if (selectedFolderId && selectedManifestId && folders.length > 0) {
-      const fullPath = getFolderIdPath({ Id: selectedFolderId, ManifestId: selectedManifestId }, folders);
-      if (fullPath.length > 0) {
-        // Expand all folders in the path including the selected folder if it has children.
-        setExpandedFolders(new Set(fullPath.map(id => scopedKey(selectedManifestId, id))));
-      }
-    } else {
-      setExpandedFolders(new Set());
-    }
-  }, [selectedFolderId, selectedManifestId, folders]);
-
-  /**
-   * Toggle folder expansion in tree view.
-   */
-  const toggleFolder = useCallback((folderKey: string): void => {
-    setExpandedFolders(prev => {
-      const next = new Set(prev);
-      if (next.has(folderKey)) {
-        next.delete(folderKey);
-      } else {
-        next.add(folderKey);
-      }
-      return next;
-    });
-  }, []);
-
-  /**
-   * Handle folder selection and close the modal.
-   */
-  const handleSelectFolder = useCallback((folder: FolderRef | null): void => {
-    onFolderChange(folder);
-    setShowFolderModal(false);
-  }, [onFolderChange]);
 
   /**
    * Handle name input change.
@@ -97,20 +49,6 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     onChange(e.target.value);
   }, [onChange]);
-
-  /**
-   * Handle opening folder modal.
-   */
-  const handleOpenFolderModal = useCallback((): void => {
-    setShowFolderModal(true);
-  }, []);
-
-  /**
-   * Handle closing folder modal.
-   */
-  const handleCloseFolderModal = useCallback((): void => {
-    setShowFolderModal(false);
-  }, []);
 
   return (
     <>
@@ -152,7 +90,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
             {/* Folder Button inside input - always visible, width adjusts based on whether a folder is selected */}
             <button
               type="button"
-              onClick={handleOpenFolderModal}
+              onClick={() => setShowFolderModal(true)}
               className={`absolute right-1 z-10 flex items-center gap-1 px-2 py-1 rounded transition-colors text-xs ${
                 selectedFolderId
                   ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50'
@@ -176,72 +114,9 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
         </div>
       </div>
 
-      {/* Folder Selection Modal */}
-      <ModalWrapper isOpen={showFolderModal} onClose={handleCloseFolderModal} title={t('items.folders.folder')} maxWidth="max-w-sm">
-        {/* Folder Options - Tree View */}
-        <div className="space-y-1 max-h-64 overflow-y-auto">
-          {/* No Folder Option */}
-          <button
-            type="button"
-            onClick={() => handleSelectFolder(null)}
-            className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${
-              !selectedFolderId
-                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            <Icon name="archive" className={`w-5 h-5 ${!selectedFolderId ? 'text-primary-500' : 'text-gray-400'}`} />
-            <span className="font-medium">&mdash;</span>
-            {!selectedFolderId && (
-              <Icon name="check" className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" />
-            )}
-          </button>
-
-          {/* Folder Tree, one row per visible folder; each level indents by one chevron slot */}
-          {visibleFolders.map(node => {
-            const nodeKey = scopedKey(node.ManifestId, node.Id);
-            const isExpanded = expandedFolders.has(nodeKey);
-            const hasChildren = node.children.length > 0;
-            const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
-            return (
-              <div
-                key={nodeKey}
-                className={`flex items-center rounded-md transition-colors ${isSelected ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                style={{ paddingLeft: `${node.depth * FOLDER_INDENT_PX + 4}px` }}
-              >
-                {hasChildren ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleFolder(nodeKey)}
-                    aria-expanded={isExpanded}
-                    className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    <Icon name="chevron-right" className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                  </button>
-                ) : (
-                  <span className="flex-shrink-0 w-6" />
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
-                  className="flex-1 min-w-0 pl-1 pr-3 py-2 text-left flex items-center gap-2"
-                >
-                  <FolderIcon
-                    variant="outline"
-                    isShared={isSharedFolder(node, personalManifestId)}
-                    className={`w-5 h-5 flex-shrink-0 ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}
-                    badgeClassName="bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600"
-                  />
-                  <span className="font-medium flex-1 truncate">{node.Name}</span>
-                  {isSelected && (
-                    <Icon name="check" className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" />
-                  )}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </ModalWrapper>
+      {showFolderModal && (
+        <FolderPickerModal selected={selectedFolderRef ?? null} onSelect={onFolderChange} onClose={() => setShowFolderModal(false)} />
+      )}
     </>
   );
 };

@@ -22,6 +22,7 @@ import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
 import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
+import SelectionActionBar from '@/entrypoints/popup/components/Items/SelectionActionBar';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import SharedFolderAccessModal from '@/entrypoints/popup/components/Sharing/SharedFolderAccessModal';
@@ -30,6 +31,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import { useItemSelection } from '@/entrypoints/popup/hooks/useItemSelection';
 import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
 import { usePasswordConfirmedAction } from '@/entrypoints/popup/hooks/usePasswordConfirmedAction';
 import { useSharedFolders } from '@/entrypoints/popup/hooks/useSharedFolders';
@@ -154,7 +156,7 @@ const ItemsList: React.FC = () => {
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showListMenu, setShowListMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const [visibleItemCount, setVisibleItemCount] = useState(ITEM_BATCH_SIZE);
   /** The folder whose people dialog is open; kept while the folder turns into a shared one and the page moves to it. */
@@ -542,7 +544,6 @@ const ItemsList: React.FC = () => {
     setHeaderButtons(headerButtonsJSX);
     return () => setHeaderButtons(null);
   }, [setHeaderButtons, handleAddItem, t]);
-
   // Set back button title for folder view
   useEffect(() => {
     if (currentFolderRef && dbContext?.sqliteClient) {
@@ -842,6 +843,7 @@ const ItemsList: React.FC = () => {
    * Check if all items are in folders (no items at root level but items exist in folders).
    * This is used to show a helpful message when the user has imported credentials that were all in folders.
    */
+  const hasItems = items.length > 0;
   const hasItemsInFoldersOnly = items.length > 0 && items.every((item: Item) => item.FolderId !== null);
 
   /**
@@ -889,15 +891,45 @@ const ItemsList: React.FC = () => {
     }
   }, [currentFolderRef, dbContext, navigate]);
 
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const selection = useItemSelection(sortedItems);
+  const { isActive: isSelecting, exit: exitSelection, toggle: toggleSelected } = selection;
+  const folderKey = currentFolderRef ? scopedKey(currentFolderRef.ManifestId, currentFolderRef.Id) : null;
+
+  // Exit selection mode when the list changes.
+  useEffect(() => {
+    exitSelection();
+  }, [folderKey, listSearchTerm, filterType, showFolders, items, exitSelection]);
+
+  /**
+   * Toggle the specified rendered item (Space/Enter in selection mode).
+   */
+  const handleToggleItemAt = useCallback((index: number): void => {
+    const item = visibleItems[index];
+    if (item && !bulkDialogOpen) {
+      toggleSelected(item, false);
+    }
+  }, [visibleItems, bulkDialogOpen, toggleSelected]);
+
+  /**
+   * Re-read the items and leave selection mode after a bulk action.
+   */
+  const finishBulkAction = useCallback((): void => {
+    exitSelection();
+    setItems(dbContext.sqliteClient!.items.getAll());
+    setRecentlyDeletedCount(dbContext.sqliteClient!.items.getRecentlyDeletedCount());
+  }, [dbContext, exitSelection]);
+
   const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId } = useListKeyboardNav({
     folderCount: folders.length,
     itemCount: visibleItems.length,
     searchInputRef,
-    resetKey: currentFolderRef ? scopedKey(currentFolderRef.ManifestId, currentFolderRef.Id) : null,
+    resetKey: folderKey,
     onActivateFolder: handleActivateFolder,
     onActivateItem: handleActivateItem,
     onGoBack: handleGoBack,
     onClearSearch: handleClearSearch,
+    onToggleItem: isSelecting ? handleToggleItemAt : undefined,
   });
 
   /**
@@ -992,30 +1024,56 @@ const ItemsList: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          {/* Sort button */}
+        <div className="flex items-center gap-2">
+          {/* List menu: start selecting, sort order */}
           <div className="relative">
             <button
-              onClick={() => setShowSortMenu(!showSortMenu)}
-              className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title={t('items.sort.title')}
+              id="items-list-menu"
+              onClick={() => setShowListMenu(!showListMenu)}
+              aria-haspopup="menu"
+              aria-expanded={showListMenu}
+              className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition-colors"
+              title={t('items.contextMenu.title')}
             >
-              <Icon name="sort-descending" className="w-5 h-5" />
+              <Icon name="dots-horizontal" className="w-5 h-5" />
             </button>
-            {showSortMenu && (
+            {showListMenu && (
               <>
                 <div
                   className="fixed inset-0 z-10"
-                  onClick={() => setShowSortMenu(false)}
+                  onClick={() => setShowListMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
-                  <div className="py-1">
+                <div role="menu" className="absolute right-0 top-full mt-1 w-48 overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
+                  {hasItems && (
+                    <div className="border-b border-gray-200 dark:border-gray-700">
+                      <button
+                        id="items-select"
+                        role="menuitem"
+                        onClick={() => {
+                          setShowListMenu(false);
+                          if (isSelecting) {
+                            exitSelection();
+                          } else {
+                            selection.enter();
+                          }
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                      >
+                        <Icon name={isSelecting ? 'square-feather' : 'square-check'} className="w-4 h-4" />
+                        <span>{isSelecting ? t('items.selection.disable') : t('items.selection.enable')}</span>
+                      </button>
+                    </div>
+                  )}
+                  <div>
+                    <div className="px-4 pt-2 pb-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">{t('items.sort.title')}</div>
                     {SORT_OPTIONS.map((option) => (
                       <button
                         key={option.value}
+                        role="menuitemradio"
+                        aria-checked={sortOrder === option.value}
                         onClick={async () => {
                           setSortOrder(option.value);
-                          setShowSortMenu(false);
+                          setShowListMenu(false);
                           // Save to settings and trigger vault sync
                           await executeVaultMutationAsync(async () => {
                             dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
@@ -1202,7 +1260,7 @@ const ItemsList: React.FC = () => {
 
           {/* Items */}
           {visibleItems.length > 0 && (
-            <ul id="items-list" role="listbox" className="space-y-2">
+            <ul id="items-list" role="listbox" aria-multiselectable={isSelecting || undefined} className="space-y-2">
               {visibleItems.map((item, index) => (
                 <ItemCard
                   key={scopedKey(item.ManifestId, item.Id)}
@@ -1215,6 +1273,9 @@ const ItemsList: React.FC = () => {
                   isHighlighted={highlightedItem !== null && isSameItem(item, highlightedItem)}
                   onDuplicate={handleDuplicateItem}
                   onDelete={setDeleteItem}
+                  selectionMode={isSelecting}
+                  isSelected={isSelecting && selection.isSelected(item)}
+                  onSelect={toggleSelected}
                 />
               ))}
             </ul>
@@ -1267,6 +1328,19 @@ const ItemsList: React.FC = () => {
         message={t('common.deleteItemConfirmDescription')}
         confirmText={t('common.delete')}
       />
+
+      {isSelecting && (
+        <SelectionActionBar
+          selection={selection.selection}
+          visibleCount={sortedItems.length}
+          currentFolder={currentFolderRef}
+          onSelectAll={selection.selectAll}
+          onDeselectAll={selection.deselectAll}
+          onClose={exitSelection}
+          onDone={finishBulkAction}
+          onDialogOpenChange={setBulkDialogOpen}
+        />
+      )}
 
       {/* Create Folder Modal */}
       <FolderModal
