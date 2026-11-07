@@ -124,8 +124,8 @@ test.describe('20. Items', () => {
     });
 
     await test.step('select two items and move them into the folder', async () => {
-      await card('Bulk one').hover();
-      await card('Bulk one').getByRole('checkbox').click();
+      await card('Bulk one').click({ button: 'right' });
+      await page.getByRole('menuitem', { name: 'Select', exact: true }).click();
       await card('Bulk two').click();
       await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
       await page.locator('#selection-move').click();
@@ -143,8 +143,7 @@ test.describe('20. Items', () => {
     });
 
     await test.step('select all in the folder and delete', async () => {
-      await card('Bulk one').hover();
-      await card('Bulk one').getByRole('checkbox').click();
+      await card('Bulk one').click({ modifiers: ['ControlOrMeta'] });
       await page.locator('#selection-action-bar').getByRole('button', { name: 'Select all' }).click();
       await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
       await page.locator('#selection-delete').click();

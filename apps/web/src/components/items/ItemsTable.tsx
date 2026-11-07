@@ -75,7 +75,7 @@ const ItemsTableRow: React.FC<ItemsTableRowProps> = ({ entry, onMutated, isSelec
       <SortableTableColumn padding={false}>{formatDate(entry.createdAt)}</SortableTableColumn>
       <SortableTableColumn padding={false}>
         <div className="flex justify-end pr-2">
-          <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} />
+          <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} isSelected={isSelected} onToggleSelect={() => onSelect(false)} />
         </div>
       </SortableTableColumn>
     </SortableTableRow>
