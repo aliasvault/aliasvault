@@ -119,6 +119,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   /**
+   * Open the item's details, keeping the search to return to.
+   */
+  const openItem = (): void => {
+    navigate(searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item));
+  };
+
+  /**
    * Open the item context menu from a right-click at the cursor position.
    */
   const handleContextMenu = (e: React.MouseEvent): void => {
@@ -147,9 +154,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
             onSelect(item, selectionMode && e.shiftKey);
             return;
           }
-          // Build URL with search query parameter if present
-          const url = searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item);
-          navigate(url);
+          openItem();
         }}
         className={`w-full p-2 border rounded flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 ${
           isSelected ? 'bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -211,9 +216,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
       )}
       {menuEnabled && (
         <ContextMenu ref={menuRef}>
-          <MenuItem onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
-          <MenuItem onClick={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.duplicate')}</MenuItem>
-          <MenuItem danger onClick={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.delete')}</MenuItem>
+          <MenuItem icon="eye" onClick={openItem}>{t('common.open')}</MenuItem>
+          <MenuItem icon="pencil-alt" onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
+          <MenuItem icon="document-duplicate" onClick={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.duplicate')}</MenuItem>
+          <MenuItem danger icon="trash" onClick={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.delete')}</MenuItem>
         </ContextMenu>
       )}
     </li>

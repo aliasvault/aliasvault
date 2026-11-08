@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import ContextMenu, { MenuItem, type ContextMenuHandle } from '@/entrypoints/popup/components/ContextMenu';
 import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
@@ -22,6 +22,7 @@ type EmailCardProps = {
  */
 const EmailCard: React.FC<EmailCardProps> = ({ email, dateLabel, selectionMode, isSelected, onSelect, onDelete }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const menuRef = useRef<ContextMenuHandle>(null);
 
   /**
@@ -64,7 +65,8 @@ const EmailCard: React.FC<EmailCardProps> = ({ email, dateLabel, selectionMode, 
         </div>
       </Link>
       <ContextMenu ref={menuRef}>
-        <MenuItem danger onClick={() => onDelete(email.id)}>{t('common.delete')}</MenuItem>
+        <MenuItem icon="eye" onClick={() => navigate(`/emails/${email.id}`)}>{t('common.open')}</MenuItem>
+        <MenuItem danger icon="trash" onClick={() => onDelete(email.id)}>{t('common.delete')}</MenuItem>
       </ContextMenu>
     </div>
   );

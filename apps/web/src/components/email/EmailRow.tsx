@@ -77,7 +77,8 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, isSel
         <SelectCheckbox isSelected={isChecked} onSelect={range => onCheck(email, range)} className="ml-4 -mr-1" />
       )}
       <ContextMenu ref={menuRef}>
-        <MenuItem danger onClick={() => onDelete(email.id)}>{t('common.delete')}</MenuItem>
+        <MenuItem icon="eye" onClick={() => onEmailClick(email.id)}>{t('common.open')}</MenuItem>
+        <MenuItem danger icon="trash" onClick={() => onDelete(email.id)}>{t('common.delete')}</MenuItem>
       </ContextMenu>
       <div className="p-4 flex flex-grow min-w-0 justify-start items-start">
         <div className="mr-4 flex-shrink-0">
