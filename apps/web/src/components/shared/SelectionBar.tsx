@@ -98,7 +98,7 @@ type SelectionMenuItemProps = {
 export const SelectionMenuItem: React.FC<SelectionMenuItemProps> = ({ isActive, onToggle }) => {
   const { t } = useTranslation();
   return (
-    <MenuItem id="list-select" spacious icon={isActive ? 'square-feather' : 'square-check'} onClick={onToggle}>
+    <MenuItem id="list-select" standalone icon={isActive ? 'square-feather' : 'square-check'} onClick={onToggle}>
       {isActive ? t('common.selection.disable') : t('common.selection.enable')}
     </MenuItem>
   );

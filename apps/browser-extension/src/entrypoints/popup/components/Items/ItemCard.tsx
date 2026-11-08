@@ -1,15 +1,16 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { truncateFolderPath } from '@aliasvault/client/items/FolderUtils';
 import { FieldKey } from '@aliasvault/models/vault';
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import ContextMenu, { MenuItem, type ContextMenuHandle } from '@/entrypoints/popup/components/ContextMenu';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
+import { SelectCheckbox } from '@/entrypoints/popup/components/SelectionBar';
 
 import { itemRoute } from '@/utils/ItemRoute';
 
-import ItemContextMenu from './ItemContextMenu';
 import ItemIcon from './ItemIcon';
 
 import type { Item } from '@aliasvault/models/vault';
@@ -39,7 +40,7 @@ type ItemCardProps = {
 const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId, isHighlighted = false, onDuplicate, onDelete, onSelect, selectionMode = false, isSelected = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const menuRef = useRef<ContextMenuHandle>(null);
   const menuEnabled = Boolean(onDuplicate || onDelete);
   const showEllipsis = menuEnabled && !selectionMode;
 
@@ -125,7 +126,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
       return;
     }
     e.preventDefault();
-    setMenuPosition({ x: e.clientX, y: e.clientY });
+    menuRef.current?.open(e.clientX, e.clientY);
   };
 
   /**
@@ -134,7 +135,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   const handleEllipsisClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
-    setMenuPosition({ x: rect.right - 160, y: rect.bottom + 4 });
+    menuRef.current?.open(rect.right - 160, rect.bottom + 4);
   };
 
   return (
@@ -160,13 +161,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
             : isSelected ? 'border-primary-300 dark:border-primary-700' : 'border-gray-200 dark:border-gray-600'
         }`}
       >
-        {selectionMode && (
-          <span aria-hidden className={`w-4 h-4 mr-2 flex-shrink-0 rounded border-2 flex items-center justify-center ${
-            isSelected ? 'bg-primary-500 border-primary-500 text-white' : 'bg-white border-gray-300 dark:bg-gray-800 dark:border-gray-500'
-          }`}>
-            {isSelected && <Icon name="check" className="w-3 h-3" strokeWidth={3} />}
-          </span>
-        )}
+        {selectionMode && <SelectCheckbox isSelected={isSelected} />}
         <div className="w-8 h-8 mr-2 flex-shrink-0">
           <ItemIcon item={item} className="w-8 h-8" />
         </div>
@@ -208,22 +203,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
           aria-label={t('items.contextMenu.title')}
           aria-haspopup="menu"
           className={`absolute right-2 top-1/2 -translate-y-1/2 px-1 py-1 rounded text-gray-400 transition-opacity ${
-            isActive || menuPosition ? 'opacity-100' : 'opacity-0'
+            isActive ? 'opacity-100' : 'opacity-0'
           } group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500`}
         >
           <Icon name="dots-vertical-narrow" className="w-2 h-4" />
         </button>
       )}
-      {menuPosition && menuEnabled && (
-        <ItemContextMenu
-          position={menuPosition}
-          onClose={() => setMenuPosition(null)}
-          onEdit={() => navigate(itemRoute(item, true))}
-          onDuplicate={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}
-          onDelete={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}
-          isSelected={isSelected}
-          onToggleSelect={onSelect ? (): void => onSelect(item, false) : undefined}
-        />
+      {menuEnabled && (
+        <ContextMenu ref={menuRef}>
+          <MenuItem onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
+          <MenuItem onClick={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.duplicate')}</MenuItem>
+          <MenuItem danger onClick={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.delete')}</MenuItem>
+        </ContextMenu>
       )}
     </li>
   );
