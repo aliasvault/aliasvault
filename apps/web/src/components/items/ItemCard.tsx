@@ -3,11 +3,12 @@ import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import ItemContextMenu, { type ItemContextMenuHandle } from '@/components/items/ItemContextMenu';
+import ItemContextMenu from '@/components/items/ItemContextMenu';
 import ItemIcon from '@/components/items/ItemIcon';
 import type { ItemListEntry } from '@/components/items/ItemListEntry';
-import ItemSelectCheckbox from '@/components/items/ItemSelectCheckbox';
+import { type ContextMenuHandle } from '@/components/shared/ContextMenu';
 import Icon from '@/components/shared/Icon';
+import SelectCheckbox from '@/components/shared/SelectCheckbox';
 import { itemRoute } from '@/utils/ItemRoute';
 
 type ItemCardProps = {
@@ -38,7 +39,7 @@ const getDisplayText = (entry: ItemListEntry): string => {
 const ItemCard: React.FC<ItemCardProps> = ({ entry, onMutated, isSelectionMode, isSelected, onSelect }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const menuRef = useRef<ItemContextMenuHandle>(null);
+  const menuRef = useRef<ContextMenuHandle>(null);
   const serviceName = entry.service && entry.service.length > 0 ? entry.service : t('items.untitled');
   const colorClass = isSelected
     ? 'bg-primary-50 border-primary-500 hover:bg-primary-100 dark:bg-primary-900/20 dark:border-primary-500 dark:hover:bg-primary-900/30'
@@ -63,10 +64,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ entry, onMutated, isSelectionMode, 
       }}
       className={`credential-card relative group px-3 py-2.5 md:p-4 border rounded-lg shadow-sm cursor-pointer transition-colors duration-200 ${isSelectionMode ? 'select-none pl-10 md:pl-4' : ''} ${colorClass}`}>
       {isSelectionMode && (
-        <ItemSelectCheckbox isSelected={isSelected} onSelect={onSelect} className="absolute left-3 top-1/2 -translate-y-1/2 md:left-2.5 md:top-2.5 md:translate-y-0" />
+        <SelectCheckbox isSelected={isSelected} onSelect={onSelect} className="absolute left-3 top-1/2 -translate-y-1/2 md:left-2.5 md:top-2.5 md:translate-y-0" />
       )}
       <div className="absolute inset-y-0 right-2 flex items-center md:inset-y-auto md:top-[7px] md:right-1.5">
-        <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} isSelected={isSelected} onToggleSelect={() => onSelect(false)} />
+        <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} />
       </div>
       <div className="flex flex-row items-center gap-3 pr-8 text-left md:flex-col md:gap-0 md:mt-2 md:px-4 md:py-2 md:text-center text-gray-400 rounded">
         <div className="flex-shrink-0 md:mb-2">

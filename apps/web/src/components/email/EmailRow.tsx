@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import SenderInitials from '@/components/email/SenderInitials';
+import ContextMenu, { MenuItem, type ContextMenuHandle } from '@/components/shared/ContextMenu';
 import Icon from '@/components/shared/Icon';
+import SelectCheckbox from '@/components/shared/SelectCheckbox';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
@@ -24,8 +26,10 @@ export type MailListEntry = {
 type EmailRowProps = {
   email: MailListEntry;
   onEmailClick: (id: number) => void;
-  onEmailCheck: (id: number) => void;
+  isSelectionMode: boolean;
   isChecked: boolean;
+  onCheck: (email: MailListEntry, range: boolean) => void;
+  onDelete: (id: number) => void;
   isSelected: boolean;
   isNewEmail: boolean;
 };
@@ -39,19 +43,43 @@ const formatShortDate = (date: Date): string => `${String(date.getDate()).padSta
 /**
  * A row in the mailbox list.
  */
-const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, onEmailCheck, isChecked, isSelected, isNewEmail }) => {
+const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, isSelectionMode, isChecked, onCheck, onDelete, isSelected, isNewEmail }) => {
   const { t } = useTranslation();
+  const menuRef = useRef<ContextMenuHandle>(null);
+
+  /**
+   * Open the email, or toggle selection status when selection mode is active or a modifier is held.
+   */
+  const handleClick = (e: React.MouseEvent): void => {
+    if (isSelectionMode || e.metaKey || e.ctrlKey || e.shiftKey) {
+      onCheck(email, isSelectionMode && e.shiftKey);
+      return;
+    }
+    onEmailClick(email.id);
+  };
+
+  let colorClass = 'hover:bg-gray-100 dark:hover:bg-gray-600';
+  if (isSelected) {
+    colorClass = 'bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50';
+  } else if (isChecked) {
+    colorClass = 'bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/20 dark:hover:bg-primary-900/30';
+  }
+  const borderClass = isSelected ? 'border-l-4 border-primary-500' : '';
 
   return (
-    <li className={`flex items-center transition duration-150 ease-in-out cursor-pointer ${isSelected ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-600'}`}>
-      <div className="pl-4 mr-2 flex-shrink-0">
-        <input
-          className="form-checkbox h-4 w-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          type="checkbox"
-          checked={isChecked}
-          onChange={() => onEmailCheck(email.id)} />
-      </div>
-      <div onClick={() => onEmailClick(email.id)} className="p-4 flex flex-grow min-w-0 justify-start items-start">
+    <li
+      onClick={handleClick}
+      onContextMenu={(e) => {
+        e.preventDefault(); menuRef.current?.open(e.clientX, e.clientY);
+      }}
+      className={`email-row flex items-center transition duration-150 ease-in-out cursor-pointer ${isSelectionMode ? 'select-none' : ''} ${colorClass} ${borderClass}`}>
+      {isSelectionMode && (
+        <SelectCheckbox isSelected={isChecked} onSelect={range => onCheck(email, range)} className="ml-4 -mr-1" />
+      )}
+      <ContextMenu ref={menuRef}>
+        <MenuItem danger onClick={() => onDelete(email.id)}>{t('common.delete')}</MenuItem>
+      </ContextMenu>
+      <div className="p-4 flex flex-grow min-w-0 justify-start items-start">
         <div className="mr-4 flex-shrink-0">
           <SenderInitials senderName={email.fromName} senderEmail={email.fromEmail} />
         </div>

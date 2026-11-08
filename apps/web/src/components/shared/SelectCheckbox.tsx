@@ -3,20 +3,20 @@ import { useTranslation } from 'react-i18next';
 
 import Icon from '@/components/shared/Icon';
 
-type ItemSelectCheckboxProps = {
+type SelectCheckboxProps = {
   isSelected: boolean;
   className?: string;
   onSelect: (range: boolean) => void;
 };
 
 /**
- * Small checkbox that selects an item in the item list.
+ * Small checkbox that selects a row in a list.
  */
-const ItemSelectCheckbox: React.FC<ItemSelectCheckboxProps> = ({ isSelected, className = '', onSelect }) => {
+const SelectCheckbox: React.FC<SelectCheckboxProps> = ({ isSelected, className = '', onSelect }) => {
   const { t } = useTranslation();
 
   /**
-   * Toggle the item without opening it.
+   * Toggle the row without opening it.
    */
   const handleClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
@@ -43,4 +43,4 @@ const ItemSelectCheckbox: React.FC<ItemSelectCheckboxProps> = ({ isSelected, cla
   );
 };
 
-export default ItemSelectCheckbox;
+export default SelectCheckbox;

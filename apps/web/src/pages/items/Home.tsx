@@ -1,5 +1,6 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -16,16 +17,19 @@ import FolderPill, { type FolderWithCount } from '@/components/items/FolderPill'
 import ItemCard from '@/components/items/ItemCard';
 import ItemFilterDropdown from '@/components/items/ItemFilterDropdown';
 import { type ItemListEntry, toItemListEntry } from '@/components/items/ItemListEntry';
+import ItemSelectionBar from '@/components/items/ItemSelectionBar';
 import ItemsTable from '@/components/items/ItemsTable';
-import SelectionActionBar from '@/components/items/SelectionActionBar';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
+import { MenuHeading, MenuRadioItem, MenuSeparator } from '@/components/shared/ContextMenu';
+import EllipsisMenu from '@/components/shared/EllipsisMenu';
 import Icon from '@/components/shared/Icon';
 import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
+import { SelectionMenuItem } from '@/components/shared/SelectionBar';
 import type { SortDirection } from '@/components/shared/SortableTable';
 import SharedFolderAccessModal from '@/components/sharing/SharedFolderAccessModal';
 import SharedFolderInvitationModal from '@/components/sharing/SharedFolderInvitationModal';
@@ -34,8 +38,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useQuickCreate } from '@/context/QuickCreateContext';
 import { useWebApi } from '@/context/WebApiContext';
-import { useClickOutside } from '@/hooks/useClickOutside';
-import { useItemSelection } from '@/hooks/useItemSelection';
+import { useListSelection } from '@/hooks/useListSelection';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
@@ -115,7 +118,6 @@ const ItemsHome: React.FC = () => {
   const [items, setItems] = useState<ItemListEntry[]>([]);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
-  const [showListMenu, setShowListMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
@@ -134,15 +136,7 @@ const ItemsHome: React.FC = () => {
   const [tableSortDirection, setTableSortDirection] = useState<SortDirection>('desc');
   const [visibleItemCount, setVisibleItemCount] = useState(BATCH_SIZE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const listMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const listMenuRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Close the list menu.
-   */
-  const closeListMenu = useCallback((): void => setShowListMenu(false), []);
-  useClickOutside([listMenuButtonRef, listMenuRef], closeListMenu, showListMenu);
 
   /**
    * Table sort follows the sort order setting.
@@ -261,7 +255,7 @@ const ItemsHome: React.FC = () => {
   }, [items, folderRef, showFolders, filterType, viewMode, tableSortColumn, tableSortDirection, sortOrder]);
 
   const selectableItems = useMemo((): Item[] => allFilteredAndSortedItems.map(entry => entry.item), [allFilteredAndSortedItems]);
-  const selection = useItemSelection(selectableItems);
+  const selection = useListSelection(selectableItems, toSelectedItem, selectedItemKey);
   const { exit: exitSelection } = selection;
 
   // Leave selection mode when the list changes underneath it (folder, filter, grouping, reload).
@@ -573,24 +567,6 @@ const ItemsHome: React.FC = () => {
     </div>
   );
 
-  const menuItemClass = 'w-full flex items-center gap-2 px-4 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700';
-  const menuHeadingClass = 'px-4 pt-2 pb-0.5 text-xs font-medium text-gray-500 dark:text-gray-400';
-
-  /**
-   * One option of a choice in the list menu, with a check in front of the chosen one.
-   * @param labelKey - translation key of the label
-   * @param checked - whether this option is the chosen one
-   * @param onPick - called when the option is picked
-   */
-  const renderMenuRadio = (labelKey: string, checked: boolean, onPick: () => void): React.ReactNode => (
-    <button key={labelKey} type="button" role="menuitemradio" aria-checked={checked} onClick={() => {
-      closeListMenu(); onPick();
-    }} className={`${menuItemClass} py-2 ${checked ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
-      {checked ? <Icon name="check" className="w-4 h-4" /> : <span className="w-4" />}
-      {t(labelKey)}
-    </button>
-  );
-
   return (
     <>
       <PageHeader
@@ -631,40 +607,23 @@ const ItemsHome: React.FC = () => {
         )}
         customActions={(
           <>
-            <div className="relative">
-              <button ref={listMenuButtonRef} id="items-list-menu" onClick={() => setShowListMenu(!showListMenu)} aria-haspopup="menu" aria-expanded={showListMenu} title={t('items.contextMenu.title')} className="p-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
-                <Icon name="dots-horizontal" className="w-5 h-5" />
-              </button>
-
-              {showListMenu && (
-                <div ref={listMenuRef} role="menu" className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100">
-                  {(selectableItems.length > 0 || selection.isActive) && (
-                    <>
-                      <button type="button" id="items-select" role="menuitem" onClick={() => {
-                        closeListMenu(); if (selection.isActive) {
-                          selection.exit();
-                        } else {
-                          selection.enter();
-                        }
-                      }} className={`${menuItemClass} py-2.5 text-gray-700 dark:text-gray-300`}>
-                        <Icon name={selection.isActive ? 'square-feather' : 'square-check'} className="w-4 h-4" />
-                        {selection.isActive ? t('items.selection.disable') : t('items.selection.enable')}
-                      </button>
-                      <div role="separator" className="h-px bg-gray-200 dark:bg-gray-700" />
-                    </>
-                  )}
-                  <div>
-                    <div className={menuHeadingClass}>{t('items.home.viewModeLabel')}</div>
-                    {VIEW_MODE_OPTIONS.map(option => renderMenuRadio(option.labelKey, viewMode === option.value, () => setViewMode(option.value)))}
-                  </div>
-                  <div role="separator" className="h-px bg-gray-200 dark:bg-gray-700" />
-                  <div>
-                    <div className={menuHeadingClass}>{t('items.sort.title')}</div>
-                    {SORT_OPTIONS.map(option => renderMenuRadio(option.labelKey, sortOrder === option.value, () => setSortOrder(option.value)))}
-                  </div>
-                </div>
+            <EllipsisMenu id="items-list-menu" label={t('common.moreOptions')}>
+              {(selectableItems.length > 0 || selection.isActive) && (
+                <>
+                  <SelectionMenuItem isActive={selection.isActive} onToggle={() => (selection.isActive ? selection.exit() : selection.enter())} />
+                  <MenuSeparator />
+                </>
               )}
-            </div>
+              <MenuHeading>{t('items.home.viewModeLabel')}</MenuHeading>
+              {VIEW_MODE_OPTIONS.map(option => (
+                <MenuRadioItem key={option.value} checked={viewMode === option.value} onClick={() => setViewMode(option.value)}>{t(option.labelKey)}</MenuRadioItem>
+              ))}
+              <MenuSeparator />
+              <MenuHeading>{t('items.sort.title')}</MenuHeading>
+              {SORT_OPTIONS.map(option => (
+                <MenuRadioItem key={option.value} checked={sortOrder === option.value} onClick={() => setSortOrder(option.value)}>{t(option.labelKey)}</MenuRadioItem>
+              ))}
+            </EllipsisMenu>
             <RefreshButton onClick={refreshVault} buttonText={t('common.refresh')} />
           </>
         )} />
@@ -765,7 +724,7 @@ const ItemsHome: React.FC = () => {
           )}
 
           {selection.isActive && (
-            <SelectionActionBar
+            <ItemSelectionBar
               selection={selection.selection}
               visibleCount={selectableItems.length}
               currentFolder={folderRef}
