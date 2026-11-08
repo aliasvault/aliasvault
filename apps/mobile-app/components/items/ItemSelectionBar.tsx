@@ -69,7 +69,7 @@ export function ItemSelectionBar({ selection, visibleCount, folders, personalMan
   const confirmDelete = (): void => {
     const sharedCount = countSharedItems(selection, personalManifestId);
     const description = t('items.selection.deleteDescription', { days: TRASH_RETENTION_DEFAULT_DAYS });
-    const message = sharedCount > 0 ? `${description}\n\n${t('items.selection.deleteShared', { count: sharedCount })}` : description;
+    const message = sharedCount > 0 ? `${description}\n\n${t('items.selection.deleteShared')}` : description;
     showConfirm(t('items.selection.deleteTitle', { count }), message, t('common.delete'), () => runAction(async () => {
       const trashed = await dbContext.sqliteClient!.items.trashMany(selection.map(item => ({ Id: item.Id, ManifestId: item.ManifestId })));
       return t('items.selection.deleted', { count: trashed });
@@ -100,8 +100,8 @@ export function ItemSelectionBar({ selection, visibleCount, folders, personalMan
     }
     const moved = summary.toMove.length;
     const message = [
-      summary.toShared ? t('items.selection.moveIntoShared', { count: moved }) : null,
-      summary.fromShared ? t('items.selection.moveOutOfShared', { count: moved }) : null,
+      summary.toShared ? t('items.selection.moveIntoShared') : null,
+      summary.fromShared ? t('items.selection.moveOutOfShared') : null,
     ].filter(Boolean).join('\n\n');
     afterPickerCloseRef.current = (): void => showConfirm(t('items.selection.moveTitle', { count: moved }), message, t('items.selection.move'), () => performMove(summary, target));
     if (Platform.OS !== 'ios') {

@@ -22,6 +22,7 @@ import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 interface IModalWrapperProps {
   isOpen: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
   isSubmitting?: boolean;
   title?: string;
   children: React.ReactNode;
@@ -50,6 +51,7 @@ interface IModalWrapperProps {
 export const ModalWrapper: React.FC<IModalWrapperProps> = ({
   isOpen,
   onClose,
+  onDismiss,
   isSubmitting = false,
   title,
   children,
@@ -213,6 +215,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
       transparent
       animationType={animationType}
       onRequestClose={handleClose}
+      onDismiss={onDismiss}
       statusBarTranslucent
     >
       {isOpen && Platform.OS === 'android' && (

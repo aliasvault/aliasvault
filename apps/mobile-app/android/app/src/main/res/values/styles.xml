@@ -4,6 +4,12 @@
     <item name="android:editTextStyle">@style/ResetEditText</item>
     <item name="colorPrimary">@color/av_primary</item>
     <item name="enforceNavigationBarContrast">false</item>
+    <!-- Item menus (react-native-context-menu-view) use the framework popup menu. -->
+    <item name="android:textAppearanceLargePopupMenu">@style/PopupMenuText</item>
+    <item name="android:textAppearanceSmallPopupMenu">@style/PopupMenuText</item>
+  </style>
+  <style name="PopupMenuText" parent="@android:style/TextAppearance.DeviceDefault.Widget.PopupMenu.Large">
+    <item name="android:textSize">13sp</item>
   </style>
   <style name="ResetEditText" parent="@android:style/Widget.EditText">
     <item name="android:padding">0dp</item>

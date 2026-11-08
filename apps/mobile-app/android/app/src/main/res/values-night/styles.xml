@@ -9,6 +9,9 @@
     <!-- Dark mode: use light icons/text on dark background -->
     <item name="android:windowLightStatusBar">false</item>
     <item name="android:windowLightNavigationBar">false</item>
+    <!-- Item menus (react-native-context-menu-view) use the framework popup menu. -->
+    <item name="android:textAppearanceLargePopupMenu">@style/PopupMenuText</item>
+    <item name="android:textAppearanceSmallPopupMenu">@style/PopupMenuText</item>
   </style>
   <!-- Dark mode splash screen theme -->
   <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">

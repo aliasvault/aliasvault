@@ -1,4 +1,5 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -20,6 +21,7 @@ import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingError
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
+import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
@@ -28,6 +30,8 @@ import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+import { ListMenu } from '@/components/common/ListMenu';
+import { SELECTION_BAR_SPACE } from '@/components/common/SelectionBar';
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
 import { FolderHeaderTitle } from '@/components/folders/FolderHeaderTitle';
@@ -35,7 +39,7 @@ import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
-import { SortMenu } from '@/components/items/SortMenu';
+import { ItemSelectionBar } from '@/components/items/ItemSelectionBar';
 import { SharedFolderAccessModal } from '@/components/sharing/SharedFolderAccessModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -153,6 +157,29 @@ export default function FolderViewScreen(): React.ReactNode {
    * Sort the filtered items based on the current sort order.
    */
   const sortedItems = useSortedItems(filteredItems, sortOrder);
+
+  const selection = useListSelection(sortedItems, toSelectedItem, selectedItemKey);
+  const { exit: exitSelection, toggle: toggleSelected, enter: enterSelection } = selection;
+
+  /**
+   * Turn selection mode on or off from the list menu.
+   */
+  const toggleSelectionMode = useCallback((): void => (selection.isActive ? exitSelection() : selection.enter()), [selection, exitSelection]);
+
+  /**
+   * Toggle one row from a tap or long-press.
+   */
+  const toggleItem = useCallback((entry: DisplayItem): void => toggleSelected(entry, false), [toggleSelected]);
+
+  /**
+   * Start selection mode with one row selected, from its context menu.
+   */
+  const selectFromMenu = useCallback((entry: DisplayItem): void => enterSelection(entry), [enterSelection]);
+
+  // Exit selection mode when the list changes.
+  useEffect(() => {
+    exitSelection();
+  }, [folderRef, searchQuery, filterType, exitSelection]);
 
   /**
    * Calculate total item count including all items in current folder and all child folders recursively.
@@ -806,13 +833,14 @@ export default function FolderViewScreen(): React.ReactNode {
               color={colors.text}
             />
           </TouchableOpacity>
-          {/* Sort button */}
+          {/* List menu button */}
           <TouchableOpacity
             style={styles.sortButton}
             onPress={toggleSortMenu}
+            accessibilityLabel={t('common.moreOptions')}
           >
             <MaterialIcons
-              name="sort"
+              name="more-horiz"
               size={24}
               color={colors.textMuted}
             />
@@ -883,7 +911,7 @@ export default function FolderViewScreen(): React.ReactNode {
         data={isLoadingItems ? Array(4).fill(null) : sortedItems}
         keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: paddingBottom + SELECTION_BAR_SPACE }]}
         scrollIndicatorInsets={{ bottom: 40 }}
         initialNumToRender={14}
         maxToRenderPerBatch={14}
@@ -906,21 +934,48 @@ export default function FolderViewScreen(): React.ReactNode {
           isLoadingItems ? (
             <SkeletonLoader count={1} height={60} parts={2} />
           ) : (
-            <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey} />
+            <ItemCard
+              item={itm}
+              onItemDelete={onItemDelete}
+              onItemDuplicate={onItemDuplicate}
+              isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
+              selectionMode={selection.isActive}
+              isSelected={selection.isSelected(itm)}
+              onToggleSelect={toggleItem}
+              onSelectFromMenu={selectFromMenu}
+            />
           )
         }
         ListEmptyComponent={renderEmptyComponent() as React.ReactElement}
       />
 
-      {/* FAB with item type menu */}
-      <AddItemFab onSelectType={handleAddItem} />
+      {/* FAB with item type menu; the selection bar takes its place while selecting */}
+      {selection.isActive ? (
+        <ItemSelectionBar
+          selection={selection.selection}
+          visibleCount={sortedItems.length}
+          folders={allFolders}
+          personalManifestId={personalManifestId}
+          currentFolder={folderRef}
+          onSelectAll={selection.selectAll}
+          onClose={exitSelection}
+          onDone={async () => {
+            // Reload first, so the selected rows stay marked until the list changes, in one step.
+            await loadItems();
+            exitSelection();
+          }}
+        />
+      ) : (
+        <AddItemFab onSelectType={handleAddItem} />
+      )}
 
       {/* Filter menu overlay */}
       {renderFilterOverlay()}
 
-      {/* Sort menu overlay */}
-      <SortMenu
+      {/* List menu overlay: selection mode and sort order */}
+      <ListMenu
         visible={showSortMenu}
+        selection={sortedItems.length > 0 || selection.isActive ? { isActive: selection.isActive, onToggle: toggleSelectionMode } : undefined}
         sortOrder={sortOrder}
         onSelect={async (order: CredentialSortOrder) => {
           setSortOrder(order);

@@ -6,6 +6,7 @@ All icons of the AliasVault apps, one source of truth for every platform.
 - `item/`: item type icons (placeholder, note, card brands).
 - `builtin-logo/`: built-in logos a user can pick for an item. The PascalCase form of the file name (`shopping.svg` is `Shopping`) is stored in the vault, never rename one.
 - `sources.json`: where each icon comes from. Every icon needs an entry.
+- `"androidDrawable": true` on a `ui` icon also generates `ic_ui_<name>.xml` in the Android `res/drawable` folder (stroked `<path>` icons only).
 
 Run `core/assets/sync.sh` (or `node core/models/scripts/generate-icons.cjs`) after editing an icon to generate the catalogs for all platforms
 (`core/models/src/icons`, `@aliasvault/models/icons` for TypeScript).

@@ -1,5 +1,6 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
@@ -17,6 +18,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
+import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
@@ -26,12 +28,14 @@ import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import Logo from '@/assets/images/logo.svg';
+import { ListMenu } from '@/components/common/ListMenu';
+import { SELECTION_BAR_SPACE } from '@/components/common/SelectionBar';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { ItemFilterMenu } from '@/components/items/ItemFilterMenu';
-import { SortMenu } from '@/components/items/SortMenu';
+import { ItemSelectionBar } from '@/components/items/ItemSelectionBar';
 import { SharedFolderInvitationModal } from '@/components/sharing/SharedFolderInvitationModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -265,6 +269,29 @@ export default function ItemsScreen(): React.ReactNode {
     }
   }, [filteredItems, sortOrder]);
 
+  const selection = useListSelection(sortedItems, toSelectedItem, selectedItemKey);
+  const { exit: exitSelection, toggle: toggleSelected, enter: enterSelection } = selection;
+
+  /**
+   * Turn selection mode on or off from the list menu.
+   */
+  const toggleSelectionMode = useCallback((): void => (selection.isActive ? exitSelection() : selection.enter()), [selection, exitSelection]);
+
+  /**
+   * Toggle one row from a tap or long-press; stable, so the memoized cards don't re-render for it.
+   */
+  const toggleItem = useCallback((entry: DisplayItem): void => toggleSelected(entry, false), [toggleSelected]);
+
+  /**
+   * Start selection mode with one row selected, from its context menu.
+   */
+  const selectFromMenu = useCallback((entry: DisplayItem): void => enterSelection(entry), [enterSelection]);
+
+  // Leave selection mode when the list changes underneath it (search, filter, folder grouping).
+  useEffect(() => {
+    exitSelection();
+  }, [searchQuery, filterType, showFolderItems, exitSelection]);
+
   /**
    * Load items (credentials), folders, and recently deleted count.
    */
@@ -374,7 +401,7 @@ export default function ItemsScreen(): React.ReactNode {
         return <Text>{t('items.title')}</Text>;
       },
       /**
-       * Sort button in the header (Android only, iOS uses inline button).
+       * List menu button in the header (Android only, iOS uses inline button).
        */
       headerRight: (): React.ReactNode => {
         if (Platform.OS === 'android') {
@@ -383,7 +410,7 @@ export default function ItemsScreen(): React.ReactNode {
               style={{ padding: 8, marginRight: 8 }}
               onPress={() => setShowSortMenu(prev => !prev)}
             >
-              <MaterialIcons name="sort" size={24} color={colors.text} />
+              <MaterialIcons name="more-horiz" size={24} color={colors.text} />
             </TouchableOpacity>
           );
         }
@@ -694,13 +721,14 @@ export default function ItemsScreen(): React.ReactNode {
                 color={colors.text}
               />
             </TouchableOpacity>
-            {/* Sort button */}
+            {/* List menu button */}
             <TouchableOpacity
               style={styles.sortButton}
               onPress={() => setShowSortMenu(!showSortMenu)}
+              accessibilityLabel={t('common.moreOptions')}
             >
               <MaterialIcons
-                name="sort"
+                name="more-horiz"
                 size={24}
                 color={colors.textMuted}
               />
@@ -891,7 +919,7 @@ export default function ItemsScreen(): React.ReactNode {
             { useNativeDriver: true }
           )}
           scrollEventThrottle={16}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 60 : 10) + SELECTION_BAR_SPACE }]}
           scrollIndicatorInsets={{ bottom: 40 }}
           initialNumToRender={14}
           maxToRenderPerBatch={14}
@@ -913,7 +941,17 @@ export default function ItemsScreen(): React.ReactNode {
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} showFolderPath={!!searchQuery} isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey} />
+              <ItemCard
+                item={itm}
+                onItemDelete={onItemDelete}
+                onItemDuplicate={onItemDuplicate}
+                showFolderPath={!!searchQuery}
+                isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
+                selectionMode={selection.isActive}
+                isSelected={selection.isSelected(itm)}
+                onToggleSelect={toggleItem}
+                onSelectFromMenu={selectFromMenu}
+              />
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}
@@ -921,8 +959,25 @@ export default function ItemsScreen(): React.ReactNode {
         />
       </ThemedView>
 
-      {/* FAB with item type menu */}
-      <AddItemFab onSelectType={handleAddItem} testID="add-item-button" />
+      {/* FAB with item type menu; the selection bar takes its place while selecting */}
+      {selection.isActive ? (
+        <ItemSelectionBar
+          selection={selection.selection}
+          visibleCount={sortedItems.length}
+          folders={folders}
+          personalManifestId={personalManifestId}
+          currentFolder={null}
+          onSelectAll={selection.selectAll}
+          onClose={exitSelection}
+          onDone={async () => {
+            // Reload first, so the selected rows stay marked until the list changes, in one step.
+            await loadItems();
+            exitSelection();
+          }}
+        />
+      ) : (
+        <AddItemFab onSelectType={handleAddItem} testID="add-item-button" />
+      )}
 
       {/* Filter menu overlay */}
       <ItemFilterMenu
@@ -940,9 +995,10 @@ export default function ItemsScreen(): React.ReactNode {
         }}
       />
 
-      {/* Sort menu overlay */}
-      <SortMenu
+      {/* List menu overlay: selection mode and sort order */}
+      <ListMenu
         visible={showSortMenu}
+        selection={sortedItems.length > 0 || selection.isActive ? { isActive: selection.isActive, onToggle: toggleSelectionMode } : undefined}
         sortOrder={sortOrder}
         onSelect={async (order: CredentialSortOrder) => {
           setSortOrder(order);
