@@ -19,7 +19,7 @@ type SelectionBarProps = {
 };
 
 const baseButtonClass = 'inline-flex items-center gap-2 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500';
-const buttonClass = `${baseButtonClass} px-3.5 text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`;
+const buttonClass = `${baseButtonClass} px-2.5 sm:px-3.5 text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`;
 
 /**
  * Floating bar of a list in selection mode: close, count, select all and the given actions.
@@ -56,10 +56,11 @@ const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSele
             <Icon name="x" className="w-[18px] h-[18px]" />
           </button>
           <span aria-live="polite" className="pl-1 pr-1 text-sm font-medium whitespace-nowrap mr-auto sm:mr-0 text-gray-900 dark:text-white tabular-nums">{countLabel}</span>
-          <span aria-hidden className="h-5 w-px mx-1.5 bg-gray-300 dark:bg-gray-500" />
-          <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} title={selectAllLabel} className={buttonClass}>
-            <Icon name={allSelected ? 'square-feather' : 'square-check'} className="w-4 h-4" />
-            <span className="hidden sm:inline">{selectAllLabel}</span>
+          <span aria-hidden className="hidden sm:block h-5 w-px mx-1.5 bg-gray-300 dark:bg-gray-500" />
+          {/* Always labelled: as an icon alone, Deselect all is too easy to hit by mistake. */}
+          <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} title={selectAllLabel} className={`${buttonClass} min-w-0`}>
+            <Icon name={allSelected ? 'square-feather' : 'square-check'} className="hidden sm:block w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{selectAllLabel}</span>
           </button>
           {children}
         </div>
@@ -81,7 +82,7 @@ type SelectionBarButtonProps = {
  * An action button in the selection bar; the label hides on small screens.
  */
 export const SelectionBarButton: React.FC<SelectionBarButtonProps> = ({ icon, label, onClick, disabled = false, danger = false, id }) => (
-  <button type="button" id={id} onClick={onClick} disabled={disabled} title={label} className={danger ? `${baseButtonClass} px-3.5 text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/20` : buttonClass}>
+  <button type="button" id={id} onClick={onClick} disabled={disabled} title={label} className={danger ? `${baseButtonClass} px-2.5 sm:px-3.5 text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/20` : buttonClass}>
     <Icon name={icon} className="w-4 h-4" />
     <span className="hidden sm:inline">{label}</span>
   </button>

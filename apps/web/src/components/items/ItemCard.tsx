@@ -62,7 +62,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ entry, onMutated, isSelectionMode, 
       onContextMenu={(e) => {
         e.preventDefault(); menuRef.current?.open(e.clientX, e.clientY); 
       }}
-      className={`credential-card relative group px-3 py-2.5 md:p-4 border rounded-lg shadow-sm cursor-pointer transition-colors duration-200 ${isSelectionMode ? 'select-none pl-10 md:pl-4' : ''} ${colorClass}`}>
+      className={`credential-card relative group min-w-0 px-3 py-2.5 md:p-4 border rounded-lg shadow-sm cursor-pointer transition-colors duration-200 ${isSelectionMode ? 'select-none pl-10 md:pl-4' : ''} ${colorClass}`}>
       {isSelectionMode && (
         <SelectCheckbox isSelected={isSelected} onSelect={onSelect} className="absolute left-3 top-1/2 -translate-y-1/2 md:left-2.5 md:top-2.5 md:translate-y-0" />
       )}

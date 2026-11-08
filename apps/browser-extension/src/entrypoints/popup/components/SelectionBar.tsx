@@ -58,9 +58,8 @@ const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSele
         </button>
         <span className="pl-1.5 pr-1 text-sm font-medium whitespace-nowrap tabular-nums text-gray-900 dark:text-white" aria-live="polite">{countLabel}</span>
         <span aria-hidden className="h-5 w-px mx-1 bg-gray-300 dark:bg-gray-500" />
-        <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} className={`${buttonClass} gap-1.5 px-2 h-8 text-sm font-medium whitespace-nowrap text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`}>
-          <Icon name={allSelected ? 'square-feather' : 'square-check'} className="w-4 h-4" />
-          {allSelected ? t('common.selection.deselectAll') : t('common.selection.selectAll')}
+        <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} className={`${buttonClass} min-w-0 px-2 h-8 text-sm font-medium whitespace-nowrap text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`}>
+          <span className="truncate">{allSelected ? t('common.selection.deselectAll') : t('common.selection.selectAll')}</span>
         </button>
         <div className="flex-1" />
         {children}
