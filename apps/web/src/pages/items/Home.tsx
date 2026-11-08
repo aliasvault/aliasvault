@@ -729,7 +729,6 @@ const ItemsHome: React.FC = () => {
               visibleCount={selectableItems.length}
               currentFolder={folderRef}
               onSelectAll={selection.selectAll}
-              onDeselectAll={selection.deselectAll}
               onClose={selection.exit}
               onDone={finishBulkAction} />
           )}

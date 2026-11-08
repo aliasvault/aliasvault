@@ -155,9 +155,11 @@ test.describe('20. Items', () => {
     });
 
     await test.step('select all in the folder and delete', async () => {
+      const bar = page.locator('#selection-action-bar');
       await card('Bulk one').click({ modifiers: ['ControlOrMeta'] });
-      await page.locator('#selection-action-bar').getByRole('button', { name: 'Select all' }).click();
-      await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
+      await bar.getByRole('button', { name: 'Select all' }).click();
+      await expect(bar).toContainText('2 selected');
+      await expect(bar.getByRole('button', { name: 'Select all' })).toBeDisabled();
       await page.locator('#selection-delete').click();
       await expect(page.getByRole('heading', { name: 'Delete 2 items?' })).toBeVisible();
       await page.getByRole('button', { name: 'Delete', exact: true }).last().click();

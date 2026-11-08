@@ -10,7 +10,6 @@ type SelectionBarProps = {
   count: number;
   visibleCount: number;
   onSelectAll: () => void;
-  onDeselectAll: () => void;
   onClose: () => void;
   /** While a dialog of the bar is open, Escape belongs to the dialog. */
   dialogOpen: boolean;
@@ -24,11 +23,10 @@ const buttonClass = `${baseButtonClass} px-2.5 sm:px-3.5 text-gray-800 hover:bg-
 /**
  * Floating bar of a list in selection mode: close, count, select all and the given actions.
  */
-const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSelectAll, onDeselectAll, onClose, dialogOpen, children }) => {
+const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSelectAll, onClose, dialogOpen, children }) => {
   const { t } = useTranslation();
   const countLabel = t('common.selection.count', { count });
   const allSelected = count > 0 && count >= visibleCount;
-  const selectAllLabel = allSelected ? t('common.selection.deselectAll') : t('common.selection.selectAll');
 
   const dialogOpenRef = useRef(dialogOpen);
   dialogOpenRef.current = dialogOpen;
@@ -57,10 +55,10 @@ const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSele
           </button>
           <span aria-live="polite" className="pl-1 pr-1 text-sm font-medium whitespace-nowrap mr-auto sm:mr-0 text-gray-900 dark:text-white tabular-nums">{countLabel}</span>
           <span aria-hidden className="hidden sm:block h-5 w-px mx-1.5 bg-gray-300 dark:bg-gray-500" />
-          {/* Always labelled: as an icon alone, Deselect all is too easy to hit by mistake. */}
-          <button type="button" onClick={allSelected ? onDeselectAll : onSelectAll} title={selectAllLabel} className={`${buttonClass} min-w-0`}>
-            <Icon name={allSelected ? 'square-feather' : 'square-check'} className="hidden sm:block w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{selectAllLabel}</span>
+          {/* No Deselect all: a selection is cleared by closing the bar or clicking rows, never by one stray click. */}
+          <button type="button" onClick={onSelectAll} disabled={allSelected} title={t('common.selection.selectAll')} className={`${buttonClass} min-w-0`}>
+            <Icon name="square-check" className="hidden sm:block w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{t('common.selection.selectAll')}</span>
           </button>
           {children}
         </div>
