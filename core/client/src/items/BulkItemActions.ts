@@ -66,7 +66,7 @@ export function describeBulkMove(items: SelectedItem[], target: FolderRef | null
 }
 
 /**
- * How many of the selected items are in a shared folder, which a bulk delete removes for everyone with access.
+ * How many of the selected items are in a shared folder.
  * @param items - The selected items
  * @param personalManifestId - The user's personal manifest
  * @returns The number of shared items

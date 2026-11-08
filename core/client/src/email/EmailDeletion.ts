@@ -10,13 +10,15 @@ type EmailBulkResponse = {
   successfulEmailIds: number[];
 };
 
+export type EmailDeletionApi = Pick<WebApiService, 'authFetch'>;
+
 /**
  * Delete emails from the mailbox, in batches the server accepts.
  * @param webApi - The API client
  * @param emailIds - The ids of the emails to delete
  * @returns The ids the server deleted
  */
-export async function deleteEmails(webApi: WebApiService, emailIds: number[]): Promise<number[]> {
+export async function deleteEmails(webApi: EmailDeletionApi, emailIds: number[]): Promise<number[]> {
   const deleted: number[] = [];
   for (let start = 0; start < emailIds.length; start += MAX_IDS_PER_REQUEST) {
     const ids = emailIds.slice(start, start + MAX_IDS_PER_REQUEST);

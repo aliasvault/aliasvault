@@ -533,7 +533,7 @@ export class ItemRepository extends BaseRepository {
    * Move several items into one folder in one transaction. A target in another manifest moves the item there.
    * @param refs - The items, each named by its manifest and id
    * @param target - The folder to move them into, or null for the top level of the personal manifest
-   * @returns Where each item is after the move, in input order (unchanged for an item already in the target or no longer stored)
+   * @returns Where each item is after the move, in input order
    */
   public async moveMany(refs: ItemRef[], target: FolderRef | null): Promise<ItemRef[]> {
     return this.withTransaction(async () => {

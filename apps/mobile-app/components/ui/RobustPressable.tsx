@@ -1,9 +1,12 @@
 import React from 'react';
-import { StyleProp, ViewStyle, Platform } from 'react-native';
+import { StyleProp, ViewStyle, Platform, type AccessibilityState } from 'react-native';
 import { Pressable } from 'react-native-gesture-handler';
 
 interface IRobustPressableProps {
   onPress?: () => void;
+  onLongPress?: () => void;
+  onPressIn?: () => void;
+  onPressOut?: () => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
@@ -11,6 +14,7 @@ interface IRobustPressableProps {
   hitSlop?: number;
   testID?: string;
   accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
 }
 
 /**
@@ -21,6 +25,9 @@ interface IRobustPressableProps {
  */
 export const RobustPressable: React.FC<IRobustPressableProps> = ({
   onPress,
+  onLongPress,
+  onPressIn,
+  onPressOut,
   children,
   style,
   disabled,
@@ -28,10 +35,14 @@ export const RobustPressable: React.FC<IRobustPressableProps> = ({
   hitSlop = 10,
   testID,
   accessibilityLabel,
+  accessibilityState,
 }) => {
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       hitSlop={hitSlop}
       pressRetentionOffset={pressRetentionOffset}
       disabled={disabled}
@@ -42,6 +53,7 @@ export const RobustPressable: React.FC<IRobustPressableProps> = ({
       ]}
       testID={testID}
       accessibilityLabel={accessibilityLabel ?? testID}
+      accessibilityState={accessibilityState}
     >
       {children}
     </Pressable>

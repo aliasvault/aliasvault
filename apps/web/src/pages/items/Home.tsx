@@ -258,10 +258,10 @@ const ItemsHome: React.FC = () => {
   const selection = useListSelection(selectableItems, toSelectedItem, selectedItemKey);
   const { exit: exitSelection } = selection;
 
-  // Leave selection mode when the list changes underneath it (folder, filter, grouping, reload).
+  // Exit selection mode when the list changes.
   useEffect(() => {
     exitSelection();
-  }, [folderRef, filterType, showFolders, items, exitSelection]);
+  }, [folderRef, filterType, showFolders, exitSelection]);
 
   /**
    * Refresh the list and leave selection mode after a bulk action.

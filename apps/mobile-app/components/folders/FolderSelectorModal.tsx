@@ -27,6 +27,7 @@ interface IFolderSelectorModalProps {
   onFolderChange: (folder: FolderRef | null) => void;
   isOpen: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
 }
 
 /**
@@ -42,6 +43,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   onFolderChange,
   isOpen,
   onClose,
+  onDismiss,
 }) => {
   const { t } = useTranslation();
   const colors = useColors();
@@ -256,6 +258,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
+      onDismiss={onDismiss}
       showHeaderBorder={false}
       showFooterBorder={false}
     >
