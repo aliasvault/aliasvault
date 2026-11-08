@@ -172,6 +172,16 @@ export default [
         },
     },
     {
+        // A direct page.pause() stops every headed run; app.pause() only stops in a test:e2e:p run.
+        files: ["tests/**/*.ts"],
+        ignores: ["tests/fixtures/WebApp.ts"],
+        rules: {
+            "no-restricted-syntax": ["error",
+                { selector: "CallExpression[callee.property.name='pause'][callee.object.name=/(^p|P)age$/], CallExpression[callee.property.name='pause'][callee.object.property.name=/(^p|P)age$/]", message: "Use app.pause(), which only stops in a `npm run test:e2e:p` run." },
+            ],
+        },
+    },
+    {
         languageOptions: {
             globals: {
                 ...globals.browser,
