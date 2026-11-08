@@ -3,7 +3,7 @@
     "ACCOUNT_BLOCKED": "Hesabınız devre dışı bırakıldı. Bunun bir hata olduğunu düşünüyorsanız lütfen destek ekibiyle iletişime geçin.",
     "ACCOUNT_LOCKED": "Çok fazla hatalı deneme nedeniyle hesabınız geçici olarak kilitlendi. Lütfen daha sonra tekrar deneyin.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Hesabınız başarıyla silinmiştir.",
-    "ALIAS_LIMIT_REACHED": "Yeni mail alias oluşturma limitinize ulaştınız. Lütfen daha sonra tekrsr deneyin ya da daha fazlasına ihtiyacınız varsa destek ekibimizle iletişime geçin.",
+    "ALIAS_LIMIT_REACHED": "Yeni mail alias oluşturma limitinize ulaştınız. Lütfen daha sonra tekrar deneyin ya da daha fazlasına ihtiyacınız varsa destek ekibimizle iletişime geçin.",
     "CLAIM_DOES_NOT_EXIST": "E-postalar yüklenirken bir hata oluştu. Veritabanını senkronize etmek için lütfen kimlik bilgisi kaydını düzenleyip kaydedin, ardından tekrar deneyin.",
     "CLAIM_TAKEN": "Bu mail adresi başka bir hesap tarafından kullanılıyor. Düzenleyin ve farklı bir mail adresi seçin.",
     "INTERNAL_SERVER_ERROR": "İç sunucu hatası.",
