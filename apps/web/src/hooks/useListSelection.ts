@@ -15,13 +15,19 @@ export type ListSelection<T, S> = {
 };
 
 /**
+ * How selection mode was entered: `explicit` from a menu stays open at zero selected,
+ * `implicit` from a modifier-click closes again once the last entry is deselected.
+ */
+type SelectionMode = 'off' | 'explicit' | 'implicit';
+
+/**
  * Multi-select state for a list.
  * @param entries - the entries to select from, in list order
  * @param toSelected - what the selection keeps of an entry
  * @param keyOf - the unique key of a selected entry
  */
 export function useListSelection<T, S>(entries: T[], toSelected: (entry: T) => S, keyOf: (selected: S) => string): ListSelection<T, S> {
-  const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState<SelectionMode>('off');
   const [selection, setSelection] = useState<S[]>([]);
   const anchorKeyRef = useRef<string | null>(null);
 
@@ -33,25 +39,32 @@ export function useListSelection<T, S>(entries: T[], toSelected: (entry: T) => S
     return selection.filter(selected => entryKeys.has(keyOf(selected)));
   }, [entries, entryKey, selection, keyOf]);
 
+  const isActive = mode === 'explicit' || (mode === 'implicit' && visibleSelection.length > 0);
+
   const selectedKeys = useMemo(() => new Set(visibleSelection.map(keyOf)), [visibleSelection, keyOf]);
 
   const isSelected = useCallback((entry: T): boolean => selectedKeys.has(entryKey(entry)), [selectedKeys, entryKey]);
 
   const enter = useCallback((entry?: T): void => {
-    setIsActive(true);
+    setMode('explicit');
     setSelection(entry ? [toSelected(entry)] : []);
     anchorKeyRef.current = entry ? entryKey(entry) : null;
   }, [toSelected, entryKey]);
 
   const exit = useCallback((): void => {
-    setIsActive(false);
+    setMode('off');
     setSelection([]);
     anchorKeyRef.current = null;
   }, []);
 
   const toggle = useCallback((entry: T, range: boolean): void => {
-    setIsActive(true);
     const key = entryKey(entry);
+    if (!isActive) {
+      setMode('implicit');
+      setSelection([toSelected(entry)]);
+      anchorKeyRef.current = key;
+      return;
+    }
     const keys = entries.map(entryKey);
     const from = anchorKeyRef.current ? keys.indexOf(anchorKeyRef.current) : -1;
     const to = keys.indexOf(key);
@@ -66,7 +79,7 @@ export function useListSelection<T, S>(entries: T[], toSelected: (entry: T) => S
       setSelection(current => (current.some(selected => keyOf(selected) === key) ? current.filter(selected => keyOf(selected) !== key) : [...current, toSelected(entry)]));
     }
     anchorKeyRef.current = key;
-  }, [entries, entryKey, keyOf, toSelected]);
+  }, [isActive, entries, entryKey, keyOf, toSelected]);
 
   const selectAll = useCallback((): void => setSelection(entries.map(toSelected)), [entries, toSelected]);
 
