@@ -127,6 +127,10 @@ test.describe('20. Items', () => {
       await page.locator('#items-list-menu').click();
       await page.locator('#list-select').click();
       await card('Bulk one').click();
+      await card('Bulk one').click();
+      // Selection mode turned on from the menu stays open with nothing selected.
+      await expect(page.locator('#selection-action-bar')).toContainText('0 selected');
+      await card('Bulk one').click();
       await card('Bulk two').click();
       await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
       await page.locator('#selection-move').click();
@@ -141,6 +145,13 @@ test.describe('20. Items', () => {
       await app.openFolder(folderName);
       await expect(card('Bulk one')).toBeVisible();
       await expect(card('Bulk two')).toBeVisible();
+    });
+
+    await test.step('selection mode entered by Ctrl/Cmd+click closes when the last item is deselected', async () => {
+      await card('Bulk one').click({ modifiers: ['ControlOrMeta'] });
+      await expect(page.locator('#selection-action-bar')).toContainText('1 selected');
+      await card('Bulk one').click({ modifiers: ['ControlOrMeta'] });
+      await expect(page.locator('#selection-action-bar')).toHaveCount(0);
     });
 
     await test.step('select all in the folder and delete', async () => {
