@@ -1,4 +1,4 @@
-import { isSameItem, type ItemRef } from '../database/ItemRef';
+import { type ItemRef, scopedKey } from '../database/ItemRef';
 
 import type { FolderRef } from '../database/repositories/FolderRepository';
 
@@ -14,6 +14,15 @@ export type SelectedItem = ItemRef & { FolderId?: string | null };
  */
 export function toSelectedItem(item: SelectedItem): SelectedItem {
   return { Id: item.Id, ManifestId: item.ManifestId, FolderId: item.FolderId ?? null };
+}
+
+/**
+ * The key of a selected item, unique across manifests.
+ * @param item - The selected item
+ * @returns The item's manifest-scoped key
+ */
+export function selectedItemKey(item: SelectedItem): string {
+  return scopedKey(item.ManifestId, item.Id);
 }
 
 /**
@@ -64,14 +73,4 @@ export function describeBulkMove(items: SelectedItem[], target: FolderRef | null
  */
 export function countSharedItems(items: ItemRef[], personalManifestId: string | null): number {
   return items.filter(item => isShared(item.ManifestId, personalManifestId)).length;
-}
-
-/**
- * Toggle one item in a selection.
- * @param selection - The current selection
- * @param item - The item to add or remove
- * @returns The new selection
- */
-export function toggleSelectedItem<T extends ItemRef>(selection: T[], item: T): T[] {
-  return selection.some(selected => isSameItem(selected, item)) ? selection.filter(selected => !isSameItem(selected, item)) : [...selection, item];
 }

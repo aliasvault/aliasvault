@@ -1,6 +1,7 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
+import { deleteEmails } from '@aliasvault/client/email/EmailDeletion';
 import { getPlatform } from '@aliasvault/client/platform';
 import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -12,17 +13,19 @@ import EmailPreview from '@/components/email/EmailPreview';
 import EmailPreviewSkeleton from '@/components/email/EmailPreviewSkeleton';
 import EmailRow, { type MailListEntry } from '@/components/email/EmailRow';
 import EmailRowSkeleton from '@/components/email/EmailRowSkeleton';
-import DeleteAllSelectedButton from '@/components/shared/DeleteAllSelectedButton';
+import EllipsisMenu from '@/components/shared/EllipsisMenu';
 import Icon from '@/components/shared/Icon';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
 import ResponsivePaginator from '@/components/shared/ResponsivePaginator';
+import SelectionBar, { SelectionBarButton, SelectionMenuItem } from '@/components/shared/SelectionBar';
 import Text from '@/components/shared/Text';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
+import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -53,11 +56,14 @@ type MailboxPage = {
 };
 
 /**
- * Response of a bulk delete.
+ * What the selection keeps of an email: its id.
  */
-type EmailBulkResponse = {
-  successfulEmailIds: number[];
-};
+const emailIdOf = (email: MailListEntry): number => email.id;
+
+/**
+ * The selection key of an email id.
+ */
+const emailKey = (id: number): string => String(id);
 
 /**
  * The mailbox: every email received by the vault's private email addresses.
@@ -83,7 +89,6 @@ const EmailsHome: React.FC = () => {
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [emailModalEmail, setEmailModalEmail] = useState<EmailViewModel | null>(null);
   const previewLoadSequence = useRef(0);
-  const [checkedEmailIds, setCheckedEmailIds] = useState<Set<number>>(new Set());
   const [newEmailIds, setNewEmailIds] = useState<Set<number>>(new Set());
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const knownEmailIds = useRef<Set<number>>(new Set());
@@ -91,6 +96,9 @@ const EmailsHome: React.FC = () => {
   const autoRefreshEnabled = useMemo(() => (dbContext.sqliteClient?.settings.getSetting('AutoEmailRefresh', 'True') ?? 'True').toLowerCase() === 'true', [dbContext.sqliteClient]);
 
   const hasMoreEmails = totalRecords > emailList.length;
+  const selection = useListSelection(emailList, emailIdOf, emailKey);
+  const { exit: exitSelection } = selection;
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   /**
    * Get the list of private email alias addresses in the vault, used to show the empty state.
@@ -177,7 +185,7 @@ const EmailsHome: React.FC = () => {
     setIsLoading(true);
     setNoEmailClaims(false);
     setSelectedEmailId(null);
-    setCheckedEmailIds(new Set());
+    exitSelection();
     setEmailList([]);
     setNewEmailIds(new Set());
     knownEmailIds.current = new Set();
@@ -206,7 +214,7 @@ const EmailsHome: React.FC = () => {
       }
     }
     setIsLoading(false);
-  }, [dbContext, getEmailClaimList, loadEmailsFromServer, setIsLoading]);
+  }, [dbContext, getEmailClaimList, loadEmailsFromServer, setIsLoading, exitSelection]);
 
   useEffect(() => {
     void refreshData();
@@ -291,21 +299,6 @@ const EmailsHome: React.FC = () => {
     }
   };
 
-  /**
-   * Toggle an email's checkbox.
-   */
-  const checkEmail = useCallback((emailId: number): void => {
-    setCheckedEmailIds(ids => {
-      const next = new Set(ids);
-      if (next.has(emailId)) {
-        next.delete(emailId);
-      } else {
-        next.add(emailId);
-      }
-      return next;
-    });
-  }, []);
-
   // Load and decrypt the selected email for the preview panel; a newer selection cancels an older load.
   useEffect(() => {
     const sequence = ++previewLoadSequence.current;
@@ -369,7 +362,6 @@ const EmailsHome: React.FC = () => {
     const deletedSelectedIndex = selectedEmailId !== null && emailIds.includes(selectedEmailId) ? emailList.findIndex(e => e.id === selectedEmailId) : -1;
     const remaining = emailList.filter(e => !emailIds.includes(e.id));
     setEmailList(remaining);
-    setCheckedEmailIds(new Set());
     emailIds.forEach(id => knownEmailIds.current.delete(id));
     setTotalRecords(total => Math.max(0, total - emailIds.length));
     if (deletedSelectedIndex >= 0) {
@@ -378,36 +370,55 @@ const EmailsHome: React.FC = () => {
   };
 
   /**
-   * Delete every checked email after confirmation.
+   * Delete emails after confirmation.
+   * @param emailIds - the emails to delete
+   * @param title - the confirmation title
+   * @param message - the confirmation message
+   * @param successMessage - the message once the emails are gone
+   * @returns whether the emails were deleted
    */
-  const showBulkDeleteConfirmation = async (): Promise<void> => {
-    if (checkedEmailIds.size === 0) {
-      return;
+  const confirmAndDelete = async (emailIds: number[], title: string, message: string, successMessage: (count: number) => string): Promise<boolean> => {
+    if (emailIds.length === 0) {
+      return false;
     }
-    const confirmed = await showConfirmation(
-      t('emails.home.bulkDeleteEmailTitle'),
-      t('emails.home.bulkDeleteEmailConfirmation', { count: checkedEmailIds.size }),
-      t('common.confirm'),
-      t('common.cancel'),
-    );
+    setIsConfirmingDelete(true);
+    const confirmed = await showConfirmation(title, message, t('common.confirm'), t('common.cancel'));
+    setIsConfirmingDelete(false);
     if (!confirmed) {
-      return;
+      return false;
     }
 
     try {
-      const response = await webApi.authFetch<EmailBulkResponse>('Email/bulk', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [...checkedEmailIds] }),
-      });
-      const deletedIds = response?.successfulEmailIds ?? [];
-      notifications.addSuccessMessage(t('emails.home.bulkDeleteEmailSuccess', { count: deletedIds.length }), true);
+      const deletedIds = await deleteEmails(webApi, emailIds);
+      notifications.addSuccessMessage(successMessage(deletedIds.length), true);
       handleEmailsDeleted(deletedIds);
+      return true;
     } catch (error) {
       notifications.addErrorMessage(error instanceof Error ? error.message : t('common.errors.unknownError'), true);
-      console.error('An error occurred while bulk deleting emails at server', error);
+      console.error('An error occurred while deleting emails at server', error);
+      return false;
     }
   };
+
+  const confirmAndDeleteRef = useRef(confirmAndDelete);
+  confirmAndDeleteRef.current = confirmAndDelete;
+
+  /**
+   * Delete the selected emails after confirmation, then leave selection mode.
+   */
+  const deleteSelectedEmails = async (): Promise<void> => {
+    const count = selection.selection.length;
+    if (await confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle'), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }))) {
+      exitSelection();
+    }
+  };
+
+  /**
+   * Delete one email from its context menu after confirmation.
+   */
+  const deleteSingleEmail = useCallback((emailId: number): void => {
+    void confirmAndDeleteRef.current([emailId], t('emails.deleteEmail'), t('emails.modal.deleteEmailConfirmation'), () => t('emails.modal.emailDeletedSuccess'));
+  }, [t]);
 
   /**
    * The preview panel.
@@ -433,9 +444,11 @@ const EmailsHome: React.FC = () => {
     <EmailRow
       key={email.id}
       email={email}
-      onEmailCheck={checkEmail}
       onEmailClick={onClick}
-      isChecked={checkedEmailIds.has(email.id)}
+      isSelectionMode={selection.isActive}
+      isChecked={selection.isSelected(email)}
+      onCheck={selection.toggle}
+      onDelete={deleteSingleEmail}
       isSelected={withSelection && selectedEmailId === email.id}
       isNewEmail={newEmailIds.has(email.id)} />
   ));
@@ -454,10 +467,12 @@ const EmailsHome: React.FC = () => {
             {autoRefreshEnabled && currentPage === 1 && (
               <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('emails.home.autoRefreshEnabledTooltip')}></div>
             )}
-            <RefreshButton onClick={onRefreshClick} buttonText={t('common.refresh')} />
-            {checkedEmailIds.size > 0 && (
-              <DeleteAllSelectedButton onClick={showBulkDeleteConfirmation} buttonText={t('emails.home.deleteSelectedEmails', { count: checkedEmailIds.size })} />
+            {(emailList.length > 0 || selection.isActive) && (
+              <EllipsisMenu id="emails-list-menu" label={t('common.moreOptions')}>
+                <SelectionMenuItem isActive={selection.isActive} onToggle={() => (selection.isActive ? exitSelection() : selection.enter())} />
+              </EllipsisMenu>
             )}
+            <RefreshButton onClick={onRefreshClick} buttonText={t('common.refresh')} />
           </>
         )} />
 
@@ -553,6 +568,12 @@ const EmailsHome: React.FC = () => {
               )}
             </div>
           </div>
+        )}
+
+        {selection.isActive && (
+          <SelectionBar count={selection.selection.length} visibleCount={emailList.length} onSelectAll={selection.selectAll} onDeselectAll={selection.deselectAll} onClose={exitSelection} dialogOpen={isConfirmingDelete}>
+            <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => void deleteSelectedEmails()} disabled={selection.selection.length === 0} danger />
+          </SelectionBar>
         )}
       </PageContent>
     </>

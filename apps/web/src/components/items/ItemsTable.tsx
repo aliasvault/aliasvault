@@ -2,10 +2,11 @@ import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import ItemContextMenu, { type ItemContextMenuHandle } from '@/components/items/ItemContextMenu';
+import ItemContextMenu from '@/components/items/ItemContextMenu';
 import ItemIcon from '@/components/items/ItemIcon';
 import type { ItemListEntry } from '@/components/items/ItemListEntry';
-import ItemSelectCheckbox from '@/components/items/ItemSelectCheckbox';
+import { type ContextMenuHandle } from '@/components/shared/ContextMenu';
+import SelectCheckbox from '@/components/shared/SelectCheckbox';
 import SortableTable, { SortableTableColumn, SortableTableRow, type SortDirection, type TableColumn } from '@/components/shared/SortableTable';
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -47,7 +48,7 @@ const formatDate = (date: Date): string => `${date.getFullYear()}-${String(date.
  */
 const ItemsTableRow: React.FC<ItemsTableRowProps> = ({ entry, onMutated, isSelectionMode, isSelected, onSelect }) => {
   const navigate = useNavigate();
-  const menuRef = useRef<ItemContextMenuHandle>(null);
+  const menuRef = useRef<ContextMenuHandle>(null);
   const selectedClass = isSelected ? '!bg-primary-50 hover:!bg-primary-100 dark:!bg-primary-900/20 dark:hover:!bg-primary-900/30' : '';
 
   /**
@@ -65,7 +66,7 @@ const ItemsTableRow: React.FC<ItemsTableRowProps> = ({ entry, onMutated, isSelec
     <SortableTableRow className={`cursor-pointer group ${isSelectionMode ? 'select-none' : ''} ${selectedClass}`} onClick={handleClick} onContextMenu={(e) => menuRef.current?.open(e.clientX, e.clientY)}>
       <SortableTableColumn padding={false}>
         <div className="flex items-center space-x-2 py-2 pl-2">
-          <ItemSelectCheckbox isSelected={isSelected} onSelect={onSelect} className="-mr-1" />
+          <SelectCheckbox isSelected={isSelected} onSelect={onSelect} className="-mr-1" />
           <ItemIcon item={entry.item} altText={entry.service ?? ''} sizeClass="w-6 h-6" />
           <span className="font-bold ml-2 truncate">{entry.service}</span>
         </div>
@@ -75,7 +76,7 @@ const ItemsTableRow: React.FC<ItemsTableRowProps> = ({ entry, onMutated, isSelec
       <SortableTableColumn padding={false}>{formatDate(entry.createdAt)}</SortableTableColumn>
       <SortableTableColumn padding={false}>
         <div className="flex justify-end pr-2">
-          <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} isSelected={isSelected} onToggleSelect={() => onSelect(false)} />
+          <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} />
         </div>
       </SortableTableColumn>
     </SortableTableRow>
