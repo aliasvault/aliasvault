@@ -11,19 +11,19 @@ import { SORT_OPTIONS } from '@/hooks/useItemSort';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 
-interface SortMenuProps {
+interface ListMenuProps {
   /**
    * Whether the menu is visible.
    */
   visible: boolean;
   /**
-   * Current sort order.
+   * Current sort order; the sort options only show when `onSelect` is set.
    */
-  sortOrder: CredentialSortOrder;
+  sortOrder?: CredentialSortOrder;
   /**
    * Callback when a sort option is selected.
    */
-  onSelect: (order: CredentialSortOrder) => void;
+  onSelect?: (order: CredentialSortOrder) => void;
   /**
    * Callback when the menu should close.
    */
@@ -33,19 +33,23 @@ interface SortMenuProps {
    * If not provided, uses default position based on platform.
    */
   topOffset?: number;
+  /**
+   * When set, an entry above the sort options turns selection mode on or off.
+   */
+  selection?: { isActive: boolean; onToggle: () => void };
 }
 
 /**
- * Reusable sort menu overlay component.
- * Displays a dropdown menu with sort options (Oldest First, Newest First, Alphabetical).
+ * The ellipsis menu of a list: selection mode and, for items, the sort options.
  */
-export function SortMenu({
+export function ListMenu({
   visible,
   sortOrder,
   onSelect,
   onClose,
   topOffset,
-}: SortMenuProps): React.ReactNode {
+  selection,
+}: ListMenuProps): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -81,7 +85,8 @@ export function SortMenu({
       shadowOpacity: 0.25,
       shadowRadius: 4,
       top: menuTop,
-      width: 200,
+      maxWidth: 280,
+      minWidth: 200,
       zIndex: 1001,
     },
     menuItem: {
@@ -97,6 +102,10 @@ export function SortMenu({
     menuItemText: {
       color: colors.text,
       fontSize: 14,
+    },
+    separator: {
+      backgroundColor: colors.accentBorder,
+      height: 1,
     },
     menuItemTextActive: {
       color: colors.primary,
@@ -114,7 +123,25 @@ export function SortMenu({
       />
       {/* Menu content */}
       <ThemedView style={styles.menuOverlay}>
-        {SORT_OPTIONS.map((option) => (
+        {selection && (
+          <>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                onClose();
+                selection.onToggle();
+              }}
+              testID="list-select"
+            >
+              <MaterialIcons name={selection.isActive ? 'check-box-outline-blank' : 'check-box'} size={18} color={colors.text} style={styles.menuItemIcon} />
+              <ThemedText style={styles.menuItemText}>
+                {selection.isActive ? t('common.selection.disable') : t('common.selection.enable')}
+              </ThemedText>
+            </TouchableOpacity>
+            {onSelect && <View style={styles.separator} />}
+          </>
+        )}
+        {onSelect && SORT_OPTIONS.map((option) => (
           <TouchableOpacity
             key={option.value}
             style={styles.menuItem}

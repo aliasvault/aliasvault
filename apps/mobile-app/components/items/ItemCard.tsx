@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Text, TouchableOpacity, Keyboard, Platform } from 'react-native';
-import ContextMenu, { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
+import { StyleSheet, View, Text, Keyboard, Platform } from 'react-native';
+import ContextMenu, { type ContextMenuAction, ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 import type { NativeSyntheticEvent } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import { SelectableListRow } from '@/components/common/SelectableListRow';
 import { ItemIcon } from '@/components/items/ItemIcon';
 import { useDialog } from '@/context/DialogContext';
 import { useDb } from '@/context/DbContext';
@@ -28,12 +29,16 @@ type ItemCardProps = {
   onItemDuplicate?: (item: ItemRef) => Promise<void>;
   showFolderPath?: boolean;
   isHighlighted?: boolean;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (item: DisplayItem) => void;
+  onSelectFromMenu?: (item: DisplayItem) => void;
 };
 
 /**
  * Item card component for displaying vault items in a list.
  */
-export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath = false, isHighlighted = false }: ItemCardProps): React.ReactNode {
+function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath = false, isHighlighted = false, selectionMode = false, isSelected = false, onToggleSelect, onSelectFromMenu }: ItemCardProps): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showConfirm } = useDialog();
@@ -74,6 +79,16 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   };
 
   /**
+   * Open the item's details.
+   */
+  const openItem = (): void => {
+    navigate(() => {
+      Keyboard.dismiss();
+      router.push(itemRoute(item, item.Name));
+    });
+  };
+
+  /**
    * Helper function to copy text to clipboard with auto-clear
    */
   const copyToClipboard = async (text: string): Promise<void> => {
@@ -97,6 +112,12 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
     const { name } = event.nativeEvent;
 
     switch (name) {
+      case t('common.open'):
+        openItem();
+        break;
+      case t('common.select'):
+        onSelectFromMenu?.(item);
+        break;
       case t('common.edit'):
         navigate(() => {
           Keyboard.dismiss();
@@ -196,90 +217,53 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   };
 
   /**
-   * Gets the menu actions for the context menu based on available item data.
-   * @returns Array of menu action objects with title and icon
+   * The context menu entries, in groups: open and edit, copy, select, delete. iOS draws a separator between groups;
+   * the Android menu shows the same entries as one flat list.
    */
-  const getMenuActions = (): {
-    title: string;
-    systemIcon: string;
-    destructive?: boolean;
-  }[] => {
-    const actions: { title: string; systemIcon: string; destructive?: boolean }[] = [
-      {
-        title: t('common.edit'),
-        systemIcon: Platform.select({
-          ios: 'pencil',
-          android: 'baseline_edit',
-          default: 'pencil',
-        }),
-      },
-      {
-        title: t('common.duplicate'),
-        systemIcon: Platform.select({
-          ios: 'plus.square.on.square',
-          android: 'baseline_content_copy',
-          default: 'plus.square.on.square',
-        }),
-      },
-      {
-        title: t('common.delete'),
-        systemIcon: Platform.select({
-          ios: 'trash',
-          android: 'baseline_delete',
-          default: 'trash',
-        }),
-        destructive: true,
-      },
-    ];
+  const getMenuActions = (): ContextMenuAction[] => {
+    /**
+     * A menu entry with its iOS (SF Symbol) and Android (drawable) icon.
+     */
+    const action = (title: string, ios: string, android: string, destructive = false): ContextMenuAction => ({
+      title,
+      systemIcon: Platform.select({ ios, android, default: ios }),
+      ...(destructive && { destructive: true }),
+    });
 
-    const username = getFieldValue(item, FieldKey.LoginUsername);
-    if (username) {
-      actions.push({
-        title: t('items.contextMenu.copyUsername'),
-        systemIcon: Platform.select({
-          ios: 'person',
-          android: 'baseline_person',
-          default: 'person',
-        }),
-      });
+    const copyActions: ContextMenuAction[] = [];
+    if (getFieldValue(item, FieldKey.LoginUsername)) {
+      copyActions.push(action(t('items.contextMenu.copyUsername'), 'person', 'baseline_person'));
     }
-
-    const email = getFieldValue(item, FieldKey.LoginEmail);
-    if (email) {
-      actions.push({
-        title: t('items.contextMenu.copyEmail'),
-        systemIcon: Platform.select({
-          ios: 'envelope',
-          android: 'baseline_email',
-          default: 'envelope',
-        }),
-      });
+    if (getFieldValue(item, FieldKey.LoginEmail)) {
+      copyActions.push(action(t('items.contextMenu.copyEmail'), 'envelope', 'baseline_email'));
     }
-
-    const password = getFieldValue(item, FieldKey.LoginPassword);
-    if (password) {
-      actions.push({
-        title: t('items.contextMenu.copyPassword'),
-        systemIcon: Platform.select({
-          ios: 'key',
-          android: 'baseline_key',
-          default: 'key',
-        }),
-      });
+    if (getFieldValue(item, FieldKey.LoginPassword)) {
+      copyActions.push(action(t('items.contextMenu.copyPassword'), 'key', 'baseline_key'));
     }
-
     if (item.HasTotp) {
-      actions.push({
-        title: t('items.contextMenu.copyTotpCode'),
-        systemIcon: Platform.select({
-          ios: 'number',
-          android: 'baseline_pin',
-          default: 'number',
-        }),
-      });
+      copyActions.push(action(t('items.contextMenu.copyTotpCode'), 'number', 'baseline_pin'));
     }
 
-    return actions;
+    // Several copy actions fold into one submenu, so the menu stays short enough for the row to stay in place.
+    const copyGroup = copyActions.length > 1
+      ? [{ title: t('common.copyToClipboard'), systemIcon: Platform.select({ ios: 'doc.on.doc', android: 'baseline_content_copy', default: 'doc.on.doc' }), actions: copyActions }]
+      : copyActions;
+
+    const groups: ContextMenuAction[][] = [
+      [
+        action(t('common.open'), 'eye', 'baseline_visibility'),
+        action(t('common.edit'), 'pencil', 'baseline_edit'),
+        action(t('common.duplicate'), 'plus.square.on.square', 'baseline_content_copy'),
+      ],
+      copyGroup,
+      onSelectFromMenu && !selectionMode ? [action(t('common.select'), 'checkmark.circle', 'baseline_check_circle')] : [],
+      [action(t('common.delete'), 'trash', 'baseline_delete', true)],
+    ].filter(group => group.length > 0);
+
+    if (Platform.OS === 'ios') {
+      return groups.map(group => ({ title: '', inlineChildren: true, actions: group }));
+    }
+    return groups.flat();
   };
 
   const styles = StyleSheet.create({
@@ -293,6 +277,10 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
     },
     credentialCardHighlighted: {
       borderColor: colors.primary,
+    },
+    menuButton: {
+      marginLeft: 4,
+      padding: 6,
     },
     itemContent: {
       alignItems: 'center',
@@ -331,68 +319,65 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   });
 
   return (
-    <ContextMenu
-      title={t('items.contextMenu.title')}
-      actions={getMenuActions()}
-      onPress={handleContextMenuAction}
-      previewBackgroundColor={colors.accentBackground}
+    <SelectableListRow
+      style={[styles.credentialCard, isHighlighted && styles.credentialCardHighlighted]}
+      selectionMode={selectionMode}
+      isSelected={isSelected}
+      onToggleSelect={onToggleSelect ? () => onToggleSelect(item) : undefined}
+      onOpen={openItem}
+      menu={{ title: t('items.contextMenu.title'), actions: getMenuActions(), onPress: handleContextMenuAction }}
+      testID="item-card"
+      accessibilityLabel={item.Name ?? undefined}
     >
-        <TouchableOpacity
-          style={[styles.credentialCard, isHighlighted && styles.credentialCardHighlighted]}
-          onPress={() => {
-            navigate(() => {
-              Keyboard.dismiss();
-              router.push(itemRoute(item));
-            });
-          }}
-          onLongPress={() => {
-            // Ignore long press to prevent context menu long press from triggering the item card press.
-          }}
-          activeOpacity={0.7}
-          testID="item-card"
-          accessibilityLabel={item.Name ?? undefined}
-        >
-          <View style={styles.itemContent}>
-            <ItemIcon item={item} style={styles.logo} />
-            <View style={styles.itemInfo}>
-              <View style={styles.serviceNameRow}>
-                {showFolderPath && item.FolderPath && item.FolderPath.length > 0 && (
-                  <Text style={styles.folderPath}>{item.FolderPath.join(' > ')} &gt; </Text>
-                )}
-                <Text style={styles.serviceName}>
-                  {getItemName(item)}
-                </Text>
-                {item.HasPasskey && (
-                  <MaterialIcons
-                    name="vpn-key"
-                    size={14}
-                    color={colors.textMuted}
-                    style={styles.iconStyle}
-                  />
-                )}
-                {item.HasAttachment && (
-                  <MaterialIcons
-                    name="attach-file"
-                    size={14}
-                    color={colors.textMuted}
-                    style={styles.iconStyle}
-                  />
-                )}
-                {item.HasTotp && (
-                  <MaterialIcons
-                    name="pin"
-                    size={14}
-                    color={colors.textMuted}
-                    style={styles.iconStyle}
-                  />
-                )}
-              </View>
-              <Text style={styles.itemText}>
-                {getItemDisplayText(item)}
-              </Text>
-            </View>
+      <View style={styles.itemContent}>
+        <ItemIcon item={item} style={styles.logo} />
+        <View style={styles.itemInfo}>
+          <View style={styles.serviceNameRow}>
+            {showFolderPath && item.FolderPath && item.FolderPath.length > 0 && (
+              <Text style={styles.folderPath}>{item.FolderPath.join(' > ')} &gt; </Text>
+            )}
+            <Text style={styles.serviceName}>
+              {getItemName(item)}
+            </Text>
+            {item.HasPasskey && (
+              <MaterialIcons
+                name="vpn-key"
+                size={14}
+                color={colors.textMuted}
+                style={styles.iconStyle}
+              />
+            )}
+            {item.HasAttachment && (
+              <MaterialIcons
+                name="attach-file"
+                size={14}
+                color={colors.textMuted}
+                style={styles.iconStyle}
+              />
+            )}
+            {item.HasTotp && (
+              <MaterialIcons
+                name="pin"
+                size={14}
+                color={colors.textMuted}
+                style={styles.iconStyle}
+              />
+            )}
           </View>
-        </TouchableOpacity>
-    </ContextMenu>
+          <Text style={styles.itemText}>
+            {getItemDisplayText(item)}
+          </Text>
+        </View>
+        {/* On Android a long-press selects, so the item menu sits behind a button on the row. */}
+        {Platform.OS === 'android' && !selectionMode && (
+          <ContextMenu actions={getMenuActions()} onPress={handleContextMenuAction} dropdownMenuMode>
+            <MaterialIcons name="more-vert" size={20} color={colors.textMuted} style={styles.menuButton} accessibilityLabel={t('items.contextMenu.title')} />
+          </ContextMenu>
+        )}
+      </View>
+    </SelectableListRow>
   );
 }
+
+/** Re-renders only when its own props change, so toggling one row leaves the others alone. */
+export const ItemCard = memo(ItemCardComponent);

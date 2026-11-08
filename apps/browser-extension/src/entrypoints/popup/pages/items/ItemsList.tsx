@@ -902,7 +902,7 @@ const ItemsList: React.FC = () => {
   // Exit selection mode when the list changes.
   useEffect(() => {
     exitSelection();
-  }, [folderKey, listSearchTerm, filterType, showFolders, items, exitSelection]);
+  }, [folderKey, listSearchTerm, filterType, showFolders, exitSelection]);
 
   /**
    * Toggle the specified rendered item (Space/Enter in selection mode).

@@ -1,7 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { type ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
+
+import type { NativeSyntheticEvent } from 'react-native';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import type { MailboxEmail } from '@aliasvault/models/webapi';
@@ -10,20 +13,25 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import { SelectableListRow } from '@/components/common/SelectableListRow';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { RobustPressable } from '@/components/ui/RobustPressable';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconSymbolName } from '@/components/ui/IconSymbolName';
 import { useDb } from '@/context/DbContext';
 
 type EmailCardProps = {
   email: MailboxEmail;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (email: MailboxEmail) => void;
+  onSelectFromMenu?: (email: MailboxEmail) => void;
+  onDelete?: (emailId: number) => void;
 };
 
 /**
  * Email card component.
  */
-export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
+function EmailCardComponent({ email, selectionMode = false, isSelected = false, onToggleSelect, onSelectFromMenu, onDelete }: EmailCardProps) : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const navigate = useNavigationDebounce();
@@ -82,6 +90,26 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
         day: '2-digit',
         month: '2-digit'
       });
+    }
+  };
+
+  /**
+   * Open the email.
+   */
+  const openEmail = (): void => {
+    navigate(() => router.push({ pathname: '/(tabs)/emails/[id]', params: { id: String(email.id), subject: email.subject } }));
+  };
+
+  /**
+   * Run the context menu entry that was picked.
+   */
+  const handleContextMenuAction = (event: NativeSyntheticEvent<ContextMenuOnPressNativeEvent>): void => {
+    if (event.nativeEvent.name === t('common.open')) {
+      openEmail();
+    } else if (event.nativeEvent.name === t('common.select')) {
+      onSelectFromMenu?.(email);
+    } else if (event.nativeEvent.name === t('common.delete')) {
+      onDelete?.(email.id);
     }
   };
 
@@ -146,10 +174,26 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
     },
   });
 
+  const menu = onDelete ? {
+    actions: [
+      { title: '', inlineChildren: true, actions: [
+        { title: t('common.open'), systemIcon: 'eye' },
+        ...(onSelectFromMenu && !selectionMode ? [{ title: t('common.select'), systemIcon: 'checkmark.circle' }] : []),
+      ] },
+      { title: '', inlineChildren: true, actions: [{ title: t('common.delete'), systemIcon: 'trash', destructive: true }] },
+    ],
+    onPress: handleContextMenuAction,
+  } : undefined;
+
   return (
-    <RobustPressable
+    <SelectableListRow
       style={styles.emailCard}
-      onPress={() => navigate(() => router.push(`/(tabs)/emails/${email.id}`))}
+      selectionMode={selectionMode}
+      isSelected={isSelected}
+      onToggleSelect={onToggleSelect ? () => onToggleSelect(email) : undefined}
+      onOpen={openEmail}
+      menu={menu}
+      checkboxAlign="top"
     >
       <View style={styles.emailHeader}>
         <ThemedText style={styles.emailSubject} numberOfLines={1}>
@@ -175,6 +219,9 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
           </ThemedText>
         </View>
       )}
-    </RobustPressable>
+    </SelectableListRow>
   );
 }
+
+/** Re-renders only when its own props change, so toggling one row leaves the others alone. */
+export const EmailCard = memo(EmailCardComponent);

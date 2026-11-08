@@ -57,7 +57,6 @@ const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSele
         </button>
         <span className="pl-1.5 pr-1 text-sm font-medium whitespace-nowrap tabular-nums text-gray-900 dark:text-white" aria-live="polite">{countLabel}</span>
         <span aria-hidden className="h-5 w-px mx-1 bg-gray-300 dark:bg-gray-500" />
-        {/* No Deselect all: a selection is cleared by closing the bar or clicking rows, never by one stray click. */}
         <button type="button" onClick={onSelectAll} disabled={allSelected} className={`${buttonClass} min-w-0 px-2 h-8 text-sm font-medium whitespace-nowrap text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600`}>
           <span className="truncate">{t('common.selection.selectAll')}</span>
         </button>
