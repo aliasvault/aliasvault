@@ -73,22 +73,22 @@ test.describe('20. Items', () => {
     });
 
     await test.step('switching to login drops the alias fields only', async () => {
-      await page.pause();
+      await app.pause();
       await switchType('Login');
       await expect(page.locator('#first-name')).toHaveCount(0);
       await expect(page.locator('#username')).toHaveValue('jswitch');
     });
 
     await test.step('switching to note drops the login fields', async () => {
-      await page.pause();
+      await app.pause();
       await switchType('Note');
       await expect(page.locator('#username')).toHaveCount(0);
     });
 
     await test.step('switching back to alias restores every field', async () => {
-      await page.pause();
+      await app.pause();
       await switchType('Alias');
-      await page.pause();
+      await app.pause();
       await expect(page.locator('#first-name')).toHaveValue('Jane');
       await expect(page.locator('#last-name')).toHaveValue('Switcher');
       await expect(page.locator('#username')).toHaveValue('jswitch');
@@ -124,8 +124,9 @@ test.describe('20. Items', () => {
     });
 
     await test.step('select two items and move them into the folder', async () => {
-      await card('Bulk one').click({ button: 'right' });
-      await page.getByRole('menuitem', { name: 'Select', exact: true }).click();
+      await page.locator('#items-list-menu').click();
+      await page.locator('#list-select').click();
+      await card('Bulk one').click();
       await card('Bulk two').click();
       await expect(page.locator('#selection-action-bar')).toContainText('2 selected');
       await page.locator('#selection-move').click();
