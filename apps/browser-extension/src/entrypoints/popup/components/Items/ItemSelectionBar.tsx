@@ -104,8 +104,8 @@ const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleC
         onConfirm={() => pendingMove && void performMove(pendingMove)}
         title={t('items.selection.moveTitle', { count: pendingMove?.summary.toMove.length ?? 0 })}
         warning={pendingMove ? [
-          pendingMove.summary.toShared ? t('items.selection.moveIntoShared', { count: pendingMove.summary.toMove.length }) : null,
-          pendingMove.summary.fromShared ? t('items.selection.moveOutOfShared', { count: pendingMove.summary.toMove.length }) : null,
+          pendingMove.summary.toShared ? t('items.selection.moveIntoShared') : null,
+          pendingMove.summary.fromShared ? t('items.selection.moveOutOfShared') : null,
         ].filter(Boolean).join('\n\n') : undefined}
         confirmText={t('items.selection.move')}
         variant="primary"
@@ -117,7 +117,7 @@ const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleC
         onConfirm={() => void confirmDelete()}
         title={t('items.selection.deleteTitle', { count })}
         message={t('items.selection.deleteDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}
-        warning={sharedCount > 0 ? t('items.selection.deleteShared', { count: sharedCount }) : undefined}
+        warning={sharedCount > 0 ? t('items.selection.deleteShared') : undefined}
         confirmText={t('common.delete')}
       />
     </>

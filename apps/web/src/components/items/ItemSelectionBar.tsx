@@ -144,10 +144,10 @@ const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleC
         )}>
         <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
           {pendingMove?.summary.toShared && (
-            <p>{t('items.selection.moveIntoShared', { count: pendingMove.summary.toMove.length })}</p>
+            <p>{t('items.selection.moveIntoShared')}</p>
           )}
           {pendingMove?.summary.fromShared && (
-            <p>{t('items.selection.moveOutOfShared', { count: pendingMove.summary.toMove.length })}</p>
+            <p>{t('items.selection.moveOutOfShared')}</p>
           )}
         </div>
       </FormModal>
@@ -169,7 +169,7 @@ const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleC
         {sharedCount > 0 && (
           <div className="mt-3 flex items-start gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
             <Icon name="exclamation" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <p>{t('items.selection.deleteShared', { count: sharedCount })}</p>
+            <p>{t('items.selection.deleteShared')}</p>
           </div>
         )}
       </FormModal>

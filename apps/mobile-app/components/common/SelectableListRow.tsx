@@ -17,6 +17,7 @@ type SelectableListRowProps = {
   onOpen: () => void;
   menu?: { title?: string; actions: ContextMenuAction[]; onPress: (event: NativeSyntheticEvent<ContextMenuOnPressNativeEvent>) => void };
   checkboxAlign?: 'center' | 'top';
+  trailing?: React.ReactNode;
   testID?: string;
   accessibilityLabel?: string;
   children: React.ReactNode;
@@ -25,7 +26,7 @@ type SelectableListRowProps = {
 /**
  * A list row that can be selected.
  */
-export function SelectableListRow({ style, selectionMode, isSelected, onToggleSelect, onOpen, menu, checkboxAlign = 'center', testID, accessibilityLabel, children }: SelectableListRowProps): React.ReactNode {
+export function SelectableListRow({ style, selectionMode, isSelected, onToggleSelect, onOpen, menu, checkboxAlign = 'center', trailing, testID, accessibilityLabel, children }: SelectableListRowProps): React.ReactNode {
   const colors = useColors();
   const { shownSelected, onPressIn, onPressOut } = useSelectionPressPreview(selectionMode, isSelected);
   /**
@@ -41,6 +42,12 @@ export function SelectableListRow({ style, selectionMode, isSelected, onToggleSe
     row: {
       alignItems: checkboxAlign === 'top' ? 'flex-start' : 'center',
       flexDirection: 'row',
+    },
+    trailing: {
+      bottom: 0,
+      position: 'absolute',
+      right: 0,
+      top: 0,
     },
     selected: {
       backgroundColor: blendColors(colors.accentBackground, colors.primary, 0.1),
@@ -80,7 +87,21 @@ export function SelectableListRow({ style, selectionMode, isSelected, onToggleSe
     </ListRowPressable>
   );
 
-  if (Platform.OS === 'android' || !menu) {
+  if (Platform.OS === 'android') {
+    /*
+     * The trailing control is a sibling on top of the row, so the row never takes its taps. The wrapper stays when the
+     * control goes: a new parent would remount the row while the long-press that starts selecting is still down.
+     */
+    const { marginTop = 0, marginBottom = 0 } = StyleSheet.flatten(style) ?? {};
+    return (
+      <View>
+        {row}
+        {trailing && <View style={[styles.trailing, { top: marginTop as number, bottom: marginBottom as number }]}>{trailing}</View>}
+      </View>
+    );
+  }
+
+  if (!menu) {
     return row;
   }
 

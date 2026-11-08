@@ -56,6 +56,7 @@ const SVG_CATALOGS = [
 
 const UI_TS_OUTPUT = path.join(ICONS_DIR, 'UiIcons.ts');
 const UI_CSHARP_OUTPUT = path.join(REPO_ROOT, 'apps/server/AliasVault.Admin/Main/Components/Icons/UiIcons.cs');
+const ANDROID_DRAWABLE_DIR = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/res/drawable');
 
 /**
  * Load one catalog in the order of sources.json, failing when a source file and its provenance entry don't line up.
@@ -368,6 +369,68 @@ function emit(file, content) {
 }
 
 /**
+ * Rewrite SVG path data with every number and arc flag spaced out; Android's parser misreads compact arc flags (`a3 3 0 11-6 0`).
+ */
+function expandPathData(d, file) {
+  const out = [];
+  let command = null;
+  let argIndex = 0;
+  let i = 0;
+  while (i < d.length) {
+    const c = d[i];
+    if (/[\s,]/.test(c)) {
+      i++;
+    } else if (/[MmLlHhVvCcSsQqTtAaZz]/.test(c)) {
+      command = c;
+      argIndex = 0;
+      out.push(c);
+      i++;
+    } else if ((command === 'a' || command === 'A') && (argIndex % 7 === 3 || argIndex % 7 === 4)) {
+      out.push(c);
+      argIndex++;
+      i++;
+    } else {
+      const match = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/.exec(d.slice(i));
+      if (!match) {
+        throw new Error(`${file}: unreadable path data at "${d.slice(i, i + 10)}"`);
+      }
+      out.push(match[0]);
+      argIndex++;
+      i += match[0].length;
+    }
+  }
+  return out.join(' ');
+}
+
+/**
+ * Generate an Android vector drawable for a stroked UI icon, drawn in the theme's text color at menu icon size.
+ */
+function generateAndroidDrawable(name, icon) {
+  const file = `ui/${name}.svg`;
+  const { viewBox, stroke, 'stroke-width': strokeWidth, 'stroke-linecap': strokeLinecap, 'stroke-linejoin': strokeLinejoin } = icon.attrs;
+  if (stroke !== 'currentColor' || icon.nodes.some(([tag]) => tag !== 'path')) {
+    throw new Error(`${file}: an Android drawable needs a stroked icon made of <path> elements only`);
+  }
+  const [, , width, height] = viewBox.split(/\s+/);
+  const paths = icon.nodes.map(([, attrs]) => `    <path
+        android:pathData="${expandPathData(attrs.d, file)}"
+        android:strokeColor="?android:attr/textColorPrimary"
+        android:strokeWidth="${strokeWidth ?? '1'}"
+        android:strokeLineCap="${strokeLinecap ?? 'butt'}"
+        android:strokeLineJoin="${strokeLinejoin ?? 'miter'}" />`).join('\n');
+  return `<?xml version="1.0" encoding="utf-8"?>
+<!-- ${GENERATED_HEADER} ${REGENERATE_HINT} -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="${width}"
+    android:viewportHeight="${height}">
+${paths}
+</vector>
+`;
+}
+
+/**
  * Main execution.
  */
 function main() {
@@ -376,6 +439,9 @@ function main() {
   const uiIcons = loadCatalog('ui', sources);
   emit(UI_TS_OUTPUT, generateUiTypeScript(uiIcons));
   emit(UI_CSHARP_OUTPUT, generateUiCSharp(uiIcons));
+  for (const name of Object.keys(uiIcons).filter((key) => sources.ui[key].androidDrawable)) {
+    emit(path.join(ANDROID_DRAWABLE_DIR, `ic_ui_${name.replace(/-/g, '_')}.xml`), generateAndroidDrawable(name, uiIcons[name]));
+  }
 
   for (const catalog of SVG_CATALOGS) {
     const icons = loadCatalog(catalog.key, sources);

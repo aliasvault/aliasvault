@@ -1,4 +1,6 @@
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
+import { deleteEmails } from '@aliasvault/client/email/EmailDeletion';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,9 +13,12 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { isServerUnreachable } from '@/utils/ServerReachability';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+import { ListMenu } from '@/components/common/ListMenu';
+import { SELECTION_BAR_SPACE, SelectionBar, SelectionBarButton } from '@/components/common/SelectionBar';
 import { EmailCard } from '@/components/EmailCard';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -21,9 +26,20 @@ import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 
 import type { InboxResponse, MailboxEmail } from '@aliasvault/models/webapi';
+
+/**
+ * What the selection keeps of an email: its id.
+ */
+const emailIdOf = (email: MailboxEmail): number => email.id;
+
+/**
+ * The selection key of an email id.
+ */
+const emailKey = (id: number): string => String(id);
 
 /**
  * Emails screen.
@@ -46,6 +62,10 @@ export default function EmailsScreen() : React.ReactNode {
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+  const { showConfirm } = useDialog();
+  const [showListMenu, setShowListMenu] = useState(false);
+  const selection = useListSelection(emails, emailIdOf, emailKey);
+  const { exit: exitSelection, toggle: toggleSelected, enter: enterSelection } = selection;
 
   const PAGE_SIZE = 50;
 
@@ -198,11 +218,85 @@ export default function EmailsScreen() : React.ReactNode {
   }, [loadEmails]);
 
   /**
+   * Ask to delete emails, then delete them and drop them from the list.
+   * @param ids - the emails to delete
+   * @param title - the confirm dialog title
+   * @param message - the confirm dialog message
+   * @param successMessage - the toast text for the number of deleted emails
+   * @param onDeleted - called once the emails are deleted
+   */
+  const confirmAndDelete = useCallback((ids: number[], title: string, message: string, successMessage: (deleted: number) => string, onDeleted?: () => void): void => {
+    showConfirm(title, message, t('common.delete'), async () => {
+      try {
+        const deleted = await deleteEmails(webApi, ids);
+        const deletedIds = new Set(deleted);
+        setEmails(current => current.filter(email => !deletedIds.has(email.id)));
+        setTotalRecords(current => Math.max(0, current - deleted.length));
+        Toast.show({ type: 'success', text1: successMessage(deleted.length), position: 'bottom' });
+        onDeleted?.();
+      } catch (err) {
+        console.error('Failed to delete emails:', err);
+        Toast.show({ type: 'error', text1: t('common.errors.unknownError'), position: 'bottom' });
+      }
+    }, { confirmStyle: 'destructive' });
+  }, [showConfirm, webApi, t]);
+
+  /**
+   * Delete the selected emails; selection mode ends once they are deleted.
+   */
+  const deleteSelectedEmails = useCallback((): void => {
+    const count = selection.selection.length;
+    confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle'), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }), exitSelection);
+  }, [selection.selection, confirmAndDelete, exitSelection, t]);
+
+  /**
+   * Delete one email from its context menu.
+   */
+  const deleteSingleEmail = useCallback((emailId: number): void => {
+    confirmAndDelete([emailId], t('emails.deleteEmail'), t('emails.deleteEmailConfirm'), () => t('emails.modal.emailDeletedSuccess'));
+  }, [confirmAndDelete, t]);
+
+  /**
+   * Turn selection mode on or off from the list menu.
+   */
+  const toggleSelectionMode = useCallback((): void => (selection.isActive ? exitSelection() : selection.enter()), [selection, exitSelection]);
+
+  /**
+   * Toggle one row from a tap or long-press.
+   */
+  const toggleEmail = useCallback((entry: MailboxEmail): void => toggleSelected(entry, false), [toggleSelected]);
+
+  /**
+   * Start selection mode with one row selected, from its context menu.
+   */
+  const selectFromMenu = useCallback((entry: MailboxEmail): void => enterSelection(entry), [enterSelection]);
+
+  /**
+   * Header menu button on Android; iOS shows it next to the title.
+   */
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+    navigation.setOptions({
+      /**
+       * List menu button.
+       */
+      headerRight: (): React.ReactNode => (
+        <TouchableOpacity style={{ padding: 8, marginRight: 8 }} onPress={() => setShowListMenu(prev => !prev)} accessibilityLabel={t('common.moreOptions')}>
+          <MaterialIcons name="more-horiz" size={24} color={colors.text} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, colors.text, t]);
+
+  /**
    * Refresh the emails on pull to refresh.
    */
   const onRefresh = useCallback(async () : Promise<void> => {
     // Trigger haptic feedback when pull-to-refresh is activated
     HapticsUtility.impact();
+    exitSelection();
 
     setIsLoading(true);
     setIsRefreshing(true);
@@ -214,7 +308,7 @@ export default function EmailsScreen() : React.ReactNode {
     }
     setIsRefreshing(false);
     setIsLoading(false);
-  }, [dbContext.isOffline, loadEmails, syncVault, setIsLoading, setIsRefreshing]);
+  }, [dbContext.isOffline, loadEmails, syncVault, setIsLoading, setIsRefreshing, exitSelection]);
 
   const styles = StyleSheet.create({
     centerContainer: {
@@ -222,9 +316,13 @@ export default function EmailsScreen() : React.ReactNode {
       flex: 1,
       justifyContent: 'center',
     },
+    container: {
+      paddingHorizontal: 0,
+    },
     contentContainer: {
       flexGrow: 1,
-      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 10,
+      paddingHorizontal: 14,
+      paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 60 : 10) + (selection.isActive ? SELECTION_BAR_SPACE : 0),
       paddingTop: Platform.OS === 'ios' ? 42 : 16,
     },
     emptyText: {
@@ -314,7 +412,15 @@ export default function EmailsScreen() : React.ReactNode {
       <>
         {errorView}
         {emails.map((email) => (
-          <EmailCard key={email.id} email={email} />
+          <EmailCard
+            key={email.id}
+            email={email}
+            selectionMode={selection.isActive}
+            isSelected={selection.isSelected(email)}
+            onToggleSelect={toggleEmail}
+            onSelectFromMenu={selectFromMenu}
+            onDelete={deleteSingleEmail}
+          />
         ))}
 
         {/* Load More Button */}
@@ -346,7 +452,7 @@ export default function EmailsScreen() : React.ReactNode {
   };
 
   return (
-    <ThemedContainer testID="emails-screen">
+    <ThemedContainer style={styles.container} testID="emails-screen">
       <CollapsibleHeader
         title={t('emails.title')}
         scrollY={scrollY}
@@ -371,9 +477,26 @@ export default function EmailsScreen() : React.ReactNode {
           />
         }
       >
-        <TitleContainer title={t('emails.title')} />
+        <TitleContainer
+          title={t('emails.title')}
+          right={(
+            <TouchableOpacity style={{ padding: 8 }} onPress={() => setShowListMenu(prev => !prev)} accessibilityLabel={t('common.moreOptions')}>
+              <MaterialIcons name="more-horiz" size={24} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        />
         {renderContent()}
       </Animated.ScrollView>
+      {selection.isActive && (
+        <SelectionBar count={selection.selection.length} visibleCount={emails.length} onSelectAll={selection.selectAll} onClose={exitSelection}>
+          <SelectionBarButton icon="delete" label={t('common.delete')} onPress={deleteSelectedEmails} disabled={selection.selection.length === 0} danger testID="selection-delete" />
+        </SelectionBar>
+      )}
+      <ListMenu
+        visible={showListMenu}
+        selection={emails.length > 0 || selection.isActive ? { isActive: selection.isActive, onToggle: toggleSelectionMode } : undefined}
+        onClose={() => setShowListMenu(false)}
+      />
     </ThemedContainer>
   );
 }

@@ -102,7 +102,8 @@
     },
     "document-duplicate": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/document-duplicate"
+      "icon": "outline/document-duplicate",
+      "androidDrawable": true
     },
     "document-text": {
       "source": "heroicons@1.0.6",
@@ -134,7 +135,8 @@
     },
     "eye": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/eye"
+      "icon": "outline/eye",
+      "androidDrawable": true
     },
     "eye-off": {
       "source": "heroicons@1.0.6",
@@ -162,7 +164,8 @@
     },
     "hashtag": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/hashtag"
+      "icon": "outline/hashtag",
+      "androidDrawable": true
     },
     "home": {
       "source": "heroicons@1.0.6",
@@ -174,7 +177,8 @@
     },
     "key": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/key"
+      "icon": "outline/key",
+      "androidDrawable": true
     },
     "keyboard": {
       "source": "custom",
@@ -190,7 +194,8 @@
     },
     "mail": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/mail"
+      "icon": "outline/mail",
+      "androidDrawable": true
     },
     "menu": {
       "source": "heroicons@1.0.6",
@@ -214,7 +219,8 @@
     },
     "pencil-alt": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/pencil-alt"
+      "icon": "outline/pencil-alt",
+      "androidDrawable": true
     },
     "pin-material": {
       "source": "material-symbols",
@@ -294,7 +300,8 @@
     },
     "trash": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/trash"
+      "icon": "outline/trash",
+      "androidDrawable": true
     },
     "upload": {
       "source": "heroicons@1.0.6",
@@ -302,7 +309,8 @@
     },
     "user": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/user"
+      "icon": "outline/user",
+      "androidDrawable": true
     },
     "user-group": {
       "source": "heroicons@1.0.6",

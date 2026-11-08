@@ -3,7 +3,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Text, Keyboard, Platform } from 'react-native';
+import { StyleSheet, View, Text, Keyboard, Platform, Pressable } from 'react-native';
 import ContextMenu, { type ContextMenuAction, ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 import type { NativeSyntheticEvent } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -222,42 +222,46 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
    */
   const getMenuActions = (): ContextMenuAction[] => {
     /**
-     * A menu entry with its iOS (SF Symbol) and Android (drawable) icon.
+     * A menu entry with its iOS SF Symbol and its Android drawable (generated from core/assets/icons).
      */
-    const action = (title: string, ios: string, android: string, destructive = false): ContextMenuAction => ({
+    const action = (title: string, ios: string, android?: string, destructive = false): ContextMenuAction => ({
       title,
-      systemIcon: Platform.select({ ios, android, default: ios }),
+      ...(Platform.OS === 'ios' ? { systemIcon: ios } : { icon: android }),
       ...(destructive && { destructive: true }),
     });
 
     const copyActions: ContextMenuAction[] = [];
     if (getFieldValue(item, FieldKey.LoginUsername)) {
-      copyActions.push(action(t('items.contextMenu.copyUsername'), 'person', 'baseline_person'));
+      copyActions.push(action(t('items.contextMenu.copyUsername'), 'person', 'ic_ui_user'));
     }
     if (getFieldValue(item, FieldKey.LoginEmail)) {
-      copyActions.push(action(t('items.contextMenu.copyEmail'), 'envelope', 'baseline_email'));
+      copyActions.push(action(t('items.contextMenu.copyEmail'), 'envelope', 'ic_ui_mail'));
     }
     if (getFieldValue(item, FieldKey.LoginPassword)) {
-      copyActions.push(action(t('items.contextMenu.copyPassword'), 'key', 'baseline_key'));
+      copyActions.push(action(t('items.contextMenu.copyPassword'), 'key', 'ic_ui_key'));
     }
     if (item.HasTotp) {
-      copyActions.push(action(t('items.contextMenu.copyTotpCode'), 'number', 'baseline_pin'));
+      copyActions.push(action(t('items.contextMenu.copyTotpCode'), 'number', 'ic_ui_hashtag'));
     }
 
-    // Several copy actions fold into one submenu, so the menu stays short enough for the row to stay in place.
-    const copyGroup = copyActions.length > 1
-      ? [{ title: t('common.copyToClipboard'), systemIcon: Platform.select({ ios: 'doc.on.doc', android: 'baseline_content_copy', default: 'doc.on.doc' }), actions: copyActions }]
+    /*
+     * On iOS several copy actions fold into one submenu, so the menu stays short enough for the row to stay in place.
+     * Android lists them flat: the library adds an Android submenu out of order and puts its icon on another entry.
+     */
+    const copyGroup = Platform.OS === 'ios' && copyActions.length > 1
+      ? [{ ...action(t('common.copyToClipboard'), 'doc.on.doc'), actions: copyActions }]
       : copyActions;
 
     const groups: ContextMenuAction[][] = [
       [
-        action(t('common.open'), 'eye', 'baseline_visibility'),
-        action(t('common.edit'), 'pencil', 'baseline_edit'),
-        action(t('common.duplicate'), 'plus.square.on.square', 'baseline_content_copy'),
+        action(t('common.open'), 'eye', 'ic_ui_eye'),
+        action(t('common.edit'), 'pencil', 'ic_ui_pencil_alt'),
+        action(t('common.duplicate'), 'plus.square.on.square', 'ic_ui_document_duplicate'),
       ],
       copyGroup,
-      onSelectFromMenu && !selectionMode ? [action(t('common.select'), 'checkmark.circle', 'baseline_check_circle')] : [],
-      [action(t('common.delete'), 'trash', 'baseline_delete', true)],
+      // On Android a long-press already selects, so only iOS gets a Select entry.
+      Platform.OS === 'ios' && onSelectFromMenu && !selectionMode ? [action(t('common.select'), 'checkmark.circle')] : [],
+      [action(t('common.delete'), 'trash', 'ic_ui_trash', true)],
     ].filter(group => group.length > 0);
 
     if (Platform.OS === 'ios') {
@@ -278,9 +282,18 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
     credentialCardHighlighted: {
       borderColor: colors.primary,
     },
+    // The menu button covers the right edge of the row: the spacer plus the card's padding and border.
     menuButton: {
-      marginLeft: 4,
-      padding: 6,
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 18,
+    },
+    menuButtonHost: {
+      flex: 1,
+    },
+    menuButtonSpace: {
+      width: 44,
     },
     itemContent: {
       alignItems: 'center',
@@ -326,6 +339,13 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
       onToggleSelect={onToggleSelect ? () => onToggleSelect(item) : undefined}
       onOpen={openItem}
       menu={{ title: t('items.contextMenu.title'), actions: getMenuActions(), onPress: handleContextMenuAction }}
+      trailing={Platform.OS === 'android' && !selectionMode && (
+        <ContextMenu actions={getMenuActions()} onPress={handleContextMenuAction} dropdownMenuMode style={styles.menuButtonHost}>
+          <Pressable style={styles.menuButton} onPress={() => undefined} android_ripple={{ color: colors.accentBorder, borderless: true, radius: 22 }} accessibilityRole="button" accessibilityLabel={t('items.contextMenu.title')}>
+            <MaterialIcons name="more-vert" size={20} color={colors.textMuted} />
+          </Pressable>
+        </ContextMenu>
+      )}
       testID="item-card"
       accessibilityLabel={item.Name ?? undefined}
     >
@@ -368,12 +388,8 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
             {getItemDisplayText(item)}
           </Text>
         </View>
-        {/* On Android a long-press selects, so the item menu sits behind a button on the row. */}
-        {Platform.OS === 'android' && !selectionMode && (
-          <ContextMenu actions={getMenuActions()} onPress={handleContextMenuAction} dropdownMenuMode>
-            <MaterialIcons name="more-vert" size={20} color={colors.textMuted} style={styles.menuButton} accessibilityLabel={t('items.contextMenu.title')} />
-          </ContextMenu>
-        )}
+        {/* On Android a long-press selects, so the item menu sits behind a button on the row; this keeps its space free. */}
+        {Platform.OS === 'android' && !selectionMode && <View style={styles.menuButtonSpace} />}
       </View>
     </SelectableListRow>
   );
