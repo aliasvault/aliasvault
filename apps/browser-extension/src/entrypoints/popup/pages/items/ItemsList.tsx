@@ -1,5 +1,6 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -9,7 +10,9 @@ import React, { useState, useEffect, useCallback, useDeferredValue, useMemo, use
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { MenuHeading, MenuRadioItem, MenuSeparator } from '@/entrypoints/popup/components/ContextMenu';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import EllipsisMenu from '@/entrypoints/popup/components/EllipsisMenu';
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
@@ -21,18 +24,19 @@ import CurrentSiteSuggestion from '@/entrypoints/popup/components/Items/CurrentS
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
 import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
+import ItemSelectionBar from '@/entrypoints/popup/components/Items/ItemSelectionBar';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
-import SelectionActionBar from '@/entrypoints/popup/components/Items/SelectionActionBar';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
+import { SelectionMenuItem } from '@/entrypoints/popup/components/SelectionBar';
 import SharedFolderAccessModal from '@/entrypoints/popup/components/Sharing/SharedFolderAccessModal';
 import SharedFolderInvitationModal from '@/entrypoints/popup/components/Sharing/SharedFolderInvitationModal';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-import { useItemSelection } from '@/entrypoints/popup/hooks/useItemSelection';
 import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
+import { useListSelection } from '@/entrypoints/popup/hooks/useListSelection';
 import { usePasswordConfirmedAction } from '@/entrypoints/popup/hooks/usePasswordConfirmedAction';
 import { useSharedFolders } from '@/entrypoints/popup/hooks/useSharedFolders';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
@@ -156,7 +160,6 @@ const ItemsList: React.FC = () => {
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
-  const [showListMenu, setShowListMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const [visibleItemCount, setVisibleItemCount] = useState(ITEM_BATCH_SIZE);
   /** The folder whose people dialog is open; kept while the folder turns into a shared one and the page moves to it. */
@@ -892,7 +895,7 @@ const ItemsList: React.FC = () => {
   }, [currentFolderRef, dbContext, navigate]);
 
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
-  const selection = useItemSelection(sortedItems);
+  const selection = useListSelection(sortedItems, toSelectedItem, selectedItemKey);
   const { isActive: isSelecting, exit: exitSelection, toggle: toggleSelected } = selection;
   const folderKey = currentFolderRef ? scopedKey(currentFolderRef.ManifestId, currentFolderRef.Id) : null;
 
@@ -910,6 +913,16 @@ const ItemsList: React.FC = () => {
       toggleSelected(item, false);
     }
   }, [visibleItems, bulkDialogOpen, toggleSelected]);
+
+  /**
+   * Change the sort order and save it in the vault settings.
+   */
+  const changeSortOrder = async (order: CredentialSortOrder): Promise<void> => {
+    setSortOrder(order);
+    await executeVaultMutationAsync(async () => {
+      dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
+    });
+  };
 
   /**
    * Re-read the items and leave selection mode after a bulk action.
@@ -1025,77 +1038,18 @@ const ItemsList: React.FC = () => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* List menu: start selecting, sort order */}
-          <div className="relative">
-            <button
-              id="items-list-menu"
-              onClick={() => setShowListMenu(!showListMenu)}
-              aria-haspopup="menu"
-              aria-expanded={showListMenu}
-              className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition-colors"
-              title={t('items.contextMenu.title')}
-            >
-              <Icon name="dots-horizontal" className="w-5 h-5" />
-            </button>
-            {showListMenu && (
+          <EllipsisMenu id="items-list-menu" label={t('common.moreOptions')}>
+            {hasItems && (
               <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowListMenu(false)}
-                />
-                <div role="menu" className="absolute right-0 top-full mt-1 w-48 overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
-                  {hasItems && (
-                    <div className="border-b border-gray-200 dark:border-gray-700">
-                      <button
-                        id="items-select"
-                        role="menuitem"
-                        onClick={() => {
-                          setShowListMenu(false);
-                          if (isSelecting) {
-                            exitSelection();
-                          } else {
-                            selection.enter();
-                          }
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
-                      >
-                        <Icon name={isSelecting ? 'square-feather' : 'square-check'} className="w-4 h-4" />
-                        <span>{isSelecting ? t('items.selection.disable') : t('items.selection.enable')}</span>
-                      </button>
-                    </div>
-                  )}
-                  <div>
-                    <div className="px-4 pt-2 pb-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">{t('items.sort.title')}</div>
-                    {SORT_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        role="menuitemradio"
-                        aria-checked={sortOrder === option.value}
-                        onClick={async () => {
-                          setSortOrder(option.value);
-                          setShowListMenu(false);
-                          // Save to settings and trigger vault sync
-                          await executeVaultMutationAsync(async () => {
-                            dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
-                          });
-                        }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
-                          sortOrder === option.value ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'
-                        }`}
-                      >
-                        {sortOrder === option.value ? (
-                          <Icon name="check" className="w-4 h-4" />
-                        ) : (
-                          <span className="w-4" />
-                        )}
-                        <span>{t(option.labelKey)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <SelectionMenuItem isActive={isSelecting} onToggle={() => (isSelecting ? exitSelection() : selection.enter())} />
+                <MenuSeparator />
               </>
             )}
-          </div>
+            <MenuHeading>{t('items.sort.title')}</MenuHeading>
+            {SORT_OPTIONS.map((option) => (
+              <MenuRadioItem key={option.value} checked={sortOrder === option.value} onClick={() => void changeSortOrder(option.value)}>{t(option.labelKey)}</MenuRadioItem>
+            ))}
+          </EllipsisMenu>
           <ReloadButton onClick={() => void refreshVault()} />
         </div>
       </div>
@@ -1330,7 +1284,7 @@ const ItemsList: React.FC = () => {
       />
 
       {isSelecting && (
-        <SelectionActionBar
+        <ItemSelectionBar
           selection={selection.selection}
           visibleCount={sortedItems.length}
           currentFolder={currentFolderRef}

@@ -119,20 +119,20 @@ type MenuItemProps = {
   onClick: () => void;
   icon?: UiIconName;
   danger?: boolean;
-  /** A bit more padding, for an entry that stands alone above other groups. */
-  spacious?: boolean;
+  /** An entry outside any group, with a bit more padding to stand apart from the headed groups. */
+  standalone?: boolean;
   id?: string;
 };
 
 /**
  * A menu entry that closes the menu and runs its action.
  */
-export const MenuItem: React.FC<MenuItemProps> = ({ children, onClick, icon, danger = false, spacious = false, id }) => {
+export const MenuItem: React.FC<MenuItemProps> = ({ children, onClick, icon, danger = false, standalone = false, id }) => {
   const close = useContext(MenuCloseContext);
   return (
     <button type="button" role="menuitem" id={id} onClick={() => {
       close(); onClick();
-    }} className={`${itemClass} ${spacious ? 'py-2.5' : 'py-2'} ${danger ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+    }} className={`${itemClass} ${standalone ? 'py-2.5' : 'py-2'} ${danger ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
       {icon && <Icon name={icon} className="w-4 h-4" />}
       {children}
     </button>

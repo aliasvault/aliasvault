@@ -21,7 +21,7 @@ type ItemContextMenuProps = {
 };
 
 /**
- * Ellipsis menu on an item with edit, duplicate and delete.
+ * Context menu of an item (right-click or its ••• button) with edit, duplicate and delete.
  */
 const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated, hideTrigger = false }, ref) => {
   const { t } = useTranslation();

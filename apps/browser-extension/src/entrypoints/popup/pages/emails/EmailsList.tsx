@@ -1,20 +1,24 @@
 import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
+import { deleteEmails } from '@aliasvault/client/email/EmailDeletion';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 
+import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import EllipsisMenu from '@/entrypoints/popup/components/EllipsisMenu';
+import EmailCard from '@/entrypoints/popup/components/EmailCard';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
-import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
+import SelectionBar, { SelectionBarButton, SelectionMenuItem } from '@/entrypoints/popup/components/SelectionBar';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import { useListSelection } from '@/entrypoints/popup/hooks/useListSelection';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -22,6 +26,16 @@ import { logFailure } from '@/utils/Diagnostics';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import type { InboxResponse, MailboxEmail } from '@aliasvault/models/webapi';
+
+/**
+ * What the selection keeps of an email: its id.
+ */
+const emailIdOf = (email: MailboxEmail): number => email.id;
+
+/**
+ * The selection key of an email id.
+ */
+const emailKey = (id: number): string => String(id);
 
 /**
  * Emails list page.
@@ -43,6 +57,10 @@ const EmailsList: React.FC = () => {
    */
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 100);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const selection = useListSelection(emails, emailIdOf, emailKey);
+  const { exit: exitSelection } = selection;
+  /** The emails waiting for delete confirmation, and whether they are the bulk selection. */
+  const [pendingDelete, setPendingDelete] = useState<{ ids: number[]; bulk: boolean } | null>(null);
 
   /**
    * Page size for pagination.
@@ -56,6 +74,7 @@ const EmailsList: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
+      exitSelection();
 
       if (!dbContext?.sqliteClient) {
         return;
@@ -98,7 +117,7 @@ const EmailsList: React.FC = () => {
       setIsInitialLoading(false);
       setHasLoaded(true);
     }
-  }, [dbContext, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
+  }, [dbContext, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE, exitSelection]);
 
   /**
    * Loads more emails (next page).
@@ -195,6 +214,38 @@ const EmailsList: React.FC = () => {
     }
   };
 
+  /**
+   * Delete the emails waiting for confirmation and drop them from the list.
+   */
+  const confirmDelete = async (): Promise<void> => {
+    if (!pendingDelete) {
+      return;
+    }
+    const { ids, bulk } = pendingDelete;
+    setPendingDelete(null);
+    try {
+      const deleted = new Set(await deleteEmails(webApi, ids));
+      setEmails(current => current.filter(email => !deleted.has(email.id)));
+      setTotalRecords(total => Math.max(0, total - deleted.size));
+      if (bulk) {
+        exitSelection();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+    }
+  };
+
+  const deleteModal = (
+    <ConfirmDeleteModal
+      isOpen={pendingDelete !== null}
+      onClose={() => setPendingDelete(null)}
+      onConfirm={() => void confirmDelete()}
+      title={pendingDelete?.bulk ? t('emails.home.bulkDeleteEmailTitle') : t('emails.deleteEmail')}
+      message={pendingDelete?.bulk ? t('emails.home.bulkDeleteEmailConfirmation', { count: pendingDelete.ids.length }) : t('emails.deleteEmailConfirm')}
+      confirmText={t('common.delete')}
+    />
+  );
+
   const spinner = (
     <div className="flex justify-center items-center p-8">
       <LoadingSpinner />
@@ -247,31 +298,27 @@ const EmailsList: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <PageTitle>{t('emails.title')}</PageTitle>
-        <ReloadButton onClick={() => loadEmails(true)} />
+        <div className="flex items-center gap-2">
+          <EllipsisMenu id="emails-list-menu" label={t('common.moreOptions')}>
+            <SelectionMenuItem isActive={selection.isActive} onToggle={() => (selection.isActive ? exitSelection() : selection.enter())} />
+          </EllipsisMenu>
+          <ReloadButton onClick={() => loadEmails(true)} />
+        </div>
       </div>
       {isLoading ? spinner : (
         <div>
           {error && <p className="mb-4 text-sm text-red-500">{t('common.error')}: {error}</p>}
           <div className="space-y-2">
             {emails.map((email) => (
-              <Link
+              <EmailCard
                 key={email.id}
-                to={`/emails/${email.id}`}
-                className="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="text-gray-900 dark:text-white mb-1 font-bold">
-                    {email.subject}
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
-                    {email.hasAttachments && <AttachmentIcon className="w-4 h-4" />}
-                    <span>{formatEmailDate(email.dateSystem)}</span>
-                  </div>
-                </div>
-                <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">
-                  {email.messagePreview}
-                </div>
-              </Link>
+                email={email}
+                dateLabel={formatEmailDate(email.dateSystem)}
+                selectionMode={selection.isActive}
+                isSelected={selection.isSelected(email)}
+                onSelect={selection.toggle}
+                onDelete={id => setPendingDelete({ ids: [id], bulk: false })}
+              />
             ))}
           </div>
 
@@ -296,6 +343,13 @@ const EmailsList: React.FC = () => {
           )}
         </div>
       )}
+
+      {selection.isActive && (
+        <SelectionBar count={selection.selection.length} visibleCount={emails.length} onSelectAll={selection.selectAll} onDeselectAll={selection.deselectAll} onClose={exitSelection} dialogOpen={pendingDelete !== null}>
+          <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => setPendingDelete({ ids: selection.selection, bulk: true })} disabled={selection.selection.length === 0} danger />
+        </SelectionBar>
+      )}
+      {deleteModal}
     </div>
   );
 };
