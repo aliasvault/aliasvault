@@ -345,7 +345,7 @@ const EmailsList: React.FC = () => {
       )}
 
       {selection.isActive && (
-        <SelectionBar count={selection.selection.length} visibleCount={emails.length} onSelectAll={selection.selectAll} onDeselectAll={selection.deselectAll} onClose={exitSelection} dialogOpen={pendingDelete !== null}>
+        <SelectionBar count={selection.selection.length} visibleCount={emails.length} onSelectAll={selection.selectAll} onClose={exitSelection} dialogOpen={pendingDelete !== null}>
           <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => setPendingDelete({ ids: selection.selection, bulk: true })} disabled={selection.selection.length === 0} danger />
         </SelectionBar>
       )}

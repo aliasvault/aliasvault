@@ -1289,7 +1289,6 @@ const ItemsList: React.FC = () => {
           visibleCount={sortedItems.length}
           currentFolder={currentFolderRef}
           onSelectAll={selection.selectAll}
-          onDeselectAll={selection.deselectAll}
           onClose={exitSelection}
           onDone={finishBulkAction}
           onDialogOpenChange={setBulkDialogOpen}

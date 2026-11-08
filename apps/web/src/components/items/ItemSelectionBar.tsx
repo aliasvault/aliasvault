@@ -20,7 +20,6 @@ type ItemSelectionBarProps = {
   visibleCount: number;
   currentFolder: FolderRef | null;
   onSelectAll: () => void;
-  onDeselectAll: () => void;
   onClose: () => void;
   onDone: () => void;
 };
@@ -31,7 +30,7 @@ type PendingMove = { summary: BulkMoveSummary; target: FolderRef | null };
 /**
  * Selection bar of the item list: move and delete the selected items, plus their dialogs.
  */
-const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleCount, currentFolder, onSelectAll, onDeselectAll, onClose, onDone }) => {
+const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleCount, currentFolder, onSelectAll, onClose, onDone }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const notifications = useNotifications();
@@ -122,7 +121,7 @@ const ItemSelectionBar: React.FC<ItemSelectionBarProps> = ({ selection, visibleC
 
   return (
     <>
-      <SelectionBar count={count} visibleCount={visibleCount} onSelectAll={onSelectAll} onDeselectAll={onDeselectAll} onClose={onClose} dialogOpen={dialogOpen}>
+      <SelectionBar count={count} visibleCount={visibleCount} onSelectAll={onSelectAll} onClose={onClose} dialogOpen={dialogOpen}>
         <SelectionBarButton id="selection-move" icon="folder" label={t('items.selection.move')} onClick={() => setShowMovePicker(true)} disabled={count === 0 || isWorking} />
         <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => setShowDeleteModal(true)} disabled={count === 0 || isWorking} danger />
       </SelectionBar>

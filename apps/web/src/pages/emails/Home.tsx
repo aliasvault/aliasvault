@@ -571,7 +571,7 @@ const EmailsHome: React.FC = () => {
         )}
 
         {selection.isActive && (
-          <SelectionBar count={selection.selection.length} visibleCount={emailList.length} onSelectAll={selection.selectAll} onDeselectAll={selection.deselectAll} onClose={exitSelection} dialogOpen={isConfirmingDelete}>
+          <SelectionBar count={selection.selection.length} visibleCount={emailList.length} onSelectAll={selection.selectAll} onClose={exitSelection} dialogOpen={isConfirmingDelete}>
             <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => void deleteSelectedEmails()} disabled={selection.selection.length === 0} danger />
           </SelectionBar>
         )}

@@ -11,7 +11,6 @@ export type ListSelection<T, S> = {
   exit: () => void;
   toggle: (entry: T, range: boolean) => void;
   selectAll: () => void;
-  deselectAll: () => void;
 };
 
 /**
@@ -83,7 +82,5 @@ export function useListSelection<T, S>(entries: T[], toSelected: (entry: T) => S
 
   const selectAll = useCallback((): void => setSelection(entries.map(toSelected)), [entries, toSelected]);
 
-  const deselectAll = useCallback((): void => setSelection([]), []);
-
-  return { isActive, selection: visibleSelection, isSelected, enter, exit, toggle, selectAll, deselectAll };
+  return { isActive, selection: visibleSelection, isSelected, enter, exit, toggle, selectAll };
 }
