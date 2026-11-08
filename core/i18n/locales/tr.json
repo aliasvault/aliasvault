@@ -940,9 +940,9 @@
         "0": "Kimliğiniz en değerli varlığınızdır. Ona göre koruyun.",
         "1": "Dijital dünyada güçlü bir parola, sizin ilk savunma hattınızdır.",
         "2": "Güvenlik bir ürün değil, bir süreçtir.",
-        "3": "Güvenlik zincirindeki en zayıf halka, insan unsurudur.",
-        "4": "Güvenlik her zaman fazla görünür, ta ki yeterli olmadığında eksik kalana kadar.",
-        "5": "Güven, ama internette mutlaka doğrula.",
+        "3": "Güvenlik zincirindeki en zayıf halka insan unsurudur.",
+        "4": "Güvenlik her zaman fazla görünür, ta ki yeterli gelmeyene dek.",
+        "5": "Güven ama doğrula - özellikle internette.",
         "6": "Verileriniz, en zayıf parolanız kadar güvendedir.",
         "7": "En güvenli parola, hatırlayamadığınız paroladır."
       }
@@ -1118,7 +1118,7 @@
       "showSearchText": "Show search text",
       "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential",
       "step1": "1. Aşağıdaki buton ile Android Ayarlarını açın ve “Otomatik doldurma tercihi”ni “AliasVault” olarak değiştirin",
-      "step2": "2. Bazı uygulamalar, örneğin Google Chrome, üçüncü taraf otomatik doldurma uygulamalarına izin vermek için kendi ayarlarında manuel yapılandırma gerektirebilir. Ancak çoğu uygulama varsayılan olarak otomatik doldurma ile çalışmalıdır."
+      "step2": "2. Google Chrome gibi bazı uygulamalar üçüncü taraf otomatik doldurma uygulamalarına izin vermek için kendi ayarlarında manuel yapılandırma gerektirebilir. Ancak çoğu uygulama varsayılan olarak otomatik doldurma ile çalışmalıdır."
     },
     "apiUrlHint": "The API endpoint URL (usually client URL + /api)",
     "appVersion": "App version",
@@ -1148,7 +1148,7 @@
       "8hours": "8 saat"
     },
     "autoLockSettings": {
-      "description": "Uygulamanın arka planda ne kadar süre kalabileceğini seçin; ardından kasayı tekrar açmak için Face ID kullanmanız veya parolanızı girmeniz gerekecektir."
+      "description": "Uygulamanın tekrar doğrulama istemeden arka planda ne kadar süre kalabileceğini seçin; ardından kasayı tekrar açmak için Face ID kullanmanız veya parolanızı girmeniz gerekecektir."
     },
     "autoLockTimeoutDescription": "Automatically lock the vault after a period of inactivity",
     "autoLockTimeoutHelp": "Kasa, yalnızca belirtilen süre boyunca herhangi bir işlem yapılmadığında (otomatik doldurma kullanılmadığında veya uzantı açılmadığında) kilitlenecektir. Ancak, bu ayardan bağımsız olarak tarayıcı kapatıldığında her zaman kilitlenir.",
@@ -1180,7 +1180,7 @@
     "clipboardClear10Seconds": "Clear after 10 seconds",
     "clipboardClear15Seconds": "Clear after 15 seconds",
     "clipboardClear5Seconds": "Clear after 5 seconds",
-    "clipboardClearAndroidWarning": "Not: Bazı Android cihazlarda pano geçmişi özelliği açıktır ve AliasVault panoyu temizledikten sonra bile daha önce kopyalanan öğeleri saklayabilir. AliasVault yalnızca en son öğeyi üzerine yazabilir, ancak daha eski girişler geçmişte görünmeye devam edebilir. Güvenlik nedeniyle, cihaz ayarlarınızdan pano geçmişi özelliklerini devre dışı bırakmanızı öneririz.",
+    "clipboardClearAndroidWarning": "Not: Bazı Android cihazlarda pano geçmişi özelliği açıktır ve AliasVault panoyu temizledikten sonra bile daha önce kopyalanan öğeleri saklayabilir. AliasVault yalnızca en son öğenin üzerine yazabilir, ancak daha eski girişler geçmişte görünmeye devam edebilir. Güvenlik nedeniyle, cihaz ayarlarınızdan pano geçmişi özelliklerini devre dışı bırakmanızı öneririz.",
     "clipboardClearDescription": "Kopyalanan parolaları ve hassas bilgileri, belirtilen süre sonunda panodan otomatik olarak temizleyin.",
     "clipboardClearDisabled": "Never clear",
     "clipboardClearOptions": {
