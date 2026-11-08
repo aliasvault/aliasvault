@@ -361,6 +361,11 @@ const EmailsHome: React.FC = () => {
   const handleEmailsDeleted = (emailIds: number[]): void => {
     const deletedSelectedIndex = selectedEmailId !== null && emailIds.includes(selectedEmailId) ? emailList.findIndex(e => e.id === selectedEmailId) : -1;
     const remaining = emailList.filter(e => !emailIds.includes(e.id));
+    if (remaining.length === 0) {
+      // The loaded page is empty, so fetch again: the server may still have older emails.
+      void refreshData();
+      return;
+    }
     setEmailList(remaining);
     emailIds.forEach(id => knownEmailIds.current.delete(id));
     setTotalRecords(total => Math.max(0, total - emailIds.length));
@@ -408,7 +413,7 @@ const EmailsHome: React.FC = () => {
    */
   const deleteSelectedEmails = async (): Promise<void> => {
     const count = selection.selection.length;
-    if (await confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle'), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }))) {
+    if (await confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle', { count }), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }))) {
       exitSelection();
     }
   };
@@ -571,7 +576,7 @@ const EmailsHome: React.FC = () => {
         )}
 
         {selection.isActive && (
-          <SelectionBar count={selection.selection.length} visibleCount={emailList.length} onSelectAll={selection.selectAll} onClose={exitSelection} dialogOpen={isConfirmingDelete}>
+          <SelectionBar count={selection.selection.length} visibleCount={emailList.length} onSelectAll={selection.selectAll} onClose={exitSelection} dialogOpen={isConfirmingDelete} spacerClassName="h-20 lg:hidden">
             <SelectionBarButton id="selection-delete" icon="trash" label={t('common.delete')} onClick={() => void deleteSelectedEmails()} disabled={selection.selection.length === 0} danger />
           </SelectionBar>
         )}
