@@ -323,8 +323,8 @@ class WebApiService(private val context: Context) {
                 connection.setRequestProperty(key, value)
             }
 
-            // Set body if present
-            val sendsBody = method.uppercase() == "POST" || method.uppercase() == "PUT" || method.uppercase() == "PATCH"
+            // Set body if present (DELETE carries one for Email/bulk)
+            val sendsBody = method.uppercase() in setOf("POST", "PUT", "PATCH", "DELETE")
             if (bodyBytes != null && sendsBody) {
                 connection.doOutput = true
                 connection.setFixedLengthStreamingMode(bodyBytes.size)

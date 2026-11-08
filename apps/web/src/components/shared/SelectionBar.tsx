@@ -11,10 +11,9 @@ type SelectionBarProps = {
   visibleCount: number;
   onSelectAll: () => void;
   onClose: () => void;
-  /** While a dialog of the bar is open, Escape belongs to the dialog. */
   dialogOpen: boolean;
-  /** The actions on the selected rows. */
   children: React.ReactNode;
+  spacerClassName?: string;
 };
 
 const baseButtonClass = 'inline-flex items-center gap-2 py-1.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500';
@@ -23,7 +22,7 @@ const buttonClass = `${baseButtonClass} px-2.5 sm:px-3.5 text-gray-800 hover:bg-
 /**
  * Floating bar of a list in selection mode: close, count, select all and the given actions.
  */
-const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSelectAll, onClose, dialogOpen, children }) => {
+const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSelectAll, onClose, dialogOpen, children, spacerClassName = 'h-20' }) => {
   const { t } = useTranslation();
   const countLabel = t('common.selection.count', { count });
   const allSelected = count > 0 && count >= visibleCount;
@@ -47,7 +46,7 @@ const SelectionBar: React.FC<SelectionBarProps> = ({ count, visibleCount, onSele
   return (
     <>
       {/* Room below the list so the bar never covers the last rows. */}
-      <div className="h-20" aria-hidden />
+      <div className={spacerClassName} aria-hidden />
       <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] sm:w-auto">
         <div id="selection-action-bar" role="toolbar" aria-label={countLabel} className="flex items-center gap-1.5 rounded-xl bg-white shadow-[0_12px_32px_-4px_rgba(0,0,0,0.25),0_4px_10px_-2px_rgba(0,0,0,0.12)] ring-1 ring-gray-300 dark:bg-gray-700 dark:shadow-[0_12px_32px_0_rgba(0,0,0,0.6),0_4px_10px_rgba(0,0,0,0.4)] dark:ring-gray-500 p-2">
           <button type="button" onClick={onClose} aria-label={t('common.close')} title={t('common.close')} className={`${baseButtonClass} justify-center w-8 h-8 py-0 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white`}>

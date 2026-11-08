@@ -225,7 +225,13 @@ const EmailsList: React.FC = () => {
     setPendingDelete(null);
     try {
       const deleted = new Set(await deleteEmails(webApi, ids));
-      setEmails(current => current.filter(email => !deleted.has(email.id)));
+      const remaining = emails.filter(email => !deleted.has(email.id));
+      if (remaining.length === 0) {
+        // The loaded page is empty, so fetch again: the server may still have older emails.
+        await loadEmails();
+        return;
+      }
+      setEmails(remaining);
       setTotalRecords(total => Math.max(0, total - deleted.size));
       if (bulk) {
         exitSelection();
@@ -240,7 +246,7 @@ const EmailsList: React.FC = () => {
       isOpen={pendingDelete !== null}
       onClose={() => setPendingDelete(null)}
       onConfirm={() => void confirmDelete()}
-      title={pendingDelete?.bulk ? t('emails.home.bulkDeleteEmailTitle') : t('emails.deleteEmail')}
+      title={pendingDelete?.bulk ? t('emails.home.bulkDeleteEmailTitle', { count: pendingDelete.ids.length }) : t('emails.deleteEmail')}
       message={pendingDelete?.bulk ? t('emails.home.bulkDeleteEmailConfirmation', { count: pendingDelete.ids.length }) : t('emails.deleteEmailConfirm')}
       confirmText={t('common.delete')}
     />
