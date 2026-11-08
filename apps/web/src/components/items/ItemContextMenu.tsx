@@ -96,9 +96,10 @@ const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ i
           <Icon name="dots-vertical-narrow" className="w-2 h-4" />
         </button>
       )}>
-        <MenuItem onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
-        <MenuItem onClick={() => void duplicateItem()}>{t('common.duplicate')}</MenuItem>
-        <MenuItem danger onClick={() => setShowDeleteModal(true)}>{t('common.delete')}</MenuItem>
+        <MenuItem icon="eye" onClick={() => navigate(itemRoute(item))}>{t('common.open')}</MenuItem>
+        <MenuItem icon="pencil-alt" onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
+        <MenuItem icon="document-duplicate" onClick={() => void duplicateItem()}>{t('common.duplicate')}</MenuItem>
+        <MenuItem danger icon="trash" onClick={() => setShowDeleteModal(true)}>{t('common.delete')}</MenuItem>
       </ContextMenu>
 
       <FormModal
