@@ -1,5 +1,4 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
@@ -8,6 +7,7 @@ import { getFolderIdPath, getFolderPath } from '@aliasvault/client/items/FolderU
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';
 import { folderRoute } from '@/utils/FolderRoute';
+import { usePaneRouter } from '@/hooks/usePaneRouter';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
@@ -51,7 +51,7 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
   folders,
 }) => {
   const { t } = useTranslation();
-  const router = useRouter();
+  const router = usePaneRouter();
   const dbContext = useDb();
   const colors = useColors();
   const [loadedFolders, setLoadedFolders] = useState<Folder[]>([]);
@@ -100,9 +100,9 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
   /**
    * Handle breadcrumb navigation. Every folder on the trail shares the current folder's manifest.
    */
-  const handleBreadcrumbClick = useCallback((crumbId: string) => {
+  const handleBreadcrumbClick = useCallback((crumbId: string, name: string) => {
     if (manifestId) {
-      router.dismissTo(folderRoute({ Id: crumbId, ManifestId: manifestId }));
+      router.dismissTo(folderRoute({ Id: crumbId, ManifestId: manifestId }, undefined, name));
     }
   }, [router, manifestId]);
 
@@ -180,7 +180,7 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
             style={styles.chevron}
           />
           <TouchableOpacity
-            onPress={() => handleBreadcrumbClick(crumb.id)}
+            onPress={() => handleBreadcrumbClick(crumb.id, crumb.name)}
             style={styles.breadcrumbButton}
             activeOpacity={0.6}
           >

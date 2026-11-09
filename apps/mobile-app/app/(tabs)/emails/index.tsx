@@ -16,6 +16,8 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useRailSideBleed } from '@/hooks/useRailSideFlush';
+import { useScrollSelectedIntoView } from '@/hooks/useScrollSelectedIntoView';
+import { isPathSelected } from '@/hooks/useTwoPane';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { ListMenu } from '@/components/common/ListMenu';
@@ -26,6 +28,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
+import { TwoPaneRoot } from '@/components/ui/TwoPaneLayout';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -42,10 +45,13 @@ const emailIdOf = (email: MailboxEmail): number => email.id;
  */
 const emailKey = (id: number): string => String(id);
 
+/** Most extra pages the two-pane list loads to find the email shown next to it. */
+const MAX_PAGES_TO_FIND_SELECTED = 10;
+
 /**
  * Emails screen.
  */
-export default function EmailsScreen() : React.ReactNode {
+export function EmailsScreen() : React.ReactNode {
   const { t } = useTranslation();
   const dbContext = useDb();
   const webApi = useWebApi();
@@ -261,6 +267,29 @@ export default function EmailsScreen() : React.ReactNode {
    */
   const selectFromMenu = useCallback((entry: MailboxEmail): void => enterSelection(entry), [enterSelection]);
 
+  // When the primary pane appears (the phone is unfolded), scroll the email shown next to it into view once.
+  const scrollIntoView = useScrollSelectedIntoView(scrollViewRef);
+  const scrollTargetPath = scrollIntoView.targetPath;
+
+  // The email may sit on a later page than the first: load pages until it is in the list (bounded, it may be gone).
+  const targetPagesLoadedRef = useRef(0);
+  const targetSearchDoneRef = useRef(false);
+  useEffect(() => {
+    if (!scrollTargetPath || targetSearchDoneRef.current || isLoading || isLoadingMore) {
+      return;
+    }
+    if (emails.some(email => isPathSelected(scrollTargetPath, { pathname: '/(tabs)/emails/[id]', params: { id: String(email.id) } }))) {
+      targetSearchDoneRef.current = true;
+      return;
+    }
+    if (totalRecords <= emails.length || targetPagesLoadedRef.current >= MAX_PAGES_TO_FIND_SELECTED) {
+      targetSearchDoneRef.current = true;
+      return;
+    }
+    targetPagesLoadedRef.current++;
+    loadMoreEmails();
+  }, [scrollTargetPath, isLoading, isLoadingMore, emails, totalRecords, loadMoreEmails]);
+
   /**
    * Header menu button on Android; iOS shows it next to the title.
    */
@@ -401,17 +430,21 @@ export default function EmailsScreen() : React.ReactNode {
     return (
       <>
         {errorView}
-        {emails.map((email) => (
-          <EmailCard
-            key={email.id}
-            email={email}
-            selectionMode={selection.isActive}
-            isSelected={selection.isSelected(email)}
-            onToggleSelect={toggleEmail}
-            onSelectFromMenu={selectFromMenu}
-            onDelete={deleteSingleEmail}
-          />
-        ))}
+        {emails.map((email) => {
+          const href = { pathname: '/(tabs)/emails/[id]', params: { id: String(email.id) } } as const;
+          return (
+            <View key={email.id} onLayout={scrollIntoView.onLayoutFor(href)}>
+              <EmailCard
+                email={email}
+                selectionMode={selection.isActive}
+                isSelected={selection.isSelected(email)}
+                onToggleSelect={toggleEmail}
+                onSelectFromMenu={selectFromMenu}
+                onDelete={deleteSingleEmail}
+              />
+            </View>
+          );
+        })}
 
         {/* Load More Button */}
         {hasMoreEmails && (
@@ -487,4 +520,12 @@ export default function EmailsScreen() : React.ReactNode {
       />
     </ThemedContainer>
   );
+}
+
+/**
+ * The emails tab's root route: the email list, or the empty detail pane of a two-pane layout, where the layout renders the list.
+ */
+export default function EmailsRoute(): React.ReactNode {
+  const { t } = useTranslation();
+  return <TwoPaneRoot placeholderIcon="mail-outline" placeholderMessage={t('emails.preview.selectEmailMessage')}><EmailsScreen /></TwoPaneRoot>;
 }

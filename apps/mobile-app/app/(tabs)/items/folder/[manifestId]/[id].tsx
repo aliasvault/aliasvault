@@ -6,7 +6,7 @@ import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifest
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Stack, useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useVerticalBarEdgeIOS } from 'expo-status-bar';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,7 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { itemRoute } from '@/utils/ItemRoute';
 import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingErrors';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -24,9 +25,13 @@ import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { SORT_OPTIONS, useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePaneRouter } from '@/hooks/usePaneRouter';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
+import { useScreenParams } from '@/hooks/useScreenParams';
+import { useScrollSelectedRowIntoView } from '@/hooks/useScrollSelectedRowIntoView';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
+import { useIsStackRoute, useSetScreenOptions } from '@/hooks/useTwoPane';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -46,6 +51,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
+import { ScreenToolbar } from '@/components/ui/ScreenToolbar';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -83,14 +89,15 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
  * Simplified view with search scoped to this folder only.
  */
 export default function FolderViewScreen(): React.ReactNode {
-  const { id: folderId, manifestId, filter: filterParam, name: nameParam } = useLocalSearchParams<{ manifestId: string; id: string; filter?: string; name?: string }>();
+  const { id: folderId, manifestId, filter: filterParam, name: nameParam } = useScreenParams<{ manifestId: string; id: string; filter?: string; name?: string }>();
   const folderRef = useMemo((): FolderRef => ({ Id: folderId, ManifestId: manifestId }), [folderId, manifestId]);
   const colors = useColors();
   const { t } = useTranslation();
+  const isStackRoute = useIsStackRoute();
+  const setScreenOptions = useSetScreenOptions();
   // On the iPhone Duo rail the filter and list menus move into the rail, so the content skips its own heading row.
-  const hasRail = useVerticalBarEdgeIOS() !== null;
-  const navigation = useNavigation();
-  const router = useRouter();
+  const hasRail = useVerticalBarEdgeIOS() !== null && isStackRoute;
+  const router = usePaneRouter();
   const navigate = useNavigationDebounce();
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
 
@@ -316,7 +323,7 @@ export default function FolderViewScreen(): React.ReactNode {
    * Set up the header.
    */
   useEffect(() => {
-    navigation.setOptions({
+    setScreenOptions({
       title: folder?.Name || nameParam || t('items.folders.folder'),
       /**
        * Folder icon and name, marked as shared for a shared vault folder.
@@ -340,16 +347,33 @@ export default function FolderViewScreen(): React.ReactNode {
         ),
       }),
     });
-  }, [navigation, folder, nameParam, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
+  }, [setScreenOptions, folder, nameParam, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
+
+  // The header title comes from the name param until the folder has loaded: keep the param at the loaded name, also after a rename.
+  useEffect(() => {
+    if (folder && folder.Name !== nameParam) {
+      router.setParams({ name: folder.Name });
+    }
+  }, [folder, nameParam, router]);
 
   /**
-   * The folder actions in the Android overflow menu; iOS shows them in the toolbar.
+   * The folder actions in the list menu, on Android and without a route header; elsewhere iOS shows them in the toolbar.
    */
   const folderMenuActions = useMemo((): ListMenuAction[] => {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS !== 'android' && isStackRoute) {
       return [];
     }
     const actions: ListMenuAction[] = [];
+    if (!isStackRoute && canShareFolder && folder) {
+      actions.push({
+        label: t('common.share'),
+        icon: 'people',
+        /**
+         * Open the people sheet of the folder.
+         */
+        onPress: () => setPeopleFolder({ folder, isShared: isVirtualFolder }),
+      });
+    }
     if (canEditFolder) {
       actions.push({
         label: t('common.edit'),
@@ -372,7 +396,7 @@ export default function FolderViewScreen(): React.ReactNode {
       });
     }
     return actions;
-  }, [canEditFolder, canDeleteFolder, isVirtualFolder, deleteSharedFolder, t]);
+  }, [isStackRoute, canShareFolder, folder, canEditFolder, canDeleteFolder, isVirtualFolder, deleteSharedFolder, t]);
 
   /**
    * Delete an item (move to trash).
@@ -404,6 +428,9 @@ export default function FolderViewScreen(): React.ReactNode {
     setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
+  const scrollSelected = useScrollSelectedRowIntoView(flatListRef, { rows: sortedItems, isLoaded: !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
+  const { scrollToIndex } = scrollSelected;
+
   /**
    * Scroll the highlighted item (a freshly created duplicate) into view once it's
    * rendered, then clear the highlight after a short moment.
@@ -415,12 +442,12 @@ export default function FolderViewScreen(): React.ReactNode {
 
     const index = sortedItems.findIndex(itm => scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey);
     if (index >= 0) {
-      flatListRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
+      scrollToIndex(index, true);
     }
 
     const timer = setTimeout(() => setHighlightedItemKey(null), 2000);
     return (): void => clearTimeout(timer);
-  }, [highlightedItemKey, sortedItems]);
+  }, [highlightedItemKey, sortedItems, scrollToIndex]);
 
   /**
    * Rename the folder.
@@ -940,7 +967,7 @@ export default function FolderViewScreen(): React.ReactNode {
   return (
     <ThemedContainer style={styles.container}>
       {Platform.OS === 'ios' && (
-        <Stack.Toolbar placement="right">
+        <ScreenToolbar placement="right">
           {hasRail && (
             <Stack.Toolbar.Menu icon={filterType === ItemFilter.All ? 'line.3.horizontal.decrease' : 'line.3.horizontal.decrease.circle.fill'} accessibilityLabel={getFilterTitle()}>
               <Stack.Toolbar.Menu inline>
@@ -980,24 +1007,22 @@ export default function FolderViewScreen(): React.ReactNode {
           {canDeleteFolder && (
             <Stack.Toolbar.Button icon="trash" tintColor={colors.destructive} onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}>{t('common.delete')}</Stack.Toolbar.Button>
           )}
-        </Stack.Toolbar>
+        </ScreenToolbar>
       )}
       {/* Item list */}
       <FlatList
         ref={flatListRef}
+        key={scrollSelected.listKey}
         data={isLoadingItems ? Array(4).fill(null) : sortedItems}
         keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
         contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: paddingBottom + SELECTION_BAR_SPACE }]}
         contentInsetAdjustmentBehavior="automatic"
-        initialNumToRender={14}
+        {...scrollSelected.listProps}
         maxToRenderPerBatch={14}
         windowSize={7}
         removeClippedSubviews={false}
-        ListHeaderComponent={listHeader}
-        onScrollToIndexFailed={({ index, averageItemLength }) => {
-          flatListRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: true });
-        }}
+        ListHeaderComponent={<View onLayout={scrollSelected.onListHeaderLayout}>{listHeader}</View>}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

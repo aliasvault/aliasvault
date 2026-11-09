@@ -16,7 +16,7 @@ export default function EmailsLayout(): React.ReactNode {
   const { t } = useTranslation();
   return (
     <>
-      <TwoPaneLayout primary={<EmailsScreen />}>
+      <TwoPaneLayout path="/(tabs)/emails" primary={<EmailsScreen />} primaryTitle={t('emails.title')}>
         <Stack screenLayout={stackScreenLayout}>
           <Stack.Screen
             name="index"
