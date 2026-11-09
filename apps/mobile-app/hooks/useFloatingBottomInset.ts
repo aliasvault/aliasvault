@@ -2,8 +2,11 @@ import { useVerticalBarEdgeIOS } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+/** Distance of the iPhone Duo bar rail from the screen edge; it ignores the 34pt bottom safe area, so floating views line up with it. */
+export const RAIL_EDGE_MARGIN = 24;
+
 /**
- * Bottom offset for a floating view: `gap` above the tab bar, or on the safe-area edge when the iPhone Duo rail holds the tab bar.
+ * Bottom offset for a floating view: `gap` above the tab bar, or level with the bottom of the iPhone Duo rail when the rail holds the tab bar.
  */
 export function useFloatingBottomInset(gap: number): number {
   const insets = useSafeAreaInsets();
@@ -11,5 +14,5 @@ export function useFloatingBottomInset(gap: number): number {
   if (Platform.OS !== 'ios') {
     return gap;
   }
-  return railEdge ? Math.max(insets.bottom, gap) : insets.bottom + gap;
+  return railEdge ? Math.max(RAIL_EDGE_MARGIN, gap) : insets.bottom + gap;
 }

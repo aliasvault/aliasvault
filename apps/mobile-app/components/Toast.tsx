@@ -1,7 +1,10 @@
 import { ThemeColors } from '@aliasvault/models/colors';
-import { View, Text, StyleSheet } from 'react-native';
+import { useVerticalBarEdgeIOS } from 'expo-status-bar';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+
+import { RAIL_EDGE_MARGIN } from '@/hooks/useFloatingBottomInset';
 
 type BaseToastProps = {
   text1?: string;
@@ -32,7 +35,6 @@ const styles = StyleSheet.create({
     backgroundColor: primaryColor,
     borderRadius: 8,
     elevation: 5,
-    marginHorizontal: 16,
     padding: 12,
     shadowColor: shadowColor,
     shadowOffset: {
@@ -65,7 +67,8 @@ const SuccessToast = (props: BaseToastProps): React.ReactNode => {
         styles.toastSuccess,
         {
           marginTop: insets.top - 38,
-          marginBottom: insets.bottom + 20,
+          marginLeft: insets.left + 16,
+          marginRight: insets.right + 16,
         },
       ]}
     >
@@ -88,7 +91,8 @@ const ErrorToast = (props: ErrorToastProps): React.ReactNode => {
         styles.toastError,
         {
           marginTop: insets.top + 20,
-          marginBottom: insets.bottom + 20,
+          marginLeft: insets.left + 16,
+          marginRight: insets.right + 16,
         },
       ]}
     >
@@ -116,7 +120,8 @@ const InfoToast = (props: BaseToastProps): React.ReactNode => {
         styles.toastInfo,
         {
           marginTop: insets.top + 20,
-          marginBottom: insets.bottom + 20,
+          marginLeft: insets.left + 16,
+          marginRight: insets.right + 16,
         },
       ]}
     >
@@ -146,5 +151,9 @@ export const toastConfig = {
  * AliasVault toast component.
  */
 export const AliasVaultToast = (): React.ReactNode => {
-  return <Toast config={toastConfig} />;
+  const insets = useSafeAreaInsets();
+  const railEdge = useVerticalBarEdgeIOS();
+  // Clear of a bottom tab bar, or level with the bottom of the iPhone Duo rail when the rail holds the tab bar.
+  const bottomOffset = Platform.OS === 'ios' && railEdge ? RAIL_EDGE_MARGIN : insets.bottom + 60;
+  return <Toast config={toastConfig} bottomOffset={bottomOffset} />;
 };
