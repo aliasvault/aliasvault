@@ -329,6 +329,7 @@
     "save": "Сохранить",
     "saving": "Сохраняем...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "Редактировать поле"
     },
     "emailLoadError": "Произошла ошибка при загрузке писем. Пожалуйста, повторите попытку позже.",
-    "emailPreview": "Предварительный просмотр электронной почты",
     "emailUnexpectedError": "При загрузке писем произошла непредвиденная ошибка. Пожалуйста, повторите попытку позже.",
     "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда записи, перейдите в режим редактирования записи и нажмите на иконку папки в поле имени.",
     "errorLoadingItems": "Ошибка загрузки записей",
@@ -1532,6 +1532,8 @@
     "theme": "Тема",
     "totpAutofill": "Автозаполнение кодов 2FA",
     "totpAutofillDescription": "Показывать окно автозаполнения при обнаружении полей для кодов 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Подтвердите ПИН-код﻿",
       "confirmPinDescription": "Повторите ПИН-код для подтверждения",
