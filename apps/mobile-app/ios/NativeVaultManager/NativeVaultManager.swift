@@ -1,5 +1,6 @@
 import Foundation
 import LocalAuthentication
+import React
 import VaultStoreKit
 import VaultModels
 import SwiftUI

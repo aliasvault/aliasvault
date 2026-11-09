@@ -3,17 +3,15 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 internal import Expo
-internal import ExpoScreenOrientation
 import VaultStoreKit
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+internal class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
   var window: UIWindow?
-  private(set) var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  private var reactNativeDelegate: ReactNativeDelegate?
-  private(set) var reactNativeFactory: ExpoReactNativeFactory?
+  var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
+  var reactNativeFactory: RCTReactNativeFactory?
 
-  func application(
+  override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
@@ -35,31 +33,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
-    self.launchOptions = launchOptions
 
-    // The window is created and React Native is started in SceneDelegate (UIScene lifecycle).
-    return true
+    // The window is created and React Native is started by `SceneDelegate` under the
+    // scene-based life cycle (required by the iOS 27 SDK).
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   // MARK: - Orientation
 
   /// Caps every screen to the expo-screen-orientation lock (portrait unless a screen unlocks it); iPad keeps all orientations.
-  func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+  override func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
     if UIDevice.current.userInterfaceIdiom == .pad { return .all }
-    let mask = ScreenOrientationRegistry.shared.currentOrientationMask
+    let mask = super.application(application, supportedInterfaceOrientationsFor: window)
     return mask.isEmpty ? .portrait : mask
-  }
-
-  // MARK: - UIScene
-
-  func application(
-    _ application: UIApplication,
-    configurationForConnecting connectingSceneSession: UISceneSession,
-    options: UIScene.ConnectionOptions
-  ) -> UISceneConfiguration {
-    let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    configuration.delegateClass = SceneDelegate.self
-    return configuration
   }
 
   // MARK: - Test Support
@@ -125,28 +111,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     print("[UITest] Cleared additional UserDefaults (\(keysToRemove.count) keys)")
   }
   #endif
-  
-  // MARK: - Remote Notifications
-  
-  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    // Handle device token if needed
-  }
-  
-  func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    // Handle registration failure if needed
-  }
-  
-  func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-    // Handle remote notification if needed
-    completionHandler(.noData)
-  }
 }
 
 private class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
   override func sourceURL(for bridge: RCTBridge) -> URL? {
-    self.bundleURL()
+    // needed to return the correct URL for expo-dev-client.
+    bridge.bundleURL ?? bundleURL()
   }
-  
+
   override func bundleURL() -> URL? {
 #if DEBUG
     RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")

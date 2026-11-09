@@ -993,7 +993,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     override fun setScreenCaptureProtection(enabled: Boolean, promise: Promise) {
-        ScreenCaptureProtection.setEnabled(reactApplicationContext, enabled, currentActivity)
+        ScreenCaptureProtection.setEnabled(reactApplicationContext, enabled, getCurrentActivity())
         promise.resolve(null)
     }
 
@@ -1013,7 +1013,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     override fun setBlockScreenshots(enabled: Boolean, promise: Promise) {
-        ScreenCaptureProtection.setBlockScreenshotsEnabled(reactApplicationContext, enabled, currentActivity)
+        ScreenCaptureProtection.setBlockScreenshotsEnabled(reactApplicationContext, enabled, getCurrentActivity())
         promise.resolve(null)
     }
 
@@ -1022,7 +1022,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @return The fragment activity
      */
     private fun getFragmentActivity(): FragmentActivity? {
-        return currentActivity as? FragmentActivity
+        return getCurrentActivity() as? FragmentActivity
     }
 
     // MARK: - WebAPI Configuration
@@ -1693,7 +1693,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         vaultStore.getAccountKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
             override fun onSuccess(accountKey: String) {
                 try {
-                    val activity = currentActivity
+                    val activity = getCurrentActivity()
                     if (activity == null) {
                         promise.reject("ERR_NO_ACTIVITY", "No activity available")
                         return
@@ -1745,7 +1745,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     override fun showPinUnlock(promise: Promise) {
-        val activity = currentActivity
+        val activity = getCurrentActivity()
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "No activity available", null)
             return
@@ -1789,7 +1789,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * Launch the password unlock activity for showPasswordUnlock and showPasswordUnlockForKey.
      */
     private fun presentPasswordUnlock(title: String?, subtitle: String?, buttonText: String?, returnUnlockKey: Boolean, promise: Promise) {
-        val activity = currentActivity
+        val activity = getCurrentActivity()
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "No activity available", null)
             return
@@ -1817,7 +1817,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     override fun scanQRCode(prefixes: ReadableArray?, statusText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val activity = currentActivity
+                val activity = getCurrentActivity()
                 if (activity == null) {
                     promise.reject("NO_ACTIVITY", "No activity available", null)
                     return@launch
@@ -1949,7 +1949,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                         }
 
                         // Launch PIN unlock activity
-                        val activity = currentActivity
+                        val activity = getCurrentActivity()
                         if (activity == null) {
                             promise.reject("NO_ACTIVITY", "No activity available", null)
                             pendingAuthContext = null
@@ -2002,7 +2002,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     pendingActivityResultPromise = promise
 
                     // Launch password unlock activity
-                    val activity = currentActivity
+                    val activity = getCurrentActivity()
                     if (activity == null) {
                         promise.reject("NO_ACTIVITY", "No activity available", null)
                         return@launch

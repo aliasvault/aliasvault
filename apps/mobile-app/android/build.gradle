@@ -2,11 +2,11 @@
 
 buildscript {
     ext {
-        buildToolsVersion = findProperty('android.buildToolsVersion') ?: '36.0.0'
+        buildToolsVersion = findProperty('android.buildToolsVersion') ?: '37.0.0'
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '30')
-        compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '36')
+        compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '37')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '36')
-        kotlinVersion = findProperty('android.kotlinVersion') ?: '2.1.20'
+        kotlinVersion = findProperty('android.kotlinVersion') ?: '2.2.0'
         detektVersion = '1.23.5'
 
         ndkVersion = "28.0.12433566"
@@ -17,14 +17,16 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath('com.android.tools.build:gradle:8.8.2')
+        classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
-        classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+        def kotlinPluginVersion = findProperty('android.kotlinVersion')
+        classpath(kotlinPluginVersion ? "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinPluginVersion" : 'org.jetbrains.kotlin:kotlin-gradle-plugin')
         classpath('org.jlleitschuh.gradle:ktlint-gradle:11.6.1')
         classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detektVersion")
     }
 }
 
+apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
 apply plugin: "org.jlleitschuh.gradle.ktlint"
 apply plugin: "io.gitlab.arturbosch.detekt"
