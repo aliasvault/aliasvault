@@ -329,6 +329,7 @@
     "save": "Save",
     "saving": "Saving...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -1532,6 +1533,8 @@
     "theme": "Theme",
     "totpAutofill": "2FA code autofill",
     "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
