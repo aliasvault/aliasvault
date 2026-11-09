@@ -3,24 +3,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { useTwoPane, type ScreenParams } from '@/hooks/useTwoPane';
 
-export type PaneScreen = { 
-  name: string; 
-  params: ScreenParams;
-};
+export type PaneScreen = { name: string; params: ScreenParams };
 
-export type PaneStackEntry = PaneScreen & { 
-  key: string;
-};
+export type PaneStackEntry = PaneScreen & { key: string };
 
-export type PrimaryRoute = { 
-  screen: React.ComponentType; 
-  title: (params: ScreenParams) => string;
-};
+export type PrimaryRoute = { screen: React.ComponentType; title: (params: ScreenParams) => string };
 
-export type PrimaryRoutes = { 
-  path: string; 
-  routes: Record<string, PrimaryRoute>;
-};
+export type PrimaryRoutes = { path: string; routes: Record<string, PrimaryRoute> };
 
 /** Navigation on the pane stack; the functions are stable. */
 export type PaneStackApi = {
@@ -32,17 +21,9 @@ export type PaneStackApi = {
   replace: (key: string, screen: PaneScreen) => void;
 };
 
-export type PaneHeaderViews = { 
-  title?: React.ReactNode; 
-  right?: React.ReactNode; 
-};
+export type PaneHeaderViews = { title?: React.ReactNode; right?: React.ReactNode };
 
-export type PaneScreenInfo = { 
-  key: string; 
-  params: ScreenParams; 
-  headerHeight: number; 
-  setHeaderViews: (views: PaneHeaderViews) => void;
-};
+export type PaneScreenInfo = { key: string; params: ScreenParams; headerHeight: number; setHeaderViews: (views: PaneHeaderViews) => void };
 
 export const PaneStackContext = createContext<PaneStackApi | null>(null);
 export const PaneStackScreensContext = createContext<PaneStackEntry[]>([]);
@@ -87,7 +68,7 @@ export function usePrimaryRoutes(): PrimaryRoutes | null {
 }
 
 /*
- * The transitions of the stack are pure functions of the screens, so they can be read and tested without React.
+ * The transitions of the stack are pure functions of the screens, so they can be read without React.
  */
 let nextKey = 0;
 

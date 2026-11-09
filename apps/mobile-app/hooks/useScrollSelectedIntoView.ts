@@ -5,11 +5,8 @@ import type { HostInstance, LayoutChangeEvent, ScrollViewInstance } from 'react-
 import { isPathSelected, useTwoPane } from '@/hooks/useTwoPane';
 
 /*
- * When the primary pane appears (folding phone is unfolded), these hooks scroll the row of the detail shown next to the list
- * into the middle of it, once. Which one a screen uses depends on its list:
- * - useScrollSelectedIntoFlatList: a long, data-driven FlatList (items, folders, emails), which only renders the rows near
- *   the visible area, so it scrolls by index.
- * - useScrollSelectedIntoScrollView: a short, fixed ScrollView (settings), which renders every row, so it measures the row.
+ * When the primary pane appears, these hooks scroll the row of the detail shown next to the list into the middle of it, once:
+ * by index for a virtualized FlatList, by measuring the row for a ScrollView.
  */
 
 /**
