@@ -112,7 +112,7 @@ export default function ImportExportScreen(): React.ReactNode {
         file.delete();
       }
       file.create();
-      file.write(bytes);
+      await file.write(bytes);
 
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(file.uri, { dialogTitle: filename, mimeType: VAULT_EXPORT_MIME_TYPES[format] });

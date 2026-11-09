@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useFloatingBottomInset } from '@/hooks/useFloatingBottomInset';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -29,11 +30,14 @@ const MIN_SYNC_DISPLAY_TIME = 1500;
  * 3. Uploading (blue spinner) - uploading local changes to server
  * 4. Pending (blue icon) - local changes waiting to be uploaded, tappable to retry
  * 5. Hidden - when synced
+ *
+ * Rendered inside each tab so the bottom inset includes the native tab bar.
  */
 export function ServerSyncIndicator(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const bottom = useFloatingBottomInset(16);
   const app = useApp();
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
@@ -131,11 +135,11 @@ export function ServerSyncIndicator(): React.ReactNode {
     container: {
       alignItems: 'center',
       borderRadius: 24,
-      bottom: insets.bottom + 60,
+      bottom,
       elevation: 4,
       flexDirection: 'row',
       gap: 6,
-      left: 16,
+      left: insets.left + 16,
       paddingHorizontal: 14,
       paddingVertical: 10,
       position: 'absolute',

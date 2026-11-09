@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { View, TextInput, TextInputProps, StyleSheet, TouchableHighlight, Platform } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, TouchableHighlight, Platform, type TextInputInstance } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -44,7 +44,7 @@ const FormFieldComponent = forwardRef<FormFieldRef, FormFieldProps>(({
   ...props
 }, ref) => {
   const colors = useColors();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const [isFocused, setIsFocused] = useState(false);
 
   useImperativeHandle(ref, () => ({

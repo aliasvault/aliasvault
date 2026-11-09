@@ -16,6 +16,7 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
 import { ConfirmDeleteModal } from '@/components/items/ConfirmDeleteModal';
@@ -47,6 +48,7 @@ const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETEN
 export default function RecentlyDeletedScreen(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
+  const headerInset = useHeaderInset();
   const dbContext = useDb();
   const { executeVaultMutation } = useVaultMutate();
 
@@ -263,7 +265,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
       alignItems: 'center',
       flex: 1,
       justifyContent: 'center',
-      paddingTop: 60,
+      paddingTop: headerInset,
     },
   });
 

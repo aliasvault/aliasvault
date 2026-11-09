@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MobileLoginScanHandoff, type PendingMobileLoginRequest } from '@/utils/MobileLoginScanHandoff';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
@@ -77,7 +76,6 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   const { t } = useTranslation();
   const { showAlert } = useDialog();
   const webApi = useWebApi();
-  const insets = useSafeAreaInsets();
   const [scan] = useState<PendingMobileLoginRequest | null>(() => MobileLoginScanHandoff.take());
   const [request, setRequest] = useState<VerifiedRequest | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -223,7 +221,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
     content: {
       alignItems: 'center',
       flexGrow: 1,
-      paddingBottom: insets.bottom + 80,
+      paddingBottom: 20,
       paddingHorizontal: 6,
       paddingTop: 8,
     },
