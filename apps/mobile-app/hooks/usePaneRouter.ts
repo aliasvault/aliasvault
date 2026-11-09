@@ -1,4 +1,5 @@
 import { useNavigation, useRouter, type Href } from 'expo-router';
+// Internal expo-router path, not public API: recheck it on every expo-router upgrade.
 import { INTERNAL_EXPO_ROUTER_NO_ANIMATION_PARAM_NAME } from 'expo-router/build/navigationParams';
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 
@@ -182,10 +183,13 @@ export function usePaneRouter(): PaneRouter {
         }
       },
       openDetail: (href): void => {
-        if (resolve(href) === null) {
+        const target = resolve(href);
+        if (target === null) {
           openDetail(href);
+        } else if (target === 'root') {
+          paneStack.popToRoot();
         } else {
-          paneStack.push(resolve(href) as PaneScreen);
+          paneStack.push(target);
         }
       },
     };

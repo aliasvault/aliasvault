@@ -148,6 +148,7 @@ export const LocalPreferencesService = {
       AsyncStorage.removeItem(KEYS.CLIPBOARD_CLEAR_TIMEOUT),
       AsyncStorage.removeItem(KEYS.CLIPBOARD_LOCAL_ONLY),
       AsyncStorage.removeItem(KEYS.SHOW_FOLDERS),
+      AsyncStorage.removeItem(KEYS.TWO_PANE_LAYOUT),
     ]);
   },
 };

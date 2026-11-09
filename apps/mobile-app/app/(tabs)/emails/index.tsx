@@ -290,7 +290,6 @@ export function EmailsScreen() : React.ReactNode {
     }
     const isInList = emails.some(email => isPathSelected(scrollTargetPath, emailRoute(email)));
     if (isInList || totalRecords <= emails.length || targetPagesLoadedRef.current >= MAX_PAGES_TO_FIND_SELECTED) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- ends the search once the email is in the list or cannot be
       setIsTargetSearchDone(true);
       return;
     }
