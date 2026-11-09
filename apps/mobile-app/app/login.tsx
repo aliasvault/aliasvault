@@ -642,7 +642,6 @@ export default function LoginScreen() : React.ReactNode {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
       >
         <SafeAreaView>
           <LinearGradient
@@ -666,7 +665,7 @@ export default function LoginScreen() : React.ReactNode {
             </View>
           </View>
         </SafeAreaView>
-        <ThemedView style={[styles.content, { marginLeft: insets.left, marginRight: insets.right }]}>
+        <ThemedView style={[styles.content, { paddingLeft: 16 + insets.left, paddingRight: 16 + insets.right }]}>
           {isLoading ? (
             <LoadingIndicator status={loginStatus ?? t('common.loading')} />
           ) : (
