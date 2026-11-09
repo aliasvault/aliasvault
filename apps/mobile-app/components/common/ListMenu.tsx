@@ -11,32 +11,24 @@ import { SORT_OPTIONS } from '@/hooks/useItemSort';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 
+/**
+ * An extra entry at the bottom of a list menu, below a separator.
+ */
+export interface ListMenuAction {
+  label: string;
+  icon: React.ComponentProps<typeof MaterialIcons>['name'];
+  onPress: () => void;
+  destructive?: boolean;
+}
+
 interface ListMenuProps {
-  /**
-   * Whether the menu is visible.
-   */
   visible: boolean;
-  /**
-   * Current sort order; the sort options only show when `onSelect` is set.
-   */
   sortOrder?: CredentialSortOrder;
-  /**
-   * Callback when a sort option is selected.
-   */
   onSelect?: (order: CredentialSortOrder) => void;
-  /**
-   * Callback when the menu should close.
-   */
   onClose: () => void;
-  /**
-   * Optional top offset for the menu position.
-   * If not provided, uses default position based on platform.
-   */
   topOffset?: number;
-  /**
-   * When set, an entry above the sort options turns selection mode on or off.
-   */
   selection?: { isActive: boolean; onToggle: () => void };
+  actions?: ListMenuAction[];
 }
 
 /**
@@ -49,6 +41,7 @@ export function ListMenu({
   onClose,
   topOffset,
   selection,
+  actions,
 }: ListMenuProps): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
@@ -165,6 +158,22 @@ export function ListMenu({
               sortOrder === option.value && styles.menuItemTextActive
             ]}>
               {t(option.labelKey)}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
+        {actions && actions.length > 0 && (selection || onSelect) && <View style={styles.separator} />}
+        {actions?.map((action) => (
+          <TouchableOpacity
+            key={action.label}
+            style={styles.menuItem}
+            onPress={() => {
+              onClose();
+              action.onPress();
+            }}
+          >
+            <MaterialIcons name={action.icon} size={18} color={action.destructive ? colors.destructive : colors.text} style={styles.menuItemIcon} />
+            <ThemedText style={[styles.menuItemText, action.destructive && { color: colors.destructive }]}>
+              {action.label}
             </ThemedText>
           </TouchableOpacity>
         ))}

@@ -274,7 +274,7 @@ export default function EmailsScreen() : React.ReactNode {
        */
       headerRight: (): React.ReactNode => (
         <TouchableOpacity style={{ padding: 8, marginRight: 8 }} onPress={() => setShowListMenu(prev => !prev)} accessibilityLabel={t('common.moreOptions')}>
-          <MaterialIcons name="more-horiz" size={24} color={colors.text} />
+          <MaterialIcons name="more-vert" size={24} color={colors.text} />
         </TouchableOpacity>
       ),
     });
