@@ -329,6 +329,7 @@
     "save": "Mentés",
     "saving": "Mentés...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "Cím szerkesztése"
     },
     "emailLoadError": "Hiba lépett fel az e-mailek betöltése során. Kérem próbálkozzon újra később.",
-    "emailPreview": "E-mail előnézet",
     "emailUnexpectedError": "Váratlan hiba lépett fel az e-mailek betöltése során. Kérem próbálkozzon újra később.",
     "emptyFolderHint": "Ez a mappa üres. Ahhoz, hogy elemeket helyezzen a mappába, szerkessze az elemet, majd koppintson a mappa ikonra a név mezőnél.",
     "errorLoadingItems": "Hiba az elemek betöltése során",
@@ -1532,6 +1532,8 @@
     "theme": "Téma",
     "totpAutofill": "Kétlépcsős kód kitöltés",
     "totpAutofillDescription": "Felugró kitöltő ablak megjelenítése ha kétlépcsős mezőt érzékel",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "PIN kód megerősítése",
       "confirmPinDescription": "Adja meg újra PIN kódját a megerősítéshez",
