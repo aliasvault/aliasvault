@@ -329,6 +329,7 @@
     "save": "Zapisz",
     "saving": "Zapisywanie...",
     "select": "Zaznacz",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} Zaznaczony",
       "disable": "Wyłącz zaznaczenie",
@@ -694,7 +695,6 @@
       "editLabel": "Edytuj etykietę"
     },
     "emailLoadError": "Wystąpił błąd podczas ładowania wiadomości e-mail. Spróbuj ponownie później.",
-    "emailPreview": "Podgląd wiadomości e-mail",
     "emailUnexpectedError": "Podczas ładowania wiadomości e-mail wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
     "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
     "errorLoadingItems": "Błąd podczas ładowania elementów",
@@ -1532,6 +1532,8 @@
     "theme": "Motyw",
     "totpAutofill": "Autouzupełnianie kodów 2FA",
     "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Potwierdź kod PIN",
       "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
