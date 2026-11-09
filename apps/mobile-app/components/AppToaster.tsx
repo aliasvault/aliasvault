@@ -10,6 +10,9 @@ import { RAIL_EDGE_MARGIN } from '@/hooks/useFloatingBottomInset';
 /** Height of the Material bottom navigation bar of the Android tabs. */
 const ANDROID_TAB_BAR_HEIGHT = 80;
 
+/** Horizontal margin sonner-native gives each toast. */
+const TOAST_MARGIN = 16;
+
 /**
  * Bottom offset of the toasts.
  */
@@ -23,10 +26,22 @@ function useToastBottomOffset(): number {
 }
 
 /**
+ * Horizontal bounds of the toasts.
+ */
+function useToastHorizontalBounds(): { left: number; right: number } {
+  const insets = useSafeAreaInsets();
+  const railEdge = useVerticalBarEdgeIOS();
+  return {
+    left: railEdge === 'leading' ? insets.left - TOAST_MARGIN : insets.left,
+    right: railEdge === 'trailing' ? insets.right - TOAST_MARGIN : insets.right,
+  };
+}
+
+/**
  * App-wide toast host (sonner-native).
  */
 export function AppToaster(): React.ReactNode {
-  const insets = useSafeAreaInsets();
+  const bounds = useToastHorizontalBounds();
   const colors = useColors();
   const colorScheme = useColorScheme();
   const offset = useToastBottomOffset();
@@ -36,7 +51,7 @@ export function AppToaster(): React.ReactNode {
       offset={offset}
       theme={colorScheme}
       duration={2500}
-      positionerStyle={{ left: insets.left, right: insets.right, width: 'auto' }}
+      positionerStyle={{ ...bounds, width: 'auto' }}
       toastOptions={{
         style: {
           backgroundColor: colors.modalSurfaceRaised,

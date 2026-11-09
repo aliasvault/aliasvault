@@ -9,6 +9,7 @@ import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useForegroundSync } from '@/hooks/useForegroundSync';
+import { useIsTwoPaneEnabled } from '@/hooks/useTwoPane';
 
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -24,6 +25,7 @@ export default function TabLayout() : React.ReactNode {
   const { t } = useTranslation();
 
   useForegroundSync();
+  const twoPaneEnabled = useIsTwoPaneEnabled();
 
   // Check if user is authenticated and database is available
   const isFullyInitialized = authContext.isInitialized && dbContext.dbInitialized;
@@ -45,7 +47,7 @@ export default function TabLayout() : React.ReactNode {
     }
   }, [requireLoginOrUnlock]);
 
-  if (!isFullyInitialized || requireLoginOrUnlock) {
+  if (!isFullyInitialized || requireLoginOrUnlock || twoPaneEnabled === undefined) {
     return null;
   }
 
@@ -58,17 +60,19 @@ export default function TabLayout() : React.ReactNode {
       labelStyle={Platform.OS === 'android' ? { default: { color: colors.tabIconDefault }, selected: { color: colors.tabIconSelected } } : undefined}
       indicatorColor={colors.primary + '20'}
       rippleColor={colors.primary + '20'}
-      screenListeners={{
+      screenListeners={({ navigation, route }) => ({
         /**
-         * Listener for the tab press event.
-         * @param {Object} e - The event object.
-         * @param {string} e.target - The target route key.
+         * Listener for the tab press event: tells the tab's root screen, and pops the tab's stack when the focused tab
+         * is tapped again.
          */
-        tabPress: (e) => {
-          const targetPathname = (e.target as string).split(/[-:]/)[0];
-          emitter.emit('tabPress', targetPathname);
+        tabPress: (): void => {
+          emitter.emit('tabPress', route.name);
+          const stack = navigation.getState().routes.find((entry: { key: string }) => entry.key === route.key)?.state;
+          if (navigation.isFocused() && stack?.key && (stack.index ?? 0) > 0) {
+            navigation.dispatch({ type: 'POP_TO_TOP', target: stack.key });
+          }
         },
-      }}
+      })}
     >
       <NativeTabs.Trigger name="items" testID="tab-items">
         <NativeTabs.Trigger.Icon sf="key.fill" src={<NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="key" />} />

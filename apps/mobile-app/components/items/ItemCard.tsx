@@ -15,6 +15,8 @@ import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePaneRouter } from '@/hooks/usePaneRouter';
+import { useIsSelectedRoute } from '@/hooks/useTwoPane';
 import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
@@ -44,6 +46,8 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
   const { showConfirm } = useDialog();
   const dbContext = useDb();
   const navigate = useNavigationDebounce();
+  const paneRouter = usePaneRouter();
+  const isActive = useIsSelectedRoute(itemRoute(item));
   const recordItemCopy = useRecordItemCopy();
 
   /**
@@ -84,7 +88,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
   const openItem = (): void => {
     navigate(() => {
       Keyboard.dismiss();
-      router.push(itemRoute(item, item.Name));
+      paneRouter.openDetail(itemRoute(item, item.Name));
     });
   };
 
@@ -263,6 +267,9 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
       marginBottom: 8,
       padding: 10,
     },
+    credentialCardActive: {
+      backgroundColor: colors.selectedRowBackground,
+    },
     credentialCardHighlighted: {
       borderColor: colors.primary,
     },
@@ -317,7 +324,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
 
   return (
     <SelectableListRow
-      style={[styles.credentialCard, isHighlighted && styles.credentialCardHighlighted]}
+      style={[styles.credentialCard, isActive && styles.credentialCardActive, isHighlighted && styles.credentialCardHighlighted]}
       selectionMode={selectionMode}
       isSelected={isSelected}
       onToggleSelect={onToggleSelect ? () => onToggleSelect(item) : undefined}

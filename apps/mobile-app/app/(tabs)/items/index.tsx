@@ -5,7 +5,7 @@ import { compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@alia
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl, type FlatList } from 'react-native';
@@ -15,15 +15,20 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { itemRoute } from '@/utils/ItemRoute';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePaneRouter } from '@/hooks/usePaneRouter';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useRailSideBleed } from '@/hooks/useRailSideFlush';
+import { useScreenParams } from '@/hooks/useScreenParams';
+import { useScrollSelectedRowIntoView } from '@/hooks/useScrollSelectedRowIntoView';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
+import { useSetScreenOptions } from '@/hooks/useTwoPane';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -44,6 +49,7 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { TwoPaneRoot } from '@/components/ui/TwoPaneLayout';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
@@ -60,9 +66,6 @@ type ItemTypeOption = {
   iconName: keyof typeof MaterialIcons.glyphMap;
 };
 
-/**
- * Available item type filter options with icons.
- */
 const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
   { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
   { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
@@ -73,18 +76,19 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
 /**
  * Items screen - main vault items list.
  */
-export default function ItemsScreen(): React.ReactNode {
+export function ItemsScreen(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const navigate = useNavigationDebounce();
   const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
   const navigation = useNavigation();
+  const setScreenOptions = useSetScreenOptions();
   const insets = useSafeAreaInsets();
   const headerHeight = useCollapsibleHeaderHeight();
   const railSideBleed = useRailSideBleed();
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
-  const router = useRouter();
-  const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
+  const router = usePaneRouter();
+  const { itemUrl } = useScreenParams<{ itemUrl?: string }>();
   const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const personalManifestId = usePersonalManifestId();
@@ -375,7 +379,7 @@ export default function ItemsScreen(): React.ReactNode {
 
   // Set header for Android
   useEffect(() => {
-    navigation.setOptions({
+    setScreenOptions({
       /**
        * Define custom header which is shown on Android. iOS displays the custom CollapsibleHeader component instead.
        */
@@ -409,7 +413,7 @@ export default function ItemsScreen(): React.ReactNode {
         return null;
       },
     });
-  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, colors.text]);
+  }, [setScreenOptions, t, getFilterTitle, filteredItems.length, showFilterMenu, colors.text]);
 
   /**
    * Delete an item (move to trash).
@@ -442,6 +446,9 @@ export default function ItemsScreen(): React.ReactNode {
     setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
+  const scrollSelected = useScrollSelectedRowIntoView(flatListRef, { rows: sortedItems, isLoaded: hasLoadedItems && !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
+  const { scrollToIndex } = scrollSelected;
+
   /**
    * Scroll the highlighted item (a freshly created duplicate) into view once it's
    * rendered, then clear the highlight after a short moment.
@@ -453,20 +460,20 @@ export default function ItemsScreen(): React.ReactNode {
 
     const index = sortedItems.findIndex(itm => scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey);
     if (index >= 0) {
-      flatListRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
+      scrollToIndex(index, true);
     }
 
     const timer = setTimeout(() => setHighlightedItemKey(null), 2000);
     return (): void => clearTimeout(timer);
-  }, [highlightedItemKey, sortedItems]);
+  }, [highlightedItemKey, sortedItems, scrollToIndex]);
 
   /**
    * Navigate to a folder, preserving the active type/feature filter so the folder view
    * shows the same subset of items reflected in the folder's badge count.
    */
-  const handleFolderClick = useCallback((folder: FolderRef) => {
+  const handleFolderClick = useCallback((folder: FolderRef, name?: string) => {
     navigate(() => {
-      router.push(folderRoute(folder, filterType));
+      router.push(folderRoute(folder, filterType, name));
     });
   }, [router, navigate, filterType]);
 
@@ -767,7 +774,7 @@ export default function ItemsScreen(): React.ReactNode {
               <FolderPill
                 key={scopedKey(folder.manifestId, folder.id)}
                 folder={folder}
-                onPress={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId })}
+                onPress={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId }, folder.name)}
               />
             ))}
             {/* Invitations to shared folders wait in the folder list until they are answered. */}
@@ -902,6 +909,7 @@ export default function ItemsScreen(): React.ReactNode {
         {/* Item list */}
         <Animated.FlatList
           ref={flatListRef}
+          key={scrollSelected.listKey}
           testID="items-list"
           data={isLoadingItems ? Array(4).fill(null) : sortedItems}
           keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
@@ -910,14 +918,11 @@ export default function ItemsScreen(): React.ReactNode {
           scrollEventThrottle={16}
           style={railSideBleed.style}
           contentContainerStyle={[styles.contentContainer, railSideBleed.contentContainerStyle, selection.isActive && { paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 16 : 10) + SELECTION_BAR_SPACE }]}
-          initialNumToRender={14}
+          {...scrollSelected.listProps}
           maxToRenderPerBatch={14}
           windowSize={7}
           removeClippedSubviews={false}
-          ListHeaderComponent={renderListHeader() as React.ReactElement}
-          onScrollToIndexFailed={({ index, averageItemLength }) => {
-            flatListRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: true });
-          }}
+          ListHeaderComponent={<View onLayout={scrollSelected.onListHeaderLayout}>{renderListHeader()}</View>}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -1021,4 +1026,12 @@ export default function ItemsScreen(): React.ReactNode {
       })()}
     </ThemedContainer>
   );
+}
+
+/**
+ * The vault tab's root route: the items list, or the empty detail pane of a two-pane layout, where the layout renders the list.
+ */
+export default function ItemsRoute(): React.ReactNode {
+  const { t } = useTranslation();
+  return <TwoPaneRoot placeholderIcon="key" placeholderMessage={t('common.selectItemMessage')}><ItemsScreen /></TwoPaneRoot>;
 }

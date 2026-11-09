@@ -17,6 +17,7 @@ const KEYS = {
   // UI preferences
   SHOW_FOLDERS: 'items-show-folders',
   LAST_SEARCH_QUERY: 'items-last-search-query',
+  TWO_PANE_LAYOUT: 'two-pane-layout',
 } as const;
 
 /**
@@ -111,6 +112,22 @@ export const LocalPreferencesService = {
     } else {
       await AsyncStorage.removeItem(KEYS.LAST_SEARCH_QUERY);
     }
+  },
+
+  /**
+   * Get the two-column layout preference of a foldable iPhone.
+   * @returns Whether the list and the selected item show side by side on a wide window. Defaults to true.
+   */
+  async getTwoPaneLayout(): Promise<boolean> {
+    const value = await AsyncStorage.getItem(KEYS.TWO_PANE_LAYOUT);
+    return value === null ? true : value === 'true';
+  },
+
+  /**
+   * Set the two-column layout preference of a foldable iPhone.
+   */
+  async setTwoPaneLayout(enabled: boolean): Promise<void> {
+    await AsyncStorage.setItem(KEYS.TWO_PANE_LAYOUT, enabled.toString());
   },
 
   /**

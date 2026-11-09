@@ -1,5 +1,4 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { type ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
@@ -11,6 +10,8 @@ import type { MailboxEmail } from '@aliasvault/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePaneRouter } from '@/hooks/usePaneRouter';
+import { useIsSelectedRoute } from '@/hooks/useTwoPane';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { SelectableListRow } from '@/components/common/SelectableListRow';
@@ -35,6 +36,9 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
   const colors = useColors();
   const { t } = useTranslation();
   const navigate = useNavigationDebounce();
+  const paneRouter = usePaneRouter();
+  const href = { pathname: '/(tabs)/emails/[id]', params: { id: String(email.id), subject: email.subject } } as const;
+  const isActive = useIsSelectedRoute(href);
   const dbContext = useDb();
   const [associatedItem, setAssociatedItem] = useState<DisplayItem | null>(null);
 
@@ -97,7 +101,7 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
    * Open the email.
    */
   const openEmail = (): void => {
-    navigate(() => router.push({ pathname: '/(tabs)/emails/[id]', params: { id: String(email.id), subject: email.subject } }));
+    navigate(() => paneRouter.openDetail(href));
   };
 
   /**
@@ -136,6 +140,9 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
       color: colors.textMuted,
       fontSize: 12,
       opacity: 0.6,
+    },
+    emailCardActive: {
+      backgroundColor: colors.selectedRowBackground,
     },
     emailHeader: {
       alignItems: 'flex-start',
@@ -187,7 +194,7 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
 
   return (
     <SelectableListRow
-      style={styles.emailCard}
+      style={[styles.emailCard, isActive && styles.emailCardActive]}
       selectionMode={selectionMode}
       isSelected={isSelected}
       onToggleSelect={onToggleSelect ? () => onToggleSelect(email) : undefined}
