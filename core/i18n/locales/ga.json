@@ -329,6 +329,7 @@
     "save": "Sábháil",
     "saving": "Ag sábháil...",
     "select": "Roghnaigh",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} roghnaithe",
       "disable": "Díchumasaigh an roghnú",
@@ -694,7 +695,6 @@
       "editLabel": "Cuir lipéad in eagar"
     },
     "emailLoadError": "Tharla earráid agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
-    "emailPreview": "Réamhamharc Ríomhphoist",
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus tapáil deilbhín an fhillteáin sa réimse ainm.",
     "errorLoadingItems": "Earráid ag luchtú míreanna",
@@ -1532,6 +1532,8 @@
     "theme": "Téama",
     "totpAutofill": "Cód 2FA go huathoibríoch",
     "totpAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí cód 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Deimhnigh PIN",
       "confirmPinDescription": "Cuir isteach do PIN arís lena dheimhniú",
