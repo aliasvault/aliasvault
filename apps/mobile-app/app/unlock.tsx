@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
@@ -57,6 +58,7 @@ export default function UnlockScreen() : React.ReactNode {
   const [isLoading, setIsLoading] = useState(true);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [biometricDisplayName, setBiometricDisplayName] = useState('');
 
@@ -553,7 +555,7 @@ export default function UnlockScreen() : React.ReactNode {
       ) : (
         <ScrollView
           style={styles.container}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingLeft: insets.left, paddingRight: insets.right }]}
           keyboardShouldPersistTaps="handled"
         >
           <LinearGradient

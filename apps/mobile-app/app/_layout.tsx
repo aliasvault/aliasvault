@@ -15,6 +15,7 @@ import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 
 import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
 import { AliasVaultToast } from '@/components/Toast';
+import { StackScreenLayout, stackScreenLayout } from '@/components/ui/StackScreenLayout';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CapabilityProvider } from '@/context/CapabilityContext';
@@ -27,6 +28,24 @@ import { initI18n } from '@/i18n';
 import { runStartupMigrations } from '@/migrations';
 
 SplashScreen.preventAutoHideAsync();
+
+/**
+ * Screens whose header gradient spans the full width; they pad their own content by the horizontal safe area.
+ */
+const FULL_WIDTH_SCREENS = new Set(['login', 'unlock', 'upgrade', 'vault-error']);
+
+/**
+ * Screen layout of the root stack: keeps screens inside the horizontal safe area, except the tab navigator (each tab's stack insets its own screens) and FULL_WIDTH_SCREENS.
+ */
+function rootScreenLayout({ route, children }: { route: { name: string }; children: React.ReactElement }): React.ReactElement {
+  if (route.name === '(tabs)') {
+    return children;
+  }
+  if (FULL_WIDTH_SCREENS.has(route.name)) {
+    return <StackScreenLayout horizontalInsets={false}>{children}</StackScreenLayout>;
+  }
+  return stackScreenLayout({ children });
+}
 
 /**
  * Root layout navigation.
@@ -60,7 +79,7 @@ function RootLayoutNav() : React.ReactNode {
     (async (): Promise<void> => {
       const [, initialUrl] = await Promise.all([initI18n(), Linking.getInitialURL(), runStartupMigrations()]);
 
-      const resolved = await resolveDeepLink(initialUrl);
+      const resolved = await resolveDeepLink(initialUrl ?? null);
       if (resolved) {
         navigation.setReturnUrl(resolved);
       }
@@ -99,6 +118,7 @@ function RootLayoutNav() : React.ReactNode {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customDefaultTheme}>
       <Stack
+        screenLayout={rootScreenLayout}
         screenOptions={{
           headerShown: true,
           animation: 'none',

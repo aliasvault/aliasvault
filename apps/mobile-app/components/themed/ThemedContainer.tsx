@@ -1,5 +1,6 @@
-import { Platform, StyleSheet, type ViewProps } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, type ViewProps } from 'react-native';
+
+import { useRailSideFlush } from '@/hooks/useRailSideFlush';
 
 import { ThemedView } from '@/components/themed/ThemedView';
 
@@ -7,24 +8,17 @@ export type ThemedContainerProps = ViewProps;
 
 /**
  * Themed container component which should be the outermost component of a screen.
- * It handles the safe area insets and the padding for the screen.
+ * It fills the screen under the transparent iOS header: a scroll view inside it is inset by the system
+ * (automatic content insets), a non-scrolling screen pads by useHeaderInset() itself.
  */
 export function ThemedContainer({ style, ...otherProps }: ThemedContainerProps): React.ReactNode {
-  const insets = useSafeAreaInsets();
-
-  const getTopPadding = () => {
-    if (Platform.OS !== 'ios') return 0;
-
-    const iosVersion = parseInt(Platform.Version as string, 10);
-    return iosVersion >= 26 ? insets.top + 14 : insets.top;
-  };
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      paddingHorizontal: 14,
-      paddingTop: getTopPadding(),
-    },
-  });
-  return <ThemedView style={[styles.container, style]} {...otherProps} />;
+  const railSideFlush = useRailSideFlush();
+  return <ThemedView style={[styles.container, railSideFlush, style]} {...otherProps} />;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 14,
+  },
+});

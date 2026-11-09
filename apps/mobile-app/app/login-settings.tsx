@@ -1,6 +1,6 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation, useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 
@@ -10,7 +10,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { HeaderBackButton } from '@/components/ui/HeaderBackButton';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -38,7 +37,6 @@ const isReservedHeaderName = (name: string): boolean => {
 export default function SettingsScreen() : React.ReactNode {
   const colors = useColors();
   const navigation = useNavigation();
-  const router = useRouter();
   const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState<string>(AppInfo.DEFAULT_API_URL);
   const [customUrl, setCustomUrl] = useState<string>('');
@@ -55,17 +53,9 @@ export default function SettingsScreen() : React.ReactNode {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('app.navigation.loginSettings'),
-      /**
-       * Header left button (custom back button with testID for E2E tests).
-       */
-      headerLeft: (): React.ReactNode => (
-        <HeaderBackButton
-          label={t('app.navigation.login')}
-          onPress={() => router.back()}
-        />
-      ),
+      headerBackTitle: t('app.navigation.login'),
     });
-  }, [navigation, router, t]);
+  }, [navigation, t]);
 
   /**
    * Load the stored settings from native layer.

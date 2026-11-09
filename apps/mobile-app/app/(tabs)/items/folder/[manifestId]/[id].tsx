@@ -6,11 +6,10 @@ import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifest
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshControl, FlatList } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
@@ -20,6 +19,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingErrors';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -88,7 +88,6 @@ export default function FolderViewScreen(): React.ReactNode {
   const navigation = useNavigation();
   const router = useRouter();
   const navigate = useNavigationDebounce();
-  const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
 
   const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
@@ -314,7 +313,8 @@ export default function FolderViewScreen(): React.ReactNode {
   }, [currentShared, folder?.Name, showConfirm, runWithPassword, webApi, syncVault, reloadShared, router, t]);
 
   /**
-   * Set up header with folder name and edit/delete buttons.
+   * Set up the header with the folder name and, on Android, the share, edit and delete buttons.
+   * On iOS those are native bar button items (the toolbar below), which the iPhone Duo bar rail picks up.
    */
   useEffect(() => {
     navigation.setOptions({
@@ -323,42 +323,30 @@ export default function FolderViewScreen(): React.ReactNode {
        * Folder icon and name, marked as shared for a shared vault folder.
        */
       headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || t('items.folders.folder')} isShared={isShared} />,
-      /**
-       * Header right buttons for edit and delete.
-       */
-      headerRight: (): React.ReactNode => (
-        <View style={{ flexDirection: 'row', gap: 4 }}>
-          {canShareFolder && folder && (
-            <RobustPressable onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })} style={{ padding: 8 }}>
-              <MaterialIcons name="people" size={Platform.OS === 'android' ? 24 : 22} color={colors.primary} />
-            </RobustPressable>
-          )}
-          {canEditFolder && (
-            <RobustPressable
-              onPress={() => setShowEditFolderModal(true)}
-              style={{ padding: 8 }}
-            >
-              <MaterialIcons
-                name="edit"
-                size={Platform.OS === 'android' ? 24 : 22}
-                color={colors.primary}
-              />
-            </RobustPressable>
-          )}
-          {canDeleteFolder && (
-            <RobustPressable
-              onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}
-              style={{ padding: 8 }}
-            >
-              <MaterialIcons
-                name="delete"
-                size={Platform.OS === 'android' ? 24 : 22}
-                color={colors.destructive}
-              />
-            </RobustPressable>
-          )}
-        </View>
-      ),
+      ...(Platform.OS === 'android' && {
+        /**
+         * Header right buttons for share, edit and delete.
+         */
+        headerRight: (): React.ReactNode => (
+          <View style={{ flexDirection: 'row', gap: 4 }}>
+            {canShareFolder && folder && (
+              <RobustPressable onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })} style={{ padding: 8 }}>
+                <MaterialIcons name="people" size={24} color={colors.primary} />
+              </RobustPressable>
+            )}
+            {canEditFolder && (
+              <RobustPressable onPress={() => setShowEditFolderModal(true)} style={{ padding: 8 }}>
+                <MaterialIcons name="edit" size={24} color={colors.primary} />
+              </RobustPressable>
+            )}
+            {canDeleteFolder && (
+              <RobustPressable onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))} style={{ padding: 8 }}>
+                <MaterialIcons name="delete" size={24} color={colors.destructive} />
+              </RobustPressable>
+            )}
+          </View>
+        ),
+      }),
     });
   }, [navigation, folder, isVirtualFolder, isShared, canShareFolder, canEditFolder, canDeleteFolder, deleteSharedFolder, colors.primary, colors.destructive, t]);
 
@@ -488,8 +476,9 @@ export default function FolderViewScreen(): React.ReactNode {
     setShowCreateSubfolderModal(false);
   }, [dbContext.sqliteClient, folderRef, executeVaultMutation, loadItems]);
 
-  const paddingTop = Platform.OS === 'ios' ? 56 : 16;
-  const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 60 : 40;
+  const paddingTop = 16;
+  const paddingBottom = Platform.OS === 'ios' ? 16 : 40;
+  const menuTopOffset = useHeaderInset() + paddingTop + 44;
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -574,7 +563,7 @@ export default function FolderViewScreen(): React.ReactNode {
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.25,
       shadowRadius: 4,
-      top: Platform.OS === 'ios' ? paddingTop + 104 : paddingTop +44,
+      top: menuTopOffset,
       zIndex: 1001,
     },
     filterMenuBackdrop: {
@@ -652,7 +641,7 @@ export default function FolderViewScreen(): React.ReactNode {
       color: colors.textMuted,
       fontSize: 14,
     },
-  }), [colors, paddingTop, paddingBottom]);
+  }), [colors, paddingTop, paddingBottom, menuTopOffset]);
 
   /**
    * Render the filter menu as an absolute overlay.
@@ -905,6 +894,19 @@ export default function FolderViewScreen(): React.ReactNode {
 
   return (
     <ThemedContainer style={styles.container}>
+      {Platform.OS === 'ios' && (
+        <Stack.Toolbar placement="right">
+          {canShareFolder && folder && (
+            <Stack.Toolbar.Button icon="person.2" onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })}>{t('common.share')}</Stack.Toolbar.Button>
+          )}
+          {canEditFolder && (
+            <Stack.Toolbar.Button icon="pencil" onPress={() => setShowEditFolderModal(true)}>{t('common.edit')}</Stack.Toolbar.Button>
+          )}
+          {canDeleteFolder && (
+            <Stack.Toolbar.Button icon="trash" tintColor={colors.destructive} onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}>{t('common.delete')}</Stack.Toolbar.Button>
+          )}
+        </Stack.Toolbar>
+      )}
       {/* Item list */}
       <FlatList
         ref={flatListRef}
@@ -912,7 +914,7 @@ export default function FolderViewScreen(): React.ReactNode {
         keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
         contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: paddingBottom + SELECTION_BAR_SPACE }]}
-        scrollIndicatorInsets={{ bottom: 40 }}
+        contentInsetAdjustmentBehavior="automatic"
         initialNumToRender={14}
         maxToRenderPerBatch={14}
         windowSize={7}
@@ -927,7 +929,6 @@ export default function FolderViewScreen(): React.ReactNode {
             onRefresh={onRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
-            progressViewOffset={Platform.OS === 'ios' ? 44 : undefined}
           />
         }
         renderItem={({ item: itm }) =>
@@ -985,7 +986,7 @@ export default function FolderViewScreen(): React.ReactNode {
           });
         }}
         onClose={() => setShowSortMenu(false)}
-        topOffset={Platform.OS === 'ios' ? paddingTop + 104 : paddingTop + 44}
+        topOffset={menuTopOffset}
       />
 
       {/* Folder modals; a shared folder is renamed through its shared manifest, whose name an invitation has to fit */}

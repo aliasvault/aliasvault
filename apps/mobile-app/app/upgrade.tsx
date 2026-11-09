@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
@@ -92,6 +93,7 @@ export default function UpgradeScreen() : React.ReactNode {
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
   const [latestVersion, setLatestVersion] = useState<VaultVersion | null>(null);
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [upgradeStatus, setUpgradeStatus] = useState(() => t('upgrade.status.preparingUpgrade'));
   const { showAlert, showConfirm } = useDialog();
@@ -544,7 +546,7 @@ export default function UpgradeScreen() : React.ReactNode {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[styles.scrollContent, { paddingLeft: insets.left, paddingRight: insets.right }]}
             keyboardShouldPersistTaps="handled"
           >
             <LinearGradient

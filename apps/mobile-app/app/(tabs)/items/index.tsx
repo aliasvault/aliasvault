@@ -8,7 +8,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';
+import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl, type FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
@@ -22,6 +22,7 @@ import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
+import { useRailSideBleed } from '@/hooks/useRailSideFlush';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
@@ -41,7 +42,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
-import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
+import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -76,11 +77,12 @@ export default function ItemsScreen(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const navigate = useNavigationDebounce();
-  const [scrollY] = useState(() => new Animated.Value(0));
+  const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const flatListRef = useRef<Animated.FlatList<DisplayItem | null>>(null);
-  const [isTabFocused, setIsTabFocused] = useState(false);
+  const headerHeight = useCollapsibleHeaderHeight();
+  const railSideBleed = useRailSideBleed();
+  const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
   const router = useRouter();
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
   const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
@@ -321,16 +323,8 @@ export default function ItemsScreen(): React.ReactNode {
   }, [dbContext.sqliteClient, setIsLoadingItems, router]);
 
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      setIsTabFocused(true);
-    });
-
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      setIsTabFocused(false);
-    });
-
     const tabPressSub = emitter.addListener('tabPress', (routeName: string) => {
-      if (routeName === 'items' && isTabFocused) {
+      if (routeName === 'items' && navigation.isFocused()) {
         // Reset search and scroll to top when tapping the tab again
         setSearchQuery('');
         flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -349,10 +343,8 @@ export default function ItemsScreen(): React.ReactNode {
       tabPressSub.remove();
       itemChangedSub.remove();
       itemUsedSub.remove();
-      unsubscribeFocus();
-      unsubscribeBlur();
     };
-  }, [isTabFocused, loadItems, navigation]);
+  }, [loadItems, navigation]);
 
   const { refreshing, onRefresh } = useVaultRefresh(loadItems, setIsLoadingItems);
 
@@ -531,9 +523,9 @@ export default function ItemsScreen(): React.ReactNode {
       gap: 8,
     },
     contentContainer: {
-      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 10,
+      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 16 : 10,
       paddingHorizontal: 14,
-      paddingTop: Platform.OS === 'ios' ? 42 : 8,
+      paddingTop: Platform.OS === 'ios' ? headerHeight + 12 : 8,
     },
     // Header row styles
     headerRow: {
@@ -902,7 +894,7 @@ export default function ItemsScreen(): React.ReactNode {
     <ThemedContainer style={styles.container} testID="items-screen">
       <CollapsibleHeader
         title={getFilterTitle()}
-        scrollY={scrollY}
+        scroll={headerScroll}
         showNavigationHeader={true}
         alwaysVisible={true}
       />
@@ -914,13 +906,10 @@ export default function ItemsScreen(): React.ReactNode {
           data={isLoadingItems ? Array(4).fill(null) : sortedItems}
           keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
           keyboardShouldPersistTaps='handled'
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}
+          onScroll={onHeaderScroll}
           scrollEventThrottle={16}
-          contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 60 : 10) + SELECTION_BAR_SPACE }]}
-          scrollIndicatorInsets={{ bottom: 40 }}
+          style={railSideBleed.style}
+          contentContainerStyle={[styles.contentContainer, railSideBleed.contentContainerStyle, selection.isActive && { paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 16 : 10) + SELECTION_BAR_SPACE }]}
           initialNumToRender={14}
           maxToRenderPerBatch={14}
           windowSize={7}
@@ -935,6 +924,7 @@ export default function ItemsScreen(): React.ReactNode {
               onRefresh={onRefresh}
               colors={[colors.primary]}
               tintColor={colors.primary}
+              progressViewOffset={Platform.OS === 'ios' ? insets.top : undefined}
             />
           }
           renderItem={({ item: itm }) =>

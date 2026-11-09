@@ -1,23 +1,21 @@
-import { Tabs, router } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
+import { NativeTabs } from 'expo-router/native-tabs';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform } from 'react-native';
 
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useForegroundSync } from '@/hooks/useForegroundSync';
 
-import { ServerSyncIndicator } from '@/components/ServerSyncIndicator';
-import { ThemedText } from '@/components/themed/ThemedText';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { IconSymbolName } from '@/components/ui/IconSymbolName';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 
 /**
  * This is the main layout for the app. It is used to navigate between the tabs.
+ * The tab bar is the system one (UITabBarController on iOS, Material bottom navigation on Android).
  */
 export default function TabLayout() : React.ReactNode {
   const colors = useColors();
@@ -51,104 +49,38 @@ export default function TabLayout() : React.ReactNode {
     return null;
   }
 
-  const styles = StyleSheet.create({
-    iconContainer: {
-      position: 'relative',
-    },
-    iconNotificationContainer: {
-      alignItems: 'center',
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      height: 16,
-      justifyContent: 'center',
-      position: 'absolute',
-      right: -4,
-      top: -4,
-      width: 16,
-    },
-    iconNotificationText: {
-      color: colors.primarySurfaceText,
-      fontSize: 10,
-      fontWeight: '600',
-      lineHeight: 16,
-      textAlign: 'center',
-    },
-  });
-
   return (
-    <>
-      <Tabs
-        screenListeners={{
-          /**
-           * Listener for the tab press event.
-           * @param {Object} e - The event object.
-           * @param {string} e.target - The target pathname.
-           */
-          tabPress: (e) => {
-            const targetPathname = (e.target as string).split('-')[0];
-            emitter.emit('tabPress', targetPathname);
-          },
-        }}
-        screenOptions={{
-          tabBarActiveTintColor: colors.tint,
-          headerShown: false,
-          tabBarBackground: TabBarBackground,
-          tabBarStyle: Platform.select({
-            ios: {
-              position: 'absolute',
-            },
-            android: {
-              backgroundColor: colors.tabBarBackground,
-            },
-            default: {},
-          }),
-        }}>
-        <Tabs.Screen
-          name="items"
-          options={{
-            title: t('navigation.vault'),
-            tabBarButtonTestID: 'tab-items',
-            /**
-             * Icon for the vault tab.
-             */
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Key} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="emails"
-          options={{
-            title: t('emails.title'),
-            tabBarButtonTestID: 'tab-emails',
-            /**
-             * Icon for the emails tab.
-             */
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Envelope} color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="settings"
-          options={{
-            title: t('common.settings'),
-            tabBarButtonTestID: 'tab-settings',
-            /**
-             * Icon for the settings tab.
-             */
-            tabBarIcon: ({ color }) => (
-              <View style={styles.iconContainer}>
-                <IconSymbol size={28} name={IconSymbolName.Gear} color={color} />
-                {authContext.shouldShowAutofillReminder && (
-                  <View style={styles.iconNotificationContainer}>
-                    <ThemedText style={styles.iconNotificationText}>1</ThemedText>
-                  </View>
-                )}
-              </View>
-            )
-          }}
-        />
-      </Tabs>
-
-      {/* Floating sync indicator - visible on all tabs */}
-      <ServerSyncIndicator />
-    </>
+    <NativeTabs
+      tintColor={colors.tint}
+      badgeBackgroundColor={colors.primary}
+      backgroundColor={Platform.OS === 'android' ? colors.tabBarBackground : undefined}
+      indicatorColor={colors.primary + '20'}
+      rippleColor={colors.primary + '20'}
+      screenListeners={{
+        /**
+         * Listener for the tab press event.
+         * @param {Object} e - The event object.
+         * @param {string} e.target - The target route key.
+         */
+        tabPress: (e) => {
+          const targetPathname = (e.target as string).split(/[-:]/)[0];
+          emitter.emit('tabPress', targetPathname);
+        },
+      }}
+    >
+      <NativeTabs.Trigger name="items" testID="tab-items">
+        <NativeTabs.Trigger.Icon sf="key.fill" src={<NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="key" />} />
+        <NativeTabs.Trigger.Label>{t('navigation.vault')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="emails" testID="tab-emails">
+        <NativeTabs.Trigger.Icon sf="envelope.fill" src={<NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="mail" />} />
+        <NativeTabs.Trigger.Label>{t('emails.title')}</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings" testID="tab-settings">
+        <NativeTabs.Trigger.Icon sf="gear" src={<NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="settings" />} />
+        <NativeTabs.Trigger.Label>{t('common.settings')}</NativeTabs.Trigger.Label>
+        {authContext.shouldShowAutofillReminder && <NativeTabs.Trigger.Badge>1</NativeTabs.Trigger.Badge>}
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

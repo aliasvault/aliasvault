@@ -1,8 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import { Stack } from 'expo-router';
-import React from 'react';
-import { StyleSheet, Platform, Animated, TouchableOpacity, useColorScheme, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Platform, Animated, TouchableOpacity, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -10,6 +10,56 @@ import { useColors } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/themed/ThemedText';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+
+/**
+ * Height of the collapsible header bar below the status bar.
+ */
+const HEADER_BAR_HEIGHT = 44;
+
+/**
+ * Whether the title fits in the status bar strip itself: a wide phone screen with a tall strip and no centred camera
+ * cutout (the unfolded iPhone Duo in portrait).
+ */
+function useTitleInStatusBar(): boolean {
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  return Platform.OS === 'ios' && !Platform.isPad && width >= 600 && insets.top >= 32;
+}
+
+/**
+ * Height of the collapsible header (status bar included) on iOS, 0 on Android where the native header is used.
+ */
+export function useCollapsibleHeaderHeight(): number {
+  const insets = useSafeAreaInsets();
+  const titleInStatusBar = useTitleInStatusBar();
+  if (Platform.OS !== 'ios') {
+    return 0;
+  }
+  return titleInStatusBar ? insets.top : insets.top + HEADER_BAR_HEIGHT;
+}
+
+/**
+ * Scroll position of the list below a collapsible header, with what is needed to ignore the bounce past its end.
+ */
+export type CollapsibleHeaderScroll = {
+  offsetY: Animated.Value;
+  contentHeight: Animated.Value;
+  layoutHeight: Animated.Value;
+}
+
+/**
+ * Scroll state for a CollapsibleHeader plus the onScroll handler (native driver) to put on its list.
+ */
+export function useCollapsibleHeaderScroll(): { scroll: CollapsibleHeaderScroll; onScroll: (...args: unknown[]) => void } {
+  return useMemo(() => {
+    const scroll = { offsetY: new Animated.Value(0), contentHeight: new Animated.Value(0), layoutHeight: new Animated.Value(0) };
+    const onScroll = Animated.event(
+      [{ nativeEvent: { contentOffset: { y: scroll.offsetY }, contentSize: { height: scroll.contentHeight }, layoutMeasurement: { height: scroll.layoutHeight } } }],
+      { useNativeDriver: true }
+    );
+    return { scroll, onScroll };
+  }, []);
+}
 
 type HeaderButton = {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -19,7 +69,7 @@ type HeaderButton = {
 
 type CollapsibleHeaderProps = {
   title: string;
-  scrollY: Animated.Value;
+  scroll: CollapsibleHeaderScroll;
   showNavigationHeader?: boolean;
   alwaysVisible?: boolean;
   headerButtons?: HeaderButton[];
@@ -27,12 +77,12 @@ type CollapsibleHeaderProps = {
 
 /**
  * Collapsible header component.
- * For iOS: Shows a collapsible header with blur effect
+ * For iOS: Shows a collapsible header with blur effect that slides away on scroll down and returns on scroll up
  * For Android: Returns null and uses native header instead
  */
 export function CollapsibleHeader({
   title,
-  scrollY,
+  scroll,
   showNavigationHeader = false,
   alwaysVisible = false,
   headerButtons = []
@@ -40,8 +90,27 @@ export function CollapsibleHeader({
   const colors = useColors();
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const headerHeight = useCollapsibleHeaderHeight();
+  const titleInStatusBar = useTitleInStatusBar();
+  const barHeight = titleInStatusBar ? 0 : HEADER_BAR_HEIGHT;
 
-  // For Android, let the native header handle it. We do add a padding to the top of the screen to account for the status bar.
+  /*
+   * Distance the bar is slid up, 0 (shown) to HEADER_BAR_HEIGHT (hidden): grows on scroll down, shrinks on scroll up.
+   * Only the bar below the status bar slides away, so a notch or Dynamic Island keeps its strip; where the status bar
+   * lives elsewhere (the iPhone Duo rail, insets.top 0) the whole header goes. With the title in the status bar strip
+   * there is no bar, so nothing slides.
+   */
+  const scrollY = scroll.offsetY;
+  const hideOffset = useMemo(() => {
+    // Capped at the end of the content, so the bounce back from overscrolling the bottom does not count as scrolling up.
+    const maxOffset = Animated.subtract(scroll.contentHeight, scroll.layoutHeight);
+    const overscroll = Animated.subtract(scroll.offsetY, maxOffset).interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolateLeft: 'clamp' });
+    const cappedY = Animated.subtract(scroll.offsetY, overscroll);
+    const offset = cappedY.interpolate({ inputRange: [0, 1], outputRange: [0, barHeight === 0 ? 0 : 1], extrapolateLeft: 'clamp' });
+    return Animated.diffClamp(offset, 0, barHeight);
+  }, [scroll, barHeight]);
+
+  // For Android, let the native header handle it.
   if (Platform.OS === 'android') {
     return null;
   }
@@ -59,18 +128,28 @@ export function CollapsibleHeader({
     extrapolate: 'clamp',
   });
 
-  const headerTransform = alwaysVisible
+  const fadeInTransform = alwaysVisible
     ? new Animated.Value(0)
     : headerOpacity.interpolate({
       inputRange: [0, 1],
       outputRange: [-20, 0],
     });
 
+  const headerTransform = Animated.add(fadeInTransform, hideOffset.interpolate({
+    inputRange: [0, HEADER_BAR_HEIGHT],
+    outputRange: [0, -HEADER_BAR_HEIGHT],
+  }));
+
+  const barContentOpacity = hideOffset.interpolate({
+    inputRange: [0, HEADER_BAR_HEIGHT],
+    outputRange: [1, 0],
+  });
+
   const styles = StyleSheet.create({
     floatingHeader: {
       alignItems: 'flex-end',
       flexDirection: 'row',
-      height: insets.top + 44,
+      height: headerHeight,
       justifyContent: 'center',
       left: 0,
       overflow: 'hidden',
@@ -83,12 +162,13 @@ export function CollapsibleHeader({
       color: colors.text,
       fontSize: 20,
       fontWeight: '600',
-      marginTop: insets.top,
+      marginTop: titleInStatusBar ? 0 : insets.top,
       textAlign: 'center',
     },
     floatingTitleContainer: {
       flex: 1,
-      height: insets.top + 44,
+      paddingHorizontal: titleInStatusBar ? 160 : 0,
+      height: headerHeight,
       justifyContent: 'center',
     },
     headerBorder: {
@@ -138,10 +218,10 @@ export function CollapsibleHeader({
         <Animated.View
           style={[
             styles.floatingTitleContainer,
-            { opacity: alwaysVisible ? titleOpacity : headerOpacity },
+            { opacity: Animated.multiply(alwaysVisible ? titleOpacity : headerOpacity, barContentOpacity) },
           ]}
         >
-          <ThemedText style={styles.floatingTitle}>{title}</ThemedText>
+          <ThemedText style={styles.floatingTitle} numberOfLines={1}>{title}</ThemedText>
         </Animated.View>
 
         {headerButtons.map((button, idx) => (

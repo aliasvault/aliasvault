@@ -218,13 +218,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
       onDismiss={onDismiss}
       statusBarTranslucent
     >
-      {isOpen && Platform.OS === 'android' && (
-        <StatusBar
-          backgroundColor="transparent"
-          translucent
-          barStyle="light-content"
-        />
-      )}
+      {isOpen && Platform.OS === 'android' && <StatusBar barStyle="light-content" />}
       <ModalBackdrop />
       {renderBackdrop()}
     </Modal>
