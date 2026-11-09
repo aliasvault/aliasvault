@@ -642,6 +642,7 @@ export default function LoginScreen() : React.ReactNode {
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <SafeAreaView>
           <LinearGradient

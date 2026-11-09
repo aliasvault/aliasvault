@@ -914,6 +914,7 @@ export function ItemsScreen(): React.ReactNode {
           data={isLoadingItems ? Array(4).fill(null) : sortedItems}
           keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
           keyboardShouldPersistTaps='handled'
+          keyboardDismissMode='on-drag'
           onScroll={onHeaderScroll}
           scrollEventThrottle={16}
           style={railSideBleed.style}

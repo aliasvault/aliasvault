@@ -1030,6 +1030,7 @@ export default function FolderViewScreen(): React.ReactNode {
         data={isLoadingItems ? Array(4).fill(null) : sortedItems}
         keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
+        keyboardDismissMode='on-drag'
         contentContainerStyle={[styles.contentContainer, selection.isActive && { paddingBottom: paddingBottom + SELECTION_BAR_SPACE }]}
         contentInsetAdjustmentBehavior="automatic"
         {...scrollSelected.listProps}
