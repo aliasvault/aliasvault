@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type TextInputInstance,
   View,
 } from 'react-native';
 
@@ -43,7 +44,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
   const { t } = useTranslation();
   const colors = useColors();
   const personalManifestId = usePersonalManifestId();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const [showModal, setShowModal] = useState(false);
 
   useImperativeHandle(ref, () => ({

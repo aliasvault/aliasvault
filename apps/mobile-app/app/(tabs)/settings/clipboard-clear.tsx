@@ -71,7 +71,7 @@ export default function ClipboardClearScreen(): React.ReactNode {
 
     // Listen for app state changes to re-check permission when app comes to foreground
     const subscription = AppState.addEventListener('change', async (nextAppState) => {
-      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+      if (appState.current?.match(/inactive|background/) && nextAppState === 'active') {
         // App coming to foreground, re-check battery optimization
         if (Platform.OS === 'android') {
           await checkBatteryOptimization();

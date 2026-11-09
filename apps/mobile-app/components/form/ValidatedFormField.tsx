@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Controller, Control, FieldValues, Path } from 'react-hook-form';
-import { View, TextInput, TextInputProps, StyleSheet, TouchableHighlight, Platform } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, TouchableHighlight, Platform, type TextInputInstance } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -37,7 +37,7 @@ const ValidatedFormFieldComponent = forwardRef<ValidatedFormFieldRef, ValidatedF
   ...props
 }, ref) => {
   const colors = useColors();
-  const inputRef = React.useRef<TextInput>(null);
+  const inputRef = React.useRef<TextInputInstance>(null);
   const currentValue = useRef<string>('');
   const [isFocused, setIsFocused] = React.useState(false);
 
