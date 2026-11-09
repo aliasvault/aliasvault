@@ -26,6 +26,7 @@ import { SORT_OPTIONS, useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePaneRouter } from '@/hooks/usePaneRouter';
+import { usePaneHeaderViews } from '@/hooks/usePaneStack';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useScreenParams } from '@/hooks/useScreenParams';
@@ -356,6 +357,16 @@ export default function FolderViewScreen(): React.ReactNode {
     }
   }, [folder, nameParam, router]);
 
+  // The pane stack header has no toolbar, so it carries the list menu button instead of the heading row.
+  usePaneHeaderViews(useMemo(() => ({
+    title: <FolderHeaderTitle name={folder?.Name || nameParam || t('items.folders.folder')} isShared={isShared} />,
+    right: (
+      <RobustPressable onPress={toggleSortMenu} style={{ padding: 6 }} accessibilityLabel={t('common.moreOptions')}>
+        <MaterialIcons name="more-horiz" size={24} color={colors.text} />
+      </RobustPressable>
+    ),
+  }), [folder?.Name, nameParam, isShared, toggleSortMenu, colors.text, t]));
+
   /**
    * The folder actions in the list menu, on Android and without a route header; elsewhere iOS shows them in the toolbar.
    */
@@ -529,7 +540,8 @@ export default function FolderViewScreen(): React.ReactNode {
 
   const paddingTop = 16;
   const paddingBottom = Platform.OS === 'ios' ? 16 : 40;
-  const menuTopOffset = useHeaderInset() + paddingTop + 44;
+  const headerInset = useHeaderInset();
+  const menuTopOffset = isStackRoute ? headerInset + paddingTop + 44 : headerInset + 4;
 
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -827,12 +839,14 @@ export default function FolderViewScreen(): React.ReactNode {
   const listHeader = useMemo((): React.ReactElement => {
     return (
       <ThemedView>
-        {/* Folder breadcrumb navigation */}
-        <FolderBreadcrumb
-          folder={folderRef}
-          excludeCurrentFolder={true}
-          folders={allFolders}
-        />
+        {/* Folder breadcrumb navigation; on the pane stack a top-level folder skips it, the back button leads there */}
+        {(isStackRoute || !!folder?.ParentFolderId) && (
+          <FolderBreadcrumb
+            folder={folderRef}
+            excludeCurrentFolder={true}
+            folders={allFolders}
+          />
+        )}
 
         {/* Subfolder pills (shown when not searching) */}
         {!searchQuery && subfolders.length > 0 && (
@@ -891,8 +905,8 @@ export default function FolderViewScreen(): React.ReactNode {
                 color={colors.text}
               />
             </TouchableOpacity>
-            {/* List menu button; Android has it in the header */}
-            {Platform.OS === 'ios' && (
+            {/* List menu button; Android and the pane stack have it in the header */}
+            {Platform.OS === 'ios' && isStackRoute && (
               <TouchableOpacity
                 style={styles.sortButton}
                 onPress={toggleSortMenu}
@@ -939,7 +953,7 @@ export default function FolderViewScreen(): React.ReactNode {
         </ThemedView>
       </ThemedView>
     );
-  }, [folderRef, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, hasRail, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
+  }, [folderRef, folder?.ParentFolderId, isStackRoute, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, hasRail, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
 
   /**
    * Render empty state.

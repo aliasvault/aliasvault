@@ -32,8 +32,17 @@ export type PaneStackApi = {
   replace: (key: string, screen: PaneScreen) => void;
 };
 
-/** What a screen on the pane stack knows about itself. */
-export type PaneScreenInfo = { key: string; params: ScreenParams; headerHeight: number };
+export type PaneHeaderViews = { 
+  title?: React.ReactNode; 
+  right?: React.ReactNode; 
+};
+
+export type PaneScreenInfo = { 
+  key: string; 
+  params: ScreenParams; 
+  headerHeight: number; 
+  setHeaderViews: (views: PaneHeaderViews) => void;
+};
 
 export const PaneStackContext = createContext<PaneStackApi | null>(null);
 export const PaneStackScreensContext = createContext<PaneStackEntry[]>([]);
@@ -54,6 +63,20 @@ export function usePaneStack(): PaneStackApi | null {
  */
 export function usePaneScreen(): PaneScreenInfo | null {
   return useContext(PaneScreenContext);
+}
+
+/**
+ * Shows `views` in the pane stack header of this screen; a no-op off the pane stack. Pass a memoized object.
+ */
+export function usePaneHeaderViews(views: PaneHeaderViews): void {
+  const setHeaderViews = usePaneScreen()?.setHeaderViews;
+  useEffect(() => {
+    if (!setHeaderViews) {
+      return undefined;
+    }
+    setHeaderViews(views);
+    return (): void => setHeaderViews({});
+  }, [setHeaderViews, views]);
 }
 
 /**
