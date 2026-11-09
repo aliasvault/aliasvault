@@ -1,6 +1,7 @@
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import React from 'react';
-import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaFrame } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -16,7 +17,7 @@ type FolderHeaderTitleProps = {
  */
 export const FolderHeaderTitle: React.FC<FolderHeaderTitleProps> = ({ name, isShared }) => {
   const colors = useColors();
-  const { width } = useWindowDimensions();
+  const { width } = useSafeAreaFrame();
   const maxWidth = Platform.OS === 'ios' ? width - 180 : width - 140;
 
   const styles = StyleSheet.create({

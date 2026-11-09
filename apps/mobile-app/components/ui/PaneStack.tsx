@@ -1,9 +1,9 @@
 import { memo, useMemo, useState } from 'react';
 import { Platform, StyleSheet, useColorScheme } from 'react-native';
-import { Screen, ScreenStack, ScreenStackHeaderConfig } from 'react-native-screens';
+import { Screen, ScreenStack, ScreenStackHeaderCenterView, ScreenStackHeaderConfig, ScreenStackHeaderRightView } from 'react-native-screens';
 
 import { useColors } from '@/hooks/useColorScheme';
-import { PaneScreenContext, type PaneScreen, type PaneScreenInfo, type PaneStackEntry } from '@/hooks/usePaneStack';
+import { PaneScreenContext, type PaneHeaderViews, type PaneScreen, type PaneScreenInfo, type PaneStackEntry } from '@/hooks/usePaneStack';
 
 const iosMajorVersion = Platform.OS === 'ios' ? parseInt(String(Platform.Version), 10) : 0;
 
@@ -54,7 +54,8 @@ function PaneStackScreen({ screen, title, backTitle, onDismissed, children }: Pa
   const colors = useColors();
   const colorScheme = useColorScheme();
   const [headerHeight, setHeaderHeight] = useState(0);
-  const info = useMemo<PaneScreenInfo>(() => ({ key: screen.key, params: screen.params, headerHeight }), [screen.key, screen.params, headerHeight]);
+  const [headerViews, setHeaderViews] = useState<PaneHeaderViews>({});
+  const info = useMemo<PaneScreenInfo>(() => ({ key: screen.key, params: screen.params, headerHeight, setHeaderViews }), [screen.key, screen.params, headerHeight]);
 
   return (
     <Screen
@@ -75,7 +76,10 @@ function PaneStackScreen({ screen, title, backTitle, onDismissed, children }: Pa
         blurEffect={colorScheme === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
         backTitle={backTitle}
         backButtonDisplayMode={iosMajorVersion >= 26 ? 'minimal' : 'default'}
-      />
+      >
+        {headerViews.title ? <ScreenStackHeaderCenterView>{headerViews.title}</ScreenStackHeaderCenterView> : null}
+        {headerViews.right ? <ScreenStackHeaderRightView>{headerViews.right}</ScreenStackHeaderRightView> : null}
+      </ScreenStackHeaderConfig>
     </Screen>
   );
 }
