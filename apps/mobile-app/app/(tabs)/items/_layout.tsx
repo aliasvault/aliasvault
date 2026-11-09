@@ -91,7 +91,7 @@ export default function ItemsLayout(): React.ReactNode {
           <Stack.Screen
             name="[manifestId]/[id]/index"
             options={{
-              title: t('items.itemDetails'),
+              title: t('items.view.viewItemTitle'),
               headerBackTitle: t('items.title'),
               ...defaultHeaderOptions,
             }}

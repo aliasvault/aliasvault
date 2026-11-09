@@ -294,7 +294,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
   return (
     <ThemedContainer>
       {/* In the iPhone Duo rail pose the back and edit buttons live in the rail, so the top bar is dropped. */}
-      <Stack.Screen options={verticalBarEdge === null ? { title: t('items.itemDetails') } : { title: '', headerShown: false, headerBackground: noHeaderBackground }} />
+      <Stack.Screen options={verticalBarEdge === null ? { title: t('items.view.viewItemTitle') } : { title: '', headerShown: false, headerBackground: noHeaderBackground }} />
       {Platform.OS === 'ios' && (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button icon="pencil" onPress={handleEdit}>{t('common.edit')}</Stack.Toolbar.Button>
