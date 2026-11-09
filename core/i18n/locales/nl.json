@@ -1093,7 +1093,7 @@
     },
     "bypass": {
       "alwaysForSite": "Altijd voor deze site",
-      "description": "Hoe lang wilt je de browser passkey voor {{origin}} gebruiken?",
+      "description": "Hoe lang wil je de browser passkey voor {{origin}} gebruiken?",
       "thisTimeOnly": "Alleen deze keer"
     },
     "create": {
