@@ -329,6 +329,7 @@
     "save": "Salva",
     "saving": "Salvataggio...",
     "select": "Seleziona",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selezionati",
       "disable": "Disabilita selezione",
@@ -694,7 +695,6 @@
       "editLabel": "Modifica etichetta"
     },
     "emailLoadError": "Si è verificato un errore durante il caricamento delle email. Riprova più tardi.",
-    "emailPreview": "Anteprima email",
     "emailUnexpectedError": "Si è verificato un errore imprevisto durante il caricamento delle email. Riprova più tardi.",
     "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
     "errorLoadingItems": "Errore durante il caricamento degli elementi",
@@ -1532,6 +1532,8 @@
     "theme": "Tema",
     "totpAutofill": "Codice di autoriempimento 2FA",
     "totpAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati i campi del codice 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Conferma PIN",
       "confirmPinDescription": "Inserisci di nuovo il tuo PIN per confermare",
