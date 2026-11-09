@@ -329,6 +329,7 @@
     "save": "Speichern",
     "saving": "Wird gespeichert ...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "Bezeichnung bearbeiten"
     },
     "emailLoadError": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
-    "emailPreview": "E-Mail-Vorschau",
     "emailUnexpectedError": "Beim Laden der E-Mails ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.",
     "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
     "errorLoadingItems": "Fehler beim Laden der Daten",
@@ -1532,6 +1532,8 @@
     "theme": "Thema",
     "totpAutofill": "2FA-Code Autofill",
     "totpAutofillDescription": "Zeige Autofill-Popup wenn 2FA-Code-Felder erkannt wurden",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "PIN bestätigen",
       "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
