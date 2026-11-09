@@ -3,13 +3,20 @@ package net.aliasvault.app.qrscanner
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
+import android.widget.FrameLayout
+import android.widget.ImageButton
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
 import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import net.aliasvault.app.R
 
 /**
  * Activity for scanning QR codes using ZXing.
@@ -40,7 +47,11 @@ class QRScannerActivity : Activity() {
         // Create and configure barcode view
         barcodeView = DecoratedBarcodeView(this)
         barcodeView.setStatusText(statusText)
-        setContentView(barcodeView)
+
+        val root = FrameLayout(this)
+        root.addView(barcodeView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        root.addView(createCloseButton())
+        setContentView(root)
 
         // Initialize capture manager
         capture = CaptureManager(this, barcodeView)
@@ -91,6 +102,43 @@ class QRScannerActivity : Activity() {
                 // No visualization needed
             }
         })
+    }
+
+    /**
+     * Create the close button in the top start corner, kept clear of the system bars.
+     */
+    private fun createCloseButton(): ImageButton {
+        val density = resources.displayMetrics.density
+        val size = (48 * density).toInt()
+        val margin = (8 * density).toInt()
+
+        val button = ImageButton(this)
+        button.setImageResource(R.drawable.ic_ui_x)
+        button.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        button.contentDescription = getString(R.string.common_cancel)
+        val padding = (12 * density).toInt()
+        button.setPadding(padding, padding, padding, padding)
+        val outValue = android.util.TypedValue()
+        theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)
+        button.setBackgroundResource(outValue.resourceId)
+        button.setOnClickListener {
+            setResult(RESULT_CANCELED)
+            finish()
+        }
+
+        val params = FrameLayout.LayoutParams(size, size, Gravity.TOP or Gravity.START)
+        params.setMargins(margin, margin, margin, margin)
+        button.layoutParams = params
+        button.setOnApplyWindowInsetsListener { view, insets ->
+            val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+            val lp = view.layoutParams as FrameLayout.LayoutParams
+            lp.topMargin = bars.top + margin
+            lp.marginStart = (if (view.layoutDirection == View.LAYOUT_DIRECTION_RTL) bars.right else bars.left) + margin
+            view.layoutParams = lp
+            insets
+        }
+
+        return button
     }
 
     /**

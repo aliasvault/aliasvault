@@ -326,7 +326,8 @@
     },
     "x": {
       "source": "heroicons@1.0.6",
-      "icon": "outline/x"
+      "icon": "outline/x",
+      "androidDrawable": true
     },
     "x-circle": {
       "source": "heroicons@1.0.6",

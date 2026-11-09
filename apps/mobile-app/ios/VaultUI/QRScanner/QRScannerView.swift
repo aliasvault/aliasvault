@@ -26,6 +26,23 @@ public struct QRScannerView: View {
     }
 
     public var body: some View {
+        NavigationStack {
+            scannerContent
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(action: onCancel) {
+                            Image(systemName: "xmark")
+                                .foregroundStyle(.white)
+                        }
+                        .accessibilityLabel(String(localized: "cancel", bundle: locBundle))
+                    }
+                }
+                .toolbarBackground(.hidden, for: .navigationBar)
+                .toolbarColorScheme(.dark, for: .navigationBar)
+        }
+    }
+
+    private var scannerContent: some View {
         ZStack {
             // Camera preview
             QRScannerRepresentable(
@@ -74,22 +91,8 @@ public struct QRScannerView: View {
                     .cornerRadius(10)
                     .padding(.bottom, 50)
             }
-
-            // Cancel button
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onCancel) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white)
-                            .padding()
-                    }
-                }
-                Spacer()
-            }
         }
-        .background(Color.black)
+        .background(Color.black.ignoresSafeArea())
     }
 }
 
