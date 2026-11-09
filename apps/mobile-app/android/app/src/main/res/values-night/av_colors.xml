@@ -10,6 +10,7 @@
   <color name="av_background">#000000</color>
   <color name="av_accent_background">#202020</color>
   <color name="av_accent_border">#444444</color>
+  <color name="av_selected_row_background">#392e24</color>
   <color name="av_primary">#f49541</color>
   <color name="av_primary_surface_text">#ffffff</color>
   <color name="av_secondary">#6b7280</color>
