@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NativeSyntheticEvent, ScrollView, StyleSheet, TextInput, TextInputProps, TextInputSelectionChangeEventData, TouchableHighlight, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, TextInputProps, TouchableHighlight, View, useWindowDimensions, type ScrollViewInstance, type TextInputSelectionChangeEvent } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
@@ -54,7 +54,7 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   const { height: windowHeight } = useWindowDimensions();
   const maxHeight = Math.max(MIN_HEIGHT * 2, Math.round(windowHeight * MAX_HEIGHT_RATIO));
   const [isResized, setIsResized] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const isCaretAtEnd = useRef(false);
 
   // Height the field renders at: follows the content while it still auto-grows,
@@ -135,7 +135,7 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   /**
    * Track whether the caret is at the end of the text.
    */
-  const handleSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>): void => {
+  const handleSelectionChange = useCallback((event: TextInputSelectionChangeEvent): void => {
     isCaretAtEnd.current = event.nativeEvent.selection.end >= value.length;
   }, [value.length]);
 

@@ -1,8 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation, useRouter } from 'expo-router';
+import { Stack, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, AppState } from 'react-native';
+import { StyleSheet, View, AppState, Platform } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -77,6 +77,9 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
 
   // Set header buttons
   useEffect(() => {
+    if (Platform.OS === 'ios') {
+      return;
+    }
     navigation.setOptions({
       /**
        * Header right button.
@@ -95,6 +98,11 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
 
   return (
     <ThemedSafeAreaView style={styles.container}>
+      {Platform.OS === 'ios' && (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button onPress={handleStayInApp}>{t('common.close')}</Stack.Toolbar.Button>
+        </Stack.Toolbar>
+      )}
       <ThemedView style={styles.content}>
         <View style={styles.iconContainer}>
           <MaterialIcons

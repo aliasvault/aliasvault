@@ -8,7 +8,7 @@ import { ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsFor
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { usePreventRemove, type NavigationAction } from 'expo-router/react-navigation';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
@@ -102,7 +102,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-  const [pendingNavigationAction, setPendingNavigationAction] = useState<NavigationAction | null>(null);
+  const [pendingNavigationRepeat, setPendingNavigationRepeat] = useState<(() => void) | null>(null);
   const [item, setItem] = useState<DisplayItem | null>(null);
   const [personalManifestId, setPersonalManifestId] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
@@ -411,9 +411,9 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
    * Prevent accidental dismissal when there are unsaved changes.
    * Shows custom dialog on Android, stores pending action for later execution.
    */
-  usePreventRemove(hasUnsavedChanges, ({ data }): void => {
-    // Store the pending navigation action and show the discard confirm dialog
-    setPendingNavigationAction(data.action);
+  usePreventRemove(hasUnsavedChanges, ({ repeat }): void => {
+    // Keep the blocked navigation so the discard confirm dialog can repeat it
+    setPendingNavigationRepeat(() => repeat);
     setShowDiscardConfirm(true);
   });
 
@@ -894,7 +894,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
               position: 'bottom'
             });
             if (currentRef) {
-              router.push(itemRoute(currentRef));
+              router.push(itemRoute(currentRef, itemToSave.Name));
             }
           }
         }, 100);
@@ -972,15 +972,14 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     setHasUnsavedChanges(false);
     setShowDiscardConfirm(false);
 
-    // If we have a pending navigation action (from usePreventRemove), dispatch it
-    if (pendingNavigationAction) {
-      navigation.dispatch(pendingNavigationAction);
-      setPendingNavigationAction(null);
+    // Repeat the navigation blocked by usePreventRemove, or go back from the cancel button
+    if (pendingNavigationRepeat) {
+      pendingNavigationRepeat();
+      setPendingNavigationRepeat(null);
     } else {
-      // Otherwise just go back (from cancel button press)
       router.back();
     }
-  }, [router, navigation, pendingNavigationAction]);
+  }, [router, pendingNavigationRepeat]);
 
   /**
    * Hide delete confirmation dialog.
@@ -1027,17 +1026,6 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       onPress: confirmDiscard,
     },
   ], [t, hideDiscardConfirm, confirmDiscard]);
-
-  /**
-   * Get the top padding for the container.
-   */
-  const getTopPadding = (): number => {
-    if (Platform.OS !== 'ios') {
-      return 0;
-    }
-    const iosVersion = parseInt(Platform.Version as string, 10);
-    return iosVersion >= 26 ? 72 : 52;
-  };
 
   /**
    * Get category title for display.
@@ -1192,7 +1180,6 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: getTopPadding(),
     },
     contentContainer: {
       paddingBottom: 40,
@@ -1209,12 +1196,6 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     deleteButtonText: {
       color: colors.errorText,
       fontWeight: '600',
-    },
-    headerLeftButton: {
-      paddingHorizontal: 8,
-    },
-    headerLeftButtonText: {
-      color: colors.primary,
     },
     headerRightButton: {
       paddingHorizontal: 8,
@@ -1306,22 +1287,12 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     },
   });
 
-  // Set header buttons
+  // Header button on Android. On iOS the cancel and save buttons are native bar button items (the toolbars below), which the iPhone Duo bar rail picks up.
   useEffect(() => {
+    if (Platform.OS === 'ios') {
+      return;
+    }
     navigation.setOptions({
-      ...(Platform.OS === 'ios' && {
-        /**
-         * Show the cancel button
-         */
-        headerLeft: (): React.ReactNode => (
-          <RobustPressable
-            onPress={handleCancel}
-            style={styles.headerLeftButton}
-          >
-            <ThemedText style={styles.headerLeftButtonText}>{t('common.cancel')}</ThemedText>
-          </RobustPressable>
-        ),
-      }),
       /**
        * Show the save button
        */
@@ -1333,15 +1304,11 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
           testID="save-button"
           accessibilityLabel="save-button"
         >
-          <MaterialIcons
-            name="save"
-            size={Platform.OS === 'android' ? 24 : 22}
-            color={colors.primary}
-          />
+          <MaterialIcons name="save" size={24} color={colors.primary} />
         </TouchableOpacity>
       ),
     });
-  }, [navigation, onSubmit, colors.primary, isEditMode, router, styles.headerLeftButton, styles.headerLeftButtonText, styles.headerRightButton, styles.headerRightButtonDisabled, isSaveDisabled, t, handleCancel]);
+  }, [navigation, onSubmit, colors.primary, styles.headerRightButton, styles.headerRightButtonDisabled, isSaveDisabled]);
 
   // Check for passkeys (in edit mode)
   const hasPasskey = useMemo(() => {
@@ -1355,6 +1322,16 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   return (
     <>
       <Stack.Screen options={{ title: isEditMode ? t('items.editItem') : t('items.addItem') }} />
+      {Platform.OS === 'ios' && (
+        <>
+          <Stack.Toolbar placement="left">
+            <Stack.Toolbar.Button onPress={handleCancel}>{t('common.cancel')}</Stack.Toolbar.Button>
+          </Stack.Toolbar>
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button icon="checkmark" onPress={onSubmit} disabled={isSaveDisabled} accessibilityLabel="save-button">{t('common.save')}</Stack.Toolbar.Button>
+          </Stack.Toolbar>
+        </>
+      )}
       {isSaving && (
         <LoadingOverlay status={saveStatus} />
       )}
@@ -1367,6 +1344,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
         >
           <ScrollView
             contentContainerStyle={styles.contentContainer}
+            contentInsetAdjustmentBehavior="automatic"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >

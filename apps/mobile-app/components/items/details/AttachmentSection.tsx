@@ -49,9 +49,9 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
 
       const blob = blobsRef.current.get(attachment.Id);
       if (typeof blob === 'string') {
-        file.write(blob, { encoding: 'base64' });
+        await file.write(blob, { encoding: 'base64' });
       } else {
-        file.write((blob ?? new Uint8Array(0)) as unknown as Uint8Array);
+        await file.write((blob ?? new Uint8Array(0)) as unknown as Uint8Array);
       }
 
       await openAttachment({ filePath: file.uri, fileName: attachment.Filename });
