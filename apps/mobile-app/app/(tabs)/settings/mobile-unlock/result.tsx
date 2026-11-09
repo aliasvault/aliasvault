@@ -1,15 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedButton } from '@/components/themed/ThemedButton';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
-import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { ScreenToolbar } from '@/components/ui/ScreenToolbar';
+
+/** Seconds after which a success result returns to settings by itself; an error stays until closed. */
+const SUCCESS_AUTO_CLOSE_SECONDS = 5;
 
 /**
  * QR Code result screen - shows success or error after mobile unlock attempt.
@@ -18,6 +23,8 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const navigation = useNavigation();
+  const headerInset = useHeaderInset();
+  const insets = useSafeAreaInsets();
   const { success, reason } = useLocalSearchParams<{ success: string; reason?: string }>();
 
   const isSuccess = success === 'true';
@@ -34,6 +41,15 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
     });
   }, [navigation, isSuccess, t]);
 
+  // A success needs no reading, so it returns to settings by itself.
+  useEffect(() => {
+    if (!isSuccess) {
+      return undefined;
+    }
+    const timer = setTimeout(() => router.replace('/(tabs)/settings'), SUCCESS_AUTO_CLOSE_SECONDS * 1000);
+    return (): void => clearTimeout(timer);
+  }, [isSuccess]);
+
   /**
    * Handle dismiss - navigate to settings tab.
    * Uses replace to handle cases where this page is reached via deep link navigation.
@@ -43,6 +59,11 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    screen: {
+      flex: 1,
+      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 16 : 16,
+      paddingTop: Math.max(headerInset, insets.top),
+    },
     container: {
       alignItems: 'center',
       flex: 1,
@@ -75,8 +96,6 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
       textAlign: 'center',
     },
     buttonContainer: {
-      marginTop: 20,
-      paddingBottom: 20,
       paddingHorizontal: 20,
       width: '100%',
     },
@@ -87,7 +106,13 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
 
   return (
     <ThemedContainer>
-      <ThemedScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      {/* On iOS the close button is a native header item, which the iPhone Duo moves into its rail. */}
+      {Platform.OS === 'ios' && (
+        <ScreenToolbar placement="right">
+          <Stack.Toolbar.Button icon="xmark" onPress={handleDismiss}>{t('common.close')}</Stack.Toolbar.Button>
+        </ScreenToolbar>
+      )}
+      <View style={styles.screen}>
         <View style={styles.container}>
           <View style={styles.resultContainer}>
             <Ionicons
@@ -107,14 +132,16 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
           </View>
         </View>
 
-        <View style={styles.buttonContainer}>
-          <ThemedButton
-            title={t('common.close')}
-            onPress={handleDismiss}
-            style={styles.button}
-          />
-        </View>
-      </ThemedScrollView>
+        {Platform.OS === 'android' && (
+          <View style={styles.buttonContainer}>
+            <ThemedButton
+              title={t('common.close')}
+              onPress={handleDismiss}
+              style={styles.button}
+            />
+          </View>
+        )}
+      </View>
     </ThemedContainer>
   );
 }

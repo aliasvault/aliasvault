@@ -90,12 +90,11 @@ export default function ItemsLayout(): React.ReactNode {
           />
           <Stack.Screen
             name="[manifestId]/[id]/index"
-            options={({ route }) => ({
-              // The name travels in the route so the header shows it before the item has loaded.
-              title: (route.params as { name?: string } | undefined)?.name || t('items.itemDetails'),
+            options={{
+              title: t('items.itemDetails'),
               headerBackTitle: t('items.title'),
               ...defaultHeaderOptions,
-            })}
+            }}
           />
           <Stack.Screen
             name="[manifestId]/[id]/edit"
