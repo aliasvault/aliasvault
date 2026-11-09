@@ -329,6 +329,7 @@
     "save": "Sauvegarder",
     "saving": "Sauvegarde...",
     "select": "Sélectionner",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} sélectionné(s)",
       "disable": "Désactiver la sélection",
@@ -694,7 +695,6 @@
       "editLabel": "Éditer l’étiquette"
     },
     "emailLoadError": "Une erreur s'est produite lors du chargement des e-mails. Veuillez réessayer plus tard.",
-    "emailPreview": "Aperçu de l'e-mail",
     "emailUnexpectedError": "Une erreur inattendue s'est produite lors du chargement des e-mails. Veuillez réessayer plus tard.",
     "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et appuyez sur l'icône du dossier dans le champ nom.",
     "errorLoadingItems": "Erreur lors du chargement des éléments",
@@ -1532,6 +1532,8 @@
     "theme": "Thème",
     "totpAutofill": "Remplissage automatique du code d'authentification à deux facteurs",
     "totpAutofillDescription": "Afficher le popup de saisie automatique lorsque des champs de code 2FA sont détectés",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Confirmer le code PIN",
       "confirmPinDescription": "Saisissez à nouveau votre code PIN pour confirmer",
