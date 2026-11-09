@@ -329,6 +329,7 @@
     "save": "Opslaan",
     "saving": "Opslaan...",
     "select": "Selecteer",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} geselecteerd",
       "disable": "Schakel selectie uit",
@@ -694,7 +695,6 @@
       "editLabel": "Bewerk label"
     },
     "emailLoadError": "Er is een fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
-    "emailPreview": "E-mail voorbeeld",
     "emailUnexpectedError": "Er is een onverwachte fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
     "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
     "errorLoadingItems": "Fout bij het laden van items",
@@ -1532,6 +1532,8 @@
     "theme": "Thema",
     "totpAutofill": "Automatisch invullen van 2FA code",
     "totpAutofillDescription": "Automatisch invullen popup tonen wanneer 2FA code-velden worden gedetecteerd",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Bevestig pincode",
       "confirmPinDescription": "Voer je pincode nogmaals in om te bevestigen",
