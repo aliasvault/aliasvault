@@ -329,6 +329,7 @@
     "save": "保存",
     "saving": "保存中…",
     "select": "选择",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "已选择 {{count}} 项",
       "disable": "禁用所选",
@@ -694,7 +695,6 @@
       "editLabel": "编辑标签"
     },
     "emailLoadError": "加载邮件时出错，请稍后重试。",
-    "emailPreview": "邮件预览",
     "emailUnexpectedError": "加载邮件时发生意外错误，请稍后重试。",
     "emptyFolderHint": "此文件夹为空。要将项目移动到此文件夹，请编辑该项目，然后点击名称字段中的文件夹图标。",
     "errorLoadingItems": "加载项目时出错",
@@ -1532,6 +1532,8 @@
     "theme": "主题",
     "totpAutofill": "两步验证码自动填充",
     "totpAutofillDescription": "检测到两步验证码字段时显示自动填充弹窗",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
