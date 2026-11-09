@@ -1,20 +1,140 @@
 import type { Href } from 'expo-router';
-import { useCallback, useMemo, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import type { HostInstance, LayoutChangeEvent, ScrollViewInstance } from 'react-native';
 
 import { isPathSelected, useTwoPane } from '@/hooks/useTwoPane';
 
-export type ScrollSelectedIntoView = {
+/*
+ * When the primary pane appears (folding phone is unfolded), these hooks scroll the row of the detail shown next to the list
+ * into the middle of it, once. Which one a screen uses depends on its list:
+ * - useScrollSelectedIntoFlatList: a long, data-driven FlatList (items, folders, emails), which only renders the rows near
+ *   the visible area, so it scrolls by index.
+ * - useScrollSelectedIntoScrollView: a short, fixed ScrollView (settings), which renders every row, so it measures the row.
+ */
+
+/**
+ * The detail shown next to the list when the pane appears, captured once; null outside the primary pane.
+ */
+function useScrollTargetPath(): string | null {
+  const { pane, selectedPath } = useTwoPane();
+  const [targetPath] = useState(pane === 'primary' ? selectedPath : null);
+  return targetPath;
+}
+
+const INITIAL_RENDER_COUNT = 14;
+const MAX_RENDERED_TO_SELECTED = 500;
+const MAX_SCROLL_RETRIES = 30;
+const SETTLE_DURATION = 3000;
+const MAINTAIN_VISIBLE_POSITION = { minIndexForVisible: 0 };
+
+/** The scroll methods of a FlatList. */
+type ScrollableList = {
+  scrollToIndex: (params: { index: number; viewPosition?: number; animated?: boolean }) => void;
+  scrollToOffset: (params: { offset: number; animated?: boolean }) => void;
+};
+
+type FlatListOptions<Row> = {
+  rows: readonly Row[];
+  isLoaded: boolean;
+  rowHref: (row: Row) => Href;
+  rowKey: (row: Row) => string;
+};
+
+export type ScrollSelectedIntoFlatList = {
   targetPath: string | null;
+  listKey: string;
+  listProps: {
+    initialNumToRender: number;
+    maintainVisibleContentPosition?: { minIndexForVisible: number };
+    onScrollToIndexFailed: (info: { index: number; averageItemLength: number }) => void;
+  };
+  onListHeaderLayout: (event: LayoutChangeEvent) => void;
+  scrollToIndex: (index: number, animated: boolean) => void;
+};
+
+/**
+ * Scrolls the selected row of a FlatList into view. A FlatList only scrolls to a row exactly once every row above it is
+ * measured, so it mounts again with those rows rendered (up to a cap). The target is kept by key, as a restored search or
+ * sort may still reorder the rows.
+ */
+export function useScrollSelectedIntoFlatList<Row>(listRef: RefObject<ScrollableList | null>, { rows, isLoaded, rowHref, rowKey }: FlatListOptions<Row>): ScrollSelectedIntoFlatList {
+  const targetPath = useScrollTargetPath();
+  const targetDoneRef = useRef(false);
+  const retriesRef = useRef(0);
+  const listHeaderHeightRef = useRef(0);
+  const [targetKey, setTargetKey] = useState<string | null>(null);
+  const [isSettling, setIsSettling] = useState(false);
+
+  useEffect(() => {
+    if (targetPath === null || targetDoneRef.current || !isLoaded) {
+      return;
+    }
+    targetDoneRef.current = true;
+    const selected = rows.find(row => isPathSelected(targetPath, rowHref(row)));
+    if (selected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- runs once, after the first load in the primary pane
+      setTargetKey(rowKey(selected));
+    }
+  }, [targetPath, isLoaded, rows, rowHref, rowKey]);
+
+  const targetIndex = useMemo(() => (targetKey === null ? -1 : rows.findIndex(row => rowKey(row) === targetKey)), [targetKey, rows, rowKey]);
+
+  const scrollToIndex = useCallback((index: number, animated: boolean): void => {
+    retriesRef.current = 0;
+    listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated });
+  }, [listRef]);
+
+  useEffect(() => {
+    if (targetIndex <= 0) {
+      return;
+    }
+    // While the rows above settle, keep the visible rows in place instead of letting their real heights shift them.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- toggles a list prop for the duration of the scroll
+    setIsSettling(true);
+    const frame = requestAnimationFrame(() => scrollToIndex(targetIndex, false));
+    const settle = setTimeout(() => setIsSettling(false), SETTLE_DURATION);
+    return (): void => {
+      cancelAnimationFrame(frame);
+      clearTimeout(settle);
+    };
+  }, [targetIndex, scrollToIndex]);
+
+  const onScrollToIndexFailed = useCallback(({ index, averageItemLength }: { index: number; averageItemLength: number }): void => {
+    listRef.current?.scrollToOffset({ offset: listHeaderHeightRef.current + index * averageItemLength, animated: false });
+    if (retriesRef.current >= MAX_SCROLL_RETRIES) {
+      return;
+    }
+    retriesRef.current++;
+    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: false }), 50);
+  }, [listRef]);
+
+  const onListHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
+    listHeaderHeightRef.current = event.nativeEvent.layout.height;
+  }, []);
+
+  const rendersToTarget = targetIndex > 0 && targetIndex <= MAX_RENDERED_TO_SELECTED;
+  return {
+    targetPath,
+    listKey: rendersToTarget ? 'to-selected' : 'list',
+    listProps: {
+      initialNumToRender: rendersToTarget ? targetIndex + INITIAL_RENDER_COUNT : INITIAL_RENDER_COUNT,
+      maintainVisibleContentPosition: isSettling ? MAINTAIN_VISIBLE_POSITION : undefined,
+      onScrollToIndexFailed,
+    },
+    onListHeaderLayout,
+    scrollToIndex,
+  };
+}
+
+export type ScrollSelectedIntoScrollView = {
   onLayoutFor: (href: Href) => ((event: LayoutChangeEvent) => void) | undefined;
 };
 
 /**
- * Scrolls the row of the detail shown next to the list into the middle of the scroll view, once, when the pane appears.
+ * Scrolls the selected row of a ScrollView into view by measuring it against the scroll view's content.
  */
-export function useScrollSelectedIntoView(scrollViewRef: RefObject<ScrollViewInstance | null>): ScrollSelectedIntoView {
-  const { pane, selectedPath } = useTwoPane();
-  const [targetPath] = useState(pane === 'primary' ? selectedPath : null);
+export function useScrollSelectedIntoScrollView(scrollViewRef: RefObject<ScrollViewInstance | null>): ScrollSelectedIntoScrollView {
+  const targetPath = useScrollTargetPath();
   const doneRef = useRef(false);
 
   const onLayout = useCallback((event: LayoutChangeEvent): void => {
@@ -43,5 +163,5 @@ export function useScrollSelectedIntoView(scrollViewRef: RefObject<ScrollViewIns
   }, [scrollViewRef]);
 
   const onLayoutFor = useCallback((href: Href) => (targetPath !== null && !doneRef.current && isPathSelected(targetPath, href) ? onLayout : undefined), [targetPath, onLayout]);
-  return useMemo(() => ({ targetPath, onLayoutFor }), [targetPath, onLayoutFor]);
+  return useMemo(() => ({ onLayoutFor }), [onLayoutFor]);
 }
