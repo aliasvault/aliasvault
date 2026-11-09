@@ -54,6 +54,8 @@ export default function TabLayout() : React.ReactNode {
       tintColor={colors.tint}
       badgeBackgroundColor={colors.primary}
       backgroundColor={Platform.OS === 'android' ? colors.tabBarBackground : undefined}
+      iconColor={Platform.OS === 'android' ? { default: colors.tabIconDefault, selected: colors.tabIconSelected } : undefined}
+      labelStyle={Platform.OS === 'android' ? { default: { color: colors.tabIconDefault }, selected: { color: colors.tabIconSelected } } : undefined}
       indicatorColor={colors.primary + '20'}
       rippleColor={colors.primary + '20'}
       screenListeners={{
