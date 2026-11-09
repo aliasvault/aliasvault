@@ -150,6 +150,9 @@ export function usePaneStackState(): { screens: PaneStackEntry[]; api: PaneStack
   return { screens, api };
 }
 
+/** How long the route sync waits after a layout change, so it runs after the fold rotation has finished. */
+const ROUTE_SYNC_DELAY = 600;
+
 /** The tab's stack state and navigation, as far as the sync uses them; a route without a key is one the router still has to create. */
 type StackState = { index: number; routes: Array<{ key?: string; name: string; params?: object }> };
 type StackNavigation = { getState: () => StackState | undefined; reset: (state: StackState) => void };
@@ -157,7 +160,8 @@ type StackNavigation = { getState: () => StackState | undefined; reset: (state: 
 /**
  * Moves screens between the tab's stack and the pane stack when the window changes layout, from a screen on the stack
  * (the tab's index route). On unfolding, the primary routes on the stack leave it for the pane; on folding, the pane's
- * screens go on the stack below the routes already there, so a folder stays open either way.
+ * screens go on the stack below the routes already there, so a folder stays open either way. The move waits until the
+ * fold rotation has finished: pushing or popping native screens during it crashes UIKit (see TwoPaneLayout).
  */
 export function usePaneStackRouteSync(): void {
   const navigation = useNavigation() as unknown as StackNavigation;
@@ -165,34 +169,40 @@ export function usePaneStackRouteSync(): void {
   const api = useContext(PaneStackContext);
   const screens = useContext(PaneStackScreensContext);
   const primaryRoutes = usePrimaryRoutes();
-  const wasTwoPane = useRef(isTwoPane);
+  const syncedTwoPane = useRef(isTwoPane);
+  const screensRef = useRef(screens);
+  screensRef.current = screens;
 
   useEffect(() => {
-    if (wasTwoPane.current === isTwoPane || !api || !primaryRoutes) {
-      return;
+    if (syncedTwoPane.current === isTwoPane || !api || !primaryRoutes) {
+      return undefined;
     }
-    wasTwoPane.current = isTwoPane;
-    const state = navigation.getState();
-    if (!state) {
-      return;
-    }
-    if (isTwoPane) {
-      const isPrimary = (route: StackState['routes'][number]): boolean => route.name in primaryRoutes.routes;
-      if (!state.routes.some(isPrimary)) {
+    const timer = setTimeout(() => {
+      syncedTwoPane.current = isTwoPane;
+      const state = navigation.getState();
+      if (!state) {
         return;
       }
-      state.routes.filter(isPrimary).forEach(route => api.push({ name: route.name, params: (route.params ?? {}) as ScreenParams }));
-      const routes = state.routes.filter(route => !isPrimary(route));
+      if (isTwoPane) {
+        const isPrimary = (route: StackState['routes'][number]): boolean => route.name in primaryRoutes.routes;
+        if (!state.routes.some(isPrimary)) {
+          return;
+        }
+        state.routes.filter(isPrimary).forEach(route => api.push({ name: route.name, params: (route.params ?? {}) as ScreenParams }));
+        const routes = state.routes.filter(route => !isPrimary(route));
+        navigation.reset({ ...state, routes, index: routes.length - 1 });
+        return;
+      }
+      const paneScreens = screensRef.current;
+      if (paneScreens.length === 0) {
+        return;
+      }
+      // Keys are left out on purpose: the stack router creates them. The routes already there keep theirs, and their screens.
+      const [root, ...rest] = state.routes;
+      const routes = [root, ...paneScreens.map(({ name, params }) => ({ name, params })), ...rest];
       navigation.reset({ ...state, routes, index: routes.length - 1 });
-      return;
-    }
-    if (screens.length === 0) {
-      return;
-    }
-    // Keys are left out on purpose: the stack router creates them. The routes already there keep theirs, and their screens.
-    const [root, ...rest] = state.routes;
-    const routes = [root, ...screens.map(({ name, params }) => ({ name, params })), ...rest];
-    navigation.reset({ ...state, routes, index: routes.length - 1 });
-    api.popToRoot();
-  }, [isTwoPane, api, screens, navigation, primaryRoutes]);
+      api.popToRoot();
+    }, ROUTE_SYNC_DELAY);
+    return (): void => clearTimeout(timer);
+  }, [isTwoPane, api, navigation, primaryRoutes]);
 }

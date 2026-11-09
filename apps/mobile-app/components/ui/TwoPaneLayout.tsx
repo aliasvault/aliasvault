@@ -1,7 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, usePathname } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useVerticalBarEdgeIOS } from 'expo-status-bar';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, useWindowDimensions, View, type HostInstance, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -12,10 +13,6 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { PaneStack } from '@/components/ui/PaneStack';
 import { StackScreenLayout } from '@/components/ui/StackScreenLayout';
-
-const PRIMARY_WIDTH_FRACTION = 0.4;
-const PRIMARY_MIN_WIDTH = 300;
-const PRIMARY_MAX_WIDTH = 400;
 
 const NO_PRIMARY_ROUTES: Record<string, PrimaryRoute> = {};
 
@@ -52,9 +49,14 @@ export function TwoPaneLayout({ children, ...props }: TwoPaneLayoutProps): React
 function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_PRIMARY_ROUTES, children }: TwoPaneLayoutProps): React.ReactNode {
   const colors = useColors();
   const isTwoPane = useIsTwoPaneWindow();
-  const { width } = useWindowDimensions();
   const [primaryParams, setPrimaryParamsState] = useState<ScreenParams>({});
   const paneStack = usePaneStackState();
+  const { width: windowWidth } = useWindowDimensions();
+  const rowRef = useRef<HostInstance>(null);
+  const [rowX, setRowX] = useState<number | null>(null);
+  const onRowLayout = useCallback((): void => rowRef.current?.measureInWindow(x => setRowX(x)), []);
+  const railEdge = useVerticalBarEdgeIOS();
+  useEffect(onRowLayout, [onRowLayout, windowWidth, railEdge]);
 
   const setPrimaryParams = useCallback((params: ScreenParams): void => setPrimaryParamsState(current => (isSameParams(current, params) ? current : params)), []);
   // Only the primary pane needs the selected path (see PrimaryPane), so this value never changes on navigation.
@@ -67,20 +69,28 @@ function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_
   }, [primaryRoutes]);
 
   /*
-   * One tree shape for both window layouts: the stack keeps its place, so unfolding or folding only adds or drops the
-   * primary pane instead of remounting the stack (and reloading the detail screen on it).
+   * The divider sits in the middle of the window, on the hinge of an unfolded iPhone Duo, so each pane matches the cover
+   * display. The row starts after the bar rail, so the width is measured from the row's position in the window.
    */
-  const primaryWidth = Math.min(PRIMARY_MAX_WIDTH, Math.max(PRIMARY_MIN_WIDTH, Math.round(width * PRIMARY_WIDTH_FRACTION)));
+  let primaryStyle: StyleProp<ViewStyle> = styles.primaryCollapsed;
+  if (isTwoPane) {
+    primaryStyle = rowX === null ? styles.primary : [styles.primaryCentered, { width: windowWidth / 2 - rowX }];
+  }
+
+
+  /*
+   * One tree shape for both window layouts: the stack keeps its place, and the primary pane stays mounted (collapsed on a
+   * single pane). Mounting or unmounting its native stack during the fold rotation adds or removes a child view controller
+   * while UIKit enumerates them, which crashes the app.
+   */
   return (
     <PrimaryRoutesContext.Provider value={primaryRoutesValue}>
       <PaneStackContext.Provider value={paneStack.api}>
         <PaneStackScreensContext.Provider value={paneStack.screens}>
-          <View style={styles.row}>
-            {isTwoPane && (
-              <PrimaryPane width={primaryWidth} primaryParams={primaryParams} setPrimaryParams={setPrimaryParams}>
-                <PaneStack root={primary} rootTitle={primaryTitle} screens={paneStack.screens} onDismissed={paneStack.api.pop} titleOf={titleOf} renderScreen={renderScreen} />
-              </PrimaryPane>
-            )}
+          <View ref={rowRef} style={styles.row} onLayout={onRowLayout}>
+            <PrimaryPane isVisible={isTwoPane} style={primaryStyle} primaryParams={primaryParams} setPrimaryParams={setPrimaryParams}>
+              <PaneStack root={isTwoPane ? primary : null} rootTitle={primaryTitle} screens={paneStack.screens} onDismissed={paneStack.api.pop} titleOf={titleOf} renderScreen={renderScreen} />
+            </PrimaryPane>
             {isTwoPane && <View style={[styles.divider, { backgroundColor: colors.headerBorder }]} />}
             <TwoPaneContext.Provider value={secondaryState}>
               <SafeAreaProvider style={styles.secondary}>{children}</SafeAreaProvider>
@@ -100,7 +110,8 @@ function isSameParams(a: ScreenParams, b: ScreenParams): boolean {
 }
 
 type PrimaryPaneProps = {
-  width: number;
+  isVisible: boolean;
+  style: StyleProp<ViewStyle>;
   primaryParams: ScreenParams;
   setPrimaryParams: TwoPaneState['setPrimaryParams'];
   children: React.ReactNode;
@@ -109,12 +120,12 @@ type PrimaryPaneProps = {
 /**
  * The primary pane. It alone follows the route shown in the secondary pane, so only this subtree re-renders on navigation.
  */
-function PrimaryPane({ width, primaryParams, setPrimaryParams, children }: PrimaryPaneProps): React.ReactNode {
+function PrimaryPane({ isVisible, style, primaryParams, setPrimaryParams, children }: PrimaryPaneProps): React.ReactNode {
   const pathname = usePathname();
   const state = useMemo<TwoPaneState>(() => ({ isTwoPane: true, pane: 'primary', selectedPath: pathname, primaryParams, setPrimaryParams }), [pathname, primaryParams, setPrimaryParams]);
   return (
     <TwoPaneContext.Provider value={state}>
-      <SafeAreaProvider style={{ width }}>
+      <SafeAreaProvider style={style} pointerEvents={isVisible ? 'auto' : 'none'}>
         <StackScreenLayout>{children}</StackScreenLayout>
       </SafeAreaProvider>
     </TwoPaneContext.Provider>
@@ -180,6 +191,19 @@ const styles = StyleSheet.create({
   placeholderIcon: {
     marginBottom: 12,
     opacity: 0.5,
+  },
+  primary: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  primaryCentered: {
+    flex: 0,
+    overflow: 'hidden',
+  },
+  primaryCollapsed: {
+    flex: 0,
+    overflow: 'hidden',
+    width: 0,
   },
   placeholderText: {
     fontSize: 16,
