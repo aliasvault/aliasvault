@@ -3,6 +3,7 @@ import { StyleSheet, View, Platform, Switch } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
+import { IS_TWO_PANE_PLATFORM, useIsLargeScreen, useTwoPanePreference } from '@/hooks/useTwoPane';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
@@ -17,6 +18,8 @@ export default function AdvancedSettingsScreen(): React.ReactNode {
   const { t } = useTranslation();
   const [hideAppContents, setHideAppContents] = useState<boolean>(true);
   const [blockScreenshots, setBlockScreenshots] = useState<boolean>(true);
+  const [twoPaneLayout, setTwoPaneLayout] = useTwoPanePreference();
+  const isLargeScreen = useIsLargeScreen();
 
   useEffect(() => {
     /**
@@ -127,6 +130,26 @@ export default function AdvancedSettingsScreen(): React.ReactNode {
             </>
           )}
         </View>
+        {IS_TWO_PANE_PLATFORM && isLargeScreen && (
+          <>
+            <ThemedText style={styles.groupTitle}>{t('settings.appearance')}</ThemedText>
+            <View style={styles.optionContainer}>
+              <View style={styles.option}>
+                <View style={styles.optionRow}>
+                  <ThemedText style={styles.optionText}>{t('settings.twoColumnLayout')}</ThemedText>
+                  <Switch
+                    testID="two-column-layout-switch"
+                    value={twoPaneLayout ?? true}
+                    onValueChange={setTwoPaneLayout}
+                    trackColor={{ false: colors.accentBorder, true: colors.primary }}
+                    thumbColor={colors.primarySurfaceText}
+                  />
+                </View>
+                <ThemedText style={styles.optionDescription}>{t('settings.twoColumnLayoutDescription')}</ThemedText>
+              </View>
+            </View>
+          </>
+        )}
       </ThemedScrollView>
     </ThemedContainer>
   );
