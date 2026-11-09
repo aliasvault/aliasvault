@@ -45,8 +45,8 @@
     <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.1" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageVersion Include="SkiaSharp" Version="4.154.0" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.154.0" />
+    <PackageVersion Include="SkiaSharp" Version="4.155.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.155.0" />
     <PackageVersion Include="SmtpServer" Version="11.1.0" />
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
     <PackageVersion Include="srp" Version="1.0.7" />
