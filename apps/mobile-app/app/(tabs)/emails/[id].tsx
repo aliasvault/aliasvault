@@ -2,12 +2,13 @@ import { Buffer } from 'buffer';
 
 import { decryptEmail, decryptEmailAttachment, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, View, type StyleProp, type TextStyle, ActivityIndicator, Linking, Text, TextInput, Platform, Pressable, ScrollView, RefreshControl } from 'react-native';
+import ContextMenu, { type ContextMenuAction } from 'react-native-context-menu-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewNavigation } from 'react-native-webview';
 
@@ -33,6 +34,16 @@ import { useWebApi } from '@/context/WebApiContext';
 import type { Email } from '@aliasvault/models/webapi';
 
 /**
+ * Read-only text the user can partly select and copy (a selectable Text on iOS only copies all of it).
+ */
+function SelectableText({ text, style }: { text: string; style: StyleProp<TextStyle> }): React.ReactNode {
+  if (Platform.OS === 'ios') {
+    return <TextInput multiline editable={false} scrollEnabled={false} style={style} value={text} />;
+  }
+  return <Text selectable style={style}>{text}</Text>;
+}
+
+/**
  * Email details screen.
  */
 export default function EmailDetailsScreen() : React.ReactNode {
@@ -53,7 +64,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const [isLoading, setIsLoading] = useState(true);
   const [isMetadataMaximized, setMetadataMaximized] = useState(false);
   const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
-  const isDarkMode = useColorScheme() === 'dark';
   const [associatedItem, setAssociatedItem] = useState<DisplayItem | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -202,7 +212,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
         tempFile.delete();
       }
       tempFile.create();
-      tempFile.write(decryptedBytes);
+      await tempFile.write(decryptedBytes);
 
       try {
         await openAttachment({
@@ -245,7 +255,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
    */
   const handleOpenItem = () : void => {
     if (associatedItem) {
-      router.push(itemRoute(associatedItem));
+      router.push(itemRoute(associatedItem, associatedItem.Name));
     }
   };
 
@@ -270,15 +280,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
     source: t('emails.formatSource'),
   }), [t]);
 
-  const cycleViewMode = useCallback((): void => {
-    if (availableModes.length <= 1) {
-      return;
-    }
-    const idx = availableModes.indexOf(viewMode);
-    const next = availableModes[(idx + 1) % availableModes.length];
-    setViewMode(next);
-  }, [availableModes, viewMode]);
-
   const styles = StyleSheet.create({
     attachment: {
       alignItems: 'center',
@@ -297,7 +298,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       borderTopColor: colors.accentBorder,
       borderTopWidth: 1,
       gap: 4,
-      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 8,
+      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 8 : 8,
       paddingHorizontal: 12,
       paddingTop: 8,
     },
@@ -321,6 +322,9 @@ export default function EmailDetailsScreen() : React.ReactNode {
       height: 1,
       marginVertical: 2,
     },
+    dividerLast: {
+      marginBottom: 0,
+    },
     emptyText: {
       color: colors.textMuted,
       opacity: 0.7,
@@ -334,23 +338,13 @@ export default function EmailDetailsScreen() : React.ReactNode {
       padding: 10,
       paddingRight: 10,
     },
-    headerRightButtonDelete: {
-      paddingRight: Platform.OS === 'ios' ? 0 : 10,
-    },
-    headerRightContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-    },
-    headerRightFormatLabel: {
-      fontSize: 14,
-      fontWeight: '600',
-    },
     inlineError: {
       paddingHorizontal: 12,
       paddingVertical: 8,
     },
     metadataContainer: {
       padding: 2,
+      paddingBottom: 0,
     },
     metadataItem: {
       alignItems: 'center',
@@ -368,10 +362,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
       marginTop: 0,
       paddingBottom: 0,
       paddingTop: 0,
-    },
-    metadataIcon: {
-      paddingTop: 6,
-      width: 30,
     },
     metadataLabel: {
       paddingBottom: 4,
@@ -423,66 +413,50 @@ export default function EmailDetailsScreen() : React.ReactNode {
       backgroundColor: '#ffffff',
       flex: 1,
     },
-    subject: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: 'bold',
-      textAlign: 'center',
-    },
-    subjectContainer: {
-      paddingBottom: 8,
-      paddingLeft: 5,
-      paddingTop: 8,
-      width: '90%',
-    },
-    topBox: {
-      alignSelf: 'flex-start',
-      backgroundColor: colors.background,
-      flexDirection: 'row',
-      padding: 2,
-    },
     webView: {
       flex: 1,
     },
   });
 
-  // Set navigation options
+  // Header menu on Android. On iOS the same entries live in one native menu (the toolbar below), which the iPhone Duo bar rail picks up.
   useEffect(() => {
+    if (Platform.OS === 'ios') {
+      return;
+    }
+    // The Android menu has no checkmarks, so the active format is shown disabled.
+    const entries: Array<{ action: ContextMenuAction; key: 'details' | 'delete' | 'html' | 'plain' | 'source' }> = [
+      { action: { title: isMetadataMaximized ? t('common.hideDetails') : t('common.showDetails') }, key: 'details' },
+      ...(availableModes.length > 1 ? availableModes.map(mode => ({ action: { title: formatLabels[mode], disabled: viewMode === mode }, key: mode })) : []),
+      { action: { title: t('common.delete'), destructive: true }, key: 'delete' },
+    ];
+
+    /**
+     * Runs the header menu entry at the given index.
+     */
+    const handleMenuPress = (index: number): void => {
+      const key = entries[index]?.key;
+      if (key === 'details') {
+        setMetadataMaximized(prev => !prev);
+      } else if (key === 'delete') {
+        handleDelete();
+      } else if (key) {
+        setViewMode(key);
+      }
+    };
+
     navigation.setOptions({
       /**
        * Header right button.
        */
       headerRight: () => (
-        <View style={styles.headerRightContainer}>
-          {availableModes.length > 1 && (
-            <RobustPressable
-              onPress={cycleViewMode}
-              style={styles.headerRightButton}
-              accessibilityLabel={t('emails.formatSwitchTitle')}
-              pressRetentionOffset={5}
-              hitSlop={5}
-            >
-              <Text style={[styles.headerRightFormatLabel, { color: colors.primary }]}>
-                {formatLabels[viewMode]}
-              </Text>
-            </RobustPressable>
-          )}
-          <RobustPressable
-            onPress={handleDelete}
-            style={[styles.headerRightButton, styles.headerRightButtonDelete]}
-            pressRetentionOffset={5}
-            hitSlop={5}
-          >
-            <Ionicons
-              name="trash-outline"
-              size={Platform.OS === 'android' ? 24 : 22}
-              color="#FF0000"
-            />
-          </RobustPressable>
-        </View>
+        <ContextMenu actions={entries.map(entry => entry.action)} onPress={(event) => handleMenuPress(event.nativeEvent.index)} dropdownMenuMode>
+          <Pressable onPress={() => undefined} style={styles.headerRightButton} android_ripple={{ color: colors.accentBorder, borderless: true, radius: 22 }} accessibilityRole="button" accessibilityLabel={t('common.moreOptions')}>
+            <MaterialIcons name="more-vert" size={24} color={colors.primary} />
+          </Pressable>
+        </ContextMenu>
       ),
     });
-  }, [navigation, handleDelete, colors.primary, styles.headerRightButton, styles.headerRightButtonDelete, styles.headerRightContainer, styles.headerRightFormatLabel, availableModes, cycleViewMode, formatLabels, viewMode, t]);
+  }, [navigation, handleDelete, colors.primary, colors.accentBorder, styles.headerRightButton, availableModes, formatLabels, viewMode, isMetadataMaximized, t]);
 
   if (isLoading) {
     return (
@@ -517,84 +491,61 @@ export default function EmailDetailsScreen() : React.ReactNode {
     );
   }
 
+  // The details (subject, date, from, to) are hidden until opened from the header; the subject is the screen title.
   let metadataView = null;
-  if (!isMetadataMaximized) {
+  if (isMetadataMaximized) {
     metadataView = (
-      <RobustPressable onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
-        <View style={styles.topBox}>
-          <View style={styles.subjectContainer}>
-            <ThemedText style={styles.subject}>{email.subject}</ThemedText>
-          </View>
-          <View style={styles.metadataIcon}>
-            <Ionicons name="reorder-four-outline" size={22} color={isDarkMode ? '#eee' : '#000'} />
+      <View style={styles.metadataContainer}>
+        <View style={styles.metadataRow}>
+          <View style={styles.metadataValue}>
+            <SelectableText style={[styles.metadataText, styles.metadataSubject]} text={email.subject} />
+            {associatedItem && (
+              <View>
+                <RobustPressable
+                  onPress={handleOpenItem}
+                  style={styles.metadataItem}
+                >
+                  <IconSymbol size={16} name={IconSymbolName.Key} color={colors.primary} style={styles.metadataItemIcon} />
+                  <ThemedText style={[styles.metadataText, { color: colors.primary }]}>
+                    {associatedItem.Name}
+                  </ThemedText>
+                </RobustPressable>
+              </View>
+            )}
           </View>
         </View>
-      </RobustPressable>
-    );
-  } else {
-    metadataView = (
-      <RobustPressable onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
-        <View style={styles.metadataContainer}>
-          <View style={styles.metadataRow}>
-            <View style={styles.metadataValue}>
-              <ThemedText style={[styles.metadataText, styles.metadataSubject]}>{email.subject}</ThemedText>
-              {associatedItem && (
-                <View>
-                  <RobustPressable
-                    onPress={handleOpenItem}
-                    style={styles.metadataItem}
-                  >
-                    <IconSymbol size={16} name={IconSymbolName.Key} color={colors.primary} style={styles.metadataItemIcon} />
-                    <ThemedText style={[styles.metadataText, { color: colors.primary }]}>
-                      {associatedItem.Name}
-                    </ThemedText>
-                  </RobustPressable>
-                </View>
-              )}
-            </View>
-            <View style={styles.metadataIcon}>
-              <Ionicons name="chevron-up-outline" size={22} color={isDarkMode ? '#eee' : '#000'} />
-            </View>
-          </View>
-          <View style={styles.divider} />
+        <View style={styles.divider} />
 
-          <View style={styles.metadataRow}>
-            <View style={styles.metadataLabel}>
-              <ThemedText style={styles.metadataHeading}>{t('emails.date')}</ThemedText>
-            </View>
-            <View style={styles.metadataValue}>
-              <ThemedText style={styles.metadataText}>
-                {new Date(email.dateSystem).toLocaleString()}
-              </ThemedText>
-            </View>
+        <View style={styles.metadataRow}>
+          <View style={styles.metadataLabel}>
+            <ThemedText style={styles.metadataHeading}>{t('emails.date')}</ThemedText>
           </View>
-          <View style={styles.divider} />
-
-          <View style={styles.metadataRow}>
-            <View style={styles.metadataLabel}>
-              <ThemedText style={styles.metadataHeading}>{t('emails.from')}</ThemedText>
-            </View>
-            <View style={styles.metadataValue}>
-              <ThemedText style={styles.metadataText}>
-                {email.fromDisplay} ({email.fromLocal}@{email.fromDomain})
-              </ThemedText>
-            </View>
+          <View style={styles.metadataValue}>
+            <SelectableText style={styles.metadataText} text={new Date(email.dateSystem).toLocaleString()} />
           </View>
-          <View style={styles.divider} />
-
-          <View style={styles.metadataRow}>
-            <View style={styles.metadataLabel}>
-              <ThemedText style={styles.metadataHeading}>{t('emails.to')}</ThemedText>
-            </View>
-            <View style={styles.metadataValue}>
-              <ThemedText style={styles.metadataText}>
-                {email.toLocal}@{email.toDomain}
-              </ThemedText>
-            </View>
-          </View>
-          <View style={styles.divider} />
         </View>
-      </RobustPressable>
+        <View style={styles.divider} />
+
+        <View style={styles.metadataRow}>
+          <View style={styles.metadataLabel}>
+            <ThemedText style={styles.metadataHeading}>{t('emails.from')}</ThemedText>
+          </View>
+          <View style={styles.metadataValue}>
+            <SelectableText style={styles.metadataText} text={`${email.fromDisplay} (${email.fromLocal}@${email.fromDomain})`} />
+          </View>
+        </View>
+        <View style={styles.divider} />
+
+        <View style={styles.metadataRow}>
+          <View style={styles.metadataLabel}>
+            <ThemedText style={styles.metadataHeading}>{t('emails.to')}</ThemedText>
+          </View>
+          <View style={styles.metadataValue}>
+            <SelectableText style={styles.metadataText} text={`${email.toLocal}@${email.toDomain}`} />
+          </View>
+        </View>
+        <View style={[styles.divider, styles.dividerLast]} />
+      </View>
     );
   }
 
@@ -641,7 +592,26 @@ export default function EmailDetailsScreen() : React.ReactNode {
   return (
     <>
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ title: t('emails.emailDetails') }} />
+        <Stack.Screen options={{ title: email.subject || email.fromDisplay || t('emails.emailDetails') }} />
+        {Platform.OS === 'ios' && (
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Menu icon="ellipsis" accessibilityLabel={t('emails.emailDetails')}>
+              <Stack.Toolbar.Menu inline>
+                <Stack.Toolbar.MenuAction icon="info.circle" isOn={isMetadataMaximized} onPress={() => setMetadataMaximized(prev => !prev)}>{t('common.showDetails')}</Stack.Toolbar.MenuAction>
+              </Stack.Toolbar.Menu>
+              {availableModes.length > 1 && (
+                <Stack.Toolbar.Menu inline title={t('emails.formatSwitchTitle')}>
+                  {availableModes.map((mode) => (
+                    <Stack.Toolbar.MenuAction key={mode} isOn={viewMode === mode} onPress={() => setViewMode(mode)}>{formatLabels[mode]}</Stack.Toolbar.MenuAction>
+                  ))}
+                </Stack.Toolbar.Menu>
+              )}
+              <Stack.Toolbar.Menu inline>
+                <Stack.Toolbar.MenuAction icon="trash" destructive onPress={handleDelete}>{t('common.delete')}</Stack.Toolbar.MenuAction>
+              </Stack.Toolbar.Menu>
+            </Stack.Toolbar.Menu>
+          </Stack.Toolbar>
+        )}
         {metadataView}
         {error && (
           <View style={styles.inlineError}>
