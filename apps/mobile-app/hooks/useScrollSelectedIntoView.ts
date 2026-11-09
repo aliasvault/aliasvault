@@ -62,6 +62,9 @@ export function useScrollSelectedIntoFlatList<Row>(listRef: RefObject<Scrollable
   const targetDoneRef = useRef(false);
   const retriesRef = useRef(0);
   const listHeaderHeightRef = useRef(0);
+  const isLoadedRef = useRef(isLoaded);
+  isLoadedRef.current = isLoaded;
+  const scrolledRef = useRef(false);
   const [targetKey, setTargetKey] = useState<string | null>(null);
   const [isSettling, setIsSettling] = useState(false);
 
@@ -81,23 +84,39 @@ export function useScrollSelectedIntoFlatList<Row>(listRef: RefObject<Scrollable
 
   const scrollToIndex = useCallback((index: number, animated: boolean): void => {
     retriesRef.current = 0;
-    listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated });
+    if (isLoadedRef.current) {
+      listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated });
+    }
   }, [listRef]);
 
   useEffect(() => {
-    if (targetIndex <= 0) {
+    if (targetIndex <= 0 || !isLoaded || scrolledRef.current) {
       return;
     }
     // While the rows above settle, keep the visible rows in place instead of letting their real heights shift them.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- toggles a list prop for the duration of the scroll
     setIsSettling(true);
-    const frame = requestAnimationFrame(() => scrollToIndex(targetIndex, false));
-    const settle = setTimeout(() => setIsSettling(false), SETTLE_DURATION);
+    const frame = requestAnimationFrame(() => {
+      if (isLoadedRef.current) {
+        scrolledRef.current = true;
+        scrollToIndex(targetIndex, false);
+      }
+    });
+    let isSettled = false;
+    const settle = setTimeout(() => {
+      isSettled = true;
+      setIsSettling(false);
+    }, SETTLE_DURATION);
     return (): void => {
       cancelAnimationFrame(frame);
       clearTimeout(settle);
+      setIsSettling(false);
+      // A reload before the rows settled shows placeholder rows, which drops the scroll position: scroll again once loaded.
+      if (!isSettled) {
+        scrolledRef.current = false;
+      }
     };
-  }, [targetIndex, scrollToIndex]);
+  }, [targetIndex, isLoaded, scrollToIndex]);
 
   const onScrollToIndexFailed = useCallback(({ index, averageItemLength }: { index: number; averageItemLength: number }): void => {
     listRef.current?.scrollToOffset({ offset: listHeaderHeightRef.current + index * averageItemLength, animated: false });
@@ -105,7 +124,11 @@ export function useScrollSelectedIntoFlatList<Row>(listRef: RefObject<Scrollable
       return;
     }
     retriesRef.current++;
-    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: false }), 50);
+    setTimeout(() => {
+      if (isLoadedRef.current) {
+        listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: false });
+      }
+    }, 50);
   }, [listRef]);
 
   const onListHeaderLayout = useCallback((event: LayoutChangeEvent): void => {

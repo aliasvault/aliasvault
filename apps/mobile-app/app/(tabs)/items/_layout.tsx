@@ -114,7 +114,9 @@ export default function ItemsLayout(): React.ReactNode {
           <Stack.Screen
             name="email/[id]"
             options={{
-              title: t('items.emailPreview'),
+              title: t('emails.emailDetails'),
+              ...defaultHeaderOptions,
+              headerTransparent: false,
             }}
           />
           <Stack.Screen

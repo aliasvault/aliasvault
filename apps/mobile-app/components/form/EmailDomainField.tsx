@@ -261,7 +261,6 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       flexDirection: 'row',
       justifyContent: 'center',
       paddingHorizontal: 12,
-      paddingVertical: 11,
     },
     domainButtonNoRoundRight: {
       borderBottomRightRadius: 0,
@@ -277,7 +276,6 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       borderWidth: 1,
       justifyContent: 'center',
       paddingHorizontal: 10,
-      paddingVertical: 11,
     },
     domainButtonText: {
       color: colors.text,
@@ -337,7 +335,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       marginTop: 4,
     },
     inputContainer: {
-      alignItems: 'center',
+      alignItems: 'stretch',
       flexDirection: 'row',
     },
     label: {
