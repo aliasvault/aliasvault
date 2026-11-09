@@ -17,6 +17,9 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
  */
 const HEADER_BAR_HEIGHT = 44;
 
+/** Whether the tab root screens get a title bar; not on iPad, whose tab bar sits at the top and names the screen. */
+const HAS_TITLE_BAR = !(Platform.OS === 'ios' && Platform.isPad);
+
 /**
  * Height of the collapsible header (status bar included) on iOS, 0 on Android where the native header is used.
  */
@@ -25,7 +28,7 @@ export function useCollapsibleHeaderHeight(): number {
   if (Platform.OS !== 'ios') {
     return 0;
   }
-  return insets.top + HEADER_BAR_HEIGHT;
+  return insets.top + (HAS_TITLE_BAR ? HEADER_BAR_HEIGHT : 0);
 }
 
 /**
@@ -101,6 +104,11 @@ export function CollapsibleHeader({
   // For Android, let the native header handle it.
   if (Platform.OS === 'android') {
     return null;
+  }
+
+  // On iPad the tab bar at the top already names the screen; a bar would only add an empty strip behind it on scroll.
+  if (!HAS_TITLE_BAR) {
+    return showNavigationHeader && isStackRoute ? <Stack.Screen options={{ title, headerShown: false }} /> : null;
   }
 
   // Calculate header opacity and transforms based on scroll

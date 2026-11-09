@@ -2,6 +2,9 @@ import { BlurView } from 'expo-blur';
 import { Platform, StyleSheet, useColorScheme, View } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useTwoPane } from '@/hooks/useTwoPane';
+
+const iosMajorVersion = Platform.OS === 'ios' ? parseInt(String(Platform.Version), 10) : 0;
 
 /**
  * ThemedHeader component that provides consistent header styling across the app.
@@ -11,6 +14,7 @@ import { useColors } from '@/hooks/useColorScheme';
 export function ThemedHeader(): React.ReactNode {
   const colorScheme = useColorScheme();
   const colors = useColors();
+  const isDetailPane = useTwoPane().pane === 'secondary';
 
   const styles = StyleSheet.create({
     header: {
@@ -25,6 +29,10 @@ export function ThemedHeader(): React.ReactNode {
       right: 0,
     },
   });
+
+  if (isDetailPane) {
+    return <View style={[styles.header, { backgroundColor: colors.background }]} />;
+  }
 
   return (
     <View style={styles.header}>
@@ -43,7 +51,6 @@ export function ThemedHeader(): React.ReactNode {
  * This provides consistent header styling across the app.
  * @returns {Object} The default header options
  */
-const iosMajorVersion = Platform.OS === 'ios' ? parseInt(String(Platform.Version), 10) : 0;
 
 export const defaultHeaderOptions = {
   /**
