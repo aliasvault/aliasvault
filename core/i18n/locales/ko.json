@@ -329,6 +329,7 @@
     "save": "저장",
     "saving": "저장 중...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "라벨 수정"
     },
     "emailLoadError": "이메일을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    "emailPreview": "이메일 미리보기",
     "emailUnexpectedError": "이메일을 불러오는 중 예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
     "emptyFolderHint": "이 폴더가 비어 있습니다. 이 폴더로 항목을 이동하려면 항목을 수정한 후 이름 필드의 폴더 아이콘을 누르세요.",
     "errorLoadingItems": "항목 불러오기 오류",
@@ -1532,6 +1532,8 @@
     "theme": "테마",
     "totpAutofill": "2단계 인증 코드 자동 완성",
     "totpAutofillDescription": "2단계 인증 코드 필드가 감지되면 자동 완성 팝업을 표시합니다",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "PIN 확인",
       "confirmPinDescription": "확인을 위해 PIN을 다시 입력하세요",
