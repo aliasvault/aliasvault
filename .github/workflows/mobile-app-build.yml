@@ -143,7 +143,7 @@ jobs:
   build-ios-signed:
     needs: setup
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_ios_signed == 'true'
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

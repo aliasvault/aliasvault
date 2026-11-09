@@ -1,5 +1,6 @@
 #import "RCTNativeVaultManager.h"
 #import <ExpoModulesCore-Swift.h>
+#import <Expo-Swift.h>
 #import "AliasVault-Swift.h"
 
 @interface RCTNativeVaultManager () <NativeVaultManagerSpec>

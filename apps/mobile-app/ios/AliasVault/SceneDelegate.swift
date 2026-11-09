@@ -1,76 +1,33 @@
 import UIKit
-import React
+internal import Expo
 import VaultUtils
 
-/// UIKit requires the UIScene lifecycle for apps linked against the iOS 27 SDK, otherwise the app will crash on boot with iOS 27+ while it still works with iOS 26.
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-  var window: UIWindow?
+/// Scene delegate required by the iOS 27 SDK. The Expo base class creates the window, starts React Native and
+/// forwards URL, user activity and life cycle events to the app delegate and its subscribers.
+internal class SceneDelegate: ExpoAppSceneDelegate {
   private var screenCaptureProtection: ScreenCaptureProtection?
 
-  func scene(
+  override func scene(
     _ scene: UIScene,
     willConnectTo session: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
-    guard let windowScene = scene as? UIWindowScene else { return }
-    guard let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-          let factory = appDelegate.reactNativeFactory else {
-      fatalError("SceneDelegate: React Native factory is not initialized")
+    super.scene(scene, willConnectTo: session, options: connectionOptions)
+
+    if let windowScene = scene as? UIWindowScene {
+      screenCaptureProtection = ScreenCaptureProtection(scene: windowScene)
     }
-
-    let window = UIWindow(windowScene: windowScene)
-    self.window = window
-    appDelegate.window = window
-
-    // Under the scene lifecycle, URLs and user activities that launched the app arrive here
-    // instead of in didFinishLaunchingWithOptions. Forward them so Linking.getInitialURL() works.
-    var launchOptions = appDelegate.launchOptions ?? [:]
-    if let url = connectionOptions.urlContexts.first?.url {
-      launchOptions[.url] = url
-    }
-    if let activity = connectionOptions.userActivities.first {
-      launchOptions[.userActivityDictionary] = ["UIApplicationLaunchOptionsUserActivityKey": activity]
-    }
-
-    factory.startReactNative(
-      withModuleName: "main",
-      in: window,
-      launchOptions: launchOptions
-    )
-
-    screenCaptureProtection = ScreenCaptureProtection(scene: windowScene)
   }
 
   // MARK: - Screen capture protection
 
-  func sceneDidEnterBackground(_ scene: UIScene) {
+  override func sceneDidEnterBackground(_ scene: UIScene) {
+    super.sceneDidEnterBackground(scene)
     screenCaptureProtection?.sceneDidEnterBackground()
   }
 
-  func sceneWillEnterForeground(_ scene: UIScene) {
+  override func sceneWillEnterForeground(_ scene: UIScene) {
+    super.sceneWillEnterForeground(scene)
     screenCaptureProtection?.sceneWillEnterForeground()
-  }
-
-  // MARK: - Linking API
-
-  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    for context in URLContexts {
-      var options: [UIApplication.OpenURLOptionsKey: Any] = [
-        .openInPlace: context.options.openInPlace
-      ]
-      if let sourceApplication = context.options.sourceApplication {
-        options[.sourceApplication] = sourceApplication
-      }
-      if let annotation = context.options.annotation {
-        options[.annotation] = annotation
-      }
-      _ = RCTLinkingManager.application(UIApplication.shared, open: context.url, options: options)
-    }
-  }
-
-  // MARK: - Universal Links
-
-  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-    _ = RCTLinkingManager.application(UIApplication.shared, continue: userActivity) { _ in }
   }
 }
