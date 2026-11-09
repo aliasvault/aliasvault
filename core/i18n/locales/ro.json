@@ -329,6 +329,7 @@
     "save": "Salvează",
     "saving": "Se salvează...",
     "select": "Selectează",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selectate",
       "disable": "Dezactivează selecția",
@@ -694,7 +695,6 @@
       "editLabel": "Editează eticheta"
     },
     "emailLoadError": "A apărut o eroare la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
-    "emailPreview": "Previzualizare E-mail",
     "emailUnexpectedError": "A apărut o eroare neașteptată la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
     "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și apasă pe pictograma folderului din câmpul de nume.",
     "errorLoadingItems": "Eroare la încărcarea elementelor",
@@ -1532,6 +1532,8 @@
     "theme": "Temă",
     "totpAutofill": "Completează automat codul 2FA",
     "totpAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile pentru codul 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Confirmă PIN",
       "confirmPinDescription": "Introdu PIN-ul din nou pentru confirmare",
