@@ -370,6 +370,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         ListEmptyComponent={(
           <View style={styles.emptyState}>
             <ThemedText style={styles.emptyText}>
