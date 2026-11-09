@@ -329,6 +329,7 @@
     "save": "Tallenna",
     "saving": "Saving...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "Edit label"
     },
     "emailLoadError": "Sähköpostien lataamisessa tapahtui virhe. Yritä myöhemmin uudelleen.",
-    "emailPreview": "Sähköpostin esikatselu",
     "emailUnexpectedError": "Odottamaton virhe sähköpostien lataamisen aikana. Yritä myöhemmin uudelleen.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Virhe ladattaessa tietoja",
@@ -1532,6 +1532,8 @@
     "theme": "Teema",
     "totpAutofill": "2FA code autofill",
     "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Vahvista PIN",
       "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
