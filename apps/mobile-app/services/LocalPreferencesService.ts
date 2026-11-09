@@ -115,7 +115,7 @@ export const LocalPreferencesService = {
   },
 
   /**
-   * Get the two-column layout preference of a foldable iPhone.
+   * Get the two-pane layout preference of a large-screen device.
    * @returns Whether the list and the selected item show side by side on a wide window. Defaults to true.
    */
   async getTwoPaneLayout(): Promise<boolean> {
@@ -124,7 +124,7 @@ export const LocalPreferencesService = {
   },
 
   /**
-   * Set the two-column layout preference of a foldable iPhone.
+   * Set the two-pane layout preference of a large-screen device.
    */
   async setTwoPaneLayout(enabled: boolean): Promise<void> {
     await AsyncStorage.setItem(KEYS.TWO_PANE_LAYOUT, enabled.toString());

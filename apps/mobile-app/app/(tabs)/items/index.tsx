@@ -26,7 +26,7 @@ import { usePaneRouter } from '@/hooks/usePaneRouter';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useRailSideBleed } from '@/hooks/useRailSideFlush';
 import { useScreenParams } from '@/hooks/useScreenParams';
-import { useScrollSelectedRowIntoView } from '@/hooks/useScrollSelectedRowIntoView';
+import { useScrollSelectedIntoFlatList } from '@/hooks/useScrollSelectedIntoView';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
 import { useSetScreenOptions } from '@/hooks/useTwoPane';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -446,7 +446,7 @@ export function ItemsScreen(): React.ReactNode {
     setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
-  const scrollSelected = useScrollSelectedRowIntoView(flatListRef, { rows: sortedItems, isLoaded: hasLoadedItems && !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
+  const scrollSelected = useScrollSelectedIntoFlatList(flatListRef, { rows: sortedItems, isLoaded: hasLoadedItems && !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
   const { scrollToIndex } = scrollSelected;
 
   /**

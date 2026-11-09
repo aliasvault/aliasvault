@@ -3,7 +3,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 /*
- * The two-column preference of a foldable iPhone, shared by every tab layout and the setting that changes it. It is
+ * The two-pane layout preference of a large-screen device, shared by every tab layout and the setting that changes it. It is
  * undefined until the stored value has loaded, which the first subscriber starts.
  */
 let preference: boolean | undefined;
@@ -39,7 +39,7 @@ function subscribe(listener: () => void): () => void {
 }
 
 /**
- * The two-column preference of a foldable iPhone, undefined until it has loaded, and its setter, which stores it.
+ * The two-pane layout preference, undefined until it has loaded, and its setter, which stores it.
  */
 export function useTwoPanePreference(): [boolean | undefined, (enabled: boolean) => void] {
   const enabled = useSyncExternalStore(subscribe, () => preference);

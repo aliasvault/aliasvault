@@ -62,24 +62,23 @@ export function useSetScreenOptions(): (options: ScreenOptions) => void {
   }, [navigation, isStackRoute]);
 }
 
+/** Whether this platform has the two-pane layout; Android does not yet. */
+export const IS_TWO_PANE_PLATFORM = Platform.OS === 'ios';
+
 /**
- * Whether this iPhone can show two panes: an unfolded foldable.
+ * Whether the window is large-screen sized (shortest side at least 600pt), e.g. an iPad or an unfolded iPhone Duo.
  */
-export function useIsFoldableIPhone(): boolean {
+export function useIsLargeScreen(): boolean {
   const { width, height } = useWindowDimensions();
-  return Platform.OS === 'ios' && !Platform.isPad && Math.min(width, height) >= TWO_PANE_MIN_WIDTH;
+  return Math.min(width, height) >= TWO_PANE_MIN_WIDTH;
 }
 
 /**
- * Whether the two-pane layout is on for this device: every iPad, a foldable iPhone by its preference.
- * Undefined while the preference loads.
+ * Whether the two-pane layout is on for this device, by its preference. Undefined while the preference loads.
  */
 export function useIsTwoPaneEnabled(): boolean | undefined {
   const [preference] = useTwoPanePreference();
-  if (Platform.OS !== 'ios') {
-    return false;
-  }
-  return Platform.isPad || preference;
+  return IS_TWO_PANE_PLATFORM ? preference : false;
 }
 
 /**

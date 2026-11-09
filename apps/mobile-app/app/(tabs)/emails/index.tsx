@@ -1,10 +1,10 @@
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { deleteEmails } from '@aliasvault/client/email/EmailDeletion';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from 'expo-router';
+import { useNavigation, type Href } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Platform, View, RefreshControl, Animated, TouchableOpacity, ActivityIndicator, type ScrollViewInstance } from 'react-native';
+import { StyleSheet, Platform, View, RefreshControl, Animated, TouchableOpacity, ActivityIndicator, type FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 
@@ -16,7 +16,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useRailSideBleed } from '@/hooks/useRailSideFlush';
-import { useScrollSelectedIntoView } from '@/hooks/useScrollSelectedIntoView';
+import { useScrollSelectedIntoFlatList } from '@/hooks/useScrollSelectedIntoView';
 import { isPathSelected } from '@/hooks/useTwoPane';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -45,6 +45,16 @@ const emailIdOf = (email: MailboxEmail): number => email.id;
  */
 const emailKey = (id: number): string => String(id);
 
+/**
+ * The list key of an email.
+ */
+const emailRowKey = (email: MailboxEmail): string => emailKey(email.id);
+
+/**
+ * The detail route of an email.
+ */
+const emailRoute = (email: MailboxEmail): Href => ({ pathname: '/(tabs)/emails/[id]', params: { id: String(email.id) } });
+
 /** Most extra pages the two-pane list loads to find the email shown next to it. */
 const MAX_PAGES_TO_FIND_SELECTED = 10;
 
@@ -59,7 +69,7 @@ export function EmailsScreen() : React.ReactNode {
   const navigation = useNavigation();
   const { syncVault } = useVaultSync();
   const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
-  const scrollViewRef = useRef<ScrollViewInstance>(null);
+  const flatListRef = useRef<FlatList<MailboxEmail>>(null);
   const [error, setError] = useState<string | null>(null);
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
@@ -181,7 +191,7 @@ export function EmailsScreen() : React.ReactNode {
     const sub = emitter.addListener('tabPress', (routeName: string) => {
       if (routeName === 'emails' && navigation.isFocused()) {
         // Scroll to top
-        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
       }
     });
 
@@ -268,27 +278,25 @@ export function EmailsScreen() : React.ReactNode {
   const selectFromMenu = useCallback((entry: MailboxEmail): void => enterSelection(entry), [enterSelection]);
 
   // When the primary pane appears (the phone is unfolded), scroll the email shown next to it into view once.
-  const scrollIntoView = useScrollSelectedIntoView(scrollViewRef);
-  const scrollTargetPath = scrollIntoView.targetPath;
+  const [isTargetSearchDone, setIsTargetSearchDone] = useState(false);
+  const scrollSelected = useScrollSelectedIntoFlatList(flatListRef, { rows: emails, isLoaded: !isLoading && isTargetSearchDone, rowHref: emailRoute, rowKey: emailRowKey });
+  const scrollTargetPath = scrollSelected.targetPath;
 
   // The email may sit on a later page than the first: load pages until it is in the list (bounded, it may be gone).
   const targetPagesLoadedRef = useRef(0);
-  const targetSearchDoneRef = useRef(false);
   useEffect(() => {
-    if (!scrollTargetPath || targetSearchDoneRef.current || isLoading || isLoadingMore) {
+    if (!scrollTargetPath || isTargetSearchDone || isLoading || isLoadingMore) {
       return;
     }
-    if (emails.some(email => isPathSelected(scrollTargetPath, { pathname: '/(tabs)/emails/[id]', params: { id: String(email.id) } }))) {
-      targetSearchDoneRef.current = true;
-      return;
-    }
-    if (totalRecords <= emails.length || targetPagesLoadedRef.current >= MAX_PAGES_TO_FIND_SELECTED) {
-      targetSearchDoneRef.current = true;
+    const isInList = emails.some(email => isPathSelected(scrollTargetPath, emailRoute(email)));
+    if (isInList || totalRecords <= emails.length || targetPagesLoadedRef.current >= MAX_PAGES_TO_FIND_SELECTED) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- ends the search once the email is in the list or cannot be
+      setIsTargetSearchDone(true);
       return;
     }
     targetPagesLoadedRef.current++;
     loadMoreEmails();
-  }, [scrollTargetPath, isLoading, isLoadingMore, emails, totalRecords, loadMoreEmails]);
+  }, [scrollTargetPath, isTargetSearchDone, isLoading, isLoadingMore, emails, totalRecords, loadMoreEmails]);
 
   /**
    * Header menu button on Android; iOS shows it next to the title.
@@ -385,10 +393,33 @@ export function EmailsScreen() : React.ReactNode {
    */
   const hasMoreEmails = totalRecords > emails.length;
 
+  const showsEmails = !isLoading && !dbContext.isOffline;
+
   /**
-   * Render the content.
+   * The list header: the title, and an error, which sits inside the list so pull to refresh keeps working.
    */
-  const renderContent = () : React.ReactNode => {
+  const listHeader = (
+    <View onLayout={scrollSelected.onListHeaderLayout}>
+      <TitleContainer
+        title={t('emails.title')}
+        right={(
+          <TouchableOpacity style={{ padding: 8 }} onPress={() => setShowListMenu(prev => !prev)} accessibilityLabel={t('common.moreOptions')}>
+            <MaterialIcons name="more-horiz" size={24} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+      />
+      {showsEmails && error && (
+        <View style={styles.errorContainer}>
+          <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
+        </View>
+      )}
+    </View>
+  );
+
+  /**
+   * What the list shows without emails: the loading skeleton, the offline message or the empty message.
+   */
+  const renderEmpty = (): React.ReactElement | null => {
     if (isLoading) {
       return (
         <View style={styles.loadingContainer}>
@@ -396,7 +427,6 @@ export function EmailsScreen() : React.ReactNode {
         </View>
       );
     }
-
     if (dbContext.isOffline) {
       return (
         <View style={styles.centerContainer}>
@@ -404,75 +434,42 @@ export function EmailsScreen() : React.ReactNode {
         </View>
       );
     }
-
-    // The error sits inside the scroll view so pull to refresh keeps working.
-    const errorView = error ? (
-      <View style={styles.errorContainer}>
-        <ThemedText style={styles.errorText}>{t('common.error')}: {error}</ThemedText>
-      </View>
-    ) : null;
-
-    if (emails.length === 0) {
-      return (
-        <>
-          {errorView}
-          {!error && (
-            <View style={styles.centerContainer}>
-              <ThemedText style={styles.emptyText}>
-                {t('emails.emptyMessage')}
-              </ThemedText>
-            </View>
-          )}
-        </>
-      );
+    if (error) {
+      return null;
     }
-
     return (
-      <>
-        {errorView}
-        {emails.map((email) => {
-          const href = { pathname: '/(tabs)/emails/[id]', params: { id: String(email.id) } } as const;
-          return (
-            <View key={email.id} onLayout={scrollIntoView.onLayoutFor(href)}>
-              <EmailCard
-                email={email}
-                selectionMode={selection.isActive}
-                isSelected={selection.isSelected(email)}
-                onToggleSelect={toggleEmail}
-                onSelectFromMenu={selectFromMenu}
-                onDelete={deleteSingleEmail}
-              />
-            </View>
-          );
-        })}
-
-        {/* Load More Button */}
-        {hasMoreEmails && (
-          <TouchableOpacity
-            style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
-            onPress={loadMoreEmails}
-            disabled={isLoadingMore}
-            activeOpacity={0.7}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {isLoadingMore && (
-                <ActivityIndicator
-                  size="small"
-                  color="#FFFFFF"
-                  style={styles.loadMoreSpinner}
-                />
-              )}
-              <ThemedText style={styles.loadMoreButtonText}>
-                {isLoadingMore
-                  ? t('common.loading')
-                  : t('emails.loadMore', { count: totalRecords - emails.length })}
-              </ThemedText>
-            </View>
-          </TouchableOpacity>
-        )}
-      </>
+      <View style={styles.centerContainer}>
+        <ThemedText style={styles.emptyText}>{t('emails.emptyMessage')}</ThemedText>
+      </View>
     );
   };
+
+  /**
+   * The load more button below the emails.
+   */
+  const loadMoreButton = showsEmails && hasMoreEmails ? (
+    <TouchableOpacity
+      style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
+      onPress={loadMoreEmails}
+      disabled={isLoadingMore}
+      activeOpacity={0.7}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {isLoadingMore && (
+          <ActivityIndicator
+            size="small"
+            color="#FFFFFF"
+            style={styles.loadMoreSpinner}
+          />
+        )}
+        <ThemedText style={styles.loadMoreButtonText}>
+          {isLoadingMore
+            ? t('common.loading')
+            : t('emails.loadMore', { count: totalRecords - emails.length })}
+        </ThemedText>
+      </View>
+    </TouchableOpacity>
+  ) : null;
 
   return (
     <ThemedContainer style={styles.container} testID="emails-screen">
@@ -481,13 +478,31 @@ export function EmailsScreen() : React.ReactNode {
         scroll={headerScroll}
         showNavigationHeader={true}
       />
-      <Animated.ScrollView
-        ref={scrollViewRef}
+      <Animated.FlatList
+        ref={flatListRef}
+        key={scrollSelected.listKey}
+        data={showsEmails ? emails : []}
+        keyExtractor={emailRowKey}
+        renderItem={({ item: email }) => (
+          <EmailCard
+            email={email}
+            selectionMode={selection.isActive}
+            isSelected={selection.isSelected(email)}
+            onToggleSelect={toggleEmail}
+            onSelectFromMenu={selectFromMenu}
+            onDelete={deleteSingleEmail}
+          />
+        )}
+        {...scrollSelected.listProps}
+        removeClippedSubviews={false}
         onScroll={onHeaderScroll}
         scrollEventThrottle={16}
         style={railSideBleed.style}
         contentContainerStyle={[styles.contentContainer, railSideBleed.contentContainerStyle]}
         alwaysBounceVertical={true}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={renderEmpty() ?? undefined}
+        ListFooterComponent={loadMoreButton ?? undefined}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -497,17 +512,7 @@ export function EmailsScreen() : React.ReactNode {
             progressViewOffset={Platform.OS === 'ios' ? insets.top : undefined}
           />
         }
-      >
-        <TitleContainer
-          title={t('emails.title')}
-          right={(
-            <TouchableOpacity style={{ padding: 8 }} onPress={() => setShowListMenu(prev => !prev)} accessibilityLabel={t('common.moreOptions')}>
-              <MaterialIcons name="more-horiz" size={24} color={colors.textMuted} />
-            </TouchableOpacity>
-          )}
-        />
-        {renderContent()}
-      </Animated.ScrollView>
+      />
       {selection.isActive && (
         <SelectionBar count={selection.selection.length} visibleCount={emails.length} onSelectAll={selection.selectAll} onClose={exitSelection}>
           <SelectionBarButton icon="delete" label={t('common.delete')} onPress={deleteSelectedEmails} disabled={selection.selection.length === 0} danger testID="selection-delete" />

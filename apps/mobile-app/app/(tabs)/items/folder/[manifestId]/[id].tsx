@@ -29,7 +29,7 @@ import { usePaneRouter } from '@/hooks/usePaneRouter';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useScreenParams } from '@/hooks/useScreenParams';
-import { useScrollSelectedRowIntoView } from '@/hooks/useScrollSelectedRowIntoView';
+import { useScrollSelectedIntoFlatList } from '@/hooks/useScrollSelectedIntoView';
 import { useSharedFolders } from '@/hooks/useSharedFolders';
 import { useIsStackRoute, useSetScreenOptions } from '@/hooks/useTwoPane';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -428,7 +428,7 @@ export default function FolderViewScreen(): React.ReactNode {
     setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
-  const scrollSelected = useScrollSelectedRowIntoView(flatListRef, { rows: sortedItems, isLoaded: !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
+  const scrollSelected = useScrollSelectedIntoFlatList(flatListRef, { rows: sortedItems, isLoaded: !isLoadingItems, rowHref: itemRoute, rowKey: selectedItemKey });
   const { scrollToIndex } = scrollSelected;
 
   /**
