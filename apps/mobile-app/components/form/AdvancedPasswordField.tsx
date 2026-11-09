@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity, type TextInputInstance } from 'react-native';
 
 import type { PasswordSettings } from '@aliasvault/models/vault';
 import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
@@ -51,7 +51,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 }, ref) => {
   const colors = useColors();
   const { t } = useTranslation();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [currentSettings, setCurrentSettings] = useState<PasswordSettings | null>(initialSettings || null);

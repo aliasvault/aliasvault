@@ -4,7 +4,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Platform, View, RefreshControl, Animated, TouchableOpacity, ActivityIndicator, type ScrollViewInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -15,6 +15,7 @@ import { isServerUnreachable } from '@/utils/ServerReachability';
 import { useColors } from '@/hooks/useColorScheme';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+import { useRailSideBleed } from '@/hooks/useRailSideFlush';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { ListMenu } from '@/components/common/ListMenu';
@@ -22,7 +23,7 @@ import { SELECTION_BAR_SPACE, SelectionBar, SelectionBarButton } from '@/compone
 import { EmailCard } from '@/components/EmailCard';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
+import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useDb } from '@/context/DbContext';
@@ -51,17 +52,18 @@ export default function EmailsScreen() : React.ReactNode {
   const colors = useColors();
   const navigation = useNavigation();
   const { syncVault } = useVaultSync();
-  const [scrollY] = useState(() => new Animated.Value(0));
-  const scrollViewRef = useRef<ScrollView>(null);
+  const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const [error, setError] = useState<string | null>(null);
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
-  const [isTabFocused, setIsTabFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalRecords, setTotalRecords] = useState<number>(0);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+  const headerHeight = useCollapsibleHeaderHeight();
+  const railSideBleed = useRailSideBleed();
   const { showConfirm } = useDialog();
   const [showListMenu, setShowListMenu] = useState(false);
   const selection = useListSelection(emails, emailIdOf, emailKey);
@@ -178,16 +180,8 @@ export default function EmailsScreen() : React.ReactNode {
   }, [isLoadingMore, dbContext, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      setIsTabFocused(true);
-    });
-
-    const unsubscribeBlur = navigation.addListener('blur', () => {
-      setIsTabFocused(false);
-    });
-
     const sub = emitter.addListener('tabPress', (routeName: string) => {
-      if (routeName === 'emails' && isTabFocused) {
+      if (routeName === 'emails' && navigation.isFocused()) {
         // Scroll to top
         scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       }
@@ -203,11 +197,9 @@ export default function EmailsScreen() : React.ReactNode {
 
     return () : void => {
       sub.remove();
-      unsubscribeFocus();
-      unsubscribeBlur();
       refreshSub.remove();
     };
-  }, [isTabFocused, loadEmails, navigation]);
+  }, [loadEmails, navigation]);
 
   /**
    * Load emails on mount.
@@ -230,8 +222,14 @@ export default function EmailsScreen() : React.ReactNode {
       try {
         const deleted = await deleteEmails(webApi, ids);
         const deletedIds = new Set(deleted);
-        setEmails(current => current.filter(email => !deletedIds.has(email.id)));
-        setTotalRecords(current => Math.max(0, current - deleted.length));
+        const remaining = emails.filter(email => !deletedIds.has(email.id));
+        if (remaining.length === 0) {
+          // The loaded page is empty, so fetch again: the server may still have older emails.
+          await loadEmails();
+        } else {
+          setEmails(remaining);
+          setTotalRecords(current => Math.max(0, current - deleted.length));
+        }
         Toast.show({ type: 'success', text1: successMessage(deleted.length), position: 'bottom' });
         onDeleted?.();
       } catch (err) {
@@ -239,14 +237,14 @@ export default function EmailsScreen() : React.ReactNode {
         Toast.show({ type: 'error', text1: t('common.errors.unknownError'), position: 'bottom' });
       }
     }, { confirmStyle: 'destructive' });
-  }, [showConfirm, webApi, t]);
+  }, [showConfirm, webApi, t, emails, loadEmails]);
 
   /**
    * Delete the selected emails; selection mode ends once they are deleted.
    */
   const deleteSelectedEmails = useCallback((): void => {
     const count = selection.selection.length;
-    confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle'), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }), exitSelection);
+    confirmAndDelete(selection.selection, t('emails.home.bulkDeleteEmailTitle', { count }), t('emails.home.bulkDeleteEmailConfirmation', { count }), deleted => t('emails.home.bulkDeleteEmailSuccess', { count: deleted }), exitSelection);
   }, [selection.selection, confirmAndDelete, exitSelection, t]);
 
   /**
@@ -322,8 +320,8 @@ export default function EmailsScreen() : React.ReactNode {
     contentContainer: {
       flexGrow: 1,
       paddingHorizontal: 14,
-      paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 60 : 10) + (selection.isActive ? SELECTION_BAR_SPACE : 0),
-      paddingTop: Platform.OS === 'ios' ? 42 : 16,
+      paddingBottom: (Platform.OS === 'ios' ? insets.bottom + 16 : 10) + (selection.isActive ? SELECTION_BAR_SPACE : 0),
+      paddingTop: Platform.OS === 'ios' ? headerHeight + 12 : 16,
     },
     emptyText: {
       color: colors.textMuted,
@@ -455,18 +453,15 @@ export default function EmailsScreen() : React.ReactNode {
     <ThemedContainer style={styles.container} testID="emails-screen">
       <CollapsibleHeader
         title={t('emails.title')}
-        scrollY={scrollY}
+        scroll={headerScroll}
         showNavigationHeader={true}
       />
       <Animated.ScrollView
         ref={scrollViewRef}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
+        onScroll={onHeaderScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={styles.contentContainer}
-        scrollIndicatorInsets={{ bottom: 40 }}
+        style={railSideBleed.style}
+        contentContainerStyle={[styles.contentContainer, railSideBleed.contentContainerStyle]}
         alwaysBounceVertical={true}
         refreshControl={
           <RefreshControl
@@ -474,6 +469,7 @@ export default function EmailsScreen() : React.ReactNode {
             onRefresh={onRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
+            progressViewOffset={Platform.OS === 'ios' ? insets.top : undefined}
           />
         }
       >

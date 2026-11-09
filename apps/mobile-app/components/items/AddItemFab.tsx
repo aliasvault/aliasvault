@@ -2,13 +2,13 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, BackHandler, Easing, Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Animated, BackHandler, Easing, Platform, Pressable, StyleSheet, useWindowDimensions, View, type ViewInstance } from 'react-native';
 
 import type { ItemType } from '@aliasvault/models/vault';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColorScheme, useColors } from '@/hooks/useColorScheme';
+import { useFloatingBottomInset } from '@/hooks/useFloatingBottomInset';
 
 import { ITEM_TYPE_OPTIONS } from '@/components/items/ItemTypeSelector';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -29,13 +29,12 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
   const { t } = useTranslation();
   const colors = useColors();
   const colorScheme = useColorScheme();
-  const insets = useSafeAreaInsets();
 
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   const [isMounted, setIsMounted] = useState(false);
   const [backdropOffset, setBackdropOffset] = useState<{ left: number; top: number } | null>(null);
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const isOpenRef = useRef(false);
   const progress = useRef(new Animated.Value(0)).current;
   const rowProgress = useRef(ITEM_TYPE_OPTIONS.map(() => new Animated.Value(0))).current;
@@ -142,7 +141,7 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
     }
   }, [close, open]);
 
-  const fabBottom = Platform.OS === 'ios' ? insets.bottom + 60 : 16;
+  const fabBottom = useFloatingBottomInset(16);
 
   const styles = StyleSheet.create({
     root: {
@@ -372,7 +371,8 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
       )}
 
       <RobustPressable style={styles.fab} onPress={handleFabPress} testID={testID}>
-        <Animated.View style={{ transform: [{ rotate }] }}>
+        {/* The native button routes a tap to the child under the finger; the icon must not take it. */}
+        <Animated.View style={{ transform: [{ rotate }] }} pointerEvents="none">
           <MaterialIcons name="add" style={styles.fabIcon} />
         </Animated.View>
       </RobustPressable>

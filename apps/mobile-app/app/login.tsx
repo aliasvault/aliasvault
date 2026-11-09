@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
@@ -37,6 +37,7 @@ import type { LoginResponse } from '@aliasvault/models/webapi';
  */
 export default function LoginScreen() : React.ReactNode {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showAlert, showDialog } = useDialog();
 
@@ -664,7 +665,7 @@ export default function LoginScreen() : React.ReactNode {
             </View>
           </View>
         </SafeAreaView>
-        <ThemedView style={styles.content}>
+        <ThemedView style={[styles.content, { marginLeft: insets.left, marginRight: insets.right }]}>
           {isLoading ? (
             <LoadingIndicator status={loginStatus ?? t('common.loading')} />
           ) : (

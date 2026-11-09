@@ -1,12 +1,13 @@
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useRef, useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Linking } from 'react-native';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Animated, Platform, Linking, type ScrollViewInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
+import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useDeveloperToolsUnlock } from '@/hooks/useDeveloperToolsUnlock';
@@ -17,7 +18,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
+import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
@@ -39,16 +40,27 @@ export default function SettingsScreen() : React.ReactNode {
   const { logoutUserInitiated } = useLogout();
   const navigate = useNavigationDebounce();
   const insets = useSafeAreaInsets();
-  // On iOS the tab bar floats over the content, on Android it takes its own space.
-  const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 80 : 16;
-  const [scrollY] = useState(() => new Animated.Value(0));
-  const scrollViewRef = useRef<ScrollView>(null);
+  const headerHeight = useCollapsibleHeaderHeight();
+  // On iOS the tab bar floats over the content (the bottom inset includes it), on Android it takes its own space.
+  const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 16 : 16;
+  const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
+  const navigation = useNavigation();
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
   const isSharingEnabled = hasCapability(CapabilityKeys.VaultSharing);
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
   const { isEnabled: isDeveloperToolsEnabled, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
+
+  useEffect(() => {
+    const sub = emitter.addListener('tabPress', (routeName: string) => {
+      if (routeName === 'settings' && navigation.isFocused()) {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }
+    });
+    return (): void => sub.remove();
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -254,7 +266,7 @@ export default function SettingsScreen() : React.ReactNode {
     },
     scrollContent: {
       paddingBottom,
-      paddingTop: Platform.OS === 'ios' ? 42 : 16,
+      paddingTop: Platform.OS === 'ios' ? headerHeight + 12 : 16,
     },
     scrollView: {
       flex: 1,
@@ -333,18 +345,14 @@ export default function SettingsScreen() : React.ReactNode {
     <ThemedContainer testID="settings-screen">
       <CollapsibleHeader
         title={t('common.settings')}
-        scrollY={scrollY}
+        scroll={headerScroll}
         showNavigationHeader={false}
       />
       <Animated.ScrollView
         ref={scrollViewRef}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
+        onScroll={onHeaderScroll}
         scrollEventThrottle={16}
         contentContainerStyle={styles.scrollContent}
-        scrollIndicatorInsets={{ bottom: paddingBottom }}
         style={styles.scrollView}
       >
         <TitleContainer title={t('common.settings')} />

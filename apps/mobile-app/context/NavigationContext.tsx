@@ -174,7 +174,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
    */
   useEffect(() => {
     const appstateSubscription = AppState.addEventListener('change', async (nextAppState) => {
-      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+      if (appState.current?.match(/inactive|background/) && nextAppState === 'active') {
         /**
          * App coming to foreground
          * Skip vault re-initialization checks during unlock, login, initialize, and reinitialize flows to prevent race conditions

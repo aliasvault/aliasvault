@@ -1,10 +1,9 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useColors } from '@/hooks/useColorScheme';
+import { useFloatingBottomInset } from '@/hooks/useFloatingBottomInset';
 
 /** Extra list padding at the bottom so the floating bar never covers the last rows. */
 export const SELECTION_BAR_SPACE = 64;
@@ -23,7 +22,7 @@ type SelectionBarProps = {
 export function SelectionBar({ count, visibleCount, onSelectAll, onClose, children }: SelectionBarProps): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
-  const insets = useSafeAreaInsets();
+  const bottom = useFloatingBottomInset(12);
   const allSelected = count > 0 && count >= visibleCount;
 
   // The Android back button leaves selection mode first.
@@ -42,7 +41,7 @@ export function SelectionBar({ count, visibleCount, onSelectAll, onClose, childr
       borderColor: colors.accentBorder,
       borderRadius: 14,
       borderWidth: 1,
-      bottom: Platform.OS === 'ios' ? insets.bottom + 12 : 12,
+      bottom,
       elevation: 8,
       flexDirection: 'row',
       gap: 4,

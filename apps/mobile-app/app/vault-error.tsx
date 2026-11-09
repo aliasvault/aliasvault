@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Dimensions, Text, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { copyToClipboard } from '@/utils/ClipboardUtility';
 
@@ -35,6 +36,7 @@ export default function VaultErrorScreen() : React.ReactNode {
     errorSource: string;
   }>();
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { logoutUserInitiated } = useLogout();
   const [showDetails, setShowDetails] = useState(false);
@@ -215,7 +217,7 @@ export default function VaultErrorScreen() : React.ReactNode {
     <ThemedView style={styles.container} testID="vault-error-screen">
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingLeft: insets.left, paddingRight: insets.right }]}
         keyboardShouldPersistTaps="handled"
       >
         <LinearGradient

@@ -43,6 +43,8 @@ export function ThemedHeader(): React.ReactNode {
  * This provides consistent header styling across the app.
  * @returns {Object} The default header options
  */
+const iosMajorVersion = Platform.OS === 'ios' ? parseInt(String(Platform.Version), 10) : 0;
+
 export const defaultHeaderOptions = {
   /**
    * On iOS, we want the header to be transparent and use our custom header background.
@@ -50,4 +52,5 @@ export const defaultHeaderOptions = {
    */
   headerTransparent: Platform.OS === 'ios',
   headerBackground: Platform.OS === 'ios' ? (): React.ReactNode => <ThemedHeader /> : undefined,
+  headerBackButtonDisplayMode: iosMajorVersion >= 26 ? 'minimal' as const : 'default' as const,
 };

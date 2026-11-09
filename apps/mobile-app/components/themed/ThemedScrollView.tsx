@@ -1,5 +1,4 @@
 import { Platform, ScrollView, StyleProp, StyleSheet, ViewStyle, ScrollViewProps } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ThemedScrollViewProps = ScrollViewProps & {
   style?: StyleProp<ViewStyle>;
@@ -7,11 +6,10 @@ type ThemedScrollViewProps = ScrollViewProps & {
   darkColor?: string;
   children?: React.ReactNode;
   contentContainerStyle?: StyleProp<ViewStyle>;
-  scrollIndicatorInsets?: { top?: number; bottom?: number };
 };
 
 /**
- * Themed scroll view component.
+ * Themed scroll view component. On iOS the system insets the content by the header, the tab bar and the safe area.
  */
 export function ThemedScrollView({
   style,
@@ -21,16 +19,11 @@ export function ThemedScrollView({
   keyboardShouldPersistTaps = 'handled',
   ...otherProps
 }: ThemedScrollViewProps): React.ReactNode {
-  const insets = useSafeAreaInsets();
-
-  const paddingTop = Platform.OS === 'ios' ? 56 : 16;
-  const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 60 : 40;
-
   return (
     <ScrollView
-      style={[styles.container, { paddingTop: paddingTop }, style]}
-      contentContainerStyle={[{ paddingBottom: paddingBottom }, contentContainerStyle]}
-      scrollIndicatorInsets={{ bottom: paddingBottom }}
+      style={[styles.container, Platform.OS === 'ios' ? null : styles.androidContainer, style]}
+      contentContainerStyle={[Platform.OS === 'ios' ? styles.iosContent : styles.androidContent, contentContainerStyle]}
+      contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       {...otherProps}
     />
@@ -40,5 +33,15 @@ export function ThemedScrollView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  androidContainer: {
+    paddingTop: 16,
+  },
+  androidContent: {
+    paddingBottom: 40,
+  },
+  iosContent: {
+    paddingBottom: 16,
+    paddingTop: 16,
   },
 });

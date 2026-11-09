@@ -17,7 +17,7 @@ export function useForegroundSync(): void {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async (nextAppState) => {
-      const cameToForeground = appState.current.match(/inactive|background/) && nextAppState === 'active';
+      const cameToForeground = appState.current?.match(/inactive|background/) && nextAppState === 'active';
       appState.current = nextAppState;
       if (!cameToForeground) {
         return;
