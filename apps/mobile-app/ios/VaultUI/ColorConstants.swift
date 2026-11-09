@@ -13,6 +13,7 @@ public struct ColorConstants {
         public static let background = SwiftUI.Color(hex: "#f3f2f7")
         public static let accentBackground = SwiftUI.Color(hex: "#ffffff")
         public static let accentBorder = SwiftUI.Color(hex: "#d1d5db")
+        public static let selectedRowBackground = SwiftUI.Color(hex: "#fef2e8")
         public static let primary = SwiftUI.Color(hex: "#f49541")
         public static let primarySurfaceText = SwiftUI.Color(hex: "#ffffff")
         public static let secondary = SwiftUI.Color(hex: "#6b7280")
@@ -34,6 +35,7 @@ public struct ColorConstants {
         public static let background = SwiftUI.Color(hex: "#000000")
         public static let accentBackground = SwiftUI.Color(hex: "#202020")
         public static let accentBorder = SwiftUI.Color(hex: "#444444")
+        public static let selectedRowBackground = SwiftUI.Color(hex: "#392e24")
         public static let primary = SwiftUI.Color(hex: "#f49541")
         public static let primarySurfaceText = SwiftUI.Color(hex: "#ffffff")
         public static let secondary = SwiftUI.Color(hex: "#6b7280")
@@ -62,6 +64,7 @@ public struct ColorConstants {
         static var background: Color { get }
         static var accentBackground: Color { get }
         static var accentBorder: Color { get }
+        static var selectedRowBackground: Color { get }
         static var primary: Color { get }
         static var primarySurfaceText: Color { get }
         static var secondary: Color { get }
