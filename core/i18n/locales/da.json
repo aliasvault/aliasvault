@@ -329,6 +329,7 @@
     "save": "Gem",
     "saving": "Gemmer...",
     "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
     "selection": {
       "count": "{{count}} selected",
       "disable": "Disable selection",
@@ -694,7 +695,6 @@
       "editLabel": "Rediger label"
     },
     "emailLoadError": "Der opstod en fejl under indlæsning af e-mails. Prøv igen senere.",
-    "emailPreview": "Forhåndsvisning af e-mail",
     "emailUnexpectedError": "Der opstod en uventet fejl under indlæsning af e-mails. Prøv igen senere.",
     "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe, skal du redigere elementet og trykke på mappe-ikonet i navnefeltet.",
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
@@ -1532,6 +1532,8 @@
     "theme": "Tema",
     "totpAutofill": "2FA kode autofyld",
     "totpAutofillDescription": "Vis popup for autofyld når 2FA-kode felter detekteres",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Bekræft PIN-kode",
       "confirmPinDescription": "Indtast din PIN-kode igen for at bekræfte",
