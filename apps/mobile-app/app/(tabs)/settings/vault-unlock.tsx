@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Platform, Linking, Switch, TouchableOpacity } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 
@@ -133,12 +133,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
 
     // Show toast notification
     if (value) {
-      Toast.show({
-        type: 'success',
-        text1: t('settings.vaultUnlockSettings.biometricEnabled', { biometric: biometricDisplayName }),
-        position: 'bottom',
-        visibilityTime: 1200,
-      });
+      toast.success(t('settings.vaultUnlockSettings.biometricEnabled', { biometric: biometricDisplayName }), { duration: 1200 });
     }
   }, [hasBiometrics, biometricDisplayName, showDialog, showAlert, t]);
 
@@ -167,12 +162,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
        * Biometrics takes priority during unlock, PIN serves as fallback.
        */
       setPinEnabled(true);
-      Toast.show({
-        type: 'success',
-        text1: t('settings.vaultUnlockSettings.pinEnabled'),
-        position: 'bottom',
-        visibilityTime: 1200,
-      });
+      toast.success(t('settings.vaultUnlockSettings.pinEnabled'), { duration: 1200 });
     } catch (error) {
       // Handle cancellation or errors
       if ((error as { code?: string })?.code === 'USER_CANCELLED') {
@@ -192,12 +182,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
     try {
       await NativeVaultManager.removeAndDisablePin();
       setPinEnabled(false);
-      Toast.show({
-        type: 'success',
-        text1: t('settings.vaultUnlockSettings.pinDisabled'),
-        position: 'bottom',
-        visibilityTime: 1200,
-      });
+      toast.success(t('settings.vaultUnlockSettings.pinDisabled'), { duration: 1200 });
     } catch (error) {
       console.error('Failed to disable PIN:', error);
       showAlert(t('common.error'), t('common.errors.unknownErrorTryAgain'));

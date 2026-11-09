@@ -11,7 +11,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Platform, StyleSheet, TextInput, TouchableOpacity, View, type ListRenderItem } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import { sanitizeServiceUrl } from '@/utils/UrlUtility';
@@ -186,11 +186,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
       navigateToSuccess();
     } catch (err) {
       console.error('Error linking URL to existing item:', err);
-      Toast.show({
-        type: 'error',
-        text1: t('common.error'),
-        text2: t('common.errors.unknownErrorTryAgain'),
-      });
+      toast.error(t('common.error'), { description: t('common.errors.unknownErrorTryAgain') });
     } finally {
       setIsSaving(false);
     }

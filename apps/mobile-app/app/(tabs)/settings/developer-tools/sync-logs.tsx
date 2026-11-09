@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { copyToClipboard } from '@/utils/ClipboardUtility';
 
@@ -71,12 +71,7 @@ export default function SyncLogsScreen(): React.ReactNode {
     }
     await copyToClipboard(entries.map((entry) => `${formatHeader(entry)}\n${entry.lines.join('\n')}`).join('\n\n'));
 
-    Toast.show({
-      type: 'success',
-      text1: 'Sync logs copied',
-      position: 'bottom',
-      visibilityTime: 2000,
-    });
+    toast.success('Sync logs copied', { duration: 2000 });
   }, [entries]);
 
   const styles = StyleSheet.create({

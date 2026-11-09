@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, Platform, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
@@ -98,21 +98,11 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         if (Platform.OS !== 'android') {
           // Only show toast on iOS, Android already shows a native toast on clipboard interactions.
-          Toast.show({
-            type: 'success',
-            text1: t('common.copied'),
-            position: 'bottom',
-            visibilityTime: 2000,
-          });
+          toast.success(t('common.copied'), { duration: 2000 });
         }
       } catch (error) {
         console.error('Failed to copy to clipboard:', error);
-        Toast.show({
-          type: 'error',
-          text1: t('common.error'),
-          position: 'bottom',
-          visibilityTime: 2000,
-        });
+        toast.error(t('common.error'), { duration: 2000 });
       }
     }
   };

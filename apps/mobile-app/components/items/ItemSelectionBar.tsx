@@ -3,7 +3,7 @@ import { TRASH_RETENTION_DEFAULT_DAYS } from '@aliasvault/models/vault';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
@@ -53,11 +53,11 @@ export function ItemSelectionBar({ selection, visibleCount, folders, personalMan
       await executeVaultMutation(async () => {
         message = await action();
       });
-      Toast.show({ type: 'success', text1: message, position: 'bottom' });
+      toast.success(message);
       await onDone();
     } catch (error) {
       console.error('Bulk item action failed:', error);
-      Toast.show({ type: 'error', text1: t('common.errors.unknownError'), position: 'bottom' });
+      toast.error(t('common.errors.unknownError'));
     } finally {
       setIsWorking(false);
     }

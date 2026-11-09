@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { useAppReviewDebug } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
@@ -40,12 +40,7 @@ export default function AppReviewDebugScreen(): React.ReactNode {
   const handleResetReviewState = useCallback(async (): Promise<void> => {
     await resetReviewState();
 
-    Toast.show({
-      type: 'success',
-      text1: 'App review state reset',
-      position: 'bottom',
-      visibilityTime: 2000,
-    });
+    toast.success('App review state reset', { duration: 2000 });
   }, [resetReviewState]);
 
   const reviewRows: StateRow[] = reviewState ? [
