@@ -402,7 +402,7 @@ export default function ItemsScreen(): React.ReactNode {
               style={{ padding: 8, marginRight: 8 }}
               onPress={() => setShowSortMenu(prev => !prev)}
             >
-              <MaterialIcons name="more-horiz" size={24} color={colors.text} />
+              <MaterialIcons name="more-vert" size={24} color={colors.text} />
             </TouchableOpacity>
           );
         }

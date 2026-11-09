@@ -30,7 +30,7 @@ import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultRefresh } from '@/hooks/useVaultRefresh';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
-import { ListMenu } from '@/components/common/ListMenu';
+import { ListMenu, type ListMenuAction } from '@/components/common/ListMenu';
 import { SELECTION_BAR_SPACE } from '@/components/common/SelectionBar';
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
@@ -309,8 +309,7 @@ export default function FolderViewScreen(): React.ReactNode {
   }, [currentShared, folder?.Name, showConfirm, runWithPassword, webApi, syncVault, reloadShared, router, t]);
 
   /**
-   * Set up the header with the folder name and, on Android, the share, edit and delete buttons.
-   * On iOS those are native bar button items (the toolbar below), which the iPhone Duo bar rail picks up.
+   * Set up the header.
    */
   useEffect(() => {
     navigation.setOptions({
@@ -321,30 +320,55 @@ export default function FolderViewScreen(): React.ReactNode {
       headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || t('items.folders.folder')} isShared={isShared} />,
       ...(Platform.OS === 'android' && {
         /**
-         * Header right buttons for share, edit and delete.
+         * Header right buttons: share, and the overflow menu.
          */
         headerRight: (): React.ReactNode => (
           <View style={{ flexDirection: 'row', gap: 4 }}>
             {canShareFolder && folder && (
-              <RobustPressable onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })} style={{ padding: 8 }}>
+              <RobustPressable onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })} style={{ padding: 8 }} accessibilityLabel={t('common.share')}>
                 <MaterialIcons name="people" size={24} color={colors.primary} />
               </RobustPressable>
             )}
-            {canEditFolder && (
-              <RobustPressable onPress={() => setShowEditFolderModal(true)} style={{ padding: 8 }}>
-                <MaterialIcons name="edit" size={24} color={colors.primary} />
-              </RobustPressable>
-            )}
-            {canDeleteFolder && (
-              <RobustPressable onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))} style={{ padding: 8 }}>
-                <MaterialIcons name="delete" size={24} color={colors.destructive} />
-              </RobustPressable>
-            )}
+            <RobustPressable onPress={toggleSortMenu} style={{ padding: 8 }} accessibilityLabel={t('common.moreOptions')}>
+              <MaterialIcons name="more-vert" size={24} color={colors.text} />
+            </RobustPressable>
           </View>
         ),
       }),
     });
-  }, [navigation, folder, isVirtualFolder, isShared, canShareFolder, canEditFolder, canDeleteFolder, deleteSharedFolder, colors.primary, colors.destructive, t]);
+  }, [navigation, folder, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
+
+  /**
+   * The folder actions in the Android overflow menu; iOS shows them in the toolbar.
+   */
+  const folderMenuActions = useMemo((): ListMenuAction[] => {
+    if (Platform.OS !== 'android') {
+      return [];
+    }
+    const actions: ListMenuAction[] = [];
+    if (canEditFolder) {
+      actions.push({
+        label: t('common.edit'),
+        icon: 'edit',
+        /**
+         * Open the edit folder modal.
+         */
+        onPress: () => setShowEditFolderModal(true),
+      });
+    }
+    if (canDeleteFolder) {
+      actions.push({
+        label: t('common.delete'),
+        icon: 'delete',
+        destructive: true,
+        /**
+         * Delete the shared vault, or open the delete folder modal.
+         */
+        onPress: () => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true)),
+      });
+    }
+    return actions;
+  }, [canEditFolder, canDeleteFolder, isVirtualFolder, deleteSharedFolder, t]);
 
   /**
    * Delete an item (move to trash).
@@ -818,18 +842,20 @@ export default function FolderViewScreen(): React.ReactNode {
               color={colors.text}
             />
           </TouchableOpacity>
-          {/* List menu button */}
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={toggleSortMenu}
-            accessibilityLabel={t('common.moreOptions')}
-          >
-            <MaterialIcons
-              name="more-horiz"
-              size={24}
-              color={colors.textMuted}
-            />
-          </TouchableOpacity>
+          {/* List menu button; Android has it in the header */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={toggleSortMenu}
+              accessibilityLabel={t('common.moreOptions')}
+            >
+              <MaterialIcons
+                name="more-horiz"
+                size={24}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Search input */}
@@ -969,7 +995,7 @@ export default function FolderViewScreen(): React.ReactNode {
       {/* Filter menu overlay */}
       {renderFilterOverlay()}
 
-      {/* List menu overlay: selection mode and sort order */}
+      {/* List menu overlay */}
       <ListMenu
         visible={showSortMenu}
         selection={sortedItems.length > 0 || selection.isActive ? { isActive: selection.isActive, onToggle: toggleSelectionMode } : undefined}
@@ -981,8 +1007,9 @@ export default function FolderViewScreen(): React.ReactNode {
             await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
           });
         }}
+        actions={folderMenuActions}
         onClose={() => setShowSortMenu(false)}
-        topOffset={menuTopOffset}
+        topOffset={Platform.OS === 'ios' ? menuTopOffset : undefined}
       />
 
       {/* Folder modals; a shared folder is renamed through its shared manifest, whose name an invitation has to fit */}
