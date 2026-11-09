@@ -201,6 +201,8 @@ export default function SettingsLayout(): React.ReactNode {
             options={{
               title: t('settings.qrScanner.mobileLogin.confirmTitle'),
               ...defaultHeaderOptions,
+              // On iOS the header's cancel button declines the request; a back button would leave it pending.
+              headerBackVisible: Platform.OS !== 'ios',
             }}
           />
           <Stack.Screen
@@ -208,6 +210,8 @@ export default function SettingsLayout(): React.ReactNode {
             options={{
               title: t('common.success'),
               ...defaultHeaderOptions,
+              // On iOS the header's close button leaves the screen; a back button would return to the used-up request.
+              headerBackVisible: Platform.OS !== 'ios',
             }}
           />
         </Stack>

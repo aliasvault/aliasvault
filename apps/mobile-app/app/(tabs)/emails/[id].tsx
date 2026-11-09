@@ -255,7 +255,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
    */
   const handleOpenItem = () : void => {
     if (associatedItem) {
-      router.push(itemRoute(associatedItem, associatedItem.Name));
+      router.push(itemRoute(associatedItem));
     }
   };
 

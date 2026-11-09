@@ -2,9 +2,9 @@ import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
 import { VaultKeyAlgorithm, type MobileLoginDetailsResponse, type MobileLoginRequestReference } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 
 import { MobileLoginScanHandoff, type PendingMobileLoginRequest } from '@/utils/MobileLoginScanHandoff';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
@@ -18,6 +18,7 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { AccountChip } from '@/components/ui/AccountChip';
 import { RobustPressable } from '@/components/ui/RobustPressable';
+import { ScreenToolbar } from '@/components/ui/ScreenToolbar';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -340,10 +341,18 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
     },
   });
 
+  // On iOS cancel is a native header item, which the iPhone Duo moves into its rail; it replaces the back button.
+  const cancelToolbar = Platform.OS === 'ios' && !isProcessing && (
+    <ScreenToolbar placement="left">
+      <Stack.Toolbar.Button onPress={handleDecline}>{t('common.cancel')}</Stack.Toolbar.Button>
+    </ScreenToolbar>
+  );
+
   // Show loading during validation or processing
   if (!request || isProcessing) {
     return (
       <ThemedContainer>
+        {cancelToolbar}
         <View style={styles.loadingContainer}>
           <LoadingIndicator />
         </View>
@@ -359,6 +368,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   // Show confirmation screen
   return (
     <ThemedContainer>
+      {cancelToolbar}
       <ThemedScrollView contentContainerStyle={styles.content}>
         <AccountChip style={styles.accountChip} />
         <ThemedText style={styles.message}>
@@ -414,9 +424,11 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
             {approveDelay > 0 ? `${t('settings.qrScanner.mobileLogin.approve')} (${approveDelay})` : t('settings.qrScanner.mobileLogin.approve')}
           </ThemedText>
         </RobustPressable>
-        <RobustPressable style={styles.declineButton} onPress={handleDecline} testID="mobile-login-decline">
-          <ThemedText style={styles.declineButtonText}>{t('common.cancel')}</ThemedText>
-        </RobustPressable>
+        {Platform.OS === 'android' && (
+          <RobustPressable style={styles.declineButton} onPress={handleDecline} testID="mobile-login-decline">
+            <ThemedText style={styles.declineButtonText}>{t('common.cancel')}</ThemedText>
+          </RobustPressable>
+        )}
       </ThemedScrollView>
     </ThemedContainer>
   );

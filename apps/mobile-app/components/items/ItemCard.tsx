@@ -88,7 +88,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
   const openItem = (): void => {
     navigate(() => {
       Keyboard.dismiss();
-      paneRouter.openDetail(itemRoute(item, item.Name));
+      paneRouter.openDetail(itemRoute(item));
     });
   };
 

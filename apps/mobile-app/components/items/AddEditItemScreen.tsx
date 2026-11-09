@@ -881,7 +881,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
           } else {
             toast.success(t('items.toasts.itemCreated'));
             if (currentRef) {
-              router.push(itemRoute(currentRef, itemToSave.Name));
+              router.push(itemRoute(currentRef));
             }
           }
         }, 100);
