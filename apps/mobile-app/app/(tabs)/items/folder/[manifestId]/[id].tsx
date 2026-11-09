@@ -7,6 +7,7 @@ import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Stack, useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
+import { useVerticalBarEdgeIOS } from 'expo-status-bar';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshControl, FlatList } from 'react-native';
@@ -20,7 +21,7 @@ import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingError
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useHeaderInset } from '@/hooks/useHeaderInset';
-import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
+import { SORT_OPTIONS, useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePasswordConfirmedAction } from '@/hooks/usePasswordConfirmedAction';
@@ -64,16 +65,17 @@ type ItemTypeOption = {
   type: ItemFilterType;
   titleKey: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
+  sfSymbol: Extract<React.ComponentProps<typeof Stack.Toolbar.MenuAction>['icon'], string>;
 };
 
 /**
  * Available item type filter options with icons.
  */
 const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
-  { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
-  { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
-  { type: ItemFilter.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
-  { type: ItemFilter.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
+  { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key', sfSymbol: 'key' },
+  { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person', sfSymbol: 'person' },
+  { type: ItemFilter.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card', sfSymbol: 'creditcard' },
+  { type: ItemFilter.Note, titleKey: 'itemTypes.note.title', iconName: 'description', sfSymbol: 'doc.text' },
 ];
 
 /**
@@ -81,10 +83,12 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
  * Simplified view with search scoped to this folder only.
  */
 export default function FolderViewScreen(): React.ReactNode {
-  const { id: folderId, manifestId, filter: filterParam } = useLocalSearchParams<{ manifestId: string; id: string; filter?: string }>();
+  const { id: folderId, manifestId, filter: filterParam, name: nameParam } = useLocalSearchParams<{ manifestId: string; id: string; filter?: string; name?: string }>();
   const folderRef = useMemo((): FolderRef => ({ Id: folderId, ManifestId: manifestId }), [folderId, manifestId]);
   const colors = useColors();
   const { t } = useTranslation();
+  // On the iPhone Duo rail the filter and list menus move into the rail, so the content skips its own heading row.
+  const hasRail = useVerticalBarEdgeIOS() !== null;
   const navigation = useNavigation();
   const router = useRouter();
   const navigate = useNavigationDebounce();
@@ -313,11 +317,11 @@ export default function FolderViewScreen(): React.ReactNode {
    */
   useEffect(() => {
     navigation.setOptions({
-      title: folder?.Name || t('items.folders.folder'),
+      title: folder?.Name || nameParam || t('items.folders.folder'),
       /**
        * Folder icon and name, marked as shared for a shared vault folder.
        */
-      headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || t('items.folders.folder')} isShared={isShared} />,
+      headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || nameParam || t('items.folders.folder')} isShared={isShared} />,
       ...(Platform.OS === 'android' && {
         /**
          * Header right buttons: share, and the overflow menu.
@@ -336,7 +340,7 @@ export default function FolderViewScreen(): React.ReactNode {
         ),
       }),
     });
-  }, [navigation, folder, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
+  }, [navigation, folder, nameParam, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
 
   /**
    * The folder actions in the Android overflow menu; iOS shows them in the toolbar.
@@ -479,9 +483,9 @@ export default function FolderViewScreen(): React.ReactNode {
   /**
    * Handle subfolder click.
    */
-  const handleSubfolderClick = useCallback((subfolder: FolderRef) => {
+  const handleSubfolderClick = useCallback((subfolder: FolderRef, name?: string) => {
     navigate(() => {
-      router.push(folderRoute(subfolder, filterType));
+      router.push(folderRoute(subfolder, filterType, name));
     });
   }, [router, navigate, filterType]);
 
@@ -556,6 +560,11 @@ export default function FolderViewScreen(): React.ReactNode {
     },
     sortButton: {
       padding: 8,
+    },
+    railFilterSummary: {
+      color: colors.textMuted,
+      fontSize: 13,
+      marginBottom: 8,
     },
     filterButtonText: {
       color: colors.text,
@@ -662,6 +671,16 @@ export default function FolderViewScreen(): React.ReactNode {
       fontSize: 14,
     },
   }), [colors, paddingTop, paddingBottom, menuTopOffset]);
+
+  /**
+   * Apply a sort order and save it to the vault settings.
+   */
+  const changeSortOrder = useCallback(async (order: CredentialSortOrder): Promise<void> => {
+    setSortOrder(order);
+    await executeVaultMutation(async () => {
+      await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
+    });
+  }, [setSortOrder, executeVaultMutation, dbContext.sqliteClient]);
 
   /**
    * Render the filter menu as an absolute overlay.
@@ -795,7 +814,7 @@ export default function FolderViewScreen(): React.ReactNode {
               <FolderPill
                 key={scopedKey(subfolder.manifestId, subfolder.id)}
                 folder={subfolder}
-                onPress={() => handleSubfolderClick({ Id: subfolder.id, ManifestId: subfolder.manifestId })}
+                onPress={() => handleSubfolderClick({ Id: subfolder.id, ManifestId: subfolder.manifestId }, subfolder.name)}
               />
             ))}
             {canCreateSubfolder && (
@@ -823,40 +842,44 @@ export default function FolderViewScreen(): React.ReactNode {
           </View>
         )}
 
-        {/* Header row with filter dropdown and sort button */}
-        <View style={styles.headerRow}>
-          {/* Filter button */}
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={() => setShowFilterMenu(!showFilterMenu)}
-          >
-            <ThemedText style={styles.filterButtonText}>
-              {getFilterTitle()}
-            </ThemedText>
-            <ThemedText style={styles.filterCount}>
-              ({filteredItems.length})
-            </ThemedText>
-            <MaterialIcons
-              name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-              size={24}
-              color={colors.text}
-            />
-          </TouchableOpacity>
-          {/* List menu button; Android has it in the header */}
-          {Platform.OS === 'ios' && (
+        {/* Header row with filter dropdown and sort button; on the Duo rail only the active filter and count */}
+        {hasRail ? (
+          <ThemedText style={styles.railFilterSummary}>{getFilterTitle()} ({filteredItems.length})</ThemedText>
+        ) : (
+          <View style={styles.headerRow}>
+            {/* Filter button */}
             <TouchableOpacity
-              style={styles.sortButton}
-              onPress={toggleSortMenu}
-              accessibilityLabel={t('common.moreOptions')}
+              style={styles.filterButton}
+              onPress={() => setShowFilterMenu(!showFilterMenu)}
             >
+              <ThemedText style={styles.filterButtonText}>
+                {getFilterTitle()}
+              </ThemedText>
+              <ThemedText style={styles.filterCount}>
+                ({filteredItems.length})
+              </ThemedText>
               <MaterialIcons
-                name="more-horiz"
+                name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
                 size={24}
-                color={colors.textMuted}
+                color={colors.text}
               />
             </TouchableOpacity>
-          )}
-        </View>
+            {/* List menu button; Android has it in the header */}
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={styles.sortButton}
+                onPress={toggleSortMenu}
+                accessibilityLabel={t('common.moreOptions')}
+              >
+                <MaterialIcons
+                  name="more-horiz"
+                  size={24}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/* Search input */}
         <ThemedView style={styles.searchContainer}>
@@ -889,7 +912,7 @@ export default function FolderViewScreen(): React.ReactNode {
         </ThemedView>
       </ThemedView>
     );
-  }, [folderRef, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
+  }, [folderRef, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, hasRail, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
 
   /**
    * Render empty state.
@@ -918,6 +941,36 @@ export default function FolderViewScreen(): React.ReactNode {
     <ThemedContainer style={styles.container}>
       {Platform.OS === 'ios' && (
         <Stack.Toolbar placement="right">
+          {hasRail && (
+            <Stack.Toolbar.Menu icon={filterType === ItemFilter.All ? 'line.3.horizontal.decrease' : 'line.3.horizontal.decrease.circle.fill'} accessibilityLabel={getFilterTitle()}>
+              <Stack.Toolbar.Menu inline>
+                <Stack.Toolbar.MenuAction isOn={filterType === ItemFilter.All} onPress={() => setFilterType(ItemFilter.All)}>{t('items.title')}</Stack.Toolbar.MenuAction>
+              </Stack.Toolbar.Menu>
+              <Stack.Toolbar.Menu inline>
+                {ITEM_TYPE_OPTIONS.map((option) => (
+                  <Stack.Toolbar.MenuAction key={option.type} icon={option.sfSymbol} isOn={filterType === option.type} onPress={() => setFilterType(option.type)}>{t(option.titleKey)}</Stack.Toolbar.MenuAction>
+                ))}
+              </Stack.Toolbar.Menu>
+              <Stack.Toolbar.Menu inline>
+                <Stack.Toolbar.MenuAction isOn={filterType === ItemFilter.Passkeys} onPress={() => setFilterType(ItemFilter.Passkeys)}>{t('common.passkeys')}</Stack.Toolbar.MenuAction>
+                <Stack.Toolbar.MenuAction isOn={filterType === ItemFilter.Attachments} onPress={() => setFilterType(ItemFilter.Attachments)}>{t('common.attachments')}</Stack.Toolbar.MenuAction>
+              </Stack.Toolbar.Menu>
+            </Stack.Toolbar.Menu>
+          )}
+          {hasRail && (
+            <Stack.Toolbar.Menu icon="ellipsis" accessibilityLabel={t('common.moreOptions')}>
+              {(sortedItems.length > 0 || selection.isActive) && (
+                <Stack.Toolbar.Menu inline>
+                  <Stack.Toolbar.MenuAction icon="checkmark.circle" onPress={toggleSelectionMode}>{selection.isActive ? t('common.selection.disable') : t('common.selection.enable')}</Stack.Toolbar.MenuAction>
+                </Stack.Toolbar.Menu>
+              )}
+              <Stack.Toolbar.Menu inline title={t('items.sort.title')}>
+                {SORT_OPTIONS.map((option) => (
+                  <Stack.Toolbar.MenuAction key={option.value} isOn={sortOrder === option.value} onPress={() => void changeSortOrder(option.value)}>{t(option.labelKey)}</Stack.Toolbar.MenuAction>
+                ))}
+              </Stack.Toolbar.Menu>
+            </Stack.Toolbar.Menu>
+          )}
           {canShareFolder && folder && (
             <Stack.Toolbar.Button icon="person.2" onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })}>{t('common.share')}</Stack.Toolbar.Button>
           )}
@@ -1000,13 +1053,7 @@ export default function FolderViewScreen(): React.ReactNode {
         visible={showSortMenu}
         selection={sortedItems.length > 0 || selection.isActive ? { isActive: selection.isActive, onToggle: toggleSelectionMode } : undefined}
         sortOrder={sortOrder}
-        onSelect={async (order: CredentialSortOrder) => {
-          setSortOrder(order);
-          // Save to settings and trigger vault sync
-          await executeVaultMutation(async () => {
-            await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
-          });
-        }}
+        onSelect={changeSortOrder}
         actions={folderMenuActions}
         onClose={() => setShowSortMenu(false)}
         topOffset={Platform.OS === 'ios' ? menuTopOffset : undefined}
