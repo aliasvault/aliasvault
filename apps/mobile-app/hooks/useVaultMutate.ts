@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import { VaultKeyAlgorithm, type PasswordChangeInitiateResponse, type PasswordChangeRequest } from '@aliasvault/models/webapi';
@@ -71,12 +71,7 @@ export function useVaultMutate() : {
           /*
            * Surface the error to the user.
            */
-          Toast.show({
-            type: 'error',
-            text1: t('common.error'),
-            text2: error,
-            position: 'bottom',
-          });
+          toast.error(t('common.error'), { description: error });
           options.onError?.(new Error(error));
         },
         onOffline: async () => {
@@ -179,11 +174,7 @@ export function useVaultMutate() : {
       await executeMutateOperation(operation, options);
     } catch (error) {
       console.error('Error during vault mutation:', error);
-      Toast.show({
-        type: 'error',
-        text1: t('common.errors.unknownError'),
-        position: 'bottom'
-      });
+      toast.error(t('common.errors.unknownError'));
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
     }
   }, [executeMutateOperation, t]);

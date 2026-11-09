@@ -2,7 +2,7 @@ import { authEventTypeName } from '@aliasvault/models/webapi';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, RefreshControl } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
@@ -95,11 +95,7 @@ export default function AuthLogsScreen() : React.ReactNode {
       const response = await webApi.getAuthLogs();
       setLogs(response);
     } catch {
-      Toast.show({
-        type: 'error',
-        text1: t('settings.securitySettings.authLogs.failedToLoad'),
-        position: 'bottom',
-      });
+      toast.error(t('settings.securitySettings.authLogs.failedToLoad'));
     } finally {
       setIsLoading(false);
     }

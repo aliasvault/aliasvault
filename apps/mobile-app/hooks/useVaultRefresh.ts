@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
@@ -53,12 +53,7 @@ export const useVaultRefresh = (
           await dbContext.refreshSyncState(); // Clear offline state if we were offline
           done();
           setTimeout(() => {
-            Toast.show({
-              type: 'success',
-              text1: hasNewVault ? t('items.vaultSyncedSuccessfully') : t('items.vaultUpToDate'),
-              position: 'top',
-              visibilityTime: 1200,
-            });
+            toast.success(hasNewVault ? t('items.vaultSyncedSuccessfully') : t('items.vaultUpToDate'), { duration: 1200 });
           }, 200);
         },
         /**
@@ -91,11 +86,7 @@ export const useVaultRefresh = (
       done();
 
       if (!(err instanceof VaultAuthenticationError)) {
-        Toast.show({
-          type: 'error',
-          text1: t('items.vaultSyncFailed'),
-          text2: t('common.errors.unknownError'),
-        });
+        toast.error(t('items.vaultSyncFailed'), { description: t('common.errors.unknownError') });
       }
     }
   }, [syncVault, reload, setIsLoading, setRefreshing, dbContext, router, showAlert, t]);

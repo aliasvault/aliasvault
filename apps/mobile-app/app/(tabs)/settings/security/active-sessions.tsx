@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity, RefreshControl } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
@@ -114,18 +114,10 @@ export default function ActiveSessionsScreen() : React.ReactNode {
           await loadSessions();
 
           // Show success toast
-          Toast.show({
-            text1: t('settings.securitySettings.activeSessions.sessionRevoked'),
-            type: 'success',
-            position: 'bottom',
-          });
+          toast.success(t('settings.securitySettings.activeSessions.sessionRevoked'));
         } catch {
           // Show error toast
-          Toast.show({
-            text1: t('settings.securitySettings.activeSessions.failedToRevoke'),
-            type: 'error',
-            position: 'bottom',
-          });
+          toast.error(t('settings.securitySettings.activeSessions.failedToRevoke'));
         }
       },
       { confirmStyle: 'destructive' }

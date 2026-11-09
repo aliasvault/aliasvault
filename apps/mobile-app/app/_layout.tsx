@@ -14,7 +14,7 @@ import { clearExportDirectories } from '@/utils/FileUtility';
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 
 import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
-import { AliasVaultToast } from '@/components/Toast';
+import { AppToaster } from '@/components/AppToaster';
 import { StackScreenLayout, stackScreenLayout } from '@/components/ui/StackScreenLayout';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -144,7 +144,7 @@ function RootLayoutNav() : React.ReactNode {
         <Stack.Screen name="open/[...path]" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <AliasVaultToast />
+      <AppToaster />
     </ThemeProvider>
   );
 }

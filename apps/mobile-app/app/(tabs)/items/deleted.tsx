@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
@@ -71,11 +71,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
       setItems(results);
     } catch (err) {
       console.error('Error loading deleted items:', err);
-      Toast.show({
-        type: 'error',
-        text1: t('items.errorLoadingItems'),
-        text2: t('common.errors.unknownError'),
-      });
+      toast.error(t('items.errorLoadingItems'), { description: t('common.errors.unknownError') });
     } finally {
       setIsLoadingItems(false);
     }
@@ -104,10 +100,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     await loadItems();
     emitter.emit('itemChanged');
 
-    Toast.show({
-      type: 'success',
-      text1: t('items.recentlyDeleted.itemRestored'),
-    });
+    toast.success(t('items.recentlyDeleted.itemRestored'));
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems, t]);
 
   /**
@@ -127,10 +120,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     setShowConfirmDelete(false);
     setSelectedItem(null);
 
-    Toast.show({
-      type: 'success',
-      text1: t('items.recentlyDeleted.itemDeleted'),
-    });
+    toast.success(t('items.recentlyDeleted.itemDeleted'));
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems, selectedItem, t]);
 
   /**
@@ -151,10 +141,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     emitter.emit('itemChanged');
     setShowConfirmEmptyAll(false);
 
-    Toast.show({
-      type: 'success',
-      text1: t('items.recentlyDeleted.allItemsDeleted'),
-    });
+    toast.success(t('items.recentlyDeleted.allItemsDeleted'));
   }, [dbContext.sqliteClient, executeVaultMutation, items, loadItems, t]);
 
   /**

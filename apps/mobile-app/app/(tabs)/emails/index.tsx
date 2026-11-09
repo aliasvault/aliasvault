@@ -6,7 +6,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform, View, RefreshControl, Animated, TouchableOpacity, ActivityIndicator, type ScrollViewInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
@@ -121,11 +121,7 @@ export default function EmailsScreen() : React.ReactNode {
         }
 
         // Show toast and throw error
-        Toast.show({
-          type: 'error',
-          text1: t('common.errors.unknownError'),
-          position: 'bottom',
-        });
+        toast.error(t('common.errors.unknownError'));
         throw new Error(t('common.errors.unknownError'));
       } finally {
         setIsLoading(false);
@@ -169,11 +165,7 @@ export default function EmailsScreen() : React.ReactNode {
       console.error('Failed to load more emails:', err);
 
       // Show toast for error
-      Toast.show({
-        type: 'error',
-        text1: t('common.errors.unknownError'),
-        position: 'bottom',
-      });
+      toast.error(t('common.errors.unknownError'));
     } finally {
       setIsLoadingMore(false);
     }
@@ -230,11 +222,11 @@ export default function EmailsScreen() : React.ReactNode {
           setEmails(remaining);
           setTotalRecords(current => Math.max(0, current - deleted.length));
         }
-        Toast.show({ type: 'success', text1: successMessage(deleted.length), position: 'bottom' });
+        toast.success(successMessage(deleted.length));
         onDeleted?.();
       } catch (err) {
         console.error('Failed to delete emails:', err);
-        Toast.show({ type: 'error', text1: t('common.errors.unknownError'), position: 'bottom' });
+        toast.error(t('common.errors.unknownError'));
       }
     }, { confirmStyle: 'destructive' });
   }, [showConfirm, webApi, t, emails, loadEmails]);

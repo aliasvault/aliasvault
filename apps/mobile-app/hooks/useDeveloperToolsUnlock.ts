@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 /**
  * Storage key for the developer tools toggle. Kept out of LocalPreferencesService on purpose:
@@ -93,12 +93,7 @@ export function useDeveloperToolsUnlock(): DeveloperToolsUnlock {
 
     writeEnabled(true).then(() => {
       setIsEnabled(true);
-      Toast.show({
-        type: 'success',
-        text1: 'Developer tools enabled',
-        position: 'bottom',
-        visibilityTime: 2000,
-      });
+      toast.success('Developer tools enabled', { duration: 2000 });
     });
   }, [isEnabled]);
 

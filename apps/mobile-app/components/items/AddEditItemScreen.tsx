@@ -12,7 +12,7 @@ import { usePreventRemove } from 'expo-router/react-navigation';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { logoToDataUri, type DisplayItem } from '@/utils/DisplayItem';
 import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
@@ -42,7 +42,6 @@ import { ItemTypeSelector } from '@/components/items/ItemTypeSelector';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { AliasVaultToast } from '@/components/Toast';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -484,11 +483,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       }
     } catch (err) {
       console.error('Error loading item:', err);
-      Toast.show({
-        type: 'error',
-        text1: t('common.error'),
-        text2: t('common.errors.unknownErrorTryAgain')
-      });
+      toast.error(t('common.error'), { description: t('common.errors.unknownErrorTryAgain') });
     }
   }, [editRef, dbContext.sqliteClient, t]);
 
@@ -882,17 +877,9 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
         setTimeout(() => {
           if (isEditMode) {
-            Toast.show({
-              type: 'success',
-              text1: t('items.toasts.itemUpdated'),
-              position: 'bottom'
-            });
+            toast.success(t('items.toasts.itemUpdated'));
           } else {
-            Toast.show({
-              type: 'success',
-              text1: t('items.toasts.itemCreated'),
-              position: 'bottom'
-            });
+            toast.success(t('items.toasts.itemCreated'));
             if (currentRef) {
               router.push(itemRoute(currentRef, itemToSave.Name));
             }
@@ -900,12 +887,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
         }, 100);
       }
     } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: t('common.error'),
-        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
-        position: 'bottom'
-      });
+      toast.error(t('common.error'), { description: error instanceof Error ? error.message : t('common.errors.unknownError') });
       console.error('Error saving item:', error);
       setIsSaving(false);
       setIsSaveDisabled(false);
@@ -942,11 +924,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     HapticsUtility.notification(Haptics.NotificationFeedbackType.Warning);
 
     setTimeout(() => {
-      Toast.show({
-        type: 'success',
-        text1: t('items.toasts.itemDeleted'),
-        position: 'bottom'
-      });
+      toast.success(t('items.toasts.itemDeleted'));
     }, 200);
 
     setShowDeleteConfirm(false);
@@ -1644,7 +1622,6 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
           </ScrollView>
         </KeyboardAvoidingView>
       </ThemedContainer>
-      <AliasVaultToast />
 
       <ConfirmDialog
         isVisible={showDeleteConfirm}

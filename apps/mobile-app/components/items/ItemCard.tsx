@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Text, Keyboard, Platform, Pressable } from 'react-native';
 import ContextMenu, { type ContextMenuAction, ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 import type { NativeSyntheticEvent } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { SelectableListRow } from '@/components/common/SelectableListRow';
 import { ItemIcon } from '@/components/items/ItemIcon';
@@ -149,11 +149,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
           if (username) {
             await copyToClipboard(username);
             if (Platform.OS === 'ios') {
-              Toast.show({
-                type: 'success',
-                text1: t('items.toasts.usernameCopied'),
-                position: 'bottom',
-              });
+              toast.success(t('items.toasts.usernameCopied'));
             }
           }
         }
@@ -164,11 +160,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
           if (email) {
             await copyToClipboard(email);
             if (Platform.OS === 'ios') {
-              Toast.show({
-                type: 'success',
-                text1: t('items.toasts.emailCopied'),
-                position: 'bottom',
-              });
+              toast.success(t('items.toasts.emailCopied'));
             }
           }
         }
@@ -179,11 +171,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
           if (password) {
             await copyToClipboard(password);
             if (Platform.OS === 'ios') {
-              Toast.show({
-                type: 'success',
-                text1: t('items.toasts.passwordCopied'),
-                position: 'bottom',
-              });
+              toast.success(t('items.toasts.passwordCopied'));
             }
           }
         }
@@ -199,11 +187,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
                 if (code) {
                   await copyToClipboard(code);
                   if (Platform.OS === 'ios') {
-                    Toast.show({
-                      type: 'success',
-                      text1: t('items.toasts.totpCodeCopied'),
-                      position: 'bottom',
-                    });
+                    toast.success(t('items.toasts.totpCodeCopied'));
                   }
                 }
               }

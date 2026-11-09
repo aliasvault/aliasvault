@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform, RefreshControl, Share, TouchableOpacity } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
@@ -136,7 +136,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
 
     return () : void => {
       itemChangedSub.remove();
-      Toast.hide();
+      toast.dismiss();
     };
   }, [itemRef, loadItem]);
 
@@ -170,11 +170,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
       await copyToClipboardWithExpiration(url, timeoutSeconds);
 
       if (Platform.OS === 'ios') {
-        Toast.show({
-          type: 'success',
-          text1: t('items.toasts.urlCopied'),
-          position: 'bottom',
-        });
+        toast.success(t('items.toasts.urlCopied'));
       }
     } catch (error) {
       console.error('Failed to copy URL to clipboard:', error);

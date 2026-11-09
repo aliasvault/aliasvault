@@ -10,7 +10,7 @@ import { Stack, useNavigation, useRouter, useLocalSearchParams } from 'expo-rout
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshControl, FlatList } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
@@ -240,11 +240,7 @@ export default function FolderViewScreen(): React.ReactNode {
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading folder items:', err);
-      Toast.show({
-        type: 'error',
-        text1: t('items.errorLoadingItems'),
-        text2: t('common.errors.unknownError'),
-      });
+      toast.error(t('items.errorLoadingItems'), { description: t('common.errors.unknownError') });
       setIsLoadingItems(false);
     }
   }, [dbContext.sqliteClient, folderRef, setIsLoadingItems, setSortOrder, t]);
@@ -304,10 +300,10 @@ export default function FolderViewScreen(): React.ReactNode {
         await syncVault();
         emitter.emit('itemChanged');
         await reloadShared();
-        Toast.show({ type: 'success', text1: sharingText.vaultDeleted });
+        toast.success(sharingText.vaultDeleted);
         router.dismissTo('/(tabs)/items');
       } catch (deleteError) {
-        Toast.show({ type: 'error', text1: sharingFailureMessage(deleteError, sharingText.errors.deleteVaultFailed) });
+        toast.error(sharingFailureMessage(deleteError, sharingText.errors.deleteVaultFailed));
       }
     }, { confirmStyle: 'destructive' });
   }, [currentShared, folder?.Name, showConfirm, runWithPassword, webApi, syncVault, reloadShared, router, t]);

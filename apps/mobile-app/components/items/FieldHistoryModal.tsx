@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
@@ -116,12 +116,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
       });
       // Reload history after deletion
       await loadHistory();
-      Toast.show({
-        type: 'success',
-        text1: t('common.delete'),
-        position: 'bottom',
-        visibilityTime: 2000,
-      });
+      toast.success(t('common.delete'), { duration: 2000 });
     } catch (error) {
       console.error('Error deleting field history:', error);
     }
@@ -270,12 +265,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
                   try {
                     const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
                     await copyToClipboardWithExpiration(value, timeoutSeconds);
-                    Toast.show({
-                      type: 'success',
-                      text1: t('common.copied'),
-                      position: 'bottom',
-                      visibilityTime: 2000,
-                    });
+                    toast.success(t('common.copied'), { duration: 2000 });
                   } catch (error) {
                     console.error('Failed to copy:', error);
                   }

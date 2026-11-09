@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { toast } from 'sonner-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useFloatingBottomInset } from '@/hooks/useFloatingBottomInset';
@@ -97,29 +97,16 @@ export function ServerSyncIndicator(): React.ReactNode {
           await dbContext.refreshSyncState();
           if (dbContext.isOffline) {
             // We were offline but now succeeded
-            Toast.show({
-              type: 'success',
-              text1: t('sync.backOnline'),
-              position: 'bottom',
-            });
+            toast.success(t('sync.backOnline'));
           }
           setIsRetrying(false);
         },
         onOffline: () => {
-          Toast.show({
-            type: 'error',
-            text1: t('sync.stillOffline'),
-            position: 'bottom',
-          });
+          toast.error(t('sync.stillOffline'));
           setIsRetrying(false);
         },
         onError: (error: string) => {
-          Toast.show({
-            type: 'error',
-            text1: t('sync.syncFailed'),
-            text2: error,
-            position: 'bottom',
-          });
+          toast.error(t('sync.syncFailed'), { description: error });
           setIsRetrying(false);
         },
       });
