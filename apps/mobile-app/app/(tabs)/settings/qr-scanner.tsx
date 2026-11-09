@@ -6,6 +6,7 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { MobileLoginScanHandoff } from '@/utils/MobileLoginScanHandoff';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
@@ -25,6 +26,7 @@ const QR_CODE_PREFIXES = [MobileLoginProtocol.QR_PREFIX];
  */
 export default function QRScannerScreen() : React.ReactNode {
   const colors = useColors();
+  const headerInset = useHeaderInset();
   const { t } = useTranslation();
   const { showAlert } = useDialog();
   const hasLaunchedScanner = useRef(false);
@@ -88,6 +90,7 @@ export default function QRScannerScreen() : React.ReactNode {
     container: {
       flex: 1,
       paddingHorizontal: 0,
+      paddingTop: headerInset,
     },
     loadingContainer: {
       alignItems: 'center',

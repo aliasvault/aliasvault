@@ -1,7 +1,8 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { FieldTypes, getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useVerticalBarEdgeIOS } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform, RefreshControl, Share, TouchableOpacity } from 'react-native';
@@ -31,13 +32,17 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { HeaderBackButton } from '@/components/ui/HeaderBackButton';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 import type { NativeSyntheticEvent } from 'react-native';
 import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
+
+/**
+ * Empty header background for the iPhone Duo rail pose.
+ */
+const noHeaderBackground = (): null => null;
 
 /**
  * Item details screen.
@@ -50,6 +55,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
   const dbContext = useDb();
   const navigation = useNavigation();
   const colors = useColors();
+  const verticalBarEdge = useVerticalBarEdgeIOS();
   const router = useRouter();
   const navigate = useNavigationDebounce();
   const { t } = useTranslation();
@@ -61,39 +67,24 @@ export default function ItemDetailsScreen() : React.ReactNode {
     navigate(() => router.push(itemEditRoute(itemRef)));
   }, [itemRef, router, navigate]);
 
-  // Set header buttons
+  // Header button on Android. On iOS it is a native bar button item (the toolbar below), which the iPhone Duo bar rail picks up.
   useEffect(() => {
-    const headerOptions: Record<string, unknown> = {
-      /**
-       * Header back button.
-       */
-      headerLeft: (): React.ReactNode => (
-        <HeaderBackButton
-          label={t('items.title')}
-          onPress={() => router.back()}
-        />
-      ),
+    if (Platform.OS === 'ios') {
+      return;
+    }
+    navigation.setOptions({
       /**
        * Header right button.
        */
       headerRight: (): React.ReactNode => (
         <View style={styles.headerRightContainer}>
-          <RobustPressable
-            onPress={handleEdit}
-            style={styles.headerRightButton}
-          >
-            <MaterialIcons
-              name="edit"
-              size={Platform.OS === 'android' ? 24 : 22}
-              color={colors.primary}
-            />
+          <RobustPressable onPress={handleEdit} style={styles.headerRightButton}>
+            <MaterialIcons name="edit" size={24} color={colors.primary} />
           </RobustPressable>
         </View>
       ),
-    };
-
-    navigation.setOptions(headerOptions);
-  }, [navigation, item, handleEdit, colors.primary, router, t]);
+    });
+  }, [navigation, handleEdit, colors.primary]);
 
   /**
    * Load the item, returns false when it no longer exists.
@@ -306,15 +297,21 @@ export default function ItemDetailsScreen() : React.ReactNode {
 
   return (
     <ThemedContainer>
+      {/* In the iPhone Duo rail pose the back and edit buttons live in the rail, so the top bar is dropped. */}
+      <Stack.Screen options={verticalBarEdge === null ? { title: item.Name ?? t('items.itemDetails') } : { title: '', headerShown: false, headerBackground: noHeaderBackground }} />
+      {Platform.OS === 'ios' && (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="pencil" onPress={handleEdit}>{t('common.edit')}</Stack.Toolbar.Button>
+        </Stack.Toolbar>
+      )}
       <ThemedScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={verticalBarEdge !== null ? styles.scrollContentNoHeader : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
-            progressViewOffset={Platform.OS === 'ios' ? 44 : undefined}
           />
         }
       >
@@ -371,8 +368,8 @@ const styles = StyleSheet.create({
     height: 48,
     width: 48,
   },
-  scrollContent: {
-    flexGrow: 1,
+  scrollContentNoHeader: {
+    paddingTop: 0,
   },
   serviceName: {
     fontSize: 24,

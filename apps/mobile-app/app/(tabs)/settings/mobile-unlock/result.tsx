@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -19,7 +18,6 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
   const { success, reason } = useLocalSearchParams<{ success: string; reason?: string }>();
 
   const isSuccess = success === 'true';
@@ -78,7 +76,7 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
     },
     buttonContainer: {
       marginTop: 20,
-      paddingBottom: insets.bottom + 80,
+      paddingBottom: 20,
       paddingHorizontal: 20,
       width: '100%',
     },
