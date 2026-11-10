@@ -356,6 +356,12 @@
     "yes": "Tá"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Líonadh uathoibríoch 2FA",
     "autofillWithAliasVault": "Ainm úsáideora/pasfhocal uathlíonta",
     "dismissPopup": "Díbhe aníos",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "Ní bhfuarthas aon mheaitseálacha cód 2FA",
     "openAliasVaultToUpgrade": "Oscail AliasVault le huasghrádú",
     "savePrompt": {
-      "addUrlTitle": "An bhfuil tú ag iarraidh URL a chur leis an dintiúir?",
       "neverForThisSite": "Choíche don suíomh seo",
       "title": "Sábháil chuig AliasVault?"
     },
