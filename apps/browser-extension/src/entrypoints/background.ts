@@ -5,6 +5,7 @@
 import '@/platform/ClientServices';
 
 import { broadcastVaultUnlocked, handleAwaitPendingAuth, handleLoginWithMobile, handleLoginWithPassword, handleLoginWithTwoFactor, handleUnlockWithPassword, handleUnlockWithPin } from '@/entrypoints/background/AuthHandler';
+import { handleGetAutofillConfirmation, handleResolveAutofillConfirmation } from '@/entrypoints/background/AutofillConfirmHandler';
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { handleBlockLoginSaveForDomain, handleDisableAutofillForSite, handleDismissVaultLockedPopup, handleGetContentSettings, handleGetLanguage, handleIsLoginSaveBlocked, restrictContentScriptStorage } from '@/entrypoints/background/ContentSettingsHandler';
@@ -355,6 +356,8 @@ export default defineBackground({
 
     // Fill data for the one item picked in the in-page popup; records the pick (recently selected, last autofilled, usage)
     onMessage('GET_AUTOFILL_CREDENTIAL', ({ data, sender }) => handleGetAutofillCredential(data, getAutofillSender(sender)));
+    onExtensionPageMessage('GET_AUTOFILL_CONFIRMATION', ({ data }) => handleGetAutofillConfirmation(data));
+    onExtensionPageMessage('RESOLVE_AUTOFILL_CONFIRMATION', ({ data }) => handleResolveAutofillConfirmation(data));
 
     // Record item usage (last used + counts) into the Stats data bucket; autofill from content scripts is recorded by the background
     onExtensionPageMessage('RECORD_ITEM_USAGE', ({ data }) => handleRecordItemUsage(data));

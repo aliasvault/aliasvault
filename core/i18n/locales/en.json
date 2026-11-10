@@ -356,6 +356,13 @@
     "yes": "Yes"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "savedFor": "Website URL: {{websites}}",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill username/password",
     "dismissPopup": "Dismiss popup",
@@ -368,7 +375,6 @@
     "noTotpItemsFound": "No 2FA code matches found",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "savePrompt": {
-      "addUrlTitle": "Add URL to credential?",
       "neverForThisSite": "Never for this site",
       "title": "Save to AliasVault?"
     },

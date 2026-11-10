@@ -668,11 +668,15 @@ function createTotpItem(
   itemElement.appendChild(itemInfo);
   itemElement.appendChild(createPopoutIcon(item, rootContainer));
 
-  // Handle click to fill TOTP code
-  addReliableClickHandler(itemInfo, async () => {
-    await fillTotpCode(item, input);
+  /**
+   * Fill the picked item's TOTP code; `confirm` has the background ask in an extension window first.
+   * The popup goes first, so the backup click handler cannot pick again while a confirmation is open.
+   */
+  const pickItem = (confirm: boolean): void => {
+    void fillTotpCode(item, input, confirm);
     removeExistingPopup(rootContainer);
-  });
+  };
+  addReliableClickHandler(itemInfo, () => pickItem(false), () => pickItem(true));
 
   return itemElement;
 }
@@ -1450,11 +1454,14 @@ function createItemList(items: AutofillItemSummary[], input: HTMLInputElement, r
       itemElement.appendChild(itemInfo);
       itemElement.appendChild(createPopoutIcon(item, rootContainer));
 
-      // Update click handler to only trigger on itemInfo with security validation
-      addReliableClickHandler(itemInfo, () => {
-        fillItem(item, input);
+      /**
+       * Fill the picked item; `confirm` has the background ask in an extension window first.
+       */
+      const pickItem = (confirm: boolean): void => {
+        fillItem(item, input, confirm);
         removeExistingPopup(rootContainer);
-      });
+      };
+      addReliableClickHandler(itemInfo, () => pickItem(false), () => pickItem(true));
 
       elements.push(itemElement);
     });
@@ -1483,8 +1490,7 @@ export async function dismissVaultLockedPopup(): Promise<void> {
 }
 
 /**
- * Add click handler with mousedown/mouseup backup for better click reliability in shadow DOM.
- * Now includes optional security validation.
+ * Add click handler with validation and mousedown/mouseup backup for better click reliability in shadow DOM.
  *
  * Some websites due to their design cause the AliasVault autofill to re-trigger when clicking
  * outside of the input field, which causes the AliasVault popup to close before the click event
@@ -1492,20 +1498,36 @@ export async function dismissVaultLockedPopup(): Promise<void> {
  */
 function addReliableClickHandler(
   element: HTMLElement,
-  handler: (e: Event) => void
+  handler: (e: Event) => void,
+  onObscured?: (e: Event) => void
 ): void {
+  if (onObscured) {
+    clickValidator.trackVisibility(element);
+  }
+
   /**
    * Secure wrapper that validates clicks before executing handler
    */
   const secureHandler = async (e: Event): Promise<void> => {
     const mouseEvent = e as MouseEvent;
 
-    if (!await clickValidator.validateClick(mouseEvent)) {
-      console.warn(`[AliasVault Security] Blocked click action due to security validation failure`);
+    if (!onObscured) {
+      if (await clickValidator.validateClick(mouseEvent)) {
+        handler(e);
+      } else {
+        console.warn(`[AliasVault Security] Blocked click action due to security validation failure`);
+      }
       return;
     }
 
-    handler(e);
+    const verdict = clickValidator.verifyClick(mouseEvent, element);
+    if (verdict === 'allowed') {
+      handler(e);
+    } else if (verdict === 'obscured') {
+      onObscured(e);
+    } else {
+      console.warn(`[AliasVault Security] Blocked click action due to security validation failure`);
+    }
   };
 
   // Add primary click listener with capture and prevent removal

@@ -347,6 +347,53 @@ async function recordAutofill(item: ItemRef, sender: AutofillSender): Promise<vo
 }
 
 /**
+ * Whether the item fills without asking: one of its URLs matches the page under the user's matching mode, or the user approved it on
+ * this root domain within the last minute.
+ */
+async function matchesSenderPage(item: Item, pageUrl: string): Promise<boolean> {
+  // An item without a URL only matches by name, which a look-alike domain can trigger; it needs the window, which can also link a URL.
+  const hasUrl = getFieldValues(item, FieldKey.LoginUrl).some((url) => url.trim() !== '');
+  const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+  if (hasUrl && (await filterItems([item], pageUrl, '', matchingMode)).length > 0) {
+    return true;
+  }
+
+  const recentlySelected = await RecentlySelectedItemService.getRecentlySelected(await extractRootDomainFromUrl(pageUrl));
+  return recentlySelected !== null && isSameItem(item, recentlySelected);
+}
+
+/**
+ * Whether the item may be filled into the page. A matching pick goes through as-is; an item of another website, or a pick the
+ * in-page popup could not verify (`confirm`), first needs the user's yes in an extension window the page cannot cover, which
+ * can also add the page URL to the item.
+ */
+async function isFillApproved(item: Item, pageUrl: string, tabId: number | undefined, confirm: boolean): Promise<boolean> {
+  const matchesPage = await matchesSenderPage(item, pageUrl);
+  if (matchesPage && !confirm) {
+    return true;
+  }
+
+  const answer = await confirmAutofillInWindow({
+    itemName: item.Name ?? '',
+    itemDetails: toAutofillSummary(item).Details,
+    itemUrls: getFieldValues(item, FieldKey.LoginUrl),
+    logoSrc: SqliteClient.imgSrcFromBytes(item.Logo) ?? undefined,
+    pageHost: new URL(pageUrl).hostname,
+    matchesPage,
+  }, tabId);
+
+  // The vault may have been locked while the window was open.
+  if (answer === 'cancel' || await handleGetEncryptionKey() === null) {
+    return false;
+  }
+
+  if (answer === 'link' && !matchesPage) {
+    await addPageUrlToItem(item, pageUrl);
+  }
+  return true;
+}
+
+/**
  * Filter items by URL matching.
  *
  * @param items - The items to filter
@@ -1269,9 +1316,9 @@ export async function handleGetTotpCodes(
  * @param sender - The sending frame.
  */
 export async function handleGenerateTotpCode(
-  message: { itemId: string; manifestId: string; autofill?: boolean },
+  message: { itemId: string; manifestId: string; autofill?: boolean; confirm?: boolean },
   sender: AutofillSender
-): Promise<{ success: boolean; code?: string; error?: string }> {
+): Promise<{ success: boolean; code?: string; error?: string; cancelled?: boolean }> {
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1284,6 +1331,18 @@ export async function handleGenerateTotpCode(
 
     if (totpCodes.length === 0) {
       return { success: false, error: 'No TOTP codes found for this item' };
+    }
+
+    // Filling a code into a page takes the same approval as filling a password.
+    if (message.autofill) {
+      const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
+      if (!item || !sender.pageUrl) {
+        return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+      }
+
+      if (!await isFillApproved(item, sender.pageUrl, sender.tabId, message.confirm === true)) {
+        return { success: false, cancelled: true };
+      }
     }
 
     const code = await generateTotpCode(totpCodes[0].SecretKey, totpCodes[0]);
@@ -1331,14 +1390,15 @@ export async function handleRecordItemUsage(
 
 /**
  * Hand out the fill data of the one item the user picked in the in-page popup, and remember the pick for the sender's tab.
+ * An item of another website, or a pick the popup could not verify, is only handed out after the user confirms it.
  *
- * @param message - The item to fill.
+ * @param message - The item to fill, and whether the popup asks for a confirmation.
  * @param sender - The sending frame.
  */
 export async function handleGetAutofillCredential(
-  message: { itemId: string; manifestId: string },
+  message: { itemId: string; manifestId: string; confirm?: boolean },
   sender: AutofillSender
-): Promise<{ success: boolean; credential?: Credential; error?: string }> {
+): Promise<{ success: boolean; credential?: Credential; error?: string; cancelled?: boolean }> {
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1352,22 +1412,12 @@ export async function handleGetAutofillCredential(
       return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
     }
 
+    if (!await isFillApproved(item, sender.pageUrl, sender.tabId, message.confirm === true)) {
+      return { success: false, cancelled: true };
+    }
+
     const { Id, ServiceName, Username, Password, Alias } = itemToCredential(item);
 
-    if (sender.tabId !== undefined) {
-      handleStoreLastAutofilled({
-        tabId: sender.tabId,
-        credential: {
-          itemId: item.Id,
-          manifestId: item.ManifestId,
-          itemName: ServiceName,
-          username: Username || Alias.Email || '',
-          domain: new URL(sender.pageUrl).hostname,
-          timestamp: Date.now(),
-          faviconUrl: SqliteClient.imgSrcFromBytes(item.Logo) ?? undefined,
-        },
-      });
-    }
     await recordAutofill(item, sender);
 
     return { success: true, credential: { Id, ServiceName, Username, Password, Alias } };
