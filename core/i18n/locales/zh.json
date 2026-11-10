@@ -356,6 +356,12 @@
     "yes": "是"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "自动填充两步验证码",
     "autofillWithAliasVault": "自动填充用户名/密码",
     "dismissPopup": "关闭弹窗",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "未找到匹配的两步验证码",
     "openAliasVaultToUpgrade": "打开 AliasVault 进行升级",
     "savePrompt": {
-      "addUrlTitle": "将 URL 添加到凭据？",
       "neverForThisSite": "此网站不再显示",
       "title": "保存到 AliasVault？"
     },
