@@ -356,6 +356,12 @@
     "yes": "Ya"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Pengisian Otomatis 2FA",
     "autofillWithAliasVault": "Isi otomatis nama pengguna/kata sandi",
     "dismissPopup": "Tutup jendela pop-up",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "Tidak ditemukan kode 2FA yang cocok",
     "openAliasVaultToUpgrade": "Buka AliasVault untuk memperbarui",
     "savePrompt": {
-      "addUrlTitle": "Tambah URL ke kredensial?",
       "neverForThisSite": "Jangan pernah untuk situs ini",
       "title": "Simpan ke AliasVault?"
     },
