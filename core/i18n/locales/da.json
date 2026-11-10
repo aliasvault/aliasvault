@@ -356,6 +356,12 @@
     "yes": "Ja"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofyld 2FA",
     "autofillWithAliasVault": "Autoudfyld brugernavn/adgangskode",
     "dismissPopup": "Luk popup",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "Ingen 2FA kode match fundet",
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "savePrompt": {
-      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?",
       "neverForThisSite": "Aldrig for dette websted",
       "title": "Gem i AliasVault?"
     },
