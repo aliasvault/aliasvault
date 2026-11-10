@@ -164,7 +164,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(),
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(
@@ -185,7 +184,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(),
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(
@@ -207,7 +205,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(),
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(
@@ -234,7 +231,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(),
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(
@@ -258,7 +254,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(),
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(
@@ -303,7 +298,6 @@ describe('SavePrompt persistence', () => {
         initialAutoDismissMs: 15000,
         savedAt: Date.now(), // Just saved, no time elapsed
         domain: 'example.com',
-        promptType: 'save',
       };
 
       await restoreSavePromptFromState(

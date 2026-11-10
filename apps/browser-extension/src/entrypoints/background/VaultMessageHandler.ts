@@ -20,9 +20,10 @@ import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type Sha
 import { type EmailClaimTransfer, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { bytesToBase64 } from '@aliasvault/client/utilities/Base64';
-import { FieldKey, ItemTypes, createSystemField, getFieldValue, itemToCredential, normalizeTotpPeriod, type Credential, type Item } from '@aliasvault/models/vault';
+import { FieldKey, ItemTypes, createSystemField, getFieldValue, getFieldValues, itemToCredential, normalizeTotpPeriod, type Credential, type Item } from '@aliasvault/models/vault';
 
-import { clearAllSavePromptState, handleGetLastAutofilled, handleStoreLastAutofilled, isRelatedDomain } from '@/entrypoints/background/SavePromptStateHandler';
+import { confirmAutofillInWindow } from '@/entrypoints/background/AutofillConfirmHandler';
+import { clearAllSavePromptState, isRelatedDomain } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
@@ -333,17 +334,6 @@ async function isUrlOnSenderPage(url: string, sender: AutofillSender): Promise<b
   } catch {
     return false;
   }
-}
-
-/**
- * Whether the item is the one the background last handed out for autofill in the sender's tab, and `url` is on the sender's page.
- */
-async function isLastAutofilledOnSenderPage(item: ItemRef, url: string, sender: AutofillSender): Promise<boolean> {
-  if (sender.tabId === undefined || !await isUrlOnSenderPage(url, sender)) {
-    return false;
-  }
-  const last = handleGetLastAutofilled({ tabId: sender.tabId }).credential;
-  return last !== null && last.itemId === item.Id && last.manifestId === item.ManifestId;
 }
 
 /**
@@ -1098,104 +1088,44 @@ export async function handleSaveLoginCredential(
 }
 
 /**
- * Add a URL to an existing credential in the vault.
- * This is used when a user autofills from an existing credential on a new site
- * and wants to add that URL to the credential instead of creating a new one.
- * Only the item last autofilled in the sender's tab can be changed, and only with a URL on the sender's page.
- *
- * @param message - The item ID and URL to add.
- * @param sender - The sending frame.
- * @returns Success status.
+ * Add the origin of the page to the item's URLs, so it matches that page from now on. A failure is logged and does not block the fill.
  */
-export async function handleAddUrlToCredential(message: { itemId: string; manifestId: string; url: string }, sender: AutofillSender): Promise<{ success: boolean; error?: string }> {
-  if (!await isLastAutofilledOnSenderPage({ Id: message.itemId, ManifestId: message.manifestId }, message.url, sender)) {
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
-  }
-
+async function addPageUrlToItem(itemRef: ItemRef, pageUrl: string): Promise<void> {
+  const url = ServiceDetectionUtility.sanitizeUrl(pageUrl);
   const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  if (!url || !encryptionKey) {
+    return;
   }
 
   try {
+    // Read the item again: the vault may have changed while the confirmation window was open.
     const sqliteClient = await createVaultSqliteClient();
-    const url = ServiceDetectionUtility.sanitizeUrl(message.url) || message.url;
-
-    // Get the existing item
-    const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
+    const item = sqliteClient.items.getById({ Id: itemRef.Id, ManifestId: itemRef.ManifestId });
     if (!item) {
-      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+      return;
     }
 
-    // Find the existing URL field
     const urlFieldIndex = item.Fields?.findIndex(f => f.FieldKey === FieldKey.LoginUrl);
-
     if (urlFieldIndex !== undefined && urlFieldIndex >= 0) {
       const existingField = item.Fields![urlFieldIndex];
       const existingUrls = Array.isArray(existingField.Value) ? existingField.Value : (existingField.Value ? [existingField.Value] : []);
 
-      /*
-       * Compare on host only (subdomain + domain) so trailing slashes, paths,
-       * query strings, fragments, `www.`, and http/https differences don't
-       * cause us to store a near-duplicate URL on the credential.
-       */
+      // Compare on host only, so http/https, `www.` and path differences do not store a near-duplicate URL.
       if (await isUrlAlreadyLinked(existingUrls as string[], url)) {
-        return { success: true };
+        return;
       }
-
-      // Add the new URL
       item.Fields![urlFieldIndex].Value = [...existingUrls, url];
     } else {
-      // No URL field exists - create one
-      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: url });
-      if (!item.Fields) {
-        item.Fields = [];
-      }
-      item.Fields.push(newUrlField);
+      item.Fields = [...(item.Fields ?? []), createSystemField(FieldKey.LoginUrl, { value: url })];
     }
 
-    // Update the item's timestamp
     item.UpdatedAt = new Date().toISOString();
-
-    // Update the item in the vault
     await sqliteClient.items.update({ Id: item.Id, ManifestId: item.ManifestId }, item, [], [], [], []);
 
     // Persist locally and sync in the background (doesn't block when server is offline).
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
-
-    return { success: true };
   } catch (error) {
-    logFailure('Failed to add URL to credential', error);
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
-  }
-}
-
-/**
- * Check whether a URL is already linked (host-equivalent) to a credential.
- */
-export async function handleIsUrlLinkedToCredential(message: { itemId: string; manifestId: string; url: string }, sender: AutofillSender): Promise<{ linked: boolean }> {
-  try {
-    if (!await isLastAutofilledOnSenderPage({ Id: message.itemId, ManifestId: message.manifestId }, message.url, sender)) {
-      return { linked: false };
-    }
-    const encryptionKey = await handleGetEncryptionKey();
-    if (!encryptionKey) {
-      return { linked: false };
-    }
-    const sqliteClient = await createVaultSqliteClient();
-    const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
-    if (!item) {
-      return { linked: false };
-    }
-    const urlField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginUrl);
-    const existingUrls = urlField
-      ? (Array.isArray(urlField.Value) ? urlField.Value : (urlField.Value ? [urlField.Value] : []))
-      : [];
-    const linked = await isUrlAlreadyLinked(existingUrls as string[], message.url);
-    return { linked };
-  } catch {
-    return { linked: false };
+    logFailure('Failed to add the page URL to the item', error);
   }
 }
 

@@ -6,13 +6,11 @@
 import { uiIconSvg } from '@aliasvault/models/icons';
 
 import { getLogoMarkSvg } from '@/utils/constants/logo';
-import { logExpected, logFailure } from '@/utils/Diagnostics';
-import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
+import { logFailure } from '@/utils/Diagnostics';
+import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
-
-import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
 /** Reference to the current save prompt element */
 let currentPrompt: HTMLElement | null = null;
@@ -47,12 +45,6 @@ let currentLogin: CapturedLogin | null = null;
 /** Current callbacks - stored so we can use them with updated login */
 let currentOnSave: ((login: CapturedLogin, serviceName: string) => void) | null = null;
 
-/** Current prompt type */
-let currentPromptType: 'save' | 'add-url' = 'save';
-
-/** Current existing credential (for add-url prompts) */
-let currentExistingCredential: LastAutofilledCredential | null = null;
-
 /**
  * Create and show the save prompt banner.
  * @param container - The shadow DOM container to append the prompt to.
@@ -67,8 +59,6 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   // Store current login and callback so they can be updated
   currentLogin = login;
   currentOnSave = onSave;
-  currentPromptType = 'save';
-  currentExistingCredential = null;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -260,8 +250,6 @@ export function removeSavePrompt(clearPersisted: boolean = true): void {
   // Reset login state
   currentLogin = null;
   currentOnSave = null;
-  currentPromptType = 'save';
-  currentExistingCredential = null;
 
   // Clear persisted state if user took an action
   if (clearPersisted) {
@@ -322,8 +310,6 @@ export async function restoreSavePromptFromState(
   // Store current login and callback so they can be updated
   currentLogin = login;
   currentOnSave = onSave;
-  currentPromptType = 'save';
-  currentExistingCredential = null;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -385,107 +371,6 @@ export async function restoreSavePromptFromState(
 
   // Set up event listeners
   setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
-
-  /*
-   * Set up beforeunload listener to update state before navigation.
-   * This ensures the prompt reappears after subsequent POST redirects with correct remaining time.
-   */
-  window.addEventListener('beforeunload', handleBeforeUnload);
-  window.addEventListener('pagehide', handleBeforeUnload);
-}
-
-/**
- * Restore an "Add URL" prompt from persisted state.
- * Used to continue showing the prompt after a page navigation.
- * @param container - The shadow DOM container to append the prompt to.
- * @param state - The persisted state to restore from.
- * @param onAddUrl - Callback when user clicks "Add URL".
- * @param onDismiss - Callback when prompt is dismissed.
- */
-export async function restoreAddUrlPromptFromState(
-  container: HTMLElement,
-  state: SavePromptPersistedState,
-  onAddUrl: (item: ItemRef, url: string) => void,
-  onDismiss: () => void
-): Promise<void> {
-  // Clear the persisted state now that we're restoring
-  await clearPersistedSavePromptState();
-
-  // Remove any existing prompt first (without clearing persisted state again)
-  removeSavePrompt(false);
-
-  const { login, remainingTimeMs: restoredRemainingTime, initialAutoDismissMs: restoredInitialMs, existingCredential } = state;
-
-  if (!existingCredential) {
-    logExpected('[AliasVault] Cannot restore the Add URL prompt, its credential is gone');
-    return;
-  }
-
-  // Store current login and prompt info
-  currentLogin = login;
-  currentPromptType = 'add-url';
-  currentExistingCredential = existingCredential;
-
-  // Create prompt element
-  const prompt = document.createElement('div');
-  prompt.className = 'av-save-prompt';
-  prompt.innerHTML = await createAddUrlPromptHTML(login, existingCredential);
-
-  // Add to container
-  container.appendChild(prompt);
-  currentPrompt = prompt;
-
-  // Trigger slide-in animation
-  requestAnimationFrame(() => {
-    prompt.classList.add('av-save-prompt--visible');
-  });
-
-  // Set up auto-dismiss with the remaining time from persisted state
-  if (restoredRemainingTime > 0) {
-    // Initialize countdown state with remaining time
-    initialAutoDismissMs = restoredInitialMs;
-    currentAutoDismissMs = restoredRemainingTime;
-    remainingTimeMs = restoredRemainingTime;
-    countdownStartTime = Date.now();
-    isAutoDismissPaused = false;
-    onAutoDismissCallback = onDismiss;
-
-    // Create countdown bar and start with adjusted width
-    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
-
-    // Calculate what percentage of time is remaining
-    const percentRemaining = (restoredRemainingTime / restoredInitialMs) * 100;
-
-    if (countdownBar) {
-      // Set initial width to reflect remaining time (no transition yet)
-      countdownBar.style.transition = 'none';
-      countdownBar.style.width = `${percentRemaining}%`;
-
-      /*
-       * Use double requestAnimationFrame to ensure the initial width is rendered
-       * before starting the transition. Single rAF can batch with the width set.
-       */
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (countdownBar) {
-            countdownBar.style.transition = `width ${restoredRemainingTime}ms linear`;
-            countdownBar.style.width = '0%';
-          }
-        });
-      });
-    }
-
-    autoDismissTimer = window.setTimeout(() => {
-      removeSavePrompt();
-      onDismiss();
-    }, restoredRemainingTime);
-
-    // Set up hover/focus listeners to pause countdown
-    setupPauseListeners(prompt);
-  }
-
-  // Set up event listeners for add URL prompt
-  setupAddUrlEventListeners(prompt, login, existingCredential, onAddUrl, onDismiss);
 
   /*
    * Set up beforeunload listener to update state before navigation.
@@ -730,8 +615,6 @@ async function persistSavePromptState(): Promise<void> {
     initialAutoDismissMs,
     savedAt: Date.now(),
     domain: currentLogin.domain,
-    promptType: currentPromptType,
-    existingCredential: currentExistingCredential ?? undefined,
   };
 
   try {
@@ -787,145 +670,3 @@ export async function clearPersistedSavePromptState(): Promise<void> {
     logFailure('[AliasVault] Error clearing persisted save prompt state', error);
   }
 }
-
-/**
- * Create and show the "Add URL to existing credential" prompt banner.
- * This is shown when a user logs in using an autofilled credential that doesn't have a URL match.
- * @param container - The shadow DOM container to append the prompt to.
- * @param options - Configuration options for the prompt.
- */
-export async function showAddUrlPrompt(container: HTMLElement, options: AddUrlPromptOptions): Promise<void> {
-  // Remove any existing prompt first
-  removeSavePrompt();
-
-  const { login, existingCredential, onAddUrl, onDismiss, autoDismissMs = 10000 } = options;
-
-  // Store current login and prompt info
-  currentLogin = login;
-  currentPromptType = 'add-url';
-  currentExistingCredential = existingCredential;
-
-  // Create prompt element
-  const prompt = document.createElement('div');
-  prompt.className = 'av-save-prompt';
-  prompt.innerHTML = await createAddUrlPromptHTML(login, existingCredential);
-
-  // Add to container
-  container.appendChild(prompt);
-  currentPrompt = prompt;
-
-  // Trigger slide-in animation
-  requestAnimationFrame(() => {
-    prompt.classList.add('av-save-prompt--visible');
-  });
-
-  // Set up auto-dismiss with countdown bar
-  if (autoDismissMs > 0) {
-    // Initialize countdown state
-    initialAutoDismissMs = autoDismissMs;
-    currentAutoDismissMs = autoDismissMs;
-    remainingTimeMs = autoDismissMs;
-    countdownStartTime = Date.now();
-    isAutoDismissPaused = false;
-    onAutoDismissCallback = onDismiss;
-
-    // Create and start countdown bar animation
-    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
-    startCountdownAnimation(autoDismissMs);
-
-    autoDismissTimer = window.setTimeout(() => {
-      removeSavePrompt();
-      onDismiss();
-    }, autoDismissMs);
-
-    // Set up hover/focus listeners to pause countdown
-    setupPauseListeners(prompt);
-  }
-
-  // Set up event listeners for add URL prompt
-  setupAddUrlEventListeners(prompt, login, existingCredential, onAddUrl, onDismiss);
-
-  /*
-   * Persist state immediately so it survives navigation.
-   */
-  await persistSavePromptState();
-
-  /*
-   * Set up beforeunload listener to update state before navigation.
-   * This ensures the prompt reappears after POST redirects with correct remaining time.
-   */
-  window.addEventListener('beforeunload', handleBeforeUnload);
-  window.addEventListener('pagehide', handleBeforeUnload);
-}
-
-/**
- * Create the HTML for the "Add URL" prompt.
- */
-async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: { itemName: string; faviconUrl?: string }): Promise<string> {
-  const escapedCredentialName = escapeHtml(existingCredential.itemName);
-
-  // Show origin (protocol + hostname) for clarity
-  const urlObj = new URL(login.url);
-  const escapedUrl = escapeHtml(urlObj.origin);
-
-  // Use credential's favicon if available
-  const faviconHtml = existingCredential.faviconUrl
-    ? `<img class="av-save-prompt__credential-favicon" src="${escapeHtml(existingCredential.faviconUrl)}" alt="" width="14" height="14" />`
-    : '';
-
-  const addUrlTitleText = await t('content.savePrompt.addUrlTitle');
-  const addUrlText = await t('common.confirm');
-
-  const content = `
-    <div class="av-save-prompt__add-url-info">
-      <span class="av-save-prompt__url-pill">
-        ${uiIconSvg('plus', { class: 'av-save-prompt__plus-icon', width: '12', height: '12', 'stroke-width': '2.5' })}
-        ${escapedUrl}
-      </span>
-      <span class="av-save-prompt__url-arrow">→</span>
-      <span class="av-save-prompt__credential-pill">${faviconHtml}${escapedCredentialName}</span>
-    </div>
-  `;
-
-  return createPromptFromTemplate({
-    title: addUrlTitleText,
-    content,
-    buttons: [
-      { className: 'av-save-prompt__btn--add-url', label: addUrlText },
-    ],
-  });
-}
-
-/**
- * Set up event listeners for the "Add URL" prompt buttons.
- */
-function setupAddUrlEventListeners(
-  prompt: HTMLElement,
-  login: CapturedLogin,
-  existingCredential: { itemId: string; manifestId: string; itemName: string },
-  onAddUrl: (item: ItemRef, url: string) => void,
-  onDismiss: () => void
-): void {
-  const addUrlBtn = prompt.querySelector('.av-save-prompt__btn--add-url');
-  const dismissBtn = prompt.querySelector('.av-save-prompt__btn--dismiss');
-
-  addUrlBtn?.addEventListener('click', () => {
-    const loginToUse = currentLogin || login;
-    removeSavePrompt();
-    onAddUrl({ Id: existingCredential.itemId, ManifestId: existingCredential.manifestId }, loginToUse.url);
-  });
-
-  dismissBtn?.addEventListener('click', () => {
-    removeSavePrompt();
-    onDismiss();
-  });
-
-  // Handle Escape key anywhere in the prompt
-  prompt.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      removeSavePrompt();
-      onDismiss();
-    }
-  });
-}
-
