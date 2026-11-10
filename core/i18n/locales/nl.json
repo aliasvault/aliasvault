@@ -329,7 +329,7 @@
     "save": "Opslaan",
     "saving": "Opslaan...",
     "select": "Selecteer",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "Selecteer een item om de details te bekijken",
     "selection": {
       "count": "{{count}} geselecteerd",
       "disable": "Schakel selectie uit",
@@ -1532,8 +1532,8 @@
     "theme": "Thema",
     "totpAutofill": "Automatisch invullen van 2FA code",
     "totpAutofillDescription": "Automatisch invullen popup tonen wanneer 2FA code-velden worden gedetecteerd",
-    "twoColumnLayout": "Two-column layout",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayout": "Twee kolommen lay-out",
+    "twoColumnLayoutDescription": "Toont de lijst en het geselecteerde item naast elkaar in landschap formaat.",
     "unlockMethod": {
       "confirmPin": "Bevestig pincode",
       "confirmPinDescription": "Voer je pincode nogmaals in om te bevestigen",
