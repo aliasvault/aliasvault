@@ -329,7 +329,7 @@
     "save": "保存",
     "saving": "保存中…",
     "select": "选择",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "选择一个项目查看详情",
     "selection": {
       "count": "已选择 {{count}} 项",
       "disable": "禁用所选",
@@ -1532,8 +1532,8 @@
     "theme": "主题",
     "totpAutofill": "两步验证码自动填充",
     "totpAutofillDescription": "检测到两步验证码字段时显示自动填充弹窗",
-    "twoColumnLayout": "Two-column layout",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayout": "双列布局",
+    "twoColumnLayoutDescription": "横屏时将列表与所选项目并排显示。",
     "unlockMethod": {
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
