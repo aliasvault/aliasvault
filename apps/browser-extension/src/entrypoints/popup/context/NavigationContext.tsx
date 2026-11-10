@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { AUTH_FLOW_PATHS, PASSKEY_POPUP_PATHS } from '@/entrypoints/popup/utils/routes';
+import { AUTH_FLOW_PATHS, DEDICATED_WINDOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
 import type { NavigationStackState } from '@/utils/NavigationStack';
 import { createNavigationStack, seedNavigationStack, trackNavigation } from '@/utils/NavigationStack';
@@ -55,7 +55,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       ...AUTH_FLOW_PATHS,
       '/auth-settings',
       '/upgrade',
-      ...PASSKEY_POPUP_PATHS
+      ...DEDICATED_WINDOW_PATHS
     ];
 
     // Only store the page if we're fully initialized and don't need auth
@@ -76,9 +76,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [location.pathname, location.search, location.hash, isFullyInitialized, storeCurrentPage]);
 
-  // Listen on isloggedin state to redirect to login page if not logged in. The passkey popup shows its own logged-out view.
+  // Listen on isloggedin state to redirect to login page if not logged in. Dedicated windows show their own logged-out view.
   useEffect(() => {
-    if (isFullyInitialized && !isLoggedIn && !PASSKEY_POPUP_PATHS.includes(location.pathname)) {
+    if (isFullyInitialized && !isLoggedIn && !DEDICATED_WINDOW_PATHS.includes(location.pathname)) {
       navigate('/login', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,10 +87,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   /*
    * Redirect to /unlock when the vault becomes unavailable from another window
    * (e.g. lock triggered in the main popup while the popout is open). Reinitialize
-   * handles the initial-load case, so skip the auth-flow paths. The passkey popup shows its own locked view.
+   * handles the initial-load case, so skip the auth-flow paths. Dedicated windows show their own locked view.
    */
   useEffect(() => {
-    if (isFullyInitialized && isLoggedIn && !dbAvailable && !AUTH_FLOW_PATHS.includes(location.pathname) && !PASSKEY_POPUP_PATHS.includes(location.pathname)) {
+    if (isFullyInitialized && isLoggedIn && !dbAvailable && !AUTH_FLOW_PATHS.includes(location.pathname) && !DEDICATED_WINDOW_PATHS.includes(location.pathname)) {
       navigate('/unlock', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

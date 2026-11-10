@@ -10,9 +10,10 @@ export const AUTH_FLOW_PATHS: readonly string[] = [
 ];
 
 /**
- * Routes of the dedicated passkey popup window, which handle a locked vault themselves.
+ * Routes of the windows the background opens for one request which handle a locked vault themselves.
  */
-export const PASSKEY_POPUP_PATHS: readonly string[] = [
+export const DEDICATED_WINDOW_PATHS: readonly string[] = [
   '/passkeys/create',
   '/passkeys/authenticate',
+  '/autofill/confirm',
 ];
