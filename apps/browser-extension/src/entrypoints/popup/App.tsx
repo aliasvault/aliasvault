@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
+import DedicatedWindowLayout from '@/entrypoints/popup/components/Layout/DedicatedWindowLayout';
 import DefaultLayout from '@/entrypoints/popup/components/Layout/DefaultLayout';
 import Header from '@/entrypoints/popup/components/Layout/Header';
 import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrollbar';
-import PasskeyLayout from '@/entrypoints/popup/components/Layout/PasskeyLayout';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -60,8 +60,8 @@ import { clearPendingRedirectUrl } from './hooks/useVaultLockRedirect';
 enum LayoutType {
   /** Default layout with header, footer navigation, and full UI */
   DEFAULT = 'default',
-  /** Minimal layout for passkey operations - logo only, no footer */
-  PASSKEY = 'passkey',
+  /** Minimal layout for the windows the background opens for one request, logo only, no footer */
+  DEDICATED_WINDOW = 'dedicated-window',
   /** Auth layout for login/unlock pages - no footer menu */
   AUTH = 'auth',
 }
@@ -122,16 +122,16 @@ const AppContent: React.FC<{
 
   // Render based on layout type
   switch (layoutType) {
-    case LayoutType.PASSKEY:
-      // Passkey layout - minimal UI with just logo header
+    case LayoutType.DEDICATED_WINDOW:
+      // Dedicated window layout, minimal UI with just logo header
       return (
-        <PasskeyLayout>
+        <DedicatedWindowLayout>
           {loadingOverlay}
           {message && (
             <p className="mb-4 text-red-500 dark:text-red-400 text-sm">{message}</p>
           )}
           {routesComponent}
-        </PasskeyLayout>
+        </DedicatedWindowLayout>
       );
 
     case LayoutType.AUTH:
@@ -206,9 +206,9 @@ const App: React.FC = () => {
     { path: '/items/deleted', element: <RecentlyDeleted />, showBackButton: true, title: t('items.recentlyDeleted.title') },
     { path: '/items/:manifestId/:id/edit', element: <ItemAddEdit />, showBackButton: true },
     { path: '/items/:manifestId/:id', element: <ItemDetails />, showBackButton: true },
-    { path: '/autofill/confirm', element: <AutofillConfirm />, layout: LayoutType.PASSKEY },
-    { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
-    { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
+    { path: '/autofill/confirm', element: <AutofillConfirm />, layout: LayoutType.DEDICATED_WINDOW },
+    { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.DEDICATED_WINDOW },
+    { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.DEDICATED_WINDOW },
     { path: '/emails', element: <EmailsList />, showBackButton: false },
     { path: '/emails/:id', element: <EmailDetails />, showBackButton: true, title: t('emails.title') },
     { path: '/settings', element: <Settings />, showBackButton: false },

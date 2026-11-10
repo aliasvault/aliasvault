@@ -95,11 +95,6 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
 }
 
 /**
- * Handle save prompt dismissal, which needs no cleanup.
- */
-const handleSavePromptDismiss = (): void => undefined;
-
-/**
  * Check if the login save feature is enabled.
  * @returns Whether the feature is enabled.
  */
@@ -221,7 +216,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
         container.addEventListener('keyup', handleKeyboardEvent, true);
         container.addEventListener('keypress', handleKeyboardEvent, true);
 
-        void restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain, handleSavePromptDismiss);
+        void restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain);
         earlyRestoreCompleted = true;
       },
     });
@@ -272,7 +267,7 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       return;
     }
 
-    await restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain, handleSavePromptDismiss);
+    await restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain);
   } catch (error) {
     logFailure('[AliasVault] Error restoring persisted save prompt', error);
   }
@@ -292,6 +287,11 @@ function initializeLoginDetector(container: HTMLElement): void {
   loginDetector.initialize();
 
   loginDetector.onLoginCapture(async (login: CapturedLogin) => {
+    // A login filled from the vault is already saved, even when its URL list does not include this website.
+    if (isFilledFromVault(login.username)) {
+      return;
+    }
+
     // Check if the feature is enabled
     if (!await isLoginSaveEnabled()) {
       return;
@@ -337,17 +337,11 @@ function initializeLoginDetector(container: HTMLElement): void {
       // Use default
     }
 
-    // A login filled from the vault is already saved, even when its URL list does not include this website.
-    if (isFilledFromVault(login.username)) {
-      return;
-    }
-
     // Show save prompt to offer saving the credentials
     showSavePrompt(container, {
       login,
       onSave: handleSaveLogin,
       onNeverSave: handleNeverSaveForDomain,
-      onDismiss: handleSavePromptDismiss,
       autoDismissMs,
     });
   });

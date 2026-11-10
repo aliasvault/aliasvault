@@ -36,9 +36,6 @@ let currentAutoDismissMs = 0;
 /** Initial auto-dismiss duration (for resetting) */
 let initialAutoDismissMs = 0;
 
-/** Callback for when auto-dismiss triggers */
-let onAutoDismissCallback: (() => void) | null = null;
-
 /** Current login data - can be updated while prompt is visible */
 let currentLogin: CapturedLogin | null = null;
 
@@ -54,7 +51,7 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   // Remove any existing prompt first
   removeSavePrompt();
 
-  const { login, onSave, onNeverSave, onDismiss, autoDismissMs = 10000 } = options;
+  const { login, onSave, onNeverSave, autoDismissMs = 10000 } = options;
 
   // Store current login and callback so they can be updated
   currentLogin = login;
@@ -82,23 +79,19 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
     remainingTimeMs = autoDismissMs;
     countdownStartTime = Date.now();
     isAutoDismissPaused = false;
-    onAutoDismissCallback = onDismiss;
 
     // Create and start countdown bar animation
     countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
     startCountdownAnimation(autoDismissMs);
 
-    autoDismissTimer = window.setTimeout(() => {
-      removeSavePrompt();
-      onDismiss();
-    }, autoDismissMs);
+    autoDismissTimer = window.setTimeout(() => removeSavePrompt(), autoDismissMs);
 
     // Set up hover/focus listeners to pause countdown
     setupPauseListeners(prompt);
   }
 
   // Set up event listeners
-  setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+  setupEventListeners(prompt, login, onSave, onNeverSave);
 
   /*
    * Persist state immediately so it survives navigation.
@@ -170,10 +163,7 @@ function resumeCountdown(): void {
   startCountdownAnimation(remainingTimeMs);
 
   // Set new timer for remaining time
-  autoDismissTimer = window.setTimeout(() => {
-    removeSavePrompt();
-    onAutoDismissCallback?.();
-  }, remainingTimeMs);
+  autoDismissTimer = window.setTimeout(() => removeSavePrompt(), remainingTimeMs);
 }
 
 /**
@@ -207,10 +197,7 @@ function resetCountdown(): void {
   }
 
   // Set new timer
-  autoDismissTimer = window.setTimeout(() => {
-    removeSavePrompt();
-    onAutoDismissCallback?.();
-  }, initialAutoDismissMs);
+  autoDismissTimer = window.setTimeout(() => removeSavePrompt(), initialAutoDismissMs);
 }
 
 /**
@@ -245,7 +232,6 @@ export function removeSavePrompt(clearPersisted: boolean = true): void {
   countdownStartTime = 0;
   currentAutoDismissMs = 0;
   initialAutoDismissMs = 0;
-  onAutoDismissCallback = null;
 
   // Reset login state
   currentLogin = null;
@@ -290,14 +276,12 @@ export function isSavePromptVisible(): boolean {
  * @param state - The persisted state to restore from.
  * @param onSave - Callback when user clicks "Save".
  * @param onNeverSave - Callback when user clicks "Never for this site".
- * @param onDismiss - Callback when prompt is dismissed.
  */
 export async function restoreSavePromptFromState(
   container: HTMLElement,
   state: SavePromptPersistedState,
   onSave: (login: CapturedLogin, serviceName: string) => void,
-  onNeverSave: (domain: string) => void,
-  onDismiss: () => void
+  onNeverSave: (domain: string) => void
 ): Promise<void> {
   // Clear the persisted state now that we're restoring
   await clearPersistedSavePromptState();
@@ -333,7 +317,6 @@ export async function restoreSavePromptFromState(
     remainingTimeMs = restoredRemainingTime;
     countdownStartTime = Date.now();
     isAutoDismissPaused = false;
-    onAutoDismissCallback = onDismiss;
 
     // Create countdown bar and start with adjusted width
     countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
@@ -360,17 +343,14 @@ export async function restoreSavePromptFromState(
       });
     }
 
-    autoDismissTimer = window.setTimeout(() => {
-      removeSavePrompt();
-      onDismiss();
-    }, restoredRemainingTime);
+    autoDismissTimer = window.setTimeout(() => removeSavePrompt(), restoredRemainingTime);
 
     // Set up hover/focus listeners to pause countdown
     setupPauseListeners(prompt);
   }
 
   // Set up event listeners
-  setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+  setupEventListeners(prompt, login, onSave, onNeverSave);
 
   /*
    * Set up beforeunload listener to update state before navigation.
@@ -513,8 +493,7 @@ function setupEventListeners(
   prompt: HTMLElement,
   login: CapturedLogin,
   onSave: (login: CapturedLogin, serviceName: string) => void,
-  onNeverSave: (domain: string) => void,
-  onDismiss: () => void
+  onNeverSave: (domain: string) => void
 ): void {
   const saveBtn = prompt.querySelector('.av-save-prompt__btn--save');
   const neverBtn = prompt.querySelector('.av-save-prompt__btn--never');
@@ -537,10 +516,7 @@ function setupEventListeners(
     onNeverSave(loginToUse.domain);
   });
 
-  dismissBtn?.addEventListener('click', () => {
-    removeSavePrompt();
-    onDismiss();
-  });
+  dismissBtn?.addEventListener('click', () => removeSavePrompt());
 
   // Handle Enter key in service name input
   serviceInput?.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -555,7 +531,6 @@ function setupEventListeners(
     } else if (e.key === 'Escape') {
       e.preventDefault();
       removeSavePrompt();
-      onDismiss();
     }
   });
 
@@ -563,7 +538,6 @@ function setupEventListeners(
   prompt.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       removeSavePrompt();
-      onDismiss();
     }
   });
 }

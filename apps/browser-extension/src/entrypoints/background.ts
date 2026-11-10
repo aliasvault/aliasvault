@@ -354,7 +354,7 @@ export default defineBackground({
     onMessage('GET_TOTP_CODES', ({ data }) => handleGetTotpCodes(data));
     onMessage('GENERATE_TOTP_CODE', ({ data, sender }) => handleGenerateTotpCode(data, getAutofillSender(sender)));
 
-    // Fill data for the one item picked in the in-page popup; records the pick (recently selected, last autofilled, usage)
+    // Fill data for the one item picked in the in-page popup; records the pick (recently selected, usage)
     onMessage('GET_AUTOFILL_CREDENTIAL', ({ data, sender }) => handleGetAutofillCredential(data, getAutofillSender(sender)));
     onExtensionPageMessage('GET_AUTOFILL_CONFIRMATION', ({ data }) => handleGetAutofillConfirmation(data));
     onExtensionPageMessage('RESOLVE_AUTOFILL_CONFIRMATION', ({ data }) => handleResolveAutofillConfirmation(data));
@@ -366,8 +366,6 @@ export default defineBackground({
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
     onMessage('GET_SAVE_PROMPT_STATE', ({ data, sender }) => handleGetSavePromptState({ tabId: sender.tab!.id!, ...data }));
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
-
-    // Track last autofilled credential (for "Add URL to existing credential" prompt)
 
     // Two-factor authentication state persistence
     onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorPrompt());
