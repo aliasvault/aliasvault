@@ -17,6 +17,15 @@
   <string name="autofill_no_match_found">일치하는 항목 없음</string>
   <string name="autofill_open_app">앱 열기</string>
   <string name="autofill_vault_locked">보관함 잠김</string>
+  <string name="autofill_trust_app">Trust %1$s</string>
+  <string name="autofill_trust_app_title">Trust this app?</string>
+  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it under Settings &gt; Autofill &gt; Trusted apps.</string>
+  <string name="autofill_confirm_fill_title">Fill in %1$s?</string>
+  <string name="link_url_prompt_message">다음에 AliasVault가 이 앱 또는 웹사이트를 인식할 수 있도록 %2$s에 \"%1$s\"(을)를 추가하시겠습니까?</string>
+  <string name="link_url_prompt_link_action">연결 및 채우기</string>
+  <string name="link_url_prompt_skip_action">채우기만</string>
+  <string name="passkey_blocked_title">Blocked by AliasVault</string>
+  <string name="passkey_blocked_message">AliasVault could not verify that %1$s may use passkeys for %2$s. Check your internet connection and try again. If this keeps happening, contact the developer of the app.</string>
   <string name="biometric_store_key_title">암호화 키 저장</string>
   <string name="biometric_store_key_subtitle">Android Keystore에 암호화 키를 안전하게 저장하려면 인증하세요. 이를 통해 보관함에 안전하게 접근할 수 있습니다.</string>
   <string name="biometric_unlock_vault_title">보관함 잠금 해제</string>

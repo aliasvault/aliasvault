@@ -83,6 +83,8 @@ export interface Spec extends TurboModule {
   setAutofillShowSearchText(showSearchText: boolean): Promise<void>;
   getAutofillCopyTotpOnFill(): Promise<boolean>;
   setAutofillCopyTotpOnFill(enabled: boolean): Promise<void>;
+  getAutofillTrustedApps(): Promise<string>; // Android only
+  removeAutofillTrustedApp(packageName: string): Promise<void>; // Android only
 
   // Screen capture protection
   getScreenCaptureProtection(): Promise<boolean>;

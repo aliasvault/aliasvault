@@ -17,6 +17,15 @@
   <string name="autofill_no_match_found">Nicio potrivire găsită</string>
   <string name="autofill_open_app">Deschide aplicația</string>
   <string name="autofill_vault_locked">Seif blocat</string>
+  <string name="autofill_trust_app">Trust %1$s</string>
+  <string name="autofill_trust_app_title">Trust this app?</string>
+  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it under Settings &gt; Autofill &gt; Trusted apps.</string>
+  <string name="autofill_confirm_fill_title">Fill in %1$s?</string>
+  <string name="link_url_prompt_message">Adaugă „%1$s” la %2$s astfel încât AliasVault să recunoască această aplicație sau acest site data viitoare?</string>
+  <string name="link_url_prompt_link_action">Asociază și completează</string>
+  <string name="link_url_prompt_skip_action">Doar completează</string>
+  <string name="passkey_blocked_title">Blocked by AliasVault</string>
+  <string name="passkey_blocked_message">AliasVault could not verify that %1$s may use passkeys for %2$s. Check your internet connection and try again. If this keeps happening, contact the developer of the app.</string>
   <string name="biometric_store_key_title">Stocare cheie de criptare</string>
   <string name="biometric_store_key_subtitle">Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.</string>
   <string name="biometric_unlock_vault_title">Deblochează seiful</string>

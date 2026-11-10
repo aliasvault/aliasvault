@@ -162,6 +162,30 @@
         "autofill_no_match_found": "native.autofillNoMatchFound",
         "autofill_open_app": "native.autofillOpenApp",
         "autofill_vault_locked": "native.autofillVaultLocked",
+        "autofill_trust_app": {
+          "key": "native.autofillTrustApp",
+          "format": {
+            "app": "%1$s"
+          }
+        },
+        "autofill_trust_app_title": "native.autofillTrustAppTitle",
+        "autofill_trust_app_message": {
+          "key": "native.autofillTrustAppMessage",
+          "format": {
+            "app": "%1$s",
+            "package": "%2$s",
+            "domain": "%3$s"
+          }
+        },
+        "common_confirm": "common.confirm",
+        "passkey_blocked_title": "native.passkeyBlockedTitle",
+        "passkey_blocked_message": {
+          "key": "native.passkeyBlockedMessage",
+          "format": {
+            "app": "%1$s",
+            "domain": "%2$s"
+          }
+        },
         "biometric_store_key_title": "native.biometricStoreKeyTitle",
         "biometric_store_key_subtitle": "native.biometricStoreKeySubtitle",
         "biometric_unlock_vault_title": "auth.unlockVault",
