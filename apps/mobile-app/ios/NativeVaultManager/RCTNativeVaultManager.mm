@@ -206,6 +206,16 @@
     resolve(nil);
 }
 
+- (void)getAutofillTrustedApps:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    // Only used by Android.
+    resolve(@"[]");
+}
+
+- (void)removeAutofillTrustedApp:(NSString *)packageName resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    // Only used by Android.
+    resolve(nil);
+}
+
 - (void)recordItemCopy:(NSString *)itemId manifestId:(NSString *)manifestId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager recordItemCopy:itemId manifestId:manifestId resolver:resolve rejecter:reject];
 }

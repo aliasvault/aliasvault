@@ -12,6 +12,14 @@ import { useAuth } from '@/context/AuthContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
+ * An app the user trusted to request passwords and passkeys, as stored by the native trust store.
+ */
+type TrustedApp = {
+  packageName: string;
+  label: string;
+};
+
+/**
  * Android autofill screen.
  */
 export default function AndroidAutofillScreen() : React.ReactNode {
@@ -21,6 +29,28 @@ export default function AndroidAutofillScreen() : React.ReactNode {
   const [advancedOptionsExpanded, setAdvancedOptionsExpanded] = useState(false);
   const [showSearchText, setShowSearchText] = useState(false);
   const [copyTotpOnFill, setCopyTotpOnFill] = useState(true);
+  const [trustedApps, setTrustedApps] = useState<TrustedApp[]>([]);
+
+  /**
+   * Reload the trusted apps whenever the advanced options are expanded, since the autofill prompt can add one
+   * while the app is in the background.
+   */
+  useEffect(() => {
+    if (!advancedOptionsExpanded) {
+      return;
+    }
+    /**
+     * Read the trusted apps from the native store.
+     */
+    const loadTrustedApps = async () : Promise<void> => {
+      try {
+        setTrustedApps(JSON.parse(await NativeVaultManager.getAutofillTrustedApps()) as TrustedApp[]);
+      } catch (err) {
+        console.warn('Failed to load trusted apps:', err);
+      }
+    };
+    loadTrustedApps();
+  }, [advancedOptionsExpanded]);
 
   /**
    * Load native autofill toggle settings on mount.
@@ -92,6 +122,18 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       setCopyTotpOnFill(value);
     } catch (err) {
       console.warn('Failed to update copy-TOTP-on-fill setting:', err);
+    }
+  };
+
+  /**
+   * Remove the trust for an app so the autofill prompt asks again.
+   */
+  const handleRemoveTrustedApp = async (packageName: string) : Promise<void> => {
+    try {
+      await NativeVaultManager.removeAutofillTrustedApp(packageName);
+      setTrustedApps((current) => current.filter((app) => app.packageName !== packageName));
+    } catch (err) {
+      console.warn('Failed to remove trusted app:', err);
     }
   };
 
@@ -227,6 +269,26 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       lineHeight: 20,
       marginTop: 8,
     },
+    trustedAppRemove: {
+      color: colors.primary,
+      fontSize: 15,
+      fontWeight: '500',
+    },
+    trustedAppRow: {
+      alignItems: 'center',
+      borderTopColor: colors.accentBorder,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 12,
+      paddingTop: 12,
+    },
+    trustedAppsContainer: {
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 16,
+    },
   });
 
   return (
@@ -322,6 +384,29 @@ export default function AndroidAutofillScreen() : React.ReactNode {
                   trackColor={{ false: colors.accentBackground, true: colors.primary }}
                   thumbColor={colors.primarySurfaceText}
                 />
+              </View>
+              <View style={styles.trustedAppsContainer}>
+                <ThemedText style={styles.settingRowTitle}>
+                  {t('settings.androidAutofillSettings.trustedApps')}
+                </ThemedText>
+                <ThemedText style={styles.settingRowDescription}>
+                  {t('settings.androidAutofillSettings.trustedAppsDescription')}
+                </ThemedText>
+                {trustedApps.length === 0 ? (
+                  <ThemedText style={styles.tipStep}>{t('common.none')}</ThemedText>
+                ) : (
+                  trustedApps.map((app) => (
+                    <View key={app.packageName} style={styles.trustedAppRow}>
+                      <View style={styles.settingRowText}>
+                        <ThemedText style={styles.settingRowTitle}>{app.label}</ThemedText>
+                        <ThemedText style={styles.settingRowDescription}>{app.packageName}</ThemedText>
+                      </View>
+                      <TouchableOpacity onPress={() => handleRemoveTrustedApp(app.packageName)}>
+                        <ThemedText style={styles.trustedAppRemove}>{t('common.remove')}</ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           )}
