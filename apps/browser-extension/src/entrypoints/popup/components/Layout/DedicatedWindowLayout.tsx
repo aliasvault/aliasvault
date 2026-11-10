@@ -9,9 +9,9 @@ import Logo from '@/entrypoints/popup/components/Logo';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 
 /**
- * PasskeyLayout - Minimal layout for passkey create/authenticate pages.
+ * Minimal layout for the windows the background opens for one request.
  */
-const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const DedicatedWindowLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const mainRef = useRef<HTMLElement>(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -57,4 +57,4 @@ const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
-export default PasskeyLayout;
+export default DedicatedWindowLayout;

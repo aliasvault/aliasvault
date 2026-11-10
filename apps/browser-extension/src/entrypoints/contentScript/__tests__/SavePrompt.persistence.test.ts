@@ -73,7 +73,6 @@ describe('SavePrompt persistence', () => {
   let mockLogin: CapturedLogin;
   let onSave: Mock;
   let onNeverSave: Mock;
-  let onDismiss: Mock;
 
   // Store original globals
   const originalWindow = global.window;
@@ -120,7 +119,6 @@ describe('SavePrompt persistence', () => {
     // Set up callback mocks
     onSave = vi.fn();
     onNeverSave = vi.fn();
-    onDismiss = vi.fn();
 
     // Use fake timers
     vi.useFakeTimers();
@@ -170,8 +168,7 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       expect(isSavePromptVisible()).toBe(true);
@@ -190,8 +187,7 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       const usernameSpan = container.querySelector('.av-save-prompt__username');
@@ -211,17 +207,15 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       expect(isSavePromptVisible()).toBe(true);
 
-      // Fast-forward 5 seconds
-      vi.advanceTimersByTime(5000);
+      // Fast-forward 5 seconds, plus the 200ms exit animation
+      vi.advanceTimersByTime(5250);
 
-      // Should have dismissed and called onDismiss
-      expect(onDismiss).toHaveBeenCalled();
+      expect(isSavePromptVisible()).toBe(false);
     });
 
     it('should call onSave with correct data when save button clicked', async () => {
@@ -237,8 +231,7 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       const saveBtn = container.querySelector('.av-save-prompt__btn--save') as HTMLButtonElement;
@@ -260,8 +253,7 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       const countdownBar = container.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
@@ -276,7 +268,6 @@ describe('SavePrompt persistence', () => {
         login: mockLogin,
         onSave,
         onNeverSave,
-        onDismiss,
         autoDismissMs: 10000,
       });
 
@@ -304,18 +295,16 @@ describe('SavePrompt persistence', () => {
         container,
         persistedState,
         onSave,
-        onNeverSave,
-        onDismiss
+        onNeverSave
       );
 
       // Should not dismiss after 6 seconds (less than 8 remaining)
       vi.advanceTimersByTime(6000);
       expect(isSavePromptVisible()).toBe(true);
-      expect(onDismiss).not.toHaveBeenCalled();
 
-      // Should dismiss after another 2+ seconds (total 8+)
+      // Should dismiss after another 2+ seconds (total 8+, plus the 200ms exit animation)
       vi.advanceTimersByTime(2500);
-      expect(onDismiss).toHaveBeenCalled();
+      expect(isSavePromptVisible()).toBe(false);
     });
   });
 });

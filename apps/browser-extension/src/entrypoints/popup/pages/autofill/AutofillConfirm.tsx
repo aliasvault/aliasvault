@@ -119,7 +119,7 @@ const AutofillConfirm: React.FC = () => {
           </div>
           {savedForHosts.length > 0 && (
             <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-400 truncate">
-              {withBoldValue(t('content.autofillConfirm.savedFor', { websites: BOLD_MARK }), savedForHosts.join(', '))}
+              {t('fieldLabels.login.url')}: <strong>{savedForHosts.join(', ')}</strong>
             </div>
           )}
         </div>

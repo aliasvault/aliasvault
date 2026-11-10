@@ -57,8 +57,6 @@ export type SavePromptOptions = {
   onSave: (login: CapturedLogin, serviceName: string) => void;
   /** Callback when user clicks "Never for this site" */
   onNeverSave: (domain: string) => void;
-  /** Callback when prompt is dismissed */
-  onDismiss: () => void;
   /** Auto-dismiss timeout in milliseconds (default: 15000) */
   autoDismissMs?: number;
 };

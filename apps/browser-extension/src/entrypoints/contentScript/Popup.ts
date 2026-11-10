@@ -670,7 +670,7 @@ function createTotpItem(
 
   /**
    * Fill the picked item's TOTP code; `confirm` has the background ask in an extension window first.
-   * The popup goes first, so the backup click handler cannot pick again while a confirmation is open.
+   * The popup is removed without waiting for the fill, so the click after mouseup cannot pick again while the window is open.
    */
   const pickItem = (confirm: boolean): void => {
     void fillTotpCode(item, input, confirm);

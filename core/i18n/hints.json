@@ -133,7 +133,6 @@
   "common.yes": "Confirmation button text",
   "content.autofillConfirm.description": "Note in that window when the login does belong to the website, but AliasVault asks anyway because the page may have hidden the click. 'Login' is a noun here: a saved login (username and password) in the vault, not the act of logging in.",
   "content.autofillConfirm.fillOn": "Subtitle of the confirm autofill window when the login does match the page, followed by content.autofillConfirm.description. {{host}} is the domain of the web page, e.g. www.example.com. 'Login' is a noun here: a saved login (username and password) in the vault, not the act of logging in.",
-  "content.autofillConfirm.savedFor": "Shown under the login in that window. {{websites}} is a comma-separated list of the domains saved in the login, e.g. example.com. Use the same term as the Website URL field of a login.",
   "content.autofillConfirm.siteMismatch": "Subtitle of the confirm autofill window when none of the website URLs saved in the login match the page. {{host}} is the domain of that page, e.g. www.example.com. 'Linked' matches the 'Link and fill' button (native.linkUrlPromptLinkAction). 'Login' is a noun here: a saved login (username and password) in the vault.",
   "content.autofillConfirm.title": "Title of the window that asks before AliasVault fills a saved login into a web page.",
   "emails.home.autoRefreshEnabledTooltip": "Tooltip for auto-refresh indicator",
