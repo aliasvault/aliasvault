@@ -356,6 +356,12 @@
     "yes": "כן"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill username/password",
     "dismissPopup": "התעלמות מחלונית",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "No 2FA code matches found",
     "openAliasVaultToUpgrade": "יש לפתוח את AliasVault כדי לשדרג",
     "savePrompt": {
-      "addUrlTitle": "להוסיף את הכתובת לפרטי הגישה?",
       "neverForThisSite": "אף פעם לא עבור האתר הזה",
       "title": "לשמור ל־AliasVault?"
     },
