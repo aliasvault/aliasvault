@@ -356,6 +356,12 @@
     "yes": "Tak"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autouzupełnianie uwierzytelniania dwuskładnikowego",
     "autofillWithAliasVault": "Autouzupełnianie nazwy użytkownika/hasła",
     "dismissPopup": "Zamknij wyskakujące okienko",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "Nie znaleziono kodu 2FA",
     "openAliasVaultToUpgrade": "Otwórz AliasVault, aby dokonać aktualizacji",
     "savePrompt": {
-      "addUrlTitle": "Dodaj nowe dane logowania?",
       "neverForThisSite": "Nigdy dla tej strony",
       "title": "Zapisać w AliasVault?"
     },
