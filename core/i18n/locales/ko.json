@@ -356,6 +356,12 @@
     "yes": "예"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "2단계 인증 자동 완성",
     "autofillWithAliasVault": "사용자 이름/비밀번호 자동 완성",
     "dismissPopup": "팝업 닫기",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "일치하는 2단계 인증 코드가 없습니다",
     "openAliasVaultToUpgrade": "업그레이드하려면 AliasVault 열기",
     "savePrompt": {
-      "addUrlTitle": "로그인 정보에 URL을 추가하시겠습니까?",
       "neverForThisSite": "이 사이트에서는 묻지 않음",
       "title": "AliasVault에 저장하시겠습니까?"
     },
