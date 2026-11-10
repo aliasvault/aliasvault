@@ -15,6 +15,7 @@ import AuthSettings from '@/entrypoints/popup/pages/auth/AuthSettings';
 import Login from '@/entrypoints/popup/pages/auth/Login';
 import Unlock from '@/entrypoints/popup/pages/auth/Unlock';
 import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
+import AutofillConfirm from '@/entrypoints/popup/pages/autofill/AutofillConfirm';
 import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
 import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
 import Index from '@/entrypoints/popup/pages/Index';
@@ -205,6 +206,7 @@ const App: React.FC = () => {
     { path: '/items/deleted', element: <RecentlyDeleted />, showBackButton: true, title: t('items.recentlyDeleted.title') },
     { path: '/items/:manifestId/:id/edit', element: <ItemAddEdit />, showBackButton: true },
     { path: '/items/:manifestId/:id', element: <ItemDetails />, showBackButton: true },
+    { path: '/autofill/confirm', element: <AutofillConfirm />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
     { path: '/emails', element: <EmailsList />, showBackButton: false },

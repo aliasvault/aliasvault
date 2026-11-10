@@ -17,8 +17,9 @@ export type TotpCodePreview = {
 import type { TwoFactorPrompt } from '@/entrypoints/background/TwoFactorStateHandler';
 import type { SharingActionResponse } from '@/entrypoints/background/VaultMessageHandler';
 
-import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
+import type { SavePromptPersistedState } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
+import type { AutofillConfirmAnswer, AutofillConfirmation } from '@/utils/types/messaging/AutofillConfirmation';
 import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { ContentSettings } from '@/utils/types/messaging/ContentSettings';
@@ -79,12 +80,13 @@ export interface IExtensionMessageProtocol {
   DISMISS_VAULT_LOCKED_POPUP(): void;
   DISMISS_PASSKEY_LOCKED_POPUP(): void;
   FULL_VAULT_SYNC(data: FullVaultSyncRequest): FullVaultSyncResult;
-  GENERATE_TOTP_CODE(data: { itemId: string; manifestId: string; autofill?: boolean }): { success: boolean; code?: string; error?: string };
+  GENERATE_TOTP_CODE(data: { itemId: string; manifestId: string; autofill?: boolean; confirm?: boolean }): { success: boolean; code?: string; error?: string; cancelled?: boolean };
   GET_CLIPBOARD_COUNTDOWN_STATE(): { remaining: number; total: number; id: number } | null;
   GET_CONTENT_SETTINGS(): ContentSettings;
   GET_ENCRYPTION_KEY(): string | null;
   GET_UNLOCK_KEY_DERIVATION_PARAMS(): UnlockKeyDerivationParams | null;
-  GET_AUTOFILL_CREDENTIAL(data: { itemId: string; manifestId: string }): { success: boolean; credential?: Credential; error?: string };
+  GET_AUTOFILL_CONFIRMATION(data: { requestId: string }): AutofillConfirmation | null;
+  GET_AUTOFILL_CREDENTIAL(data: { itemId: string; manifestId: string; confirm?: boolean }): { success: boolean; credential?: Credential; error?: string; cancelled?: boolean };
   GET_FILTERED_ITEMS(data: { pageTitle: string; matchingMode?: string; includeRecentlySelected?: boolean }): ItemsResponse;
   GET_ITEMS_WITH_TOTP(data: { pageTitle: string; matchingMode?: string }): ItemsResponse;
   GET_LANGUAGE(): string;
@@ -118,6 +120,7 @@ export interface IExtensionMessageProtocol {
   POPUP_HEARTBEAT(): void;
   RECORD_ITEM_USAGE(data: { itemId: string; manifestId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;
+  RESOLVE_AUTOFILL_CONFIRMATION(data: { requestId: string; answer: AutofillConfirmAnswer }): BoolResponse;
   SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string }): SaveLoginResponse;
   SEARCH_ITEMS_WITH_TOTP(data: { searchTerm: string }): ItemsResponse;
   SET_AUTO_LOCK_TIMEOUT(data: number): boolean;

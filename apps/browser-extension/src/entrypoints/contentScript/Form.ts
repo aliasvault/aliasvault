@@ -26,6 +26,16 @@ let popupDebounceTime = 0;
  */
 const clickValidator = ClickValidator.getInstance();
 
+/** Usernames and emails (lowercase) filled from the vault into this page, so submitting one does not offer to save it as a new login. */
+const filledFromVault = new Set<string>();
+
+/**
+ * Whether `username` was filled from the vault into this page.
+ */
+export function isFilledFromVault(username: string): boolean {
+  return filledFromVault.has(username.toLowerCase());
+}
+
 /**
  * Check if popup can be shown based on debounce time.
  */
@@ -95,19 +105,31 @@ export function validateInputField(element: Element | null): { isValid: boolean;
  *
  * @param item - The item to fill.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
+ * @param confirm - Ask in an extension window first, for a pick the page may have covered or hidden.
  */
-export async function fillItem(item: ItemRef, input: HTMLInputElement): Promise<void> {
+export async function fillItem(item: ItemRef, input: HTMLInputElement, confirm = false): Promise<void> {
+  let filled = false;
   await fillForm(input, async () => {
-    const response = await sendMessage('GET_AUTOFILL_CREDENTIAL', { itemId: item.Id, manifestId: item.ManifestId });
+    const response = await sendMessage('GET_AUTOFILL_CREDENTIAL', { itemId: item.Id, manifestId: item.ManifestId, confirm });
     if (!response.success || !response.credential) {
-      logFailure('Failed to get autofill credential', response.error);
+      if (!response.cancelled) {
+        logFailure('Failed to get autofill credential', response.error);
+      }
       return null;
+    }
+    filled = true;
+    for (const value of [response.credential.Username, response.credential.Alias?.Email]) {
+      if (value) {
+        filledFromVault.add(value.toLowerCase());
+      }
     }
     return response.credential;
   });
 
   // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
-  await copyTotpToClipboardIfEnabled(item);
+  if (filled) {
+    await copyTotpToClipboardIfEnabled(item);
+  }
 }
 
 /**
@@ -390,8 +412,9 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
  *
  * @param item - The item to generate the TOTP code for, named by its manifest and id.
  * @param input - The input element to fill the TOTP code into.
+ * @param confirm - Ask in an extension window first, for a pick the page may have covered or hidden.
  */
-export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Promise<void> {
+export async function fillTotpCode(item: ItemRef, input: HTMLInputElement, confirm = false): Promise<void> {
   // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
   hidePopupFor(300);
 
@@ -401,10 +424,12 @@ export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Prom
   });
 
   // Generate TOTP code via background, which also records the pick
-  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId, autofill: true });
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId, autofill: true, confirm });
 
   if (!response.success || !response.code) {
-    logFailure('Failed to generate TOTP code', response.error);
+    if (!response.cancelled) {
+      logFailure('Failed to generate TOTP code', response.error);
+    }
     return;
   }
 
