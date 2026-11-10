@@ -63,12 +63,10 @@ export interface IExtensionMessageProtocol {
   AUTH_LOGIN_MOBILE(data: MobileLoginResult): BackgroundAuthResult;
   AUTH_UNLOCK_PASSWORD(data: { password: string }): BackgroundAuthResult;
   AUTH_UNLOCK_PIN(data: { pin: string }): BackgroundAuthResult;
-  ADD_URL_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { success: boolean; error?: string }; 
   AUTOFILL_CREATED_ITEM(data: { item: ItemRef; elementIdentifier?: string }): BoolResponse;
   BLOCK_LOGIN_SAVE_FOR_DOMAIN(data: { domain: string }): void;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresManifestMigration: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;
-  CLEAR_LAST_AUTOFILLED(): { success: boolean };
   CLEAR_PERSISTED_FORM_VALUES(): void;
   CLEAR_SAVE_PROMPT_STATE(): { success: boolean };
   CLEAR_SESSION(): BoolResponse;
@@ -90,7 +88,6 @@ export interface IExtensionMessageProtocol {
   GET_FILTERED_ITEMS(data: { pageTitle: string; matchingMode?: string; includeRecentlySelected?: boolean }): ItemsResponse;
   GET_ITEMS_WITH_TOTP(data: { pageTitle: string; matchingMode?: string }): ItemsResponse;
   GET_LANGUAGE(): string;
-  GET_LAST_AUTOFILLED(data: { domain?: string; username?: string }): { success: boolean; credential: LastAutofilledCredential | null };
   GET_LOGIN_SAVE_SETTINGS(): { success: boolean; enabled: boolean; autoDismissSeconds: number; error?: string };
   GET_MATCHING_PASSKEYS(data: { rpId: string; allowCredentialIds?: string[] }): MatchingPasskeysResponse;
   GET_PERSISTED_FORM_VALUES(): any | null;
@@ -109,7 +106,6 @@ export interface IExtensionMessageProtocol {
   GROUP_INVITE_MEMBER_BY_FINGERPRINT(data: { groupId: string; manifestId: string; accountFingerprint: string }): SharingActionResponse;
   GROUP_ACCEPT_MANIFEST_INVITATION(data: { invitationId: string; accountFingerprint?: string }): SharingActionResponse;
   EMAIL_CLAIM_TRANSFER(data: EmailClaimTransfer): SharingActionResponse;
-  IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };
   IS_LOGIN_SAVE_BLOCKED(data: { domain: string }): boolean;
   LOCK_VAULT(): BoolResponse;
   MIGRATE_VAULT_MANIFEST(): VaultManifestMigrationResult;

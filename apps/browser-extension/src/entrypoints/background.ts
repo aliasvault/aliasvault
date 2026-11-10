@@ -11,9 +11,9 @@ import { handleBlockLoginSaveForDomain, handleDisableAutofillForSite, handleDism
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleDismissPasskeyLockedPopup, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
+import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleGetTwoFactorPrompt, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupLookupAccountFingerprint, handleGroupInviteMemberByFingerprint, handleGroupAcceptManifestInvitation, handleEmailClaimTransfer, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpCodes, handleGenerateTotpCode, handleGetAutofillCredential, handleRecordItemUsage, type AutofillSender } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupLookupAccountFingerprint, handleGroupInviteMemberByFingerprint, handleGroupAcceptManifestInvitation, handleEmailClaimTransfer, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpCodes, handleGenerateTotpCode, handleGetAutofillCredential, handleRecordItemUsage, type AutofillSender } from '@/entrypoints/background/VaultMessageHandler';
 import { getCurrentAutofillFrameUrl } from '@/entrypoints/contentScript/AutofillFrameUrl';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -337,8 +337,6 @@ export default defineBackground({
     // Remember login save messages
     onMessage('CHECK_LOGIN_DUPLICATE', ({ data, sender }) => handleCheckLoginDuplicate(data, getAutofillSender(sender)));
     onMessage('SAVE_LOGIN_CREDENTIAL', ({ data, sender }) => handleSaveLoginCredential(data, getAutofillSender(sender)));
-    onMessage('ADD_URL_TO_CREDENTIAL', ({ data, sender }) => handleAddUrlToCredential(data, getAutofillSender(sender)));
-    onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data, sender }) => handleIsUrlLinkedToCredential(data, getAutofillSender(sender)));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
     onMessage('IS_LOGIN_SAVE_BLOCKED', ({ data }) => handleIsLoginSaveBlocked(data.domain));
     onMessage('BLOCK_LOGIN_SAVE_FOR_DOMAIN', ({ data }) => handleBlockLoginSaveForDomain(data.domain));
@@ -367,8 +365,6 @@ export default defineBackground({
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
 
     // Track last autofilled credential (for "Add URL to existing credential" prompt)
-    onMessage('GET_LAST_AUTOFILLED', ({ data, sender }) => handleGetLastAutofilled({ tabId: sender.tab!.id!, ...data }));
-    onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
     onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorPrompt());

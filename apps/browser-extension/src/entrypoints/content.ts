@@ -6,9 +6,9 @@ import '@/entrypoints/contentScript/style.css';
 import { setPlatform } from '@aliasvault/client/platform';
 
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
-import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
+import { fillItem, injectIcon, isFilledFromVault, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { consumeUnlockResume, getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
-import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
+import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
@@ -23,8 +23,6 @@ import { getDeepActiveElement, getDeepElementById, getDeepEventTarget } from '@/
 
 import { t } from '@/i18n/StandaloneI18n';
 import { extensionPlatform } from '@/platform/ExtensionPlatform';
-
-import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
 import { defineContentScript, createShadowRootUi } from '#imports';
 
@@ -79,9 +77,6 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
     if (!response.success) {
       logFailure('[AliasVault] Failed to save login', response.error);
     }
-
-    // Clear the last autofilled state after save
-    await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
     logFailure('[AliasVault] Error saving login', error);
   }
@@ -100,36 +95,9 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
 }
 
 /**
- * Handle save prompt dismissal.
+ * Handle save prompt dismissal, which needs no cleanup.
  */
-async function handleSavePromptDismiss(): Promise<void> {
-  // Clear the last autofilled state on dismiss
-  await sendMessage('CLEAR_LAST_AUTOFILLED');
-}
-
-/**
- * Handle adding URL to an existing credential.
- * @param item - The credential to add the URL to, named by its manifest and id.
- * @param url - The URL to add.
- */
-async function handleAddUrlToCredential(item: ItemRef, url: string): Promise<void> {
-  try {
-    const response = await sendMessage('ADD_URL_TO_CREDENTIAL', {
-      itemId: item.Id,
-      manifestId: item.ManifestId,
-      url,
-    });
-
-    if (!response.success) {
-      logFailure('[AliasVault] Failed to add URL to credential', response.error);
-    }
-
-    // Clear the last autofilled state after successful add
-    await sendMessage('CLEAR_LAST_AUTOFILLED');
-  } catch (error) {
-    logFailure('[AliasVault] Error adding URL to credential', error);
-  }
-}
+const handleSavePromptDismiss = (): void => undefined;
 
 /**
  * Check if the login save feature is enabled.
@@ -253,24 +221,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
         container.addEventListener('keyup', handleKeyboardEvent, true);
         container.addEventListener('keypress', handleKeyboardEvent, true);
 
-        // Restore the appropriate prompt type based on persisted state
-        if (persistedState.promptType === 'add-url') {
-          void restoreAddUrlPromptFromState(
-            container,
-            persistedState,
-            handleAddUrlToCredential,
-            handleSavePromptDismiss
-          );
-        } else {
-          // Default to 'save' prompt
-          void restoreSavePromptFromState(
-            container,
-            persistedState,
-            handleSaveLogin,
-            handleNeverSaveForDomain,
-            handleSavePromptDismiss
-          );
-        }
+        void restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain, handleSavePromptDismiss);
         earlyRestoreCompleted = true;
       },
     });
@@ -321,24 +272,7 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       return;
     }
 
-    // Restore the appropriate prompt type based on persisted state
-    if (persistedState.promptType === 'add-url') {
-      await restoreAddUrlPromptFromState(
-        container,
-        persistedState,
-        handleAddUrlToCredential,
-        handleSavePromptDismiss
-      );
-    } else {
-      // Default to 'save' prompt
-      await restoreSavePromptFromState(
-        container,
-        persistedState,
-        handleSaveLogin,
-        handleNeverSaveForDomain,
-        handleSavePromptDismiss
-      );
-    }
+    await restoreSavePromptFromState(container, persistedState, handleSaveLogin, handleNeverSaveForDomain, handleSavePromptDismiss);
   } catch (error) {
     logFailure('[AliasVault] Error restoring persisted save prompt', error);
   }
@@ -403,40 +337,9 @@ function initializeLoginDetector(container: HTMLElement): void {
       // Use default
     }
 
-    /*
-     * Check if user recently autofilled from an existing credential.
-     * If so, offer to add the current URL to that credential instead of creating a new one.
-     */
-    try {
-      const lastAutofilledResponse = await sendMessage('GET_LAST_AUTOFILLED', {
-        domain: login.domain,
-        username: login.username,
-      });
-
-      if (lastAutofilledResponse.success && lastAutofilledResponse.credential) {
-        /*
-         * Skip the prompt when the submitted URL is already linked.
-         */
-        const linkCheck = await sendMessage('IS_URL_LINKED_TO_CREDENTIAL', {
-          itemId: lastAutofilledResponse.credential.itemId,
-          manifestId: lastAutofilledResponse.credential.manifestId,
-          url: login.url,
-        });
-
-        if (!linkCheck.linked) {
-          // Current URL is not linked to the existing credential, show the prompt.
-          showAddUrlPrompt(container, {
-            login,
-            existingCredential: lastAutofilledResponse.credential,
-            onAddUrl: handleAddUrlToCredential,
-            onDismiss: handleSavePromptDismiss,
-            autoDismissMs,
-          });
-          return;
-        }
-      }
-    } catch {
-      // If check fails, fall back to normal save prompt
+    // A login filled from the vault is already saved, even when its URL list does not include this website.
+    if (isFilledFromVault(login.username)) {
+      return;
     }
 
     // Show save prompt to offer saving the credentials
