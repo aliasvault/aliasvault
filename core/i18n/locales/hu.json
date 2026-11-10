@@ -356,6 +356,12 @@
     "yes": "Igen"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Kétlépcsős kitöltés",
     "autofillWithAliasVault": "Felhasználónév/jelszó kitöltése",
     "dismissPopup": "Felugró ablak figyelmen kívül hagyása",
@@ -368,7 +374,6 @@
     "noTotpItemsFound": "Nem található megfelelő kétlépcsős kód",
     "openAliasVaultToUpgrade": "A frissítéshez nyissa meg az AliasVault-ot",
     "savePrompt": {
-      "addUrlTitle": "Cím hozzáadása a bejegyzésekhez?",
       "neverForThisSite": "Ehhez az oldlhoz soha",
       "title": "Mentés az AliasVault-ba?"
     },
