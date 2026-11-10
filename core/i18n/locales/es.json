@@ -329,7 +329,7 @@
     "save": "Guardar",
     "saving": "Guardando...",
     "select": "Seleccionar",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "Seleccione un elemento para ver sus detalles",
     "selection": {
       "count": "{{count}} seleccionado(s)",
       "disable": "Deshabilitar selección",
@@ -1532,7 +1532,7 @@
     "theme": "Tema",
     "totpAutofill": "Codigo 2FA de autorelleno",
     "totpAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de código 2FA",
-    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayout": "Diseño en dos columnas",
     "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
