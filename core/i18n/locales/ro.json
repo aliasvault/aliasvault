@@ -329,7 +329,7 @@
     "save": "Salvează",
     "saving": "Se salvează...",
     "select": "Selectează",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "Selectează un element pentru a-i vedea detaliile",
     "selection": {
       "count": "{{count}} selectate",
       "disable": "Dezactivează selecția",
@@ -1532,8 +1532,8 @@
     "theme": "Temă",
     "totpAutofill": "Completează automat codul 2FA",
     "totpAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile pentru codul 2FA",
-    "twoColumnLayout": "Two-column layout",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayout": "Aspect pe două coloane",
+    "twoColumnLayoutDescription": "Afișează lista și elementul selectat alăturat, în modul peisaj.",
     "unlockMethod": {
       "confirmPin": "Confirmă PIN",
       "confirmPinDescription": "Introdu PIN-ul din nou pentru confirmare",
