@@ -6,13 +6,14 @@ import android.util.Log
 import android.view.View
 import android.view.autofill.AutofillId
 import net.aliasvault.app.autofill.models.FieldType
+import net.aliasvault.app.autofill.models.UnverifiedPage
 
 /**
- * Helper class to find fields in the assist structure.
- * @param structure The assist structure to parse
- * @param context Context used to verify the signature of a browser caller
+ * Helper class to find fields in the assist structures of a fill request.
+ * @param structures The structure of every fill context of the request, oldest first
+ * @param context Context used to verify the signature of the calling app
  */
-class FieldFinder(var structure: AssistStructure, private val context: Context) {
+class FieldFinder(private val structures: List<AssistStructure>, private val context: Context) {
     companion object {
         /**
          * The tag for logging.
@@ -45,15 +46,24 @@ class FieldFinder(var structure: AssistStructure, private val context: Context) 
      */
     private val unknownFields = mutableListOf<AutofillId>()
 
+    /** Fields already classified, so a field found in a newer structure is not classified again from an older one. */
+    private val seenIds = mutableSetOf<AutofillId>()
+
+    /** The structure of the latest fill context, which names the app and site. */
+    private val structure: AssistStructure get() = structures.last()
+
     /**
-     * Parse the structure.
+     * Parse the structures, newest first.
      */
     fun parseStructure() {
-        val nodeCount = structure.windowNodeCount
-        for (i in 0 until nodeCount) {
-            val windowNode = structure.getWindowNodeAt(i)
-            val rootNode = windowNode.rootViewNode
-            parseNode(rootNode)
+        /*
+         * A later request in the same session can leave out fields of an earlier one that are still on screen (LinkedIn
+         * drops its email field when the password field is focused), and its response then serves those fields too.
+         */
+        for (parsed in structures.asReversed()) {
+            for (i in 0 until parsed.windowNodeCount) {
+                parseNode(parsed.getWindowNodeAt(i).rootViewNode)
+            }
         }
 
         // If only a password field was found, but there is exactly one other undetected field,
@@ -67,32 +77,58 @@ class FieldFinder(var structure: AssistStructure, private val context: Context) 
     }
 
     /**
-     * The app or website to suggest items for: the web domain when a trusted browser reports one, otherwise the
-     * package name. Null for a trusted browser without a detectable site.
+     * Package name of the app that requested autofill.
+     */
+    val callerPackage: String? get() = structure.activityComponent?.packageName
+
+    private val isTrustedApp: Boolean by lazy { callerPackage?.let { BrowserAllowlist.isTrustedApp(context, it) } ?: false }
+
+    /**
+     * The app or website to suggest items for: the web domain when a trusted app reports one, otherwise the
+     * package name. Null for a trusted app without a detectable site.
      */
     val appInfo: String? by lazy { resolveAppInfo() }
 
+    /**
+     * The web page an app that is not trusted reports; its logins fill only after the user confirms.
+     */
+    val unverifiedPage: UnverifiedPage? by lazy { resolveUnverifiedPage() }
+
+    /**
+     * What the "No match found" and "Open app" rows search for.
+     */
+    val openAppTarget: String? get() = unverifiedPage?.openAppTarget(appInfo) ?: appInfo
+
+    private fun resolveUnverifiedPage(): UnverifiedPage? {
+        val packageName = callerPackage ?: return null
+        if (isTrustedApp) {
+            return null
+        }
+        val site = findSite() ?: return null
+        return UnverifiedPage(packageName, site, BrowserAllowlist.isBrowser(context, packageName))
+    }
+
     private fun resolveAppInfo(): String? {
-        val packageName = structure.activityComponent?.packageName ?: return null
-        if (!BrowserAllowlist.isTrustedBrowser(context, packageName)) {
+        val packageName = callerPackage ?: return null
+        if (!isTrustedApp) {
             return packageName
         }
 
-        val roots = (0 until structure.windowNodeCount).map { structure.getWindowNodeAt(it).rootViewNode }
-        roots.firstNotNullOfOrNull { findWebDomain(it) }?.let { return it }
-        roots.firstNotNullOfOrNull { findUrlBarText(it) }?.let { return it }
+        findSite()?.let { return it }
 
         Log.d(TAG, "Browser $packageName reported no web domain")
         return null
     }
 
+    private fun findSite(): String? {
+        val roots = (0 until structure.windowNodeCount).map { structure.getWindowNodeAt(it).rootViewNode }
+        return roots.firstNotNullOfOrNull { findWebDomain(it) } ?: roots.firstNotNullOfOrNull { findUrlBarText(it) }
+    }
+
     /**
      * Determines if a field is most likely an email field, username field, password field, or unknown.
      */
-    private fun determineFieldType(fieldId: AutofillId): FieldType {
-        // Find the node in the structure
-        val node = findNodeById(fieldId) ?: return FieldType.UNKNOWN
-
+    private fun determineFieldType(node: AssistStructure.ViewNode): FieldType {
         // Check for password field first
         if (isLikelyPasswordField(node)) {
             return FieldType.PASSWORD
@@ -149,8 +185,8 @@ class FieldFinder(var structure: AssistStructure, private val context: Context) 
         val viewId = node.autofillId
 
         // Consider any editable field as a potential field, except a browser URL bar exposed in compatibility mode
-        if (viewId != null && isEditableField(node) && node.idEntry != URL_BAR_ID_ENTRY) {
-            val fieldType = determineFieldType(viewId)
+        if (viewId != null && isEditableField(node) && node.idEntry != URL_BAR_ID_ENTRY && seenIds.add(viewId)) {
+            val fieldType = determineFieldType(node)
 
             if (fieldType == FieldType.PASSWORD) {
                 foundPasswordField = true
@@ -397,47 +433,5 @@ class FieldFinder(var structure: AssistStructure, private val context: Context) 
         }
 
         return false
-    }
-
-    /**
-     * Find a node by ID.
-     * @param fieldId The ID of the field to find
-     * @return The node
-     */
-    private fun findNodeById(fieldId: AutofillId): AssistStructure.ViewNode? {
-        val nodeCount = structure.windowNodeCount
-        for (i in 0 until nodeCount) {
-            val windowNode = structure.getWindowNodeAt(i)
-            val rootNode = windowNode.rootViewNode
-            val node = findNodeByIdRecursive(rootNode, fieldId)
-            if (node != null) {
-                return node
-            }
-        }
-        return null
-    }
-
-    /**
-     * Find a node by ID recursively.
-     * @param node The node to start searching from
-     * @param fieldId The ID of the field to find
-     * @return The node
-     */
-    private fun findNodeByIdRecursive(
-        node: AssistStructure.ViewNode,
-        fieldId: AutofillId,
-    ): AssistStructure.ViewNode? {
-        if (node.autofillId == fieldId) {
-            return node
-        }
-        val childCount = node.childCount
-        for (i in 0 until childCount) {
-            val child = node.getChildAt(i)
-            val result = findNodeByIdRecursive(child, fieldId)
-            if (result != null) {
-                return result
-            }
-        }
-        return null
     }
 }

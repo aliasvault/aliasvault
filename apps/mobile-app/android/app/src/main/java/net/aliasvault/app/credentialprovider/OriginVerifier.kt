@@ -1,11 +1,18 @@
 package net.aliasvault.app.credentialprovider
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.service.credentials.CreateCredentialRequest
+import android.service.credentials.CredentialProviderService
+import android.service.credentials.GetCredentialRequest
 import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.credentials.provider.CallingAppInfo
+import net.aliasvault.app.autofill.utils.BrowserAllowlist
 import net.aliasvault.app.rustcore.JnaInitializer
+import net.aliasvault.app.utils.TrustedAppStore
 import org.json.JSONArray
 import org.json.JSONObject
 import uniffi.aliasvault_core.isRelatedOriginAllowed
@@ -21,18 +28,30 @@ import java.security.MessageDigest
 /**
  * Validates caller origin for WebAuthn credential requests.
  *
- * For privileged apps (browsers): Uses CallingAppInfo.getOrigin() with an allowlist.
+ * For privileged apps (browsers): Uses CallingAppInfo.getOrigin() with the allowlist of [BrowserAllowlist], which
+ * also covers the apps the user trusted.
  * For native apps: Computes facetId from the app's signing certificate SHA-256 hash.
  *
  * Reference: https://developer.android.com/identity/sign-in/credential-provider
  */
-class OriginVerifier {
+class OriginVerifier(private val context: Context) {
 
     companion object {
         private const val TAG = "OriginVerifier"
 
         private const val MAX_RELATED_ORIGINS_BYTES = 64 * 1024
         private val RP_ID_HOST_REGEX = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+\\.?$")
+
+        /**
+         * The web origin the caller of the passkey request in [intent] claims to show, unverified. Null when the caller
+         * claims none or Android is older than 14.
+         */
+        fun claimedOrigin(intent: Intent): String? {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return null
+            val getRequest = intent.getParcelableExtra(CredentialProviderService.EXTRA_GET_CREDENTIAL_REQUEST, GetCredentialRequest::class.java)
+            val createRequest = intent.getParcelableExtra(CredentialProviderService.EXTRA_CREATE_CREDENTIAL_REQUEST, CreateCredentialRequest::class.java)
+            return (getRequest?.callingAppInfo ?: createRequest?.callingAppInfo)?.origin
+        }
 
         /**
          * Privileged app allowlist for CallingAppInfo.getOrigin().
@@ -1044,12 +1063,20 @@ class OriginVerifier {
          * @property reason Human-readable reason for failure.
          */
         data class Failure(val reason: String) : OriginResult()
+
+        /**
+         * The caller could not be verified (a browser that is not on the list, or an app the RP does not list in its
+         * asset links) and the user may trust it to retry.
+         * @property packageName Package name of the caller.
+         */
+        data class UntrustedApp(val packageName: String) : OriginResult()
     }
 
-    /** Result of asset links verification. */
+    /** Result of asset links verification: the RP lists the app, does not list it, or could not be checked. */
     private sealed class AssetLinksResult {
         data object Success : AssetLinksResult()
-        data class Failure(val reason: String) : AssetLinksResult()
+        data class NotLinked(val reason: String) : AssetLinksResult()
+        data class Unreachable(val reason: String) : AssetLinksResult()
     }
 
     /**
@@ -1070,7 +1097,7 @@ class OriginVerifier {
 
         // Try to get origin from privileged app (browser)
         val privilegedOrigin = try {
-            callingAppInfo.getOrigin(PRIVILEGED_ALLOWLIST_JSON)
+            callingAppInfo.getOrigin(BrowserAllowlist.passkeyAllowlistJson(context))
         } catch (e: Exception) {
             Log.d(TAG, "Not a privileged caller or getOrigin failed: ${e.message}")
             null
@@ -1087,7 +1114,19 @@ class OriginVerifier {
             return OriginResult.Success(privilegedOrigin, isPrivileged = true)
         }
 
-        // Not a privileged caller - compute facetId from signing certificate
+        if (callingAppInfo.isOriginPopulated()) {
+            Log.w(TAG, "$packageName claims a web origin but is not a trusted app")
+            return OriginResult.UntrustedApp(packageName)
+        }
+
+        return verifyNativeApp(callingAppInfo, packageName, requestedRpId)
+    }
+
+    /**
+     * Verify a native app by its signing certificate: the user trusted it, or the RP lists it in its asset links.
+     */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun verifyNativeApp(callingAppInfo: CallingAppInfo, packageName: String, requestedRpId: String): OriginResult {
         val facetId = computeFacetId(callingAppInfo)
         if (facetId == null) {
             Log.e(TAG, "Failed to compute facetId for $packageName")
@@ -1104,14 +1143,26 @@ class OriginVerifier {
         }
 
         Log.d(TAG, "Certificate fingerprints for $packageName: $certFingerprints")
-        val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, certFingerprints)
-        if (assetLinksResult is AssetLinksResult.Failure) {
-            Log.e(TAG, "Asset links verification failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
-            return OriginResult.Failure(assetLinksResult.reason)
+        if (TrustedAppStore.isTrusted(context, packageName, certFingerprints.map { it.replace(":", "") }.toSet())) {
+            Log.d(TAG, "User trusted $packageName, skipping asset links verification for $requestedRpId")
+            return OriginResult.Success(facetId, isPrivileged = false)
         }
 
-        Log.d(TAG, "Asset links verification passed for $packageName on $requestedRpId")
-        return OriginResult.Success(facetId, isPrivileged = false)
+        // Only a definite "not listed" may be overridden by the user; a lookup that failed must not lead to permanent trust.
+        return when (val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, certFingerprints)) {
+            is AssetLinksResult.Unreachable -> {
+                Log.e(TAG, "Asset links lookup failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
+                OriginResult.Failure(assetLinksResult.reason)
+            }
+            is AssetLinksResult.NotLinked -> {
+                Log.e(TAG, "Asset links verification failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
+                OriginResult.UntrustedApp(packageName)
+            }
+            AssetLinksResult.Success -> {
+                Log.d(TAG, "Asset links verification passed for $packageName on $requestedRpId")
+                OriginResult.Success(facetId, isPrivileged = false)
+            }
+        }
     }
 
     /**
@@ -1242,11 +1293,13 @@ class OriginVerifier {
             connection.readTimeout = 5000
             connection.requestMethod = "GET"
 
+            if (connection.responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                Log.w(TAG, "Asset links not found for $rpId")
+                return AssetLinksResult.NotLinked("$rpId publishes no asset links")
+            }
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                Log.w(TAG, "Asset links not found for $rpId: ${connection.responseCode}")
-                return AssetLinksResult.Failure(
-                    "App is not authorized to access passkeys for $rpId",
-                )
+                Log.w(TAG, "Asset links request for $rpId returned ${connection.responseCode}")
+                return AssetLinksResult.Unreachable("Could not read the asset links of $rpId (HTTP ${connection.responseCode})")
             }
 
             val reader = BufferedReader(InputStreamReader(connection.inputStream))
@@ -1266,15 +1319,11 @@ class OriginVerifier {
                 AssetLinksResult.Success
             } else {
                 Log.w(TAG, "App $packageName not found in asset links for $rpId")
-                AssetLinksResult.Failure(
-                    "App is not authorized to access passkeys for $rpId",
-                )
+                AssetLinksResult.NotLinked("App is not authorized to access passkeys for $rpId")
             }
         } catch (e: Exception) {
             Log.w(TAG, "Asset links verification failed for $rpId", e)
-            AssetLinksResult.Failure(
-                "App is not authorized to access passkeys for $rpId",
-            )
+            AssetLinksResult.Unreachable("Could not read the asset links of $rpId: ${e.message}")
         }
     }
 

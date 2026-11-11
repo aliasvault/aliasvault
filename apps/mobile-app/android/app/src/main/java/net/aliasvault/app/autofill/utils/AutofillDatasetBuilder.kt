@@ -4,17 +4,27 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Build
 import android.service.autofill.Dataset
+import android.service.autofill.FillResponse
+import android.service.autofill.Presentations
 import android.util.Log
 import android.view.autofill.AutofillId
+import android.view.autofill.AutofillManager
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import android.widget.inline.InlinePresentationSpec
 import net.aliasvault.app.R
+import net.aliasvault.app.autofill.AutofillConfirmFillActivity
 import net.aliasvault.app.autofill.AutofillFillActivity
+import net.aliasvault.app.autofill.AutofillUnlockActivity
 import net.aliasvault.app.autofill.models.FieldType
+import net.aliasvault.app.autofill.models.UnverifiedPage
 import net.aliasvault.app.utils.ItemTypeIcon
+import net.aliasvault.app.utils.TotpClipboard
+import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.models.Item
+import uniffi.aliasvault_core.ItemUsageAction
 import java.net.URLEncoder
 
 /**
@@ -24,18 +34,97 @@ object AutofillDatasetBuilder {
     private const val TAG = "AliasVaultAutofill"
 
     /**
+     * The logins to offer for a fill request.
+     * @property direct Logins matching the app or site, filled at once.
+     * @property confirm Logins of the site of [page], filled only after the user confirms.
+     * @property page The web page reported by an unverified app that [confirm] belongs to.
+     */
+    class LoginMatches(val direct: List<Item>, val confirm: List<Item>, val page: UnverifiedPage?) {
+        /** Number of rows these logins produce. */
+        val count: Int get() = direct.size + confirm.size
+    }
+
+    /**
+     * The logins with a password that match [appInfo], plus for a [page] the logins of its site that [appInfo] did not match.
+     */
+    fun findLogins(items: List<Item>, appInfo: String?, page: UnverifiedPage?): LoginMatches {
+        val direct = loginsMatching(items, appInfo)
+        val directKeys = direct.map { it.manifestId to it.id }.toSet()
+        val confirm = page?.let { loginsMatching(items, it.site).filter { item -> (item.manifestId to item.id) !in directKeys } }.orEmpty()
+        Log.d(TAG, "Logins: direct=${direct.size}, confirm first=${confirm.size}")
+        return LoginMatches(direct, confirm, page)
+    }
+
+    /**
+     * One row per login in [logins]; the rows of [LoginMatches.confirm] open [AutofillConfirmFillActivity] first.
+     */
+    fun createLoginDatasets(
+        context: Context,
+        fields: List<Pair<AutofillId, FieldType>>,
+        logins: LoginMatches,
+        nextInlineSpec: () -> InlinePresentationSpec? = { null },
+    ): List<Dataset> {
+        val direct = logins.direct.map { createItemDataset(context, fields, it, nextInlineSpec()) }
+        val confirm = logins.confirm.map { createItemDataset(context, fields, it, nextInlineSpec(), logins.page) }
+        return direct + confirm
+    }
+
+    /**
+     * A [FillResponse] with a row per login in [logins], or a "No match found" row for [appInfo] when there are none.
+     */
+    fun createLoginsResponse(context: Context, fields: List<Pair<AutofillId, FieldType>>, logins: LoginMatches, appInfo: String?): FillResponse {
+        val responseBuilder = FillResponse.Builder()
+        if (logins.count == 0) {
+            responseBuilder.addDataset(createNoMatchesDataset(context, fields, logins.page?.openAppTarget(appInfo) ?: appInfo))
+        } else {
+            createLoginDatasets(context, fields, logins).forEach(responseBuilder::addDataset)
+        }
+        return responseBuilder.build()
+    }
+
+    /**
+     * The authentication result for the picked row of [item]: records the use and copies its TOTP code when [copyTotp] is set.
+     */
+    fun createPickedItemResult(context: Context, store: VaultStore, item: Item, fields: List<Pair<AutofillId, FieldType>>, copyTotp: Boolean): Intent {
+        val itemId = item.id.toString().lowercase()
+        try {
+            store.recordItemUsage(itemId, item.manifestId, ItemUsageAction.AUTOFILL)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to record item usage", e)
+        }
+        if (copyTotp) {
+            TotpClipboard.copyCodeForItem(context, store, itemId, item.manifestId)
+        }
+
+        // The returned dataset only fills, so its presentation is never displayed, but the builder requires one.
+        val builder = Dataset.Builder(RemoteViews(context.packageName, R.layout.autofill_dataset_item_icon))
+        AutofillFieldMapper.applyItem(builder, item, fields)
+        val result = Intent().putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, builder.build())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Keep the original row in the cached response; otherwise it is replaced by this dataset and shows blank once the field is cleared.
+            result.putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT_EPHEMERAL_DATASET, true)
+        }
+        return result
+    }
+
+    private fun loginsMatching(items: List<Item>, query: String?): List<Item> {
+        return query?.let { RustItemMatcher.filterItemsByAppInfo(items, it) }.orEmpty().filter { !it.password.isNullOrEmpty() }
+    }
+
+    /**
      * Build a Dataset for a single vault item shown in the autofill picker.
      *
      * The Dataset wires `setAuthentication` to [AutofillFillActivity], which is
      * responsible for performing the actual fill (and optionally copying the
-     * TOTP code to the clipboard) once the user selects the row.
+     * TOTP code to the clipboard) once the user selects the row. With
+     * [confirmFor] set it opens [AutofillConfirmFillActivity] instead.
      */
-    fun createItemDataset(
+    private fun createItemDataset(
         context: Context,
         fields: List<Pair<AutofillId, FieldType>>,
         item: Item,
-        copyTotpOnSelect: Boolean,
-        inlineSpec: InlinePresentationSpec? = null,
+        inlineSpec: InlinePresentationSpec?,
+        confirmFor: UnverifiedPage? = null,
     ): Dataset {
         val presentation = RemoteViews(context.packageName, R.layout.autofill_dataset_item_icon)
         val builder = Dataset.Builder(presentation)
@@ -77,14 +166,16 @@ object AutofillDatasetBuilder {
             }
         }
 
-        val autofillIds = fields.map { it.first }.toTypedArray()
-        val fieldTypeOrdinals = IntArray(fields.size) { i -> fields[i].second.ordinal }
-        val authIntent = Intent(context, AutofillFillActivity::class.java).apply {
+        val target = if (confirmFor == null) AutofillFillActivity::class.java else AutofillConfirmFillActivity::class.java
+        val authIntent = Intent(context, target).apply {
             putExtra(AutofillFillActivity.EXTRA_ITEM_ID, item.id.toString().lowercase())
             putExtra(AutofillFillActivity.EXTRA_MANIFEST_ID, item.manifestId)
-            putExtra(AutofillFillActivity.EXTRA_AUTOFILL_IDS, autofillIds)
-            putExtra(AutofillFillActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
-            putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, copyTotpOnSelect)
+            AutofillFieldExtras.put(this, fields, AutofillFillActivity.EXTRA_AUTOFILL_IDS, AutofillFillActivity.EXTRA_FIELD_TYPES)
+            putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, item.hasTotp && TotpClipboard.isCopyOnFillEnabled(context))
+            if (confirmFor != null) {
+                putExtra(AutofillConfirmFillActivity.EXTRA_PACKAGE_NAME, confirmFor.packageName)
+                putExtra(AutofillConfirmFillActivity.EXTRA_BROWSER_SITE, confirmFor.site.takeIf { confirmFor.isBrowser })
+            }
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -168,5 +259,40 @@ object AutofillDatasetBuilder {
         }
 
         return dataSetBuilder.build()
+    }
+
+    /**
+     * Build a [FillResponse] whose only entry is a "Vault locked" row that opens [AutofillUnlockActivity] for [appInfo] and [page].
+     */
+    fun createVaultLockedResponse(
+        context: Context,
+        fields: List<Pair<AutofillId, FieldType>>,
+        appInfo: String?,
+        page: UnverifiedPage? = null,
+        inlineSpec: InlinePresentationSpec? = null,
+    ): FillResponse {
+        val autofillIds = fields.map { it.first }.toTypedArray()
+        val unlockIntent = Intent(context, AutofillUnlockActivity::class.java).apply {
+            AutofillFieldExtras.put(this, fields, AutofillUnlockActivity.EXTRA_AUTOFILL_IDS, AutofillUnlockActivity.EXTRA_FIELD_TYPES)
+            putExtra(AutofillUnlockActivity.EXTRA_APP_INFO, appInfo)
+            putExtra(AutofillUnlockActivity.EXTRA_PAGE_PACKAGE_NAME, page?.packageName)
+            putExtra(AutofillUnlockActivity.EXTRA_PAGE_SITE, page?.site)
+            putExtra(AutofillUnlockActivity.EXTRA_PAGE_IS_BROWSER, page?.isBrowser ?: false)
+        }
+        val pendingIntent = PendingIntent.getActivity(context, 0, unlockIntent, PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT)
+
+        val lockedLabel = context.getString(R.string.autofill_vault_locked)
+        val presentation = RemoteViews(context.packageName, R.layout.autofill_dataset_item_logo)
+        presentation.setTextViewText(R.id.text, lockedLabel)
+
+        val responseBuilder = FillResponse.Builder()
+        if (inlineSpec != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val inline = InlinePresentationHelper.buildActionPresentation(context, inlineSpec, lockedLabel)
+            if (inline != null) {
+                val presentations = Presentations.Builder().setMenuPresentation(presentation).setInlinePresentation(inline).build()
+                return responseBuilder.setAuthentication(autofillIds, pendingIntent.intentSender, presentations).build()
+            }
+        }
+        return responseBuilder.setAuthentication(autofillIds, pendingIntent.intentSender, presentation).build()
     }
 }

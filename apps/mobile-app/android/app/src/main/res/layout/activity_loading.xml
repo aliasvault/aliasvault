@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/av_background">
@@ -23,6 +24,25 @@
         android:padding="32dp"
         android:gravity="center"
         android:visibility="gone">
+
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/av_logo" />
+
+        <!-- Optional heading above the message. Hidden by default. -->
+        <TextView
+            android:id="@+id/errorTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:textColor="@color/av_text"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/errorMessage"
@@ -84,6 +104,19 @@
                 android:textSize="14sp" />
 
         </LinearLayout>
+
+        <!-- Optional action that resolves the error, e.g. trusting the calling browser. Hidden by default. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/errorActionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/av_primary"
+            app:cornerRadius="8dp"
+            android:paddingVertical="14dp"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/closeButton"

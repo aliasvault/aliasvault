@@ -51,5 +51,12 @@
     <item name="android:windowLightNavigationBar">true</item>
     <item name="android:windowIsTranslucent">true</item>
   </style>
+  <!-- Transparent overlay for activities that only show a dialog on top of the calling app. -->
+  <style name="Theme.App.Dialog" parent="Theme.App.Overlay">
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+    <item name="android:windowAnimationStyle">@null</item>
+  </style>
   <style name="Theme.App.NoDisplay" parent="@android:style/Theme.NoDisplay" />
 </resources>

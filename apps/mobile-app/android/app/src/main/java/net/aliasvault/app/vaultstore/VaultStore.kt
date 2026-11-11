@@ -9,6 +9,7 @@ import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.BiometricAuthCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.models.BuiltinLogos
+import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.ItemField
 import net.aliasvault.app.vaultstore.models.StoreVaultResult
@@ -505,6 +506,14 @@ class VaultStore(
         // Usage statistics live in their own data bucket, pushed without a full manifest write.
         val deviceId = metadata.getOrCreateDeviceId()
         database.withTransaction(VaultDataBucketCategory.STATS) { db -> db.recordItemUse(itemId.lowercase(), manifestId, deviceId, action) }
+    }
+
+    /**
+     * Append [url] to the login URLs of an item, so autofill matches the item there next time.
+     * Other platform implementations: VaultStore.appendUrl (iOS).
+     */
+    fun appendUrl(itemId: UUID, manifestId: String, url: String) {
+        database.withTransaction { db -> db.appendFieldValue(itemId.toString().lowercase(), manifestId, FieldKey.LOGIN_URL, url) }
     }
 
     /**

@@ -1,7 +1,6 @@
 package net.aliasvault.app.autofill
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.service.autofill.FillResponse
 import android.util.Log
@@ -15,11 +14,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.models.FieldType
+import net.aliasvault.app.autofill.models.UnverifiedPage
 import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
-import net.aliasvault.app.autofill.utils.RustItemMatcher
+import net.aliasvault.app.autofill.utils.AutofillFieldExtras
 import net.aliasvault.app.credentialprovider.UnlockCoordinator
 import net.aliasvault.app.utils.ErrorScreenView
-import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -47,6 +46,15 @@ class AutofillUnlockActivity : FragmentActivity() {
 
         /** Resolved web origin or package name for the calling app/site, used for matching. */
         const val EXTRA_APP_INFO = "net.aliasvault.app.autofill.unlock.EXTRA_APP_INFO"
+
+        /** Package name of an unverified app reporting a web page, set together with [EXTRA_PAGE_SITE]. */
+        const val EXTRA_PAGE_PACKAGE_NAME = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_PACKAGE_NAME"
+
+        /** The site that web page reports; its logins fill only after the user confirms. */
+        const val EXTRA_PAGE_SITE = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_SITE"
+
+        /** Whether that app is a browser. */
+        const val EXTRA_PAGE_IS_BROWSER = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_IS_BROWSER"
     }
 
     private lateinit var vaultStore: VaultStore
@@ -54,22 +62,22 @@ class AutofillUnlockActivity : FragmentActivity() {
 
     private lateinit var fields: List<Pair<AutofillId, FieldType>>
     private var appInfo: String? = null
+    private var page: UnverifiedPage? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         try {
-            val autofillIds = parseAutofillIds(intent)
-            val fieldTypeOrdinals = intent.getIntArrayExtra(EXTRA_FIELD_TYPES)
-            if (autofillIds == null || fieldTypeOrdinals == null ||
-                autofillIds.size != fieldTypeOrdinals.size
-            ) {
+            fields = AutofillFieldExtras.read(intent, EXTRA_AUTOFILL_IDS, EXTRA_FIELD_TYPES) ?: run {
                 Log.w(TAG, "AutofillUnlockActivity: missing or mismatched extras, finishing")
                 cancelAndFinish()
                 return
             }
-            fields = pairFields(autofillIds, fieldTypeOrdinals)
             appInfo = intent.getStringExtra(EXTRA_APP_INFO)
+            val pagePackage = intent.getStringExtra(EXTRA_PAGE_PACKAGE_NAME)
+            val pageSite = intent.getStringExtra(EXTRA_PAGE_SITE)
+            val pageIsBrowser = intent.getBooleanExtra(EXTRA_PAGE_IS_BROWSER, false)
+            page = if (pagePackage != null && pageSite != null) UnverifiedPage(pagePackage, pageSite, pageIsBrowser) else null
 
             vaultStore = VaultStore.getExistingInstance() ?: run {
                 val keystoreProvider = AndroidKeystoreProvider(applicationContext)
@@ -133,59 +141,8 @@ class AutofillUnlockActivity : FragmentActivity() {
     }
 
     private fun buildFillResponse(): FillResponse {
-        val allItems = vaultStore.getAllItems()
-
-        val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(allItems, it) } ?: emptyList()
-
-        // Filter out items with no password
-        val matchingItems = filteredByApp.filter { item -> !item.password.isNullOrEmpty() }
-
-        Log.d(
-            TAG,
-            "Post-unlock items: app matches=${filteredByApp.size}, with data=${matchingItems.size}",
-        )
-
-        val copyTotpOnFill = TotpClipboard.isCopyOnFillEnabled(this)
-
-        val responseBuilder = FillResponse.Builder()
-        if (matchingItems.isEmpty()) {
-            responseBuilder.addDataset(
-                AutofillDatasetBuilder.createNoMatchesDataset(this, fields, appInfo),
-            )
-        } else {
-            for (item in matchingItems) {
-                responseBuilder.addDataset(
-                    AutofillDatasetBuilder.createItemDataset(
-                        context = this,
-                        fields = fields,
-                        item = item,
-                        copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
-                    ),
-                )
-            }
-        }
-        return responseBuilder.build()
-    }
-
-    @Suppress("DEPRECATION")
-    private fun parseAutofillIds(intent: Intent): Array<AutofillId>? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayExtra(EXTRA_AUTOFILL_IDS, AutofillId::class.java)
-        } else {
-            intent.getParcelableArrayExtra(EXTRA_AUTOFILL_IDS)
-                ?.mapNotNull { it as? AutofillId }
-                ?.toTypedArray()
-        }
-    }
-
-    private fun pairFields(
-        autofillIds: Array<AutofillId>,
-        fieldTypeOrdinals: IntArray,
-    ): List<Pair<AutofillId, FieldType>> {
-        val types = FieldType.values()
-        return autofillIds.mapIndexed { i, id ->
-            id to (types.getOrNull(fieldTypeOrdinals[i]) ?: FieldType.UNKNOWN)
-        }
+        val logins = AutofillDatasetBuilder.findLogins(vaultStore.getAllItems(), appInfo, page)
+        return AutofillDatasetBuilder.createLoginsResponse(this, fields, logins, appInfo)
     }
 
     private fun cancelAndFinish() {

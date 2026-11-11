@@ -17,6 +17,7 @@ import net.aliasvault.app.R
 import net.aliasvault.app.utils.ErrorScreenView
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.utils.TotpClipboard
+import net.aliasvault.app.utils.TrustedAppPrompt
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
@@ -191,7 +192,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                 updateLoadingMessage(R.string.passkey_verifying)
 
                 // Verify origin of the calling app
-                val originVerifier = OriginVerifier()
+                val originVerifier = OriginVerifier(applicationContext)
                 val callingAppInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     providerRequest.callingAppInfo
                 } else {
@@ -217,7 +218,22 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     }
                     is OriginVerifier.OriginResult.Failure -> {
                         Log.e(TAG, "Origin verification failed: ${originResult.reason}")
-                        showError("Security error: ${originResult.reason}")
+                        val site = OriginVerifier.claimedOrigin(intent) ?: passkey.rpId
+                        OriginBlockedScreen.show(this@PasskeyAuthenticationActivity, callingAppInfo?.packageName, site, originResult.reason) {
+                            setResult(RESULT_CANCELED)
+                            finish()
+                        }
+                        return@launch
+                    }
+                    is OriginVerifier.OriginResult.UntrustedApp -> {
+                        val site = OriginVerifier.claimedOrigin(intent) ?: passkey.rpId
+                        val activity = this@PasskeyAuthenticationActivity
+                        TrustedAppPrompt.showOnErrorScreen(activity, originResult.packageName, site, onClose = {
+                            setResult(RESULT_CANCELED)
+                            finish()
+                        }) {
+                            processAuthenticationRequest()
+                        }
                         return@launch
                     }
                 }

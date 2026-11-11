@@ -1,20 +1,11 @@
 package net.aliasvault.app.autofill
 
 import android.app.Activity
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.service.autofill.Dataset
 import android.util.Log
-import android.view.autofill.AutofillId
-import android.view.autofill.AutofillManager
-import android.widget.RemoteViews
-import net.aliasvault.app.R
-import net.aliasvault.app.autofill.models.FieldType
-import net.aliasvault.app.autofill.utils.AutofillFieldMapper
-import net.aliasvault.app.utils.TotpClipboard
+import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
+import net.aliasvault.app.autofill.utils.AutofillFieldExtras
 import net.aliasvault.app.vaultstore.VaultStore
-import uniffi.aliasvault_core.ItemUsageAction
 
 /**
  * Transparent activity launched by the OS when the user picks an autofill
@@ -50,13 +41,8 @@ class AutofillFillActivity : Activity() {
         try {
             val itemId = intent.getStringExtra(EXTRA_ITEM_ID)
             val manifestId = intent.getStringExtra(EXTRA_MANIFEST_ID)
-            val autofillIds = parseAutofillIds(intent)
-            val fieldTypeOrdinals = intent.getIntArrayExtra(EXTRA_FIELD_TYPES)
-            val copyTotp = intent.getBooleanExtra(EXTRA_COPY_TOTP, false)
-
-            if (itemId == null || manifestId == null || autofillIds == null || fieldTypeOrdinals == null ||
-                autofillIds.size != fieldTypeOrdinals.size
-            ) {
+            val fields = AutofillFieldExtras.read(intent, EXTRA_AUTOFILL_IDS, EXTRA_FIELD_TYPES)
+            if (itemId == null || manifestId == null || fields == null) {
                 Log.w(TAG, "AutofillFillActivity: missing or mismatched extras, finishing")
                 setResult(RESULT_CANCELED)
                 finish()
@@ -81,54 +67,12 @@ class AutofillFillActivity : Activity() {
                 return
             }
 
-            // Count the fill in the item's usage statistics
-            try {
-                store.recordItemUsage(itemId, item.manifestId, ItemUsageAction.AUTOFILL)
-            } catch (e: Exception) {
-                Log.w(TAG, "AutofillFillActivity: failed to record item usage", e)
-            }
-
-            if (copyTotp) {
-                TotpClipboard.copyCodeForItem(this, store, itemId, item.manifestId)
-            }
-
-            val fields = pairFields(autofillIds, fieldTypeOrdinals)
-            // Presentation passed to the inner Dataset.Builder is never displayed
-            // (the OS already showed the outer dataset's presentation in the
-            // picker) but the legacy constructor requires a valid RemoteViews.
-            val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_icon)
-            val builder = Dataset.Builder(presentation)
-            AutofillFieldMapper.applyItem(builder, item, fields)
-
-            val resultIntent = Intent().apply {
-                putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, builder.build())
-            }
-            setResult(RESULT_OK, resultIntent)
+            val copyTotp = intent.getBooleanExtra(EXTRA_COPY_TOTP, false)
+            setResult(RESULT_OK, AutofillDatasetBuilder.createPickedItemResult(this, store, item, fields, copyTotp))
         } catch (e: Exception) {
             Log.e(TAG, "AutofillFillActivity error", e)
             setResult(RESULT_CANCELED)
         }
         finish()
-    }
-
-    @Suppress("DEPRECATION")
-    private fun parseAutofillIds(intent: Intent): Array<AutofillId>? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayExtra(EXTRA_AUTOFILL_IDS, AutofillId::class.java)
-        } else {
-            intent.getParcelableArrayExtra(EXTRA_AUTOFILL_IDS)
-                ?.mapNotNull { it as? AutofillId }
-                ?.toTypedArray()
-        }
-    }
-
-    private fun pairFields(
-        autofillIds: Array<AutofillId>,
-        fieldTypeOrdinals: IntArray,
-    ): List<Pair<AutofillId, FieldType>> {
-        val types = FieldType.values()
-        return autofillIds.mapIndexed { i, id ->
-            id to (types.getOrNull(fieldTypeOrdinals[i]) ?: FieldType.UNKNOWN)
-        }
     }
 }

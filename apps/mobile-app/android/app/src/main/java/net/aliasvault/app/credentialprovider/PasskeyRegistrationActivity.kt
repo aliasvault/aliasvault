@@ -18,6 +18,7 @@ import net.aliasvault.app.R
 import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 import net.aliasvault.app.utils.ErrorScreenView
 import net.aliasvault.app.utils.Helpers
+import net.aliasvault.app.utils.TrustedAppPrompt
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -167,7 +168,7 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 updateLoadingMessage(R.string.passkey_verifying)
 
                 // Run origin verification on IO thread (asset links fetch requires network)
-                val originVerifier = OriginVerifier()
+                val originVerifier = OriginVerifier(applicationContext)
                 val originResult = withContext(Dispatchers.IO) {
                     originVerifier.verifyOrigin(
                         callingAppInfo = callingAppInfo,
@@ -221,7 +222,15 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                     }
                     is OriginVerifier.OriginResult.Failure -> {
                         Log.e(TAG, "Origin verification failed: ${originResult.reason}")
-                        showError("Security error: ${originResult.reason}")
+                        val site = OriginVerifier.claimedOrigin(intent) ?: viewModel.rpId
+                        OriginBlockedScreen.show(this@PasskeyRegistrationActivity, callingAppInfo?.packageName, site, originResult.reason) { finish() }
+                    }
+                    is OriginVerifier.OriginResult.UntrustedApp -> {
+                        val site = OriginVerifier.claimedOrigin(intent) ?: viewModel.rpId
+                        val activity = this@PasskeyRegistrationActivity
+                        TrustedAppPrompt.showOnErrorScreen(activity, originResult.packageName, site, onClose = { finish() }) {
+                            verifyOriginAndStartUnlock(callingAppInfo, savedInstanceState)
+                        }
                     }
                 }
             } catch (e: Exception) {
