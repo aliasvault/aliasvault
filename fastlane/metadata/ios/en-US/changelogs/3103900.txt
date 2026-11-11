@@ -1,0 +1,3 @@
+- Update footer menu to use iOS native menu style
+- Add multi-select support
+- Add support for two-column layouts for iPhone Duo

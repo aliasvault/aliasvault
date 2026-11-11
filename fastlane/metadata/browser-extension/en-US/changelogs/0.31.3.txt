@@ -1,0 +1,3 @@
+- Add multi-select support
+- Improve autofill link URL prompt
+- Improve autofill compatibility

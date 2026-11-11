@@ -1,0 +1,4 @@
+- Menu gebruikt nu de native Android menustijl
+- Multi-select support toegevoegd
+- Autofill vraagt nu of je een URL aan een item wilt koppelen
+- Autofill problemen verholpen bij sommige browsers
