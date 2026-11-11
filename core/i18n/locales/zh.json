@@ -357,10 +357,10 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
-      "title": "Confirm autofill"
+      "description": "仅当您自行选择并信任此网站时，才填充此登录。",
+      "fillOn": "您即将在 {{host}} 上填充登录。",
+      "siteMismatch": "此登录尚未关联至 {{host}}。仅当您信任此网站时才继续。",
+      "title": "确认自动填充"
     },
     "autofillTotp": "自动填充两步验证码",
     "autofillWithAliasVault": "自动填充用户名/密码",
