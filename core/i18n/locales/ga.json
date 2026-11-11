@@ -329,7 +329,7 @@
     "save": "Sábháil",
     "saving": "Ag sábháil...",
     "select": "Roghnaigh",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "Roghnaigh mír chun a sonraí a fheiceáil",
     "selection": {
       "count": "{{count}} roghnaithe",
       "disable": "Díchumasaigh an roghnú",
@@ -357,10 +357,10 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
-      "title": "Confirm autofill"
+      "description": "Ná líon isteach na sonraí logála seo ach amháin má roghnaigh tú iad tú féin agus má tá muinín agat as an suíomh gréasáin seo.",
+      "fillOn": "Tá tú ar tí sonraí logála a líonadh ar {{host}}.",
+      "siteMismatch": "Níl an logáil isteach seo nasctha le {{host}} go fóill. Ná lean ar aghaidh ach amháin má tá muinín agat as an suíomh gréasáin seo.",
+      "title": "Deimhnigh an líonadh uathoibríoch"
     },
     "autofillTotp": "Líonadh uathoibríoch 2FA",
     "autofillWithAliasVault": "Ainm úsáideora/pasfhocal uathlíonta",
@@ -1537,8 +1537,8 @@
     "theme": "Téama",
     "totpAutofill": "Cód 2FA go huathoibríoch",
     "totpAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí cód 2FA",
-    "twoColumnLayout": "Two-column layout",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayout": "Leagan amach dhá cholún",
+    "twoColumnLayoutDescription": "Taispeánann sé an liosta agus an mhír roghnaithe taobh le taobh i mód tírdhreacha.",
     "unlockMethod": {
       "confirmPin": "Deimhnigh PIN",
       "confirmPinDescription": "Cuir isteach do PIN arís lena dheimhniú",
