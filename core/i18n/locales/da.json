@@ -280,6 +280,7 @@
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere den. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen."
     },
+    "expand": "Expand",
     "generate": "Generer",
     "help": "Hjælp",
     "hide": "Skjul",
@@ -341,6 +342,7 @@
     "share": "Del",
     "show": "Vis",
     "showDetails": "Vis detaljer",
+    "showList": "Show list",
     "showPassword": "Vis adgangskode",
     "success": "Succes",
     "syncVaultData": "Synkroniser boksdata",
