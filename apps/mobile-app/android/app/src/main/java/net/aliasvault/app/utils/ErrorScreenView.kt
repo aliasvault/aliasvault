@@ -23,7 +23,23 @@ object ErrorScreenView {
     private const val CLIP_LABEL = "AliasVault error detail"
 
     /**
-     * Populate and reveal the error state.
+     * An extra button shown above Close.
+     * @property label Button text.
+     * @property onClick Invoked when the user taps the button.
+     */
+    class Action(val label: String, val onClick: () -> Unit)
+
+    /**
+     * What the error state shows.
+     * @property message User-facing error message.
+     * @property title Optional bold heading above the message.
+     * @property detail Optional technical detail behind the "Show details" toggle, copyable to the clipboard.
+     * @property action Optional extra button shown above Close.
+     */
+    class Content(val message: String, val title: String? = null, val detail: String? = null, val action: Action? = null)
+
+    /**
+     * Populate and reveal the error state with a plain message.
      *
      * @param activity Hosting activity whose current content view exposes the
      *   `activity_loading.xml` error view ids (errorContainer, errorMessage,
@@ -36,18 +52,50 @@ object ErrorScreenView {
      *   error UI itself fails to render.
      */
     fun show(activity: Activity, message: String, detail: String? = null, onClose: () -> Unit) {
+        show(activity, Content(message, detail = detail), onClose)
+    }
+
+    /** Populate and reveal the error state with [content]; [onClose] runs on Close and when the error UI fails to render. */
+    fun show(activity: Activity, content: Content, onClose: () -> Unit) {
         activity.runOnUiThread {
             try {
                 activity.findViewById<View>(R.id.loadingIndicator)?.visibility = View.GONE
                 activity.findViewById<View>(R.id.errorContainer)?.visibility = View.VISIBLE
-                activity.findViewById<TextView>(R.id.errorMessage)?.text = message
+                activity.findViewById<TextView>(R.id.errorMessage)?.text = content.message
                 activity.findViewById<MaterialButton>(R.id.closeButton)?.setOnClickListener { onClose() }
-                bindDetail(activity, detail)
+                bindTitle(activity, content.title)
+                bindAction(activity, content.action)
+                bindDetail(activity, content.detail)
             } catch (e: Exception) {
                 Log.e(TAG, "Error showing error UI", e)
                 onClose()
             }
         }
+    }
+
+    private fun bindTitle(activity: Activity, title: String?) {
+        val view = activity.findViewById<TextView>(R.id.errorTitle) ?: return
+        view.text = title
+        view.visibility = if (title.isNullOrBlank()) View.GONE else View.VISIBLE
+    }
+
+    /** Hide the error state again and show the loading indicator, for a retry after the user resolved the error. */
+    fun showLoading(activity: Activity) {
+        activity.runOnUiThread {
+            activity.findViewById<View>(R.id.errorContainer)?.visibility = View.GONE
+            activity.findViewById<View>(R.id.loadingIndicator)?.visibility = View.VISIBLE
+        }
+    }
+
+    private fun bindAction(activity: Activity, action: Action?) {
+        val button = activity.findViewById<MaterialButton>(R.id.errorActionButton) ?: return
+        if (action == null) {
+            button.visibility = View.GONE
+            return
+        }
+        button.text = action.label
+        button.visibility = View.VISIBLE
+        button.setOnClickListener { action.onClick() }
     }
 
     /**

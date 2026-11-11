@@ -11,7 +11,6 @@ package net.aliasvault.app.autofill
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Typeface
-import android.os.Build
 import android.os.CancellationSignal
 import android.service.autofill.AutofillService
 import android.service.autofill.Dataset
@@ -29,8 +28,6 @@ import net.aliasvault.app.R
 import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.FieldFinder
 import net.aliasvault.app.autofill.utils.InlinePresentationHelper
-import net.aliasvault.app.autofill.utils.RustItemMatcher
-import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
 import net.aliasvault.app.vaultstore.models.Item
@@ -66,13 +63,8 @@ class AutofillService : AutofillService() {
                 return
             }
 
-            // Get the autofill contexts for this request
-            val contexts = request.fillContexts
-            val context = contexts.last()
-            val structure = context.structure
-
-            // Find any autofillable fields in the form
-            val fieldFinder = FieldFinder(structure, this)
+            // Find any autofillable fields in the form, across every fill context of this session
+            val fieldFinder = FieldFinder(request.fillContexts.map { it.structure }, this)
             fieldFinder.parseStructure()
 
             // If no password field was found, return an empty response
@@ -88,10 +80,7 @@ class AutofillService : AutofillService() {
             // Provide a simple fallback response to prevent white flash
             try {
                 // Get the app/website information to include in debug dataset
-                val contexts = request.fillContexts
-                val context = contexts.last()
-                val structure = context.structure
-                val fieldFinder = FieldFinder(structure, this)
+                val fieldFinder = FieldFinder(request.fillContexts.map { it.structure }, this)
                 fieldFinder.parseStructure()
 
                 val responseBuilder = FillResponse.Builder()
@@ -152,52 +141,28 @@ class AutofillService : AutofillService() {
                                 return
                             }
 
-                            // Filter items based on app/website info; no matches when the site is unknown
-                            val filteredByApp = appInfo?.let { RustItemMatcher.filterItemsByAppInfo(result, it) } ?: emptyList()
-
-                            // Filter out items with no password
-                            val filteredItems = filteredByApp.filter { item -> !item.password.isNullOrEmpty() }
-
-                            Log.d(
-                                TAG,
-                                "Items after filtering: app matches=${filteredByApp.size}, with data=${filteredItems.size}",
-                            )
-
+                            val logins = AutofillDatasetBuilder.findLogins(result, appInfo, fieldFinder.unverifiedPage)
                             val responseBuilder = FillResponse.Builder()
 
                             // Add debug dataset if enabled in settings
                             val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
-                            val copyTotpOnFill = TotpClipboard.isCopyOnFillEnabled(this@AutofillService)
                             addDatasets(responseBuilder, fieldFinder, inlinePool, showSearchText) {
-                                // If there are no results, return "no matches" placeholder option.
-                                if (filteredItems.isEmpty()) {
-                                    Log.d(
-                                        TAG,
-                                        "No items found for this app, showing 'no matches' option",
-                                    )
+                                if (logins.count == 0) {
+                                    Log.d(TAG, "No items found for this app, showing 'no matches' option")
                                     responseBuilder.addDataset(
                                         AutofillDatasetBuilder.createNoMatchesDataset(
                                             this@AutofillService,
                                             fieldFinder.autofillableFields,
-                                            appInfo,
+                                            fieldFinder.openAppTarget,
                                             inlinePool.next(),
                                         ),
                                     )
                                 } else {
-                                    // If there are matches, add them to the dataset
-                                    for (item in filteredItems) {
-                                        val dataset = AutofillDatasetBuilder.createItemDataset(
-                                            context = this@AutofillService,
-                                            fields = fieldFinder.autofillableFields,
-                                            item = item,
-                                            copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
-                                            inlineSpec = inlinePool.next(),
-                                        )
-                                        responseBuilder.addDataset(dataset)
-                                    }
+                                    AutofillDatasetBuilder.createLoginDatasets(this@AutofillService, fieldFinder.autofillableFields, logins, inlinePool::next)
+                                        .forEach(responseBuilder::addDataset)
 
-                                    // Add "Open app" option at the bottom (when search text is not shown and there are matches)
+                                    // Add "Open app" option at the bottom when search text is not shown
                                     if (!showSearchText) {
                                         responseBuilder.addDataset(createOpenAppDataset(fieldFinder, inlinePool))
                                     }
@@ -237,54 +202,7 @@ class AutofillService : AutofillService() {
         }
 
         Log.d(TAG, "Vault is locked, requiring authentication before fill")
-        callback(buildLockedFillResponse(fieldFinder, appInfo, inlinePool))
-    }
-
-    /**
-     * Build a [FillResponse] whose only entry is a "Vault locked" row.
-     */
-    private fun buildLockedFillResponse(
-        fieldFinder: FieldFinder,
-        appInfo: String?,
-        inlinePool: InlinePresentationHelper.SpecPool,
-    ): FillResponse {
-        val autofillIds = fieldFinder.autofillableFields.map { it.first }.toTypedArray()
-        val fieldTypeOrdinals = IntArray(fieldFinder.autofillableFields.size) { i ->
-            fieldFinder.autofillableFields[i].second.ordinal
-        }
-
-        val unlockIntent = Intent(this, AutofillUnlockActivity::class.java).apply {
-            putExtra(AutofillUnlockActivity.EXTRA_AUTOFILL_IDS, autofillIds)
-            putExtra(AutofillUnlockActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
-            putExtra(AutofillUnlockActivity.EXTRA_APP_INFO, appInfo)
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            unlockIntent,
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
-        )
-
-        val lockedLabel = getString(R.string.autofill_vault_locked)
-        val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(R.id.text, lockedLabel)
-
-        val responseBuilder = FillResponse.Builder()
-        val inlineSpec = inlinePool.next()
-        if (inlineSpec != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val inline = InlinePresentationHelper.buildActionPresentation(this, inlineSpec, lockedLabel)
-            if (inline != null) {
-                val presentations = android.service.autofill.Presentations.Builder()
-                    .setMenuPresentation(presentation)
-                    .setInlinePresentation(inline)
-                    .build()
-                responseBuilder.setAuthentication(autofillIds, pendingIntent.intentSender, presentations)
-                return responseBuilder.build()
-            }
-        }
-        return responseBuilder
-            .setAuthentication(autofillIds, pendingIntent.intentSender, presentation)
-            .build()
+        callback(AutofillDatasetBuilder.createVaultLockedResponse(this, fieldFinder.autofillableFields, appInfo, fieldFinder.unverifiedPage, inlinePool.next()))
     }
 
     /**
@@ -373,8 +291,7 @@ class AutofillService : AutofillService() {
         addInlineIfAvailable(dataSetBuilder, inlinePool, searchText)
 
         // Get the app/website information to use as item URL
-        val appInfo = fieldFinder.appInfo
-        val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
+        val encodedUrl = fieldFinder.openAppTarget?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
         // Create deep link URL to items page with item URL
         val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
@@ -424,8 +341,7 @@ class AutofillService : AutofillService() {
 
         // Open the action picker so the user can choose between linking this app
         // to an existing credential or creating a new one.
-        val appInfo = fieldFinder.appInfo
-        val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
+        val encodedUrl = fieldFinder.openAppTarget?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
         val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link

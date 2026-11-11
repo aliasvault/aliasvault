@@ -24,6 +24,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.utils.ScreenCaptureProtection
+import net.aliasvault.app.utils.TrustedAppStore
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
@@ -1015,6 +1016,36 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     override fun setBlockScreenshots(enabled: Boolean, promise: Promise) {
         ScreenCaptureProtection.setBlockScreenshotsEnabled(reactApplicationContext, enabled, getCurrentActivity())
         promise.resolve(null)
+    }
+
+    /**
+     * Get the apps the user trusted for autofill and passkeys, as a JSON array.
+     * @param promise The promise to resolve with the JSON string
+     */
+    @ReactMethod
+    override fun getAutofillTrustedApps(promise: Promise) {
+        try {
+            promise.resolve(TrustedAppStore.listJson(reactApplicationContext))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting trusted apps", e)
+            promise.reject("ERR_GET_AUTOFILL_SETTING", "Failed to get trusted apps: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Remove the trust for an app so it has to be confirmed again.
+     * @param packageName The package name of the app
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun removeAutofillTrustedApp(packageName: String, promise: Promise) {
+        try {
+            TrustedAppStore.remove(reactApplicationContext, packageName)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing trusted app", e)
+            promise.reject("ERR_SET_AUTOFILL_SETTING", "Failed to remove trusted app: ${e.message}", e)
+        }
     }
 
     /**
