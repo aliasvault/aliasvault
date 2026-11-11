@@ -359,7 +359,6 @@
     "autofillConfirm": {
       "description": "Ná líon isteach na sonraí logála seo ach amháin má roghnaigh tú iad tú féin agus má tá muinín agat as an suíomh gréasáin seo.",
       "fillOn": "Tá tú ar tí sonraí logála a líonadh ar {{host}}.",
-      "siteMismatch": "Níl an logáil isteach seo nasctha le {{host}} go fóill. Ná lean ar aghaidh ach amháin má tá muinín agat as an suíomh gréasáin seo.",
       "title": "Deimhnigh an líonadh uathoibríoch"
     },
     "autofillTotp": "Líonadh uathoibríoch 2FA",
