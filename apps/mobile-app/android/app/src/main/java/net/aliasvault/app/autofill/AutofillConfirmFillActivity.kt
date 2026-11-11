@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.models.FieldType
+import net.aliasvault.app.autofill.models.UnverifiedPage
 import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.AutofillFieldExtras
 import net.aliasvault.app.autofill.utils.BrowserAllowlist
@@ -29,12 +30,6 @@ class AutofillConfirmFillActivity : FragmentActivity() {
     companion object {
         private const val TAG = "AliasVaultAutofill"
         private const val SYNC_TIMEOUT_MS = 10_000L
-
-        /** Package name of the app showing the page. */
-        const val EXTRA_PACKAGE_NAME = "net.aliasvault.app.autofill.confirm.EXTRA_PACKAGE_NAME"
-
-        /** The site the page reports, set only when the app is a browser. */
-        const val EXTRA_BROWSER_SITE = "net.aliasvault.app.autofill.confirm.EXTRA_BROWSER_SITE"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,8 +38,8 @@ class AutofillConfirmFillActivity : FragmentActivity() {
         val itemId = intent.getStringExtra(AutofillFillActivity.EXTRA_ITEM_ID)
         val manifestId = intent.getStringExtra(AutofillFillActivity.EXTRA_MANIFEST_ID)
         val fields = AutofillFieldExtras.read(intent, AutofillFillActivity.EXTRA_AUTOFILL_IDS, AutofillFillActivity.EXTRA_FIELD_TYPES)
-        val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
-        if (itemId == null || manifestId == null || fields == null || packageName.isNullOrEmpty()) {
+        val page = UnverifiedPage.from(intent)
+        if (itemId == null || manifestId == null || fields == null || page == null) {
             Log.w(TAG, "AutofillConfirmFillActivity: missing or mismatched extras, finishing")
             cancelAndFinish()
             return
@@ -61,17 +56,25 @@ class AutofillConfirmFillActivity : FragmentActivity() {
         }
 
         // Trusted or linked earlier in this session, whose cached rows still point here: fill without asking.
-        val browserSite = intent.getStringExtra(EXTRA_BROWSER_SITE)
-        val alreadyConfirmed = if (browserSite != null) BrowserAllowlist.isTrustedApp(this, packageName) else item.urls.any { it.trim() == packageName }
-        if (alreadyConfirmed) {
+        val packageName = page.packageName
+        val signers = page.signers
+        val alreadyTrusted = page.isBrowser && signers != null && BrowserAllowlist.isTrustedApp(this, packageName, signers)
+        val alreadyLinked = !page.isBrowser && item.urls.any { it.trim() == packageName }
+        if (alreadyTrusted || alreadyLinked) {
             fill(store, item, fields)
             return
         }
 
         val dialog = MaterialAlertDialogBuilder(this).setTitle(getString(R.string.autofill_confirm_fill_title, TrustedAppPrompt.appLabel(this, packageName)))
-        if (browserSite != null) {
-            dialog.setMessage(TrustedAppPrompt.message(this, packageName, browserSite))
-                .setPositiveButton(TrustedAppPrompt.actionLabel(this, packageName)) { _, _ -> trustAndFill(store, item, packageName, fields) }
+        if (page.isBrowser) {
+            // The trust binds to the certificates seen at the fill request; without them the browser can only fill once.
+            dialog.setMessage(TrustedAppPrompt.message(this, packageName, page.site))
+            if (signers != null) {
+                dialog.setPositiveButton(TrustedAppPrompt.actionLabel(this, packageName)) { _, _ ->
+                    TrustedAppPrompt.trust(this, packageName, signers)
+                    fill(store, item, fields)
+                }
+            }
         } else {
             dialog.setMessage(getString(R.string.link_url_prompt_message, packageName, item.name.orEmpty()))
                 .setPositiveButton(R.string.link_url_prompt_link_action) { _, _ -> linkAndFill(store, item, packageName, fields) }
@@ -86,14 +89,6 @@ class AutofillConfirmFillActivity : FragmentActivity() {
         val copyTotp = intent.getBooleanExtra(AutofillFillActivity.EXTRA_COPY_TOTP, false)
         setResult(RESULT_OK, AutofillDatasetBuilder.createPickedItemResult(this, store, item, fields, copyTotp))
         finish()
-    }
-
-    /**
-     * Trust the browser [packageName] for every site and fill.
-     */
-    private fun trustAndFill(store: VaultStore, item: Item, packageName: String, fields: List<Pair<AutofillId, FieldType>>) {
-        TrustedAppPrompt.trust(this, packageName)
-        fill(store, item, fields)
     }
 
     /**

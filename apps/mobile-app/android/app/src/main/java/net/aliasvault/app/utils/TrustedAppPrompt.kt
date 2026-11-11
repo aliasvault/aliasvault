@@ -5,7 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import net.aliasvault.app.R
-import net.aliasvault.app.autofill.utils.BrowserAllowlist
+import net.aliasvault.app.credentialprovider.OriginVerifier
 
 /**
  * Texts and the store action for offering to trust an app AliasVault cannot verify, shared by the autofill picker and the passkey screens.
@@ -28,31 +28,29 @@ object TrustedAppPrompt {
         return context.getString(R.string.autofill_trust_app_message, appLabel(context, packageName), packageName, domain)
     }
 
-    /** Store [packageName] with its current signing certificate as a trusted app; false when the certificate cannot be read. */
-    fun trust(context: Context, packageName: String): Boolean {
-        val fingerprints = BrowserAllowlist.installedFingerprints(context, packageName)
-        if (fingerprints.isNullOrEmpty()) {
-            Log.w(TAG, "No signing certificate for $packageName, not trusting it")
-            return false
-        }
-        TrustedAppStore.trust(context, packageName, fingerprints.last(), appLabel(context, packageName))
+    /** Store [packageName] as a trusted app, bound to [signers]: the certificates of the request the user is answering. */
+    fun trust(context: Context, packageName: String, signers: AppSigners) {
+        TrustedAppStore.trust(context, packageName, signers, appLabel(context, packageName))
         Log.i(TAG, "User trusted $packageName")
-        return true
     }
 
     /**
-     * Show the error screen of `activity_loading.xml` with the warning for [packageName] and a button that trusts it and runs [onTrusted].
+     * Show the error screen of `activity_loading.xml` with the warning for the [caller] of a passkey request and a button that
+     * trusts it and runs [onTrusted].
      */
-    fun showOnErrorScreen(activity: Activity, packageName: String, site: String, onClose: () -> Unit, onTrusted: () -> Unit) {
-        val action = ErrorScreenView.Action(actionLabel(activity, packageName)) {
-            if (trust(activity, packageName)) {
-                ErrorScreenView.showLoading(activity)
-                onTrusted()
-            } else {
-                onClose()
-            }
+    fun showOnErrorScreen(
+        activity: Activity,
+        caller: OriginVerifier.OriginResult.UntrustedApp,
+        site: String,
+        onClose: () -> Unit,
+        onTrusted: () -> Unit,
+    ) {
+        val action = ErrorScreenView.Action(actionLabel(activity, caller.packageName)) {
+            trust(activity, caller.packageName, caller.signers)
+            ErrorScreenView.showLoading(activity)
+            onTrusted()
         }
         val title = activity.getString(R.string.autofill_trust_app_title)
-        ErrorScreenView.show(activity, ErrorScreenView.Content(message(activity, packageName, site), title, action = action), onClose)
+        ErrorScreenView.show(activity, ErrorScreenView.Content(message(activity, caller.packageName, site), title, action = action), onClose)
     }
 }

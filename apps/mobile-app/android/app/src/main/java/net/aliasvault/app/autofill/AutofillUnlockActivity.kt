@@ -46,15 +46,6 @@ class AutofillUnlockActivity : FragmentActivity() {
 
         /** Resolved web origin or package name for the calling app/site, used for matching. */
         const val EXTRA_APP_INFO = "net.aliasvault.app.autofill.unlock.EXTRA_APP_INFO"
-
-        /** Package name of an unverified app reporting a web page, set together with [EXTRA_PAGE_SITE]. */
-        const val EXTRA_PAGE_PACKAGE_NAME = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_PACKAGE_NAME"
-
-        /** The site that web page reports; its logins fill only after the user confirms. */
-        const val EXTRA_PAGE_SITE = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_SITE"
-
-        /** Whether that app is a browser. */
-        const val EXTRA_PAGE_IS_BROWSER = "net.aliasvault.app.autofill.unlock.EXTRA_PAGE_IS_BROWSER"
     }
 
     private lateinit var vaultStore: VaultStore
@@ -74,10 +65,7 @@ class AutofillUnlockActivity : FragmentActivity() {
                 return
             }
             appInfo = intent.getStringExtra(EXTRA_APP_INFO)
-            val pagePackage = intent.getStringExtra(EXTRA_PAGE_PACKAGE_NAME)
-            val pageSite = intent.getStringExtra(EXTRA_PAGE_SITE)
-            val pageIsBrowser = intent.getBooleanExtra(EXTRA_PAGE_IS_BROWSER, false)
-            page = if (pagePackage != null && pageSite != null) UnverifiedPage(pagePackage, pageSite, pageIsBrowser) else null
+            page = UnverifiedPage.from(intent)
 
             vaultStore = VaultStore.getExistingInstance() ?: run {
                 val keystoreProvider = AndroidKeystoreProvider(applicationContext)
