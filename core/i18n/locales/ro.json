@@ -280,6 +280,7 @@
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou."
     },
+    "expand": "Expand",
     "generate": "Generează",
     "help": "Ajutor",
     "hide": "Ascunde",
@@ -341,6 +342,7 @@
     "share": "Distribuie",
     "show": "Afișează",
     "showDetails": "Afișează detalii",
+    "showList": "Show list",
     "showPassword": "Afișează parola",
     "success": "Succes",
     "syncVaultData": "Sincronizează datele seifului",
