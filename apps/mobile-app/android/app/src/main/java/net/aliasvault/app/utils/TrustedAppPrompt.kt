@@ -19,7 +19,7 @@ object TrustedAppPrompt {
         return runCatching { packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString() }.getOrDefault(packageName)
     }
 
-    /** Label of the "Trust <app> for websites" action. */
+    /** Label of the "Trust <app>" action. */
     fun actionLabel(context: Context, packageName: String): String = context.getString(R.string.autofill_trust_app, appLabel(context, packageName))
 
     /** Warning shown before the user trusts [packageName] for [site], a URL or host the app claims to show. */

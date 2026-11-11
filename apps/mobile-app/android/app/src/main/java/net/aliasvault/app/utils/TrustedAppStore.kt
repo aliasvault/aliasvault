@@ -18,9 +18,8 @@ object TrustedAppStore {
      * @property packageName Android package name of the app.
      * @property certFingerprints SHA-256 of the certificates it was signed with, as uppercase hex without colons.
      * @property label App label shown to the user when the trust was given.
-     * @property trustedAt Epoch milliseconds of the trust decision.
      */
-    data class TrustedApp(val packageName: String, val certFingerprints: Set<String>, val label: String, val trustedAt: Long)
+    data class TrustedApp(val packageName: String, val certFingerprints: Set<String>, val label: String)
 
     /**
      * All trusted apps, oldest first.
@@ -50,7 +49,7 @@ object TrustedAppStore {
      */
     @Synchronized
     fun trust(context: Context, packageName: String, signers: AppSigners, label: String) {
-        val entry = TrustedApp(packageName, signers.current, label, System.currentTimeMillis())
+        val entry = TrustedApp(packageName, signers.current, label)
         save(context, list(context).filter { it.packageName != packageName } + entry)
     }
 
@@ -63,16 +62,10 @@ object TrustedAppStore {
     }
 
     /**
-     * The trusted apps as a JSON array for the app's settings screen; entries of uninstalled apps are dropped.
+     * The trusted apps as a JSON array for the app's settings screen.
      */
-    @Synchronized
     fun listJson(context: Context): String {
-        val apps = list(context)
-        val installed = apps.filter { isInstalled(context, it.packageName) }
-        if (installed.size != apps.size) {
-            save(context, installed)
-        }
-        return JSONArray(installed.map { it.toJson() }).toString()
+        return JSONArray(list(context).map { it.toJson() }).toString()
     }
 
     private fun save(context: Context, apps: List<TrustedApp>) {
@@ -80,16 +73,11 @@ object TrustedAppStore {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putString(PREF_KEY, json).apply()
     }
 
-    private fun isInstalled(context: Context, packageName: String): Boolean {
-        return runCatching { context.packageManager.getPackageInfo(packageName, 0) }.isSuccess
-    }
-
     private fun TrustedApp.toJson(): JSONObject {
         return JSONObject()
             .put("packageName", packageName)
             .put("certFingerprints", JSONArray(certFingerprints.toList()))
             .put("label", label)
-            .put("trustedAt", trustedAt)
     }
 
     private fun JSONObject.toTrustedApp(): TrustedApp? {
@@ -98,6 +86,6 @@ object TrustedAppStore {
         if (packageName.isEmpty() || fingerprints.isEmpty() || fingerprints.any { it.isEmpty() }) {
             return null
         }
-        return TrustedApp(packageName, fingerprints.toSet(), optString("label", packageName), optLong("trustedAt"))
+        return TrustedApp(packageName, fingerprints.toSet(), optString("label", packageName))
     }
 }

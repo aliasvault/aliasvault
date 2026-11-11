@@ -16,10 +16,10 @@ object OriginBlockedScreen {
      */
     fun show(activity: Activity, packageName: String?, site: String, reason: String, onClose: () -> Unit) {
         // The package is only unknown below Android 14, where the credential provider never runs.
-        val app = packageName?.let { TrustedAppPrompt.appLabel(activity, it) } ?: "unknown"
         val domain = Uri.parse(site).host ?: site
+        val message = packageName?.let { activity.getString(R.string.passkey_blocked_message, TrustedAppPrompt.appLabel(activity, it), domain) }
         val content = ErrorScreenView.Content(
-            message = activity.getString(R.string.passkey_blocked_message, app, domain),
+            message = message ?: activity.getString(R.string.unknown_error),
             title = activity.getString(R.string.passkey_blocked_title),
             detail = "Reason: $reason\nApp: ${packageName ?: "unknown"}\nSite: $site",
         )

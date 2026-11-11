@@ -381,7 +381,7 @@
   "logout.loggingOutDescription": "Description shown during logout process",
   "logout.loggingOutTitle": "Title shown during logout process",
   "native.autofillConfirmFillTitle": "Title of the question asked before a login is filled into an app AliasVault could not verify. {{app}} is the app name.",
-  "native.autofillTrustApp": "Autofill popup row offering to trust an app AliasVault could not verify. {{app}} is the app name.",
+  "native.autofillTrustApp": "Button that trusts an app AliasVault could not verify, shown in the autofill confirm dialog and on the passkey screen. {{app}} is the app name.",
   "native.autofillTrustAppMessage": "Warning before the user trusts an app AliasVault could not verify (a browser not on the known list, or an app the website does not list), answered with Trust, Just fill or Cancel. Keep the warning about the consequence. {{app}} is the app name, {{package}} its Android package name, {{domain}} the website.",
   "native.passkeyBlockedMessage": "Shown when AliasVault refuses a passkey request after it could not verify the calling app. {{app}} is the app name, {{domain}} the website.",
   "navigation.vault": "Main navigation link for vault section",

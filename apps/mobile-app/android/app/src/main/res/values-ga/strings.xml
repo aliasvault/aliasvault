@@ -19,13 +19,13 @@
   <string name="autofill_vault_locked">Cruinneachán faoi ghlas</string>
   <string name="autofill_trust_app">Trust %1$s</string>
   <string name="autofill_trust_app_title">Trust this app?</string>
-  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it under Settings &gt; Autofill &gt; Trusted apps.</string>
+  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it in the Autofill settings.</string>
   <string name="autofill_confirm_fill_title">Fill in %1$s?</string>
   <string name="link_url_prompt_message">Cuir \"%1$s\" le %2$s ionas go n-aithníonn AliasVault an aip nó an suíomh Gréasáin seo an chéad uair eile?</string>
   <string name="link_url_prompt_link_action">Nasc agus líon isteach</string>
   <string name="link_url_prompt_skip_action">Líon isteach amháin</string>
   <string name="passkey_blocked_title">Blocked by AliasVault</string>
-  <string name="passkey_blocked_message">AliasVault could not verify that %1$s may use passkeys for %2$s. Check your internet connection and try again. If this keeps happening, contact the developer of the app.</string>
+  <string name="passkey_blocked_message">AliasVault could not verify that %1$s may use passkeys for %2$s, so the request was blocked. If you think this is a mistake, contact the developer of the app.</string>
   <string name="biometric_store_key_title">Siopa Eochair Chriptiú</string>
   <string name="biometric_store_key_subtitle">Fíordheimhnigh chun d\'eochair chriptiúcháin a stóráil go sábháilte san Keystore Android. Cumasaíonn sé seo rochtain shlán ar do chruinneachán.</string>
   <string name="biometric_unlock_vault_title">Díghlasáil an Cruinneachán</string>
