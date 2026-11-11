@@ -280,6 +280,7 @@
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor la acepte. Intenta eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelve a intentarlo.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtalo de nuevo."
     },
+    "expand": "Expand",
     "generate": "Generar",
     "help": "Ayuda",
     "hide": "Esconder",
@@ -341,6 +342,7 @@
     "share": "Compartir",
     "show": "Mostrar",
     "showDetails": "Mostrar detalles",
+    "showList": "Show list",
     "showPassword": "Mostrar contraseña",
     "success": "Correcto",
     "syncVaultData": "Sincronizar datos de bóveda",
