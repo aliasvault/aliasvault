@@ -228,7 +228,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     is OriginVerifier.OriginResult.UntrustedApp -> {
                         val site = OriginVerifier.claimedOrigin(intent) ?: passkey.rpId
                         val activity = this@PasskeyAuthenticationActivity
-                        TrustedAppPrompt.showOnErrorScreen(activity, originResult.packageName, site, onClose = {
+                        TrustedAppPrompt.showOnErrorScreen(activity, originResult, site, onClose = {
                             setResult(RESULT_CANCELED)
                             finish()
                         }) {

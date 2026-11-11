@@ -6,7 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Apps the user trusted to request passwords and passkeys for any site, each bound to the signing certificate it had when trusted.
+ * Apps the user trusted to request passwords and passkeys for any site, each bound to the signing certificates it had when trusted.
  */
 object TrustedAppStore {
     private const val TAG = "AliasVaultAutofill"
@@ -16,15 +16,16 @@ object TrustedAppStore {
     /**
      * An app trusted by the user.
      * @property packageName Android package name of the app.
-     * @property certFingerprint SHA-256 of its signing certificate as uppercase hex without colons.
+     * @property certFingerprints SHA-256 of the certificates it was signed with, as uppercase hex without colons.
      * @property label App label shown to the user when the trust was given.
      * @property trustedAt Epoch milliseconds of the trust decision.
      */
-    data class TrustedApp(val packageName: String, val certFingerprint: String, val label: String, val trustedAt: Long)
+    data class TrustedApp(val packageName: String, val certFingerprints: Set<String>, val label: String, val trustedAt: Long)
 
     /**
      * All trusted apps, oldest first.
      */
+    @Synchronized
     fun list(context: Context): List<TrustedApp> {
         val json = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(PREF_KEY, null) ?: return emptyList()
         return try {
@@ -37,23 +38,26 @@ object TrustedAppStore {
     }
 
     /**
-     * Whether [packageName] was trusted with one of the certificates it is currently signed with.
+     * Whether [packageName] was trusted while signed by exactly the certificates of [signers]; any new certificate, a key rotation
+     * included, needs a new trust.
      */
-    fun isTrusted(context: Context, packageName: String, installedFingerprints: Set<String>): Boolean {
-        return list(context).any { it.packageName == packageName && it.certFingerprint in installedFingerprints }
+    fun isTrusted(context: Context, packageName: String, signers: AppSigners): Boolean {
+        return list(context).any { it.packageName == packageName && it.certFingerprints == signers.current }
     }
 
     /**
-     * Trust [packageName] as signed with [certFingerprint], replacing an earlier entry for the same package.
+     * Trust [packageName] as signed by [signers], replacing an earlier entry for the same package.
      */
-    fun trust(context: Context, packageName: String, certFingerprint: String, label: String) {
-        val entry = TrustedApp(packageName, certFingerprint, label, System.currentTimeMillis())
+    @Synchronized
+    fun trust(context: Context, packageName: String, signers: AppSigners, label: String) {
+        val entry = TrustedApp(packageName, signers.current, label, System.currentTimeMillis())
         save(context, list(context).filter { it.packageName != packageName } + entry)
     }
 
     /**
      * Remove the trust for [packageName].
      */
+    @Synchronized
     fun remove(context: Context, packageName: String) {
         save(context, list(context).filter { it.packageName != packageName })
     }
@@ -61,25 +65,14 @@ object TrustedAppStore {
     /**
      * The trusted apps as a JSON array for the app's settings screen; entries of uninstalled apps are dropped.
      */
+    @Synchronized
     fun listJson(context: Context): String {
-        val installed = list(context).filter { isInstalled(context, it.packageName) }
-        if (installed.size != list(context).size) {
+        val apps = list(context)
+        val installed = apps.filter { isInstalled(context, it.packageName) }
+        if (installed.size != apps.size) {
             save(context, installed)
         }
         return JSONArray(installed.map { it.toJson() }).toString()
-    }
-
-    /**
-     * The trusted apps in the format of Google's privileged apps list, for merging into a `CallingAppInfo.getOrigin` allowlist.
-     */
-    fun toAllowlistApps(context: Context): JSONArray {
-        val apps = JSONArray()
-        for (app in list(context)) {
-            val signature = JSONObject().put("build", "release").put("cert_fingerprint_sha256", app.certFingerprint.chunked(2).joinToString(":"))
-            val info = JSONObject().put("package_name", app.packageName).put("signatures", JSONArray().put(signature))
-            apps.put(JSONObject().put("type", "android").put("info", info))
-        }
-        return apps
     }
 
     private fun save(context: Context, apps: List<TrustedApp>) {
@@ -92,15 +85,19 @@ object TrustedAppStore {
     }
 
     private fun TrustedApp.toJson(): JSONObject {
-        return JSONObject().put("packageName", packageName).put("certFingerprint", certFingerprint).put("label", label).put("trustedAt", trustedAt)
+        return JSONObject()
+            .put("packageName", packageName)
+            .put("certFingerprints", JSONArray(certFingerprints.toList()))
+            .put("label", label)
+            .put("trustedAt", trustedAt)
     }
 
     private fun JSONObject.toTrustedApp(): TrustedApp? {
         val packageName = optString("packageName")
-        val certFingerprint = optString("certFingerprint")
-        if (packageName.isEmpty() || certFingerprint.isEmpty()) {
+        val fingerprints = optJSONArray("certFingerprints")?.let { array -> (0 until array.length()).map { array.optString(it) } }.orEmpty()
+        if (packageName.isEmpty() || fingerprints.isEmpty() || fingerprints.any { it.isEmpty() }) {
             return null
         }
-        return TrustedApp(packageName, certFingerprint, optString("label", packageName), optLong("trustedAt"))
+        return TrustedApp(packageName, fingerprints.toSet(), optString("label", packageName), optLong("trustedAt"))
     }
 }

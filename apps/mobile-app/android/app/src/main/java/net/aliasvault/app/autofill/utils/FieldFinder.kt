@@ -7,6 +7,7 @@ import android.view.View
 import android.view.autofill.AutofillId
 import net.aliasvault.app.autofill.models.FieldType
 import net.aliasvault.app.autofill.models.UnverifiedPage
+import net.aliasvault.app.utils.AppSigners
 
 /**
  * Helper class to find fields in the assist structures of a fill request.
@@ -81,11 +82,18 @@ class FieldFinder(private val structures: List<AssistStructure>, private val con
      */
     val callerPackage: String? get() = structure.activityComponent?.packageName
 
-    private val isTrustedApp: Boolean by lazy { callerPackage?.let { BrowserAllowlist.isTrustedApp(context, it) } ?: false }
+    /** Signing certificates of the installed caller, null when it is not visible to AliasVault. */
+    private val callerSigners: AppSigners? by lazy { callerPackage?.let { AppSigners.installed(context, it) } }
+
+    private val isTrustedApp: Boolean by lazy {
+        val packageName = callerPackage
+        val signers = callerSigners
+        packageName != null && signers != null && BrowserAllowlist.isTrustedApp(context, packageName, signers)
+    }
 
     /**
      * The app or website to suggest items for: the web domain when a trusted app reports one, otherwise the
-     * package name. Null for a trusted app without a detectable site.
+     * package name. Null for a trusted browser without a detectable site.
      */
     val appInfo: String? by lazy { resolveAppInfo() }
 
@@ -105,7 +113,7 @@ class FieldFinder(private val structures: List<AssistStructure>, private val con
             return null
         }
         val site = findSite() ?: return null
-        return UnverifiedPage(packageName, site, BrowserAllowlist.isBrowser(context, packageName))
+        return UnverifiedPage(packageName, site, BrowserAllowlist.isBrowser(context, packageName), callerSigners)
     }
 
     private fun resolveAppInfo(): String? {
@@ -116,6 +124,10 @@ class FieldFinder(private val structures: List<AssistStructure>, private val con
 
         findSite()?.let { return it }
 
+        // A trusted app's own screens match by package name; a browser's own screens match nothing.
+        if (!BrowserAllowlist.isBrowser(context, packageName)) {
+            return packageName
+        }
         Log.d(TAG, "Browser $packageName reported no web domain")
         return null
     }

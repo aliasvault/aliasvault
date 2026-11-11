@@ -172,10 +172,7 @@ object AutofillDatasetBuilder {
             putExtra(AutofillFillActivity.EXTRA_MANIFEST_ID, item.manifestId)
             AutofillFieldExtras.put(this, fields, AutofillFillActivity.EXTRA_AUTOFILL_IDS, AutofillFillActivity.EXTRA_FIELD_TYPES)
             putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, item.hasTotp && TotpClipboard.isCopyOnFillEnabled(context))
-            if (confirmFor != null) {
-                putExtra(AutofillConfirmFillActivity.EXTRA_PACKAGE_NAME, confirmFor.packageName)
-                putExtra(AutofillConfirmFillActivity.EXTRA_BROWSER_SITE, confirmFor.site.takeIf { confirmFor.isBrowser })
-            }
+            confirmFor?.putInto(this)
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -275,9 +272,7 @@ object AutofillDatasetBuilder {
         val unlockIntent = Intent(context, AutofillUnlockActivity::class.java).apply {
             AutofillFieldExtras.put(this, fields, AutofillUnlockActivity.EXTRA_AUTOFILL_IDS, AutofillUnlockActivity.EXTRA_FIELD_TYPES)
             putExtra(AutofillUnlockActivity.EXTRA_APP_INFO, appInfo)
-            putExtra(AutofillUnlockActivity.EXTRA_PAGE_PACKAGE_NAME, page?.packageName)
-            putExtra(AutofillUnlockActivity.EXTRA_PAGE_SITE, page?.site)
-            putExtra(AutofillUnlockActivity.EXTRA_PAGE_IS_BROWSER, page?.isBrowser ?: false)
+            page?.putInto(this)
         }
         val pendingIntent = PendingIntent.getActivity(context, 0, unlockIntent, PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT)
 

@@ -228,7 +228,7 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                     is OriginVerifier.OriginResult.UntrustedApp -> {
                         val site = OriginVerifier.claimedOrigin(intent) ?: viewModel.rpId
                         val activity = this@PasskeyRegistrationActivity
-                        TrustedAppPrompt.showOnErrorScreen(activity, originResult.packageName, site, onClose = { finish() }) {
+                        TrustedAppPrompt.showOnErrorScreen(activity, originResult, site, onClose = { finish() }) {
                             verifyOriginAndStartUnlock(callingAppInfo, savedInstanceState)
                         }
                     }

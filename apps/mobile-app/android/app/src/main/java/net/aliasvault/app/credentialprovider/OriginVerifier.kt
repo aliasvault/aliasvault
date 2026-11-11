@@ -10,8 +10,8 @@ import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.credentials.provider.CallingAppInfo
-import net.aliasvault.app.autofill.utils.BrowserAllowlist
 import net.aliasvault.app.rustcore.JnaInitializer
+import net.aliasvault.app.utils.AppSigners
 import net.aliasvault.app.utils.TrustedAppStore
 import org.json.JSONArray
 import org.json.JSONObject
@@ -28,8 +28,8 @@ import java.security.MessageDigest
 /**
  * Validates caller origin for WebAuthn credential requests.
  *
- * For privileged apps (browsers): Uses CallingAppInfo.getOrigin() with the allowlist of [BrowserAllowlist], which
- * also covers the apps the user trusted.
+ * For privileged apps (browsers): Uses CallingAppInfo.getOrigin() with Google's allowlist, or the apps the user trusted
+ * in [TrustedAppStore].
  * For native apps: Computes facetId from the app's signing certificate SHA-256 hash.
  *
  * Reference: https://developer.android.com/identity/sign-in/credential-provider
@@ -1068,8 +1068,9 @@ class OriginVerifier(private val context: Context) {
          * The caller could not be verified (a browser that is not on the list, or an app the RP does not list in its
          * asset links) and the user may trust it to retry.
          * @property packageName Package name of the caller.
+         * @property signers Signing certificates of the caller, which a trust given by the user is bound to.
          */
-        data class UntrustedApp(val packageName: String) : OriginResult()
+        data class UntrustedApp(val packageName: String, val signers: AppSigners) : OriginResult()
     }
 
     /** Result of asset links verification: the RP lists the app, does not list it, or could not be checked. */
@@ -1095,38 +1096,74 @@ class OriginVerifier(private val context: Context) {
         val packageName = callingAppInfo.packageName
         Log.d(TAG, "Verifying origin for package: $packageName, rpId: $requestedRpId")
 
-        // Try to get origin from privileged app (browser)
-        val privilegedOrigin = try {
-            callingAppInfo.getOrigin(BrowserAllowlist.passkeyAllowlistJson(context))
+        val signers = AppSigners.from(callingAppInfo.signingInfo)
+        if (signers == null) {
+            Log.e(TAG, "No signing certificates found for $packageName")
+            return OriginResult.Failure("Cannot verify calling application signature")
+        }
+        Log.d(TAG, "Certificate fingerprints for $packageName: ${signers.history}")
+
+        if (!callingAppInfo.isOriginPopulated()) {
+            return verifyNativeApp(callingAppInfo, packageName, signers, requestedRpId)
+        }
+
+        val privilegedOrigin = privilegedOrigin(callingAppInfo, signers)
+        if (privilegedOrigin == null) {
+            Log.w(TAG, "$packageName claims a web origin but is not a trusted app")
+            return OriginResult.UntrustedApp(packageName, signers)
+        }
+
+        Log.d(TAG, "Privileged caller detected, origin: $privilegedOrigin")
+        if (!isOriginValidForRpId(privilegedOrigin, requestedRpId)) {
+            Log.w(TAG, "Privileged origin $privilegedOrigin does not match rpId $requestedRpId")
+            return OriginResult.Failure("Origin does not match RP ID")
+        }
+
+        return OriginResult.Success(privilegedOrigin, isPrivileged = true)
+    }
+
+    /**
+     * The web origin claimed by a browser on Google's list or by an app the user trusted with these [signers], or null for
+     * any other caller.
+     */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun privilegedOrigin(callingAppInfo: CallingAppInfo, signers: AppSigners): String? {
+        listedOrigin(callingAppInfo, PRIVILEGED_ALLOWLIST_JSON)?.let { return it }
+        if (!TrustedAppStore.isTrusted(context, callingAppInfo.packageName, signers)) {
+            return null
+        }
+
+        /*
+         * androidx returns the origin only through its own allowlist check, which looks at just the original certificate of a
+         * rotated key and at the first entry per package. The trust is decided above, so this allowlist names only this caller.
+         */
+        return listedOrigin(callingAppInfo, allowlistOf(callingAppInfo.packageName, signers))
+    }
+
+    /** The origin of [callingAppInfo] when [allowlistJson] lists it, otherwise null. */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun listedOrigin(callingAppInfo: CallingAppInfo, allowlistJson: String): String? {
+        return try {
+            callingAppInfo.getOrigin(allowlistJson)
         } catch (e: Exception) {
-            Log.d(TAG, "Not a privileged caller or getOrigin failed: ${e.message}")
+            Log.d(TAG, "Caller not on the allowlist or getOrigin failed: ${e.message}")
             null
         }
+    }
 
-        if (privilegedOrigin != null) {
-            Log.d(TAG, "Privileged caller detected, origin: $privilegedOrigin")
-
-            if (!isOriginValidForRpId(privilegedOrigin, requestedRpId)) {
-                Log.w(TAG, "Privileged origin $privilegedOrigin does not match rpId $requestedRpId")
-                return OriginResult.Failure("Origin does not match RP ID")
-            }
-
-            return OriginResult.Success(privilegedOrigin, isPrivileged = true)
-        }
-
-        if (callingAppInfo.isOriginPopulated()) {
-            Log.w(TAG, "$packageName claims a web origin but is not a trusted app")
-            return OriginResult.UntrustedApp(packageName)
-        }
-
-        return verifyNativeApp(callingAppInfo, packageName, requestedRpId)
+    /** An allowlist in the format of Google's list that names only [packageName] with all certificates in [signers]. */
+    private fun allowlistOf(packageName: String, signers: AppSigners): String {
+        val signatures = JSONArray()
+        signers.history.forEach { signatures.put(JSONObject().put("build", "release").put("cert_fingerprint_sha256", it.chunked(2).joinToString(":"))) }
+        val app = JSONObject().put("type", "android").put("info", JSONObject().put("package_name", packageName).put("signatures", signatures))
+        return JSONObject().put("apps", JSONArray().put(app)).toString()
     }
 
     /**
      * Verify a native app by its signing certificate: the user trusted it, or the RP lists it in its asset links.
      */
     @RequiresApi(Build.VERSION_CODES.P)
-    private fun verifyNativeApp(callingAppInfo: CallingAppInfo, packageName: String, requestedRpId: String): OriginResult {
+    private fun verifyNativeApp(callingAppInfo: CallingAppInfo, packageName: String, signers: AppSigners, requestedRpId: String): OriginResult {
         val facetId = computeFacetId(callingAppInfo)
         if (facetId == null) {
             Log.e(TAG, "Failed to compute facetId for $packageName")
@@ -1134,29 +1171,20 @@ class OriginVerifier(private val context: Context) {
         }
 
         Log.d(TAG, "Native app detected, facetId: $facetId")
-
-        // Verify the native app is authorized via Asset Links
-        val certFingerprints = getAllCertificateFingerprints(callingAppInfo)
-        if (certFingerprints.isEmpty()) {
-            Log.e(TAG, "Failed to get certificate fingerprints for $packageName")
-            return OriginResult.Failure("Cannot verify calling application signature")
-        }
-
-        Log.d(TAG, "Certificate fingerprints for $packageName: $certFingerprints")
-        if (TrustedAppStore.isTrusted(context, packageName, certFingerprints.map { it.replace(":", "") }.toSet())) {
+        if (TrustedAppStore.isTrusted(context, packageName, signers)) {
             Log.d(TAG, "User trusted $packageName, skipping asset links verification for $requestedRpId")
             return OriginResult.Success(facetId, isPrivileged = false)
         }
 
         // Only a definite "not listed" may be overridden by the user; a lookup that failed must not lead to permanent trust.
-        return when (val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, certFingerprints)) {
+        return when (val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, signers.history)) {
             is AssetLinksResult.Unreachable -> {
                 Log.e(TAG, "Asset links lookup failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
                 OriginResult.Failure(assetLinksResult.reason)
             }
             is AssetLinksResult.NotLinked -> {
                 Log.e(TAG, "Asset links verification failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
-                OriginResult.UntrustedApp(packageName)
+                OriginResult.UntrustedApp(packageName, signers)
             }
             AssetLinksResult.Success -> {
                 Log.d(TAG, "Asset links verification passed for $packageName on $requestedRpId")
@@ -1348,38 +1376,6 @@ class OriginVerifier(private val context: Context) {
         val fingerprints = target.optJSONArray("sha256_cert_fingerprints") ?: return false
         return (0 until fingerprints.length()).any { j ->
             fingerprints.getString(j).replace(":", "").lowercase() in normalizedCertHashes
-        }
-    }
-
-    /**
-     * Get all certificate fingerprints for the calling app.
-     * Uses signing certificate history for apps with key rotation,
-     * falls back to apkContentsSigners for apps with multiple signers.
-     */
-    @RequiresApi(Build.VERSION_CODES.P)
-    fun getAllCertificateFingerprints(callingAppInfo: CallingAppInfo): List<String> {
-        return try {
-            val signingInfo = callingAppInfo.signingInfo
-            val certs = if (signingInfo.hasMultipleSigners()) {
-                signingInfo.apkContentsSigners.toList()
-            } else {
-                signingInfo.signingCertificateHistory?.toList() ?: signingInfo.apkContentsSigners.toList()
-            }
-
-            if (certs.isEmpty()) {
-                Log.e(TAG, "No signing certificates found for ${callingAppInfo.packageName}")
-                return emptyList()
-            }
-
-            val md = MessageDigest.getInstance("SHA-256")
-            certs.map { cert ->
-                md.reset()
-                val certHash = md.digest(cert.toByteArray())
-                certHash.joinToString(":") { "%02X".format(it) }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting certificate fingerprints", e)
-            emptyList()
         }
     }
 }
