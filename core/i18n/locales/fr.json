@@ -280,6 +280,7 @@
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "wrongPassword": "Mot de passe incorrect. Veuillez réessayer."
     },
+    "expand": "Expand",
     "generate": "Générer",
     "help": "Aide",
     "hide": "Masquer",
@@ -341,6 +342,7 @@
     "share": "Partager",
     "show": "Afficher",
     "showDetails": "Afficher les détails",
+    "showList": "Show list",
     "showPassword": "Afficher le mot de passe",
     "success": "Succès",
     "syncVaultData": "Synchroniser les données du coffre-fort",
