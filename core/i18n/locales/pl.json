@@ -280,6 +280,7 @@
       "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie."
     },
+    "expand": "Expand",
     "generate": "Wygeneruj",
     "help": "Pomoc",
     "hide": "Ukryj",
@@ -341,6 +342,7 @@
     "share": "Udostępnij",
     "show": "Pokaż",
     "showDetails": "Pokaż szczegóły",
+    "showList": "Show list",
     "showPassword": "Pokaż hasło",
     "success": "Gotowe",
     "syncVaultData": "Synchronizacja danych z sejfu",
