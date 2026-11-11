@@ -1,7 +1,7 @@
 // Mozilla Public Suffix List, rules only: comments and blank lines stripped, internationalized rules in punycode.
 // Source: https://publicsuffix.org/list/public_suffix_list.dat
-// Upstream version: 2026-11-04_19-07-29_UTC
-// Last refreshed: 2026-11-06 by scripts/dependencies/refresh-external-dependencies.sh (task public-suffix-list)
+// Upstream version: 2026-11-11_13-52-29_UTC
+// Last refreshed: 2026-11-11 by scripts/dependencies/refresh-external-dependencies.sh (task public-suffix-list)
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -5627,7 +5627,9 @@ net.vi
 org.vi
 vn
 ac.vn
+ad.vn
 ai.vn
+ap.vn
 biz.vn
 com.vn
 edu.vn
@@ -5639,6 +5641,7 @@ int.vn
 io.vn
 name.vn
 net.vn
+on.vn
 org.vn
 pro.vn
 angiang.vn
@@ -6971,6 +6974,7 @@ ltd.ua
 611.to
 a2hosted.com
 cpserver.com
+abyme.dev
 activetrail.biz
 myaddr.dev
 myaddr.io
@@ -7986,8 +7990,10 @@ bearblog.dev
 pages.gay
 bnr.la
 bitbucket.io
+ship.place
 blackbaudcdn.net
 of.je
+prod.page
 square.site
 bluebite.io
 boomla.net
@@ -8127,6 +8133,7 @@ objects.lpg.cloudscale.ch
 objects.rma.cloudscale.ch
 lpg.objectstorage.ch
 rma.objectstorage.ch
+cloudzyro.app
 wnext.app
 cnpy.gdn
 *.otap.co
@@ -9000,6 +9007,7 @@ cloud.run
 ai.studio
 goupile.fr
 pymnt.uk
+gov.de
 gov.nl
 grafana-dev.net
 grayjayleagues.com
@@ -10326,6 +10334,7 @@ tmp.now
 vercel.run
 now.sh
 2038.io
+vibekit.page
 v-info.info
 vistablog.ir
 deus-canvas.com
