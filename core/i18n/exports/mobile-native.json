@@ -177,7 +177,21 @@
             "domain": "%3$s"
           }
         },
-        "common_confirm": "common.confirm",
+        "autofill_confirm_fill_title": {
+          "key": "native.autofillConfirmFillTitle",
+          "format": {
+            "app": "%1$s"
+          }
+        },
+        "link_url_prompt_message": {
+          "key": "native.linkUrlPromptMessage",
+          "format": {
+            "url": "%1$s",
+            "name": "%2$s"
+          }
+        },
+        "link_url_prompt_link_action": "native.linkUrlPromptLinkAction",
+        "link_url_prompt_skip_action": "native.linkUrlPromptSkipAction",
         "passkey_blocked_title": "native.passkeyBlockedTitle",
         "passkey_blocked_message": {
           "key": "native.passkeyBlockedMessage",
