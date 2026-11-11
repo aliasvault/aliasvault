@@ -280,6 +280,7 @@
       "vaultTooLarge": "密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。",
       "wrongPassword": "密码错误，请重试。"
     },
+    "expand": "Expand",
     "generate": "生成",
     "help": "帮助",
     "hide": "隐藏",
@@ -341,6 +342,7 @@
     "share": "分享",
     "show": "显示",
     "showDetails": "显示详情",
+    "showList": "Show list",
     "showPassword": "显示密码",
     "success": "成功",
     "syncVaultData": "同步密码库数据",
