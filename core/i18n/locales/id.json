@@ -280,6 +280,7 @@
       "vaultTooLarge": "Vault terlalu besar untuk diterima server. Coba untuk menghapus beberapa item atau lampiran untuk mengurangi ukuran dan coba lagi.",
       "wrongPassword": "Kata sandi salah. Silakan coba lagi."
     },
+    "expand": "Expand",
     "generate": "Buat",
     "help": "Help",
     "hide": "Sembunyikan",
@@ -296,6 +297,7 @@
     "lockVault": "Kunci brankas",
     "loggedIn": "Sudah masuk",
     "logout": "Keluar",
+    "moreOptions": "More options",
     "never": "Jangan pernah",
     "next": "Berikutnya",
     "no": "Tidak",
@@ -304,6 +306,7 @@
     "notice": "Perhatian",
     "offlineMode": "Menjalankan dalam mode offline",
     "ok": "OK",
+    "open": "Open",
     "openInNewWindow": "Buka di jendela baru",
     "or": "atau",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "Coba lagi",
     "save": "Simpan",
     "saving": "Menyimpan...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Nama Layanan",
     "settings": "Pengaturan",
     "share": "Share",
     "show": "Tampilkan",
     "showDetails": "Tampilkan rincian",
+    "showList": "Show list",
     "showPassword": "Tampilkan kata sandi",
     "success": "Berhasil",
     "syncVaultData": "Sinkronkan data brankas",
@@ -346,6 +358,11 @@
     "yes": "Ya"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Pengisian Otomatis 2FA",
     "autofillWithAliasVault": "Isi otomatis nama pengguna/kata sandi",
     "dismissPopup": "Tutup jendela pop-up",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Tidak ditemukan kode 2FA yang cocok",
     "openAliasVaultToUpgrade": "Buka AliasVault untuk memperbarui",
     "savePrompt": {
-      "addUrlTitle": "Tambah URL ke kredensial?",
       "neverForThisSite": "Jangan pernah untuk situs ini",
       "title": "Simpan ke AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Dari",
     "home": {
       "autoRefreshEnabledTooltip": "Fitur penyegaran otomatis diaktifkan",
-      "bulkDeleteEmailConfirmation": "Apakah Anda yakin ingin menghapus {{count}} email? Tindakan ini tidak dapat dibatalkan.",
-      "bulkDeleteEmailSuccess": "Semua {{count}} email telah dihapus dengan sukses",
-      "bulkDeleteEmailTitle": "Hapus email",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Terjadi kesalahan saat mencoba memuat email. Silakan coba mengedit dan menyimpan entri kredensial apa pun untuk menyinkronkan basis data, lalu coba lagi.",
-      "deleteSelectedEmails": "Hapus {{count}} email yang dipilih",
       "noEmailClaimsMessage": "Anda (belum) menggunakan alamat email pribadi apa pun. Buat alias baru dan gunakan alamat email pribadi yang didukung oleh AliasVault. Semua email yang diterima oleh alamat email pribadi tersebut akan muncul di sini.",
       "noEmailsReceivedMessage": "Belum ada email yang diterima.",
       "pageDescription": "Anda dapat melihat semua email yang diterima oleh alamat email pribadi Anda di bawah ini."
@@ -684,7 +701,6 @@
       "editLabel": "Edit label"
     },
     "emailLoadError": "Terjadi kesalahan saat memuat email. Mohon coba lagi nanti.",
-    "emailPreview": "Pratinjau Email",
     "emailUnexpectedError": "Terjadi kesalahan yang tidak terduga saat memuat email. Silakan coba lagi nanti.",
     "emptyFolderHint": "Folder ini kosong. Untuk memindahkan item ke folder ini, edit item tersebut dan ketuk ikon folder di kolom nama.",
     "errorLoadingItems": "Kesalahan dalam memuat data",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "Menurut abjad",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Folder ini kosong.",
       "failedToCreateFolder": "Gagal membuat folder.",
@@ -745,7 +760,6 @@
       "loadingMore": "Memuat lebih banyak...",
       "noItemsTitle": "Belum ada item",
       "pageDescription": "Temukan semua barang Anda di bawah ini.",
-      "sortOrderLabel": "Pengurutan",
       "tableViewOption": "Tampilan Tabel",
       "viewModeLabel": "Mode Tampilan"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Mencari “{{search}}”",
       "searchingMessage": "Mencari..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Mencari brankas...",
     "selectEmailDomain": "Pilih domain email",
     "separator": "Pemisah",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah {{count}} kali lagi.",
     "authRequired": "Autentikasi diperlukan",
     "authRequiredMessage": "Silakan aktifkan metode pembukaan kunci dengan biometrik atau PIN di aplikasi utama AliasVault untuk menggunakan fitur pengisian otomatis.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Gagal mengambil, buka aplikasi",
     "autofillNoMatchFound": "Tidak ada kecocokan ditemukan",
     "autofillOpenApp": "Buka aplikasi",
     "autofillServiceDescription": "Pengisian otomatis AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Brankas ditutup",
     "biometricStoreKeySubtitle": "Lakukan otentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Hal ini memungkinkan akses yang aman ke brankas Anda.",
     "biometricStoreKeyTitle": "Menyimpan Kunci Enkripsi",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Atau, tambah passkey ke item yang sudah ada",
     "passkeyAddToExistingLabel": "Atau, tambahkan kunci akses ke item yang sudah ada:",
     "passkeyAuthenticating": "Sedang melakukan otentikasi...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Memeriksa sambungan...",
     "passkeyCreating": "Membuat Kunci akses...",
     "passkeyCreationFailed": "Gagal membuat kunci sandi",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Tampilkan teks pencarian",
       "showSearchTextDescription": "Sertakan teks yang diterima AliasVault dari Android, yang digunakan untuk mencari kredensial yang sesuai",
       "step1": "1. Buka Pengaturan Android melalui tombol di bawah ini, lalu ubah “layanan pilihan untuk pengisian otomatis” menjadi “AliasVault”",
-      "step2": "2. Beberapa aplikasi, misalnya Google Chrome, mungkin memerlukan konfigurasi manual di pengaturannya agar dapat menggunakan aplikasi pengisian otomatis pihak ketiga. Namun, sebagian besar aplikasi seharusnya sudah mendukung fitur pengisian otomatis secara default."
+      "step2": "2. Beberapa aplikasi, misalnya Google Chrome, mungkin memerlukan konfigurasi manual di pengaturannya agar dapat menggunakan aplikasi pengisian otomatis pihak ketiga. Namun, sebagian besar aplikasi seharusnya sudah mendukung fitur pengisian otomatis secara default.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL endpoint API (biasanya URL klien + /api)",
     "appVersion": "Versi Aplikasi",
@@ -1507,6 +1546,8 @@
     "theme": "Tema",
     "totpAutofill": "Pengisian otomatis kode 2FA",
     "totpAutofillDescription": "Tampilkan pop-up pengisian otomatis saat kolom kode 2FA terdeteksi",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Konfirmasi PIN",
       "confirmPinDescription": "Masukkan PIN Anda lagi untuk mengonfirmasi",

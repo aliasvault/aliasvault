@@ -280,6 +280,7 @@
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב."
     },
+    "expand": "Expand",
     "generate": "יצירה",
     "help": "עזרה",
     "hide": "הסתרה",
@@ -296,6 +297,7 @@
     "lockVault": "נעילת כספת",
     "loggedIn": "נכנסת",
     "logout": "יציאה",
+    "moreOptions": "More options",
     "never": "אף פעם",
     "next": "הבא",
     "no": "לא",
@@ -304,6 +306,7 @@
     "notice": "לתשומת ליבך",
     "offlineMode": "פועל במצב בלתי מקוון",
     "ok": "אישור",
+    "open": "Open",
     "openInNewWindow": "פתיחה בחלון חדש",
     "or": "או",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "לנסות שוב",
     "save": "שמירה",
     "saving": "Saving...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "שם השירות",
     "settings": "הגדרות",
     "share": "Share",
     "show": "הצגה",
     "showDetails": "הצגת פרטים",
+    "showList": "Show list",
     "showPassword": "הצגת סיסמה",
     "success": "הצליח",
     "syncVaultData": "סנכרון נתוני כספת",
@@ -346,6 +358,11 @@
     "yes": "כן"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill username/password",
     "dismissPopup": "התעלמות מחלונית",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "No 2FA code matches found",
     "openAliasVaultToUpgrade": "יש לפתוח את AliasVault כדי לשדרג",
     "savePrompt": {
-      "addUrlTitle": "להוסיף את הכתובת לפרטי הגישה?",
       "neverForThisSite": "אף פעם לא עבור האתר הזה",
       "title": "לשמור ל־AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "מאת",
     "home": {
       "autoRefreshEnabledTooltip": "ריענון אוטומטי מופעל",
-      "bulkDeleteEmailConfirmation": "Are you sure you want to delete {{count}} email(s)? This action cannot be undone.",
-      "bulkDeleteEmailSuccess": "All {{count}} email(s) deleted successfully",
-      "bulkDeleteEmailTitle": "Delete email(s)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "אירעה שגיאה בניסיון לטעון את הודעות הדוא״ל. נא לנסות לערוך ולשמור רשומת פרטי קשר כלשהי כדי לסנכרן את מסד הנתונים ואז לנסות שוב.",
-      "deleteSelectedEmails": "Delete {{count}} selected email(s)",
       "noEmailClaimsMessage": "עוד אין לך אף כתובת דוא״ל פרטית בשימוש (עדיין). אפשר ליצור כינוי חדש ולהשתמש בכתובת דוא״ל פרטית שנתמכת על ידי AliasVault. כל הודעות הדוא״ל שמגיעות לכתובת הדוא״ל הפרטיות האלה תופענה כאן.",
       "noEmailsReceivedMessage": "לא התקבלו עדיין הודעות דוא״ל.",
       "pageDescription": "אפשר לצפות בכל הודעות הדוא״ל שמגיעות לכתובות הדוא״ל הפרטיות שלך להלן."
@@ -684,7 +701,6 @@
       "editLabel": "Edit label"
     },
     "emailLoadError": "אירעה שגיאה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
-    "emailPreview": "תצוגה מקדימה של הודעת דוא״ל",
     "emailUnexpectedError": "אירעה שגיאה לא צפויה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Error loading items",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "לפי האלפבית",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "התיקייה הזאת ריקה.",
       "failedToCreateFolder": "יצירת התיקייה נכשלה.",
@@ -745,7 +760,6 @@
       "loadingMore": "נטענים עוד…",
       "noItemsTitle": "אין פריטים עדיין",
       "pageDescription": "אפשר למצוא את כל הפריטים שלך להלן.",
-      "sortOrderLabel": "סדר מיון",
       "tableViewOption": "תצוגת טבלה",
       "viewModeLabel": "מצב תצוגה"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "מתבצע חיפוש אחר „{{search}}”",
       "searchingMessage": "מתבצע חיפוש…"
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "חיפוש בכספת…",
     "selectEmailDomain": "בחירת שם תחום לדוא״ל",
     "separator": "מפריד",
@@ -962,10 +993,14 @@
     "attemptsWarning": "סיסמה שגויה. תתבצע יציאה מהחשבון אם הסיסמה הלא נכונה תוקלד עוד {{count}} פעמים.",
     "authRequired": "נדרש אימות",
     "authRequiredMessage": "Please enable Biometrics or PIN unlock method in the main AliasVault app to use autofill.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "המשיכה נכשלה, נא לפתוח את היישום",
     "autofillNoMatchFound": "No match found",
     "autofillOpenApp": "פתיחת היישום",
     "autofillServiceDescription": "השלמה אוטומטית עם AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "הכספת נעולה",
     "biometricStoreKeySubtitle": "יש לעבור אימות כדי לאחסן בבטחה את מפתח ההצפנה שלך ב־Android Keystore (אחסון מפתחות). כך מופעלת גישה מאובטחת לכספת שלך.",
     "biometricStoreKeyTitle": "אחסון מפתח הצפנה",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Or, add passkey to an existing item",
     "passkeyAddToExistingLabel": "Or, add passkey to an existing item:",
     "passkeyAuthenticating": "Authenticating...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "החיבור נבדק...",
     "passkeyCreating": "נוצר מפתח גישה...",
     "passkeyCreationFailed": "Failed to create passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "הצגת טקסט חיפוש",
       "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential",
       "step1": "1. לפתוח את הגדרות Android בעזרת הכפתור שלהלן ולשנות את „שירות השלמה אוטומטית מועדף” ל־„AliasVault”",
-      "step2": "2. חלק מהיישומונים, למשל: Google Chrome, עלולים לדרוש הגדרות ידניות בהגדרות שלהן כדי שתאפשרנה יישומוני השלמות אוטומטיות מגורמי צד־שלישי. עם זאת, רוב היישומונים אמורים לעבוד עם השלמה אוטומטית כברירת מחדל."
+      "step2": "2. חלק מהיישומונים, למשל: Google Chrome, עלולים לדרוש הגדרות ידניות בהגדרות שלהן כדי שתאפשרנה יישומוני השלמות אוטומטיות מגורמי צד־שלישי. עם זאת, רוב היישומונים אמורים לעבוד עם השלמה אוטומטית כברירת מחדל.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "נקודת הקצה של ה־API (בדרך כלל כתובת לקוח + ‎/api)",
     "appVersion": "גרסת היישום",
@@ -1507,6 +1546,8 @@
     "theme": "ערכת עיצוב",
     "totpAutofill": "2FA code autofill",
     "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "אישור קוד אישי",
       "confirmPinDescription": "נא למלא את הקוד האישי שלך שוב לאישור",

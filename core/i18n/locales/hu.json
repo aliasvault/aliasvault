@@ -280,6 +280,7 @@
       "vaultTooLarge": "A széf túl nagy a szerver számára. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
       "wrongPassword": "Hibás jelszó. Kérem, próbálkozzon újra."
     },
+    "expand": "Expand",
     "generate": "Generálás",
     "help": "Help",
     "hide": "Elrejtés",
@@ -296,6 +297,7 @@
     "lockVault": "Széf zárása",
     "loggedIn": "Bejelentkezve",
     "logout": "Kijelentkezés",
+    "moreOptions": "More options",
     "never": "Soha",
     "next": "Következő",
     "no": "Nem",
@@ -304,6 +306,7 @@
     "notice": "Megjegyzés",
     "offlineMode": "Kapcsolat nélküli működés",
     "ok": "Rendben",
+    "open": "Open",
     "openInNewWindow": "Megnyitás új ablakban",
     "or": "vagy",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "Újra",
     "save": "Mentés",
     "saving": "Mentés...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Szolgáltató neve",
     "settings": "Beállítások",
     "share": "Share",
     "show": "Megjelenítés",
     "showDetails": "Részletek megjelenítése",
+    "showList": "Show list",
     "showPassword": "Jelszó megjelenítése",
     "success": "Siker",
     "syncVaultData": "Széf adatok szinkronizálása",
@@ -346,6 +358,11 @@
     "yes": "Igen"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Kétlépcsős kitöltés",
     "autofillWithAliasVault": "Felhasználónév/jelszó kitöltése",
     "dismissPopup": "Felugró ablak figyelmen kívül hagyása",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Nem található megfelelő kétlépcsős kód",
     "openAliasVaultToUpgrade": "A frissítéshez nyissa meg az AliasVault-ot",
     "savePrompt": {
-      "addUrlTitle": "Cím hozzáadása a bejegyzésekhez?",
       "neverForThisSite": "Ehhez az oldlhoz soha",
       "title": "Mentés az AliasVault-ba?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Feladó:",
     "home": {
       "autoRefreshEnabledTooltip": "Auto-frissítés bekapcsolva",
-      "bulkDeleteEmailConfirmation": "Are you sure you want to delete {{count}} email(s)? This action cannot be undone.",
-      "bulkDeleteEmailSuccess": "All {{count}} email(s) deleted successfully",
-      "bulkDeleteEmailTitle": "Delete email(s)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Hiba lépett fel az e-mailek betöltése során. Próbálja meg szerkeszteni majd menteni a bejegyzéseket az adatbázis szinkronizáláshoz, majd próbálkozzon újra.",
-      "deleteSelectedEmails": "Delete {{count}} selected email(s)",
       "noEmailClaimsMessage": "Nem használ privát e-mail címet (még). Hozzon létre egy új aliast, és vegye igénybe a privát e-mail címet amit az AliasVault biztosít. Minden ami ezekre a privát címekre érkezik, itt jelenik majd meg.",
       "noEmailsReceivedMessage": "Még nem érkezett be e-mail.",
       "pageDescription": "Lentebb megtekintheti az összes levelét, amit a privát címéről érkezett."
@@ -684,7 +701,6 @@
       "editLabel": "Cím szerkesztése"
     },
     "emailLoadError": "Hiba lépett fel az e-mailek betöltése során. Kérem próbálkozzon újra később.",
-    "emailPreview": "E-mail előnézet",
     "emailUnexpectedError": "Váratlan hiba lépett fel az e-mailek betöltése során. Kérem próbálkozzon újra később.",
     "emptyFolderHint": "Ez a mappa üres. Ahhoz, hogy elemeket helyezzen a mappába, szerkessze az elemet, majd koppintson a mappa ikonra a név mezőnél.",
     "errorLoadingItems": "Hiba az elemek betöltése során",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "Betűrendben",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Ez a mappa üres.",
       "failedToCreateFolder": "Sikertelen mappa létrehozás.",
@@ -745,7 +760,6 @@
       "loadingMore": "Továbbiak betöltése...",
       "noItemsTitle": "Még nincsenek elemek",
       "pageDescription": "Lentebb megtalálhatja az összes elemét.",
-      "sortOrderLabel": "Rendezési sorrend",
       "tableViewOption": "Táblázatos nézet",
       "viewModeLabel": "Nézet mód"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "\"{{search}}\" keresése",
       "searchingMessage": "Keresés..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Keresés a széfben...",
     "selectEmailDomain": "E-mail tartomány kiválasztása",
     "separator": "Elválasztó",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Hibás jelszó. Ha további {{count}} alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.",
     "authRequired": "Hitelesítés szükséges",
     "authRequiredMessage": "Kérem, kapcsolja be a PIN kód vagy biometrikus belépést a fő AliasVault app-ban a kitöltés bekapcsolásához.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Sikertelen kinyerés, app megnyitása",
     "autofillNoMatchFound": "Nincs találat",
     "autofillOpenApp": "App megnyitása",
     "autofillServiceDescription": "AliasVault kitöltés",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Széf lezárva",
     "biometricStoreKeySubtitle": "Hitelesítés a a titkosító kulcs Android Kulcstárolóban való tárolásához. Ennek segítségével léphet be biztonságosan széfjébe.",
     "biometricStoreKeyTitle": "Titkosító kulcs mentése",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Vagy adja hozzá egy már létező elemhez",
     "passkeyAddToExistingLabel": "Vagy adja hozzá egy már létező elemhez:",
     "passkeyAuthenticating": "Hitelesítés...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Kapcsolat ellenőrzése...",
     "passkeyCreating": "Azonosítókulcs létrehozása...",
     "passkeyCreationFailed": "Az azonosítókulcs létrehozása sikertelen volt",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Keresett szöveg megjelenítése",
       "showSearchTextDescription": "Bővítse ki az Android rendszertől kapott szövegekkel a bejegyzés keresésnél használt szöveget",
       "step1": "1. Nyissa meg az Android Beállításokat a lenti gombbal, és válassza ki az \"AliasVault\"-ot a \"Preferált kitöltés szolgáltatás\" menüben",
-      "step2": "2. Egyes app-ok, - mint pl. a Google Chrome - kérhetnek utólagos visszaigazolást a harmadik féltől származó kitöltési app miatt. Azonban a legtöbb enélkül is működni fog alapból."
+      "step2": "2. Egyes app-ok, - mint pl. a Google Chrome - kérhetnek utólagos visszaigazolást a harmadik féltől származó kitöltési app miatt. Azonban a legtöbb enélkül is működni fog alapból.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "Az API végpont webcím (többnyire kliens webcím + /api)",
     "appVersion": "App verzió",
@@ -1507,6 +1546,8 @@
     "theme": "Téma",
     "totpAutofill": "Kétlépcsős kód kitöltés",
     "totpAutofillDescription": "Felugró kitöltő ablak megjelenítése ha kétlépcsős mezőt érzékel",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "PIN kód megerősítése",
       "confirmPinDescription": "Adja meg újra PIN kódját a megerősítéshez",

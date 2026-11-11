@@ -280,6 +280,7 @@
       "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
       "wrongPassword": "Неверный пароль. Пожалуйста, повторите попытку."
     },
+    "expand": "Expand",
     "generate": "Сгенерировать",
     "help": "Помощь",
     "hide": "Скрыть",
@@ -296,6 +297,7 @@
     "lockVault": "Заблокировать хранилище",
     "loggedIn": "Вход выполнен",
     "logout": "Выйти",
+    "moreOptions": "More options",
     "never": "Никогда",
     "next": "Далее",
     "no": "Нет",
@@ -304,6 +306,7 @@
     "notice": "Примечание",
     "offlineMode": "Работа в автономном режиме",
     "ok": "ОК",
+    "open": "Open",
     "openInNewWindow": "Открыть в новом окне",
     "or": "или",
     "pageNavigation": "Навигация по страницам",
@@ -326,11 +329,20 @@
     "retry": "Повторить",
     "save": "Сохранить",
     "saving": "Сохраняем...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Название сервиса",
     "settings": "Настройки",
     "share": "Share",
     "show": "Показать",
     "showDetails": "Показать подробности",
+    "showList": "Show list",
     "showPassword": "Показать пароль",
     "success": "Успешно",
     "syncVaultData": "Синхронизировать хранилище",
@@ -346,6 +358,11 @@
     "yes": "Да"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Заполнить код 2FA",
     "autofillWithAliasVault": "Заполнить логин/пароль",
     "dismissPopup": "Закрыть окно",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "2FA-коды не найдены",
     "openAliasVaultToUpgrade": "Откройте AliasVault для обновления",
     "savePrompt": {
-      "addUrlTitle": "Добавить URL к этой записи?",
       "neverForThisSite": "Никогда для этого сайта",
       "title": "Сохранить в AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "От",
     "home": {
       "autoRefreshEnabledTooltip": "Автообновление включено",
-      "bulkDeleteEmailConfirmation": "Удалить {{count}} писем? Это действие нельзя отменить.",
-      "bulkDeleteEmailSuccess": "Успешно удалено писем: {{count}}",
-      "bulkDeleteEmailTitle": "Удаление писем",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Произошла ошибка при загрузке писем. Попробуйте отредактировать и сохранить любую запись с учётными данными, чтобы синхронизировать базу, а затем повторите попытку.",
-      "deleteSelectedEmails": "Удалить выбранные письма ({{count}})",
       "noEmailClaimsMessage": "Вы ещё не используете личные адреса электронной почты. Создайте псевдоним и получите приватный адрес от AliasVault — все письма, пришедшие на него, будут появляться здесь.",
       "noEmailsReceivedMessage": "Писем пока нет.",
       "pageDescription": "Ниже вы можете просмотреть все письма, полученные на ваши личные адреса электронной почты."
@@ -684,7 +701,6 @@
       "editLabel": "Редактировать поле"
     },
     "emailLoadError": "Произошла ошибка при загрузке писем. Пожалуйста, повторите попытку позже.",
-    "emailPreview": "Предварительный просмотр электронной почты",
     "emailUnexpectedError": "При загрузке писем произошла непредвиденная ошибка. Пожалуйста, повторите попытку позже.",
     "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда записи, перейдите в режим редактирования записи и нажмите на иконку папки в поле имени.",
     "errorLoadingItems": "Ошибка загрузки записей",
@@ -732,7 +748,6 @@
     "hasPasskey": "С ключом доступа",
     "hasTotp": "С кодом 2FA",
     "home": {
-      "alphabeticalOption": "По алфавиту",
       "createFirstItemManuallyText": "Создайте первую запись в хранилище вручную.",
       "emptyFolderMessage": "Эта папка пуста.",
       "failedToCreateFolder": "Не удалось создать папку.",
@@ -745,7 +760,6 @@
       "loadingMore": "Загружаем еще...",
       "noItemsTitle": "Записей пока нет",
       "pageDescription": "Ниже вы найдете все ваши записи.",
-      "sortOrderLabel": "Порядок сортировки",
       "tableViewOption": "Таблица",
       "viewModeLabel": "Режим просмотра"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Поиск \"{{search}}\"",
       "searchingMessage": "Ищем..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Поиск хранилища...",
     "selectEmailDomain": "Выбрать домен электронной почты",
     "separator": "Разделитель",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Неверный пароль. Вы выйдете из системы, если ошибетесь еще {{count}} раз.",
     "authRequired": "Требуется аутентификация",
     "authRequiredMessage": "Пожалуйста, включите разблокировку с помощью биометрии или PIN-кода в основном приложении AliasVault, чтобы использовать автозаполнение.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Не удалось извлечь, открыть приложение",
     "autofillNoMatchFound": "Совпадений не найдено",
     "autofillOpenApp": "Открыть приложение",
     "autofillServiceDescription": "Автозаполнение AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Хранилище заблокировано",
     "biometricStoreKeySubtitle": "Пройдите аутентификацию, чтобы надежно сохранить свой ключ шифрования в хранилище ключей Android. Это обеспечивает безопасный доступ к вашему хранилищу.",
     "biometricStoreKeyTitle": "Храните ключ шифрования",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Или добавьте ключ к существующей записи",
     "passkeyAddToExistingLabel": "Или добавьте ключ доступа к существующей записи:",
     "passkeyAuthenticating": "Аутентификация...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Проверка соединения...",
     "passkeyCreating": "Создание ключа доступа﻿...",
     "passkeyCreationFailed": "Не удалось создать ключ доступа",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Показать текст поиска",
       "showSearchTextDescription": "Включите текст, который AliasVault получает от Android и использует для поиска подходящих учетных данных",
       "step1": "1. Откройте настройки Android с помощью кнопки ниже и измените \"предпочтительный сервис автозаполнения\" на \"Alias Vault\".",
-      "step2": "2. Для некоторых приложений, например Google Chrome, может потребоваться ручная настройка в настройках, чтобы разрешить сторонним приложениям автозаполнение. Однако большинство приложений должны работать с автозаполнением по умолчанию."
+      "step2": "2. Для некоторых приложений, например Google Chrome, может потребоваться ручная настройка в настройках, чтобы разрешить сторонним приложениям автозаполнение. Однако большинство приложений должны работать с автозаполнением по умолчанию.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL-адрес конечной точки API (обычно URL-адрес клиента + /api)﻿",
     "appVersion": "Версия приложения",
@@ -1507,6 +1546,8 @@
     "theme": "Тема",
     "totpAutofill": "Автозаполнение кодов 2FA",
     "totpAutofillDescription": "Показывать окно автозаполнения при обнаружении полей для кодов 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Подтвердите ПИН-код﻿",
       "confirmPinDescription": "Повторите ПИН-код для подтверждения",

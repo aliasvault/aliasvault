@@ -280,6 +280,7 @@
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís."
     },
+    "expand": "Expand",
     "generate": "Gin",
     "help": "Cabhair",
     "hide": "Folaigh",
@@ -296,6 +297,7 @@
     "lockVault": "Glasáil cruinneachán",
     "loggedIn": "Logáilte isteach",
     "logout": "Logáil Amach",
+    "moreOptions": "Tuilleadh roghanna",
     "never": "Choíche",
     "next": "Ar Aghaidh",
     "no": "Níl",
@@ -304,6 +306,7 @@
     "notice": "Fógra",
     "offlineMode": "Ag oibriú i mód as líne",
     "ok": "Ceart go leor",
+    "open": "Oscailte",
     "openInNewWindow": "Oscail i bhfuinneog nua",
     "or": "nó",
     "pageNavigation": "Nascleanúint leathanaigh",
@@ -326,11 +329,20 @@
     "retry": "Bain triail eile as",
     "save": "Sábháil",
     "saving": "Ag sábháil...",
+    "select": "Roghnaigh",
+    "selectItemMessage": "Roghnaigh mír chun a sonraí a fheiceáil",
+    "selection": {
+      "count": "{{count}} roghnaithe",
+      "disable": "Díchumasaigh an roghnú",
+      "enable": "Cumasaigh roghnú",
+      "selectAll": "Roghnaigh gach rud"
+    },
     "serviceName": "Ainm na Seirbhíse",
     "settings": "Socruithe",
     "share": "Comhroinn",
     "show": "Taispeáin",
     "showDetails": "Taispeáin sonraí",
+    "showList": "Show list",
     "showPassword": "Taispeáin pasfhocal",
     "success": "Rath",
     "syncVaultData": "Sioncrónaigh sonraí cruinneacháin",
@@ -346,6 +358,11 @@
     "yes": "Tá"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Ná líon isteach na sonraí logála seo ach amháin má roghnaigh tú iad tú féin agus má tá muinín agat as an suíomh gréasáin seo.",
+      "fillOn": "Tá tú ar tí sonraí logála a líonadh ar {{host}}.",
+      "title": "Deimhnigh an líonadh uathoibríoch"
+    },
     "autofillTotp": "Líonadh uathoibríoch 2FA",
     "autofillWithAliasVault": "Ainm úsáideora/pasfhocal uathlíonta",
     "dismissPopup": "Díbhe aníos",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Ní bhfuarthas aon mheaitseálacha cód 2FA",
     "openAliasVaultToUpgrade": "Oscail AliasVault le huasghrádú",
     "savePrompt": {
-      "addUrlTitle": "An bhfuil tú ag iarraidh URL a chur leis an dintiúir?",
       "neverForThisSite": "Choíche don suíomh seo",
       "title": "Sábháil chuig AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Ó",
     "home": {
       "autoRefreshEnabledTooltip": "Athnuachan uathoibríoch cumasaithe",
-      "bulkDeleteEmailConfirmation": "An bhfuil tú cinnte gur mian leat {{count}} ríomhphost(anna) a scriosadh? Ní féidir an gníomh seo a chealú.",
-      "bulkDeleteEmailSuccess": "Scriosadh na {{count}} ríomhphoist go léir go rathúil",
-      "bulkDeleteEmailTitle": "Scrios ríomhphost(anna)",
+      "bulkDeleteEmailConfirmation": "Ní féidir an gníomh seo a chealú.",
+      "bulkDeleteEmailSuccess_one": "Scriosadh {{count}} ríomhphost",
+      "bulkDeleteEmailSuccess_other": "Scriosadh {{count}} ríomhphost",
+      "bulkDeleteEmailTitle_one": "Scrios {{count}} ríomhphost?",
+      "bulkDeleteEmailTitle_other": "Scrios {{count}} ríomhphost?",
       "claimDoesNotExistError": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht aon iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís.",
-      "deleteSelectedEmails": "Scrios {{count}} ríomhphost(anna) roghnaithe",
       "noEmailClaimsMessage": "Níl aon seoltaí ríomhphoist príobháideacha in úsáid agat (go fóill). Cruthaigh leasainm nua agus bain úsáid as seoladh ríomhphoist príobháideach a dtacaítear leis ag AliasVault. Taispeánfar anseo gach ríomhphost a fhaightear trí na seoltaí ríomhphoist príobháideacha seo.",
       "noEmailsReceivedMessage": "Níl aon ríomhphoist faighte fós.",
       "pageDescription": "Is féidir leat féachaint ar na ríomhphoist uile a fuair tú ó do sheoltaí ríomhphoist príobháideacha thíos."
@@ -684,7 +701,6 @@
       "editLabel": "Cuir lipéad in eagar"
     },
     "emailLoadError": "Tharla earráid agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
-    "emailPreview": "Réamhamharc Ríomhphoist",
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus tapáil deilbhín an fhillteáin sa réimse ainm.",
     "errorLoadingItems": "Earráid ag luchtú míreanna",
@@ -732,7 +748,6 @@
     "hasPasskey": "Tá eochair rochtana aige/aici",
     "hasTotp": "Tá cód 2FA aige/aici",
     "home": {
-      "alphabeticalOption": "In ord aibítre",
       "createFirstItemManuallyText": "Cruthaigh do chéad mhír sa stór de láimh.",
       "emptyFolderMessage": "Tá an fillteán seo folamh.",
       "failedToCreateFolder": "Theip ar fhillteán a chruthú.",
@@ -745,7 +760,6 @@
       "loadingMore": "Ag lódáil níos mó...",
       "noItemsTitle": "Gan aon mhíreanna fós",
       "pageDescription": "Aimsigh do chuid míreanna go léir thíos.",
-      "sortOrderLabel": "Ord Sórtála",
       "tableViewOption": "Radharc Tábla",
       "viewModeLabel": "Mód Amhairc"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Ag cuardach \"{{search}}\"",
       "searchingMessage": "Ag cuardach..."
     },
+    "selection": {
+      "move": "Bog",
+      "moveTitle_one": "Bog {{count}} mír?",
+      "moveTitle_other": "Bog {{count}} mír?",
+      "moveIntoShared": "Beidh gach duine a bhfuil rochtain aige ar an bhfillteán comhroinnte in ann na míreanna a aistríodh a fheiceáil, a chur in eagar agus a scriosadh.",
+      "moveOutOfShared": "Fágann na míreanna a aistríodh an fillteán comhroinnte, mar sin ní bheidh daoine eile in ann iad a fheiceáil a thuilleadh.",
+      "deleteTitle_one": "Scrios {{count}} mír?",
+      "deleteTitle_other": "Scrios {{count}} mhír?",
+      "deleteDescription": "Bogtar míreanna scriosta go Scriosta Le Déanaí agus scriostar go buan iad tar éis {{days}} lá.",
+      "deleteShared": "Scriostar míreanna i bhfillteán comhroinnte do gach duine a bhfuil rochtain acu ar an bhfillteán sin.",
+      "moved_one": "Aistríodh {{count}} mír",
+      "moved_other": "Aistríodh {{count}} mír",
+      "movedTo_one": "Bogadh {{count}} mír go dtí {{folder}}",
+      "movedTo_other": "Bogadh {{count}} mír go dtí {{folder}}",
+      "deleted_one": "Scriosadh {{count}} mír",
+      "deleted_other": "Scriosadh {{count}} mhír"
+    },
     "searchPlaceholder": "Cuardaigh an cruinneachán...",
     "selectEmailDomain": "Roghnaigh Fearann ​​Ríomhphoist",
     "separator": "Deighilteoir",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Focal faire mícheart. Logálfar amach thú má chuireann tú an focal faire mícheart isteach {{count}} níos mó uaireanta.",
     "authRequired": "Fíordheimhniú de dhíth",
     "authRequiredMessage": "Cumasaigh modh díghlasála Biometrics nó PIN sa phríomhaip AliasVault chun uathlíonadh a úsáid.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Theip ar aisghabháil, oscail an aip",
     "autofillNoMatchFound": "Níor aimsíodh aon mheaitseáil",
     "autofillOpenApp": "Oscail aip",
     "autofillServiceDescription": "AliasVault Autofill",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Cruinneachán faoi ghlas",
     "biometricStoreKeySubtitle": "Fíordheimhnigh chun d'eochair chriptiúcháin a stóráil go sábháilte san Keystore Android. Cumasaíonn sé seo rochtain shlán ar do chruinneachán.",
     "biometricStoreKeyTitle": "Siopa Eochair Chriptiú",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Nó, cuir eochair phas le mír atá ann cheana féin",
     "passkeyAddToExistingLabel": "Nó, cuir pasfhocal le mír atá ann cheana féin:",
     "passkeyAuthenticating": "Ag fíordheimhniú...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Ceangal á sheiceáil...",
     "passkeyCreating": "Pas eochair á cruthú...",
     "passkeyCreationFailed": "Theip ar an eochair pas a chruthú",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Taispeáin téacs cuardaigh",
       "showSearchTextDescription": "Cuir an téacs a fhaigheann AliasVault ó Android san áireamh a úsáideann sé chun dintiúir chomhoiriúnacha a chuardach",
       "step1": "1. Oscail Socruithe Android tríd an gcnaipe thíos, agus athraigh an \"seirbhís uathlíonta is fearr leat\" go \"AliasVault\"",
-      "step2": "2. D’fhéadfadh sé go mbeadh gá le cumraíocht láimhe sna socruithe i gcás roinnt aipeanna, m.sh. Google Chrome, chun ligean d’aipeanna uathlíonta tríú páirtí. Mar sin féin, ba cheart go n-oibreodh formhór na n-aipeanna le huathlíonadh de réir réamhshocraithe."
+      "step2": "2. D’fhéadfadh sé go mbeadh gá le cumraíocht láimhe sna socruithe i gcás roinnt aipeanna, m.sh. Google Chrome, chun ligean d’aipeanna uathlíonta tríú páirtí. Mar sin féin, ba cheart go n-oibreodh formhór na n-aipeanna le huathlíonadh de réir réamhshocraithe.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL críochphointe an API (URL an chliaint + / api de ghnáth)",
     "appVersion": "Leagan an aip",
@@ -1507,6 +1546,8 @@
     "theme": "Téama",
     "totpAutofill": "Cód 2FA go huathoibríoch",
     "totpAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí cód 2FA",
+    "twoColumnLayout": "Leagan amach dhá cholún",
+    "twoColumnLayoutDescription": "Taispeánann sé an liosta agus an mhír roghnaithe taobh le taobh i mód tírdhreacha.",
     "unlockMethod": {
       "confirmPin": "Deimhnigh PIN",
       "confirmPinDescription": "Cuir isteach do PIN arís lena dheimhniú",

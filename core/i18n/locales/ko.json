@@ -280,6 +280,7 @@
       "vaultTooLarge": "보관함 크기가 너무 커서 서버에서 수용할 수 없습니다. 일부 항목이나 첨부 파일을 삭제하여 크기를 줄인 후 다시 시도해 주세요.",
       "wrongPassword": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요."
     },
+    "expand": "Expand",
     "generate": "생성",
     "help": "Help",
     "hide": "숨기기",
@@ -296,6 +297,7 @@
     "lockVault": "보관함 잠금",
     "loggedIn": "로그인됨",
     "logout": "로그아웃",
+    "moreOptions": "More options",
     "never": "안 함",
     "next": "다음",
     "no": "아니요",
@@ -304,6 +306,7 @@
     "notice": "알림",
     "offlineMode": "오프라인 모드로 작동 중",
     "ok": "확인",
+    "open": "Open",
     "openInNewWindow": "새 창에서 열기",
     "or": "또는",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "다시 시도",
     "save": "저장",
     "saving": "저장 중...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "서비스 이름",
     "settings": "설정",
     "share": "Share",
     "show": "표시",
     "showDetails": "세부 정보 표시",
+    "showList": "Show list",
     "showPassword": "비밀번호 표시",
     "success": "성공",
     "syncVaultData": "보관함 데이터 동기화",
@@ -346,6 +358,11 @@
     "yes": "예"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "2단계 인증 자동 완성",
     "autofillWithAliasVault": "사용자 이름/비밀번호 자동 완성",
     "dismissPopup": "팝업 닫기",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "일치하는 2단계 인증 코드가 없습니다",
     "openAliasVaultToUpgrade": "업그레이드하려면 AliasVault 열기",
     "savePrompt": {
-      "addUrlTitle": "로그인 정보에 URL을 추가하시겠습니까?",
       "neverForThisSite": "이 사이트에서는 묻지 않음",
       "title": "AliasVault에 저장하시겠습니까?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "보낸 사람",
     "home": {
       "autoRefreshEnabledTooltip": "자동 새로고침 활성화됨",
-      "bulkDeleteEmailConfirmation": "Are you sure you want to delete {{count}} email(s)? This action cannot be undone.",
-      "bulkDeleteEmailSuccess": "All {{count}} email(s) deleted successfully",
-      "bulkDeleteEmailTitle": "이메일 삭제",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "이메일을 불러오는 중 오류가 발생했습니다. 데이터베이스 동기화를 위해 아무 계정 정보 항목이나 수정한 후 저장하고 다시 시도하세요.",
-      "deleteSelectedEmails": "Delete {{count}} selected email(s)",
       "noEmailClaimsMessage": "(아직) 개인 이메일 주소를 사용하고 있지 않습니다. 새 에일리어스를 생성하고 AliasVault에서 지원하는 개인 이메일 주소를 사용하세요. 이 개인 이메일 주소로 수신된 모든 이메일이 여기에 표시됩니다.",
       "noEmailsReceivedMessage": "아직 수신된 이메일이 없습니다.",
       "pageDescription": "아래에서 개인 이메일 주소로 수신된 모든 이메일을 확인할 수 있습니다."
@@ -684,7 +701,6 @@
       "editLabel": "라벨 수정"
     },
     "emailLoadError": "이메일을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    "emailPreview": "이메일 미리보기",
     "emailUnexpectedError": "이메일을 불러오는 중 예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
     "emptyFolderHint": "이 폴더가 비어 있습니다. 이 폴더로 항목을 이동하려면 항목을 수정한 후 이름 필드의 폴더 아이콘을 누르세요.",
     "errorLoadingItems": "항목 불러오기 오류",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "이름순",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "이 폴더는 비어 있습니다.",
       "failedToCreateFolder": "폴더를 생성하지 못했습니다.",
@@ -745,7 +760,6 @@
       "loadingMore": "더 불러오는 중...",
       "noItemsTitle": "아직 항목이 없습니다",
       "pageDescription": "아래에서 모든 항목을 확인할 수 있습니다.",
-      "sortOrderLabel": "정렬 순서",
       "tableViewOption": "테이블 보기",
       "viewModeLabel": "보기 모드"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "\"{{search}}\" 검색 중",
       "searchingMessage": "검색 중..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "보관함 검색...",
     "selectEmailDomain": "이메일 도메인 선택",
     "separator": "구분자",
@@ -962,10 +993,14 @@
     "attemptsWarning": "비밀번호가 올바르지 않습니다. 비밀번호를 {{count}}회 더 잘못 입력하면 로그아웃됩니다.",
     "authRequired": "인증 필요",
     "authRequiredMessage": "자동 완성을 사용하려면 기본 AliasVault 앱에서 생체 인식 또는 PIN 잠금 해제 방식을 활성화하세요.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "가져오지 못했습니다. 앱을 여세요",
     "autofillNoMatchFound": "일치하는 항목 없음",
     "autofillOpenApp": "앱 열기",
     "autofillServiceDescription": "AliasVault 자동 완성",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "보관함 잠김",
     "biometricStoreKeySubtitle": "Android Keystore에 암호화 키를 안전하게 저장하려면 인증하세요. 이를 통해 보관함에 안전하게 접근할 수 있습니다.",
     "biometricStoreKeyTitle": "암호화 키 저장",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "또는 기존 항목에 패스키 추가",
     "passkeyAddToExistingLabel": "또는 기존 항목에 패스키 추가:",
     "passkeyAuthenticating": "Authenticating...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "연결 확인 중...",
     "passkeyCreating": "패스키 생성 중...",
     "passkeyCreationFailed": "패스키를 생성하지 못했습니다",
@@ -1118,7 +1155,9 @@
       "showSearchText": "검색 텍스트 표시",
       "showSearchTextDescription": "일치하는 로그인 정보를 검색하기 위해 AliasVault가 Android로부터 수신한 검색 텍스트를 포함합니다.",
       "step1": "1. 아래 버튼을 눌러 Android 설정을 열고, \"기본 자동 완성 서비스\"를 \"AliasVault\"로 변경합니다.",
-      "step2": "2. 일부 앱(예: Google Chrome)은 서드파티 자동 완성 앱을 허용하도록 설정에서 수동으로 구성해야 할 수 있습니다. 하지만 대부분의 앱은 기본적으로 자동 완성 기능이 지원됩니다."
+      "step2": "2. 일부 앱(예: Google Chrome)은 서드파티 자동 완성 앱을 허용하도록 설정에서 수동으로 구성해야 할 수 있습니다. 하지만 대부분의 앱은 기본적으로 자동 완성 기능이 지원됩니다.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "API 엔드포인트 URL (일반적으로 클라이언트 URL + /api)",
     "appVersion": "앱 버전",
@@ -1507,6 +1546,8 @@
     "theme": "테마",
     "totpAutofill": "2단계 인증 코드 자동 완성",
     "totpAutofillDescription": "2단계 인증 코드 필드가 감지되면 자동 완성 팝업을 표시합니다",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "PIN 확인",
       "confirmPinDescription": "확인을 위해 PIN을 다시 입력하세요",

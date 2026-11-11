@@ -280,6 +280,7 @@
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou."
     },
+    "expand": "Expand",
     "generate": "Generează",
     "help": "Ajutor",
     "hide": "Ascunde",
@@ -296,6 +297,7 @@
     "lockVault": "Blochează seiful",
     "loggedIn": "Autentificat",
     "logout": "Deconectare",
+    "moreOptions": "Mai multe opțiuni",
     "never": "Niciodată",
     "next": "Înainte",
     "no": "Nu",
@@ -304,6 +306,7 @@
     "notice": "Notificare",
     "offlineMode": "Funcționează în modul offline",
     "ok": "OK",
+    "open": "Deschide",
     "openInNewWindow": "Deschide în fereastră nouă",
     "or": "sau",
     "pageNavigation": "Navigare între pagini",
@@ -326,11 +329,20 @@
     "retry": "Reîncearcă",
     "save": "Salvează",
     "saving": "Se salvează...",
+    "select": "Selectează",
+    "selectItemMessage": "Selectează un element pentru a-i vedea detaliile",
+    "selection": {
+      "count": "{{count}} selectate",
+      "disable": "Dezactivează selecția",
+      "enable": "Activează selecția",
+      "selectAll": "Selectează tot"
+    },
     "serviceName": "Nume Serviciu",
     "settings": "Setări",
     "share": "Distribuie",
     "show": "Afișează",
     "showDetails": "Afișează detalii",
+    "showList": "Show list",
     "showPassword": "Afișează parola",
     "success": "Succes",
     "syncVaultData": "Sincronizează datele seifului",
@@ -346,6 +358,11 @@
     "yes": "Da"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Completare automată 2FA",
     "autofillWithAliasVault": "Completează automat numele de utilizator/parola",
     "dismissPopup": "Închide fereastra",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Nu s-a găsit niciun cod 2FA corespunzător",
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "savePrompt": {
-      "addUrlTitle": "Adaugă URL la datele de autentificare?",
       "neverForThisSite": "Niciodată pentru acest site",
       "title": "Salvează în AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "De la",
     "home": {
       "autoRefreshEnabledTooltip": "Actualizare automată activată",
-      "bulkDeleteEmailConfirmation": "Sigur vrei să ștergi {{count}} e-mail(uri)? Această acțiune nu poate fi anulată.",
-      "bulkDeleteEmailSuccess": "Toate cele {{count}} e-mail(uri) au fost șterse cu succes",
-      "bulkDeleteEmailTitle": "Șterge e-mail(uri)",
+      "bulkDeleteEmailConfirmation": "Această acțiune este ireversibilă.",
+      "bulkDeleteEmailSuccess_one": "S-a șters {{count}} e-mail",
+      "bulkDeleteEmailSuccess_other": "S-au șters {{count}} e-mailuri",
+      "bulkDeleteEmailTitle_one": "Ștergi {{count}} e-mail?",
+      "bulkDeleteEmailTitle_other": "Ștergi {{count}} e-mailuri?",
       "claimDoesNotExistError": "A apărut o eroare la încărcarea e-mailurilor. Editează și salvează orice intrare pentru a sincroniza baza de date, apoi reîncearcă.",
-      "deleteSelectedEmails": "Șterge {{count}} e-mail(uri) selectate",
       "noEmailClaimsMessage": "Nu utilizați nicio adresă de e-mail privată (încă). Creează un alias nou și folosește o adresă de e-mail privată acceptată de AliasVault. Toate e-mailurile tale primite pe aceste adrese private vor apărea aici.",
       "noEmailsReceivedMessage": "Nu ai primit niciun e-mail încă.",
       "pageDescription": "Poți vizualiza mai jos toate e-mailurile primite pe adresele tale private."
@@ -684,7 +701,6 @@
       "editLabel": "Editează eticheta"
     },
     "emailLoadError": "A apărut o eroare la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
-    "emailPreview": "Previzualizare E-mail",
     "emailUnexpectedError": "A apărut o eroare neașteptată la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
     "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și apasă pe pictograma folderului din câmpul de nume.",
     "errorLoadingItems": "Eroare la încărcarea elementelor",
@@ -732,7 +748,6 @@
     "hasPasskey": "Are cheie de acces",
     "hasTotp": "Are cod 2FA",
     "home": {
-      "alphabeticalOption": "Alfabetic",
       "createFirstItemManuallyText": "Creează manual primul element din seiful tău.",
       "emptyFolderMessage": "Acest dosar este gol.",
       "failedToCreateFolder": "Crearea dosarului a eșuat.",
@@ -745,7 +760,6 @@
       "loadingMore": "Se încarcă mai multe...",
       "noItemsTitle": "Niciun element încă",
       "pageDescription": "Toate elementele tale sunt afișate mai jos.",
-      "sortOrderLabel": "Ordine sortare",
       "tableViewOption": "Vizualizare tabel",
       "viewModeLabel": "Mod vizualizare"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Se caută „{{search}}”",
       "searchingMessage": "Se caută..."
     },
+    "selection": {
+      "move": "Mută",
+      "moveTitle_one": "Muți {{count}} element?",
+      "moveTitle_other": "Muți {{count}} elemente?",
+      "moveIntoShared": "Oricine are acces la folderul partajat va putea vizualiza, edita și șterge elementele mutate.",
+      "moveOutOfShared": "Elementele mutate părăsesc folderul partajat, astfel încât ceilalți utilizatori nu le vor mai putea vedea.",
+      "deleteTitle_one": "Ștergi {{count}} element?",
+      "deleteTitle_other": "Ștergi {{count}} elemente?",
+      "deleteDescription": "Elementele șterse sunt mutate în „Șterse recent” și vor fi eliminate definitiv după {{days}} zile.",
+      "deleteShared": "Elementele dintr-un folder partajat sunt șterse pentru toți cei care au acces la acel folder.",
+      "moved_one": "S-a mutat {{count}} element",
+      "moved_other": "S-au mutat {{count}} elemente",
+      "movedTo_one": "S-a mutat {{count}} element în {{folder}}",
+      "movedTo_other": "S-au mutat {{count}} elemente în {{folder}}",
+      "deleted_one": "S-a șters {{count}} element",
+      "deleted_other": "S-au șters {{count}} elemente"
+    },
     "searchPlaceholder": "Caută în seif...",
     "selectEmailDomain": "Selectează domeniul de e-mail",
     "separator": "Separator",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{count}} ori.",
     "authRequired": "Autentificare necesară",
     "authRequiredMessage": "Activează biometria sau deblocarea prin PIN în aplicația AliasVault pentru a folosi completarea automată.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Preluare eșuată, deschide aplicația",
     "autofillNoMatchFound": "Nicio potrivire găsită",
     "autofillOpenApp": "Deschide aplicația",
     "autofillServiceDescription": "Completare automată AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Seif blocat",
     "biometricStoreKeySubtitle": "Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.",
     "biometricStoreKeyTitle": "Stocare cheie de criptare",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Sau adaugă Passkey la un element existent",
     "passkeyAddToExistingLabel": "Sau adaugă passkey la un element existent:",
     "passkeyAuthenticating": "Autentificare...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Se verifică conexiunea...",
     "passkeyCreating": "Se creează passkey-ul...",
     "passkeyCreationFailed": "Crearea passkey-ului a eșuat",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Afișează textul căutat",
       "showSearchTextDescription": "Include textul pe care AliasVault îl primește de la Android și pe care îl folosește pentru a căuta datele de autentificare corespunzătoare",
       "step1": "1. Deschide setările Android folosind butonul de mai jos și schimbă „Serviciul de completare automată” în „AliasVault",
-      "step2": "2. Unele aplicații, de exemplu Google Chrome, pot necesita configurare manuală în setările lor pentru a permite aplicațiilor terțe de completare automată. Totuși, majoritatea aplicațiilor ar trebui să funcționeze cu completarea automată în mod implicit."
+      "step2": "2. Unele aplicații, de exemplu Google Chrome, pot necesita configurare manuală în setările lor pentru a permite aplicațiilor terțe de completare automată. Totuși, majoritatea aplicațiilor ar trebui să funcționeze cu completarea automată în mod implicit.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL-ul endpoint-ului API (de obicei URL client + /api)",
     "appVersion": "Versiune aplicație",
@@ -1507,6 +1546,8 @@
     "theme": "Temă",
     "totpAutofill": "Completează automat codul 2FA",
     "totpAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile pentru codul 2FA",
+    "twoColumnLayout": "Aspect pe două coloane",
+    "twoColumnLayoutDescription": "Afișează lista și elementul selectat alăturat, în modul peisaj.",
     "unlockMethod": {
       "confirmPin": "Confirmă PIN",
       "confirmPinDescription": "Introdu PIN-ul din nou pentru confirmare",

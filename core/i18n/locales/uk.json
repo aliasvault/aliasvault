@@ -280,6 +280,7 @@
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз."
     },
+    "expand": "Expand",
     "generate": "Generate",
     "help": "Help",
     "hide": "Hide",
@@ -296,6 +297,7 @@
     "lockVault": "Заблокувати сховище",
     "loggedIn": "Вхід виконано",
     "logout": "Вийти",
+    "moreOptions": "More options",
     "never": "Ніколи",
     "next": "Далі",
     "no": "Ні",
@@ -304,6 +306,7 @@
     "notice": "Примітка",
     "offlineMode": "Operating in offline mode",
     "ok": "OK",
+    "open": "Open",
     "openInNewWindow": "Відкрити у новому вікні",
     "or": "або",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "Retry",
     "save": "Зберегти",
     "saving": "Saving...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Назва сервісу",
     "settings": "Налаштування",
     "share": "Share",
     "show": "Show",
     "showDetails": "Показати подробиці",
+    "showList": "Show list",
     "showPassword": "Показати пароль",
     "success": "Успішно",
     "syncVaultData": "Синхронізувати дані сховища",
@@ -346,6 +358,11 @@
     "yes": "Так"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill username/password",
     "dismissPopup": "Закрити спливаюче вікно",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "No 2FA code matches found",
     "openAliasVaultToUpgrade": "Відкрити AliasVault для покращення",
     "savePrompt": {
-      "addUrlTitle": "Add URL to credential?",
       "neverForThisSite": "Never for this site",
       "title": "Save to AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Від",
     "home": {
       "autoRefreshEnabledTooltip": "Автооновлення увімкнено",
-      "bulkDeleteEmailConfirmation": "Are you sure you want to delete {{count}} email(s)? This action cannot be undone.",
-      "bulkDeleteEmailSuccess": "All {{count}} email(s) deleted successfully",
-      "bulkDeleteEmailTitle": "Delete email(s)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "An error occurred while trying to load the emails. Please try to edit and save any credential entry to synchronize the database, then try again.",
-      "deleteSelectedEmails": "Delete {{count}} selected email(s)",
       "noEmailClaimsMessage": "You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.",
       "noEmailsReceivedMessage": "No emails have been received yet.",
       "pageDescription": "You can view all emails received by your private email addresses below."
@@ -684,7 +701,6 @@
       "editLabel": "Edit label"
     },
     "emailLoadError": "Під час завантаження електронних листів сталася помилка. Спробуйте ще раз пізніше.",
-    "emailPreview": "Попередній перегляд електронного листа",
     "emailUnexpectedError": "Під час завантаження електронних листів сталася неочікувана помилка. Спробуйте ще раз пізніше.",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "errorLoadingItems": "Помилка завантаження об'єктів",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "Alphabetical",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
@@ -745,7 +760,6 @@
       "loadingMore": "Loading more...",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
-      "sortOrderLabel": "Sort Order",
       "tableViewOption": "Table View",
       "viewModeLabel": "View Mode"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Пошук для \"{{search}}\"",
       "searchingMessage": "Пошук..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Пошук сховища...",
     "selectEmailDomain": "Виберіть домен електронної пошти",
     "separator": "Separator",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{count}} more times.",
     "authRequired": "Authentication Required",
     "authRequiredMessage": "Please enable Biometrics or PIN unlock method in the main AliasVault app to use autofill.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Не вдалося отримати, відкрийте додаток",
     "autofillNoMatchFound": "No match found",
     "autofillOpenApp": "Відкрити додаток",
     "autofillServiceDescription": "Автозаповнення AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Vault заблоковано",
     "biometricStoreKeySubtitle": "Автентифікуйтеся, щоб надійно зберігати ключ шифрування в сховищі ключів Android. Це забезпечує безпечний доступ до сховища.",
     "biometricStoreKeyTitle": "Зберегти ключ шифрування",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Or, add passkey to an existing item",
     "passkeyAddToExistingLabel": "Or, add passkey to an existing item:",
     "passkeyAuthenticating": "Authenticating...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Checking connection...",
     "passkeyCreating": "Creating passkey...",
     "passkeyCreationFailed": "Failed to create passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Показати текст пошуку",
       "showSearchTextDescription": "Включити текст, який AliasVault отримує від Android, який він використовує для пошуку відповідних облікових даних",
       "step1": "1. Відкрийте налаштування Android за допомогою кнопки нижче та змініть «бажаний сервіс автозаповнення» на «AliasVault»",
-      "step2": "2. Деякі програми, наприклад, Google Chrome, можуть вимагати ручної конфігурації в налаштуваннях, щоб дозволити використання сторонніх програм автозаповнення. Однак більшість програм повинні працювати з автозаповненням за замовчуванням."
+      "step2": "2. Деякі програми, наприклад, Google Chrome, можуть вимагати ручної конфігурації в налаштуваннях, щоб дозволити використання сторонніх програм автозаповнення. Однак більшість програм повинні працювати з автозаповненням за замовчуванням.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL-адреса кінцевої точки API (зазвичай URL-адреса клієнта + /api)",
     "appVersion": "App version",
@@ -1507,6 +1546,8 @@
     "theme": "Тема",
     "totpAutofill": "2FA code autofill",
     "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Підтвердити ПІН-код",
       "confirmPinDescription": "Enter your PIN again to confirm",

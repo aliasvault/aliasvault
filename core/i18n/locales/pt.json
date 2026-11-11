@@ -280,6 +280,7 @@
       "vaultTooLarge": "O cofre é grande demais para o servidor aceitar. Tente remover alguns itens ou anexos para reduzir o tamanho e tente novamente.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente."
     },
+    "expand": "Expand",
     "generate": "Gerar",
     "help": "Help",
     "hide": "Esconder",
@@ -296,6 +297,7 @@
     "lockVault": "Bloquear cofre",
     "loggedIn": "Logado",
     "logout": "Sair",
+    "moreOptions": "More options",
     "never": "Nunca",
     "next": "Avançar",
     "no": "Não",
@@ -304,6 +306,7 @@
     "notice": "Aviso",
     "offlineMode": "A operar em modo offline",
     "ok": "Ok",
+    "open": "Open",
     "openInNewWindow": "Abrir numa nova janela",
     "or": "ou",
     "pageNavigation": "Page navigation",
@@ -326,11 +329,20 @@
     "retry": "Tentar Novamente",
     "save": "Guardar",
     "saving": "Salvando...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Nome do Serviço",
     "settings": "Configurações",
     "share": "Share",
     "show": "Mostrar",
     "showDetails": "Exibir detalhes",
+    "showList": "Show list",
     "showPassword": "Mostrar senha",
     "success": "Sucesso",
     "syncVaultData": "Sincronizar dados do cofre",
@@ -346,6 +358,11 @@
     "yes": "Sim"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autopreencher 2FA",
     "autofillWithAliasVault": "Autopreencher nome de utilizador/senha",
     "dismissPopup": "Ignorar pop-up",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Nenhum código 2FA encontrado",
     "openAliasVaultToUpgrade": "Abra o AliasVault para atualizar",
     "savePrompt": {
-      "addUrlTitle": "Adicionar URL na credencial?",
       "neverForThisSite": "Nunca para este site",
       "title": "Guardar no AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "De",
     "home": {
       "autoRefreshEnabledTooltip": "Atualização automática ativada",
-      "bulkDeleteEmailConfirmation": "Are you sure you want to delete {{count}} email(s)? This action cannot be undone.",
-      "bulkDeleteEmailSuccess": "All {{count}} email(s) deleted successfully",
-      "bulkDeleteEmailTitle": "Delete email(s)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, altere e salve qualquer credencial para sincronizar a base de dados, e tente novamente.",
-      "deleteSelectedEmails": "Delete {{count}} selected email(s)",
       "noEmailClaimsMessage": "Não está a utilizar nenhum endereço de e-mail privado (ainda). Crie um novo alias e utilize um endereço de e-mail privado suportado pelo AliasVault. Todos os e-mails recebidos nestes endereços de e-mail privados aparecerão acima.",
       "noEmailsReceivedMessage": "Nenhum e-mail foi recebido ainda.",
       "pageDescription": "Pode ver todos os e-mails recebidos nas suas caixas de entrada privadas abaixo."
@@ -684,7 +701,6 @@
       "editLabel": "Editar nome"
     },
     "emailLoadError": "Ocorreu um erro ao carregar os e-mails. Por favor, tente novamente mais tarde.",
-    "emailPreview": "Prévia de E-mail",
     "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
     "errorLoadingItems": "Erro ao carregar itens",
@@ -732,7 +748,6 @@
     "hasPasskey": "Has passkey",
     "hasTotp": "Has 2FA code",
     "home": {
-      "alphabeticalOption": "Em Ordem Alfabética",
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Esta pasta está vazia.",
       "failedToCreateFolder": "Falha ao criar pasta.",
@@ -745,7 +760,6 @@
       "loadingMore": "A carregar mais...",
       "noItemsTitle": "Nenhum item ainda",
       "pageDescription": "Encontre todos os seus itens abaixo.",
-      "sortOrderLabel": "Ordenação",
       "tableViewOption": "Visualização em Tabela",
       "viewModeLabel": "Modo de Visualização"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "A pesquisar por \"{{search}}\"",
       "searchingMessage": "A pesquisar..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "A pesquisar cofre...",
     "selectEmailDomain": "Selecionar domínio de e-mail",
     "separator": "Separator",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Senha incorreta. Será desconectado se você digitar a senha incorretamente mais {{count}} vezes.",
     "authRequired": "Autenticação Necessária",
     "authRequiredMessage": "Por favor, ative o desbloqueio por Biometria ou PIN na aplicação AliasVault principal para utilizar o preenchimento automático.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Falha ao recuperar, abra a aplicação",
     "autofillNoMatchFound": "Nenhum resultado encontrado",
     "autofillOpenApp": "Abrir aplicação",
     "autofillServiceDescription": "Preenchimento Automático do AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Cofre bloqueado",
     "biometricStoreKeySubtitle": "Autentique-se para armazenar a sua chave de criptografia com segurança no Android Keystore. Isto ativa o acesso seguro ao seu cofre.",
     "biometricStoreKeyTitle": "Armazenar Chave de Criptografia",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Ou, adicione um passkey a um item existente",
     "passkeyAddToExistingLabel": "Ou, adicione o passkey a um item existente:",
     "passkeyAuthenticating": "A autenticar...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "A verificar conexão...",
     "passkeyCreating": "A criar passkey...",
     "passkeyCreationFailed": "Falha ao criar passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Mostrar busca por texto",
       "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e é usado para pesquisar credenciais relacionadas",
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de preenchimento automático preferido\" para \"AliasVault\"",
-      "step2": "2. Algumas aplicações, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para ativar preenchimento automático de aplicações terceiros. Porém, a maioria dos (aplicações) deve funcionar com preenchimento automático por padrão."
+      "step2": "2. Algumas aplicações, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para ativar preenchimento automático de aplicações terceiros. Porém, a maioria dos (aplicações) deve funcionar com preenchimento automático por padrão.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "O URL do endpoint da API (geralmente o URL do cliente + /api)",
     "appVersion": "App version",
@@ -1507,6 +1546,8 @@
     "theme": "Tema",
     "totpAutofill": "Preenchimento automático de código de 2FA",
     "totpAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de 2FA forem detetados",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Insira o seu PIN novamente para confirmar",

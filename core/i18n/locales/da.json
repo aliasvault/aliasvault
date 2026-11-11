@@ -280,6 +280,7 @@
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere den. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen."
     },
+    "expand": "Expand",
     "generate": "Generer",
     "help": "Hjælp",
     "hide": "Skjul",
@@ -296,6 +297,7 @@
     "lockVault": "Lås boks",
     "loggedIn": "Logget ind",
     "logout": "Log ud",
+    "moreOptions": "More options",
     "never": "Aldrig",
     "next": "Næste",
     "no": "Nej",
@@ -304,6 +306,7 @@
     "notice": "Besked",
     "offlineMode": "Arbejder i offline-tilstand",
     "ok": "OK",
+    "open": "Open",
     "openInNewWindow": "Åbn i nyt vindue",
     "or": "eller",
     "pageNavigation": "Sidenavigation",
@@ -326,11 +329,20 @@
     "retry": "Prøv igen",
     "save": "Gem",
     "saving": "Gemmer...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Tjenestenavn",
     "settings": "Indstillinger",
     "share": "Del",
     "show": "Vis",
     "showDetails": "Vis detaljer",
+    "showList": "Show list",
     "showPassword": "Vis adgangskode",
     "success": "Succes",
     "syncVaultData": "Synkroniser boksdata",
@@ -346,6 +358,11 @@
     "yes": "Ja"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofyld 2FA",
     "autofillWithAliasVault": "Autoudfyld brugernavn/adgangskode",
     "dismissPopup": "Luk popup",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Ingen 2FA kode match fundet",
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "savePrompt": {
-      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?",
       "neverForThisSite": "Aldrig for dette websted",
       "title": "Gem i AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Fra",
     "home": {
       "autoRefreshEnabledTooltip": "Autoopfrisk aktiveret",
-      "bulkDeleteEmailConfirmation": "Er du sikker på, at du vil slette {{count}} e-mail(s)? Denne handling kan ikke fortrydes.",
-      "bulkDeleteEmailSuccess": "Alle {{count}} e-mail(s) slettet",
-      "bulkDeleteEmailTitle": "Slet email(s)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Der opstod en fejl under forsøget på at indlæse e-mails. Prøv at redigere og gemme loginoplysninger for at synkronisere databasen, og prøv igen.",
-      "deleteSelectedEmails": "Slet {{count}} valgte e-mail(s)",
       "noEmailClaimsMessage": "Du bruger ikke nogen private e-mailadresser (endnu). Opret et nyt alias og brug en privat e-mailadresse som understøttes af AliasVault. Alle e-mails modtaget af disse private e-mailadresser vil blive vist her.",
       "noEmailsReceivedMessage": "Der er endnu ikke modtaget e-mails.",
       "pageDescription": "Du kan se alle e-mails modtaget af dine private e-mail adresser nedenfor."
@@ -684,7 +701,6 @@
       "editLabel": "Rediger label"
     },
     "emailLoadError": "Der opstod en fejl under indlæsning af e-mails. Prøv igen senere.",
-    "emailPreview": "Forhåndsvisning af e-mail",
     "emailUnexpectedError": "Der opstod en uventet fejl under indlæsning af e-mails. Prøv igen senere.",
     "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe, skal du redigere elementet og trykke på mappe-ikonet i navnefeltet.",
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
@@ -732,7 +748,6 @@
     "hasPasskey": "Har passkey",
     "hasTotp": "Har 2FA kode",
     "home": {
-      "alphabeticalOption": "Alfabetisk",
       "createFirstItemManuallyText": "Opret dit første boks element manuelt.",
       "emptyFolderMessage": "Denne mappe er tom.",
       "failedToCreateFolder": "Kunne ikke oprette mappe.",
@@ -745,7 +760,6 @@
       "loadingMore": "Indlæser flere...",
       "noItemsTitle": "Ingen elementer endnu",
       "pageDescription": "Find alle dine elementer nedenfor.",
-      "sortOrderLabel": "Sorteringsrækkefølge",
       "tableViewOption": "Tabelvisning",
       "viewModeLabel": "Visningstilstand"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Søger efter \"{{search}}\"",
       "searchingMessage": "Søger..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Søg i boks...",
     "selectEmailDomain": "Vælg e-mail-domæne",
     "separator": "Skilletegn",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode {{count}} flere gange.",
     "authRequired": "Godkendelse påkrævet",
     "authRequiredMessage": "Aktiver venligst biometri eller PIN-oplåsningsmetode i AliasVault-hovedappen for at bruge autofyld.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Kunne ikke hente, åben app",
     "autofillNoMatchFound": "Ingen match fundet",
     "autofillOpenApp": "Åbn app",
     "autofillServiceDescription": "AliasVault Auto Fyld",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Boks låst",
     "biometricStoreKeySubtitle": "Godkend for at gemme din krypteringsnøgle sikkert i Android Nøgledepot. Dette giver sikker adgang til din boks.",
     "biometricStoreKeyTitle": "Opbevar Krypteringsnøgle",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Eller føj passkey til et eksisterende element",
     "passkeyAddToExistingLabel": "Eller tilføj passkey til et eksisterende element:",
     "passkeyAuthenticating": "Godkender...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Tjekker forbindelse...",
     "passkeyCreating": "Opretter passkey...",
     "passkeyCreationFailed": "Kunne ikke oprette passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Vis søgetekst",
       "showSearchTextDescription": "Inkluder den tekst, AliasVault modtager fra Android, som den bruger til at søge efter matchende loginoplysninger",
       "step1": "1. Åbn Android-indstillinger via knappen herunder, og skift den \"foretrukne autofyld-tjeneste\" til \"AliasVault\"",
-      "step2": "2. Nogle apps, f.eks. Google Chrome, kan kræve manuel konfiguration i deres indstillinger for at tillade tredjeparts-autofyld-apps. De fleste apps bør dog fungere med autofyld som standard."
+      "step2": "2. Nogle apps, f.eks. Google Chrome, kan kræve manuel konfiguration i deres indstillinger for at tillade tredjeparts-autofyld-apps. De fleste apps bør dog fungere med autofyld som standard.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "URL til API-endpoint (normalt klient-URL + /api)",
     "appVersion": "App-version",
@@ -1507,6 +1546,8 @@
     "theme": "Tema",
     "totpAutofill": "2FA kode autofyld",
     "totpAutofillDescription": "Vis popup for autofyld når 2FA-kode felter detekteres",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Bekræft PIN-kode",
       "confirmPinDescription": "Indtast din PIN-kode igen for at bekræfte",

@@ -280,6 +280,7 @@
       "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut."
     },
+    "expand": "Expand",
     "generate": "Erzeugen",
     "help": "Hilfe",
     "hide": "Ausblenden",
@@ -296,6 +297,7 @@
     "lockVault": "Tresor sperren",
     "loggedIn": "Angemeldet",
     "logout": "Abmelden",
+    "moreOptions": "Weitere Optionen",
     "never": "Niemals",
     "next": "Nächste",
     "no": "Nein",
@@ -304,6 +306,7 @@
     "notice": "Hinweis",
     "offlineMode": "Arbeitet im Offline-Modus",
     "ok": "OK",
+    "open": "Öffnen",
     "openInNewWindow": "In neuem Fenster öffnen",
     "or": "oder",
     "pageNavigation": "Seitennavigation",
@@ -326,11 +329,20 @@
     "retry": "Erneut versuchen",
     "save": "Speichern",
     "saving": "Wird gespeichert ...",
+    "select": "Auswählen",
+    "selectItemMessage": "Wähle ein Element, um seine Details anzuzeigen",
+    "selection": {
+      "count": "{{count}} ausgewählt",
+      "disable": "Auswahl deaktivieren",
+      "enable": "Auswahl aktivieren",
+      "selectAll": "Alles auswählen"
+    },
     "serviceName": "Name des Dienstes",
     "settings": "Einstellungen",
     "share": "Teilen",
     "show": "Anzeigen",
     "showDetails": "Details anzeigen",
+    "showList": "Show list",
     "showPassword": "Passwort anzeigen",
     "success": "Erfolg",
     "syncVaultData": "Tresor synchronisieren",
@@ -346,6 +358,11 @@
     "yes": "Ja"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill Benutzername/Passwort",
     "dismissPopup": "Popup schließen",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Kein passender 2FA-Code gefunden",
     "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen",
     "savePrompt": {
-      "addUrlTitle": "URL zu Anmeldeinformationen hinzufügen?",
       "neverForThisSite": "Niemals für diese Webseite",
       "title": "In AliasVault speichern?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Von",
     "home": {
       "autoRefreshEnabledTooltip": "Automatische Aktualisierung aktiviert",
-      "bulkDeleteEmailConfirmation": "Bist Du sicher, dass Du {{count}} E-Mail(s) löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
-      "bulkDeleteEmailSuccess": "{{count}} E-Mail(s) erfolgreich gelöscht",
-      "bulkDeleteEmailTitle": "E-Mail(s) löschen",
+      "bulkDeleteEmailConfirmation": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "bulkDeleteEmailSuccess_one": "{{count}} E-Mail gelöscht",
+      "bulkDeleteEmailSuccess_other": "{{count}} E-Mails gelöscht",
+      "bulkDeleteEmailTitle_one": "{{count}} E-Mail löschen?",
+      "bulkDeleteEmailTitle_other": "{{count}} E-Mails löschen?",
       "claimDoesNotExistError": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere einen beliebigen Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.",
-      "deleteSelectedEmails": "Lösche {{count}} ausgewählte E-Mail(s)",
       "noEmailClaimsMessage": "Du verwendest (noch) keine privaten E-Mail-Adressen. Erstelle einen neuen Alias und verwende eine private E-Mail-Adresse, die von AliasVault unterstützt wird. Alle E-Mails, die von diesen privaten E-Mail-Adressen empfangen werden, werden hier angezeigt.",
       "noEmailsReceivedMessage": "Bisher wurden noch keine E-Mails empfangen.",
       "pageDescription": "Nachfolgend kannst Du alle von Deinen privaten E-Mail-Adressen erhaltenen E-Mails anzeigen."
@@ -684,7 +701,6 @@
       "editLabel": "Bezeichnung bearbeiten"
     },
     "emailLoadError": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
-    "emailPreview": "E-Mail-Vorschau",
     "emailUnexpectedError": "Beim Laden der E-Mails ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.",
     "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
     "errorLoadingItems": "Fehler beim Laden der Daten",
@@ -732,7 +748,6 @@
     "hasPasskey": "Hat Passkey",
     "hasTotp": "Hat 2FA-Code",
     "home": {
-      "alphabeticalOption": "Alphabetisch",
       "createFirstItemManuallyText": "Erstelle Deinen ersten Tresor-Eintrag manuell.",
       "emptyFolderMessage": "Dieser Ordner ist leer.",
       "failedToCreateFolder": "Ordner konnte nicht erstellt werden.",
@@ -745,7 +760,6 @@
       "loadingMore": "Lade mehr...",
       "noItemsTitle": "Noch keine Elemente",
       "pageDescription": "Nachfolgend findest Du alle Deine Elemente.",
-      "sortOrderLabel": "Sortierreihenfolge",
       "tableViewOption": "Tabellenansicht",
       "viewModeLabel": "Anzeigemodus"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Suche nach \"{{search}}\"",
       "searchingMessage": "Suche läuft..."
     },
+    "selection": {
+      "move": "Verschieben",
+      "moveTitle_one": "{{count}} Element verschieben?",
+      "moveTitle_other": "{{count}} Elemente verschieben?",
+      "moveIntoShared": "Jeder, der Zugriff auf den freigegebenen Ordner hat, kann die bewegten Elemente sehen, bearbeiten und löschen.",
+      "moveOutOfShared": "Die verschobenen Elemente werden aus dem freigegebenen Ordner entfernt, sodass andere Personen sie nicht mehr sehen können.",
+      "deleteTitle_one": "{{count}} Element löschen?",
+      "deleteTitle_other": "{{count}} Elemente löschen?",
+      "deleteDescription": "Gelöschte Elemente werden nach \"Kürzlich gelöscht\" verschoben und nach {{days}} Tagen endgültig gelöscht.",
+      "deleteShared": "Elemente in einem freigegebenen Ordner werden für alle mit Zugriff auf diesen Ordner gelöscht.",
+      "moved_one": "{{count}} Element verschoben",
+      "moved_other": "{{count}} Elemente verschoben",
+      "movedTo_one": "{{count}} Element nach {{folder}} verschoben",
+      "movedTo_other": "{{count}} Elemente nach {{folder}} verschoben",
+      "deleted_one": "{{count}} Element gelöscht",
+      "deleted_other": "{{count}} Elemente gelöscht"
+    },
     "searchPlaceholder": "Tresor durchsuchen...",
     "selectEmailDomain": "E-Mail-Domain auswählen",
     "separator": "Trennzeichen",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Ungültiges Passwort. Noch {{count}} Versuche bis zur Abmeldung.",
     "authRequired": "Authentifizierung erforderlich",
     "authRequiredMessage": "Bitte aktiviere die biometrische Authentifizierung oder die PIN-Sperre, um Autofill zu verwenden.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Abruf der Daten fehlgeschlagen. Öffne die App",
     "autofillNoMatchFound": "Keine Übereinstimmungen gefunden",
     "autofillOpenApp": "App öffnen",
     "autofillServiceDescription": "AliasVault Autofill",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Der Tresor ist gesperrt",
     "biometricStoreKeySubtitle": "Authentifiziere Dich, um Deinen Schlüssel sicher im Android Keystore zu speichern. Dies ermöglicht einen sicheren Zugriff auf Deinen Tresor.",
     "biometricStoreKeyTitle": "Schlüssel speichern",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Oder füge den Passkey einem vorhandenen Element hinzu",
     "passkeyAddToExistingLabel": "Oder füge den Passkey einem vorhandenen Element hinzu:",
     "passkeyAuthenticating": "Authentifizierung läuft...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Verbindung wird überprüft...",
     "passkeyCreating": "Erstelle Passkey...",
     "passkeyCreationFailed": "Fehler beim Erstellen des Passkeys",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Suchtext anzeigen",
       "showSearchTextDescription": "Füge den Text ein, den AliasVault von Android erhält und der verwendet wird, um nach passenden Anmeldedaten zu suchen",
       "step1": "1. Tippe unten auf die Schaltfläche, um die Android-Einstellungen zu öffnen. Wähle \"AliasVault\" anschließend als bevorzugten Dienst aus",
-      "step2": "2. Manche Apps wie Google Chrome erfordern möglicherweise eine manuelle Konfiguration in ihren Einstellungen, um Drittanbieter-Autofill-Apps zuzulassen. Die meisten Apps sollten jedoch standardmäßig mit Autofill funktionieren."
+      "step2": "2. Manche Apps wie Google Chrome erfordern möglicherweise eine manuelle Konfiguration in ihren Einstellungen, um Drittanbieter-Autofill-Apps zuzulassen. Die meisten Apps sollten jedoch standardmäßig mit Autofill funktionieren.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "Die API-Endpunkt-URL (normalerweise Client-URL + /api)",
     "appVersion": "App-Version",
@@ -1281,7 +1320,7 @@
     "openSettings": "Öffne die Einstellungen",
     "openWebApp": "Web-App öffnen",
     "passkeySettings": "Passkey-Einstellungen",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Passkeys aktivieren",
     "passwordConfirm": {
       "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
@@ -1507,6 +1546,8 @@
     "theme": "Thema",
     "totpAutofill": "2FA-Code Autofill",
     "totpAutofillDescription": "Zeige Autofill-Popup wenn 2FA-Code-Felder erkannt wurden",
+    "twoColumnLayout": "Zweispaltiges Layout",
+    "twoColumnLayoutDescription": "Zeigt die Liste und das ausgewählte Element nebeneinander im Querformat an.",
     "unlockMethod": {
       "confirmPin": "PIN bestätigen",
       "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",

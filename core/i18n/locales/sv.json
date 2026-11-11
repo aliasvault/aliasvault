@@ -280,6 +280,7 @@
       "vaultTooLarge": "Valvet är för stort för att servern ska kunna hantera det. Ta bort några objekt eller bilagor för att minska storleken och försök igen.",
       "wrongPassword": "Felaktigt lösenord. Försök igen."
     },
+    "expand": "Expand",
     "generate": "Generera",
     "help": "Hjälp",
     "hide": "Dölj",
@@ -296,6 +297,7 @@
     "lockVault": "Lås valvet",
     "loggedIn": "Inloggad",
     "logout": "Logga ut",
+    "moreOptions": "More options",
     "never": "Aldrig",
     "next": "Nästa",
     "no": "Nej",
@@ -304,6 +306,7 @@
     "notice": "Meddelande",
     "offlineMode": "Arbetar i offlineläge",
     "ok": "OK",
+    "open": "Open",
     "openInNewWindow": "Öppna i nytt fönster",
     "or": "eller",
     "pageNavigation": "Sidnavigering",
@@ -326,11 +329,20 @@
     "retry": "Försök igen",
     "save": "Spara",
     "saving": "Sparar...",
+    "select": "Select",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selected",
+      "disable": "Disable selection",
+      "enable": "Enable selection",
+      "selectAll": "Select all"
+    },
     "serviceName": "Tjänstens namn",
     "settings": "Inställningar",
     "share": "Dela",
     "show": "Visa",
     "showDetails": "Visa detaljer",
+    "showList": "Show list",
     "showPassword": "Visa lösenord",
     "success": "Lyckades",
     "syncVaultData": "Synkronisera valvets data",
@@ -346,6 +358,11 @@
     "yes": "Ja"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autofyll 2FA",
     "autofillWithAliasVault": "Autofyll användarnamn och lösenord",
     "dismissPopup": "Stäng popup-fönster",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Inga matchande 2FA-koder hittades",
     "openAliasVaultToUpgrade": "Öppna AliasVault för att uppgradera",
     "savePrompt": {
-      "addUrlTitle": "Lägg till URL till posten?",
       "neverForThisSite": "Aldrig för den här webbplatsen",
       "title": "Spara till AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Från",
     "home": {
       "autoRefreshEnabledTooltip": "Automatisk uppdatering aktiverad",
-      "bulkDeleteEmailConfirmation": "Är du säker på att du vill ta bort {{count}} e-postmeddelande(n)? Denna åtgärd kan inte ångras.",
-      "bulkDeleteEmailSuccess": "Alla {{count}} e-postmeddelande(n) har tagits bort",
-      "bulkDeleteEmailTitle": "Radera e-postmeddelande(n)",
+      "bulkDeleteEmailConfirmation": "This action cannot be undone.",
+      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
+      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
+      "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen.",
-      "deleteSelectedEmails": "Ta bort {{count}} valda e-postmeddelande(n)",
       "noEmailClaimsMessage": "Du använder inga privata e-postadresser (än). Skapa ett nytt alias och använd en privat e-postadress som stöds av AliasVault. Alla e-postmeddelanden som tas emot av dessa privata e-postadresser kommer att visas här.",
       "noEmailsReceivedMessage": "Inga e-postmeddelanden har tagits emot än.",
       "pageDescription": "Du kan se alla e-postmeddelanden som mottagits av dina privata e-postadresser nedan."
@@ -684,7 +701,6 @@
       "editLabel": "Redigera etikett"
     },
     "emailLoadError": "Ett fel uppstod när e-postmeddelanden laddades. Försök igen senare.",
-    "emailPreview": "Förhandsgranskning av E-post",
     "emailUnexpectedError": "Ett oväntat fel inträffade när e-postmeddelanden laddades. Försök igen senare.",
     "emptyFolderHint": "Mappen är tom. För att flytta objekt till den här mappen, redigera objektet och tryck på mappikonen i namnfältet.",
     "errorLoadingItems": "Fel vid laddning av objekt",
@@ -732,7 +748,6 @@
     "hasPasskey": "Har passkey",
     "hasTotp": "Har 2FA kod",
     "home": {
-      "alphabeticalOption": "Alfabetisk",
       "createFirstItemManuallyText": "Skapa ditt första valvobjekt manuellt.",
       "emptyFolderMessage": "Den här mappen är tom.",
       "failedToCreateFolder": "Det gick inte att skapa mappen.",
@@ -745,7 +760,6 @@
       "loadingMore": "Laddar fler ...",
       "noItemsTitle": "Inga objekt än",
       "pageDescription": "Dina objekt visas nedan.",
-      "sortOrderLabel": "Sorteringsordning",
       "tableViewOption": "Tabellvy",
       "viewModeLabel": "Visningsläge"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Söker efter \"{{search}}\"",
       "searchingMessage": "Söker..."
     },
+    "selection": {
+      "move": "Move",
+      "moveTitle_one": "Move {{count}} item?",
+      "moveTitle_other": "Move {{count}} items?",
+      "moveIntoShared": "Everyone with access to the shared folder will be able to see, edit and delete the moved items.",
+      "moveOutOfShared": "The moved items leave the shared folder, so other people will no longer be able to see them.",
+      "deleteTitle_one": "Delete {{count}} item?",
+      "deleteTitle_other": "Delete {{count}} items?",
+      "deleteDescription": "Deleted items are moved to Recently Deleted and permanently deleted after {{days}} days.",
+      "deleteShared": "Items in a shared folder are deleted for everyone with access to that folder.",
+      "moved_one": "Moved {{count}} item",
+      "moved_other": "Moved {{count}} items",
+      "movedTo_one": "Moved {{count}} item to {{folder}}",
+      "movedTo_other": "Moved {{count}} items to {{folder}}",
+      "deleted_one": "Deleted {{count}} item",
+      "deleted_other": "Deleted {{count}} items"
+    },
     "searchPlaceholder": "Sök i valvet...",
     "selectEmailDomain": "Välj e-postdomän",
     "separator": "Avskiljare",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord {{count}} gång(er) till.",
     "authRequired": "Autentisering krävs",
     "authRequiredMessage": "Aktivera biometrisk eller PIN-autentisering i AliasVault-appen för att fortsätta.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Det gick inte att hämta, öppna app",
     "autofillNoMatchFound": "Inga träffar hittades",
     "autofillOpenApp": "Öppna app",
     "autofillServiceDescription": "AliasVault AutoFyll",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Valvet är låst",
     "biometricStoreKeySubtitle": "Autentisera för att säkert lagra din krypteringsnyckel i Android Keystore. Detta ger säker åtkomst till ditt valv.",
     "biometricStoreKeyTitle": "Lagra krypteringsnyckel",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Eller, lägg till passkey till ett befintligt objekt",
     "passkeyAddToExistingLabel": "Eller, lägg till passkey till ett befintligt objekt:",
     "passkeyAuthenticating": "Autentiserar...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Kontrollerar anslutningen...",
     "passkeyCreating": "Skapar passkey...",
     "passkeyCreationFailed": "Kunde inte skapa Passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Visa söktext",
       "showSearchTextDescription": "Inkludera texten AliasVault tar emot från Android som den använder för att söka efter en matchande inloggningsuppgift",
       "step1": "1. Öppna Android-inställningar via knappen nedan, och ändra \"Autofyll föredragen tjänst\" till \"AliasVault\"",
-      "step2": "2. Vissa appar, t.ex. Google Chrome, kan kräva manuell konfiguration i sina inställningar för att tillåta autofyll appar från tredje part. De flesta appar bör dock fungera med autofyll som standard."
+      "step2": "2. Vissa appar, t.ex. Google Chrome, kan kräva manuell konfiguration i sina inställningar för att tillåta autofyll appar från tredje part. De flesta appar bör dock fungera med autofyll som standard.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "API slutpunkts-URL (vanligtvis klientens URL + /api)",
     "appVersion": "App-version",
@@ -1507,6 +1546,8 @@
     "theme": "Tema",
     "totpAutofill": "Autofyll för 2FA-kod",
     "totpAutofillDescription": "Visa popup för autofyll när 2FA-kodfält upptäcks",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Bekräfta PIN-kod",
       "confirmPinDescription": "Ange din PIN-kod igen för att bekräfta",

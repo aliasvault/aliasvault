@@ -280,6 +280,7 @@
       "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie."
     },
+    "expand": "Expand",
     "generate": "Wygeneruj",
     "help": "Pomoc",
     "hide": "Ukryj",
@@ -296,6 +297,7 @@
     "lockVault": "Zablokuj sejf",
     "loggedIn": "Zalogowano",
     "logout": "Wyloguj się",
+    "moreOptions": "Więcej opcji",
     "never": "Nigdy",
     "next": "Dalej",
     "no": "Nie",
@@ -304,6 +306,7 @@
     "notice": "Uwaga",
     "offlineMode": "Praca w trybie offline",
     "ok": "Ok",
+    "open": "Otwórz",
     "openInNewWindow": "Otwórz w nowym oknie",
     "or": "lub",
     "pageNavigation": "Nawigacja po stronie",
@@ -326,11 +329,20 @@
     "retry": "Ponów próbę",
     "save": "Zapisz",
     "saving": "Zapisywanie...",
+    "select": "Zaznacz",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} Zaznaczony",
+      "disable": "Wyłącz zaznaczenie",
+      "enable": "Włącz zaznaczenie",
+      "selectAll": "Zaznacz wszystko"
+    },
     "serviceName": "Nazwa usługi",
     "settings": "Ustawienia",
     "share": "Udostępnij",
     "show": "Pokaż",
     "showDetails": "Pokaż szczegóły",
+    "showList": "Show list",
     "showPassword": "Pokaż hasło",
     "success": "Gotowe",
     "syncVaultData": "Synchronizacja danych z sejfu",
@@ -346,6 +358,11 @@
     "yes": "Tak"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Autouzupełnianie uwierzytelniania dwuskładnikowego",
     "autofillWithAliasVault": "Autouzupełnianie nazwy użytkownika/hasła",
     "dismissPopup": "Zamknij wyskakujące okienko",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Nie znaleziono kodu 2FA",
     "openAliasVaultToUpgrade": "Otwórz AliasVault, aby dokonać aktualizacji",
     "savePrompt": {
-      "addUrlTitle": "Dodaj nowe dane logowania?",
       "neverForThisSite": "Nigdy dla tej strony",
       "title": "Zapisać w AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Od",
     "home": {
       "autoRefreshEnabledTooltip": "Włączono automatyczne odświeżanie",
-      "bulkDeleteEmailConfirmation": "Czy na pewno chcesz usunąć {{count}} wiadomości? Tej operacji nie można cofnąć.",
-      "bulkDeleteEmailSuccess": "Wszystkie {{count}} wiadomości zostały usunięte",
-      "bulkDeleteEmailTitle": "Usuń wiadomość",
+      "bulkDeleteEmailConfirmation": "Tej czynności nie można cofnąć.",
+      "bulkDeleteEmailSuccess_one": "Usunięto wiadomość e-mail {{count}}",
+      "bulkDeleteEmailSuccess_other": "Usunięte wiadomości {{count}}",
+      "bulkDeleteEmailTitle_one": "Usunięto wiadomość e-mail {{count}}?",
+      "bulkDeleteEmailTitle_other": "Usunąć wiadomości {{count}}?",
       "claimDoesNotExistError": "Wystąpił błąd podczas próby załadowania wiadomości e-mail. Spróbuj edytować i zapisać dowolny wpis poświadczeń, aby zsynchronizować bazę danych, a następnie spróbuj ponownie.",
-      "deleteSelectedEmails": "Usuń zaznaczone wiadomości {{count}}",
       "noEmailClaimsMessage": "Nie korzystasz (jeszcze) z żadnych prywatnych adresów e-mail. Utwórz nowy alias i używaj prywatnego adresu e-mail obsługiwanego przez AliasVault. Wszystkie wiadomości e-mail otrzymane na te prywatne adresy e-mail będą wyświetlane tutaj.",
       "noEmailsReceivedMessage": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
       "pageDescription": "Możesz wyświetlić wszystkie wiadomości otrzymywane przez prywatne adresy e-mail poniżej."
@@ -684,7 +701,6 @@
       "editLabel": "Edytuj etykietę"
     },
     "emailLoadError": "Wystąpił błąd podczas ładowania wiadomości e-mail. Spróbuj ponownie później.",
-    "emailPreview": "Podgląd wiadomości e-mail",
     "emailUnexpectedError": "Podczas ładowania wiadomości e-mail wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
     "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
     "errorLoadingItems": "Błąd podczas ładowania elementów",
@@ -732,7 +748,6 @@
     "hasPasskey": "Posiada hasło",
     "hasTotp": "Posiada kod 2FA",
     "home": {
-      "alphabeticalOption": "Alfabetycznie",
       "createFirstItemManuallyText": "Utwórz swój pierwszy element sejfu ręcznie.",
       "emptyFolderMessage": "Ten folder jest pusty.",
       "failedToCreateFolder": "Nie udało się utworzyć folderu.",
@@ -745,7 +760,6 @@
       "loadingMore": "Ładuję więcej...",
       "noItemsTitle": "Brak elementów",
       "pageDescription": "Znajdź wszystkie swoje przedmioty poniżej.",
-      "sortOrderLabel": "Kolejność sortowania",
       "tableViewOption": "Widok tabeli",
       "viewModeLabel": "Tryb przeglądania"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Wyszukiwanie „{{search}}”",
       "searchingMessage": "Wyszukiwanie..."
     },
+    "selection": {
+      "move": "Przenieś",
+      "moveTitle_one": "Przenieś element {{count}}?",
+      "moveTitle_other": "Przenieś elementy {{count}}?",
+      "moveIntoShared": "Każdy z dostępem do udostępnionego folderu będzie mógł zobaczyć, edytować i usuwać przeniesione elementy.",
+      "moveOutOfShared": "Przeniesione elementy opuszczą udostępniony folder, więc inne osoby nie będą już mogły ich zobaczyć.",
+      "deleteTitle_one": "Usunąć element {{count}}?",
+      "deleteTitle_other": "Usunąć elementy {{count}}?",
+      "deleteDescription": "Usunięte elementy są przenoszone do ostatnio usuniętych i trwale usuniętych po {{days}} dniach.",
+      "deleteShared": "Elementy w udostępnionym folderze są usuwane dla wszystkich z dostępem do tego folderu.",
+      "moved_one": "Przenieś element {{count}}",
+      "moved_other": "Przenieś elementy {{count}}",
+      "movedTo_one": "Przeniesiono element {{count}} do {{folder}}",
+      "movedTo_other": "Przeniesiono {{count}} elementy do {{folder}}",
+      "deleted_one": "Usunąć element {{count}}",
+      "deleted_other": "Usunięto elementy {{count}}"
+    },
     "searchPlaceholder": "Wyszukaj w sejfie...",
     "selectEmailDomain": "Wybierz domenę poczty e-mail",
     "separator": "Separator",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{count}} więcej razy.",
     "authRequired": "Wymagane uwierzytelnienie",
     "authRequiredMessage": "Aby korzystać z funkcji autouzupełniania, włącz metodę odblokowania za pomocą danych biometrycznych lub kodu PIN w głównej aplikacji AliasVault.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Nie udało się pobrać, otwórz aplikację",
     "autofillNoMatchFound": "Brak dopasowania",
     "autofillOpenApp": "Otwórz aplikację",
     "autofillServiceDescription": "AliasVault autouzupełnianie",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Sejf jest zablokowany",
     "biometricStoreKeySubtitle": "Uwierzytelnij się, aby bezpiecznie przechowywać klucz szyfrujący w magazynie kluczy systemu Android. Umożliwia to bezpieczny dostęp do sejfu.",
     "biometricStoreKeyTitle": "Klucz szyfrujący sejfu",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Lub dodaj klucz dostępu do istniejącego elementu",
     "passkeyAddToExistingLabel": "Lub dodaj klucz dostępu do istniejącego elementu:",
     "passkeyAuthenticating": "Uwierzytelnianie...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Sprawdzanie połączenia...",
     "passkeyCreating": "Generowanie klucz dostępu...",
     "passkeyCreationFailed": "Nie udało się utworzyć klucza dostępu",
@@ -1099,7 +1136,7 @@
   },
   "settings": {
     "about": {
-      "contactSupport": "Skontaktuj się z pomocą techniczną",
+      "contactSupport": "Skontaktuj się z pomocą",
       "documentation": "Dokumentacja",
       "privacyPolicy": "Polityka prywatności",
       "reportIssue": "Zgłoś problem",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Wyświetl tekst wyszukiwania",
       "showSearchTextDescription": "AliasVault otrzymuje z Androida dane, których używa do wyszukania pasujących danych logowania",
       "step1": "1. Otwórz ustawienia systemu Android za pomocą poniższego przycisku i zmień „preferowaną usługę autouzupełniania” na „AliasVault”",
-      "step2": "2. Niektóre aplikacje, np. Google Chrome, mogą wymagać ręcznej konfiguracji w ustawieniach, aby zezwolić na korzystanie z aplikacji innych firm do automatycznego wypełniania formularzy. Jednak większość aplikacji powinna domyślnie obsługiwać funkcję automatycznego wypełniania formularzy."
+      "step2": "2. Niektóre aplikacje, np. Google Chrome, mogą wymagać ręcznej konfiguracji w ustawieniach, aby zezwolić na korzystanie z aplikacji innych firm do automatycznego wypełniania formularzy. Jednak większość aplikacji powinna domyślnie obsługiwać funkcję automatycznego wypełniania formularzy.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "Adres URL punktu końcowego API (zazwyczaj adres URL klienta + /api)",
     "appVersion": "Wersja aplikacji",
@@ -1497,7 +1536,7 @@
       "redownloadAllLogosSuccessMessage": "Zaktualizowano logo {{count}} rzeczy.",
       "serverTotalDescription": "Dokładny rozmiar zaszyfrowanego sejfu zapisanego na serwerze, łącznie z załącznikami i logami.",
       "serverTotalTitle": "Rozmiar sejfu na serwerze",
-      "title": "Wgląd do magazynu",
+      "title": "Analityka przechowywania",
       "topAttachmentsDescription": "10 największych załączników pliku. Usuń załącznik, jeśli go już nie potrzebujesz.",
       "topAttachmentsTitle": "Największe załączniki",
       "topLogosDescription": "10 największych serwisów z logo. Loga są ponownie używane dla stron z tą samą domeną.",
@@ -1507,6 +1546,8 @@
     "theme": "Motyw",
     "totpAutofill": "Autouzupełnianie kodów 2FA",
     "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Potwierdź kod PIN",
       "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",

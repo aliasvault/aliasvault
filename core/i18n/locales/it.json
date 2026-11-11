@@ -280,6 +280,7 @@
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
       "wrongPassword": "Password errata. Riprova."
     },
+    "expand": "Expand",
     "generate": "Genera",
     "help": "Aiuto",
     "hide": "Nascondi",
@@ -296,6 +297,7 @@
     "lockVault": "Blocca cassaforte",
     "loggedIn": "Accesso effettuato",
     "logout": "Esci",
+    "moreOptions": "Altre opzioni",
     "never": "Mai",
     "next": "Avanti",
     "no": "No",
@@ -304,6 +306,7 @@
     "notice": "Avviso",
     "offlineMode": "Funzionamento in modalità offline",
     "ok": "OK",
+    "open": "Apri",
     "openInNewWindow": "Apri in una nuova finestra",
     "or": "o",
     "pageNavigation": "Navigazione pagina",
@@ -326,11 +329,20 @@
     "retry": "Riprova",
     "save": "Salva",
     "saving": "Salvataggio...",
+    "select": "Seleziona",
+    "selectItemMessage": "Select an item to view its details",
+    "selection": {
+      "count": "{{count}} selezionati",
+      "disable": "Disabilita selezione",
+      "enable": "Abilita selezione",
+      "selectAll": "Seleziona tutti"
+    },
     "serviceName": "Nome Servizio",
     "settings": "Impostazioni",
     "share": "Condividi",
     "show": "Mostra",
     "showDetails": "Mostra dettagli",
+    "showList": "Show list",
     "showPassword": "Mostra password",
     "success": "Successo",
     "syncVaultData": "Sincronizza dati cassaforte",
@@ -346,6 +358,11 @@
     "yes": "Sì"
   },
   "content": {
+    "autofillConfirm": {
+      "description": "Only fill this login if you picked it yourself and trust this website.",
+      "fillOn": "You are about to fill a login on {{host}}.",
+      "title": "Confirm autofill"
+    },
     "autofillTotp": "Compilazione automatica 2FA",
     "autofillWithAliasVault": "Compilazione automatica username/password",
     "dismissPopup": "Chiudi finestra",
@@ -358,7 +375,6 @@
     "noTotpItemsFound": "Nessun codice 2FA trovato",
     "openAliasVaultToUpgrade": "Apri AliasVault per aggiornare",
     "savePrompt": {
-      "addUrlTitle": "Aggiungere URL alle credenziali?",
       "neverForThisSite": "Mai per questo sito",
       "title": "Salvare su AliasVault?"
     },
@@ -382,11 +398,12 @@
     "fromColumn": "Da",
     "home": {
       "autoRefreshEnabledTooltip": "Aggiornamento automatico abilitato",
-      "bulkDeleteEmailConfirmation": "Sei sicuro di voler eliminare {{count}} mail? Questa azione non può essere annullata.",
-      "bulkDeleteEmailSuccess": " Tutte le {{count}} mail eliminate con successo",
-      "bulkDeleteEmailTitle": "Elimina email",
+      "bulkDeleteEmailConfirmation": "Questa azione non può essere annullata.",
+      "bulkDeleteEmailSuccess_one": "Cancellata {{count}} mail",
+      "bulkDeleteEmailSuccess_other": "Cancellate {{count}} mail",
+      "bulkDeleteEmailTitle_one": "Cancellare {{count}} mail?",
+      "bulkDeleteEmailTitle_other": "Cancellare {{count}} mail?",
       "claimDoesNotExistError": "Si è verificato un errore durante il tentativo di caricare le email. Si prega di provare a modificare e salvare una qualsiasi delle credenziali per sincronizzare il database, quindi riprovare.",
-      "deleteSelectedEmails": "{{count}}Elimina {{count}} email selezionate",
       "noEmailClaimsMessage": "Non stai ancora usando alcun indirizzo email privato (per ora). Crea un nuovo alias e utilizza un indirizzo email privato supportato da AliasVault. Tutte le email ricevute da questi indirizzi email privati verranno visualizzate qui.",
       "noEmailsReceivedMessage": "Nessuna email è stata ancora ricevuta.",
       "pageDescription": "Puoi visualizzare tutte le email ricevute dai tuoi indirizzi email privati qui sotto."
@@ -684,7 +701,6 @@
       "editLabel": "Modifica etichetta"
     },
     "emailLoadError": "Si è verificato un errore durante il caricamento delle email. Riprova più tardi.",
-    "emailPreview": "Anteprima email",
     "emailUnexpectedError": "Si è verificato un errore imprevisto durante il caricamento delle email. Riprova più tardi.",
     "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
     "errorLoadingItems": "Errore durante il caricamento degli elementi",
@@ -732,7 +748,6 @@
     "hasPasskey": "Ha una passkey",
     "hasTotp": "Ha un codice 2FA",
     "home": {
-      "alphabeticalOption": "Alfabetico",
       "createFirstItemManuallyText": "Crea manualmente il tuo primo elemento nella cassaforte.",
       "emptyFolderMessage": "Questa cartella è vuota.",
       "failedToCreateFolder": "Non è stato possibile creare la cartella.",
@@ -745,7 +760,6 @@
       "loadingMore": "Caricamento di altri risultati...",
       "noItemsTitle": "Ancora nessun articolo",
       "pageDescription": "Trova tutte le tue credenziali qui sotto.",
-      "sortOrderLabel": "Ordina per",
       "tableViewOption": "Formato tabella",
       "viewModeLabel": "Modalità Visualizzazione"
     },
@@ -856,6 +870,23 @@
       "searchingForMessage": "Ricerca di \"{{search}}\"",
       "searchingMessage": "Ricerca in corso..."
     },
+    "selection": {
+      "move": "Sposta",
+      "moveTitle_one": "Spostare {{count}} elemento?",
+      "moveTitle_other": "Spostare {{count}} elementi?",
+      "moveIntoShared": "Chiunque abbia accesso alla cartella condivisa sarà in grado di vedere, modificare ed eliminare gli elementi spostati.",
+      "moveOutOfShared": "Gli elementi spostati lasciano la cartella condivisa, quindi altre persone non saranno più in grado di vederli.",
+      "deleteTitle_one": "Cancellare {{count}} elemento?",
+      "deleteTitle_other": "Cancellare ",
+      "deleteDescription": "Gli elementi cancellati sono stati spostati n Cancellati recentemente e saranno eliminati definitivamente dopo {{days}} giorni.",
+      "deleteShared": "Gli elementi in una cartella condivisa vengono eliminati per tutti coloro che hanno accesso a tale cartella.",
+      "moved_one": "Spostato {{count}} elemento",
+      "moved_other": "Spostati {{count}} elementi",
+      "movedTo_one": "Spostato {{count}} eleento  in {{folder}}",
+      "movedTo_other": "Spostati {{count}} elementi in {{folder}}",
+      "deleted_one": "Cancellato {{count}} elemento",
+      "deleted_other": "Cancellati {{count}} elementi"
+    },
     "searchPlaceholder": "Cerca cassaforte...",
     "selectEmailDomain": "Seleziona Dominio Email",
     "separator": "Separatore",
@@ -962,10 +993,14 @@
     "attemptsWarning": "Password errata. Sarai disconnesso se inserisci la password errata {{count}} altre volte.",
     "authRequired": "Autenticazione richiesta",
     "authRequiredMessage": "Si prega di abilitare il metodo di sblocco Biometrico o PIN nell'app principale di AliasVault per utilizzare l'auto-riempimento.",
+    "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Impossibile recuperare, aprire l'app",
     "autofillNoMatchFound": "Nessuna corrispondenza trovata",
     "autofillOpenApp": "Apri app",
     "autofillServiceDescription": "Riempimento Automatico AliasVault",
+    "autofillTrustApp": "Trust {{app}}",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
+    "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Cassaforte bloccata",
     "biometricStoreKeySubtitle": "Autenticati per memorizzare in modo sicuro la tua chiave di crittografia nel Keystore Android. Questo consente l'accesso sicuro alla tua cassaforte.",
     "biometricStoreKeyTitle": "Memorizza Chiave Di Cifratura",
@@ -1010,6 +1045,8 @@
     "passkeyAddToExisting": "Oppure, aggiungi passkey a un elemento esistente",
     "passkeyAddToExistingLabel": "Oppure, aggiungi passkey a un elemento esistente:",
     "passkeyAuthenticating": "Autenticazione...",
+    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
+    "passkeyBlockedTitle": "Blocked by AliasVault",
     "passkeyCheckingConnection": "Controllo connessione...",
     "passkeyCreating": "Creazione passkey...",
     "passkeyCreationFailed": "Impossibile creare passkey",
@@ -1118,7 +1155,9 @@
       "showSearchText": "Visualizza testo di ricerca",
       "showSearchTextDescription": "Includere il testo che AliasVault riceve da Android usato per cercare credenziali corrispondenti",
       "step1": "1. Apri le impostazioni di Android tramite il pulsante qui sotto, e modifica il \"servizio preferito di riempimento automatico\" in \"AliasVault\"",
-      "step2": "2. Alcune applicazioni, ad esempio Google Chrome, potrebbero richiedere la configurazione manuale nelle loro impostazioni per consentire applicazioni di riempimento automatico di terze parti. Tuttavia, la maggior parte delle app dovrebbe funzionare con il riempimento automatico di default."
+      "step2": "2. Alcune applicazioni, ad esempio Google Chrome, potrebbero richiedere la configurazione manuale nelle loro impostazioni per consentire applicazioni di riempimento automatico di terze parti. Tuttavia, la maggior parte delle app dovrebbe funzionare con il riempimento automatico di default.",
+      "trustedApps": "Trusted apps",
+      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "L'URL endpoint API (di solito URL client + /api)",
     "appVersion": "Versione app",
@@ -1507,6 +1546,8 @@
     "theme": "Tema",
     "totpAutofill": "Codice di autoriempimento 2FA",
     "totpAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati i campi del codice 2FA",
+    "twoColumnLayout": "Two-column layout",
+    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
       "confirmPin": "Conferma PIN",
       "confirmPinDescription": "Inserisci di nuovo il tuo PIN per confermare",
