@@ -1,0 +1,3 @@
+- Menu gebruikt nu de native iOS menustijl
+- Ondersteuning voor het selecteren van meerdere items
+- Ondersteuning voor weergave in twee kolommen op de iPhone Duo

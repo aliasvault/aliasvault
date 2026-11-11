@@ -1,0 +1,4 @@
+- Update footer menu to use Android native menu style
+- Add multi-select support via long-press
+- Add autofill URL link prompts
+- Fix autofill issues with sideloaded browsers
