@@ -280,6 +280,7 @@
       "vaultTooLarge": "A széf túl nagy a szerver számára. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
       "wrongPassword": "Hibás jelszó. Kérem, próbálkozzon újra."
     },
+    "expand": "Expand",
     "generate": "Generálás",
     "help": "Help",
     "hide": "Elrejtés",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "Megjelenítés",
     "showDetails": "Részletek megjelenítése",
+    "showList": "Show list",
     "showPassword": "Jelszó megjelenítése",
     "success": "Siker",
     "syncVaultData": "Széf adatok szinkronizálása",
