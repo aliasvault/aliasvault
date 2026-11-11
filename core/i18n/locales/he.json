@@ -280,6 +280,7 @@
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב."
     },
+    "expand": "Expand",
     "generate": "יצירה",
     "help": "עזרה",
     "hide": "הסתרה",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "הצגה",
     "showDetails": "הצגת פרטים",
+    "showList": "Show list",
     "showPassword": "הצגת סיסמה",
     "success": "הצליח",
     "syncVaultData": "סנכרון נתוני כספת",
