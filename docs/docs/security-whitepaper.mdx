@@ -11,7 +11,7 @@ import Link from '@docusaurus/Link';
 
 **Security architecture, cryptographic design and threat model**
 
-*Version 0.5, 2026-10-22. See [Document information](#document-information).*
+*Version 0.6, 2026-11-11. See [Document information](#document-information).*
 
 This document describes how AliasVault protects user data: which keys exist, where they are created and stored, how clients authenticate, how personal vaults, shared vaults and emails are encrypted, and what the server can and cannot do. It covers the cryptographic design of all clients and the server, the threat model and the known limitations. It does not cover the operational security of AliasVault Cloud or any other deployment, or the security of the platforms the clients run on. The source code implementation of this architecture design is referenced in [Appendix A](#appendix-a-implementation-map).
 
@@ -70,7 +70,7 @@ The last column names the mechanism and the section that describes it.
 |---|---|---|---|
 | **Malicious or compromised server** (operator, insider, intruder, leaked database or backups) | Reads and modifies everything the server stores; controls every API response; serves any public key, setting or version it likes | Read vault or stored email contents; learn the master password or any key; forge or alter vault contents undetected; move data between vaults, fields or users; make a client derive a key below the client-enforced minimum | Client-held key hierarchy ([4](#4-key-derivation-and-key-hierarchy)); AES-256-GCM bound to its slot ([4.1](#41-key-hierarchy), [6](#6-vault-operations)); other users' keys accepted only against their out-of-band provided account fingerprint, grants opened only when signed by the account itself ([10.3](#103-account-fingerprints-and-key-certifications)); client-side Argon2id minimum ([4](#4-key-derivation-and-key-hierarchy)); known limitations: rollback ([13.2](#limitation-rollback)), email on arrival ([2.2](#22-trust-assumptions)) |
 | **Network attacker** (on-path, rogue access point, mis-issued certificate) | Reads and modifies traffic between client and server | Learn the password or any key; read vault contents; impersonate the server to a client during login | SRP with mutual proof ([5](#5-authentication-process)); vault data encrypted before transmission ([6](#6-vault-operations)); TLS |
-| **Malicious website** visited while the extension is installed | Runs scripts in its own page, sends messages to the content script, calls the WebAuthn API | Obtain credentials or passkey signatures for another site; trigger autofill for another origin; read extension storage | Items with a website URL are only suggested on that URL's registrable domain; items without any URL may be suggested when a word of their name appears in the registrable domain; one item released per user pick, only to the frame it was picked in; content-script isolation; WebAuthn origin and relying-party checks ([8](#8-passkey-authentication)) |
+| **Malicious website** visited while the extension is installed | Runs scripts in its own page, sends messages to the content script, calls the WebAuthn API | Obtain credentials or passkey signatures for another site; trigger autofill for another origin; read extension storage | Items are suggested on their website's registrable domain, or by name when they have no URL; one item released per user pick, only to the frame it was picked in; filling an item that does not match the page requires confirmation in an extension window; best-effort clickjacking checks on the in-page UI (defense in depth); content-script isolation; WebAuthn origin and relying-party checks ([8](#8-passkey-authentication)) |
 | **Another AliasVault user**, including current and former shared-vault members | Holds their own account, grants they were given, and copies of data they synced | Open a vault they were not invited to; read another user's personal vault; keep receiving a shared vault's mail after removal | One VEK per vault, grants only to invited accounts, per-vault authorization on the server for vaults and their email ([10](#10-vault-sharing)) |
 | **Holder of a stolen session token** | Calls the API as the user until the token expires or its session is revoked | Decrypt anything; send an alias's future email to another vault; approve a Login with Mobile request | Tokens never decrypt; access tokens live 10 minutes; refresh tokens are stored hashed and rotated on use ([5.3](#53-session-tokens)); Login with Mobile approvals are signed and refused from a revoked session ([9.2](#92-login-flow)); alias moves are signed ([7.1](#71-key-generation-and-storage)) |
 | **Holder of a copy of the encrypted data** (server database, device storage, backup, export file) | Unlimited offline computation | Decrypt without the master password or export password | Argon2id with a client-enforced minimum ([4](#4-key-derivation-and-key-hierarchy), [12](#12-vault-exports)); known limitation: the opt-in extension PIN can be guessed offline from a copy of the extension storage ([13.3](#limitation-pin-unlock)) |
@@ -531,6 +531,7 @@ The table below maps each security-related topic in this document to the specifi
 | Sync engine: pull, push, grants, sharing, delivery keys | <ul><li><code>core/rust/src/vault_sync/</code></li><li><code>core/client/src/sync/VaultSyncEngine.ts</code></li><li><code>apps/mobile-app/ios/VaultStoreKit/VaultStore+Sync.swift</code></li><li><code>apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultSyncEngine.kt</code></li></ul> |
 | Merge of concurrent changes | <ul><li><code>core/rust/src/vault_merge/</code></li></ul> |
 | Passkeys | <ul><li><code>core/rust/src/passkey/</code></li><li><code>core/client/src/rust/WasmPasskey.ts</code></li></ul> |
+| Browser extension autofill: fill approval, confirmation window and click checks | <ul><li><code>apps/browser-extension/src/entrypoints/background/VaultMessageHandler.ts</code></li><li><code>apps/browser-extension/src/entrypoints/background/AutofillConfirmHandler.ts</code></li><li><code>apps/browser-extension/src/entrypoints/popup/pages/autofill/AutofillConfirm.tsx</code></li><li><code>apps/browser-extension/src/utils/security/ClickValidator.ts</code></li><li><code>apps/browser-extension/src/entrypoints/contentScript/Popup.ts</code></li><li><code>core/rust/src/credential_matcher/</code></li></ul> |
 | Passkeys: origin and relying-party checks in the hosts | <ul><li><code>apps/browser-extension/src/utils/passkey/</code></li><li><code>apps/browser-extension/src/entrypoints/background/PasskeyHandler.ts</code></li><li><code>apps/mobile-app/ios/Autofill/CredentialProviderViewController+Passkey.swift</code></li><li><code>apps/mobile-app/ios/VaultStoreKit/Passkeys/PasskeyAuthenticator.swift</code></li><li><code>apps/mobile-app/android/app/src/main/java/net/aliasvault/app/credentialprovider/</code></li><li><code>apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/passkey/</code></li></ul> |
 | Email parsing and HTML sanitizing | <ul><li><code>core/rust/src/email_parser/</code></li><li><code>core/client/src/email/EmailHtmlSanitizer.ts</code></li></ul> |
 | Email encryption on receipt | <ul><li><code>apps/server/Utilities/AliasVault.Cryptography/EmailEncryption.cs</code></li><li><code>apps/server/AliasVault.SmtpService/Handlers/DatabaseMessageStore.cs</code></li></ul> |
@@ -581,9 +582,9 @@ The table below maps each security-related topic in this document to the specifi
 
 | | |
 |---|---|
-| **Document version** | 0.5 |
+| **Document version** | 0.6 |
 | **Author** | AliasVault |
-| **Date** | 2026-10-22 |
+| **Date** | 2026-11-11 |
 | **Applies to** | AliasVault 0.31.0 and later (vault format v1) |
 | **Status** | Pending independent review |
 | **Canonical copy** | This page. Source: [`docs/docs/security-whitepaper.mdx`](https://github.com/aliasvault/aliasvault/blob/main/docs/docs/security-whitepaper.mdx) |
@@ -593,6 +594,7 @@ The table below maps each security-related topic in this document to the specifi
 
 | Version | Date | Changes |
 |---|---|---|
+| 0.6 | 2026-11-11 | Updated browser extension autofill protections. |
 | 0.5 | 2026-10-22 | Converted to whitepaper format: threat model, known limitations and appendices added; updated for the 0.31 vault format. |
 | 0.4 | 2026-09-30 | Raised Argon2id defaults. |
 | 0.3 | 2025-11-18 | Login with Mobile; clarified zero-knowledge scope. |

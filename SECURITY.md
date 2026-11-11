@@ -150,6 +150,7 @@ This exclusion does not apply where an application flaw causes the approval UI t
 - Clipboard clearing
 - Screen recording protections
 - Autofill edge cases
+- Clickjacking of extension UI inside web pages
 - UI redaction improvements
 
 ### 3.2.4 Metadata & Session Observations
