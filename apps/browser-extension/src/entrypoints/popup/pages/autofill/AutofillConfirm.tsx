@@ -11,17 +11,19 @@ import type { AutofillConfirmAnswer, AutofillConfirmation } from '@/utils/types/
 
 const BOLD_MARK = '\u0000';
 
+/** Second placeholder marker, for texts with two bold values. */
+const BOLD_MARK_2 = '\u0001';
+
 /** How long the fill buttons stay disabled, so a click aimed at the page cannot land by accident as the window opens. */
 const FILL_DELAY_MS = 1000;
 
 /**
- * Put `value` in bold where the translated `text` has BOLD_MARK, so translations carry no markup.
+ * Put `value` in bold where the translated `text` has BOLD_MARK, and `value2` where it has BOLD_MARK_2.
  */
-function withBoldValue(text: string, value: string): React.ReactNode {
-  return text.split(BOLD_MARK).map((part, index) => (
+function withBoldValue(text: string, value: string, value2 = ''): React.ReactNode {
+  return text.split(new RegExp(`(${BOLD_MARK}|${BOLD_MARK_2})`)).map((part, index) => (
     <React.Fragment key={index}>
-      {index > 0 && <strong>{value}</strong>}
-      {part}
+      {part === BOLD_MARK ? <strong>{value}</strong> : part === BOLD_MARK_2 ? <strong>{value2}</strong> : part}
     </React.Fragment>
   ));
 }
@@ -101,7 +103,7 @@ const AutofillConfirm: React.FC = () => {
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('content.autofillConfirm.title')}</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400 break-words">
           {mismatch ? (
-            withBoldValue(t('content.autofillConfirm.siteMismatch', { host: BOLD_MARK }), confirmation.pageHost)
+            withBoldValue(t('native.linkUrlPromptMessage', { url: BOLD_MARK, name: BOLD_MARK_2 }), confirmation.pageHost, confirmation.itemName)
           ) : (
             <>{withBoldValue(t('content.autofillConfirm.fillOn', { host: BOLD_MARK }), confirmation.pageHost)} {t('content.autofillConfirm.description')}</>
           )}

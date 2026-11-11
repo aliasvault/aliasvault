@@ -28,6 +28,11 @@ const TEST_PAGE_PATH = path.join(__dirname, '..', 'fixtures', 'test-pages', 'log
 const TEST_PAGE_HTML = fs.readFileSync(TEST_PAGE_PATH, 'utf-8');
 
 /**
+ * Test login page with the form inside a modal dialog.
+ */
+const DIALOG_PAGE_HTML = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'test-pages', 'login-dialog.html'), 'utf-8');
+
+/**
  * Helper to get credential names from the autofill popup shadow DOM.
  * Requires E2E test mode to be enabled (open shadow DOM).
  */
@@ -61,12 +66,12 @@ async function isAutofillPopupVisible(page: Page): Promise<boolean> {
 /**
  * Helper to setup route interception to serve our test login page for a given domain.
  */
-async function setupTestPageRoute(page: Page, domain: string): Promise<void> {
+async function setupTestPageRoute(page: Page, domain: string, html: string = TEST_PAGE_HTML): Promise<void> {
   await page.route(`https://${domain}/**`, (route) => {
     route.fulfill({
       status: 200,
       contentType: 'text/html',
-      body: TEST_PAGE_HTML,
+      body: html,
     });
   });
 }
@@ -260,6 +265,39 @@ test.describe.serial('60. Credential Matcher Integration', () => {
     expect(credentials).not.toContain('Another Site Login');
 
     await testPage.screenshot({ path: 'tests/screenshots/60.5-subdomain-match.png' });
+    await testPage.close();
+  });
+
+  test('60.6 should show and fill from the popup above a modal dialog', async () => {
+    const testPage = await client.context.newPage();
+    await setupTestPageRoute(testPage, 'example.com', DIALOG_PAGE_HTML);
+
+    await testPage.goto('https://example.com/login');
+    await testPage.waitForLoadState('domcontentloaded');
+
+    await testPage.locator('input#identifier').click();
+    await testPage.waitForTimeout(2000);
+
+    expect(await isAutofillPopupVisible(testPage)).toBe(true);
+    expect(await getAutofillPopupCredentials(testPage)).toContain('Example Site Login');
+
+    // The popup must be the topmost element at its own position, not hidden behind the dialog.
+    const popupOnTop = await testPage.evaluate(() => {
+      const ui = document.querySelector('aliasvault-ui');
+      const popup = ui?.shadowRoot?.querySelector('#aliasvault-credential-popup');
+      if (!ui || !popup) {
+        return false;
+      }
+      const rect = popup.getBoundingClientRect();
+      return document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2) === ui;
+    });
+    expect(popupOnTop).toBe(true);
+
+    // A real click must reach the popup (the page outside a modal dialog is inert) and fill the field.
+    await testPage.locator('aliasvault-ui .av-credential-item', { hasText: 'Example Site Login' }).click();
+    await expect(testPage.locator('input#identifier')).toHaveValue('user@example.com');
+
+    await testPage.screenshot({ path: 'tests/screenshots/60.6-modal-dialog.png' });
     await testPage.close();
   });
 });

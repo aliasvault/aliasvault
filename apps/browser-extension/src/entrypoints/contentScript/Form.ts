@@ -1,4 +1,5 @@
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
+import { placeUiForInput } from '@/entrypoints/contentScript/TopLayer';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import { logFailure } from '@/utils/Diagnostics';
@@ -231,6 +232,8 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
   if (!actualInput.id) {
     actualInput.id = `aliasvault-input-${Math.random().toString(36).substring(2, 11)}`;
   }
+
+  placeUiForInput(actualInput, container);
 
   // Create an overlay container at document level if it doesn't exist
   let overlayContainer = container.querySelector('#aliasvault-overlay-container');
