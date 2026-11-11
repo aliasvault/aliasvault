@@ -280,6 +280,7 @@
       "vaultTooLarge": "Kho lưu trữ quá lớn để máy chủ chấp nhận. Hãy thử xóa bớt một số mục hoặc tệp đính kèm để giảm kích thước rồi thử lại.",
       "wrongPassword": "Incorrect password. Please try again."
     },
+    "expand": "Expand",
     "generate": "Generate",
     "help": "Help",
     "hide": "Hide",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "Show",
     "showDetails": "Show details",
+    "showList": "Show list",
     "showPassword": "Show password",
     "success": "Thành công",
     "syncVaultData": "Đồng bộ dữ liệu kho bảo mật",
