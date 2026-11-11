@@ -280,6 +280,7 @@
       "vaultTooLarge": "Valvet är för stort för att servern ska kunna hantera det. Ta bort några objekt eller bilagor för att minska storleken och försök igen.",
       "wrongPassword": "Felaktigt lösenord. Försök igen."
     },
+    "expand": "Expand",
     "generate": "Generera",
     "help": "Hjälp",
     "hide": "Dölj",
@@ -341,6 +342,7 @@
     "share": "Dela",
     "show": "Visa",
     "showDetails": "Visa detaljer",
+    "showList": "Show list",
     "showPassword": "Visa lösenord",
     "success": "Lyckades",
     "syncVaultData": "Synkronisera valvets data",
