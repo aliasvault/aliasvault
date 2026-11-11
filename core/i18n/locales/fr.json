@@ -357,10 +357,10 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "siteMismatch": "This login is not linked to {{host}} yet. Only continue if you trust this website.",
-      "title": "Confirm autofill"
+      "description": "Ne remplissez ce login que si vous l'avez choisi vous-même et faites confiance à ce site.",
+      "fillOn": "Vous êtes sur le point de remplir une connexion sur {{host}}.",
+      "siteMismatch": "Cette connexion n'est pas encore liée à {{host}} . Ne continuez que si vous faites confiance à ce site.",
+      "title": "Confirmer la saisie automatique"
     },
     "autofillTotp": "Remplissage automatique 2FA",
     "autofillWithAliasVault": "Saisie automatique du nom d'utilisateur/mot de passe",
