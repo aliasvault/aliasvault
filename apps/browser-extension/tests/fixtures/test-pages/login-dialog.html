@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E2E Test Dialog Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    dialog {
+      width: 300px;
+      padding: 2rem;
+      border: none;
+      border-radius: 8px;
+      transform: translateY(20px);
+    }
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5);
+    }
+    label {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    input {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <p>Page content behind the login dialog.</p>
+
+  <!-- Login form inside a modal dialog (top layer). -->
+  <dialog id="loginDialog" aria-labelledby="dialogTitle">
+    <form id="loginForm" method="post" action="/login/" novalidate>
+      <h2 id="dialogTitle">Welcome back</h2>
+      <label for="identifier">
+        <span>Username or e-mail address</span>
+        <input type="text" id="identifier" name="identifier" autocomplete="off" required>
+      </label>
+      <label for="password">
+        <span>Password</span>
+        <input type="password" id="password" name="password" autocomplete="off" required>
+      </label>
+      <button type="submit">Log in</button>
+    </form>
+  </dialog>
+
+  <script>
+    document.getElementById('loginDialog').showModal();
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+    });
+  </script>
+</body>
+</html>

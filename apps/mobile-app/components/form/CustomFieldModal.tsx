@@ -181,6 +181,7 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({
       </ThemedText>
       <ScrollView
         horizontal
+        keyboardShouldPersistTaps="handled"
         showsHorizontalScrollIndicator={false}
         style={styles.fieldTypeScrollView}
         contentContainerStyle={styles.fieldTypeContainer}
