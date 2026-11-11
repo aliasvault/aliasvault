@@ -280,6 +280,7 @@
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís."
     },
+    "expand": "Expand",
     "generate": "Gin",
     "help": "Cabhair",
     "hide": "Folaigh",
@@ -341,6 +342,7 @@
     "share": "Comhroinn",
     "show": "Taispeáin",
     "showDetails": "Taispeáin sonraí",
+    "showList": "Show list",
     "showPassword": "Taispeáin pasfhocal",
     "success": "Rath",
     "syncVaultData": "Sioncrónaigh sonraí cruinneacháin",
