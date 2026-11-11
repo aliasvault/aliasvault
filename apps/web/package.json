@@ -2,7 +2,7 @@
   "name": "aliasvault-web",
   "description": "AliasVault web app",
   "private": true,
-  "version": "0.32.0",
+  "version": "0.31.3",
   "type": "module",
   "scripts": {
     "preinstall": "node ../../core/_tools/scripts/install-linked-deps.mjs",
