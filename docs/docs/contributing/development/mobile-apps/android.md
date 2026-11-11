@@ -5,7 +5,7 @@ sidebar_label: "Android"
 # Android
 
 Android-specific notes for the React Native AliasVault app. This assumes a working
-Android dev setup (Android Studio, JDK 17, and the NDK installed via *SDK Tools →
+Android dev setup (Android Studio, JDK 21, and the NDK installed via *SDK Tools →
 NDK (Side by side)*).
 
 ## Test on a real device
