@@ -280,6 +280,7 @@
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
       "wrongPassword": "Password errata. Riprova."
     },
+    "expand": "Expand",
     "generate": "Genera",
     "help": "Aiuto",
     "hide": "Nascondi",
@@ -341,6 +342,7 @@
     "share": "Condividi",
     "show": "Mostra",
     "showDetails": "Mostra dettagli",
+    "showList": "Show list",
     "showPassword": "Mostra password",
     "success": "Successo",
     "syncVaultData": "Sincronizza dati cassaforte",
