@@ -44,10 +44,17 @@ function SelectableText({ text, style }: { text: string; style: StyleProp<TextSt
 }
 
 /**
- * Email details screen.
+ * Email details screen. Switching emails on two panes changes the id of this screen, so the content remounts per email.
  */
 export default function EmailDetailsScreen() : React.ReactNode {
   const { id } = useLocalSearchParams();
+  return <EmailDetails key={String(id)} id={id} />;
+}
+
+/**
+ * The details of one email.
+ */
+function EmailDetails({ id }: { id: string | string[] | undefined }) : React.ReactNode {
   const router = useRouter();
   const navigation = useNavigation();
   const dbContext = useDb();

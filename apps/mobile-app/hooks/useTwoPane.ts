@@ -2,7 +2,7 @@ import { useNavigation, type Href } from 'expo-router';
 import { createContext, useCallback, useContext } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 
-import { useTwoPanePreference } from '@/hooks/useTwoPanePreference';
+import { useIsLargeScreenDeviceFlag, useTwoPanePreference } from '@/hooks/useTwoPanePreference';
 
 export { useTwoPanePreference } from '@/hooks/useTwoPanePreference';
 
@@ -66,11 +66,12 @@ export function useSetScreenOptions(): (options: ScreenOptions) => void {
 export const IS_TWO_PANE_PLATFORM = Platform.OS === 'ios';
 
 /**
- * Whether the window is large-screen sized (shortest side at least 600pt), e.g. an iPad or an unfolded iPhone Duo.
+ * Whether this device has a large display (an iPad, or a foldable also while folded); gates tablet and foldable-only UI options
+ * such as the two-column layout setting.
  */
-export function useIsLargeScreen(): boolean {
+export function useIsLargeScreenDevice(): boolean {
   const { width, height } = useWindowDimensions();
-  return Math.min(width, height) >= TWO_PANE_MIN_WIDTH;
+  return useIsLargeScreenDeviceFlag() || Math.min(width, height) >= TWO_PANE_MIN_WIDTH;
 }
 
 /**

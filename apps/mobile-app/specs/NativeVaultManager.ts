@@ -92,6 +92,9 @@ export interface Spec extends TurboModule {
   getBlockScreenshots(): Promise<boolean>; // Android only
   setBlockScreenshots(enabled: boolean): Promise<void>; // Android only
 
+  // Device capabilities
+  isFoldable(): Promise<boolean>; // Gates foldable and tablet UI options such as the two-column layout
+
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 

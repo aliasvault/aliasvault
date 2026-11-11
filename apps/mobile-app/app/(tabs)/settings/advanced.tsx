@@ -3,7 +3,7 @@ import { StyleSheet, View, Platform, Switch } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
-import { IS_TWO_PANE_PLATFORM, useIsLargeScreen, useTwoPanePreference } from '@/hooks/useTwoPane';
+import { IS_TWO_PANE_PLATFORM, useIsLargeScreenDevice, useTwoPanePreference } from '@/hooks/useTwoPane';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
@@ -19,7 +19,7 @@ export default function AdvancedSettingsScreen(): React.ReactNode {
   const [hideAppContents, setHideAppContents] = useState<boolean>(true);
   const [blockScreenshots, setBlockScreenshots] = useState<boolean>(true);
   const [twoPaneLayout, setTwoPaneLayout] = useTwoPanePreference();
-  const isLargeScreen = useIsLargeScreen();
+  const isLargeScreenDevice = useIsLargeScreenDevice();
 
   useEffect(() => {
     /**
@@ -130,7 +130,7 @@ export default function AdvancedSettingsScreen(): React.ReactNode {
             </>
           )}
         </View>
-        {IS_TWO_PANE_PLATFORM && isLargeScreen && (
+        {IS_TWO_PANE_PLATFORM && isLargeScreenDevice && (
           <>
             <ThemedText style={styles.groupTitle}>{t('settings.appearance')}</ThemedText>
             <View style={styles.optionContainer}>

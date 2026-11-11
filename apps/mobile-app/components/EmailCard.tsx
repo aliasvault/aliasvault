@@ -101,7 +101,7 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
    * Open the email.
    */
   const openEmail = (): void => {
-    navigate(() => paneRouter.openDetail(href));
+    navigate(() => paneRouter.openDetail(href, { reuseScreen: true }));
   };
 
   /**

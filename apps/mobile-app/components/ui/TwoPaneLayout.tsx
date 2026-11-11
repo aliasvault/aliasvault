@@ -1,7 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useLocalSearchParams, usePathname } from 'expo-router';
+import { useLocalSearchParams, usePathname, type Stack } from 'expo-router';
 import { useVerticalBarEdgeIOS } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions, View, type HostInstance, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -16,6 +17,8 @@ import { StackScreenLayout } from '@/components/ui/StackScreenLayout';
 
 const NO_PRIMARY_ROUTES: Record<string, PrimaryRoute> = {};
 
+type StackOptions = Exclude<NonNullable<ComponentProps<typeof Stack.Screen>['options']>, (...args: never[]) => unknown>;
+
 type TwoPaneLayoutProps = {
   path: string;
   /** The tab's root screen, shown in the primary pane; on a single pane it is the stack's index route instead. */
@@ -24,6 +27,8 @@ type TwoPaneLayoutProps = {
   primaryTitle: string;
   /** The stack routes that show on the primary pane (folders), by route name as the Stack.Screen names them. */
   primaryRoutes?: Record<string, PrimaryRoute>;
+  /** Whether the user hid the list, which makes the tab a single pane (see usePaneListToggleOptions). */
+  isListHidden?: boolean;
   /** The tab's stack. */
   children: React.ReactNode;
 };
@@ -46,9 +51,10 @@ export function TwoPaneLayout({ children, ...props }: TwoPaneLayoutProps): React
  * edges it touches. The primary pane has its own native stack (see PaneStack); the tab's index route moves screens
  * between it and the tab's stack when the window changes layout (see TwoPaneRoot).
  */
-function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_PRIMARY_ROUTES, children }: TwoPaneLayoutProps): React.ReactNode {
+function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_PRIMARY_ROUTES, isListHidden = false, children }: TwoPaneLayoutProps): React.ReactNode {
   const colors = useColors();
-  const isTwoPane = useIsTwoPaneWindow();
+  // A hidden list makes the tab a single pane, so going back from a screen leads straight to the list.
+  const isTwoPane = useIsTwoPaneWindow() && !isListHidden;
   const [primaryParams, setPrimaryParamsState] = useState<ScreenParams>({});
   const paneStack = usePaneStackState();
   const { width: windowWidth } = useWindowDimensions();
@@ -159,6 +165,29 @@ export function TwoPaneRoot({ placeholderIcon, placeholderMessage, children }: T
     return <DetailPlaceholder icon={placeholderIcon} message={placeholderMessage} />;
   }
   return children;
+}
+
+/**
+ * The `screenOptions` of a tab's stack: on two panes, a header button that hides or shows the list next to the open screen.
+ */
+export function usePaneListToggleOptions(isListHidden: boolean, setListHidden: (hidden: boolean) => void): StackOptions {
+  const { t } = useTranslation();
+  const isTwoPane = useIsTwoPaneWindow();
+  return useMemo((): StackOptions => {
+    if (!isTwoPane) {
+      return {};
+    }
+    // A left bar item replaces the back button unless the back button is asked for.
+    return {
+      headerBackVisible: true,
+      unstable_headerLeftItems: () => [{
+        type: 'button',
+        label: isListHidden ? t('common.showList') : t('common.expand'),
+        icon: { type: 'sfSymbol', name: isListHidden ? 'arrow.down.right.and.arrow.up.left' : 'arrow.up.left.and.arrow.down.right' },
+        onPress: () => setListHidden(!isListHidden),
+      }],
+    };
+  }, [isTwoPane, isListHidden, setListHidden, t]);
 }
 
 type DetailPlaceholderProps = {

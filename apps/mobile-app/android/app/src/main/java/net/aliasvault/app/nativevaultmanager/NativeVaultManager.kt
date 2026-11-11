@@ -3,6 +3,7 @@ package net.aliasvault.app.nativevaultmanager
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
@@ -1016,6 +1017,16 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     override fun setBlockScreenshots(enabled: Boolean, promise: Promise) {
         ScreenCaptureProtection.setBlockScreenshotsEnabled(reactApplicationContext, enabled, getCurrentActivity())
         promise.resolve(null)
+    }
+
+    /**
+     * Whether the device has a hinge (a foldable), also while it is folded.
+     * Used to offer large-screen options such as the two-column layout on a foldable while its small display is active.
+     * @param promise The promise to resolve with boolean result
+     */
+    @ReactMethod
+    override fun isFoldable(promise: Promise) {
+        promise.resolve(reactApplicationContext.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE))
     }
 
     /**

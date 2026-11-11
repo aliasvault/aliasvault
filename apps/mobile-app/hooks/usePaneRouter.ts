@@ -16,7 +16,11 @@ export type PaneRouter = {
   back: () => void;
   dismissTo: (href: Href) => void;
   setParams: (params: ScreenParams) => void;
-  openDetail: (href: Href) => void;
+  openDetail: (href: Href, options?: OpenDetailOptions) => void;
+};
+
+export type OpenDetailOptions = {
+  reuseScreen?: boolean;
 };
 
 /** A href resolved against the primary routes: the tab's root, a screen of a primary route, or null for any other href. */
@@ -107,7 +111,7 @@ export function usePaneRouter(): PaneRouter {
   /*
    * The detail replaces the one shown next to the primary pane.
    */
-  const openDetail = useCallback((href: Href): void => {
+  const openDetail = useCallback((href: Href, options?: OpenDetailOptions): void => {
     if (!paneStack || pane !== 'primary') {
       router.push(href);
       return;
@@ -121,11 +125,17 @@ export function usePaneRouter(): PaneRouter {
     if (hrefToPath(href) === selectedPathRef.current) {
       return;
     }
+    const stack = tabsState?.routes[tabsState.index]?.state;
+    const top = stackRoutes[stackRoutes.length - 1];
+    if (options?.reuseScreen && stackRoutes.length === 2 && stack?.key && primary && typeof href !== 'string' && top?.name === href.pathname.slice(primary.path.length + 1)) {
+      navigation.dispatch({ type: 'SET_PARAMS', payload: { params: href.params ?? {} }, source: top.key, target: stack.key });
+      return;
+    }
     if (stackRoutes.length > 2) {
       router.dismiss(stackRoutes.length - 2);
     }
     router.replace(withoutAnimation(href));
-  }, [paneStack, pane, router, navigation]);
+  }, [paneStack, pane, router, navigation, primary]);
 
   return useMemo<PaneRouter>(() => {
     if (!paneStack || !primary) {
@@ -182,10 +192,10 @@ export function usePaneRouter(): PaneRouter {
           router.setParams(params);
         }
       },
-      openDetail: (href): void => {
+      openDetail: (href, options): void => {
         const target = resolve(href);
         if (target === null) {
-          openDetail(href);
+          openDetail(href, options);
         } else if (target === 'root') {
           paneStack.popToRoot();
         } else {

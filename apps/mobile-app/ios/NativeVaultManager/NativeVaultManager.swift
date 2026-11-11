@@ -452,6 +452,42 @@ public class NativeVaultManager: NSObject {
         resolve(nil)
     }
 
+    /**
+     * Whether the device has a hinge (a foldable such as the iPhone Duo), also while it is folded. False before iOS 27.1.
+     * Used to offer large-screen options such as the two-column layout on a foldable while its small display is active.
+     */
+    @objc
+    func isFoldable(_ resolve: @escaping RCTPromiseResolveBlock,
+                    rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard #available(iOS 27.1, *) else {
+            resolve(false)
+            return
+        }
+        DispatchQueue.main.async {
+            guard let window = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .flatMap({ $0.windows })
+                .first else {
+                resolve(false)
+                return
+            }
+
+            // The interaction reports the initial hinge state once it is in a window; a nil hinge means the device has none.
+            let probe = UIView(frame: .zero)
+            probe.isHidden = true
+            var resolved = false
+            let finish: (Bool) -> Void = { hasHinge in
+                guard !resolved else { return }
+                resolved = true
+                probe.removeFromSuperview()
+                resolve(hasHinge)
+            }
+            probe.addInteraction(UIHingeInteraction { _, update in finish(update.hinge != nil) })
+            window.addSubview(probe)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { finish(false) }
+        }
+    }
+
     @objc
     func copyToClipboardWithExpiration(_ text: String,
                                       expirationSeconds: Double,

@@ -1010,15 +1010,23 @@ export default function FolderViewScreen(): React.ReactNode {
                   <Stack.Toolbar.MenuAction key={option.value} isOn={sortOrder === option.value} onPress={() => void changeSortOrder(option.value)}>{t(option.labelKey)}</Stack.Toolbar.MenuAction>
                 ))}
               </Stack.Toolbar.Menu>
+              {((canShareFolder && folder) || canEditFolder || canDeleteFolder) && (
+                <Stack.Toolbar.Menu inline>
+                  {canShareFolder && folder && <Stack.Toolbar.MenuAction icon="person.2" onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })}>{t('common.share')}</Stack.Toolbar.MenuAction>}
+                  {canEditFolder && <Stack.Toolbar.MenuAction icon="pencil" onPress={() => setShowEditFolderModal(true)}>{t('common.edit')}</Stack.Toolbar.MenuAction>}
+                  {canDeleteFolder && <Stack.Toolbar.MenuAction icon="trash" destructive onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}>{t('common.delete')}</Stack.Toolbar.MenuAction>}
+                </Stack.Toolbar.Menu>
+              )}
             </Stack.Toolbar.Menu>
           )}
-          {canShareFolder && folder && (
+          {/* In the rail, share, edit and delete sit in the ellipsis menu above to keep the rail short. */}
+          {!hasRail && canShareFolder && folder && (
             <Stack.Toolbar.Button icon="person.2" onPress={() => setPeopleFolder({ folder, isShared: isVirtualFolder })}>{t('common.share')}</Stack.Toolbar.Button>
           )}
-          {canEditFolder && (
+          {!hasRail && canEditFolder && (
             <Stack.Toolbar.Button icon="pencil" onPress={() => setShowEditFolderModal(true)}>{t('common.edit')}</Stack.Toolbar.Button>
           )}
-          {canDeleteFolder && (
+          {!hasRail && canDeleteFolder && (
             <Stack.Toolbar.Button icon="trash" tintColor={colors.destructive} onPress={() => (isVirtualFolder ? deleteSharedFolder() : setShowDeleteFolderModal(true))}>{t('common.delete')}</Stack.Toolbar.Button>
           )}
         </ScreenToolbar>

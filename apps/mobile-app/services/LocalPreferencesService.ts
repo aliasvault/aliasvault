@@ -18,6 +18,7 @@ const KEYS = {
   SHOW_FOLDERS: 'items-show-folders',
   LAST_SEARCH_QUERY: 'items-last-search-query',
   TWO_PANE_LAYOUT: 'two-pane-layout',
+  EMAIL_LIST_HIDDEN: 'two-pane-email-list-hidden',
 } as const;
 
 /**
@@ -131,6 +132,20 @@ export const LocalPreferencesService = {
   },
 
   /**
+   * Whether the email list is hidden next to an open email in the two-pane layout.
+   */
+  async getEmailListHidden(): Promise<boolean> {
+    return (await AsyncStorage.getItem(KEYS.EMAIL_LIST_HIDDEN)) === 'true';
+  },
+
+  /**
+   * Set whether the email list is hidden next to an open email in the two-pane layout.
+   */
+  async setEmailListHidden(hidden: boolean): Promise<void> {
+    await AsyncStorage.setItem(KEYS.EMAIL_LIST_HIDDEN, hidden.toString());
+  },
+
+  /**
    * Clear all UI preferences. Can be called on logout.
    * Note: This only clears UI preferences, not security-related settings.
    */
@@ -149,6 +164,7 @@ export const LocalPreferencesService = {
       AsyncStorage.removeItem(KEYS.CLIPBOARD_LOCAL_ONLY),
       AsyncStorage.removeItem(KEYS.SHOW_FOLDERS),
       AsyncStorage.removeItem(KEYS.TWO_PANE_LAYOUT),
+      AsyncStorage.removeItem(KEYS.EMAIL_LIST_HIDDEN),
     ]);
   },
 };
