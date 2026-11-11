@@ -91,7 +91,7 @@ console_error_panic_hook = { version = "0.1", optional = true }
 mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
 # SQLite client which can be used by all host apps for uniform access
-rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
+rusqlite = { version = "0.42", features = ["bundled", "serialize"] }
 
 # SVG logo normalization for the native renderers (writer only: no text shaping, no system fonts)
 usvg = { version = "0.49", default-features = false, features = ["writer"], optional = true }
@@ -104,6 +104,8 @@ ed25519-dalek = { version = "2", default-features = false, features = ["std", "z
 # rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }
+# rusqlite's wasm SQLite needs host functions (clock, sleep, entropy, localtime); this feature provides them via wasm-bindgen.
+sqlite-wasm-rs = { version = "0.6", features = ["wasm-bindgen"] }
 
 # Binary for generating Swift/Kotlin bindings
 # This binary requires uniffi-cli feature which includes the heavy bindgen dependencies

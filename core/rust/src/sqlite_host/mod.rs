@@ -98,7 +98,7 @@ impl MemoryDatabase {
     pub fn query_values(&self, sql: &str, params: &[SqlValue]) -> VaultResult<SqlResult> {
         let conn = self.lock();
         let mut statement = conn.prepare_cached(sql).map_err(sql_error_at(sql))?;
-        let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
+        let columns: Vec<String> = statement.column_names().map(str::to_string).collect();
         let mut rows = statement.query(params_from_iter(params.iter())).map_err(sql_error_at(sql))?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(sql_error)? {
@@ -122,7 +122,7 @@ impl MemoryDatabase {
 
     /// The database as SQLite file bytes, compacted first when it is fragmented and no transaction is open.
     pub fn export(&self) -> VaultResult<Vec<u8>> {
-        let conn = self.lock();
+        let mut conn = self.lock();
         vacuum_if_fragmented(&conn)?;
         Ok(conn.serialize(MAIN_DB).map_err(sql_error)?.to_vec())
     }
@@ -228,7 +228,7 @@ fn from_sql(value: ValueRef<'_>) -> Value {
 /// Run one query on a connection and return its rows as JSON objects keyed by column name.
 pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> VaultResult<Vec<Map<String, Value>>> {
     let mut statement = conn.prepare(sql).map_err(sql_error_at(sql))?;
-    let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
+    let columns: Vec<String> = statement.column_names().map(str::to_string).collect();
     let values: Vec<RsValue> = params.iter().map(to_sql).collect::<VaultResult<_>>()?;
     let mut rows = statement.query(params_from_iter(values.iter())).map_err(sql_error_at(sql))?;
     let mut out = Vec::new();

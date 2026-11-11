@@ -142,7 +142,7 @@ impl FakeServer {
     }
 
     /// LEGACY: hold the account as a sqlite blob under `unlock_key`.
-    pub fn publish_legacy(&mut self, db: &Connection, unlock_key: &str, revision: i64) {
+    pub fn publish_legacy(&mut self, db: &mut Connection, unlock_key: &str, revision: i64) {
         let bytes = db.serialize(rusqlite::MAIN_DB).unwrap().to_vec();
         self.legacy = Some(LegacyVault { blob: crate::common::encoding::base64_encode(&crypto::vault_blob_encrypt(&bytes, unlock_key).unwrap()), revision });
     }

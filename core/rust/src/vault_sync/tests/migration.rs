@@ -156,9 +156,9 @@ fn manifest_migration_of_an_account_upgraded_elsewhere_takes_the_server_vault() 
 /// manifest id and no revision baseline, against a server that still holds the account as a legacy vault.
 fn pre_format_session(unlock_key: &str, dirty: bool) -> TestHost {
     let server = FakeServer::new();
-    let server_db = open_schema_db();
+    let mut server_db = open_schema_db();
     insert_item(&server_db, ITEM_B, "Server item");
-    server.borrow_mut().publish_legacy(&server_db, unlock_key, 3);
+    server.borrow_mut().publish_legacy(&mut server_db, unlock_key, 3);
     server.borrow_mut().publish_contentless_personal(3);
     let mut host = TestHost::new(unlock_key);
     host.serve(&server);
