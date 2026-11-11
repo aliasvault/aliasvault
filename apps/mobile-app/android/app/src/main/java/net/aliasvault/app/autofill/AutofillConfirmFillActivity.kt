@@ -68,7 +68,7 @@ class AutofillConfirmFillActivity : FragmentActivity() {
         val dialog = MaterialAlertDialogBuilder(this).setTitle(getString(R.string.autofill_confirm_fill_title, TrustedAppPrompt.appLabel(this, packageName)))
         if (page.isBrowser) {
             // The trust binds to the certificates seen at the fill request; without them the browser can only fill once.
-            dialog.setMessage(TrustedAppPrompt.message(this, packageName, page.site))
+            dialog.setMessage(TrustedAppPrompt.message(this, page.site)).setView(TrustedAppPrompt.appCardView(this, packageName))
             if (signers != null) {
                 dialog.setPositiveButton(TrustedAppPrompt.actionLabel(this, packageName)) { _, _ ->
                     TrustedAppPrompt.trust(this, packageName, signers)

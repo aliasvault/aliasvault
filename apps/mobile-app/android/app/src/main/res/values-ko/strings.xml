@@ -19,7 +19,7 @@
   <string name="autofill_vault_locked">보관함 잠김</string>
   <string name="autofill_trust_app">Trust %1$s</string>
   <string name="autofill_trust_app_title">Trust this app?</string>
-  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it in the Autofill settings.</string>
+  <string name="autofill_trust_app_message">This app is asking for your %1$s login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.</string>
   <string name="autofill_confirm_fill_title">Fill in %1$s?</string>
   <string name="link_url_prompt_message">다음에 AliasVault가 이 앱 또는 웹사이트를 인식할 수 있도록 %2$s에 \"%1$s\"(을)를 추가하시겠습니까?</string>
   <string name="link_url_prompt_link_action">연결 및 채우기</string>

@@ -172,9 +172,7 @@
         "autofill_trust_app_message": {
           "key": "native.autofillTrustAppMessage",
           "format": {
-            "app": "%1$s",
-            "package": "%2$s",
-            "domain": "%3$s"
+            "domain": "%1$s"
           }
         },
         "autofill_confirm_fill_title": {

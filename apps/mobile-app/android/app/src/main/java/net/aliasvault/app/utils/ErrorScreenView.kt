@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.button.MaterialButton
@@ -30,13 +32,35 @@ object ErrorScreenView {
     class Action(val label: String, val onClick: () -> Unit)
 
     /**
+     * An app shown as a card above the message.
+     * @property label App name.
+     * @property packageName Android package name.
+     * @property icon Launcher icon of the app.
+     */
+    class AppCard(val label: String, val packageName: String, val icon: Drawable) {
+        /** Fill [card], a view inflated from `app_card.xml`. */
+        fun bindTo(card: View) {
+            card.findViewById<ImageView>(R.id.appCardIcon)?.setImageDrawable(icon)
+            card.findViewById<TextView>(R.id.appCardLabel)?.text = label
+            card.findViewById<TextView>(R.id.appCardPackage)?.text = packageName
+        }
+    }
+
+    /**
      * What the error state shows.
      * @property message User-facing error message.
      * @property title Optional bold heading above the message.
      * @property detail Optional technical detail behind the "Show details" toggle, copyable to the clipboard.
      * @property action Optional extra button shown above Close.
+     * @property app Optional card for the app the screen is about.
      */
-    class Content(val message: String, val title: String? = null, val detail: String? = null, val action: Action? = null)
+    class Content(
+        val message: CharSequence,
+        val title: String? = null,
+        val detail: String? = null,
+        val action: Action? = null,
+        val app: AppCard? = null,
+    )
 
     /**
      * Populate and reveal the error state with a plain message.
@@ -64,6 +88,7 @@ object ErrorScreenView {
                 activity.findViewById<TextView>(R.id.errorMessage)?.text = content.message
                 activity.findViewById<MaterialButton>(R.id.closeButton)?.setOnClickListener { onClose() }
                 bindTitle(activity, content.title)
+                bindAppCard(activity, content.app)
                 bindAction(activity, content.action)
                 bindDetail(activity, content.detail)
             } catch (e: Exception) {
@@ -77,6 +102,16 @@ object ErrorScreenView {
         val view = activity.findViewById<TextView>(R.id.errorTitle) ?: return
         view.text = title
         view.visibility = if (title.isNullOrBlank()) View.GONE else View.VISIBLE
+    }
+
+    private fun bindAppCard(activity: Activity, app: AppCard?) {
+        val card = activity.findViewById<View>(R.id.errorAppCard) ?: return
+        if (app == null) {
+            card.visibility = View.GONE
+            return
+        }
+        app.bindTo(card)
+        card.visibility = View.VISIBLE
     }
 
     /** Hide the error state again and show the loading indicator, for a retry after the user resolved the error. */

@@ -44,6 +44,15 @@
             android:gravity="center"
             android:visibility="gone" />
 
+        <!-- Optional card for the app the screen is about. Hidden by default. -->
+        <include
+            android:id="@+id/errorAppCard"
+            layout="@layout/app_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/errorMessage"
             android:layout_width="match_parent"
