@@ -280,7 +280,7 @@
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor la acepte. Intenta eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelve a intentarlo.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtalo de nuevo."
     },
-    "expand": "Expand",
+    "expand": "Expandir",
     "generate": "Generar",
     "help": "Ayuda",
     "hide": "Esconder",
@@ -342,7 +342,7 @@
     "share": "Compartir",
     "show": "Mostrar",
     "showDetails": "Mostrar detalles",
-    "showList": "Show list",
+    "showList": "Mostrar lista",
     "showPassword": "Mostrar contraseña",
     "success": "Correcto",
     "syncVaultData": "Sincronizar datos de bóveda",
@@ -361,7 +361,7 @@
     "autofillConfirm": {
       "description": "Only fill this login if you picked it yourself and trust this website.",
       "fillOn": "You are about to fill a login on {{host}}.",
-      "title": "Confirm autofill"
+      "title": "Confirmar autorrelleno"
     },
     "autofillTotp": "Autorrelleno de 2FA",
     "autofillWithAliasVault": "Autorrellenar nombre de usuario/contraseña",
@@ -1000,7 +1000,7 @@
     "autofillServiceDescription": "AutoFill de AliasVault",
     "autofillTrustApp": "Trust {{app}}",
     "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
-    "autofillTrustAppTitle": "Trust this app?",
+    "autofillTrustAppTitle": "¿Confiar en esta aplicación?",
     "autofillVaultLocked": "Bóveda bloqueada",
     "biometricStoreKeySubtitle": "Autenticar para almacenar tu clave de cifrado de forma segura en el almacén de claves Android. Esto habilita el acceso seguro a tu bóveda.",
     "biometricStoreKeyTitle": "Guardar clave de cifrado",
@@ -1046,7 +1046,7 @@
     "passkeyAddToExistingLabel": "O, añadir llave de acceso a un elemento existente:",
     "passkeyAuthenticating": "Autenticando...",
     "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
-    "passkeyBlockedTitle": "Blocked by AliasVault",
+    "passkeyBlockedTitle": "Bloqueado por AliasVault",
     "passkeyCheckingConnection": "Comprobando la conexión...",
     "passkeyCreating": "Creando llave de acceso...",
     "passkeyCreationFailed": "Fallo al crear la llave de acceso",
@@ -1156,7 +1156,7 @@
       "showSearchTextDescription": "Incluye el texto que recibe AliasVault de Android para buscar una credencial coincidente",
       "step1": "1. Abre la configuración de Android a través del botón de abajo, y cambia el \"servicio preferido de autorrelleno\" a \"AliasVault\"",
       "step2": "2. Algunas aplicaciones, por ejemplo, Google Chrome, pueden requerir configuración manual en tus ajustes para permitir aplicaciones de relleno automático de terceros. Sin embargo, la mayoría de las aplicaciones deberían funcionar con autorrelleno de forma predeterminada.",
-      "trustedApps": "Trusted apps",
+      "trustedApps": "Apps de confianza",
       "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "La URL del endpoint de la API (generalmente URL del cliente + /api)",
