@@ -280,6 +280,7 @@
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "wrongPassword": "စကားဝှက် မှားယွင်းနေသည်။ ကျေးဇူးပြု၍ ထပ်မံကြိုးစားပါ။"
     },
+    "expand": "Expand",
     "generate": "ထုတ်လုပ်မည်",
     "help": "Help",
     "hide": "ဝှက်မည်",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "ပြသမည်",
     "showDetails": "Show details",
+    "showList": "Show list",
     "showPassword": "Show password",
     "success": "အောင်မြင်သည်",
     "syncVaultData": "လုံခြုံရေးအခန်းဒေတာများ  စင့်ခ်လုပ်ရန်",
