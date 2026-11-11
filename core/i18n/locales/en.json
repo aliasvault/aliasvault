@@ -998,7 +998,7 @@
     "autofillOpenApp": "Open app",
     "autofillServiceDescription": "AliasVault AutoFill",
     "autofillTrustApp": "Trust {{app}}",
-    "autofillTrustAppMessage": "{{app}} ({{package}}) is asking for your {{domain}} login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it in the Autofill settings.",
+    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
     "autofillTrustAppTitle": "Trust this app?",
     "autofillVaultLocked": "Vault locked",
     "biometricStoreKeySubtitle": "Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.",

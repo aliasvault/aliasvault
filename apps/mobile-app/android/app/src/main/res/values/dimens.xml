@@ -3,4 +3,6 @@
     <!-- PIN unlock dimensions -->
     <dimen name="pin_dot_size">16dp</dimen>
     <dimen name="pin_dot_spacing">6dp</dimen>
+    <!-- Horizontal inset of the content of a Material 3 dialog -->
+    <dimen name="dialog_content_padding">24dp</dimen>
 </resources>

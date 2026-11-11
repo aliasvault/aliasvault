@@ -22,7 +22,7 @@
   <string name="autofill_vault_locked">Vault locked</string>
   <string name="autofill_trust_app">Trust %1$s</string>
   <string name="autofill_trust_app_title">Trust this app?</string>
-  <string name="autofill_trust_app_message">%1$s (%2$s) is asking for your %3$s login. Only continue if you trust this app. Once trusted, it can request passwords and passkeys for any website, until you remove it in the Autofill settings.</string>
+  <string name="autofill_trust_app_message">This app is asking for your %1$s login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.</string>
   <string name="autofill_confirm_fill_title">Fill in %1$s?</string>
   <string name="link_url_prompt_message">Add \"%1$s\" to %2$s so AliasVault recognises this app or website next time?</string>
   <string name="link_url_prompt_link_action">Link and fill</string>
