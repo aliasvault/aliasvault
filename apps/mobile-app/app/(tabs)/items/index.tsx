@@ -19,6 +19,7 @@ import { itemRoute } from '@/utils/ItemRoute';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
+import { useLayoutChangeCache } from '@/hooks/useLayoutChangeCache';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -89,11 +90,12 @@ export function ItemsScreen(): React.ReactNode {
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
   const router = usePaneRouter();
   const { itemUrl } = useScreenParams<{ itemUrl?: string }>();
-  const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
+  const { cached, save: saveLoaded } = useLayoutChangeCache<{ items: DisplayItem[]; folders: Folder[]; deletedCount: number; sortOrder: CredentialSortOrder }>('items');
+  const [itemsList, setItemsList] = useState<DisplayItem[]>(cached?.items ?? []);
+  const [folders, setFolders] = useState<Folder[]>(cached?.folders ?? []);
   const personalManifestId = usePersonalManifestId();
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
-  const [hasLoadedItems, setHasLoadedItems] = useState(false);
+  const [hasLoadedItems, setHasLoadedItems] = useState(cached !== undefined);
   const { executeVaultMutation } = useVaultMutate();
   const [showFolderModal, setShowFolderModal] = useState(false);
   const shared = useSharedFolders();
@@ -104,12 +106,12 @@ export function ItemsScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ItemFilterType>(ItemFilter.All);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(cached?.sortOrder ?? CredentialSortOrder.NewestFirst);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolderItems, setShowFolderItems] = useState(true);
 
   // Recently deleted count state
-  const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
+  const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(cached?.deletedCount ?? 0);
 
   // Scoped key (manifest and id) of a freshly duplicated item that gets scrolled into view and briefly highlighted
   const [highlightedItemKey, setHighlightedItemKey] = useState<string | null>(null);
@@ -313,6 +315,7 @@ export function ItemsScreen(): React.ReactNode {
       setFolders(loadedFolders);
       setRecentlyDeletedCount(deletedCount);
       setSortOrder(savedSortOrder);
+      saveLoaded({ items, folders: loadedFolders, deletedCount, sortOrder: savedSortOrder });
       setIsLoadingItems(false);
       setHasLoadedItems(true);
     } catch (err) {
@@ -324,7 +327,7 @@ export function ItemsScreen(): React.ReactNode {
         params: { errorMessage, errorStack, errorSource: 'items' },
       });
     }
-  }, [dbContext.sqliteClient, setIsLoadingItems, router]);
+  }, [dbContext.sqliteClient, setIsLoadingItems, saveLoaded, router]);
 
   useEffect(() => {
     const tabPressSub = emitter.addListener('tabPress', (routeName: string) => {
@@ -357,10 +360,13 @@ export function ItemsScreen(): React.ReactNode {
       return;
     }
 
-    setIsLoadingItems(true);
+    // With cached data the list is already shown and only refreshes.
+    if (cached === undefined) {
+      setIsLoadingItems(true);
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loadItems is async; setState only fires after data is fetched
     loadItems();
-  }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
+  }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems, cached]);
 
   /*
    * Reload once a sync completes, so newly synced data shows up without a manual pull-to-refresh.

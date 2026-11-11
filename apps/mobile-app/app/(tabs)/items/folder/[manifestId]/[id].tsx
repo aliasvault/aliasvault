@@ -23,6 +23,7 @@ import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingError
 import { useColors } from '@/hooks/useColorScheme';
 import { useHeaderInset } from '@/hooks/useHeaderInset';
 import { SORT_OPTIONS, useItemSort, useSortedItems } from '@/hooks/useItemSort';
+import { useLayoutChangeCache } from '@/hooks/useLayoutChangeCache';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { usePaneRouter } from '@/hooks/usePaneRouter';
@@ -41,7 +42,6 @@ import { ListMenu, type ListMenuAction } from '@/components/common/ListMenu';
 import { SELECTION_BAR_SPACE } from '@/components/common/SelectionBar';
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
-import { FolderHeaderTitle } from '@/components/folders/FolderHeaderTitle';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
@@ -102,18 +102,19 @@ export default function FolderViewScreen(): React.ReactNode {
   const navigate = useNavigationDebounce();
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
 
-  const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
-  const [itemSummaries, setItemSummaries] = useState<ItemSummary[]>([]);
-  const [folder, setFolder] = useState<Folder | null>(null);
-  const [canCreateSubfolder, setCanCreateSubfolder] = useState(false);
-  const [allFolders, setAllFolders] = useState<Folder[]>([]);
+  const { cached, save: saveLoaded } = useLayoutChangeCache<{ items: DisplayItem[]; summaries: ItemSummary[]; folders: Folder[]; folder: Folder | null; sortOrder: CredentialSortOrder }>(`folder/${manifestId}/${folderId}`);
+  const [itemsList, setItemsList] = useState<DisplayItem[]>(cached?.items ?? []);
+  const [itemSummaries, setItemSummaries] = useState<ItemSummary[]>(cached?.summaries ?? []);
+  const [folder, setFolder] = useState<Folder | null>(cached?.folder ?? null);
+  const [canCreateSubfolder, setCanCreateSubfolder] = useState(() => cached !== undefined && canHaveSubfolders(folderRef, cached.folders));
+  const [allFolders, setAllFolders] = useState<Folder[]>(cached?.folders ?? []);
   const personalManifestId = usePersonalManifestId();
-  const [isLoadingItems, setIsLoadingItems] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(cached === undefined);
   const { executeVaultMutation } = useVaultMutate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ItemFilterType>(() => parseItemFilterType(filterParam));
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const { sortOrder, setSortOrder, showSortMenu, setShowSortMenu, toggleSortMenu } = useItemSort();
+  const { sortOrder, setSortOrder, showSortMenu, setShowSortMenu, toggleSortMenu } = useItemSort(cached?.sortOrder);
   const [highlightedItemKey, setHighlightedItemKey] = useState<string | null>(null);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
@@ -249,13 +250,14 @@ export default function FolderViewScreen(): React.ReactNode {
       setCanCreateSubfolder(canHaveSubfolders(folderRef, folders));
 
       setSortOrder(savedSortOrder);
+      saveLoaded({ items: folderItems, summaries, folders, folder: currentFolder || null, sortOrder: savedSortOrder });
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading folder items:', err);
       toast.error(t('items.errorLoadingItems'), { description: t('common.errors.unknownError') });
       setIsLoadingItems(false);
     }
-  }, [dbContext.sqliteClient, folderRef, setIsLoadingItems, setSortOrder, t]);
+  }, [dbContext.sqliteClient, folderRef, setIsLoadingItems, setSortOrder, saveLoaded, t]);
 
   useEffect(() => {
     // Add listener for item changes
@@ -279,14 +281,16 @@ export default function FolderViewScreen(): React.ReactNode {
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing loading state with async data fetch on auth/db readiness
-    setIsLoadingItems(true);
+    // With cached data the list is already shown and only refreshes.
+    if (cached === undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing loading state with async data fetch on auth/db readiness
+      setIsLoadingItems(true);
+    }
     loadItems();
-  }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
+  }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems, cached]);
 
   // A virtual folder (a shared manifest) is renamed and deleted through its shared folder, not as a stored folder.
   const isVirtualFolder = multiManifestRendering.isVirtualFolder(folderRef);
-  const isShared = isSharedFolder(folderRef, personalManifestId);
   const currentShared = isVirtualFolder ? shared.folders.find(candidate => candidate.manifest.manifestId.toLowerCase() === folderRef.ManifestId.toLowerCase()) ?? null : null;
   const canManageShared = currentShared !== null && canAdministerGroup(currentShared.group);
   const canEditFolder = !isVirtualFolder || (canManageShared && holdsManifestKey(currentShared.manifest, shared.myUserId));
@@ -326,10 +330,6 @@ export default function FolderViewScreen(): React.ReactNode {
   useEffect(() => {
     setScreenOptions({
       title: folder?.Name || nameParam || t('items.folders.folder'),
-      /**
-       * Folder icon and name, marked as shared for a shared vault folder.
-       */
-      headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || nameParam || t('items.folders.folder')} isShared={isShared} />,
       ...(Platform.OS === 'android' && {
         /**
          * Header right buttons: share, and the overflow menu.
@@ -348,7 +348,7 @@ export default function FolderViewScreen(): React.ReactNode {
         ),
       }),
     });
-  }, [setScreenOptions, folder, nameParam, isVirtualFolder, isShared, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
+  }, [setScreenOptions, folder, nameParam, isVirtualFolder, canShareFolder, toggleSortMenu, colors.primary, colors.text, t]);
 
   // The header title comes from the name param until the folder has loaded: keep the param at the loaded name, also after a rename.
   useEffect(() => {
@@ -359,13 +359,12 @@ export default function FolderViewScreen(): React.ReactNode {
 
   // The pane stack header has no toolbar, so it carries the list menu button instead of the heading row.
   usePaneHeaderViews(useMemo(() => ({
-    title: <FolderHeaderTitle name={folder?.Name || nameParam || t('items.folders.folder')} isShared={isShared} />,
     right: (
       <RobustPressable onPress={toggleSortMenu} style={{ padding: 6 }} accessibilityLabel={t('common.moreOptions')}>
         <MaterialIcons name="more-horiz" size={24} color={colors.text} />
       </RobustPressable>
     ),
-  }), [folder?.Name, nameParam, isShared, toggleSortMenu, colors.text, t]));
+  }), [toggleSortMenu, colors.text, t]));
 
   /**
    * The folder actions in the list menu, on Android and without a route header; elsewhere iOS shows them in the toolbar.

@@ -13,9 +13,11 @@ type PaneStackProps = {
   /** The root's title, the back title of the first pushed screen. */
   rootTitle: string;
   screens: PaneStackEntry[];
-  /** Called when the native back button or gesture dismissed screens. */
-  onDismissed: (count: number) => void;
+  /** Called when the native back button or gesture dismissed `count` screens, ending at the one with `key`. */
+  onDismissed: (key: string, count: number) => void;
   titleOf: (screen: PaneScreen) => string;
+  /** The custom header title of a screen, or null for the plain title. */
+  renderTitle: (screen: PaneScreen) => React.ReactNode;
   renderScreen: (screen: PaneScreen) => React.ReactNode;
 };
 
@@ -23,7 +25,7 @@ type PaneStackProps = {
  * A native navigation stack inside a pane: the pushed screens get the native header, back button and back gesture,
  * while the root keeps its own header.
  */
-export const PaneStack = memo(function PaneStack({ root, rootTitle, screens, onDismissed, titleOf, renderScreen }: PaneStackProps): React.ReactNode {
+export const PaneStack = memo(function PaneStack({ root, rootTitle, screens, onDismissed, titleOf, renderTitle, renderScreen }: PaneStackProps): React.ReactNode {
   return (
     <ScreenStack style={styles.stack}>
       <Screen enabled isNativeStack activityState={2} stackPresentation="push" style={StyleSheet.absoluteFill}>
@@ -31,7 +33,7 @@ export const PaneStack = memo(function PaneStack({ root, rootTitle, screens, onD
         <ScreenStackHeaderConfig hidden />
       </Screen>
       {screens.map((screen, index) => (
-        <PaneStackScreen key={screen.key} screen={screen} title={titleOf(screen)} backTitle={index === 0 ? rootTitle : titleOf(screens[index - 1])} onDismissed={onDismissed}>
+        <PaneStackScreen key={screen.key} screen={screen} title={titleOf(screen)} titleView={renderTitle(screen)} backTitle={index === 0 ? rootTitle : titleOf(screens[index - 1])} onDismissed={onDismissed}>
           {renderScreen(screen)}
         </PaneStackScreen>
       ))}
@@ -42,15 +44,17 @@ export const PaneStack = memo(function PaneStack({ root, rootTitle, screens, onD
 type PaneStackScreenProps = {
   screen: PaneStackEntry;
   title: string;
+  titleView: React.ReactNode;
   backTitle: string;
-  onDismissed: (count: number) => void;
+  onDismissed: (key: string, count: number) => void;
   children: React.ReactNode;
 };
 
 /**
- * One pushed screen: its native header, and what the screen's content may ask about itself (see usePaneScreen).
+ * One pushed screen: its native header, and what its content may ask about itself (see usePaneScreen). The title view
+ * comes from the route, not the content, since one attached during a fold rotation stays empty.
  */
-function PaneStackScreen({ screen, title, backTitle, onDismissed, children }: PaneStackScreenProps): React.ReactNode {
+function PaneStackScreen({ screen, title, titleView, backTitle, onDismissed, children }: PaneStackScreenProps): React.ReactNode {
   const colors = useColors();
   const colorScheme = useColorScheme();
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -64,7 +68,7 @@ function PaneStackScreen({ screen, title, backTitle, onDismissed, children }: Pa
       activityState={2}
       stackPresentation="push"
       style={StyleSheet.absoluteFill}
-      onDismissed={event => onDismissed(event.nativeEvent.dismissCount)}
+      onDismissed={event => onDismissed(screen.key, event.nativeEvent.dismissCount)}
       onHeaderHeightChange={event => setHeaderHeight(event.nativeEvent.headerHeight)}
     >
       <PaneScreenContext.Provider value={info}>{children}</PaneScreenContext.Provider>
@@ -77,7 +81,7 @@ function PaneStackScreen({ screen, title, backTitle, onDismissed, children }: Pa
         backTitle={backTitle}
         backButtonDisplayMode={iosMajorVersion >= 26 ? 'minimal' : 'default'}
       >
-        {headerViews.title ? <ScreenStackHeaderCenterView>{headerViews.title}</ScreenStackHeaderCenterView> : null}
+        {titleView ? <ScreenStackHeaderCenterView>{titleView}</ScreenStackHeaderCenterView> : null}
         {headerViews.right ? <ScreenStackHeaderRightView>{headerViews.right}</ScreenStackHeaderRightView> : null}
       </ScreenStackHeaderConfig>
     </Screen>

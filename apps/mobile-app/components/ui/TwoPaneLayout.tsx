@@ -1,13 +1,14 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, usePathname, type Stack } from 'expo-router';
 import { useVerticalBarEdgeIOS } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions, View, type HostInstance, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
-import { PaneStackContext, PaneStackScreensContext, PrimaryRoutesContext, usePaneStackRouteSync, usePaneStackState, type PaneScreen, type PrimaryRoute, type PrimaryRoutes } from '@/hooks/usePaneStack';
+import { LayoutChangeCacheContext } from '@/hooks/useLayoutChangeCache';
+import { PaneStackContext, PrimaryRoutesContext, usePaneStackState, usePrimaryRoutes, type PaneScreen, type PrimaryRoute, type PrimaryRoutes } from '@/hooks/usePaneStack';
 import { TwoPaneContext, useIsTwoPaneEnabled, useIsTwoPaneWindow, useTwoPane, type ScreenParams, type TwoPaneState } from '@/hooks/useTwoPane';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -16,6 +17,11 @@ import { PaneStack } from '@/components/ui/PaneStack';
 import { StackScreenLayout } from '@/components/ui/StackScreenLayout';
 
 const NO_PRIMARY_ROUTES: Record<string, PrimaryRoute> = {};
+
+type Placeholder = { icon: keyof typeof MaterialIcons.glyphMap; message: string };
+
+/** The placeholder of the empty detail pane, set by the tab's index route. */
+const PlaceholderContext = createContext<{ placeholder: Placeholder | null; setPlaceholder: (placeholder: Placeholder) => void }>({ placeholder: null, setPlaceholder: () => undefined });
 
 type StackOptions = Exclude<NonNullable<ComponentProps<typeof Stack.Screen>['options']>, (...args: never[]) => unknown>;
 
@@ -48,15 +54,18 @@ export function TwoPaneLayout({ children, ...props }: TwoPaneLayoutProps): React
 
 /**
  * The layout with two panes available. Each pane has its own safe area provider, so a pane only insets for the screen
- * edges it touches. The primary pane has its own native stack (see PaneStack); the tab's index route moves screens
- * between it and the tab's stack when the window changes layout (see TwoPaneRoot).
+ * edges it touches. The primary pane has its own native stack (see PaneStack), which mirrors the primary routes on the
+ * tab's stack (see usePaneStackState).
  */
 function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_PRIMARY_ROUTES, isListHidden = false, children }: TwoPaneLayoutProps): React.ReactNode {
   const colors = useColors();
   // A hidden list makes the tab a single pane, so going back from a screen leads straight to the list.
   const isTwoPane = useIsTwoPaneWindow() && !isListHidden;
   const [primaryParams, setPrimaryParamsState] = useState<ScreenParams>({});
-  const paneStack = usePaneStackState();
+  const paneStack = usePaneStackState(primaryRoutes);
+  const [placeholder, setPlaceholder] = useState<Placeholder | null>(null);
+  const placeholderState = useMemo(() => ({ placeholder, setPlaceholder }), [placeholder]);
+  const [layoutChangeCache] = useState(() => new Map<string, unknown>());
   const { width: windowWidth } = useWindowDimensions();
   const rowRef = useRef<HostInstance>(null);
   const [rowX, setRowX] = useState<number | null>(null);
@@ -69,10 +78,15 @@ function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_
   const secondaryState = useMemo<TwoPaneState>(() => ({ isTwoPane, pane: isTwoPane ? 'secondary' : null, selectedPath: null, primaryParams, setPrimaryParams }), [isTwoPane, primaryParams, setPrimaryParams]);
   const primaryRoutesValue = useMemo<PrimaryRoutes>(() => ({ path, routes: primaryRoutes }), [path, primaryRoutes]);
   const titleOf = useCallback((screen: PaneScreen): string => primaryRoutes[screen.name]?.title(screen.params) ?? '', [primaryRoutes]);
-  const renderScreen = useCallback((screen: PaneScreen): React.ReactNode => {
-    const Route = primaryRoutes[screen.name]?.screen;
-    return Route ? <Route /> : null;
+  const renderTitle = useCallback((screen: PaneScreen): React.ReactNode => {
+    const Title = primaryRoutes[screen.name]?.headerTitle;
+    return Title ? <Title params={screen.params} /> : null;
   }, [primaryRoutes]);
+  // On a single pane the tab's stack shows the route, and the pane keeps the native screen without content.
+  const renderScreen = useCallback((screen: PaneScreen): React.ReactNode => {
+    const Route = isTwoPane ? primaryRoutes[screen.name]?.screen : undefined;
+    return Route ? <Route /> : null;
+  }, [primaryRoutes, isTwoPane]);
 
   /*
    * The divider sits in the middle of the window, on the hinge of an unfolded iPhone Duo, so each pane matches the cover
@@ -83,7 +97,6 @@ function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_
     primaryStyle = rowX === null ? styles.primary : [styles.primaryCentered, { width: windowWidth / 2 - rowX }];
   }
 
-
   /*
    * One tree shape for both window layouts: the stack keeps its place, and the primary pane stays mounted (collapsed on a
    * single pane). Mounting or unmounting its native stack during the fold rotation adds or removes a child view controller
@@ -92,17 +105,19 @@ function EnabledTwoPaneLayout({ path, primary, primaryTitle, primaryRoutes = NO_
   return (
     <PrimaryRoutesContext.Provider value={primaryRoutesValue}>
       <PaneStackContext.Provider value={paneStack.api}>
-        <PaneStackScreensContext.Provider value={paneStack.screens}>
+        <LayoutChangeCacheContext.Provider value={layoutChangeCache}>
           <View ref={rowRef} style={styles.row} onLayout={onRowLayout}>
             <PrimaryPane isVisible={isTwoPane} style={primaryStyle} primaryParams={primaryParams} setPrimaryParams={setPrimaryParams}>
-              <PaneStack root={isTwoPane ? primary : null} rootTitle={primaryTitle} screens={paneStack.screens} onDismissed={paneStack.api.pop} titleOf={titleOf} renderScreen={renderScreen} />
+              <PaneStack root={isTwoPane ? primary : null} rootTitle={primaryTitle} screens={paneStack.screens} onDismissed={paneStack.api.dismissed} titleOf={titleOf} renderTitle={renderTitle} renderScreen={renderScreen} />
             </PrimaryPane>
             {isTwoPane && <View style={[styles.divider, { backgroundColor: colors.headerBorder }]} />}
             <TwoPaneContext.Provider value={secondaryState}>
-              <SafeAreaProvider style={styles.secondary}>{children}</SafeAreaProvider>
+              <PlaceholderContext.Provider value={placeholderState}>
+                <SafeAreaProvider style={styles.secondary}>{children}</SafeAreaProvider>
+              </PlaceholderContext.Provider>
             </TwoPaneContext.Provider>
           </View>
-        </PaneStackScreensContext.Provider>
+        </LayoutChangeCacheContext.Provider>
       </PaneStackContext.Provider>
     </PrimaryRoutesContext.Provider>
   );
@@ -147,13 +162,14 @@ type TwoPaneRootProps = {
 
 /**
  * The index route of a tab with a two-pane layout: the root screen on one pane; on two panes the empty detail pane,
- * while the layout renders the root screen itself and this route forwards its params to it and keeps the stack and
- * the pane in sync when the window changes layout.
+ * while the layout renders the root screen itself and this route forwards its params to it.
  */
 export function TwoPaneRoot({ placeholderIcon, placeholderMessage, children }: TwoPaneRootProps): React.ReactNode {
   const { isTwoPane, setPrimaryParams } = useTwoPane();
   const params = useLocalSearchParams();
-  usePaneStackRouteSync();
+  const { setPlaceholder } = useContext(PlaceholderContext);
+
+  useEffect(() => setPlaceholder({ icon: placeholderIcon, message: placeholderMessage }), [placeholderIcon, placeholderMessage, setPlaceholder]);
 
   useEffect(() => {
     if (isTwoPane) {
@@ -165,6 +181,33 @@ export function TwoPaneRoot({ placeholderIcon, placeholderMessage, children }: T
     return <DetailPlaceholder icon={placeholderIcon} message={placeholderMessage} />;
   }
   return children;
+}
+
+/**
+ * The `screenLayout` of a tab's stack that has primary routes.
+ */
+export function twoPaneScreenLayout({ route, children }: { route: { name: string }; children: React.ReactElement }): React.ReactElement {
+  return <TwoPaneScreen routeName={route.name}>{children}</TwoPaneScreen>;
+}
+
+/**
+ * A screen of the tab's stack; on two panes a primary route shows the placeholder, as the primary pane renders it.
+ */
+function TwoPaneScreen({ routeName, children }: { routeName: string; children: React.ReactElement }): React.ReactNode {
+  const { isTwoPane } = useTwoPane();
+  const primaryRoutes = usePrimaryRoutes();
+  const { placeholder } = useContext(PlaceholderContext);
+  const isShownOnPane = isTwoPane && primaryRoutes !== null && routeName in primaryRoutes.routes;
+  return <StackScreenLayout>{isShownOnPane ? placeholder && <DetailPlaceholder {...placeholder} /> : children}</StackScreenLayout>;
+}
+
+/**
+ * The options of a primary route on a tab's stack: on two panes it shows the placeholder, without back button, animation
+ * or back gesture. Its header stays, since one that appears during a fold rotation loses its title view.
+ */
+export function usePrimaryRouteOptions(): StackOptions {
+  const isTwoPane = useIsTwoPaneWindow();
+  return useMemo((): StackOptions => (isTwoPane ? { headerBackVisible: false, animation: 'none', gestureEnabled: false } : {}), [isTwoPane]);
 }
 
 /**
@@ -190,10 +233,7 @@ export function usePaneListToggleOptions(isListHidden: boolean, setListHidden: (
   }, [isTwoPane, isListHidden, setListHidden, t]);
 }
 
-type DetailPlaceholderProps = {
-  icon: keyof typeof MaterialIcons.glyphMap;
-  message: string;
-};
+type DetailPlaceholderProps = Placeholder;
 
 /**
  * Fills the secondary pane while nothing is selected.
@@ -229,10 +269,15 @@ const styles = StyleSheet.create({
     flex: 0,
     overflow: 'hidden',
   },
+  // Invisible at about its two-pane width, so its native headers keep their layout.
   primaryCollapsed: {
-    flex: 0,
+    bottom: 0,
+    left: 0,
+    opacity: 0,
     overflow: 'hidden',
-    width: 0,
+    position: 'absolute',
+    top: 0,
+    width: 440,
   },
   placeholderText: {
     fontSize: 16,

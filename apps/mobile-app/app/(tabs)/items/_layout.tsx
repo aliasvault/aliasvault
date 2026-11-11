@@ -1,17 +1,17 @@
 import { Stack } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import type { PrimaryRoute } from '@/hooks/usePaneStack';
-import type { ScreenParams } from '@/hooks/useTwoPane';
+import { useIsTwoPaneEnabled, useIsTwoPaneWindow, type ScreenParams } from '@/hooks/useTwoPane';
 
 import FolderViewScreen from '@/app/(tabs)/items/folder/[manifestId]/[id]';
 import { ItemsScreen } from '@/app/(tabs)/items/index';
+import { FolderRouteTitle } from '@/components/folders/FolderRouteTitle';
 import { ServerSyncIndicator } from '@/components/ServerSyncIndicator';
 import { defaultHeaderOptions } from '@/components/themed/ThemedHeader';
-import { stackScreenLayout } from '@/components/ui/StackScreenLayout';
-import { TwoPaneLayout } from '@/components/ui/TwoPaneLayout';
+import { TwoPaneLayout, twoPaneScreenLayout, usePrimaryRouteOptions } from '@/components/ui/TwoPaneLayout';
 
 /**
  * Items layout.
@@ -21,12 +21,31 @@ export default function ItemsLayout(): React.ReactNode {
   const { t } = useTranslation();
   const folderTitle = useCallback((params: ScreenParams): string => params.name || t('items.folders.folder'), [t]);
   // Folders show on the primary pane of a two-pane layout, on its own stack.
-  const primaryRoutes = useMemo((): Record<string, PrimaryRoute> => ({ 'folder/[manifestId]/[id]': { screen: FolderViewScreen, title: folderTitle } }), [folderTitle]);
+  const primaryRoutes = useMemo((): Record<string, PrimaryRoute> => ({ 'folder/[manifestId]/[id]': { screen: FolderViewScreen, title: folderTitle, headerTitle: FolderRouteTitle } }), [folderTitle]);
+  const primaryRouteOptions = usePrimaryRouteOptions();
+  const isTwoPane = useIsTwoPaneWindow();
+  const isTwoPaneEnabled = useIsTwoPaneEnabled() === true;
+
+  /*
+   * A header that updates during a fold or a bar rail change loses its title view. So a folder route that was on the
+   * stack on two panes, where it is the empty detail pane with a hidden title view over the plain title, keeps the plain
+   * title once the window shows a single pane. A folder opened on a single pane has the title view.
+   */
+  const routesShownOnTwoPanes = useRef(new Set<string>());
+  /**
+   * Whether the folder route shows its title view; also records the routes on the stack on two panes.
+   */
+  const hasFolderTitleView = (routeKey: string): boolean => {
+    if (isTwoPane) {
+      routesShownOnTwoPanes.current.add(routeKey);
+    }
+    return isTwoPane || !isTwoPaneEnabled || !routesShownOnTwoPanes.current.has(routeKey);
+  };
 
   return (
     <>
       <TwoPaneLayout path="/(tabs)/items" primary={<ItemsScreen />} primaryTitle={t('items.title')} primaryRoutes={primaryRoutes}>
-        <Stack screenLayout={stackScreenLayout}>
+        <Stack screenLayout={twoPaneScreenLayout}>
           <Stack.Screen
             name="index"
             options={{
@@ -39,8 +58,15 @@ export default function ItemsLayout(): React.ReactNode {
             name="folder/[manifestId]/[id]"
             options={({ route }) => ({
               title: folderTitle((route.params ?? {}) as ScreenParams),
+              ...(hasFolderTitleView(route.key ?? '') && {
+                /**
+                 * Folder icon and name; hidden on two panes.
+                 */
+                headerTitle: (): React.ReactNode => <FolderRouteTitle params={(route.params ?? {}) as ScreenParams} isHidden={isTwoPane} />,
+              }),
               headerBackTitle: t('items.title'),
               ...defaultHeaderOptions,
+              ...primaryRouteOptions,
             })}
           />
           <Stack.Screen

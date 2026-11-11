@@ -117,22 +117,24 @@ export function usePaneRouter(): PaneRouter {
       return;
     }
     const tabsState = navigation.getState();
-    const stackRoutes = tabsState?.routes[tabsState.index]?.state?.routes ?? [];
-    if (stackRoutes.length <= 1) {
+    const stack = tabsState?.routes[tabsState.index]?.state;
+    const stackRoutes = stack?.routes ?? [];
+    // The details sit on top of the tab's root and the primary routes, which stay on the stack below them.
+    const detailCount = stackRoutes.filter(route => !primary || !(route.name in primary.routes)).length - 1;
+    if (detailCount <= 0) {
       router.push(withoutAnimation(href));
       return;
     }
     if (hrefToPath(href) === selectedPathRef.current) {
       return;
     }
-    const stack = tabsState?.routes[tabsState.index]?.state;
     const top = stackRoutes[stackRoutes.length - 1];
-    if (options?.reuseScreen && stackRoutes.length === 2 && stack?.key && primary && typeof href !== 'string' && top?.name === href.pathname.slice(primary.path.length + 1)) {
+    if (options?.reuseScreen && detailCount === 1 && stack?.key && primary && typeof href !== 'string' && top?.name === href.pathname.slice(primary.path.length + 1)) {
       navigation.dispatch({ type: 'SET_PARAMS', payload: { params: href.params ?? {} }, source: top.key, target: stack.key });
       return;
     }
-    if (stackRoutes.length > 2) {
-      router.dismiss(stackRoutes.length - 2);
+    if (detailCount > 1) {
+      router.dismiss(detailCount - 1);
     }
     router.replace(withoutAnimation(href));
   }, [paneStack, pane, router, navigation, primary]);

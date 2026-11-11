@@ -1,13 +1,19 @@
-import { useNavigation } from 'expo-router';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigation, useRoute } from 'expo-router';
+import { useNavigationState } from 'expo-router/react-navigation';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 
 import { useTwoPane, type ScreenParams } from '@/hooks/useTwoPane';
 
 export type PaneScreen = { name: string; params: ScreenParams };
 
+/** A screen on the pane stack: a primary route of the tab's stack, under that route's key. */
 export type PaneStackEntry = PaneScreen & { key: string };
 
-export type PrimaryRoute = { screen: React.ComponentType; title: (params: ScreenParams) => string };
+/** A pane stack screen in a transition; a new one has no key until the stack router creates it. */
+export type PaneStackRoute = PaneScreen & { key?: string };
+
+/** A stack route that shows on the primary pane; `headerTitle` replaces the plain title in the pane's header. */
+export type PrimaryRoute = { screen: React.ComponentType; title: (params: ScreenParams) => string; headerTitle?: React.ComponentType<{ params: ScreenParams }> };
 
 export type PrimaryRoutes = { path: string; routes: Record<string, PrimaryRoute> };
 
@@ -19,14 +25,14 @@ export type PaneStackApi = {
   popTo: (matches: (screen: PaneScreen) => boolean, screen: PaneScreen) => void;
   setParams: (key: string, params: ScreenParams) => void;
   replace: (key: string, screen: PaneScreen) => void;
+  dismissed: (key: string, count: number) => void;
 };
 
-export type PaneHeaderViews = { title?: React.ReactNode; right?: React.ReactNode };
+export type PaneHeaderViews = { right?: React.ReactNode };
 
 export type PaneScreenInfo = { key: string; params: ScreenParams; headerHeight: number; setHeaderViews: (views: PaneHeaderViews) => void };
 
 export const PaneStackContext = createContext<PaneStackApi | null>(null);
-export const PaneStackScreensContext = createContext<PaneStackEntry[]>([]);
 export const PrimaryRoutesContext = createContext<PrimaryRoutes | null>(null);
 export const PaneScreenContext = createContext<PaneScreenInfo | null>(null);
 
@@ -70,53 +76,53 @@ export function usePrimaryRoutes(): PrimaryRoutes | null {
 /*
  * The transitions of the stack are pure functions of the screens, so they can be read without React.
  */
-let nextKey = 0;
-
-/**
- * The screen as an entry with a new key.
- */
-function withKey(screen: PaneScreen): PaneStackEntry {
-  return { ...screen, key: `pane-${++nextKey}` };
-}
 
 /**
  * The screens with `screen` on top.
  */
-export function pushScreen(screens: PaneStackEntry[], screen: PaneScreen): PaneStackEntry[] {
-  return [...screens, withKey(screen)];
+export function pushScreen(screens: PaneStackRoute[], screen: PaneScreen): PaneStackRoute[] {
+  return [...screens, { name: screen.name, params: screen.params }];
 }
 
 /**
  * The screens without the top `count`.
  */
-export function popScreens(screens: PaneStackEntry[], count: number): PaneStackEntry[] {
+export function popScreens(screens: PaneStackRoute[], count: number): PaneStackRoute[] {
   return screens.slice(0, Math.max(0, screens.length - count));
 }
 
 /**
  * The screens up to the topmost one that matches, or `fallback` alone when none does.
  */
-export function popToScreen(screens: PaneStackEntry[], matches: (screen: PaneScreen) => boolean, fallback: PaneScreen): PaneStackEntry[] {
+export function popToScreen(screens: PaneStackRoute[], matches: (screen: PaneScreen) => boolean, fallback: PaneScreen): PaneStackRoute[] {
   for (let index = screens.length - 1; index >= 0; index--) {
     if (matches(screens[index])) {
       return screens.slice(0, index + 1);
     }
   }
-  return [withKey(fallback)];
+  return [{ name: fallback.name, params: fallback.params }];
 }
 
 /**
  * The screens with `params` merged into the one with `key`.
  */
-export function setScreenParams(screens: PaneStackEntry[], key: string, params: ScreenParams): PaneStackEntry[] {
+export function setScreenParams(screens: PaneStackRoute[], key: string, params: ScreenParams): PaneStackRoute[] {
   return screens.map(entry => (entry.key === key ? { ...entry, params: { ...entry.params, ...params } } : entry));
 }
 
 /**
  * The screens with the one with `key` replaced by `screen`, under the same key.
  */
-export function replaceScreen(screens: PaneStackEntry[], key: string, screen: PaneScreen): PaneStackEntry[] {
-  return screens.map(entry => (entry.key === key ? { ...screen, key } : entry));
+export function replaceScreen(screens: PaneStackRoute[], key: string, screen: PaneScreen): PaneStackRoute[] {
+  return screens.map(entry => (entry.key === key ? { name: screen.name, params: screen.params, key } : entry));
+}
+
+/**
+ * The screens after a native dismissal of `count` screens that ended at the one with `key`; unchanged when it already left.
+ */
+export function dismissScreens(screens: PaneStackRoute[], key: string, count: number): PaneStackRoute[] {
+  const index = screens.findIndex(entry => entry.key === key);
+  return index === -1 ? screens : screens.slice(0, Math.max(0, index - count + 1));
 }
 
 /**
@@ -133,76 +139,88 @@ export function isSameScreen(a: PaneScreen, b: PaneScreen): boolean {
   return a.name === b.name && dynamicParamNames(a.name).every(param => a.params[param] === b.params[param]);
 }
 
+/** A route of the tab's stack; a route without a key is one the router still has to create. */
+type StackRoute = { key?: string; name: string; params?: object };
+
+/** The tab's stack state, as far as the pane stack uses it. */
+type StackState = { key: string; index: number; routes: StackRoute[] };
+
+/** The tab navigator's state and navigation, as far as the pane stack uses them. */
+type TabsState = { routes: Array<{ key: string; state?: StackState }> };
+type TabNavigation = { getState: () => TabsState | undefined; dispatch: (action: object) => void };
+
+const NO_PARAMS: ScreenParams = {};
+
 /**
- * Owns the screens of a pane stack and the stable API that changes them.
+ * The route as a pane stack screen.
  */
-export function usePaneStackState(): { screens: PaneStackEntry[]; api: PaneStackApi } {
-  const [screens, setScreens] = useState<PaneStackEntry[]>([]);
-
-  const push = useCallback((screen: PaneScreen): void => setScreens(current => pushScreen(current, screen)), []);
-  const pop = useCallback((count: number = 1): void => setScreens(current => popScreens(current, count)), []);
-  const popToRoot = useCallback((): void => setScreens([]), []);
-  const popTo = useCallback((matches: (screen: PaneScreen) => boolean, screen: PaneScreen): void => setScreens(current => popToScreen(current, matches, screen)), []);
-  const setParams = useCallback((key: string, params: ScreenParams): void => setScreens(current => setScreenParams(current, key, params)), []);
-  const replace = useCallback((key: string, screen: PaneScreen): void => setScreens(current => replaceScreen(current, key, screen)), []);
-
-  const api = useMemo<PaneStackApi>(() => ({ push, pop, popToRoot, popTo, setParams, replace }), [push, pop, popToRoot, popTo, setParams, replace]);
-  return { screens, api };
+function toPaneScreen(route: StackRoute): PaneStackRoute {
+  return { key: route.key, name: route.name, params: (route.params ?? NO_PARAMS) as ScreenParams };
 }
 
-/** How long the route sync waits after a layout change, so it runs after the fold rotation has finished. */
-const ROUTE_SYNC_DELAY = 600;
-
-/** The tab's stack state and navigation, as far as the sync uses them; a route without a key is one the router still has to create. */
-type StackState = { index: number; routes: Array<{ key?: string; name: string; params?: object }> };
-type StackNavigation = { getState: () => StackState | undefined; reset: (state: StackState) => void };
+/*
+ * The pane stack has no state of its own: its screens are the primary routes on the tab's stack. Both sides keep a native
+ * screen for each and a layout change only swaps which side renders the content, because pushing or popping native
+ * screens during a fold rotation crashes UIKit or shows up late.
+ */
 
 /**
- * Moves screens between the tab's stack and the pane stack when the window changes layout, from a screen on the stack
- * (the tab's index route). On unfolding, the primary routes on the stack leave it for the pane; on folding, the pane's
- * screens go on the stack below the routes already there, so a folder stays open either way. The move waits until the
- * fold rotation has finished: pushing or popping native screens during it crashes UIKit (see TwoPaneLayout).
+ * The screens of the pane stack of the tab whose layout calls this, and the stable API that changes them.
  */
-export function usePaneStackRouteSync(): void {
-  const navigation = useNavigation() as unknown as StackNavigation;
-  const { isTwoPane } = useTwoPane();
-  const api = useContext(PaneStackContext);
-  const screens = useContext(PaneStackScreensContext);
-  const primaryRoutes = usePrimaryRoutes();
-  const syncedTwoPane = useRef(isTwoPane);
-  const screensRef = useRef(screens);
-  screensRef.current = screens;
+export function usePaneStackState(primaryRoutes: Record<string, PrimaryRoute>): { screens: PaneStackEntry[]; api: PaneStackApi } {
+  const navigation = useNavigation() as unknown as TabNavigation;
+  const tabKey = useRoute().key;
+  const stack = useNavigationState(tabs => (tabs as unknown as TabsState).routes.find(route => route.key === tabKey)?.state);
 
-  useEffect(() => {
-    if (syncedTwoPane.current === isTwoPane || !api || !primaryRoutes) {
-      return undefined;
+  // Kept stable while the primary routes are unchanged, so detail navigation does not re-render the pane stack.
+  const shown = useRef<{ routes: StackRoute[]; screens: PaneStackEntry[] }>({ routes: [], screens: [] });
+  const screens = useMemo((): PaneStackEntry[] => {
+    const routes = (stack?.routes ?? []).filter(route => route.key !== undefined && route.name in primaryRoutes);
+    if (routes.length !== shown.current.routes.length || routes.some((route, index) => route !== shown.current.routes[index])) {
+      shown.current = { routes, screens: routes.map(toPaneScreen) as PaneStackEntry[] };
     }
-    const timer = setTimeout(() => {
-      syncedTwoPane.current = isTwoPane;
-      const state = navigation.getState();
-      if (!state) {
-        return;
+    return shown.current.screens;
+  }, [stack, primaryRoutes]);
+
+  /**
+   * Applies a transition to the primary routes, which sit between the tab's root and the detail routes.
+   */
+  const update = useCallback((change: (current: PaneStackRoute[]) => PaneStackRoute[]): void => {
+    const current = navigation.getState()?.routes.find(route => route.key === tabKey)?.state;
+    if (!current) {
+      return;
+    }
+    const isPrimary = (route: StackRoute): boolean => route.name in primaryRoutes;
+    const primary = current.routes.filter(isPrimary);
+    const before = primary.map(toPaneScreen);
+    const after = change(before);
+    if (after.length === before.length && after.every((screen, index) => screen === before[index])) {
+      return;
+    }
+    // A route that did not change stays the same object, so its screen is not re-rendered.
+    const routes = after.map((screen): StackRoute => {
+      const index = before.indexOf(screen);
+      if (index !== -1) {
+        return primary[index];
       }
-      if (isTwoPane) {
-        const isPrimary = (route: StackState['routes'][number]): boolean => route.name in primaryRoutes.routes;
-        if (!state.routes.some(isPrimary)) {
-          return;
-        }
-        state.routes.filter(isPrimary).forEach(route => api.push({ name: route.name, params: (route.params ?? {}) as ScreenParams }));
-        const routes = state.routes.filter(route => !isPrimary(route));
-        navigation.reset({ ...state, routes, index: routes.length - 1 });
-        return;
-      }
-      const paneScreens = screensRef.current;
-      if (paneScreens.length === 0) {
-        return;
-      }
-      // Keys are left out on purpose: the stack router creates them. The routes already there keep theirs, and their screens.
-      const [root, ...rest] = state.routes;
-      const routes = [root, ...paneScreens.map(({ name, params }) => ({ name, params })), ...rest];
-      navigation.reset({ ...state, routes, index: routes.length - 1 });
-      api.popToRoot();
-    }, ROUTE_SYNC_DELAY);
-    return (): void => clearTimeout(timer);
-  }, [isTwoPane, api, navigation, primaryRoutes]);
+      return { ...primary.find(route => route.key !== undefined && route.key === screen.key), name: screen.name, params: screen.params };
+    });
+    const others = current.routes.filter(route => !isPrimary(route));
+    const next = [...others.slice(0, 1), ...routes, ...others.slice(1)];
+    if (next.length > 0) {
+      navigation.dispatch({ type: 'RESET', payload: { ...current, routes: next, index: next.length - 1 }, target: current.key });
+    }
+  }, [navigation, tabKey, primaryRoutes]);
+
+  const api = useMemo<PaneStackApi>(() => ({
+    push: (screen): void => update(current => pushScreen(current, screen)),
+    pop: (count = 1): void => update(current => popScreens(current, count)),
+    popToRoot: (): void => update(() => []),
+    popTo: (matches, screen): void => update(current => popToScreen(current, matches, screen)),
+    setParams: (key, params): void => update(current => setScreenParams(current, key, params)),
+    replace: (key, screen): void => update(current => replaceScreen(current, key, screen)),
+    dismissed: (key, count): void => update(current => dismissScreens(current, key, count)),
+  }), [update]);
+
+  return { screens, api };
 }

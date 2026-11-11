@@ -13,6 +13,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { isServerUnreachable } from '@/utils/ServerReachability';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useLayoutChangeCache } from '@/hooks/useLayoutChangeCache';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useRailSideBleed } from '@/hooks/useRailSideFlush';
@@ -71,11 +72,18 @@ export function EmailsScreen() : React.ReactNode {
   const { scroll: headerScroll, onScroll: onHeaderScroll } = useCollapsibleHeaderScroll();
   const flatListRef = useRef<FlatList<MailboxEmail>>(null);
   const [error, setError] = useState<string | null>(null);
-  const [emails, setEmails] = useState<MailboxEmail[]>([]);
-  const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
+  const { cached, save: saveLoaded } = useLayoutChangeCache<{ emails: MailboxEmail[]; currentPage: number; totalRecords: number }>('emails');
+  const [emails, setEmails] = useState<MailboxEmail[]>(cached?.emails ?? []);
+  const [isLoading, setIsLoading] = useMinDurationLoading(cached === undefined, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(cached?.currentPage ?? 1);
+  const [totalRecords, setTotalRecords] = useState<number>(cached?.totalRecords ?? 0);
+
+  useEffect(() => {
+    if (!isLoading) {
+      saveLoaded({ emails, currentPage, totalRecords });
+    }
+  }, [isLoading, emails, currentPage, totalRecords, saveLoaded]);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
   const headerHeight = useCollapsibleHeaderHeight();
