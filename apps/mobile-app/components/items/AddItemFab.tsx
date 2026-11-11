@@ -157,16 +157,21 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
     scrim: {
       backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(0, 0, 0, 0.3)',
     },
+    fabHost: {
+      bottom: fabBottom,
+      height: FAB_SIZE,
+      position: 'absolute',
+      right: 16,
+      width: FAB_SIZE,
+      zIndex: 1000,
+    },
     fab: {
       alignItems: 'center',
       backgroundColor: colors.primary,
       borderRadius: FAB_SIZE / 2,
-      bottom: fabBottom,
       elevation: 4,
       height: FAB_SIZE,
       justifyContent: 'center',
-      position: 'absolute',
-      right: 16,
       shadowColor: colors.black,
       shadowOffset: {
         width: 0,
@@ -175,7 +180,6 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       width: FAB_SIZE,
-      zIndex: 1000,
     },
     fabIcon: {
       color: colors.primarySurfaceText,
@@ -370,12 +374,18 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
         </>
       )}
 
-      <RobustPressable style={styles.fab} onPress={handleFabPress} testID={testID}>
-        {/* The native button routes a tap to the child under the finger; the icon must not take it. */}
-        <Animated.View style={{ transform: [{ rotate }] }} pointerEvents="none">
-          <MaterialIcons name="add" style={styles.fabIcon} />
-        </Animated.View>
-      </RobustPressable>
+      {/*
+        * The gesture handler button leaves Android's native touch unclaimed, so a tap would also reach native views below it
+        * (the item row menu button). The host claims it; hitSlop stays 0 so the button never reacts outside the host.
+        */}
+      <View style={styles.fabHost} collapsable={false}>
+        <RobustPressable style={styles.fab} onPress={handleFabPress} hitSlop={0} testID={testID}>
+          {/* The native button routes a tap to the child under the finger; the icon must not take it. */}
+          <Animated.View style={{ transform: [{ rotate }] }} pointerEvents="none">
+            <MaterialIcons name="add" style={styles.fabIcon} />
+          </Animated.View>
+        </RobustPressable>
+      </View>
     </View>
   );
 };
