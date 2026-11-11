@@ -359,7 +359,6 @@
     "autofillConfirm": {
       "description": "Ne remplissez ce login que si vous l'avez choisi vous-même et faites confiance à ce site.",
       "fillOn": "Vous êtes sur le point de remplir une connexion sur {{host}}.",
-      "siteMismatch": "Cette connexion n'est pas encore liée à {{host}} . Ne continuez que si vous faites confiance à ce site.",
       "title": "Confirmer la saisie automatique"
     },
     "autofillTotp": "Remplissage automatique 2FA",
