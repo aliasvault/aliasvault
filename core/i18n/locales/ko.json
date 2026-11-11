@@ -280,6 +280,7 @@
       "vaultTooLarge": "보관함 크기가 너무 커서 서버에서 수용할 수 없습니다. 일부 항목이나 첨부 파일을 삭제하여 크기를 줄인 후 다시 시도해 주세요.",
       "wrongPassword": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요."
     },
+    "expand": "Expand",
     "generate": "생성",
     "help": "Help",
     "hide": "숨기기",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "표시",
     "showDetails": "세부 정보 표시",
+    "showList": "Show list",
     "showPassword": "비밀번호 표시",
     "success": "성공",
     "syncVaultData": "보관함 데이터 동기화",
