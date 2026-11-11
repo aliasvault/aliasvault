@@ -280,6 +280,7 @@
       "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut."
     },
+    "expand": "Expand",
     "generate": "Erzeugen",
     "help": "Hilfe",
     "hide": "Ausblenden",
@@ -341,6 +342,7 @@
     "share": "Teilen",
     "show": "Anzeigen",
     "showDetails": "Details anzeigen",
+    "showList": "Show list",
     "showPassword": "Passwort anzeigen",
     "success": "Erfolg",
     "syncVaultData": "Tresor synchronisieren",
