@@ -550,28 +550,12 @@ export class ItemRepository extends BaseRepository {
           continue;
         }
 
-        const logoId = await this.logoIdInManifest(existing.LogoId, ref.ManifestId, manifestId, currentDateTime);
+        const logoId = await this.logoRepository.idInManifest(existing.LogoId, ref.ManifestId, manifestId, currentDateTime);
         await this.run(this.execute(ItemQueries.MOVE_ITEM, [folderId, manifestId, logoId, currentDateTime, ref.Id, ref.ManifestId]));
         moved.push({ Id: ref.Id, ManifestId: manifestId });
       }
       return moved;
     });
-  }
-
-  /**
-   * The id an item's current logo has in the manifest the item moves into, copying the logo there when needed.
-   * @param logoId - The item's current logo, or null for none
-   * @param fromManifestId - The manifest the item and its logo are in now
-   * @param toManifestId - The manifest the item moves into
-   * @param currentDateTime - The current date/time string for timestamps
-   * @returns The logo id inside `toManifestId`, or null when the item has no logo
-   */
-  private async logoIdInManifest(logoId: string | null, fromManifestId: string, toManifestId: string, currentDateTime: string): Promise<string | null> {
-    if (!logoId || fromManifestId === toManifestId) {
-      return logoId;
-    }
-    const logo = await this.run(this.logoRepository.getById(logoId, fromManifestId));
-    return logo ? this.logoRepository.ensureInScope(toManifestId, logo.Kind, logo.Source, currentDateTime) : null;
   }
 
   /**

@@ -86,6 +86,22 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
+   * The id an item's logo has in the manifest the item moves into, copying the logo there when needed.
+   * @param logoId The item's current logo, or null for none
+   * @param fromManifestId The manifest the item and its logo are in now
+   * @param toManifestId The manifest the item moves into
+   * @param currentDateTime The current date/time string for timestamps
+   * @returns The logo id inside `toManifestId`, or null when the item has no logo
+   */
+  public async idInManifest(logoId: string | null, fromManifestId: string, toManifestId: string, currentDateTime: string): Promise<string | null> {
+    if (!logoId || fromManifestId === toManifestId) {
+      return logoId;
+    }
+    const logo = await this.run(this.getById(logoId, fromManifestId));
+    return logo ? this.ensureInScope(toManifestId, logo.Kind, logo.Source, currentDateTime) : null;
+  }
+
+  /**
    * Get a logo's identity (kind, key, label) by id, or null when it no longer exists.
    * @param logoId The logo id to look up
    * @param manifestId The manifest of the item pointing at it

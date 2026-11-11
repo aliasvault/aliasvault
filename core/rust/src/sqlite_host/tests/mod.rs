@@ -30,9 +30,17 @@ fn temporary_storage_stays_in_memory() {
 }
 
 #[test]
-fn foreign_keys_are_on_by_default() {
+fn foreign_keys_are_on() {
     let db = MemoryDatabase::empty().unwrap();
-    assert_eq!(db.query("PRAGMA foreign_keys", &[]).unwrap()[0]["foreign_keys"], json!(1), "the hosts rely on the bundled SQLite default");
+    assert_eq!(db.query("PRAGMA foreign_keys", &[]).unwrap()[0]["foreign_keys"], json!(1));
+    let reopened = MemoryDatabase::from_bytes(&db.export().unwrap()).unwrap();
+    assert_eq!(reopened.query("PRAGMA foreign_keys", &[]).unwrap()[0]["foreign_keys"], json!(1));
+}
+
+#[test]
+fn the_latest_schema_database_leaves_foreign_keys_off() {
+    let db = MemoryDatabase::with_latest_schema().unwrap();
+    assert_eq!(db.query("PRAGMA foreign_keys", &[]).unwrap()[0]["foreign_keys"], json!(0), "the staging database inserts rows in any order");
 }
 
 #[test]

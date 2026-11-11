@@ -1,4 +1,4 @@
-import { ItemTypes } from '@aliasvault/models/vault';
+import { ItemTypes, LogoKinds } from '@aliasvault/models/vault';
 import { VaultSqlGenerator } from '@aliasvault/vault';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -87,6 +87,21 @@ describe('a shared manifest rendered as a folder', () => {
 
   it('refuses to delete the folder', async () => {
     await expect(client.folders.delete(SHARED_ROOT)).rejects.toThrow();
+  });
+
+  it('takes the logos of a shared folder\'s items along into the shared manifest', async () => {
+    const folderId = await client.folders.create('Streaming');
+    await client.items.create(draftItem('Netflix', PERSONAL, folderId), [], [], { Kind: LogoKinds.Builtin, Source: 'shopping' });
+    await client.folders.moveContentsToManifest({ Id: folderId, ManifestId: PERSONAL }, SHARED);
+
+    expect(client.executeQuery('SELECT l.ManifestId, l.Source FROM Items i JOIN Logos l ON l.ManifestId = i.ManifestId AND l.Id = i.LogoId WHERE i.IsDeleted = 0')).toEqual([{ ManifestId: SHARED, Source: 'shopping' }]);
+  });
+
+  it('takes the logos along when a shared manifest turns back into a personal folder', async () => {
+    await client.items.create(draftItem('Netflix', SHARED, SHARED), [], [], { Kind: LogoKinds.Builtin, Source: 'shopping' });
+    await client.folders.moveManifestToNewFolder(SHARED, 'Family');
+
+    expect(client.executeQuery('SELECT l.ManifestId, l.Source FROM Items i JOIN Logos l ON l.ManifestId = i.ManifestId AND l.Id = i.LogoId WHERE i.IsDeleted = 0')).toEqual([{ ManifestId: PERSONAL, Source: 'shopping' }]);
   });
 
   it('is left out of a personal export, which reads one manifest', async () => {

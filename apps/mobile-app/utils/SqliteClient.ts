@@ -26,7 +26,7 @@ class SqliteClient {
   private readonly database = new NativeDatabaseClient();
 
   /**
-   * The logo repository itself, which the item repository calls into.
+   * The logo repository itself, which the item and folder repositories call into.
    */
   private readonly logoRepository = new LogoRepository(this.database);
 
@@ -38,7 +38,7 @@ class SqliteClient {
   /**
    * Repository for Folder operations.
    */
-  public readonly folders = asyncRepository(new FolderRepository(this.database), this.database);
+  public readonly folders = asyncRepository(new FolderRepository(this.database, this.logoRepository), this.database);
 
   /**
    * Repository for item logo operations.

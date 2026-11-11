@@ -137,10 +137,11 @@ impl MemoryDatabase {
     }
 }
 
-/// An in-memory connection.
+/// An in-memory connection with foreign keys on; set explicitly, as the wasm SQLite build does not default to them.
 fn open_connection() -> VaultResult<Connection> {
     let conn = Connection::open_in_memory().map_err(sql_error)?;
     conn.pragma_update(None, "temp_store", "MEMORY").map_err(sql_error)?;
+    conn.pragma_update(None, "foreign_keys", "ON").map_err(sql_error)?;
     Ok(conn)
 }
 

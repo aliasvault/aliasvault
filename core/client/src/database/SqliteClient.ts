@@ -102,7 +102,7 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public get folders(): SyncRepository<FolderRepository> {
     if (!this._folders) {
-      this._folders = syncRepository(new FolderRepository(this), this);
+      this._folders = syncRepository(new FolderRepository(this, this.logoRepository), this);
     }
     return this._folders;
   }

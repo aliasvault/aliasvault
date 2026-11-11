@@ -1,8 +1,9 @@
 import { multiManifestRendering } from '../../sharing/MultiManifestRendering';
-import { BaseRepository } from '../BaseRepository';
+import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { FolderQueries } from '../queries/FolderQueries';
 
 import type { DbOp } from '../DbOp';
+import type { LogoRepository } from './LogoRepository';
 
 /**
  * Folder entity type.
@@ -28,6 +29,18 @@ export type FolderRef = {
  * Repository for Folder CRUD operations.
  */
 export class FolderRepository extends BaseRepository {
+  /**
+   * Constructor for the FolderRepository class.
+   * @param client - The database client to use for the repository
+   * @param logoRepository - The logo repository, for the logos of items moving to another manifest
+   */
+  public constructor(
+    client: IDatabaseClient,
+    private logoRepository: LogoRepository
+  ) {
+    super(client);
+  }
+
   /**
    * Create a new folder inside its parent's manifest, or the personal manifest (default) when there is no parent.
    * @param name - The name of the folder
@@ -202,7 +215,7 @@ export class FolderRepository extends BaseRepository {
    */
   public async moveContentsToManifest(ref: FolderRef, targetManifestId: string): Promise<number> {
     this.assertNotVirtual(ref);
-    return this.withTransaction(() => this.run(this.moveTree({ manifestId: ref.ManifestId, folderId: ref.Id }, { manifestId: targetManifestId, folderId: null })));
+    return this.withTransaction(() => this.moveTree({ manifestId: ref.ManifestId, folderId: ref.Id }, { manifestId: targetManifestId, folderId: null }));
   }
 
   /**
@@ -218,19 +231,19 @@ export class FolderRepository extends BaseRepository {
       const folderId = crypto.randomUUID();
       const now = this.now();
       await this.run(this.execute(FolderQueries.INSERT, [folderId, name, null, manifestId, now, now]));
-      await this.run(this.moveTree({ manifestId: sourceManifestId, folderId: null }, { manifestId, folderId }));
+      await this.moveTree({ manifestId: sourceManifestId, folderId: null }, { manifestId, folderId });
       return { Id: folderId, ManifestId: manifestId };
     });
   }
 
   /**
    * Recreate the folders under a source (a folder, or a manifest's top level) under a target in another manifest, move the
-   * items along, and delete the source folders (the source folder itself included).
+   * items along with their logos, and delete the source folders (the source folder itself included).
    * @param source - Where the contents are now: a folder, or the top level of a manifest when `folderId` is null
    * @param target - Where they land: a folder, or the top level of a manifest when `folderId` is null
    * @returns The number of items moved
    */
-  private *moveTree(source: { manifestId: string; folderId: string | null }, target: { manifestId: string; folderId: string | null }): DbOp<number> {
+  private async moveTree(source: { manifestId: string; folderId: string | null }, target: { manifestId: string; folderId: string | null }): Promise<number> {
     const now = this.now();
     // Source folder id (null for the source's top level) to the folder its contents land in.
     const landing = new Map<string | null, string | null>([[source.folderId, target.folderId]]);
@@ -240,11 +253,11 @@ export class FolderRepository extends BaseRepository {
     while (pending.length > 0) {
       const parentId = pending.shift()!;
       const children = parentId === null
-        ? yield* this.query<{ Id: string; Name: string }>(FolderQueries.GET_TOP_LEVEL_FOLDERS, [source.manifestId])
-        : yield* this.query<{ Id: string; Name: string }>(FolderQueries.GET_CHILD_FOLDERS, [parentId, source.manifestId]);
+        ? await this.run(this.query<{ Id: string; Name: string }>(FolderQueries.GET_TOP_LEVEL_FOLDERS, [source.manifestId]))
+        : await this.run(this.query<{ Id: string; Name: string }>(FolderQueries.GET_CHILD_FOLDERS, [parentId, source.manifestId]));
       for (const child of children) {
         const newId = crypto.randomUUID();
-        yield* this.execute(FolderQueries.INSERT, [newId, child.Name, landing.get(parentId) ?? null, target.manifestId, now, now]);
+        await this.run(this.execute(FolderQueries.INSERT, [newId, child.Name, landing.get(parentId) ?? null, target.manifestId, now, now]));
         landing.set(child.Id, newId);
         pending.push(child.Id);
         moved.push(child.Id);
@@ -254,15 +267,17 @@ export class FolderRepository extends BaseRepository {
     let itemsMoved = 0;
     for (const [folderId, newFolderId] of landing) {
       const items = folderId === null
-        ? yield* this.query<{ Id: string }>(FolderQueries.GET_TOP_LEVEL_ITEM_IDS, [source.manifestId])
-        : yield* this.query<{ Id: string }>(FolderQueries.GET_ITEM_IDS_IN_FOLDER, [folderId, source.manifestId]);
+        ? await this.run(this.query<{ Id: string; LogoId: string | null }>(FolderQueries.GET_TOP_LEVEL_ITEMS, [source.manifestId]))
+        : await this.run(this.query<{ Id: string; LogoId: string | null }>(FolderQueries.GET_ITEMS_IN_FOLDER, [folderId, source.manifestId]));
       for (const item of items) {
-        itemsMoved += yield* this.execute(FolderQueries.MOVE_ITEM_TO_MANIFEST, [newFolderId, target.manifestId, now, item.Id, source.manifestId]);
+        // Logo ids are derived per manifest, so the item needs the target manifest's copy of its logo.
+        const logoId = await this.logoRepository.idInManifest(item.LogoId, source.manifestId, target.manifestId, now);
+        itemsMoved += await this.run(this.execute(FolderQueries.MOVE_ITEM_TO_MANIFEST, [newFolderId, target.manifestId, logoId, now, item.Id, source.manifestId]));
       }
     }
 
     for (const id of [...moved.reverse(), ...(source.folderId ? [source.folderId] : [])]) {
-      yield* this.execute(FolderQueries.SOFT_DELETE, [now, id, source.manifestId]);
+      await this.run(this.execute(FolderQueries.SOFT_DELETE, [now, id, source.manifestId]));
     }
 
     return itemsMoved;
