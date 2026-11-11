@@ -15,6 +15,7 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
+import { placeUiForInput } from './TopLayer';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
@@ -687,6 +688,8 @@ function createTotpItem(
 export function createBasePopup(input: HTMLInputElement, rootContainer: HTMLElement) : HTMLElement {
   // Remove existing popup and its event listeners
   removeExistingPopup(rootContainer);
+
+  placeUiForInput(input, rootContainer);
 
   const popup = document.createElement('div');
   popup.id = 'aliasvault-credential-popup';

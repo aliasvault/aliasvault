@@ -118,7 +118,7 @@ export class ClickValidator {
         return pressedAt - since >= MIN_VISIBLE_BEFORE_PRESS_MS ? 'allowed' : 'obscured';
       }
 
-      return this.isCoveredByTopLayer(event.clientX, event.clientY) ? 'obscured' : 'allowed';
+      return this.isCoveredByTopLayer(event.clientX, event.clientY, element) ? 'obscured' : 'allowed';
     } catch (error) {
       logFailure('[AliasVault Security] Click validation error', error);
       return 'rejected';
@@ -154,13 +154,28 @@ export class ClickValidator {
   }
 
   /**
-   * Whether a top-layer element covers the point.
+   * Whether a top-layer element covers the point, ignoring the ones holding `target` (the UI may sit in a modal dialog).
    */
-  private isCoveredByTopLayer(x: number, y: number): boolean {
+  private isCoveredByTopLayer(x: number, y: number, target: Element): boolean {
     return this.findTopLayerElements(document).some((element) => {
+      if (ClickValidator.composedContains(element, target)) {
+        return false;
+      }
       const rect = element.getBoundingClientRect();
       return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
     });
+  }
+
+  /**
+   * Whether `ancestor` contains `node`, crossing shadow root boundaries.
+   */
+  private static composedContains(ancestor: Element, node: Node): boolean {
+    for (let current: Node | null = node; current; current = current instanceof ShadowRoot ? current.host : current.parentNode) {
+      if (current === ancestor) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
