@@ -280,6 +280,7 @@
       "vaultTooLarge": "Vault terlalu besar untuk diterima server. Coba untuk menghapus beberapa item atau lampiran untuk mengurangi ukuran dan coba lagi.",
       "wrongPassword": "Kata sandi salah. Silakan coba lagi."
     },
+    "expand": "Expand",
     "generate": "Buat",
     "help": "Help",
     "hide": "Sembunyikan",
@@ -341,6 +342,7 @@
     "share": "Share",
     "show": "Tampilkan",
     "showDetails": "Tampilkan rincian",
+    "showList": "Show list",
     "showPassword": "Tampilkan kata sandi",
     "success": "Berhasil",
     "syncVaultData": "Sinkronkan data brankas",
