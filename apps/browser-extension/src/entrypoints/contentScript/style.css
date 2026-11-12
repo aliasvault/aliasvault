@@ -820,6 +820,11 @@ body {
   transition: opacity 0.2s ease-in-out;
 }
 
+.av-input-icon img {
+  width: 100%;
+  height: 100%;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
