@@ -224,7 +224,7 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
 
   const ICON_HTML = `
 <div class="av-input-icon">
-  <img src="data:image/svg+xml;base64,${btoa(LOGO_MARK_SVG)}" style="width: 100%; height: 100%;" />
+  <img src="data:image/svg+xml;base64,${btoa(LOGO_MARK_SVG)}" />
 </div>
 `;
 
@@ -485,7 +485,6 @@ function triggerInputEvents(element: HTMLInputElement | HTMLSelectElement, anima
         height: ${rect.height}px;
         background-color: rgba(244, 149, 65, 0.3);
         border-radius: ${getComputedStyle(element).borderRadius};
-        animation: fadeOut 1.4s ease-out forwards;
       `;
     };
 
@@ -494,21 +493,14 @@ function triggerInputEvents(element: HTMLInputElement | HTMLSelectElement, anima
     // Add scroll event listener
     window.addEventListener('scroll', updatePosition);
 
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes fadeOut {
-        0% { opacity: 1; transform: scale(1.02); }
-        100% { opacity: 0; transform: scale(1); }
-      }
-    `;
-    document.head.appendChild(style);
+    // Add the overlay to the document body
     document.body.appendChild(overlay);
+    overlay.animate([{ opacity: 1, transform: 'scale(1.02)' }, { opacity: 0, transform: 'scale(1)' }], { duration: 1400, easing: 'ease-out', fill: 'forwards' });
 
     // Remove overlay and cleanup after animation
     setTimeout(() => {
       window.removeEventListener('scroll', updatePosition);
       overlay.remove();
-      style.remove();
     }, 1400);
   }
 

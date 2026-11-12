@@ -124,6 +124,30 @@ async function isDomainBlocked(domain: string): Promise<boolean> {
 const SHADOW_ROOT_MODE = import.meta.env.WXT_E2E_BUILD === 'true' ? 'open' : 'closed';
 
 /**
+ * Move the `<style>` element WXT injects into the shadow root to an adopted stylesheet, which a page CSP does not block.
+ * Safari applies the page's style-src to the `<style>` element (https://bugs.webkit.org/show_bug.cgi?id=291734), 
+ * leaving the UI unstyled on strict sites. The `<style>` element is only kept when the browser refuses the adopted sheet.
+ * @param shadow - The shadow root created by createShadowRootUi.
+ */
+function adoptShadowRootStyles(shadow: ShadowRoot): void {
+  const styleElement = shadow.querySelector('style');
+  if (!styleElement?.textContent) {
+    return;
+  }
+
+  try {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(styleElement.textContent);
+    shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, sheet];
+    if (shadow.adoptedStyleSheets.includes(sheet)) {
+      styleElement.remove();
+    }
+  } catch (error) {
+    devLog('[AliasVault] Adopting the shadow root stylesheet failed', error);
+  }
+}
+
+/**
  * Check if the login already exists in the vault.
  * @param domain - The domain of the login.
  * @param username - The username of the login.
@@ -221,6 +245,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       },
     });
 
+    adoptShadowRootStyles(ui.shadow);
     ui.mount();
   } catch (error) {
     logFailure('[AliasVault] Error in early save prompt restore', error);
@@ -760,6 +785,7 @@ export default defineContentScript({
     });
 
     // Mount the UI to create the shadow root
+    adoptShadowRootStyles(ui.shadow);
     ui.autoMount();
   },
 });
