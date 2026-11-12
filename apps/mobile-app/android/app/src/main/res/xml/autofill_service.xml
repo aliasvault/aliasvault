@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Compatibility packages: browsers filled through Android's compatibility mode, capped at the last version
-  without native autofill support. Each must also be on the browser allowlist in OriginVerifier.kt.
+  without native autofill support. Each must also be on the privileged apps list in res/raw/privileged_apps.json.
 -->
 <autofill-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:supportsInlineSuggestions="true"

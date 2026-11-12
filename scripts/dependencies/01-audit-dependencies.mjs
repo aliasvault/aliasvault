@@ -1,5 +1,5 @@
 /**
- * Helper of audit-dependencies.sh: parses audit output, looks up advisories and prints the report.
+ * Helper of 01-audit-dependencies.sh: parses audit output, looks up advisories and prints the report.
  * Findings go to the AUDIT_FINDINGS TSV file, see `emit`.
  */
 import crypto from 'node:crypto';

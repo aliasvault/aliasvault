@@ -16,14 +16,14 @@ import org.json.JSONObject
 object BrowserAllowlist {
     private const val TAG = "AliasVaultAutofill"
 
-    /** Allowed SHA-256 certificate fingerprints per listed browser package. */
-    private val fingerprintsByPackage: Map<String, Set<String>> by lazy { parseAllowlist(OriginVerifier.PRIVILEGED_ALLOWLIST_JSON) }
+    @Volatile
+    private var fingerprintsByPackage: Map<String, Set<String>>? = null
 
     /**
      * Whether [packageName], signed by [signers], is a listed browser with a listed certificate or an app the user trusted.
      */
     fun isTrustedApp(context: Context, packageName: String, signers: AppSigners): Boolean {
-        val listed = fingerprintsByPackage[packageName]
+        val listed = fingerprints(context)[packageName]
         if (listed != null && signers.history.any { it in listed }) {
             return true
         }
@@ -34,6 +34,11 @@ object BrowserAllowlist {
             Log.w(TAG, "Signing certificate of $packageName does not match the browser allowlist")
         }
         return false
+    }
+
+    /** Allowed SHA-256 certificate fingerprints per listed browser package, parsed once per process. */
+    private fun fingerprints(context: Context): Map<String, Set<String>> {
+        return fingerprintsByPackage ?: parseAllowlist(OriginVerifier.privilegedApps(context)).also { fingerprintsByPackage = it }
     }
 
     /**

@@ -3,7 +3,7 @@
 # Audit all dependencies for known vulnerabilities, apply non-breaking fixes and run the affected tests.
 # Keep the project lists below in sync with .github/dependabot.yml.
 #
-# Usage: ./audit-dependencies.sh [check|fix|test|all] [options]
+# Usage: ./01-audit-dependencies.sh [check|fix|test|all] [options]
 #   check   (default) Print one combined report. Changes nothing.
 #   fix     Apply non-breaking fixes in place, then check again.
 #   test    Run the build, lint and test commands of every project in scope.
@@ -15,7 +15,7 @@
 #   --level <severity>  Lowest failing severity: low, moderate, high (default) or critical.
 #   --ci                test: always run `npm ci` first.
 #   --build-core        test: build the core libraries first.
-#   --no-allowlist      Ignore audit-allowlist.json (accepted advisories, each with a reason).
+#   --no-allowlist      Ignore 01-audit-allowlist.json (accepted advisories, each with a reason).
 #
 # Exit codes: 0 = clean, 1 = findings at or above --level or a failed test, 2 = an ecosystem was skipped.
 
@@ -28,8 +28,8 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ALLOWLIST="$SCRIPT_DIR/audit-allowlist.json"
-HELPER="$SCRIPT_DIR/audit-dependencies.mjs"
+ALLOWLIST="$SCRIPT_DIR/01-audit-allowlist.json"
+HELPER="$SCRIPT_DIR/01-audit-dependencies.mjs"
 
 # Colors
 BLUE='\033[0;34m'
