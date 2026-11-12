@@ -1275,7 +1275,7 @@ function createLogoContainer(logo: Uint8Array | number[] | undefined): HTMLEleme
 
   const logoSrc = SqliteClient.imgSrcFromBytes(logo);
   if (logoSrc) {
-    logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
+    logoContainer.innerHTML = `<img src="${logoSrc}" alt="">`;
   } else {
     logoContainer.innerHTML = ItemTypeIconSvgs.placeholder;
   }

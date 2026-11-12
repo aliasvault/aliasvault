@@ -96,6 +96,11 @@ body {
   flex-shrink: 0;
 }
 
+.av-credential-logo img {
+  width: 100%;
+  height: 100%;
+}
+
 .av-credential-text {
   display: flex;
   flex-direction: column;
