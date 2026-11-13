@@ -169,6 +169,9 @@ public static class UiIcons
     /// <summary>Gets the "menu-alt-3" icon.</summary>
     public static UiIconDefinition MenuAlt3 { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M4 6h16M4 12h16m-7 6h7""/>");
 
+    /// <summary>Gets the "merge" icon.</summary>
+    public static UiIconDefinition Merge { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""m8 6 4-4 4 4""/><path d=""M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22""/><path d=""m20 22-5-5""/>");
+
     /// <summary>Gets the "moon" icon.</summary>
     public static UiIconDefinition Moon { get; } = new("0 0 24 24", new Dictionary<string, object> { { "fill", "none" }, { "stroke", "currentColor" }, { "stroke-width", "2" }, { "stroke-linecap", "round" }, { "stroke-linejoin", "round" } }, @"<path d=""M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z""/>");
 
