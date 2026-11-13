@@ -205,6 +205,10 @@
       "source": "heroicons@1.0.6",
       "icon": "outline/menu-alt-3"
     },
+    "merge": {
+      "source": "lucide@0.469.0",
+      "icon": "merge"
+    },
     "moon": {
       "source": "heroicons@1.0.6",
       "icon": "outline/moon"
