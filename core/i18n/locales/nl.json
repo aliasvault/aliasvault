@@ -280,7 +280,7 @@
       "vaultTooLarge": "De vault is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw."
     },
-    "expand": "Vergrootten",
+    "expand": "Uitbreiden",
     "generate": "Genereren",
     "help": "Hulp",
     "hide": "Verberg",
@@ -329,13 +329,13 @@
     "retry": "Probeer opnieuw",
     "save": "Opslaan",
     "saving": "Opslaan...",
-    "select": "Selecteer",
+    "select": "Selecteren",
     "selectItemMessage": "Selecteer een item om de details te bekijken",
     "selection": {
       "count": "{{count}} geselecteerd",
-      "disable": "Schakel selectie uit",
-      "enable": "Schakel selectie in",
-      "selectAll": "Selecteer alles"
+      "disable": "Selectie uitschakelen",
+      "enable": "Selectie inschakelen",
+      "selectAll": "Alles selecteren"
     },
     "serviceName": "Naam",
     "settings": "Instellingen",
