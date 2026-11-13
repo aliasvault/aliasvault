@@ -280,7 +280,7 @@
       "vaultTooLarge": "De vault is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw."
     },
-    "expand": "Expand",
+    "expand": "Vergrootten",
     "generate": "Genereren",
     "help": "Hulp",
     "hide": "Verberg",
@@ -342,7 +342,7 @@
     "share": "Delen",
     "show": "Toon",
     "showDetails": "Toon details",
-    "showList": "Show list",
+    "showList": "Toon lijst",
     "showPassword": "Wachtwoord tonen",
     "success": "Succes",
     "syncVaultData": "Vault synchroniseren",
@@ -451,7 +451,7 @@
     },
     "card": {
       "cardholder_name": "Naam kaarthouder",
-      "cvv": "CVV",
+      "cvv": "CVC",
       "expiry_month": "Vervalmaand",
       "expiry_year": "Vervaljaar",
       "number": "Kaartnummer",
