@@ -21,6 +21,7 @@ import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
 import Index from '@/entrypoints/popup/pages/Index';
 import ItemAddEdit from '@/entrypoints/popup/pages/items/ItemAddEdit';
 import ItemDetails from '@/entrypoints/popup/pages/items/ItemDetails';
+import ItemMerge from '@/entrypoints/popup/pages/items/ItemMerge';
 import ItemsList from '@/entrypoints/popup/pages/items/ItemsList';
 import ItemTypeSelector from '@/entrypoints/popup/pages/items/ItemTypeSelector';
 import RecentlyDeleted from '@/entrypoints/popup/pages/items/RecentlyDeleted';
@@ -205,6 +206,7 @@ const App: React.FC = () => {
     { path: '/items/add', element: <ItemAddEdit />, showBackButton: true },
     { path: '/items/deleted', element: <RecentlyDeleted />, showBackButton: true, title: t('items.recentlyDeleted.title') },
     { path: '/items/:manifestId/:id/edit', element: <ItemAddEdit />, showBackButton: true },
+    { path: '/items/:manifestId/:id/merge', element: <ItemMerge />, showBackButton: true },
     { path: '/items/:manifestId/:id', element: <ItemDetails />, showBackButton: true },
     { path: '/autofill/confirm', element: <AutofillConfirm />, layout: LayoutType.DEDICATED_WINDOW },
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.DEDICATED_WINDOW },
@@ -229,8 +231,7 @@ const App: React.FC = () => {
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
-    { path: '/settings/import-export', element: <ImportExportSettings />, showBackButton: true, title: t('common.settings') },
-  ], [t]);
+    { path: '/settings/import-export', element: <ImportExportSettings />, showBackButton: true, title: t('common.settings') },  ], [t]);
 
   useEffect(() => {
     if (!isInitialLoading) {
