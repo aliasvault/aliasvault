@@ -36,6 +36,7 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
+import { useListScrollRestore } from '@/entrypoints/popup/hooks/useListScrollRestore';
 import { useListSelection } from '@/entrypoints/popup/hooks/useListSelection';
 import { usePasswordConfirmedAction } from '@/entrypoints/popup/hooks/usePasswordConfirmedAction';
 import { useSharedFolders } from '@/entrypoints/popup/hooks/useSharedFolders';
@@ -136,6 +137,7 @@ const ItemsList: React.FC = () => {
   const { t } = useTranslation();
   const { folderId: folderIdParam, manifestId: manifestIdParam } = useParams<{ folderId?: string; manifestId?: string }>();
   const location = useLocation();
+  const resetFilters = (location.state as { resetFilters?: boolean } | null)?.resetFilters === true;
   const [searchParams] = useSearchParams();
   const dbContext = useDb();
   const navigate = useNavigate();
@@ -171,6 +173,7 @@ const ItemsList: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const rowsRef = useRef<HTMLUListElement | null>(null);
 
   /*
    * The list filters on a deferred copy of the search term: the input updates on every keystroke right away, and
@@ -262,15 +265,14 @@ const ItemsList: React.FC = () => {
    * Reset search and filter when navigating via the vault tab (with resetFilters state).
    */
   useEffect(() => {
-    const state = location.state as { resetFilters?: boolean } | null;
-    if (state?.resetFilters) {
+    if (resetFilters) {
       setSearchTerm('');
       setItemFilterType(ItemFilter.All);
       localStorage.removeItem(FILTER_STORAGE_KEY);
       // Clear the state to prevent re-triggering on subsequent renders
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, location.pathname, navigate]);
+  }, [resetFilters, location.pathname, navigate]);
 
   /**
    * Handle add new item.
@@ -814,6 +816,18 @@ const ItemsList: React.FC = () => {
     return (): void => observer.disconnect();
   }, [hasMoreItems, visibleItemCount, isLoading]);
 
+  const renderRows = useCallback((count: number): void => setVisibleItemCount(current => Math.max(current, count)), []);
+  const { openedRow, rememberOpenedRow } = useListScrollRestore({
+    key: `${location.pathname}${location.search}|${filterType}`,
+    isReady: !isLoading && visibleItems.length > 0,
+    canRestore: !resetFilters,
+    rowsRef,
+    rowCount: visibleItems.length,
+    totalRows: sortedItems.length,
+    renderRows,
+  });
+  const rememberOpenedItem = useCallback((item: ItemRef): void => rememberOpenedRow(scopedKey(item.ManifestId, item.Id)), [rememberOpenedRow]);
+
   /**
    * Calculate total item count including items in current folder and all child folders.
    * Used for the delete folder modal to show accurate count.
@@ -850,16 +864,22 @@ const ItemsList: React.FC = () => {
   const hasItemsInFoldersOnly = items.length > 0 && items.every((item: Item) => item.FolderId !== null);
 
   /**
+   * Open an item's details, keeping the search to return to.
+   */
+  const openItem = useCallback((item: Item): void => {
+    rememberOpenedItem(item);
+    navigate(searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item));
+  }, [searchTerm, navigate, rememberOpenedItem]);
+
+  /**
    * Open the Nth item in the current sorted list (ArrowRight on an item).
    */
   const handleActivateItem = useCallback((index: number): void => {
     const item = sortedItems[index];
-    if (!item) {
-      return;
+    if (item) {
+      openItem(item);
     }
-    const url = searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item);
-    navigate(url);
-  }, [sortedItems, searchTerm, navigate]);
+  }, [sortedItems, openItem]);
 
   /**
    * Enter the Nth folder (ArrowRight on a folder pill).
@@ -1214,17 +1234,19 @@ const ItemsList: React.FC = () => {
 
           {/* Items */}
           {visibleItems.length > 0 && (
-            <ul id="items-list" role="listbox" aria-multiselectable={isSelecting || undefined} className="space-y-2">
+            <ul ref={rowsRef} id="items-list" role="listbox" aria-multiselectable={isSelecting || undefined} className="space-y-2">
               {visibleItems.map((item, index) => (
                 <ItemCard
                   key={scopedKey(item.ManifestId, item.Id)}
                   item={item}
-                  showFolderPath={!!listSearchTerm && !!item.FolderPath}
-                  searchTerm={listSearchTerm}
+                  showFolderPath={!!listSearchTerm}
                   currentFolderPath={currentFolderPath}
                   isActive={activeKind === 'item' && activeIndex === index}
                   optionId={itemIdFor(index)}
                   isHighlighted={highlightedItem !== null && isSameItem(item, highlightedItem)}
+                  isMarked={openedRow === scopedKey(item.ManifestId, item.Id)}
+                  onClick={openItem}
+                  onOpen={rememberOpenedItem}
                   onDuplicate={handleDuplicateItem}
                   onDelete={setDeleteItem}
                   selectionMode={isSelecting}
