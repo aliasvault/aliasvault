@@ -9,25 +9,29 @@ import ContextMenu, { MenuItem, type ContextMenuHandle } from '@/entrypoints/pop
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { SelectCheckbox } from '@/entrypoints/popup/components/SelectionBar';
 
-import { itemRoute } from '@/utils/ItemRoute';
+import { itemMergeRoute, itemRoute } from '@/utils/ItemRoute';
 
 import ItemIcon from './ItemIcon';
+import ItemUrlLine from './ItemUrlLine';
 
 import type { Item } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
   item: Item;
   showFolderPath?: boolean;
-  searchTerm?: string;
   currentFolderPath?: string[] | null;
   isActive?: boolean;
   optionId?: string;
   isHighlighted?: boolean;
+  isMarked?: boolean;
   onDuplicate?: (item: ItemRef) => void;
   onDelete?: (item: ItemRef) => void;
   selectionMode?: boolean;
   isSelected?: boolean;
   onSelect?: (item: Item, range: boolean) => void;
+  onClick?: (item: Item) => void;
+  onOpen?: (item: Item) => void;
+  showUrl?: boolean;
 };
 
 /**
@@ -37,7 +41,7 @@ type ItemCardProps = {
  * It allows the user to navigate to the item details page when clicked.
  *
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId, isHighlighted = false, onDuplicate, onDelete, onSelect, selectionMode = false, isSelected = false }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, currentFolderPath = null, isActive = false, optionId, isHighlighted = false, isMarked = false, onDuplicate, onDelete, onSelect, onClick, onOpen, showUrl = false, selectionMode = false, isSelected = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const menuRef = useRef<ContextMenuHandle>(null);
@@ -119,10 +123,22 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   /**
-   * Open the item's details, keeping the search to return to.
+   * Go to a page of the item.
+   */
+  const openRoute = (route: string): void => {
+    onOpen?.(item);
+    navigate(route);
+  };
+
+  /**
+   * Open the item's details, unless the list handles the click itself.
    */
   const openItem = (): void => {
-    navigate(searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item));
+    if (onClick) {
+      onClick(item);
+      return;
+    }
+    openRoute(itemRoute(item));
   };
 
   /**
@@ -146,7 +162,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   return (
-    <li id={optionId} data-item-key={scopedKey(item.ManifestId, item.Id)} role="option" aria-selected={selectionMode ? isSelected : isActive} className="relative group" onContextMenu={handleContextMenu}>
+    <li id={optionId} data-item-key={scopedKey(item.ManifestId, item.Id)} role="option" aria-selected={selectionMode ? isSelected : isActive} aria-current={isMarked || undefined} className="relative group" onContextMenu={handleContextMenu}>
       <button
         onClick={(e) => {
           // Toggle selection status when selection mode is active or a modifier is held.
@@ -163,7 +179,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
         } ${
           isActive || isHighlighted
             ? 'border-primary-500 dark:border-primary-400 ring-2 ring-primary-500/40'
-            : isSelected ? 'border-primary-300 dark:border-primary-700' : 'border-gray-200 dark:border-gray-600'
+            : isSelected ? 'border-primary-300 dark:border-primary-700' : isMarked ? 'border-primary-500 dark:border-primary-400' : 'border-gray-200 dark:border-gray-600'
         }`}
       >
         {selectionMode && <SelectCheckbox isSelected={isSelected} />}
@@ -200,6 +216,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
             )}
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{getDisplayText(item)}</p>
+          {showUrl && <ItemUrlLine item={item} className="text-xs" />}
         </div>
       </button>
       {showEllipsis && (
@@ -217,8 +234,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
       {menuEnabled && (
         <ContextMenu ref={menuRef}>
           <MenuItem icon="eye" onClick={openItem}>{t('common.open')}</MenuItem>
-          <MenuItem icon="pencil-alt" onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
+          <MenuItem icon="pencil-alt" onClick={() => openRoute(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
           <MenuItem icon="document-duplicate" onClick={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.duplicate')}</MenuItem>
+          <MenuItem id="item-menu-merge" icon="merge" onClick={() => openRoute(itemMergeRoute(item))}>{t('items.merge.mergeWith')}</MenuItem>
           <MenuItem danger icon="trash" onClick={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.delete')}</MenuItem>
         </ContextMenu>
       )}
