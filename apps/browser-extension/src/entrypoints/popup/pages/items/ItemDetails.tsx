@@ -18,6 +18,7 @@ import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useItemBackButtonTitle } from '@/entrypoints/popup/hooks/useItemBackButtonTitle';
 import { useVaultRefresh } from '@/entrypoints/popup/hooks/useVaultRefresh';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
@@ -38,7 +39,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
   const dbContext = useDb();
   const [item, setItem] = useState<Item | null>(null);
   const { setIsInitialLoading } = useLoading();
-  const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
+  const { setHeaderButtons } = useHeaderButtons();
   const refreshVault = useVaultRefresh();
 
   /**
@@ -112,26 +113,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
     return () => setHeaderButtons(null);
   }, [setHeaderButtons]);
 
-  // Set back button title based on item's folder
-  useEffect(() => {
-    if (item && dbContext?.sqliteClient) {
-      if (item.FolderId) {
-        // Item is in a folder - show folder name
-        const allFolders = dbContext.sqliteClient.folders.getAll();
-        const folder = allFolders.find(f => f.Id === item.FolderId && f.ManifestId === item.ManifestId);
-        if (folder) {
-          setBackButtonTitle(folder.Name);
-        } else {
-          setBackButtonTitle(t('items.title'));
-        }
-      } else {
-        // Item is at root - show "Items"
-        setBackButtonTitle(t('items.title'));
-      }
-    }
-
-    return (): void => setBackButtonTitle(null);
-  }, [item, dbContext?.sqliteClient, setBackButtonTitle, t]);
+  useItemBackButtonTitle(item);
 
   if (!item) {
     return <div>{t('common.loading')}</div>;
