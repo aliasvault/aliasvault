@@ -238,11 +238,14 @@ start_taskrunner() { run_worker "AliasVault.TaskRunner"; }
 start_web() {
   require npm
   write_web_dev_settings
+  local lan_ip
+  lan_ip="$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || true)"
   banner "Web app (Vite dev)" \
     "Dev server  http://localhost:$WEB_PORT" \
+    "Network     http://${lan_ip:-<lan-ip>}:$WEB_PORT  (not a secure context: shows the HTTPS warning)" \
     "API         http://localhost:$API_HTTP"
   cd "$ROOT_DIR/apps/web"
-  npm run dev -- --port "$WEB_PORT" --strictPort
+  npm run dev -- --host 0.0.0.0 --port "$WEB_PORT" --strictPort
 }
 
 start_ext() {

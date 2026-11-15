@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
+import HttpsRequiredWarning from '@/components/alerts/HttpsRequiredWarning';
 import AuthPreferences from '@/components/auth/AuthPreferences';
 import Logo from '@/components/auth/Logo';
 
@@ -25,6 +26,7 @@ const AuthLayout: React.FC = () => {
       <Logo />
       <div className="w-full max-w-xl p-6 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800">
         <GlobalNotificationDisplay marginTop={false} marginBottom={true} paddingX={false} />
+        <HttpsRequiredWarning />
         <Outlet />
       </div>
     </div>

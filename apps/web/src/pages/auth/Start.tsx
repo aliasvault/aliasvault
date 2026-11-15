@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
-import MessageInfo from '@/components/alerts/MessageInfo';
+import HttpsRequiredWarning from '@/components/alerts/HttpsRequiredWarning';
 import AuthPreferences from '@/components/auth/AuthPreferences';
 import Logo from '@/components/auth/Logo';
 import FooterLogin from '@/components/layout/FooterLogin';
@@ -17,7 +17,6 @@ const Start: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isInitialized, isLoggedIn } = useAuth();
-  const [isHttpWarning, setIsHttpWarning] = useState(false);
   usePageTitle('AliasVault');
 
   useEffect(() => {
@@ -25,15 +24,6 @@ const Start: React.FC = () => {
       navigate('/', { replace: true });
     }
   }, [isInitialized, isLoggedIn, navigate]);
-
-  /**
-   * Browsers only allow the crypto APIs over HTTPS, except on localhost.
-   */
-  useEffect(() => {
-    const host = window.location.hostname.toLowerCase();
-    const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]';
-    setIsHttpWarning(window.location.protocol === 'http:' && !isLocalhost);
-  }, []);
 
   return (
     <>
@@ -60,11 +50,7 @@ const Start: React.FC = () => {
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
                 {t('auth.start.taglineText')}
               </p>
-              {isHttpWarning && (
-                <MessageInfo title={t('auth.start.httpsWarningTitle')}>
-                  {t('auth.start.httpsWarningMessage')}
-                </MessageInfo>
-              )}
+              <HttpsRequiredWarning />
               <div className="space-y-4">
                 {getAppConfig().publicRegistrationEnabled && (
                   <Link to="/user/setup" className="block w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out text-center">
