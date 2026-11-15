@@ -1,8 +1,10 @@
 import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, getSystemField, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
 
 import { getFolderPath } from '../../items/FolderUtils';
+import { mergeItems, planMerge, type MergeAttachment, type MergeChoices, type MergePasskey, type MergeResult, type MergeSide, type MergeTotpCode } from '../../items/ItemMerge';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
 import { multiManifestRendering } from '../../sharing/MultiManifestRendering';
+import { fromStandardFormat, toStandardFormat } from '../../utilities/DateHelpers';
 import { BaseRepository, type IDatabaseClient, type SqliteBindValue } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
@@ -14,7 +16,8 @@ import {
   FieldDefinitionQueries,
   FieldHistoryQueries,
   TotpCodeQueries,
-  AttachmentQueries
+  AttachmentQueries,
+  ItemMergeQueries
 } from '../queries/ItemQueries';
 
 import type { DbOp } from '../DbOp';
@@ -384,16 +387,8 @@ export class ItemRepository extends BaseRepository {
      * 4. Copy remaining child rows with fresh IDs.
      */
     const childCopies = [
-      {
-        table: 'TotpCodes',
-        sql: `INSERT INTO TotpCodes (Id, ItemId, ManifestId, Name, SecretKey, Algorithm, Digits, Period, CreatedAt, UpdatedAt, IsDeleted)
-              SELECT ?, ?, ManifestId, Name, SecretKey, Algorithm, Digits, Period, ?, ?, 0 FROM TotpCodes WHERE Id = ? AND ManifestId = ?`,
-      },
-      {
-        table: 'Attachments',
-        sql: `INSERT INTO Attachments (Id, ItemId, ManifestId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted)
-              SELECT ?, ?, ManifestId, Filename, Blob, BlobHash, ?, ?, 0 FROM Attachments WHERE Id = ? AND ManifestId = ?`,
-      },
+      { table: 'TotpCodes', sql: TotpCodeQueries.COPY },
+      { table: 'Attachments', sql: AttachmentQueries.COPY },
     ];
 
     for (const copy of childCopies) {
@@ -430,6 +425,138 @@ export class ItemRepository extends BaseRepository {
       candidate = `${base} (${counter})`;
     }
     return candidate;
+  }
+
+  /**
+   * Read an item with the child rows a merge can move, as {@link planMerge} and {@link mergeItems} take it.
+   * @param ref - The item, named by its manifest and id
+   * @returns The item and its passkeys, 2FA codes and attachments, or null when it does not exist or is in the trash
+   */
+  public *getMergeSide(ref: ItemRef): DbOp<MergeSide | null> {
+    const item = yield* this.getById(ref);
+    if (!item) {
+      return null;
+    }
+
+    const params = [ref.Id, ref.ManifestId];
+    return {
+      item,
+      passkeys: yield* this.query<MergePasskey>(ItemMergeQueries.GET_PASSKEYS, params),
+      totpCodes: yield* this.query<MergeTotpCode>(ItemMergeQueries.GET_TOTP_CODES, params),
+      attachments: yield* this.query<MergeAttachment>(ItemMergeQueries.GET_ATTACHMENTS, params),
+    };
+  }
+
+  /**
+   * Merge `source` into `target` in one transaction and move `source` to the trash. Both items are read again inside the
+   * transaction, so an edit synced in after the user opened the merge dialog is merged too.
+   * @param target - The item that is kept
+   * @param source - The item that is folded into it
+   * @param choices - The user's choice per conflict of {@link planMerge}
+   * @returns The merged item
+   */
+  public async merge(target: ItemRef, source: ItemRef, choices: MergeChoices): Promise<ItemRef> {
+    return this.withTransaction(async () => {
+      const targetSide = await this.run(this.getMergeSide(target));
+      const sourceSide = await this.run(this.getMergeSide(source));
+      if (!targetSide || !sourceSide) {
+        throw new Error('ItemRepository: an item to merge no longer exists.');
+      }
+      const { blocker } = planMerge(targetSide, sourceSide);
+      if (blocker) {
+        throw new Error(`ItemRepository: these items cannot be merged (${blocker}).`);
+      }
+
+      const merged = mergeItems(targetSide, sourceSide, choices, () => this.generateId());
+      await this.run(this.writeMerge(target, source, merged));
+      return target;
+    });
+  }
+
+  /**
+   * Write a merge: the item row, field history and values, the moved child rows and tags, then trash the source.
+   */
+  private *writeMerge(target: ItemRef, source: ItemRef, merged: MergeResult): DbOp<void> {
+    const manifestId = target.ManifestId;
+    const currentDateTime = this.now();
+    const [targetRow] = yield* this.query<{ LogoId: string | null }>(ItemQueries.GET_ITEM_FIELDS, [target.Id, manifestId]);
+    const [sourceRow] = yield* this.query<{ LogoId: string | null }>(ItemQueries.GET_ITEM_FIELDS, [source.Id, source.ManifestId]);
+
+    // 1. The item row. planMerge refuses items of different manifests, so the source's logo row can be used as-is.
+    const logoId = targetRow?.LogoId ?? sourceRow?.LogoId ?? null;
+    yield* this.execute(ItemMergeQueries.UPDATE_ITEM, [merged.name, merged.itemType, logoId, currentDateTime, target.Id, manifestId]);
+
+    /*
+     * 2. Field history: the source's history, then every value the merge replaces, dated just before the merge so the
+     * value the merged item now holds stays the newest entry.
+     */
+    const historyFields = new Set<string>();
+    const mergedSnapshots = new Map(merged.fields.filter(f => !f.IsCustomField).map(f => [f.FieldKey, ItemRepository.historySnapshot(f.Value)]));
+    const sourceHistory = yield* this.query<{ FieldKey: string; ValueSnapshot: string; ChangedAt: string }>(ItemMergeQueries.GET_SYSTEM_FIELD_HISTORY, [source.Id, source.ManifestId]);
+    for (const row of sourceHistory) {
+      // The merged value is recorded below when it changes; a snapshot the target already has is not repeated.
+      if (row.ValueSnapshot !== mergedSnapshots.get(row.FieldKey) && !(yield* this.historyHasSnapshot(target, row.FieldKey, row.ValueSnapshot))) {
+        yield* this.insertHistory(target, row.FieldKey, row.ValueSnapshot, row.ChangedAt, currentDateTime);
+        historyFields.add(row.FieldKey);
+      }
+    }
+    const replacedAt = toStandardFormat(new Date(fromStandardFormat(currentDateTime).getTime() - 1));
+    for (const replaced of merged.replacedValues) {
+      const snapshot = ItemRepository.historySnapshot(replaced.value);
+      if (!(yield* this.historyHasSnapshot(target, replaced.fieldKey, snapshot))) {
+        yield* this.insertHistory(target, replaced.fieldKey, snapshot, replacedAt, currentDateTime);
+      }
+      historyFields.add(replaced.fieldKey);
+    }
+
+    // 3. Field values, through the same path an edit takes.
+    const item = { Id: target.Id, ManifestId: manifestId, ItemType: merged.itemType, Fields: merged.fields } as Item;
+    yield* this.trackFieldHistory(target.Id, manifestId, merged.fields, currentDateTime);
+    yield* this.updateFieldValues(item, manifestId, currentDateTime);
+    for (const fieldKey of historyFields) {
+      yield* this.pruneFieldHistory(target.Id, manifestId, fieldKey, currentDateTime);
+    }
+
+    // 4. Child rows are copied, except passkeys: a passkey's id is its WebAuthn credential id, so it moves.
+    for (const id of merged.totpCodesToCopy) {
+      yield* this.execute(TotpCodeQueries.COPY, [this.generateId(), target.Id, currentDateTime, currentDateTime, id, manifestId]);
+    }
+    for (const id of merged.attachmentsToCopy) {
+      yield* this.execute(AttachmentQueries.COPY, [this.generateId(), target.Id, currentDateTime, currentDateTime, id, manifestId]);
+    }
+    yield* this.execute(ItemMergeQueries.COPY_TAGS, [target.Id, currentDateTime, currentDateTime, source.Id, manifestId]);
+    for (const id of merged.passkeysToTarget) {
+      yield* this.execute(ItemMergeQueries.MOVE_PASSKEY, [target.Id, currentDateTime, id, manifestId, source.Id]);
+    }
+    for (const id of merged.passkeysToSource) {
+      yield* this.execute(ItemMergeQueries.MOVE_PASSKEY, [source.Id, currentDateTime, id, manifestId, target.Id]);
+    }
+
+    // 5. The source goes to the trash as-is, apart from the passkeys that moved.
+    yield* this.execute(ItemQueries.TRASH_ITEM, [currentDateTime, currentDateTime, source.Id, source.ManifestId]);
+  }
+
+  /**
+   * A field value as a history entry stores it.
+   * @param value - The value or values
+   * @returns The JSON array of the non-empty values
+   */
+  private static historySnapshot(value: string | string[]): string {
+    return JSON.stringify((Array.isArray(value) ? value : [value]).filter(entry => entry && entry.trim() !== ''));
+  }
+
+  /**
+   * Whether an item's history of a field holds a snapshot.
+   */
+  private *historyHasSnapshot(item: ItemRef, fieldKey: string, snapshot: string): DbOp<boolean> {
+    return (yield* this.query(ItemMergeQueries.HISTORY_HAS_SNAPSHOT, [item.Id, item.ManifestId, fieldKey, snapshot])).length > 0;
+  }
+
+  /**
+   * Add a history entry of a system field to an item.
+   */
+  private *insertHistory(item: ItemRef, fieldKey: string, snapshot: string, changedAt: string, currentDateTime: string): DbOp<void> {
+    yield* this.execute(FieldHistoryQueries.INSERT, [this.generateId(), item.Id, item.ManifestId, null, fieldKey, snapshot, changedAt, currentDateTime, currentDateTime, 0]);
   }
 
   /**
