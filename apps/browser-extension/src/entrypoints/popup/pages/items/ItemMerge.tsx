@@ -146,11 +146,11 @@ const ItemMerge: React.FC = () => {
 
           {!search && (
             <section id="merge-suggestions">
-              {renderHeading(t('items.suggestions'))}
+              {renderHeading(t('common.suggestions.title'))}
               {suggested === null && <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p>}
               {suggested?.length === 0 && (
                 <p id="merge-no-suggestions" className="px-3 py-2 text-sm rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                  {t('items.merge.noSuggestions')}
+                  {t('common.suggestions.none')}
                 </p>
               )}
               {suggested && suggested.length > 0 && renderList(suggested)}

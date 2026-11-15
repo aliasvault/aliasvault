@@ -156,7 +156,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
                   <span className="block truncate text-xs text-gray-500 dark:text-gray-400">{getItemAccountLabel(side.item)}</span>
                   <ItemUrlLine item={side.item} className="text-xs" />
                   <span className="block truncate text-xs text-gray-500 dark:text-gray-400">
-                    {t('items.merge.lastChanged', { time: relativeTime(side.lastChangedAt) })} · {t('items.merge.lastUsed', { time: side.lastUsedAt ? relativeTime(side.lastUsedAt) : t('common.never') })}
+                    {t('common.lastChanged', { time: relativeTime(side.lastChangedAt) })} · {t('common.lastUsed', { time: side.lastUsedAt ? relativeTime(side.lastUsedAt) : t('common.never') })}
                   </span>
                 </span>
               </label>
