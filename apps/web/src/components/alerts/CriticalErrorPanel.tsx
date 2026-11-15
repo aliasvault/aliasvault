@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
+import HttpsRequiredWarning from '@/components/alerts/HttpsRequiredWarning';
 import SupportContact from '@/components/alerts/SupportContact';
 import Button from '@/components/shared/Button';
 import Icon from '@/components/shared/Icon';
@@ -44,6 +45,7 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto bg-gray-100 dark:bg-gray-900">
       <div id="critical-error" className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
+        <HttpsRequiredWarning />
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{title ?? t('common.errors.vaultLoadErrorTitle')}</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">{description ?? t('common.errors.vaultLoadError')}</p>
 
