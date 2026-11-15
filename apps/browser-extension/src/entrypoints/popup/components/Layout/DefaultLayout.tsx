@@ -82,7 +82,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
       </main>
       <OverlayScrollbar targetRef={mainRef} />
 
-      <BottomNav />
+      <BottomNav scrollRef={mainRef} />
 
       <Modal
         isOpen={syncError !== null}
