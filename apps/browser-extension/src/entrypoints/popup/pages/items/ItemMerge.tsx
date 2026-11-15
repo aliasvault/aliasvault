@@ -73,7 +73,7 @@ const ItemMerge: React.FC = () => {
   const urlDomains = useUrlDomains(resolvable);
 
   const suggested = useMemo(() => (item && urlDomains ? suggestMergeCandidates(item, candidates, url => urlDomains.get(url) ?? null) : null), [item, candidates, urlDomains]);
-  const results = useMemo(() => (search ? applySearchFilter(candidates, search) : candidates.filter(candidate => !suggested?.includes(candidate))), [candidates, search, suggested]);
+  const results = useMemo(() => (search ? applySearchFilter(candidates, search) : []), [candidates, search]);
 
   // Items to merge (when picked)
   const otherId = searchParams.get('otherId');
@@ -144,29 +144,25 @@ const ItemMerge: React.FC = () => {
             />
           </div>
 
-          {!search && (
+          {!search && suggested?.length === 0 && <p id="merge-search-hint" className="text-sm text-gray-500 dark:text-gray-400">{t('items.merge.searchHint')}</p>}
+          {!search && suggested?.length !== 0 && (
             <section id="merge-suggestions">
               {renderHeading(t('common.suggestions.title'))}
-              {suggested === null && <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p>}
-              {suggested?.length === 0 && (
-                <p id="merge-no-suggestions" className="px-3 py-2 text-sm rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                  {t('common.suggestions.none')}
-                </p>
-              )}
-              {suggested && suggested.length > 0 && renderList(suggested)}
+              {suggested === null ? <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.loading')}</p> : renderList(suggested)}
             </section>
           )}
 
-          <section id="merge-items">
-            {!search && results.length > 0 && renderHeading(t('items.title'))}
-            {renderList(results.slice(0, shownCount))}
-            {search && results.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">{t('items.noMatchingItemsSearch', { search })}</p>}
-            {results.length > shownCount && (
-              <button type="button" onClick={() => setShownCount(shownCount + PAGE_SIZE)} className="mt-2 w-full py-2 text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                {t('common.loadMore')}
-              </button>
-            )}
-          </section>
+          {search && (
+            <section id="merge-items">
+              {renderList(results.slice(0, shownCount))}
+              {results.length === 0 && <p className="text-sm text-gray-500 dark:text-gray-400">{t('items.noMatchingItemsSearch', { search })}</p>}
+              {results.length > shownCount && (
+                <button type="button" onClick={() => setShownCount(shownCount + PAGE_SIZE)} className="mt-2 w-full py-2 text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                  {t('common.loadMore')}
+                </button>
+              )}
+            </section>
+          )}
         </>
       )}
     </div>

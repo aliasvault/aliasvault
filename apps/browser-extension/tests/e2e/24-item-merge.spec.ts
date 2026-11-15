@@ -88,8 +88,9 @@ test.describe('24. Item Merge', () => {
     await test.step('the likely duplicate is suggested, and any item can be searched', async () => {
       await expect(suggestions).toContainText('Example', { timeout: Timeouts.MEDIUM });
       await expect(suggestions).not.toContainText('Unrelated thing');
+      await expect(popup.locator('#merge-items')).toHaveCount(0);
       await popup.locator('#merge-search').fill('Unrelated');
-      await expect(popup.getByText('Unrelated thing')).toBeVisible();
+      await expect(popup.locator('#merge-items')).toContainText('Unrelated thing');
       await expect(suggestions).toHaveCount(0);
       await popup.locator('#merge-search').fill('');
       await client.pause();
@@ -110,10 +111,13 @@ test.describe('24. Item Merge', () => {
       await expect(client.itemCard('Unrelated thing')).toBeVisible();
     });
 
-    await test.step('an item without a likely duplicate says so above the item list', async () => {
+    await test.step('an item without a likely duplicate asks to search, and lists items only once searched', async () => {
       await client.itemCard('Unrelated thing').click({ button: 'right' });
       await popup.locator('#item-menu-merge').click();
-      await expect(popup.locator('#merge-no-suggestions')).toBeVisible({ timeout: Timeouts.MEDIUM });
+      await expect(popup.locator('#merge-search-hint')).toBeVisible({ timeout: Timeouts.MEDIUM });
+      await expect(suggestions).toHaveCount(0);
+      await expect(popup.locator('#merge-items')).toHaveCount(0);
+      await popup.locator('#merge-search').fill('Context');
       await expect(popup.locator('#merge-items')).toContainText('Context Login');
     });
   });
