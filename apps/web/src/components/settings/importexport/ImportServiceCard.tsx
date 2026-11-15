@@ -767,8 +767,8 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
                 <img src={logoUrl} alt={`${serviceName} logo`} className="w-8 h-8 float-left mr-4" />
                 <h3 className="text-xl font-semibold dark:text-white">{t('importExport.serviceCard.importFromServiceTitle', { service: serviceName })}</h3>
               </div>
-              <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                <Icon name="x" className="w-6 h-6" />
+              <button type="button" onClick={closeModal} aria-label={t('common.close')} className="-m-1 p-1 shrink-0 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700">
+                <Icon name="x" className="w-5 h-5" />
               </button>
             </div>
 
