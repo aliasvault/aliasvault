@@ -60,13 +60,13 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
           </label>
           {/* Name suggestions, inline with the label so they don't add an extra row */}
           {suggestions.length > 0 && (
-            <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('items.suggestions')}>
+            <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('common.suggestions.title')}>
               {suggestions.map(name => (
                 <button
                   key={name}
                   type="button"
                   onClick={() => onChange(name)}
-                  title={`${t('items.suggestions')}: ${name}`}
+                  title={`${t('common.suggestions.title')}: ${name}`}
                   className="shrink-0 max-w-[7rem] truncate px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
                 >
                   {name}
