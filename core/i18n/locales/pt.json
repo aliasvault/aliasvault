@@ -3,14 +3,14 @@
     "ACCOUNT_BLOCKED": "Sua conta foi desabilitada. Se você acredita que isto foi um erro, por favor, entre em contato com o suporte.",
     "ACCOUNT_LOCKED": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Conta excluída com sucesso.",
-    "ALIAS_LIMIT_REACHED": "You have reached the limit for creating new email aliases. Please try again later, or contact support if you need more.",
+    "ALIAS_LIMIT_REACHED": "Você atingiu o limite de criação de novos aliases. Tente novamente mais tarde ou entre em contato com o suporte se precisar de mais.",
     "CLAIM_DOES_NOT_EXIST": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, tente editar e salvar a credencial para sincronizar com o banco de dados, e tente novamente.",
-    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
+    "CLAIM_TAKEN": "Este endereço de e-mail já está em uso por outra conta. Edite este item e escolha um endereço de e-mail diferente.",
     "INTERNAL_SERVER_ERROR": "Erro intero do servidor.",
     "INVALID_AUTHENTICATOR_CODE": "Código de autenticação inválido. Por favor, tente novamente.",
     "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor, tente novamente.",
     "INVALID_REFRESH_TOKEN": "Token de atualização inválido.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Este link de convite é inválido, expirou ou já foi utilizado. Solicite um novo ao administrador.",
     "PASSWORD_MISMATCH": "A senha digitada não corresponde à sua senha atual.",
     "PENDING_MIGRATIONS": "Existem migrações pendentes. Por favor, rode a 'atualização de banco de dados ef dotnet' para aplicá-las.",
     "PUBLIC_REGISTRATION_DISABLED": "Registro de novas contas está atualmente desabilitado neste servidor. Por favor, entre em contato com o administrador.",
@@ -72,10 +72,10 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Anexo excluído com sucesso.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "{{filename}} está vazio.",
     "firefoxExpandRequired": "Para fazer o upload dr arquivos, use a tela expandida.",
     "openExpandedWindow": "Abrir Tela Expandida",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Erro ao enviar arquivo: {{error}}",
     "uploadSuccess": "Arquivos enviados com sucesso.",
     "uploading": "Fazendo upload..."
   },
@@ -135,7 +135,7 @@
     "mobileUnlock": {
       "scanQrCodeDescription": "Escaneie o código QR com seu aplicativo AliasVault para entrar e desbloquear seu cofre."
     },
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Quando o aplicativo pedir, insira este número.",
     "noAccountYet": "Não possui conta?",
     "passwordAttemptsWarning": "Senha incorreta. Você será desconectado se você digitar a senha incorretamente mais {{remainingAttempts}} vezes.",
     "passwordPlaceholder": "Digite sua senha",
@@ -992,7 +992,7 @@
     "aliasvaultIcon": "Ícone do AliasVault",
     "attemptsWarning": "Senha incorreta. Você será desconectado se você digitar a senha incorretamente mais {{count}} vezes.",
     "authRequired": "Autenticação Necessária",
-    "authRequiredMessage": "Por favor, habilite o desbloqueio por Biometria ou PIN no aplicativo AliasVault principal para utilizar o autopreenchimento.",
+    "authRequiredMessage": "Para usar o preenchimento automático, ative a biometria ou o PIN no app principal do AliasVault.",
     "autofillConfirmFillTitle": "Fill in {{app}}?",
     "autofillFailedToRetrieve": "Falha ao recuperar, abra o aplicativo",
     "autofillNoMatchFound": "Nenhum resultado encontrado",
@@ -1018,7 +1018,7 @@
     "emailPrefix": "E-mail: ",
     "errorBiometricCancelled": "Autenticação biométrica cancelada",
     "errorEncryptionKeyFailed": "Falha ao recuperar chave de criptografia",
-    "errorUnlockMethodRequired": "Por favor, habilite a autenticação por biometria ou PIN no aplicativo AliasVault principal para continuar",
+    "errorUnlockMethodRequired": "Para continuar, é necessário ativar a biometria ou o PIN no aplicativo principal do AliasVault",
     "errorUnlockVaultFirst": "Por favor, desbloqueie seu cofre no aplicativo do AliasVault antes",
     "errorVaultDecryptFailed": "Falha ao descriptografar cofre",
     "failedToLoadCredentials": "Falha ao carregar credenciais",
@@ -1233,7 +1233,7 @@
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
     "contextMenuSettings": "Configurações do Menu de Contexto",
     "copyTotpOnFill": "Copiar código de dois fatores automaticamente",
-    "copyTotpOnFillDescription": "Quando utilizar o autopreenchimento com uma credencial que tenha 2FA, copia automaticamente o código de dois fatores para a área de transferência para que você possa colar no próximo campo.",
+    "copyTotpOnFillDescription": "Ao preencher automaticamente uma credencial com 2FA, copia o código TOTP para a área de transferência para que você possa colá-lo no próximo campo.",
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
     "customApiUrl": "URL da API",
@@ -1544,7 +1544,7 @@
     },
     "temporaryUntil": "até",
     "theme": "Tema",
-    "totpAutofill": "Preenchimento automático de código de 2FA",
+    "totpAutofill": "Preenchimento automático 2FA",
     "totpAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de 2FA forem detectados",
     "twoColumnLayout": "Two-column layout",
     "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
@@ -1573,7 +1573,7 @@
     "vaultUnlockSettings": {
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
       "biometricEnabled": "{{biometric}} foi ativado com sucesso",
-      "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
+      "biometricHelp": "Use a biometria para desbloquear seu cofre, que é protegido pelo {{keystore}}.",
       "biometricNotAvailable": "{{biometric}} Não Disponível",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
       "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
@@ -1620,7 +1620,7 @@
     }
   },
   "totp": {
-    "addCode": "Adicionar Código de Autenticação de Dois Fatores",
+    "addCode": "Adicionar código 2FA",
     "addName": "Add a name (optional)",
     "addTotpCodeDescription": "Adicionar um código de autenticação de dois fatores",
     "addTotpCodeModalTitle": "Adicionar código TOTP 2FA",
@@ -1630,7 +1630,7 @@
     "deleteCodeConfirmation": "Tem certeza que deseja excluir este código TOTP?",
     "deleteCodeTitle": "Excluir código TOTP",
     "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
-    "deleteTotpCodeTitle": "Excluir Código 2FA",
+    "deleteTotpCodeTitle": "Excluir código 2FA",
     "digits": "Digits",
     "enterManually": "Enter secret key",
     "errors": {
@@ -1645,7 +1645,7 @@
     "scanQrCode": "Escanear Código QR",
     "secretKey": "Chave Secreta",
     "secretKeyPlaceholder": "Digite a chave secreta (manualmente)",
-    "totpInstructions": "Se o site oferece ou requer 2FA para sua conta, copie a chave secreta ou o URI do QR cole-o e cole abaixo.",
+    "totpInstructions": "Se o site oferecer ou exigir 2FA para sua conta, copie a chave secreta ou o URI do código QR e cole abaixo.",
     "viewer": {
       "noTotpCodesMessage": "Nenhum código de autenticação de dois fatores disponível"
     }
