@@ -10,7 +10,7 @@
  *   .verifyCredentialExists('My Login');
  * ```
  */
-import type { BrowserContext, Page } from '@playwright/test';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
 
 import { createFreshContext, expect, test } from './fixtures';
 import { waitForVaultOpen } from './helpers';
@@ -262,6 +262,13 @@ export class TestClient {
     await this.popup.click(ButtonSelectors.SAVE);
     await waitForCredentialSaved(this.popup, name);
     return this;
+  }
+
+  /**
+   * The button of an item's row in the vault list.
+   */
+  itemCard(name: string): Locator {
+    return this.popup.locator('#items-list li[role="option"]', { hasText: name }).locator('button').first();
   }
 
   /**
