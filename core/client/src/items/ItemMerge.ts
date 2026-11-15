@@ -9,8 +9,8 @@ import type { Item, ItemField, ItemType } from '@aliasvault/models/vault';
  * Only single-value fields that both items fill differently are a choice for the user (a conflict). Everything else
  * is combined: URLs are joined, notes appended, and custom fields, 2FA codes, attachments and tags are copied to the
  * target. Passkeys are the exception: they move instead of being copied, because a passkey's id is its WebAuthn
- * credential id and cannot exist twice in one manifest. Two items that both hold passkeys are a conflict too, because
- * one account normally has one. TODO: update vault passkey storage logic to move primary identifier from Id to the new separate CredentialId column.
+ * credential id and cannot exist twice in one manifest. Two items that both hold a passkey are a conflict too, because
+ * an item holds one passkey: the one not kept moves to the trashed source. TODO: update vault passkey storage logic to move primary identifier from Id to the new separate CredentialId column.
  */
 
 /**
@@ -39,12 +39,12 @@ export type MergeSide = {
 };
 
 /**
- * Which item's value a conflict keeps; `both` only applies to passkeys.
+ * Which item's value a conflict keeps.
  */
-export type MergeChoice = 'target' | 'source' | 'both';
+export type MergeChoice = 'target' | 'source';
 
 /**
- * The user's choice per conflict key; a missing key takes the conflict's default.
+ * The user's choice per conflict key; a missing key keeps the target's value.
  */
 export type MergeChoices = Partial<Record<string, MergeChoice>>;
 
@@ -66,8 +66,6 @@ export type MergeConflict = {
   source: string;
   /** Whether the values are secrets, shown masked. */
   isHidden: boolean;
-  /** Whether the merged item can keep both values. */
-  allowsBoth: boolean;
 };
 
 /**
@@ -231,7 +229,7 @@ export function planMerge(target: MergeSide, source: MergeSide): MergePlan {
   const targetName = target.item.Name?.trim() ?? '';
   const sourceName = source.item.Name?.trim() ?? '';
   if (targetName && sourceName && targetName.toLowerCase() !== sourceName.toLowerCase()) {
-    conflicts.push({ key: MergeConflictKeys.Name, target: targetName, source: sourceName, isHidden: false, allowsBoth: false });
+    conflicts.push({ key: MergeConflictKeys.Name, target: targetName, source: sourceName, isHidden: false });
   }
 
   const targetFields = systemFields(target.item);
@@ -242,25 +240,16 @@ export function planMerge(target: MergeSide, source: MergeSide): MergePlan {
     const [targetValue] = valuesOf(targetFields.get(fieldKey));
     const [sourceValue] = valuesOf(sourceField);
     if (targetValue && sourceValue && !sameValue(fieldKey, targetValue, sourceValue)) {
-      conflicts.push({ key: fieldKey, target: targetValue, source: sourceValue, isHidden: sourceField.IsHidden, allowsBoth: false });
+      conflicts.push({ key: fieldKey, target: targetValue, source: sourceValue, isHidden: sourceField.IsHidden });
     }
   }
 
   if (target.passkeys.length > 0 && source.passkeys.length > 0) {
     const [targetPasskeys, sourcePasskeys] = [describePasskeys(target.passkeys), describePasskeys(source.passkeys)];
-    conflicts.push({ key: MergeConflictKeys.Passkeys, target: targetPasskeys, source: sourcePasskeys, isHidden: false, allowsBoth: true });
+    conflicts.push({ key: MergeConflictKeys.Passkeys, target: targetPasskeys, source: sourcePasskeys, isHidden: false });
   }
 
   return { blocker: null, conflicts };
-}
-
-/**
- * The choice a conflict takes when the user does not pick one: the target's value, or both passkeys.
- * @param conflict - The conflict
- * @returns The default choice
- */
-export function defaultMergeChoice(conflict: MergeConflict): MergeChoice {
-  return conflict.allowsBoth ? 'both' : 'target';
 }
 
 /**
@@ -389,7 +378,7 @@ export function mergeItems(target: MergeSide, source: MergeSide, choices: MergeC
   /**
    * The user's choice for a conflict, else its default.
    */
-  const choiceFor = (key: string): MergeChoice => choices[key] ?? (key === MergeConflictKeys.Passkeys ? 'both' : 'target');
+  const choiceFor = (key: string): MergeChoice => choices[key] ?? 'target';
 
   const targetName = target.item.Name?.trim() ? target.item.Name : null;
   const sourceName = source.item.Name?.trim() ? source.item.Name : null;
@@ -442,7 +431,8 @@ export function mergeItems(target: MergeSide, source: MergeSide, choices: MergeC
     itemType = ItemTypes.Login;
   }
 
-  const passkeyChoice = target.passkeys.length > 0 && source.passkeys.length > 0 ? choiceFor(MergeConflictKeys.Passkeys) : 'both';
+  // The target takes the source's passkey unless it keeps its own; a passkey that is not kept moves to the trashed source.
+  const keepTargetPasskey = target.passkeys.length > 0 && (source.passkeys.length === 0 || choiceFor(MergeConflictKeys.Passkeys) === 'target');
 
   const knownSecrets = new Set(target.totpCodes.map(code => totpKey(code.SecretKey)));
   const totpCodesToCopy: string[] = [];
@@ -458,8 +448,8 @@ export function mergeItems(target: MergeSide, source: MergeSide, choices: MergeC
     itemType,
     fields: [...fields, ...customFields],
     replacedValues,
-    passkeysToTarget: passkeyChoice === 'target' ? [] : source.passkeys.map(passkey => passkey.Id),
-    passkeysToSource: passkeyChoice === 'source' ? target.passkeys.map(passkey => passkey.Id) : [],
+    passkeysToTarget: keepTargetPasskey ? [] : source.passkeys.map(passkey => passkey.Id),
+    passkeysToSource: keepTargetPasskey ? [] : target.passkeys.map(passkey => passkey.Id),
     totpCodesToCopy,
     attachmentsToCopy: source.attachments.filter(attachment => !target.attachments.some(known => sameFile(known, attachment))).map(attachment => attachment.Id),
   };

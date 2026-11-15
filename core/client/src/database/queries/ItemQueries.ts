@@ -510,6 +510,13 @@ export class TotpCodeQueries {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
+   * Copy a TOTP code to another item of the same manifest. Binds [newId, newItemId, now, now, id, manifestId].
+   */
+  public static readonly COPY = `
+    INSERT INTO TotpCodes (Id, ItemId, ManifestId, Name, SecretKey, Algorithm, Digits, Period, CreatedAt, UpdatedAt, IsDeleted)
+    SELECT ?, ?, ManifestId, Name, SecretKey, Algorithm, Digits, Period, ?, ?, 0 FROM TotpCodes WHERE Id = ? AND ManifestId = ?`;
+
+  /**
    * Update an existing TOTP code.
    */
   public static readonly UPDATE = `
@@ -560,6 +567,13 @@ export class AttachmentQueries {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
+   * Copy an attachment to another item of the same manifest. Binds as {@link TotpCodeQueries.COPY}.
+   */
+  public static readonly COPY = `
+    INSERT INTO Attachments (Id, ItemId, ManifestId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted)
+    SELECT ?, ?, ManifestId, Filename, Blob, BlobHash, ?, ?, 0 FROM Attachments WHERE Id = ? AND ManifestId = ?`;
+
+  /**
    * Soft delete an attachment. Also drops the Blob bytes so storage is reclaimed
    * immediately while the row remains as a tombstone for LWW sync.
    */
@@ -569,4 +583,78 @@ export class AttachmentQueries {
         Blob = NULL,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
+}
+
+/**
+ * SQL query constants for merging one item into another.
+ */
+export class ItemMergeQueries {
+  /**
+   * An item's live passkeys as the merge reads them.
+   */
+  public static readonly GET_PASSKEYS = `
+    SELECT Id, RpId, DisplayName
+    FROM Passkeys
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0
+    ORDER BY CreatedAt`;
+
+  /**
+   * An item's live 2FA codes as the merge reads them.
+   */
+  public static readonly GET_TOTP_CODES = `
+    SELECT Id, SecretKey
+    FROM TotpCodes
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0
+    ORDER BY CreatedAt`;
+
+  /**
+   * An item's live attachments as the merge reads them, without their bytes.
+   */
+  public static readonly GET_ATTACHMENTS = `
+    SELECT Id, Filename, BlobHash, length(Blob) AS Size
+    FROM Attachments
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0
+    ORDER BY CreatedAt`;
+
+  /**
+   * Update the item row of the merged item.
+   */
+  public static readonly UPDATE_ITEM = `
+    UPDATE Items
+    SET Name = ?,
+        ItemType = ?,
+        LogoId = ?,
+        UpdatedAt = ?
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * Move a passkey to another item of the same manifest. Binds [newItemId, now, id, manifestId, oldItemId].
+   */
+  public static readonly MOVE_PASSKEY = `
+    UPDATE Passkeys SET ItemId = ?, UpdatedAt = ? WHERE Id = ? AND ManifestId = ? AND ItemId = ?`;
+
+  /**
+   * Give the target every tag of the source, reviving a tag the target once had. Binds [targetId, now, now, sourceId, manifestId].
+   */
+  public static readonly COPY_TAGS = `
+    INSERT INTO ItemTags (ManifestId, ItemId, TagId, CreatedAt, UpdatedAt, IsDeleted)
+    SELECT ManifestId, ?, TagId, ?, ?, 0 FROM ItemTags WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0
+    ON CONFLICT (ManifestId, ItemId, TagId) DO UPDATE SET IsDeleted = 0, UpdatedAt = excluded.UpdatedAt WHERE ItemTags.IsDeleted = 1`;
+
+  /**
+   * The source's history of system fields, to copy to the target.
+   */
+  public static readonly GET_SYSTEM_FIELD_HISTORY = `
+    SELECT FieldKey, ValueSnapshot, ChangedAt
+    FROM FieldHistories
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL`;
+
+  /**
+   * Whether an item's history of a field already holds a snapshot.
+   */
+  public static readonly HISTORY_HAS_SNAPSHOT = `
+    SELECT 1 AS Found
+    FROM FieldHistories
+    WHERE ItemId = ? AND ManifestId = ? AND FieldKey = ? AND ValueSnapshot = ? AND IsDeleted = 0
+    LIMIT 1`;
 }
