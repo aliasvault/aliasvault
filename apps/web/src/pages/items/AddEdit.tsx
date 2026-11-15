@@ -362,11 +362,11 @@ const ItemAddEditForm: React.FC = () => {
   /**
    * Put the cursor after the URL placeholder when the field still holds it.
    */
-  const onFocusUrlInput = (index: number, event: React.FocusEvent<HTMLInputElement>): void => {
-    if (getFieldValues(edit, FieldKey.LoginUrl)[index] !== DEFAULT_SERVICE_URL) {
+  const onFocusUrlInput = (event: React.FocusEvent<HTMLInputElement>): void => {
+    const input = event.target;
+    if (input.value !== DEFAULT_SERVICE_URL) {
       return;
     }
-    const input = event.target;
     setTimeout(() => input.setSelectionRange(DEFAULT_SERVICE_URL.length, DEFAULT_SERVICE_URL.length), 1);
   };
 
@@ -549,7 +549,7 @@ const ItemAddEditForm: React.FC = () => {
                     </div>
                     {shouldShowField(FieldKey.LoginUrl) && (
                       <div className="col-span-6 sm:col-span-3">
-                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} onFocus={onFocusUrlInput} />
+                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} onFocus={onFocusUrlInput} addLabel={t('itemTypes.fieldTypes.url')} />
                       </div>
                     )}
                   </div>
