@@ -348,7 +348,6 @@
     "showPassword": "Show password",
     "success": "Success",
     "suggestions": {
-      "none": "No suggestions",
       "title": "Suggestions"
     },
     "syncVaultData": "Sync vault data",
@@ -809,6 +808,7 @@
       "title": "Merge items",
       "action": "Merge",
       "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
       "keep": "Item to keep",
       "chooseValues": "Field values to keep:",
       "combined": "All other fields values are combined into the merged item.",
