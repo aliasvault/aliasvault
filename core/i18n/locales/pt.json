@@ -37,7 +37,7 @@
       "customApiUrl": "URL de API Customizada",
       "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",
       "customProxyHeaders": "Cabeçalhos de proxy personalizados",
-      "customProxyHeadersDescription": "Adicionar cabeçalhos HTTP que serão enviados com cada requisição para seu servidor AliasVault. Pode ser utilizado para configurações self-hosted atrás de proxies reversos que verifiquem por cabeçalhos (por exemplo, Pangolin, Cloudflare Access).",
+      "customProxyHeadersDescription": "Adicionar cabeçalhos HTTP que serão enviados com cada requisição para seu servidor AliasVault. Pode ser utilizado para configurações auto-hospedadas atrás de proxys reversos que verificam cabeçalhos (por exemplo, Pangolin, Cloudflare Access).",
       "headerName": "Nome do cabeçalho",
       "headerNamePlaceholder": "X-Cabeçalho-Personalizado",
       "headerValue": "Valor do cabeçalho",
@@ -101,7 +101,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login com sua nova senha, por favor, note que o administrador do servidor pode recuperar um backup do seu cofre para você. Se este for o caso, por favor, entre em contato com o administrador do servidor.",
-      "contactSupportWithEmail": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login, por favor, entre em contato com o suporte no {{email}} para assistência.",
+      "contactSupportWithEmail": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login, por favor, entre em contato com o suporte no {{email}} para obter ajuda.",
       "lostPasswordTitle": "Senha perdida",
       "newAccountRequired": "Se você não lembra sua senha, você precisará criar uma nova conta. Por favor, note que isto resultará na perda de todos os seus dados.",
       "noRecoveryExplanation": "Infelizmente, caso tenha perdido sua senha, não há maneiras de recuperá-la. AliasVault utiliza criptografia ponta a ponta para todos os seus dados, garantindo que ninguém, alḿe de você, tenha acesso a eles.",
@@ -133,7 +133,7 @@
     "masterPassword": "Senha Mestre",
     "maxAttemptsReached": "Muitas tentativas de desbloqueio falharam. Você foi desconectado por motivos de segurança.",
     "mobileUnlock": {
-      "scanQrCodeDescription": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre."
+      "scanQrCodeDescription": "Escaneie o código QR com seu aplicativo AliasVault para entrar e desbloquear seu cofre."
     },
     "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "noAccountYet": "Não possui conta?",
@@ -182,7 +182,7 @@
       "httpsWarningMessage": "Navegadores permitem apenas operações de criptografia seguras através de HTTPS, exceto para localhost. Login/registro não funcionará através de HTTP com o hostname atual. Por favor, altere para HTTPS.",
       "httpsWarningTitle": "HTTPS Necessário",
       "loginExistingAccountButton": "Fazer login com conta existente",
-      "mainTitle": "Gerenciador de Alias de Senha & (E-mail)",
+      "mainTitle": "Gerenciador de senhas e aliases de e-mail",
       "taglineText": "Sua Privacidade. Protegida."
     },
     "switchAccounts": "Mudar de conta?",
@@ -190,11 +190,11 @@
     "unlockPage": {
       "connectionFailedError": "A conexão com os servidores do AliasVault falhou. Por favor, tente novamente (mais tarde).",
       "enterMasterPasswordDescription": "Digite sua senha mestre para desbloquear o cofre.",
-      "loggingInWithWebAuthn": "Fazendo login com passkey...",
+      "loggingInWithWebAuthn": "Fazendo login com chave de acesso...",
       "quickUnlockDescription": "Desbloqueie seu cofre rapidamente utilizando sua passkey. Ou faça login com sua senha como alternativa.",
       "unlockButton": "Desbloquear",
       "unlockWithMobileButton": "Desbloquear com Dispositivo Móvel",
-      "unlockWithWebAuthn": "Desbloquear com Passkey",
+      "unlockWithWebAuthn": "Desbloquear com chave de acesso",
       "webAuthnNotSupportedError": "Seu navegador atual não tem suporte à extensão WebAuthn PRF. Por favor, faça login com sua senha."
     },
     "unlockTitle": "Desbloquear Seu Cofre",
@@ -252,7 +252,7 @@
     "errorGeneric": "Ocorreu um erro. Por favor, tente novamente.",
     "errorPasswordMismatch": "As senhas não coincidem.",
     "errors": {
-      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "backgroundUnresponsive": "O serviço em segundo plano da extensão não está respondendo. Feche e reabra a extensão ou reinicie o navegador se o problema persistir.",
       "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
       "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
@@ -262,8 +262,8 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
-      "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
+      "serverError": "Não foi possível conectar ao servidor do AliasVault. Tente novamente mais tarde ou entre em contato com o suporte se o problema persistir.",
+      "serverNotAvailable": "O servidor do AliasVault não está disponível no momento. Tente novamente mais tarde ou contate o suporte caso o problema persista.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
@@ -310,7 +310,7 @@
     "openInNewWindow": "Abrir em uma nova janela",
     "or": "ou",
     "pageNavigation": "Page navigation",
-    "passkeys": "Passkeys",
+    "passkeys": "Chaves de acesso",
     "password": "Senha",
     "passwordStrength": {
       "fair": "Bom",
@@ -364,12 +364,12 @@
       "title": "Confirm autofill"
     },
     "autofillTotp": "Autopreencher 2FA",
-    "autofillWithAliasVault": "Autopreencher nome de usuário/senha",
+    "autofillWithAliasVault": "Preencher usuário/senha automaticamente",
     "dismissPopup": "Ignorar pop-up",
     "generateRandomPassword": "Gerar senha aleatória (copiar para a área de transferência)",
     "hideFor1Hour": "Ocultar por 1 hora (site atual)",
     "hidePermanently": "Ocultar permanentemente (site atual)",
-    "loginWithPasskey": "Entrar com passkey",
+    "loginWithPasskey": "Entrar com chave de acesso",
     "new": "Novo",
     "noMatchesFound": "Nenhum resultado encontrado",
     "noTotpItemsFound": "Nenhum código 2FA encontrado",
@@ -469,10 +469,10 @@
   },
   "importExport": {
     "exportAvexButton": "Exportar cofre criptografado (.avex)",
-    "exportAvexDescription": "Backup protegido por senha do seu cofre inteiro. Inclui todos os itens, passkeys, e anexos. Utilize como um backup manual e/ou para restaurar para outro servidor AliasVault.",
+    "exportAvexDescription": "Backup protegido pela senha do seu cofre. Inclui todos os itens, chaves de acesso e anexos. Utilize como backup manual para restaurar em outro servidor AliasVault.",
     "exportAvexTitle": "Exportação total do cofre criptografado",
     "exportAvuxButton": "Exportar cofre descriptografado (.avux)",
-    "exportAvuxDescription": "Finalize a exportação do cofre como um arquivo descriptografado compatível com ZIP. Incluí todos os itens, passkeys e anexos.",
+    "exportAvuxDescription": "Complete a exportação do cofre como um arquivo não criptografado compatível com ZIP. Inclui todos os itens, chaves de acesso e anexos.",
     "exportAvuxTitle": "Exportação total do cofre descriptografado",
     "exportCsvButton": "Exportar para CSV",
     "exportCsvDescription": "Exportação básica para importar em outros gerenciadores de senhas. Não inclui chaves de acesso ou anexos.",
@@ -488,7 +488,7 @@
     },
     "exportSectionDescription": "Exporte seu cofre para mover credenciais entre servidores AliasVault ou outros gerenciadores de senhas.",
     "exportSuccessMessage": "O seu cofre foi exportado com sucesso.",
-    "exportWarningMessage": "Aviso: Exportar seu cofre para um arquivo descriptografado irá expor todas as suas senhas e informações sensíveis em texto. Faça isso apenas em computadores confiáveis e garanta que você:\n\n• Armazene o arquivo exportado em um local seguro\n• Exclua o arquivo quando não precisar mais dele\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
+    "exportWarningMessage": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e informações sensíveis em texto simples. Faça isso apenas em computadores confiáveis e garanta que você:\n\n• Armazene o arquivo exportado em um local seguro\n• Exclua o arquivo quando não precisar mais dele\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "exportingVaultMessage": "Exportando cofre...",
     "importSectionDescription": "Selecione um serviço para importar.",
     "importSectionTitle": "Importar senhas",
@@ -573,7 +573,7 @@
       "roboformInstructionsPart1": "Para importar suas senhas do RoboForm, você precisa exportá-las como arquivo CSV. Você pode fazer isto abrindo o RoboForm, indo no menu 'RoboForm' > 'Opções' > 'Conta & Dados' > 'Exportar' e selecionando o formato CSV.",
       "strongboxDescription": "Importar senhas do Strongbox",
       "strongboxInstructionsPart1": "Para importar seu cofre do Strongbox, você precisará exportá-lo para um arquivo CSV. Você pode fazer isto indo no menu 'Arquivo' e selecionando 'Exportar Banco de Dados (para CSV)'.",
-      "template": "template",
+      "template": "modelo",
       "uploadInstructions": "Depois de exportar o arquivo, você pode carregá-lo abaixo."
     }
   },
@@ -584,7 +584,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Cartão de Crédito"
+      "title": "Cartão de crédito"
     },
     "deleteCustomField": "Delete custom field",
     "editCustomField": "Edit Custom Field",
@@ -615,7 +615,7 @@
   "items": {
     "addEdit": {
       "addItemDescription": "Crie um novo item abaixo.",
-      "deletePasskeyButton": "Excluir passkey",
+      "deletePasskeyButton": "Excluir chave de acesso",
       "editItemDescription": "Edite o item existente abaixo.",
       "errorSavingItem": "Erro ao salvar item. Por favor, tente novamente.",
       "passkeyHelpText": "Passkeys são criadas através da extensão do navegador ou aplicativos móveis quando solicitado por um website. Eles não podem ser editados ou criados manualmente pelo aplicativo web. Para remover este passkey, utilize o botão de excluir abaixo. Para trocar ou criar um novo passkey, visite o website e siga as instruções.",
@@ -723,7 +723,7 @@
       "createFolder": "Criar Pasta",
       "deleteFolder": "Excluir Pasta",
       "deleteFolderAndItems": "Excluir pasta e todos os itens",
-      "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para recentemente excluídos.",
       "deleteFolderKeepItems": "Excluir apenas a pasta",
       "deleteFolderKeepItemsDescription": "Itens serão movidos para a pasta superior.",
       "deleteModal": {
@@ -847,7 +847,7 @@
       "confirmDeleteMessage": "Este item será excluído permanentemente, e não poderá ser restaurado.",
       "confirmDeleteTitle": "Excluir Permanentemente?",
       "confirmEmptyAllMessage": "Todos os {{count}} itens serão excluídos permanentemente, e não poderão ser restaurados.",
-      "confirmEmptyAllTitle": "Esvaziar Recentemente Excluídos?",
+      "confirmEmptyAllTitle": "Esvaziar recentemente excluídos?",
       "daysRemaining_one": "{{count}} dia restante",
       "daysRemaining_other": "{{count}} dias restantes",
       "deletePermanently": "Excluir Permanentemente",
@@ -859,7 +859,7 @@
       "noItems": "Nenhum item excluído",
       "noItemsDescription": "Itens que você excluir aparecerão aqui por {{days}} dias antes de serem permanentemente removidos.",
       "restore": "Restaurar",
-      "title": "Recentemente Excluídos"
+      "title": "Recentemente excluídos"
     },
     "salt": "Salt",
     "saveItem": "Salvar Item",
@@ -907,7 +907,7 @@
       "itemDeleted": "Item excluído com sucesso",
       "itemUpdated": "Item atualizado com sucesso",
       "passwordCopied": "Senha copiada para a área de transferência",
-      "totpCodeCopied": "Código de TOTP copiado para a área de transferência",
+      "totpCodeCopied": "Código TOTP copiado para a área de transferência",
       "urlCopied": "URL copiado para a área de transferência",
       "usernameCopied": "Nome de usuário copiado para a área de transferência"
     },
@@ -1173,8 +1173,8 @@
       "pageDescription": "Instale extensões de navegador e aplicativos móveis para acessar seu cofre de todos os seus dispositivos e preencher automaticamente as credenciais nos sites.",
       "pageTitle": "Extensões & Aplicativos"
     },
-    "autoCopyTotpOnAutofill": "Copiar código 2FA para a área de transferência automaticamente",
-    "autoCopyTotpOnAutofillDescription": "Copiar automaticamente o primeiro código 2FA para a área de transferência após preencher as credenciais automaticamente",
+    "autoCopyTotpOnAutofill": "Copiar 2FA automaticamente para a área de transferência",
+    "autoCopyTotpOnAutofillDescription": "Copiar automaticamente o primeiro código 2FA para a área de transferência após preencher as credenciais",
     "autoLock": "Bloqueio automático",
     "autoLockOptions": {
       "15minutes": "15 minutos",
@@ -1187,7 +1187,7 @@
       "8hours": "8 horas"
     },
     "autoLockSettings": {
-      "description": "Escolha por quanto tempo o aplicativos pode ficar em background antes de solicitar re-autenticação. Você precisará usar o Face ID ou digitar sua senha para desbloquear seu cofre novamente."
+      "description": "Escolha quanto tempo o aplicativo pode permanecer em segundo plano antes de exigir uma nova autenticação. Será necessário usar o Face ID ou digitar sua senha para desbloquear o cofre novamente."
     },
     "autoLockTimeoutDescription": "Bloquear o cofre automaticamente após período de inatividade",
     "autoLockTimeoutHelp": "O cofre será bloqueado apenas após o período de inatividade especificado (nenhuma utilização de preenchimento automático ou pop-up da extensão abertos). O cofre sempre será bloqueado quando o navegador for fechado, independentemente desta configuração.",
@@ -1207,10 +1207,10 @@
       "alreadyConfigured": "Já configurei",
       "howToEnable": "Como habilitar Autopreenchimento & Passkeys:"
     },
-    "batteryOptimizationActive": "Otimização de bateria está bloqueando tarefas em background",
-    "batteryOptimizationDisabled": "Limpeza da área de transferência em background habilitada",
-    "batteryOptimizationHelpDescription": "A otimização de bateria do Android previne a limpeza correta da área de transferência enquanto o aplicativo está em background. Desabilitar a otimização de bateria para o AliasVault permite a limpeza correta da área de transferência em background e automaticamente autoriza as permissões de alarme.",
-    "batteryOptimizationHelpTitle": "Habilitar Limpeza de Área de Transferência no Background",
+    "batteryOptimizationActive": "A otimização de bateria está bloqueando as tarefas em segundo plano",
+    "batteryOptimizationDisabled": "Limpeza da área de transferência em segundo plano ativada",
+    "batteryOptimizationHelpDescription": "A otimização de bateria do Android impede que a área de transferência seja limpa de forma confiável enquanto o aplicativo está em segundo plano. Desativar a otimização para o AliasVault garante a limpeza precisa em segundo plano e concede automaticamente as permissões de alarme necessárias.",
+    "batteryOptimizationHelpTitle": "Ativar limpeza da área de transferência em segundo plano",
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Limpar todos os sites desabilitados",
@@ -1219,8 +1219,8 @@
     "clipboardClear10Seconds": "Limpar após 10 segundos",
     "clipboardClear15Seconds": "Limpar após 15 segundos",
     "clipboardClear5Seconds": "Limpar após 5 segundos",
-    "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência habilitado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desabilitar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
-    "clipboardClearDescription": "Limpa automaticamente as senhas e dados sensíveis copiados da sua área de transferência após o tempo especificado.",
+    "clipboardClearAndroidWarning": "Aviso: alguns aparelhos Android mantêm o histórico da área de transferência ativado, salvando itens copiados mesmo depois que o AliasVault faz a limpeza. O aplicativo consegue substituir apenas o item mais recente, deixando os anteriores visíveis no histórico. Para maior segurança, recomendamos desativar o histórico da área de transferência nas configurações do seu celular.",
+    "clipboardClearDescription": "Limpa automaticamente as senhas e dados confidenciais copiados da sua área de transferência após o tempo definido.",
     "clipboardClearDisabled": "Nunca limpar",
     "clipboardClearOptions": {
       "10seconds": "10 segundos"
@@ -1232,7 +1232,7 @@
     "clipboardLocalOnlyDisabledWarning": "Com esta opção desativada, credenciais copiadas podem ser sincronizadas para seus dispositivos Apple (Mac, iPad, etc.) através da Área de Transferência Universal.",
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
     "contextMenuSettings": "Configurações do Menu de Contexto",
-    "copyTotpOnFill": "Copiar código de dois fatores ao autopreencher",
+    "copyTotpOnFill": "Copiar código de dois fatores automaticamente",
     "copyTotpOnFillDescription": "Quando utilizar o autopreenchimento com uma credencial que tenha 2FA, copia automaticamente o código de dois fatores para a área de transferência para que você possa colar no próximo campo.",
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
@@ -1245,9 +1245,9 @@
     "disabledSites": "Sites desabilitados",
     "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
     "enabledForThisSite": "Habilitado para este site",
-    "exportConfirmTitle": "Exportar Cofre",
+    "exportConfirmTitle": "Exportar cofre",
     "exportSectionTitle": "Exportar",
-    "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto. Realize isso apenas em dispositivos confiados e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
+    "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto simples. Realize isso somente em dispositivos confiáveis e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Selecione a faixa etária padrão para geração de novas identidades. Isto afeta a data de nascimento associada à identidade gerada.",
       "aliasGenerationGenderDescription": "Configure o gênero padrão que será utilizado para gerar novas identidades.",
@@ -1320,7 +1320,7 @@
     "openSettings": "Abrir Configurações",
     "openWebApp": "Abrir aplicativo web",
     "passkeySettings": "Configurações de Passkey",
-    "passkeysEnabled": "Enable Passkeys",
+    "passkeysEnabled": "Ativar chaves de acesso",
     "passwordConfirm": {
       "exportDescription": "Por questões de segurança, por favor, digite sua senha mestra para confirmar esta exportação."
     },
