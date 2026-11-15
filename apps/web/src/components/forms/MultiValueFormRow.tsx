@@ -11,7 +11,7 @@ type MultiValueFormRowProps = {
   onChange: (values: string[]) => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  addLabel?: string;
+  addLabel: string;
 };
 
 /**
@@ -86,7 +86,7 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
           className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500"
         >
           <Icon name="plus" className="w-2.5 h-2.5 -ml-0.5" strokeWidth={2.5} />
-          <span>{addLabel ?? t('common.add')}</span>
+          <span>{addLabel}</span>
         </button>
       </div>
       <div className="space-y-2">
