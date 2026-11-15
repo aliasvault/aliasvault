@@ -168,4 +168,39 @@ test.describe('20. Items', () => {
       await expect(card('Bulk two')).toHaveCount(0);
     });
   });
+
+  test('20.6 should add, clear and remove website URLs', async ({ app }) => {
+    const { page } = app;
+    const urlRows = page.locator('input[id^="service-url-"]');
+    const removeButtons = urlRows.locator('xpath=following-sibling::button');
+    await app.createItem('Url rows service');
+    await page.getByRole('link', { name: 'Edit item' }).click();
+    await expect(page).toHaveURL(/\/edit$/);
+    await expect(urlRows).toHaveCount(1);
+    await expect(removeButtons).toHaveCount(0);
+
+    await test.step('add a second URL; the new row gets the focus', async () => {
+      await urlRows.nth(0).fill('https://one.example');
+      await page.locator('#add-service-url').click();
+      await expect(urlRows.nth(1)).toBeFocused();
+      await page.keyboard.type('https://two.example');
+      await expect(removeButtons).toHaveCount(2);
+    });
+
+    await test.step('a cleared row stays until it is removed', async () => {
+      await urlRows.nth(0).fill('');
+      await expect(urlRows).toHaveCount(2);
+      await removeButtons.nth(0).click();
+      await expect(urlRows).toHaveCount(1);
+      await expect(urlRows.nth(0)).toHaveValue('https://two.example');
+      await expect(removeButtons).toHaveCount(0);
+    });
+
+    await test.step('the saved item holds the remaining URL', async () => {
+      await app.saveItemButton().click();
+      await app.expectItemView('Url rows service');
+      await expect(page.getByText('https://two.example')).toBeVisible();
+      await expect(page.getByText('https://one.example')).toHaveCount(0);
+    });
+  });
 });

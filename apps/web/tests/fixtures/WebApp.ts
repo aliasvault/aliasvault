@@ -93,10 +93,26 @@ export class WebApp {
    * Create a login item with only a name via the top bar quick create, and wait for its view page.
    */
   public async createItem(name: string): Promise<void> {
+    await this.createLogin(name);
+  }
+
+  /**
+   * Create a login item via the top bar quick create, fill in the given login fields, and wait for its view page.
+   */
+  public async createLogin(name: string, fields: { url?: string; username?: string; password?: string } = {}): Promise<void> {
     await this.page.locator('#topBarQuickCreateButton').click();
     await this.page.locator('#serviceName').fill(name);
+    if (fields.url) {
+      await this.page.locator('#serviceUrl').fill(fields.url);
+    }
     await this.page.locator('#quickIdentitySubmit').click();
     await expect(this.page.locator('#service-name')).toHaveValue(name);
+    if (fields.username !== undefined) {
+      await this.page.locator('#username').fill(fields.username);
+    }
+    if (fields.password !== undefined) {
+      await this.page.locator('#password').fill(fields.password);
+    }
     await this.saveItemButton().click();
     await expect(this.page.getByText('Item created successfully')).toBeVisible();
     await this.expectItemView(name);
