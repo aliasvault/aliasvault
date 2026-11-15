@@ -448,6 +448,28 @@ describe('FormDetector English tests', () => {
     });
   });
 
+  describe('English login form 8 detection (atomic CSS, "username webauthn" autocomplete, div[role=button] submit)', () => {
+    const htmlFile = 'en-login-form8.html';
+    const emailId = '_R_c9l6neappb6amH1_';
+    const passwordId = '_R_cdl6neappb6amH1_';
+
+    testField(FormField.Email, emailId, htmlFile);
+    testField(FormField.Password, passwordId, htmlFile);
+
+    it('should detect a login form from both the email and the password field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailDetector = new FormDetector(document, document.getElementById(emailId) as HTMLElement);
+      expect(emailDetector.containsLoginForm()).toBe(true);
+      expect(emailDetector.getDetectedFieldType()).not.toBeNull();
+
+      const passwordDetector = new FormDetector(document, document.getElementById(passwordId) as HTMLElement);
+      expect(passwordDetector.containsLoginForm()).toBe(true);
+      expect(passwordDetector.getDetectedFieldType()).toBe(DetectedFieldType.Password);
+    });
+  });
+
   describe('English login form 6 detection (password input named "passcode")', () => {
     const htmlFile = 'en-login-form6.html';
 
