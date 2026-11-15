@@ -17,13 +17,13 @@
     "REFRESH_TOKEN_REQUIRED": "Token de atualização é obrigatório.",
     "REGISTRATION_FAILED": "Não foi possível criar a conta. Por favor, tente novamente em alguns minutos. Caso o problema continue, por favor, entre em contato com o suporte.",
     "UNKNOWN_ERROR": "Ocorreu um erro. Por favor, tente novamente.",
-    "USERNAME_ALREADY_IN_USE": "Nome de usuário já está em uso.",
-    "USERNAME_AVAILABLE": "Nome de usuário está disponível.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Nome de usuário não pode estar vazio ou em branco.",
+    "USERNAME_ALREADY_IN_USE": "O nome de usuário já está em uso.",
+    "USERNAME_AVAILABLE": "O nome de usuário está disponível.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "O nome de usuário não pode estar vazio ou em branco.",
     "USERNAME_INVALID_CHARACTERS": "Nome de usuário é inválido, deve conter apenas letras ou números.",
     "USERNAME_INVALID_EMAIL": "Endereço de e-mail inválido.",
-    "USERNAME_MISMATCH": "Nome de usuário não corresponde ao usuário atual.",
-    "USERNAME_REQUIRED": "Nome de usuário é obrigatório.",
+    "USERNAME_MISMATCH": "O nome de usuário não corresponde ao usuário atual.",
+    "USERNAME_REQUIRED": "O nome de usuário é obrigatório.",
     "USERNAME_TOO_LONG": "Nome de usuário muito longo: não pode conter mais de 40 caracteres.",
     "USERNAME_TOO_SHORT": "Nome de usuário muito curto: deve ter pelo menos 3 caracteres.",
     "USER_NOT_FOUND": "Nome de usuário ou senha incorretos. Por favor, tente novamente.",
@@ -34,7 +34,7 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Configurações avançadas",
-      "customApiUrl": "URL de API Customizada",
+      "customApiUrl": "URL de API personalizada",
       "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",
       "customProxyHeaders": "Cabeçalhos de proxy personalizados",
       "customProxyHeadersDescription": "Adicionar cabeçalhos HTTP que serão enviados com cada requisição para seu servidor AliasVault. Pode ser utilizado para configurações auto-hospedadas atrás de proxys reversos que verificam cabeçalhos (por exemplo, Pangolin, Cloudflare Access).",
@@ -169,14 +169,14 @@
       "termsAgreementLabel": "Eu li e concordo com os <termsLink>Termos e Condições</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "Assistente AliasVault",
-        "enterUsernameInstructions": "Por favor, digite o nome de usuário que você quer utilizar. Pode ser o seu endereço de e-mail ou qualquer nome único que você preferir.",
+        "enterUsernameInstructions": "Por favor, insira o nome de usuário que você deseja utilizar. Pode ser o seu endereço de e-mail ou qualquer outro nome exclusivo que preferir.",
         "rememberUsernameNote": "Lembre-se: Isto será utilizado quando você fizer login mais tarde, então tenha certeza que é algo que você se lembrará!",
         "serverCommunicationError": "Ocorreu um erro durante a comunicação com o servidor do AliasVault.",
         "usernamePlaceholder": "Digite seu nome de usuário ou e-mail",
         "validatingUsernameMessage": "Validando nome de usuário...",
         "welcomeMessage": "Bem-vindo! Vamos começar escolhendo um nome de usuário para a sua conta."
       },
-      "usernameStepTitle": "Escolher Nome de Usuário"
+      "usernameStepTitle": "Escolher nome de usuário"
     },
     "start": {
       "httpsWarningMessage": "Navegadores permitem apenas operações de criptografia seguras através de HTTPS, exceto para localhost. Login/registro não funcionará através de HTTP com o hostname atual. Por favor, altere para HTTPS.",
@@ -347,7 +347,7 @@
     "success": "Sucesso",
     "syncVaultData": "Sincronizar dados do cofre",
     "syncingChanges": "Sincronizando alterações...",
-    "twoFactorAuthentication": "Autenticação de Dois Fatores",
+    "twoFactorAuthentication": "Autenticação de dois fatores",
     "unavailable": "Indisponível",
     "undo": "Desfazer",
     "updateApp": "Atualizar aplicativo",
@@ -450,17 +450,17 @@
       "last_name": "Sobrenome"
     },
     "card": {
-      "cardholder_name": "Nome do Titular do Cartão",
+      "cardholder_name": "Nome do titular do cartão",
       "cvv": "CVV",
-      "expiry_month": "Mês de Expiração",
-      "expiry_year": "Ano de Expiração",
-      "number": "Número do Cartão",
+      "expiry_month": "Mês de expiração",
+      "expiry_year": "Ano de expiração",
+      "number": "Número do cartão",
       "pin": "Senha"
     },
     "login": {
       "email": "E-mail",
       "password": "Senha",
-      "url": "URL do Website",
+      "url": "URL do site",
       "username": "Usuário"
     },
     "notes": {
@@ -506,9 +506,9 @@
       "decryptionPasswordLabel": "Senha de Descriptografia",
       "duplicateCredentialsWarning": "{{count}} credencial(is) duplicada(s) foram encontradas e não serão importadas.",
       "encryptedFilePasswordPrompt": "Este arquivo está criptografado. Por favor, digite a senha que utilizou ao criar a exportação.",
-      "extractFaviconsLabel": "Extrair ícones de favorito dos serviços com URLs",
+      "extractFaviconsLabel": "Extrair favicons para serviços com URLs",
       "extractingFavicons": "Extraindo ícones de favorito... {{current}} / {{total}}",
-      "faviconExtractionNote": "Nota: extração de ícones de favorito está habilitado. Este processo pode levar vários minutos dependendo do número de credenciais com URLs. Por favor, mantenha a página aberta.",
+      "faviconExtractionNote": "Nota: A extração de favicons está ativada. Este processo pode levar vários minutos, dependendo do número de credenciais de acesso com URLs. Por favor, mantenha a página aberta.",
       "foldersDetected": "{{count}} pasta(s) detectadas",
       "importAttachmentsLabel": "Importar anexos detectados",
       "importButton": "Importar",
@@ -578,8 +578,8 @@
     }
   },
   "itemTypes": {
-    "addCustomField": "Adicionar Campo Personalizado",
-    "addField": "Adicionar Campo",
+    "addCustomField": "Adicionar campo personalizado",
+    "addField": "Adicionar campo",
     "alias": {
       "title": "Alias"
     },
@@ -590,17 +590,17 @@
     "editCustomField": "Editar campo personalizado",
     "enterFieldName": "Digite o nome do campo",
     "fieldLabel": "Nome do Campo",
-    "fieldType": "Tipo do Campo",
+    "fieldType": "Tipo do campo",
     "fieldTypes": {
       "date": "Data",
       "email": "E-mail",
-      "hidden": "Escondido",
-      "hiddenMasked": "Escondido (texto mascarado)",
+      "hidden": "Oculto",
+      "hiddenMasked": "Oculto (texto mascarado)",
       "number": "Número",
       "password": "Senha",
       "phone": "Telefone",
       "text": "Texto",
-      "textArea": "Área de Texto",
+      "textArea": "Área de texto",
       "url": "URL"
     },
     "login": {
@@ -610,7 +610,7 @@
       "title": "Nota"
     },
     "secureNote": "Nota Segura",
-    "typeLabel": "Tipo do Item"
+    "typeLabel": "Tipo do item"
   },
   "items": {
     "addEdit": {
@@ -632,30 +632,30 @@
     "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Toque em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "allItemsInFoldersClick": "Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "attachmentReadError": "Não foi possível ler o anexo.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentUnavailable": "Dados do anexo indisponíveis",
     "autofillLinkExisting": {
-      "confirmMessage": "Tem certeza que deseja conectar \"{{url}}\" a esta credencial?",
+      "confirmMessage": "Tem certeza que deseja vincular \"{{url}}\" a esta credencial?",
       "confirmTitle": "Conectar à credencial?",
       "intro": "Selecione uma credencial existente do seu cofre para conectar à \"{{target}}\".",
       "title": "Conectar à credencial existente"
     },
     "autofillOpenApp": {
-      "appOrUrlLabel": "App ou URL",
-      "createNewDescription": "Adicionar uma nova credencial ao seu cofre para este app ou URL.",
+      "appOrUrlLabel": "Aplicativo ou URL",
+      "createNewDescription": "Adicione uma nova credencial de acesso ao seu cofre para este aplicativo ou URL.",
       "createNewTitle": "Criar nova credencial",
       "description": "Escolha uma ação para o aplicativo ou site que requisitar preenchimento automático.",
       "findExistingDescription": "Selecione uma credencial existente do seu cofre para conectar ao endereço acima.",
       "title": "Requisição de preenchimento automático"
     },
     "autofillUrlAdded": {
-      "message": "Agora, o preenchimento automático deve oferecer esta credencial da próxima vez que você abrir o aplicativo.",
+      "message": "O preenchimento automático agora deve oferecer esta credencial de acesso na próxima vez que você abrir o aplicativo.",
       "title": "Credencial conectada"
     },
     "avoidAmbiguousCharacters": "Evitar caracteres ambíguos (o, 0, etc.)",
     "avoidAmbiguousChars": "Evitar caracteres ambíguos",
     "birthDatePlaceholder": "AAAA-MM-DD",
-    "capitalization": "Capitalization",
-    "cardInformation": "Informações do Cartão",
+    "capitalization": "Capitalização",
+    "cardInformation": "Informações do cartão",
     "changePasswordComplexity": "Alterar complexidade de senha",
     "clearFilter": "Limpar filtro",
     "clearSearch": "Limpar pesquisa",
@@ -663,7 +663,7 @@
       "copyEmail": "Copiar E-mail",
       "copyPassword": "Copiar Senha",
       "copyTotpCode": "Copiar Código TOTP",
-      "copyUsername": "Copiar Nome de Usuário",
+      "copyUsername": "Copiar nome de usuário",
       "title": "Opções do Item"
     },
     "createNewAliasFor": "Criar novo alias para",
@@ -679,20 +679,20 @@
     "deleteHistoryConfirm": "Tem certeza que deseja excluir este dado do histórico?",
     "deleteItem": "Excluir Item",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Minúsculas",
+      "TitleCase": "Iniciais maiúsculas",
+      "Uppercase": "Maiúsculas"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Prefixo",
+      "Sprinkle": "Posição aleatória",
+      "Suffix": "Sufixo"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Dot": "Dot",
-      "Space": "Space",
-      "Underscore": "Underscore"
+      "Dash": "Traço",
+      "Dot": "Ponto",
+      "Space": "Espaço",
+      "Underscore": "Sublinhado"
     },
     "downloadToView": "Baixe o arquivo para abri-lo",
     "editItem": "Editar Item",
@@ -744,11 +744,11 @@
       "selectFolder": "Selecionar Pasta"
     },
     "fullName": "Nome Completo",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
+    "hasAttachments": "Possui anexos",
+    "hasPasskey": "Possui chave de acesso",
     "hasTotp": "Possui código 2FA",
     "home": {
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Crie o seu primeiro item do cofre manualmente.",
       "emptyFolderMessage": "Esta pasta está vazia.",
       "failedToCreateFolder": "Falha ao criar pasta.",
       "failedToDeleteFolder": "Falha ao excluir pasta.",
@@ -779,12 +779,12 @@
     "logo": {
       "builtin": {
         "bank": "Banking",
-        "dev": "Development",
-        "game": "Games",
-        "health": "Health",
-        "mail": "Mail",
-        "media": "Media",
-        "shopping": "Shopping",
+        "dev": "Desenvolvimento",
+        "game": "Jogos",
+        "health": "Saúde",
+        "mail": "E-mail",
+        "media": "Mídia",
+        "shopping": "Compras",
         "social": "Social",
         "travel": "Travel",
         "work": "Work"
@@ -890,7 +890,7 @@
     "searchPlaceholder": "Pesquisar cofre...",
     "selectEmailDomain": "Selecionar domínio de e-mail",
     "separator": "Separator",
-    "serviceUrl": "URL do Serviço",
+    "serviceUrl": "URL do serviço",
     "sort": {
       "alphabetical": "Ordem Alfabética (A-Z)",
       "newestFirst": "Mais novos primeiro",
@@ -933,9 +933,9 @@
     },
     "untitled": "Sem Título",
     "urlContextMenu": {
-      "copyLink": "Copiar Link",
-      "openLink": "Abrir Link",
-      "shareLink": "Compartilhar Link",
+      "copyLink": "Copiar link",
+      "openLink": "Abrir link",
+      "shareLink": "Compartilhar link",
       "title": "Opções de URL"
     },
     "vaultSyncFailed": "Sincronização do cofre falhou",
@@ -1006,7 +1006,7 @@
     "biometricStoreKeyTitle": "Armazenar Chave de Criptografia",
     "biometricUnlockVaultSubtitle": "Autentique para acessar seu cofre",
     "checkingConnection": "Verificando conexão",
-    "chooseUsernameMessage": "Este website pode solicitar seu nome de usuário ou seu endereço de e-mail para fazer login",
+    "chooseUsernameMessage": "Este site pode pedir seu nome de usuário ou endereço de e-mail para entrar",
     "commonCopy": "Copiar",
     "connectionErrorMessage": "Nenhuma conexão com oservidor pôde ser feita. Por favor, confira sua conexão com a internet e tente criar a passkey novamente.",
     "connectionErrorTitle": "Erro de Conexão",
@@ -1088,7 +1088,7 @@
     "totpCodeCopied": "Código de dois fatores copiado",
     "untitledCredential": "esta credencial",
     "usernameCopied": "Nome de usuário copiado",
-    "usernamePrefix": "Nome de Usuário: ",
+    "usernamePrefix": "Nome de usuário: ",
     "versionNotSupportedTitle": "Atualização Necessária",
     "viewDetails": "Ver Detalhes",
     "website": "Site"
@@ -1237,7 +1237,7 @@
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
     "customApiUrl": "URL da API",
-    "customClientUrl": "URL do Cliente",
+    "customClientUrl": "URL do cliente",
     "dark": "Escuro",
     "disableBatteryOptimization": "Desabilitar otimização de bateria",
     "disabledForThisSite": "Desabilitado para este site",
@@ -1249,7 +1249,7 @@
     "exportSectionTitle": "Exportar",
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto simples. Realize isso somente em dispositivos confiáveis e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "general": {
-      "aliasGenerationAgeRangeDescription": "Selecione a faixa etária padrão para geração de novas identidades. Isto afeta a data de nascimento associada à identidade gerada.",
+      "aliasGenerationAgeRangeDescription": "Defina a faixa etária padrão para gerar novas identidades. Isso afeta a data de nascimento atribuída à identidade gerada.",
       "aliasGenerationGenderDescription": "Configure o gênero padrão que será utilizado para gerar novas identidades.",
       "aliasGenerationLanguageDescription": "Configure o idioma padrão que será utilizado ao gerar novas identidades.",
       "appLanguageDescription": "Configure o idioma da interface do aplicativo.",
@@ -1314,7 +1314,7 @@
       "blockedSites": "Sites bloqueados",
       "blockedSitesDescription": "Sites onde o prompt para salvar nunca vão aparecer.",
       "clearAllBlockedSites": "Limpar todos os sites bloqueados",
-      "description": "Mostra um prompt para salvar credenciais de login quando você faz login em algum website.",
+      "description": "Mostar um aviso para salvar credenciais de acesso ao enviar um formulário de acesso em um site.",
       "title": "Salvar Prompt de Login"
     },
     "openSettings": "Abrir Configurações",
@@ -1349,7 +1349,7 @@
     "resetVault": {
       "pageTitle": "Resetar Cofre",
       "resetVaultConfirmButton": "Resetar meu cofre",
-      "resetVaultConfirmUsernameLabel": "Para continuar, por favor digite seu nome de usuário para confirmar",
+      "resetVaultConfirmUsernameLabel": "Para continuar, digite seu nome de usuário para confirmar",
       "resetVaultContinueButton": "Continuar com reset do cofre",
       "resetVaultDeletionIrreversibleNote": "Esta exclusão é irreversível e não pode ser desfeita",
       "resetVaultEmailAliasesKeptNote": "Seus aliases de e-mail serão preservados e podem ser reutilizados após resetar seu cofre",
@@ -1421,7 +1421,7 @@
         "passwordChangedSuccessfully": "Senha atualizada com sucesso",
         "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Novas senhas não são iguais",
-        "userNotAuthenticated": "Usuário não está autenticado"
+        "userNotAuthenticated": "Usuário não autenticado"
       },
       "deleteAccount": {
         "accountDeleted": "Conta excluída com sucesso",
@@ -1441,10 +1441,10 @@
         "initiatingDeletion": "Iniciando exclusão da conta",
         "irreversibleWarning": "Exclusão de conta é irreversível e não pode ser desfeita. Pressionado o botão abaixo excluirá sua conta imediatamente e permanentemente.",
         "permanentActionWarning": "Aviso: Esta ação é permanente e não poderá ser desfeita. Todos os seus dados serão permanentemente excluídos.",
-        "usernameDoesNotMatch": "Usuário não coincide",
-        "usernameMismatchDescription": "O nome de usuário digitado não corresponde ao seu nome de usuário atual. Por favor, tente novamente.",
+        "usernameDoesNotMatch": "Nome de usuário incorreto",
+        "usernameMismatchDescription": "O nome de usuário inserido não corresponde ao seu nome de usuário atual. Tente novamente.",
         "verifyingWithServer": "Verificando com o servidor",
-        "warningAliases": "Seus alias de e-mail ficarão órfãos e não poderão ser utilizados por outros usuários",
+        "warningAliases": "Seus aliases de e-mail ficarão órfãos e não poderão ser reutilizados outros usuários",
         "warningRecovery": "Sua conta não pode ser recuperada após excluída",
         "warningText": "Aviso: Esta ação não pode ser desfeita. Todos os seus dados serão excluídos permanentemente.",
         "warningVaults": "Todos os cofres criptografados que incluem todas as suas credenciais serão permanentemente excluídos"
@@ -1530,8 +1530,8 @@
       "logoManagementDescription": "Logos are fetched from the favicon of each item's website. You can delete every logo to reclaim space, or re-download them to pick up improved versions.",
       "logoManagementTitle": "Manage logos",
       "pageDescription": "Veja uma estimativa do tamanho do seu cofre. Para melhor performance de sincronização, é recomendado manter seu cofre pequeno e excluir itens que você não precisa mais.",
-      "redownloadAllLogosButton": "Re-download all logos",
-      "redownloadAllLogosConfirmMessage": "This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?",
+      "redownloadAllLogosButton": "Baixar novamente todas as logos",
+      "redownloadAllLogosConfirmMessage": "Isso busca novamente o favicon para cada credencial de acesso que possui uma URL de site, substituindo o logotipo existente. Dependendo do tamanho do seu cofre, isso pode demorar um pouco. Deseja continuar?",
       "redownloadAllLogosConfirmTitle": "Re-download all logos?",
       "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
       "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
@@ -1564,7 +1564,7 @@
     },
     "useDefault": "Utilizar padrão",
     "validation": {
-      "apiUrlInvalid": "Por favor, digite um URL de API válido",
+      "apiUrlInvalid": "Por favor, digite uma URL de API válida",
       "apiUrlRequired": "URL de API é obrigatório",
       "clientUrlInvalid": "Por favor, digite um URL de cliente válido",
       "clientUrlRequired": "URL de Cliente é obrigatório"
@@ -1621,7 +1621,7 @@
   },
   "totp": {
     "addCode": "Adicionar código 2FA",
-    "addName": "Add a name (optional)",
+    "addName": "Adicione um nome (opcional)",
     "addTotpCodeDescription": "Adicionar um código de autenticação de dois fatores",
     "addTotpCodeModalTitle": "Adicionar código TOTP 2FA",
     "algorithm": "Algorithm",
@@ -1632,18 +1632,18 @@
     "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Excluir código 2FA",
     "digits": "Digits",
-    "enterManually": "Enter secret key",
+    "enterManually": "Digite a chave secreta",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
       "scanFailed": "Falha ao escanear código QR. Por favor, tente novamente."
     },
-    "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
+    "instructions": "Insira a chave secreta exibida pelo site ou serviço onde você deseja adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
     "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
     "period": "Time step",
     "saveToViewCode": "Salvar para ver o código",
     "scanQrCode": "Escanear Código QR",
-    "secretKey": "Chave Secreta",
+    "secretKey": "Chave secreta",
     "secretKeyPlaceholder": "Digite a chave secreta (manualmente)",
     "totpInstructions": "Se o site oferecer ou exigir 2FA para sua conta, copie a chave secreta ou o URI do código QR e cole abaixo.",
     "viewer": {
@@ -1687,7 +1687,7 @@
   "validation": {
     "passwordRequired": "Senha é obrigatória",
     "required": "Este campo é obrigatório",
-    "secretKeyRequired": "Chave secreta é obrigatória",
+    "secretKeyRequired": "A chave secreta é obrigatória",
     "serviceNameRequired": "Nome do serviço é obrigatório"
   },
   "vault": {
