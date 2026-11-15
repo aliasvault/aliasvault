@@ -81,7 +81,7 @@
   },
   "auth": {
     "authCode": "Código de Autenticação",
-    "authCodeNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
+    "authCodeNote": "Nota: caso não tenha acesso ao seu dispositivo autenticador, você pode redefinir o 2FA usando um código de recuperação ao entrar pelo site.",
     "biometricPrompt": "Gostaria de utilizar {{biometric}} para desbloquear seu cofre?",
     "browseVault": "Navegar por conteúdo do cofre",
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
@@ -111,19 +111,19 @@
     "loggingIn": "Fazendo login...",
     "login": "Login",
     "loginForm": {
-      "authenticatorCodeLabel": "Código de Autenticação",
+      "authenticatorCodeLabel": "Código de autenticação",
       "dontHaveAuthenticatorText": "Não tem acesso ao dispositivo de autenticação?",
       "loginErrorMessage": "Ocorreu um erro enquanto a tentativa de login era processada. Tente novamente (mais tarde).",
       "loginRequestErrorMessage": "Ocorreu um erro ao processar a solicitação de login.",
       "loginWithAuthenticatorLink": "Faça login com um código de autenticação.",
       "loginWithRecoveryCodeLink": "Faça login com um código de recuperação.",
       "lostPasswordLink": "Esqueceu a Senha?",
-      "recoveryCodeDescription": "Você solicitou fazer login com um código de recuperação. Um código de recuperação é um código de uso único que pode ser utilizado para acessar sua conta. Note que se você não desabilitar o 2FA manualmente após o acesso, será solicitado um código de autenticação novamente no próximo login.",
+      "recoveryCodeDescription": "Você solicitou o login com um código de recuperação. Este é um código de uso único que permite acessar sua conta. Nota: caso não desative o 2FA manualmente após entrar, o código do autenticador será exigido novamente no próximo login.",
       "recoveryCodeLabel": "Código de Recuperação",
       "recoveryCodeVerificationTitle": "Verificação de código de recuperação",
       "regainedAccessText": "Recuperou acesso ao seu dispositivo de autenticação?",
       "rememberMachineLabel": "Lembrar nesta máquina",
-      "twoFactorAuthenticationDescription": "Seu login está protegido com um aplicativo de autenticação. Digite o código de autenticação abaixo.",
+      "twoFactorAuthenticationDescription": "Seu login está protegido por um aplicativo autenticador.\nDigite o código de autenticação abaixo.",
       "verifyingRecoveryCodeMessage": "Verificando código de recuperação...",
       "verifyingTwoFactorCodeMessage": "Verificando código 2FA..."
     },
@@ -253,8 +253,8 @@
     "errorPasswordMismatch": "As senhas não coincidem.",
     "errors": {
       "backgroundUnresponsive": "O serviço em segundo plano da extensão não está respondendo. Feche e reabra a extensão ou reinicie o navegador se o problema persistir.",
-      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
-      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
+      "clientNotSupported": "Esta versão do AliasVault não é mais compatível com o servidor. Atualize para a versão mais recente.",
+      "clientOutdated": "Esta versão do AliasVault não pode abrir seu cofre porque ele foi atualizado por uma versão mais recente. Atualize o AliasVault para continuar.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -264,7 +264,7 @@
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Tente novamente mais tarde ou entre em contato com o suporte se o problema persistir.",
       "serverNotAvailable": "O servidor do AliasVault não está disponível no momento. Tente novamente mais tarde ou contate o suporte caso o problema persista.",
-      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
+      "serverOutdated": "O servidor do AliasVault precisa ser atualizado para funcionar com esta versão do AliasVault. Tente novamente mais tarde. Se você usa um servidor auto-hospedado, entre em contato com o administrador do servidor.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -363,7 +363,7 @@
       "fillOn": "You are about to fill a login on {{host}}.",
       "title": "Confirm autofill"
     },
-    "autofillTotp": "Autopreencher 2FA",
+    "autofillTotp": "Preencher 2FA automaticamente",
     "autofillWithAliasVault": "Preencher usuário/senha automaticamente",
     "dismissPopup": "Ignorar pop-up",
     "generateRandomPassword": "Gerar senha aleatória (copiar para a área de transferência)",
@@ -404,7 +404,7 @@
       "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
       "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "Ocorreu um erro ao tentar carregar os e-mails. Por favor, altere e salve qualquer credencial para sincronizar o banco de dados, e tente novamente.",
-      "noEmailClaimsMessage": "Você não está utilizando nenhum endereço de e-mail privado (ainda). Crie um novo alias e utilize um endereço de e-mail privado suportado pelo AliasVault. Todos os e-mails recebidos nestes endereços de e-mail privados aparecerão acima.",
+      "noEmailClaimsMessage": "Você ainda não está usando nenhum endereço de e-mail privado. Crie um novo alias e use um endereço de e-mail privado compatível com o AliasVault. Todos os e-mails recebidos por esses endereços aparecerão aqui.",
       "noEmailsReceivedMessage": "Nenhum e-mail foi recebido ainda.",
       "pageDescription": "Você pode ver todos os e-mails recebidos nas suas caixas de entrada privadas abaixo."
     },
@@ -444,8 +444,8 @@
   },
   "fieldLabels": {
     "alias": {
-      "birthdate": "Data de Nascimento",
-      "first_name": "Primeiro Nome",
+      "birthdate": "Data de nascimento",
+      "first_name": "Primeiro nome",
       "gender": "Gênero",
       "last_name": "Sobrenome"
     },
@@ -486,7 +486,7 @@
       "createEncryptedExportButton": "Criar Exportação Criptografada",
       "exportPasswordLabel": "Senha de Criptografia"
     },
-    "exportSectionDescription": "Exporte seu cofre para mover credenciais entre servidores AliasVault ou outros gerenciadores de senhas.",
+    "exportSectionDescription": "Exporte seu cofre para mover credenciais entre servidores do AliasVault ou para outro gerenciador de senhas.",
     "exportSuccessMessage": "O seu cofre foi exportado com sucesso.",
     "exportWarningMessage": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e informações sensíveis em texto simples. Faça isso apenas em computadores confiáveis e garanta que você:\n\n• Armazene o arquivo exportado em um local seguro\n• Exclua o arquivo quando não precisar mais dele\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "exportingVaultMessage": "Exportando cofre...",
@@ -533,7 +533,7 @@
       "uploadExportFileText": "Carregar seu arquivo de exportação de {{service}}:"
     },
     "services": {
-      "aliasVaultDescription": "Importar do backup do AliasVault",
+      "aliasVaultDescription": "Importar de um backup do AliasVault",
       "aliasVaultInstructionsPart1": "Importar seu backup do AliasVault criado anteriormente.",
       "bitwardenDescription": "Importe senhas do seu cofre do Bitwarden",
       "bitwardenInstructionsPart1": "Para importar seu cofre do Bitwarden, você precisará exportá-lo. Você pode fazer isto entrando na sua conta do Bitwarden, indo ao menu 'Ferramentas' e selecionando 'Exportar cofre'.",
@@ -551,8 +551,8 @@
       "firefoxDescription": "Importar senhas do seu Gerenciador de Senhas do Firefox",
       "firefoxInstructionsPart1": "Para importar suas senhas do Firefox, você precisará exportá-las como um arquivo CSV. Você pode fazer isto abrindo o seu navegador Firefox, indo ao menu 'Senhas'. Então, clique no ícone do menu no canto superior direito e selecione 'Exportar senhas'.",
       "genericCsvDescription": "Importar credenciais utilizando um formato de template de CSV",
-      "genericCsvInstructionsPart1": "O gerenciador de senhas que você utiliza não é suportado? Você sempre pode importar suas credenciais para o AliasVault utilizando um formato de template genérico de CSV.",
-      "genericCsvStep1": "Baixar o Importador de CSV AliasVault",
+      "genericCsvInstructionsPart1": "O gerenciador de senhas que você usa não é compatível? Você pode importar suas credenciais para o AliasVault usando um modelo CSV genérico.",
+      "genericCsvStep1": "Baixar CSV de importação do AliasVault",
       "genericCsvStep2": "Abra-o em um programa de planilha (Microsoft Excel, Google Sheets, etc.)",
       "genericCsvStep3": "Digite suas credenciais (troque os dados de exemplo)",
       "genericCsvStep4": "Salve como formato CSV e carregue-o abaixo",
@@ -746,7 +746,7 @@
     "fullName": "Nome Completo",
     "hasAttachments": "Has attachments",
     "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasTotp": "Possui código 2FA",
     "home": {
       "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Esta pasta está vazia.",
@@ -802,7 +802,7 @@
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Nenhum e-mail recebido ainda.",
     "noHistoryAvailable": "Histórico não disponível",
-    "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
+    "noItemsFound": "Nenhum item encontrado. Crie o primeiro para começar. Dica: você também pode acessar a versão web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
     "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
@@ -831,7 +831,7 @@
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "quickCreate": {
       "createItemErrorMessage": "Erro ao criar um novo item. Por favor, tente novamente (mais tarde), ou saia e entre novamente.",
-      "createNewAliasTitle": "Criar Novo Alias",
+      "createNewAliasTitle": "Criar novo alias",
       "createNewCreditCardTitle": "Criar Novo Cartão",
       "createNewLoginTitle": "Criar Novo Login",
       "createNewNoteTitle": "Criar Nova Nota",
@@ -1045,8 +1045,8 @@
     "passkeyAddToExisting": "Ou, adicione um passkey em um item existente",
     "passkeyAddToExistingLabel": "Ou, adicione o passkey à um item existente:",
     "passkeyAuthenticating": "Autenticando...",
-    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
-    "passkeyBlockedTitle": "Blocked by AliasVault",
+    "passkeyBlockedMessage": "O AliasVault não pôde verificar se {{app}} tem permissão para usar chaves de acesso para {{domain}}, portanto a solicitação foi bloqueada. Se você acha que isso é um erro, entre em contato com o desenvolvedor do aplicativo.",
+    "passkeyBlockedTitle": "Bloqueado pelo AliasVault",
     "passkeyCheckingConnection": "Verificando conexão...",
     "passkeyCreating": "Criando passkey...",
     "passkeyCreationFailed": "Falha ao criar passkey",
@@ -1157,7 +1157,7 @@
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de autopreenchimento preferido\" para \"AliasVault\"",
       "step2": "2. Alguns aplicativos, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para habilitar autopreenchimento de aplicativos terceiros. Porém, a maioria dos aplicativos deve funcionar com autopreenchimento por padrão.",
       "trustedApps": "Trusted apps",
-      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
+      "trustedAppsDescription": "Aplicativos aos quais você permitiu solicitar senhas e chaves de acesso do seu cofre, embora o AliasVault não tenha conseguido verificá-los automaticamente. Remova um aplicativo para que a confirmação seja solicitada novamente."
     },
     "apiUrlHint": "O URL do endpoint da API (geralmente o URL do cliente + /api)",
     "appVersion": "Versão do aplicativo",
@@ -1454,21 +1454,21 @@
       },
       "description": "Gerencie as configurações de sua conta e de segurança do seu cofre.",
       "disable2fa": {
-        "confirmDisableButton": "Confirmar Desabilitar a Autenticação de Dois Fatores",
-        "failedToDisable2Fa": "Falha ao desabilitar autenticação de dois fatores.",
-        "pageDescription": "Desabilitar a autenticação de dois fatores significa que você poderá fazer login apenas com sua senha.",
-        "pageTitle": "Desabilitar autenticação de dois fatores",
-        "twoFactorDisabledSuccess": "Autenticação de dois fatores foi desabilitada com sucesso.",
-        "twoFactorNotEnabled": "Autenticação de dois fatores não está habilitada."
+        "confirmDisableButton": "Confirmar desativação da autenticação de dois fatores",
+        "failedToDisable2Fa": "Falha ao desativar a autenticação de dois fatores.",
+        "pageDescription": "Ao desativar a autenticação de dois fatores, você poderá entrar usando apenas a sua senha.",
+        "pageTitle": "Desativar autenticação de dois fatores",
+        "twoFactorDisabledSuccess": "A autenticação de dois fatores foi desativada com sucesso.",
+        "twoFactorNotEnabled": "Autenticação de dois fatores desativada."
       },
       "enable2fa": {
-        "failedToEnable2Fa": "Falha ao habilitar autenticação de dois fatores.",
-        "pageDescription": "Habilitar autenticação de dois fatores para aumentar a segurança dos seus cofres.",
-        "pageTitle": "Habilitar autenticação de dois fatores",
-        "qrCodeInstructions": "Leia este código QR com seu aplicativo autenticador ou digite o seguinte código secreto manualmente:",
-        "twoFactorEnabledSuccess": "Autenticação de dois fatores foi habilitada com sucesso. No seu próximo login, você precisará digitar seu código 2FA.",
+        "failedToEnable2Fa": "Falha ao ativar a autenticação de dois fatores.",
+        "pageDescription": "Ative a autenticação de dois fatores para aumentar a segurança dos seus cofres.",
+        "pageTitle": "Ativar autenticação de dois fatores",
+        "qrCodeInstructions": "Escaneie este código QR no seu app autenticador ou insira a chave secreta manualmente:",
+        "twoFactorEnabledSuccess": "A autenticação de dois fatores foi ativada com sucesso. Ao entrar novamente, será necessário informar seu código 2FA.",
         "verificationCodePlaceholder": "Digite o código de verificação",
-        "verifyAndEnableButton": "Verificar e Habilitar"
+        "verifyAndEnableButton": "Verificar e ativar"
       },
       "keyRotation": {
         "acknowledge": "I have backed up my vault and signed out of my other devices",
@@ -1499,7 +1499,7 @@
         "warningTitle": "Armazene estes códigos de recuperação em um local seguro."
       },
       "twoFactor": {
-        "disabledMessage": "A autenticação de dois fatores está desativada no momento. Para melhorar a segurança da sua conta, recomendamos que você a habilite.",
+        "disabledMessage": "A autenticação de dois fatores está desativada no momento. Recomendamos ativá-la para aumentar a segurança da sua conta.",
         "enabledMessage": "A autenticação de dois fatores está ativada.",
         "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
@@ -1545,7 +1545,7 @@
     "temporaryUntil": "até",
     "theme": "Tema",
     "totpAutofill": "Preenchimento automático 2FA",
-    "totpAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de 2FA forem detectados",
+    "totpAutofillDescription": "Mostrar pop-up de preenchimento automático ao detectar campos de código 2FA",
     "twoColumnLayout": "Two-column layout",
     "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
     "unlockMethod": {
@@ -1616,7 +1616,7 @@
       "contactSupport": "If the issue persists, contact our support team for help.",
       "notCompatible": "The version of this vault is not compatible with your client.",
       "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "updateInstructions": "Atualize o AliasVault para a versão mais recente, recarregue esta página e tente novamente."
     }
   },
   "totp": {
@@ -1670,7 +1670,7 @@
       "preparingUpgrade": "Preparando atualização..."
     },
     "subtitle": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isso deve levar apenas alguns segundos.",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "successOtherDevices": "Seu cofre está pronto para uso. Certifique-se de atualizar o aplicativo AliasVault nos seus outros dispositivos também.",
     "successTitle": "Vault upgraded",
     "title": "Atualizar Cofre",
     "upgrade": "Atualizar",
