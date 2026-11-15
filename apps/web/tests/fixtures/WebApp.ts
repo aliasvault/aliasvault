@@ -101,6 +101,7 @@ export class WebApp {
    */
   public async createLogin(name: string, fields: { url?: string; username?: string; password?: string } = {}): Promise<void> {
     await this.page.locator('#topBarQuickCreateButton').click();
+    await expect(this.page.locator('#serviceName')).toBeFocused();
     await this.page.locator('#serviceName').fill(name);
     if (fields.url) {
       await this.page.locator('#serviceUrl').fill(fields.url);
