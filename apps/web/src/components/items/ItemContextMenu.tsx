@@ -3,6 +3,7 @@ import React, { forwardRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import ItemMergeModal from '@/components/items/ItemMergeModal';
 import ContextMenu, { MenuItem, type ContextMenuHandle } from '@/components/shared/ContextMenu';
 import FormModal from '@/components/shared/FormModal';
 import Icon from '@/components/shared/Icon';
@@ -21,7 +22,7 @@ type ItemContextMenuProps = {
 };
 
 /**
- * Context menu of an item (right-click or its ••• button) with edit, duplicate and delete.
+ * Context menu of an item (right-click or its ••• button) with edit, duplicate, merge and delete.
  */
 const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ item, itemName, onMutated, hideTrigger = false }, ref) => {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ i
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [showMerge, setShowMerge] = useState(false);
 
   /**
    * Duplicate the item.
@@ -99,8 +101,21 @@ const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ i
         <MenuItem icon="eye" onClick={() => navigate(itemRoute(item))}>{t('common.open')}</MenuItem>
         <MenuItem icon="pencil-alt" onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
         <MenuItem icon="document-duplicate" onClick={() => void duplicateItem()}>{t('common.duplicate')}</MenuItem>
+        <MenuItem id="item-menu-merge" icon="merge" onClick={() => setShowMerge(true)}>{t('items.merge.mergeWith')}</MenuItem>
         <MenuItem danger icon="trash" onClick={() => setShowDeleteModal(true)}>{t('common.delete')}</MenuItem>
       </ContextMenu>
+
+      {showMerge && (
+        <ItemMergeModal
+          item={item}
+          onClose={() => setShowMerge(false)}
+          onMerged={target => {
+            setShowMerge(false);
+            onMutated();
+            void navigate(itemRoute(target));
+          }}
+        />
+      )}
 
       <FormModal
         isOpen={showDeleteModal}
