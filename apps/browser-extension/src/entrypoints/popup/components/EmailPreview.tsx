@@ -366,9 +366,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
             }`}
           >
             <div className="truncate flex-1">
-              <span className="text-sm text-gray-900 dark:text-white">
-                {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
-              </span>
+              <span className="text-sm text-gray-900 dark:text-white">{mail.subject}</span>
             </div>
             <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
               {mail.hasAttachments && <AttachmentIcon className="w-3.5 h-3.5" />}
@@ -385,9 +383,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId })
             }`}
           >
             <span className="truncate flex-1">
-              <span className="text-sm text-gray-900 dark:text-white">
-                {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
-              </span>
+              <span className="text-sm text-gray-900 dark:text-white">{mail.subject}</span>
             </span>
             <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
               {mail.hasAttachments && <AttachmentIcon className="w-3.5 h-3.5" />}

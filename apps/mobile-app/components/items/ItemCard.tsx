@@ -23,7 +23,7 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
-import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
+import { getFieldValue, getItemAccountLabel, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
   item: DisplayItem;
@@ -49,38 +49,6 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
   const paneRouter = usePaneRouter();
   const isActive = useIsSelectedRoute(itemRoute(item));
   const recordItemCopy = useRecordItemCopy();
-
-  /**
-   * Get the display text for an item, showing username by default,
-   * falling back to email only if username is null/undefined/empty
-   */
-  const getItemDisplayText = (itm: DisplayItem): string => {
-    // Show username if available
-    const username = getFieldValue(itm, FieldKey.LoginUsername);
-    if (username) {
-      // Trim the return value to max. 38 characters.
-      return username.length > 38 ? username.slice(0, 35) + '...' : username;
-    }
-
-    // Show email if username is not available
-    const email = getFieldValue(itm, FieldKey.LoginEmail);
-    if (email) {
-      // Trim the return value to max. 38 characters.
-      return email.length > 38 ? email.slice(0, 35) + '...' : email;
-    }
-
-    return '';
-  };
-
-  /**
-   * Get the item name, trimming it to maximum length so it doesn't overflow the UI.
-   */
-  const getItemName = (itm: DisplayItem): string => {
-    const returnValue = itm.Name || t('items.untitled');
-
-    // Trim the return value to max. 33 characters.
-    return returnValue.length > 33 ? returnValue.slice(0, 30) + '...' : returnValue;
-  };
 
   /**
    * Open the item's details.
@@ -307,6 +275,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
     },
     serviceName: {
       color: colors.text,
+      flexShrink: 1,
       fontSize: 16,
       fontWeight: '600',
       marginBottom: 4,
@@ -314,11 +283,11 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
     serviceNameRow: {
       alignItems: 'center',
       flexDirection: 'row',
-      flexWrap: 'wrap',
     },
     folderPath: {
       color: colors.textMuted,
       fontSize: 14,
+      fontWeight: 'normal',
     },
   });
 
@@ -344,11 +313,11 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
         <ItemIcon item={item} style={styles.logo} />
         <View style={styles.itemInfo}>
           <View style={styles.serviceNameRow}>
-            {showFolderPath && item.FolderPath && item.FolderPath.length > 0 && (
-              <Text style={styles.folderPath}>{item.FolderPath.join(' > ')} &gt; </Text>
-            )}
-            <Text style={styles.serviceName}>
-              {getItemName(item)}
+            <Text style={styles.serviceName} numberOfLines={1}>
+              {showFolderPath && item.FolderPath && item.FolderPath.length > 0 && (
+                <Text style={styles.folderPath}>{item.FolderPath.join(' > ')} &gt; </Text>
+              )}
+              {item.Name || t('items.untitled')}
             </Text>
             {item.HasPasskey && (
               <MaterialIcons
@@ -375,8 +344,8 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
               />
             )}
           </View>
-          <Text style={styles.itemText}>
-            {getItemDisplayText(item)}
+          <Text style={styles.itemText} numberOfLines={1}>
+            {getItemAccountLabel(item)}
           </Text>
         </View>
         {/* On Android a long-press selects, so the item menu sits behind a button on the row; this keeps its space free. */}

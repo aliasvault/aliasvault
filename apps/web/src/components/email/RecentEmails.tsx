@@ -284,9 +284,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId })
                     <tbody className="bg-white dark:bg-gray-800">
                       {displayedEmails.map((mail) => (
                         <tr key={mail.id} className="hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer" onClick={() => void openEmail(mail.id)}>
-                          <td className="p-4 text-sm font-normal text-gray-900 whitespace-nowrap dark:text-white">
-                            <span>{mail.subject.length > 30 ? `${mail.subject.substring(0, 30)}...` : mail.subject}</span>
-                          </td>
+                          <td className="p-4 text-sm font-normal text-gray-900 dark:text-white max-w-0 w-full truncate">{mail.subject}</td>
                           <td className="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
                             <span>{formatDate(mail.dateSystem)}</span>
                           </td>
