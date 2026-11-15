@@ -207,7 +207,8 @@
     },
     "merge": {
       "source": "lucide@0.469.0",
-      "icon": "merge"
+      "icon": "merge",
+      "androidDrawable": true
     },
     "moon": {
       "source": "heroicons@1.0.6",
