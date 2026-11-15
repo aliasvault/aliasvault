@@ -185,8 +185,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
                   )}
                 </div>
                 <div className="flex gap-2">
-                  {renderOption(conflict, keyOf(target), conflict.key === MergeConflictKeys.Name ? '' : target.item.Name || t('items.untitled'), conflict.target)}
-                  {renderOption(conflict, keyOf(source), conflict.key === MergeConflictKeys.Name ? '' : source.item.Name || t('items.untitled'), conflict.source)}
+                  {[first, second].map(side => renderOption(conflict, keyOf(side), conflict.key === MergeConflictKeys.Name ? '' : side.item.Name || t('items.untitled'), side === target ? conflict.target : conflict.source))}
                 </div>
               </div>
             ))}

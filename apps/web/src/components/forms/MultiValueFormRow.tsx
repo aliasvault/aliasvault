@@ -39,7 +39,8 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
   useEffect(() => {
     setRows(current => {
       const currentValues = filled(current);
-      const isSame = currentValues.length === values.length && currentValues.every((value, index) => value === values[index]);
+      const incoming = filled(values);
+      const isSame = currentValues.length === incoming.length && currentValues.every((value, index) => value === incoming[index]);
       return isSame ? current : values.length > 0 ? values : [''];
     });
   }, [values]);
@@ -68,11 +69,10 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
   };
 
   /**
-   * Remove a row, keeping one empty row when it was the last.
+   * Remove a row; the add button brings one back after the last is removed.
    */
   const remove = (index: number): void => {
-    const next = rows.filter((_, i) => i !== index);
-    update(next.length > 0 ? next : ['']);
+    update(rows.filter((_, i) => i !== index));
   };
 
   return (
@@ -101,19 +101,17 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
               onValueChange={next => update(rows.map((value, i) => (i === index ? next : value)))}
               onFocus={onFocus}
               placeholder={placeholder}
-              trailingSpace={rows.length > 1 ? 'sm' : 'none'}
+              trailingSpace="sm"
             />
-            {rows.length > 1 && (
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
-                title={t('common.remove')}
-                aria-label={t('common.remove')}
-              >
-                <Icon name="x" className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => remove(index)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+              title={t('common.remove')}
+              aria-label={t('common.remove')}
+            >
+              <Icon name="x" className="w-4 h-4" />
+            </button>
           </div>
         ))}
       </div>

@@ -177,7 +177,6 @@ test.describe('20. Items', () => {
     await page.getByRole('link', { name: 'Edit item' }).click();
     await expect(page).toHaveURL(/\/edit$/);
     await expect(urlRows).toHaveCount(1);
-    await expect(removeButtons).toHaveCount(0);
 
     await test.step('add a second URL; the new row gets the focus', async () => {
       await urlRows.nth(0).fill('https://one.example');
@@ -193,7 +192,15 @@ test.describe('20. Items', () => {
       await removeButtons.nth(0).click();
       await expect(urlRows).toHaveCount(1);
       await expect(urlRows.nth(0)).toHaveValue('https://two.example');
-      await expect(removeButtons).toHaveCount(0);
+      await expect(removeButtons).toHaveCount(1);
+    });
+
+    await test.step('the last row can be removed too, and added back', async () => {
+      await removeButtons.nth(0).click();
+      await expect(urlRows).toHaveCount(0);
+      await page.locator('#add-service-url').click();
+      await expect(urlRows.nth(0)).toBeFocused();
+      await urlRows.nth(0).fill('https://two.example');
     });
 
     await test.step('the saved item holds the remaining URL', async () => {
