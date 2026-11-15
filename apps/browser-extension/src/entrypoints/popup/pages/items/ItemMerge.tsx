@@ -17,7 +17,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useItemBackButtonTitle } from '@/entrypoints/popup/hooks/useItemBackButtonTitle';
-import { useRootDomains } from '@/entrypoints/popup/hooks/useRootDomains';
+import { useUrlDomains } from '@/entrypoints/popup/hooks/useUrlDomains';
 
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -70,9 +70,9 @@ const ItemMerge: React.FC = () => {
     return all.filter(other => item && mergeBlocker(item, other) === null).sort((a, b) => (a.Name ?? '').localeCompare(b.Name ?? ''));
   }, [dbContext.sqliteClient, item]);
   const resolvable = useMemo(() => (item ? [item, ...candidates] : []), [item, candidates]);
-  const rootDomains = useRootDomains(resolvable);
+  const urlDomains = useUrlDomains(resolvable);
 
-  const suggested = useMemo(() => (item && rootDomains ? suggestMergeCandidates(item, candidates, url => rootDomains.get(url) ?? null) : null), [item, candidates, rootDomains]);
+  const suggested = useMemo(() => (item && urlDomains ? suggestMergeCandidates(item, candidates, url => urlDomains.get(url) ?? null) : null), [item, candidates, urlDomains]);
   const results = useMemo(() => (search ? applySearchFilter(candidates, search) : candidates.filter(candidate => !suggested?.includes(candidate))), [candidates, search, suggested]);
 
   // Items to merge (when picked)

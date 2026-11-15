@@ -108,7 +108,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
         type="button"
         onClick={() => setPicks({ ...picks, [conflict.key]: pick })}
         aria-pressed={isChosen}
-        className={`flex-1 min-w-0 text-left px-2 py-1.5 rounded-md border text-sm ${isChosen ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10 text-gray-900 dark:text-white' : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+        className={`flex-1 min-w-0 text-left px-2 py-1.5 rounded-md border text-sm ${isChosen ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10 text-gray-900 dark:text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
         {label && <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">{label}</span>}
         <span className="block truncate">{masked ? '••••••••' : value}</span>
@@ -135,13 +135,13 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
     </p>
   ) : (
     <div className="space-y-4 text-sm">
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className="mb-2 font-medium text-gray-900 dark:text-white">{t('items.merge.keep')}</legend>
         <div className="space-y-2">
           {[first, second].map(side => {
             const isKept = keyOf(side) === targetKey;
             return (
-              <label key={keyOf(side)} className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer ${isKept ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-300 dark:border-gray-600'}`}>
+              <label key={keyOf(side)} className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer ${isKept ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 <input type="radio" name="merge-keep" checked={isKept} onChange={() => setTargetKey(keyOf(side))} className="accent-primary-500" />
                 <ItemIcon item={side.item} className="w-6 h-6 flex-shrink-0" />
                 <span className="min-w-0">
