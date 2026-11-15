@@ -17,6 +17,7 @@ import EmailDomainField, { detectEmailMode, EMPTY_EMAIL_DOMAINS, type EmailDomai
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
 import FormSection from '@/entrypoints/popup/components/Forms/FormSection';
 import HiddenField from '@/entrypoints/popup/components/Forms/HiddenField';
+import MultiValueField from '@/entrypoints/popup/components/Forms/MultiValueField';
 import PasswordField from '@/entrypoints/popup/components/Forms/PasswordField';
 import UsernameField from '@/entrypoints/popup/components/Forms/UsernameField';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -1124,46 +1125,9 @@ const ItemAddEdit: React.FC = () => {
   const renderFieldInput = useCallback((fieldKey: string, label: string, fieldType: FieldType, isHidden: boolean, isMultiValue: boolean, onRemove?: () => void): React.ReactNode => {
     const value = fieldValues[fieldKey] || '';
 
-    // Handle multi-value fields
     if (isMultiValue) {
-      // Ensure at least one empty input is always shown for multi-value fields
-      const values = Array.isArray(value) && value.length > 0 ? value : value ? [value as string] : [''];
-
-      return (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            {label}
-          </label>
-          {values.map((val, idx) => (
-            <div key={`${fieldKey}-${idx}`} className="relative">
-              <input
-                id={`${fieldKey}-${idx}`}
-                type="text"
-                value={val}
-                onChange={(e) => {
-                  const newValues = [...values];
-                  newValues[idx] = e.target.value;
-                  /*
-                   * Filter empty values but keep raw value for storage (empty array is fine).
-                   * The UI will still show at least one input due to the values initialization above.
-                   */
-                  handleFieldChange(fieldKey, newValues.filter(v => v.trim() !== ''));
-                }}
-                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-              />
-              {idx === values.length - 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleFieldChange(fieldKey, [...values, ''])}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-                >
-                  <Icon name="plus-sm" className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      );
+      const values = Array.isArray(value) ? value : value ? [value] : [];
+      return <MultiValueField id={fieldKey} label={label} values={values} onChange={next => handleFieldChange(fieldKey, next)} />;
     }
 
     // Single-value fields
