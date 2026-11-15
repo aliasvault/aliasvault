@@ -36,6 +36,8 @@ export type MergeSide = {
   passkeys: MergePasskey[];
   totpCodes: MergeTotpCode[];
   attachments: MergeAttachment[];
+  lastChangedAt: string;
+  lastUsedAt: string | null;
 };
 
 /**
@@ -204,13 +206,13 @@ function describePasskeys(passkeys: MergePasskey[]): string {
  * @returns The blocker, or null when they can be merged
  */
 export function mergeBlocker(a: Pick<Item, 'Id' | 'ManifestId' | 'ItemType'>, b: Pick<Item, 'Id' | 'ManifestId' | 'ItemType'>): MergeBlocker | null {
+  if (!mergedType(a.ItemType, b.ItemType)) {
+    return 'type';
+  }
   if (a.ManifestId.toLowerCase() !== b.ManifestId.toLowerCase()) {
     return 'manifest';
   }
-  if (a.Id === b.Id) {
-    return 'same-item';
-  }
-  return mergedType(a.ItemType, b.ItemType) ? null : 'type';
+  return a.Id === b.Id ? 'same-item' : null;
 }
 
 /**

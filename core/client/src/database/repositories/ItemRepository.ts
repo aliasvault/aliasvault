@@ -26,6 +26,14 @@ import type { LogoRepository } from './LogoRepository';
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@aliasvault/models/vault';
 
 /**
+ * When an item last changed and when it was last used on any device, see `ItemQueries.LAST_CHANGED_AT` and `LAST_USED_AT`.
+ */
+export type ItemActivity = {
+  LastChangedAt: string;
+  LastUsedAt: string | null;
+};
+
+/**
  * A stored FieldValues row as the write path reads it, tombstones included.
  */
 type StoredFieldValue = {
@@ -428,6 +436,16 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * When an item last changed and when it was last used on any device.
+   * @param ref - The item, named by its manifest and id
+   * @returns The timestamps, or null when the item does not exist
+   */
+  public *getActivity(ref: ItemRef): DbOp<ItemActivity | null> {
+    const [row] = yield* this.query<ItemActivity>(ItemQueries.GET_ACTIVITY, [ref.Id, ref.ManifestId]);
+    return row ?? null;
+  }
+
+  /**
    * Read an item with the child rows a merge can move, as {@link planMerge} and {@link mergeItems} take it.
    * @param ref - The item, named by its manifest and id
    * @returns The item and its passkeys, 2FA codes and attachments, or null when it does not exist or is in the trash
@@ -439,11 +457,14 @@ export class ItemRepository extends BaseRepository {
     }
 
     const params = [ref.Id, ref.ManifestId];
+    const activity = yield* this.getActivity(ref);
     return {
       item,
       passkeys: yield* this.query<MergePasskey>(ItemMergeQueries.GET_PASSKEYS, params),
       totpCodes: yield* this.query<MergeTotpCode>(ItemMergeQueries.GET_TOTP_CODES, params),
       attachments: yield* this.query<MergeAttachment>(ItemMergeQueries.GET_ATTACHMENTS, params),
+      lastChangedAt: activity?.LastChangedAt ?? item.CreatedAt,
+      lastUsedAt: activity?.LastUsedAt ?? null,
     };
   }
 

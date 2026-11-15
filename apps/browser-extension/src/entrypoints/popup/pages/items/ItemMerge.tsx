@@ -67,7 +67,7 @@ const ItemMerge: React.FC = () => {
   const item = useMemo(() => (id && manifestId ? dbContext.sqliteClient?.items.getById({ Id: id, ManifestId: manifestId }) ?? null : null), [dbContext.sqliteClient, id, manifestId]);
   const candidates = useMemo(() => {
     const all = item ? dbContext.sqliteClient?.items.getAll() ?? [] : [];
-    return all.filter(other => item && mergeBlocker(item, other) === null).sort((a, b) => (a.Name ?? '').localeCompare(b.Name ?? ''));
+    return all.filter(other => item && [null, 'manifest'].includes(mergeBlocker(item, other))).sort((a, b) => (a.Name ?? '').localeCompare(b.Name ?? ''));
   }, [dbContext.sqliteClient, item]);
   const resolvable = useMemo(() => (item ? [item, ...candidates] : []), [item, candidates]);
   const urlDomains = useUrlDomains(resolvable);
