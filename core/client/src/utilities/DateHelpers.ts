@@ -49,6 +49,26 @@ export function toLocalDisplayFormat(value: string): string {
   return isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
+/** Units for {@link toRelativeDisplayFormat}, largest first, with their length in seconds. */
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]];
+
+/**
+ * Formats a stored date-time as a relative time in the given locale, such as "3 days ago" or "last year".
+ * @param value - The date-time string, in the standard format or ISO 8601
+ * @param locale - The locale to format in
+ * @param reference - The moment to compare with, now by default
+ * @returns The relative time, or the raw value when it cannot be parsed
+ */
+export function toRelativeDisplayFormat(value: string, locale: string, reference: Date = new Date()): string {
+  const date = parseUtc(value);
+  if (isNaN(date.getTime())) {
+    return value;
+  }
+  const seconds = (date.getTime() - reference.getTime()) / 1000;
+  const [unit, size] = RELATIVE_UNITS.find(([, length]) => Math.abs(seconds) >= length) ?? ['second', 1];
+  return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(Math.trunc(seconds / size), unit);
+}
+
 /**
  * Parses a date-time string, reading one without a timezone designator as UTC.
  * @param value - The date-time string

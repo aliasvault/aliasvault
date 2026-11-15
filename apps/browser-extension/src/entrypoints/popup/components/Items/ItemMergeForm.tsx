@@ -1,9 +1,11 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { MergeConflictKeys, planMerge, suggestTarget, type MergeChoice, type MergeChoices, type MergeConflict, type MergeSide } from '@aliasvault/client/items/ItemMerge';
+import { toRelativeDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import { getItemAccountLabel, type ItemType } from '@aliasvault/models/vault';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Alert from '@/entrypoints/popup/components/Alert';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
@@ -31,7 +33,7 @@ function keyOf(side: MergeSide): string {
  * Merge two items: pick the item to keep, then the value to keep for every field both fill differently.
  */
 const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged, variant = 'modal' }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dbContext = useDb();
   const { executeVaultMutationAsync } = useVaultMutate();
   const [isMerging, setIsMerging] = useState(false);
@@ -73,6 +75,11 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
    * The translated name of an item type, e.g. `CreditCard` reads `itemTypes.creditCard.title`.
    */
   const typeName = (type: ItemType): string => t(`itemTypes.${type.charAt(0).toLowerCase()}${type.slice(1)}.title`, { defaultValue: type });
+
+  /**
+   * A stored date-time as a relative time in the UI language, e.g. "3 days ago".
+   */
+  const relativeTime = (value: string): string => toRelativeDisplayFormat(value, i18n.language);
 
   /**
    * Save the merge.
@@ -130,9 +137,9 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
   );
 
   const body = plan.blocker ? (
-    <p className="text-sm text-gray-600 dark:text-gray-300">
+    <Alert variant="warning" icon>
       {plan.blocker === 'type' ? t('items.merge.differentTypes', { types: [first, second].map(side => typeName(side.item.ItemType)).join(', ') }) : t('items.merge.differentFolders')}
-    </p>
+    </Alert>
   ) : (
     <div className="space-y-4 text-sm">
       <fieldset className="min-w-0">
@@ -148,6 +155,9 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
                   <span className="block truncate font-medium text-gray-900 dark:text-white">{side.item.Name || t('items.untitled')}</span>
                   <span className="block truncate text-xs text-gray-500 dark:text-gray-400">{getItemAccountLabel(side.item)}</span>
                   <ItemUrlLine item={side.item} className="text-xs" />
+                  <span className="block truncate text-xs text-gray-500 dark:text-gray-400">
+                    {t('items.merge.lastChanged', { time: relativeTime(side.lastChangedAt) })} · {t('items.merge.lastUsed', { time: side.lastUsedAt ? relativeTime(side.lastUsedAt) : t('common.never') })}
+                  </span>
                 </span>
               </label>
             );
