@@ -153,7 +153,7 @@
       "createAccountButton": "Criar Conta",
       "creatingStepTitle": "Criando Cofre",
       "passwordStep": {
-        "confirmMasterPasswordLabel": "Confirmar Senha Mestre",
+        "confirmMasterPasswordLabel": "Confirmar senha mestre",
         "confirmMasterPasswordPlaceholder": "Confirme sua senha mestre",
         "importantNote": "Importante: Essa senha mestre será utilizada para criptografar seu cofre. Ela deve ser uma senha longa, complexa e que você consiga se lembrar. Se você esquecer esta senha, seus dados ficarão inacessíveis permanentemente.",
         "masterPasswordPlaceholder": "Digite sua senha mestre",
@@ -162,7 +162,7 @@
         "securityPoint3": "Mesmo o administrador do servidor não poderá recuperar seu acesso caso você esqueça a senha",
         "welcomeMessage": "Ótimo! Agora, vamos configurar sua senha mestre para o AliasVault."
       },
-      "passwordStepTitle": "Definir Senha",
+      "passwordStepTitle": "Definir senha",
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Configuração",
@@ -250,7 +250,7 @@
     "enabled": "Habilitado",
     "error": "Erro",
     "errorGeneric": "Ocorreu um erro. Por favor, tente novamente.",
-    "errorPasswordMismatch": "Senhas não são iguais.",
+    "errorPasswordMismatch": "As senhas não coincidem.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
       "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
@@ -316,7 +316,7 @@
       "fair": "Bom",
       "good": "Ótimo",
       "strong": "Excelente",
-      "title": "Segurança da Senha",
+      "title": "Segurança da senha",
       "veryWeak": "Continue",
       "weak": "Melhorando"
     },
@@ -389,7 +389,7 @@
     "emailContent": "Conteúdo do email",
     "emailDetails": "Detalhes do e-mail",
     "emailNotFound": "E-mail não encontrado",
-    "emptyMessage": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
+    "emptyMessage": "Você ainda não recebeu nenhum e-mail nos seus endereços privados. Quando receber um novo e-mail, ele aparecerá aqui.",
     "formatHtml": "HTML",
     "formatPlain": "Texto",
     "formatSource": "Origem",
@@ -470,12 +470,12 @@
   "importExport": {
     "exportAvexButton": "Exportar cofre criptografado (.avex)",
     "exportAvexDescription": "Backup protegido por senha do seu cofre inteiro. Inclui todos os itens, passkeys, e anexos. Utilize como um backup manual e/ou para restaurar para outro servidor AliasVault.",
-    "exportAvexTitle": "Exportação total de cofre criptografado",
+    "exportAvexTitle": "Exportação total do cofre criptografado",
     "exportAvuxButton": "Exportar cofre descriptografado (.avux)",
     "exportAvuxDescription": "Finalize a exportação do cofre como um arquivo descriptografado compatível com ZIP. Incluí todos os itens, passkeys e anexos.",
-    "exportAvuxTitle": "Exportação total de cofre descriptografado",
+    "exportAvuxTitle": "Exportação total do cofre descriptografado",
     "exportCsvButton": "Exportar para CSV",
-    "exportCsvDescription": "Exportação básica para importar em outros gerenciadores de senhas. Não incluí passkeys ou anexos.",
+    "exportCsvDescription": "Exportação básica para importar em outros gerenciadores de senhas. Não inclui chaves de acesso ou anexos.",
     "exportCsvTitle": "Exportar para CSV",
     "exportEncryptedPasswordDescription": "Escolha uma senha forte e única para criptografar esta exportação. Esta senha é necessária para descriptografar a exportação. Caso você perca esta senha, você não conseguirá recuperar os dados exportados.",
     "exportEncryptedPasswordTitle": "Definir Senha de Exportação",
@@ -488,7 +488,7 @@
     },
     "exportSectionDescription": "Exporte seu cofre para mover credenciais entre servidores AliasVault ou outros gerenciadores de senhas.",
     "exportSuccessMessage": "O seu cofre foi exportado com sucesso.",
-    "exportWarningMessage": "Aviso: Exportar seu cofre para um arquivo descriptografado irá expor todas as suas senhas e informações sensíveis em texto. Faça isso apenas em computadores confiáveis e garanta que você:\n\n• Armazene o arquivo exportado em um local seguro\n• Exclua o arquivo quando não precisar mais dele\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
+    "exportWarningMessage": "Aviso: Exportar seu cofre para um arquivo descriptografado irá expor todas as suas senhas e informações sensíveis em texto. Faça isso apenas em computadores confiáveis e garanta que você:\n\n• Armazene o arquivo exportado em um local seguro\n• Exclua o arquivo quando não precisar mais dele\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "exportingVaultMessage": "Exportando cofre...",
     "importSectionDescription": "Selecione um serviço para importar.",
     "importSectionTitle": "Importar senhas",
@@ -652,7 +652,7 @@
       "title": "Credencial conectada"
     },
     "avoidAmbiguousCharacters": "Evitar caracteres ambíguos (o, 0, etc.)",
-    "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
+    "avoidAmbiguousChars": "Evitar caracteres ambíguos",
     "birthDatePlaceholder": "AAAA-MM-DD",
     "capitalization": "Capitalization",
     "cardInformation": "Informações do Cartão",
@@ -704,8 +704,8 @@
     "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
     "errorLoadingItems": "Erro ao carregar itens",
-    "excludedCharsDescription": "Generated passwords will never contain these characters.",
-    "excludedCharsLabel": "Exclude characters",
+    "excludedCharsDescription": "Senhas geradas nunca conterão estes caracteres.",
+    "excludedCharsLabel": "Excluir caracteres",
     "fieldHistory": {
       "deleteConfirm": "Têm certeza?",
       "title": "Histórico {{field}}"
@@ -768,7 +768,7 @@
     "includeLowercaseLetters": "Incluir letras minúsculas",
     "includeNumbers": "Números (0-9)",
     "includeSpecialCharacters": "Incluir caracteres especiais",
-    "includeSpecialChars": "Caracteres Especiais (!@#)",
+    "includeSpecialChars": "Caracteres especiais (!@#)",
     "includeUppercase": "Maiúsculas (A-Z)",
     "includeUppercaseLetters": "Incluir letras maiúsculas",
     "itemCreated": "Item Criado",
@@ -807,22 +807,22 @@
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "numberOfItemMatchesFound": "{{count}} itens encontrados",
-    "passphraseLanguage": "Passphrase language",
+    "passphraseLanguage": "Idioma da frase secreta",
     "passwordLength": "Tamanho da Senha",
-    "passwordSettings": "Configurações de Senha",
+    "passwordSettings": "Configurações de senha",
     "passwordSettingsPopup": {
       "avoidAmbiguousCharsLabel": "Evitar caracteres ambíguos (1, l, I, 0, O, etc.)",
       "includeLowercaseLabel": "Incluir letras minúsculas (a-z)",
       "includeNumbersLabel": "Incluir números (0-9)",
       "includeSpecialCharsLabel": "Incluir caracteres especiais (!@#$%^&*)",
       "includeUppercaseLabel": "Incluir letras maiúsculas (A-Z)",
-      "passwordLengthLabel": "Tamanho da Senha: {{length}}",
+      "passwordLengthLabel": "Tamanho da senha: {{length}}",
       "previewLabel": "Prévia",
       "saveGloballyButton": "Salvar Globalmente",
       "settingsUpdatedMessage": "Configurações do gerador de senhas atualizadas globalmente.",
       "useJustOnceButton": "Usar Apenas Uma Vez"
     },
-    "passwordTypeDiceware": "Passphrase",
+    "passwordTypeDiceware": "Frase secreta",
     "previewNotSupported": "Pré-visualização não suportada",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
@@ -953,7 +953,7 @@
     "viewHistory": "Visualizar histórico",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
     "welcomeTitle": "Boas-vindas ao AliasVault!",
-    "wordCount": "Words"
+    "wordCount": "Palavras"
   },
   "loadingScreen": {
     "errors": {
@@ -1160,7 +1160,7 @@
       "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
     },
     "apiUrlHint": "O URL do endpoint da API (geralmente o URL do cliente + /api)",
-    "appVersion": "App version",
+    "appVersion": "Versão do aplicativo",
     "appearance": "Aparência",
     "apps": {
       "browserExtensionsDescription": "A extensão de navegador do AliasVault permite que você realize o preenchimento automático de credenciais existentes em qualquer site. Ela também permite que você crie novos aliases enquanto se registra, acesse e-mails em todos os seus aliases, e visualize seus aliases e identidades.",
@@ -1294,7 +1294,7 @@
     "importExport": "Importar / Exportar",
     "importSectionDescription": "Importe suas senhas de outros gerenciadores de senhas ou de dados exportados anteriormente do AliasVault.",
     "importSectionTitle": "Importar",
-    "importWebNote": "Para importar credenciais de um gerenciador de senhas existente, por favor realize o login pelo site. Por enquanto, a função de importar só está disponível pela versão web.",
+    "importWebNote": "Para importar credenciais de outro gerenciador de senhas, realize o login pelo site. Por enquanto, só é possível importar arquivos pela versão web.",
     "iosAutofillSettings": {
       "headerText": "Você pode configurar o AliasVault para prover autopreenchimento nativo de senhas e passkeys no iOS. Siga as instruções abaixo para habilitar.",
       "openIosSettings": "Abrir Configurações do iOS",
@@ -1327,7 +1327,7 @@
     "passwordGenerator": "Gerador de senha",
     "passwordGeneratorSettings": {
       "configureButton": "Configurar",
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Defina as configurações usadas para gerar novos itens, incluindo o tamanho da senha, os tipos de caracteres e o idioma da frase secreta.",
       "passwordGeneratorSettingsLabel": "Configurações padrão de geração de senha"
     },
     "qrScanner": {
@@ -1387,7 +1387,7 @@
         "revokeSuccessMessage": "Sessão revogada com sucesso.",
         "sessionRevoked": "Sessão revogada com sucesso"
       },
-      "activeSessionsTitle": "Sessões Ativas",
+      "activeSessionsTitle": "Sessões ativas",
       "authLogs": {
         "client": "Cliente",
         "deviceColumn": "Dispositivo",
@@ -1397,12 +1397,12 @@
         "headerText": "Abaixo você pode ter uma visão de tentativas de login recentes na sua conta.",
         "ipAddress": "Endereço IP",
         "noLogs": "Nenhum registro de autenticação encontrado",
-        "noLogsMessage": "Não foram encontrados logs de autenticação.",
+        "noLogsMessage": "Não foram encontrados registros de autenticação.",
         "success": "Sucesso",
         "time": "Horário",
         "timestampColumn": "Horário"
       },
-      "changeMasterPassword": "Alterar Senha Mestre",
+      "changeMasterPassword": "Alterar senha mestre",
       "changePassword": {
         "changePassword": "Mudar Senha",
         "changingPasswordMessage": "Alterando senha...",
@@ -1426,19 +1426,19 @@
       "deleteAccount": {
         "accountDeleted": "Conta excluída com sucesso",
         "confirmUsernameLabel": "Confirmar nome de usuário",
-        "confirmationMessage": "Tem certeza que deseja excluir sua conta? Esta operação não pode ser desfeita.",
-        "continueWithAccountDeletion": "Continuar com Exclusão de Conta",
-        "deleteAccount": "Excluir Conta",
-        "deleteMyAccount": "Excluir Minha Conta",
+        "confirmationMessage": "Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.",
+        "continueWithAccountDeletion": "Prosseguir com a exclusão da conta",
+        "deleteAccount": "Excluir conta",
+        "deleteMyAccount": "Excluir minha conta",
         "deletingAccount": "Excluindo conta...",
-        "deletionIrreversibleNote": "A exclusão da conta é irreversível e não poderá ser desfeita. Pressionando o botão abaixo irá excluir sua conta imediatamente e permanentemente.",
+        "deletionIrreversibleNote": "A exclusão da conta é irreversível e não pode ser desfeita. Ao pressionar o botão abaixo, sua conta será excluída imediata e permanentemente.",
         "enterPassword": "Digite a senha",
         "enterUsername": "Digite seu usuário para continuar",
         "errorProcessingRequest": "Ocorreu um erro ao processar a requisição.",
-        "failedToDelete": "Falha ao excluir conta. Por favor tente novamente.",
+        "failedToDelete": "Falha ao excluir conta. Tente novamente.",
         "finalWarning": "Aviso final: Digite sua senha para excluir sua conta permanentemente.",
-        "headerText": "Excluir sua conta excluirá imediatamente e permanentemente todos os seus dados.",
-        "initiatingDeletion": "Inicializando exclusão de conta",
+        "headerText": "Excluir sua conta apagará todos os seus dados imediatamente de forma irreversível.",
+        "initiatingDeletion": "Iniciando exclusão da conta",
         "irreversibleWarning": "Exclusão de conta é irreversível e não pode ser desfeita. Pressionado o botão abaixo excluirá sua conta imediatamente e permanentemente.",
         "permanentActionWarning": "Aviso: Esta ação é permanente e não poderá ser desfeita. Todos os seus dados serão permanentemente excluídos.",
         "usernameDoesNotMatch": "Usuário não coincide",
@@ -1491,7 +1491,7 @@
         "title": "Desbloqueio com Passkey",
         "webAuthnNotSupportedError": "Seu navegador atual não tem suporte ao WebAthn com extensão PRF. Por favor, tente novamente em um navegador diferente."
       },
-      "recentAuthLogs": "Logs de Autenticação Recente",
+      "recentAuthLogs": "Registro de autenticações recentes",
       "recoveryCodes": {
         "description": "Os códigos de recuperação abaixo são utilizados para acessar sua conta em caso de você perder acesso ao seu dispositivo autenticador. Faça uma foto ou escreva-os e armazene-os em um local seguro. Não compartilhe-os com ninguém.",
         "title": "Códigos de recuperação",
@@ -1661,7 +1661,7 @@
     },
     "newVersion": "Nova versão disponível:",
     "noDescriptionAvailable": "Nenhuma descrição disponível para esta versão.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "otherDevicesWarning": "Após esta atualização, seus outros aplicativos do AliasVault precisarão estar na versão {{version}} ou mais recente. Aplicativos e extensões de navegador mais antigos serão desconectados e solicitarão atualização antes que você possa abrir seu cofre novamente.",
     "startUpgradeButton": "Iniciar processo de atualização",
     "status": {
       "applyingDatabaseMigrations": "Aplicando migrações do banco de dados...",
