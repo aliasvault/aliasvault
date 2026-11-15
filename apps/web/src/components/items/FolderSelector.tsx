@@ -42,7 +42,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
         onClick={() => setShowFolderModal(true)}
         className={`flex w-full items-center gap-2 mt-2.5 px-3 py-1 text-sm font-medium rounded-lg transition-colors ${selectedFolder
           ? 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-transparent hover:bg-gray-200 dark:hover:bg-gray-600'
-          : 'text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-500'}`}
+          : 'text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'}`}
       >
         {selectedFolder ? (
           <FolderIcon isShared={selectedFolderRow !== undefined && isSharedFolder(selectedFolderRow, personalManifestId)} className="w-4 h-4 text-primary-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
