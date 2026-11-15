@@ -8,6 +8,7 @@ type MultiValueFieldProps = {
   label: string;
   values: string[];
   onChange: (values: string[]) => void;
+  addLabel: string;
 };
 
 /**
@@ -22,7 +23,7 @@ function filled(rows: string[]): string[] {
 /**
  * A list of text inputs for a multi-value field, with an add button next to the label and a remove button per row.
  */
-const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, onChange }) => {
+const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, onChange, addLabel }) => {
   const { t } = useTranslation();
   const [rows, setRows] = useState<string[]>(values.length > 0 ? values : ['']);
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
@@ -35,7 +36,8 @@ const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, on
   useEffect(() => {
     setRows(current => {
       const currentValues = filled(current);
-      const isSame = currentValues.length === values.length && currentValues.every((value, index) => value === values[index]);
+      const incoming = filled(values);
+      const isSame = currentValues.length === incoming.length && currentValues.every((value, index) => value === incoming[index]);
       return isSame ? current : values.length > 0 ? values : [''];
     });
   }, [values]);
@@ -64,11 +66,10 @@ const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, on
   };
 
   /**
-   * Remove a row, keeping one empty row when it was the last.
+   * Remove a row; the add button brings one back after the last is removed.
    */
   const remove = (index: number): void => {
-    const next = rows.filter((_, i) => i !== index);
-    update(next.length > 0 ? next : ['']);
+    update(rows.filter((_, i) => i !== index));
   };
 
   return (
@@ -84,7 +85,7 @@ const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, on
           className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500"
         >
           <Icon name="plus" className="w-2.5 h-2.5 -ml-0.5" strokeWidth={2.5} />
-          <span>{t('common.add')}</span>
+          <span>{addLabel}</span>
         </button>
       </div>
       {rows.map((row, index) => (
@@ -97,19 +98,17 @@ const MultiValueField: React.FC<MultiValueFieldProps> = ({ id, label, values, on
             type="text"
             value={row}
             onChange={(e) => update(rows.map((value, i) => (i === index ? e.target.value : value)))}
-            className={`w-full px-3 py-2 ${rows.length > 1 ? 'pr-10' : ''} border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
+            className={`w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white`}
           />
-          {rows.length > 1 && (
-            <button
-              type="button"
-              onClick={() => remove(index)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
-              title={t('common.remove')}
-              aria-label={t('common.remove')}
-            >
-              <Icon name="x" className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => remove(index)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+            title={t('common.remove')}
+            aria-label={t('common.remove')}
+          >
+            <Icon name="x" className="w-4 h-4" />
+          </button>
         </div>
       ))}
     </div>

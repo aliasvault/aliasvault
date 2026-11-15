@@ -1,6 +1,7 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn } from '@aliasvault/client/database/ItemRef';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { fieldTypeLabelKey } from '@aliasvault/client/items/FieldTypeLabel';
 import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import { switchItemTypeFieldValues, type FormFieldValue } from '@aliasvault/client/items/ItemTypeSwitch';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
@@ -1127,7 +1128,7 @@ const ItemAddEdit: React.FC = () => {
 
     if (isMultiValue) {
       const values = Array.isArray(value) ? value : value ? [value] : [];
-      return <MultiValueField id={fieldKey} label={label} values={values} onChange={next => handleFieldChange(fieldKey, next)} />;
+      return <MultiValueField id={fieldKey} label={label} values={values} onChange={next => handleFieldChange(fieldKey, next)} addLabel={t(fieldTypeLabelKey(fieldType))} />;
     }
 
     // Single-value fields
