@@ -27,6 +27,13 @@ export function getFieldValue(item: Item, fieldKey: string): string | undefined 
 }
 
 /**
+ * The username of an item, or its email when it has no username; empty when it has neither.
+ */
+export function getItemAccountLabel(item: Item): string {
+  return getFieldValue(item, FieldKey.LoginUsername)?.trim() || getFieldValue(item, FieldKey.LoginEmail)?.trim() || '';
+}
+
+/**
  * Get all values for a multi-value field
  */
 export function getFieldValues(item: Item, fieldKey: string): string[] {

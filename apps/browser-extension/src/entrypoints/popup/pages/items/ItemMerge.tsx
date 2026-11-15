@@ -3,7 +3,7 @@ import { truncateFolderPath } from '@aliasvault/client/items/FolderUtils';
 import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import { mergeBlocker } from '@aliasvault/client/items/ItemMerge';
 import { suggestMergeCandidates } from '@aliasvault/client/items/MergeSuggestions';
-import { FieldKey } from '@aliasvault/models/vault';
+import { getItemAccountLabel } from '@aliasvault/models/vault';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -30,8 +30,7 @@ const PAGE_SIZE = 50;
  */
 const BaseItemCard: React.FC<{ item: Item }> = ({ item }) => {
   const { t } = useTranslation();
-  const value = [FieldKey.LoginUsername, FieldKey.LoginEmail].map(key => item.Fields.find(field => field.FieldKey === key)?.Value).find(entry => (Array.isArray(entry) ? entry[0] : entry));
-  const subtitle = Array.isArray(value) ? value[0] : value;
+  const subtitle = getItemAccountLabel(item);
   return (
     <div id="merge-base" className="p-2 flex items-center gap-2 rounded border border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-500/10">
       <ItemIcon item={item} className="w-8 h-8 flex-shrink-0" />

@@ -1,6 +1,6 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { truncateFolderPath } from '@aliasvault/client/items/FolderUtils';
-import { FieldKey } from '@aliasvault/models/vault';
+import { getItemAccountLabel } from '@aliasvault/models/vault';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -47,46 +47,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, curre
   const menuRef = useRef<ContextMenuHandle>(null);
   const menuEnabled = Boolean(onDuplicate || onDelete);
   const showEllipsis = menuEnabled && !selectionMode;
-
-  /**
-   * Get the display text for the item (username or email)
-   * @param itm - The item to get the display text for
-   * @returns The display text for the item
-   */
-  const getDisplayText = (itm: Item): string => {
-    let returnValue = '';
-
-    // Try to find username field
-    const usernameField = itm.Fields?.find(f => f.FieldKey === FieldKey.LoginUsername);
-    if (usernameField && usernameField.Value) {
-      returnValue = Array.isArray(usernameField.Value) ? usernameField.Value[0] : usernameField.Value;
-    }
-
-    // Try to find email field if no username
-    if (!returnValue) {
-      const emailField = itm.Fields?.find(f => f.FieldKey === FieldKey.LoginEmail);
-      if (emailField && emailField.Value) {
-        returnValue = Array.isArray(emailField.Value) ? emailField.Value[0] : emailField.Value;
-      }
-    }
-
-    // Trim the return value to max. 33 characters.
-    return returnValue.length > 33 ? returnValue.slice(0, 30) + '...' : returnValue;
-  };
-
-  /**
-   * Get the item name, trimming it to maximum length so it doesn't overflow the UI.
-   */
-  const getItemName = (itm: Item): string => {
-    let returnValue = t('items.untitled');
-
-    if (itm.Name) {
-      returnValue = itm.Name;
-    }
-
-    // Trim the return value to max. 33 characters.
-    return returnValue.length > 33 ? returnValue.slice(0, 30) + '...' : returnValue;
-  };
 
   /**
    * Get formatted folder path for display, relative to current folder if applicable.
@@ -199,10 +159,10 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, curre
                       </span>
                     ) : null;
                   })()}
-                  {getItemName(item)}
+                  {item.Name || t('items.untitled')}
                 </>
               ) : (
-                getItemName(item)
+                item.Name || t('items.untitled')
               )}
             </p>
             {item.HasPasskey && (
@@ -215,7 +175,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, curre
               <Icon name="pin-material" className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" aria-label={t('items.hasTotp')} />
             )}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{getDisplayText(item)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{getItemAccountLabel(item)}</p>
           {showUrl && <ItemUrlLine item={item} className="text-xs" />}
         </div>
       </button>
