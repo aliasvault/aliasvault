@@ -1333,16 +1333,16 @@
     "qrScanner": {
       "mobileLogin": {
         "approve": "Approve login",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "codeMismatch": "O número não coincide. A solicitação de credenciais de acesso foi recusada.",
         "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
         "confirmSubtitle": "Autentique novamente para aprovar login em outros dispositivos.",
         "confirmTitle": "Confirmar Requisição de Login",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR.",
-        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Continue apenas se você acabou de escanear este código QR com a câmera. Se você chegou aqui clicando em um link ou botão, recuse.",
+        "requestExpired": "Esta solicitação de credenciais de acesso expirou. Por favor, gere um novo código QR.",
+        "selectCode": "Toque no número mostrado no outro dispositivo",
         "successDescription": "O login no dispositivo remoto foi feito com sucesso."
       },
-      "scanningMessage": "Escanear código QR do AliasVault",
+      "scanningMessage": "Escanear o código QR do AliasVault",
       "title": "Escaneador de Código QR"
     },
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
@@ -1635,7 +1635,7 @@
     "enterManually": "Digite a chave secreta",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
-      "scanFailed": "Falha ao escanear código QR. Por favor, tente novamente."
+      "scanFailed": "Não foi possível escanear o código QR. Tente novamente."
     },
     "instructions": "Insira a chave secreta exibida pelo site ou serviço onde você deseja adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
