@@ -43,6 +43,12 @@ export const ThemeColors = {
     info: '#2563eb',
     infoBackground: '#dbeafe',
     destructive: '#ef4444',
+    toastSuccessBackground: '#f0fdf4',
+    toastSuccessBorder: '#86efac',
+    toastSuccessIcon: '#16a34a',
+    toastErrorBackground: '#fef2f2',
+    toastErrorBorder: '#fca5a5',
+    toastErrorIcon: '#dc2626',
   },
   dark: {
     text: '#ecedee',
@@ -63,6 +69,12 @@ export const ThemeColors = {
     info: '#3b82f6',
     infoBackground: '#1e3a5f',
     destructive: '#ef4444',
+    toastSuccessBackground: '#14532d',
+    toastSuccessBorder: '#16a34a',
+    toastSuccessIcon: '#86efac',
+    toastErrorBackground: '#7f1d1d',
+    toastErrorBorder: '#dc2626',
+    toastErrorIcon: '#fca5a5',
   },
 } as const;
 

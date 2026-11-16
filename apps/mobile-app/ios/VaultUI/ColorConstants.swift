@@ -26,6 +26,12 @@ public struct ColorConstants {
         public static let info = SwiftUI.Color(hex: "#2563eb")
         public static let infoBackground = SwiftUI.Color(hex: "#dbeafe")
         public static let destructive = SwiftUI.Color(hex: "#ef4444")
+        public static let toastSuccessBackground = SwiftUI.Color(hex: "#f0fdf4")
+        public static let toastSuccessBorder = SwiftUI.Color(hex: "#86efac")
+        public static let toastSuccessIcon = SwiftUI.Color(hex: "#16a34a")
+        public static let toastErrorBackground = SwiftUI.Color(hex: "#fef2f2")
+        public static let toastErrorBorder = SwiftUI.Color(hex: "#fca5a5")
+        public static let toastErrorIcon = SwiftUI.Color(hex: "#dc2626")
     }
 
     /// Dark mode colors
@@ -48,6 +54,12 @@ public struct ColorConstants {
         public static let info = SwiftUI.Color(hex: "#3b82f6")
         public static let infoBackground = SwiftUI.Color(hex: "#1e3a5f")
         public static let destructive = SwiftUI.Color(hex: "#ef4444")
+        public static let toastSuccessBackground = SwiftUI.Color(hex: "#14532d")
+        public static let toastSuccessBorder = SwiftUI.Color(hex: "#16a34a")
+        public static let toastSuccessIcon = SwiftUI.Color(hex: "#86efac")
+        public static let toastErrorBackground = SwiftUI.Color(hex: "#7f1d1d")
+        public static let toastErrorBorder = SwiftUI.Color(hex: "#dc2626")
+        public static let toastErrorIcon = SwiftUI.Color(hex: "#fca5a5")
     }
 
     /// Get colors for the specified color scheme
@@ -77,6 +89,12 @@ public struct ColorConstants {
         static var info: Color { get }
         static var infoBackground: Color { get }
         static var destructive: Color { get }
+        static var toastSuccessBackground: Color { get }
+        static var toastSuccessBorder: Color { get }
+        static var toastSuccessIcon: Color { get }
+        static var toastErrorBackground: Color { get }
+        static var toastErrorBorder: Color { get }
+        static var toastErrorIcon: Color { get }
     }
 }
 

@@ -57,18 +57,21 @@ export function AppToaster(): React.ReactNode {
           backgroundColor: colors.modalSurfaceRaised,
           borderColor: colors.accentBorder,
           borderWidth: 1,
-          elevation: 12,
+          elevation: 4,
           shadowColor: colors.black,
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: colorScheme === 'dark' ? 0.5 : 0.18,
-          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.08,
+          shadowRadius: 6,
         },
+        // Tinted success and error toasts stand out from the cards underneath.
+        success: { backgroundColor: colors.toastSuccessBackground, borderColor: colors.toastSuccessBorder },
+        error: { backgroundColor: colors.toastErrorBackground, borderColor: colors.toastErrorBorder },
         titleStyle: { color: colors.text },
         descriptionStyle: { color: colors.textMuted },
       }}
       icons={{
-        success: <MaterialIcons name="check-circle-outline" size={20} color={colors.primary} />,
-        error: <MaterialIcons name="error-outline" size={20} color={colors.destructive} />,
+        success: <MaterialIcons name="check-circle-outline" size={20} color={colors.toastSuccessIcon} />,
+        error: <MaterialIcons name="error-outline" size={20} color={colors.toastErrorIcon} />,
         info: <MaterialIcons name="info-outline" size={20} color={colors.info} />,
         warning: <MaterialIcons name="warning-amber" size={20} color={colors.warning} />,
       }}
