@@ -23,5 +23,11 @@
   <color name="av_info">#2563eb</color>
   <color name="av_info_background">#dbeafe</color>
   <color name="av_destructive">#ef4444</color>
+  <color name="av_toast_success_background">#f0fdf4</color>
+  <color name="av_toast_success_border">#86efac</color>
+  <color name="av_toast_success_icon">#16a34a</color>
+  <color name="av_toast_error_background">#fef2f2</color>
+  <color name="av_toast_error_border">#fca5a5</color>
+  <color name="av_toast_error_icon">#dc2626</color>
   <color name="av_primary_ripple">#33f49541</color>
 </resources>
