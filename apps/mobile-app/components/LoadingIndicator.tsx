@@ -94,6 +94,7 @@ export default function LoadingIndicator({ status = '' }: LoadingIndicatorProps)
 
   const backgroundColor = colorScheme === 'dark' ? 'transparent' : '#fff';
   const shadowColor = '#000';
+  const shadowOpacity = colorScheme === 'dark' ? 0 : 0.05;
 
   const styles = StyleSheet.create({
     container: {
@@ -126,7 +127,7 @@ export default function LoadingIndicator({ status = '' }: LoadingIndicatorProps)
         width: 0,
         height: 1,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: shadowOpacity,
       shadowRadius: 2,
     },
     statusText: {
