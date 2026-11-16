@@ -5,6 +5,7 @@ import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { ItemWithArchivedAt, ItemWithDeletedAt } from '@aliasvault/client/database/mappers/ItemMapper';
 import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { ItemRepository } from '@aliasvault/client/database/repositories/ItemRepository';
+import type { MergeSide } from '@aliasvault/client/items/ItemMerge';
 import type { Item } from '@aliasvault/models/vault';
 
 /*
@@ -25,7 +26,12 @@ export type DisplayItem<T extends Item = Item> = Omit<T, 'Logo'> & {
 /**
  * The item repository reads that return items.
  */
-type ItemReads = 'getAll' | 'getByFolder' | 'getById' | 'getArchived' | 'getRecentlyDeleted';
+type ItemReads = 'getAll' | 'getByFolder' | 'getById' | 'getArchived' | 'getRecentlyDeleted' | 'getMergeSide';
+
+/**
+ * A merge side whose item is a display item.
+ */
+export type DisplayMergeSide = Omit<MergeSide, 'item'> & { item: DisplayItem };
 
 /**
  * The item repository as the app uses it: every item read returns display items.
@@ -36,6 +42,7 @@ export type DisplayItemRepository = Omit<AsyncRepository<ItemRepository>, ItemRe
   getById(item: ItemRef): Promise<DisplayItem | null>;
   getArchived(): Promise<DisplayItem<ItemWithArchivedAt>[]>;
   getRecentlyDeleted(): Promise<DisplayItem<ItemWithDeletedAt>[]>;
+  getMergeSide(item: ItemRef): Promise<DisplayMergeSide | null>;
 };
 
 /**
@@ -51,6 +58,10 @@ export function withDisplayItems(repository: AsyncRepository<ItemRepository>): D
     },
     getArchived: async () => toDisplayItems(await repository.getArchived()),
     getRecentlyDeleted: async () => toDisplayItems(await repository.getRecentlyDeleted()),
+    getMergeSide: async (ref) => {
+      const side = await repository.getMergeSide(ref);
+      return side ? { ...side, item: toDisplayItems([side.item])[0] } : null;
+    },
   };
 
   return new Proxy(repository, {

@@ -138,6 +138,14 @@ export default function ItemsLayout(): React.ReactNode {
             }}
           />
           <Stack.Screen
+            name="[manifestId]/[id]/merge"
+            options={{
+              title: t('items.merge.title'),
+              headerBackTitle: t('items.title'),
+              ...defaultHeaderOptions,
+            }}
+          />
+          <Stack.Screen
             name="email/[id]"
             options={{
               title: t('emails.emailDetails'),
