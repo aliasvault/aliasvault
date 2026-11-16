@@ -288,6 +288,8 @@
     "hidePassword": "Ocultar senha",
     "highRiskAction": "Esta é uma ação de alto risco.",
     "home": "Início",
+    "lastChanged": "Alterado: {{time}}",
+    "lastUsed": "Utilizado: {{time}}",
     "loadMore": "Carregar mais",
     "loading": "Carregando...",
     "loadingAttachments": "Carregando anexos...",
@@ -345,8 +347,25 @@
     "showList": "Mostrar lista",
     "showPassword": "Mostrar senha",
     "success": "Sucesso",
+    "suggestions": {
+      "title": "Sugestões"
+    },
     "syncVaultData": "Sincronizar dados do cofre",
     "syncingChanges": "Sincronizando alterações...",
+    "timeAgo": {
+      "days_one": "{{count}} dia atrás",
+      "days_other": "{{count}} dias atrás",
+      "hours_one": "há {{count}} hora",
+      "hours_other": "há {{count}} horas",
+      "justNow": "agora",
+      "minutes_one": "há {{count}} minuto",
+      "minutes_other": "há {{count}} minutos",
+      "months_one": "{{count}} mês atrás",
+      "months_other": "{{count}} meses atrás",
+      "years_one": "{{count}} ano atrás",
+      "years_other": "{{count}} anos atrás",
+      "yesterday": "ontem"
+    },
     "twoFactorAuthentication": "Autenticação de dois fatores",
     "unavailable": "Indisponível",
     "undo": "Desfazer",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Novo e-mail"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "há {{count}} horas",
-      "hoursAgo_single": "há {{count}} hora",
-      "justNow": "agora",
-      "minutesAgo_plural": "há {{count}} minutos",
-      "minutesAgo_single": "há {{count}} minuto",
-      "yesterday": "ontem"
-    },
     "title": "E-mails",
     "to": "Para:",
     "toColumn": "Para"
@@ -799,6 +810,17 @@
       "sourceFavicon": "From {{domain}}",
       "sourceNone": "No icon"
     },
+    "merge": {
+      "title": "Mesclar itens",
+      "action": "Mesclar",
+      "mergeWith": "Mesclar com...",
+      "searchHint": "Busque o item para mesclar.",
+      "keep": "Manter item",
+      "chooseValues": "Valores a manter:",
+      "combined": "Os demais valores dos campos são combinados no item mesclado.",
+      "differentFolders": "Os itens só podem ser mesclados quando ambos estiverem no seu próprio cofre ou ambos na mesma pasta compartilhada.",
+      "differentTypes": "Estes tipos de item não podem ser mesclados entre si: {{types}}."
+    },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Nenhum e-mail recebido ainda.",
     "noHistoryAvailable": "Histórico não disponível",
@@ -897,7 +919,6 @@
       "oldestFirst": "Mais antigos primeiro",
       "title": "Ordenar por"
     },
-    "suggestions": "Suggestions",
     "switchBackToOriginalApp": "Volte ao aplicativo original para continuar.",
     "tags": "Tags",
     "title": "Itens",
@@ -906,6 +927,7 @@
       "itemCreated": "Item criado com sucesso",
       "itemDeleted": "Item excluído com sucesso",
       "itemUpdated": "Item atualizado com sucesso",
+      "itemsMerged": "Itens mesclados com sucesso",
       "passwordCopied": "Senha copiada para a área de transferência",
       "totpCodeCopied": "Código TOTP copiado para a área de transferência",
       "urlCopied": "URL copiado para a área de transferência",
