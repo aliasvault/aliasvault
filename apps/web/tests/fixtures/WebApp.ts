@@ -108,6 +108,7 @@ export class WebApp {
     }
     await this.page.locator('#quickIdentitySubmit').click();
     await expect(this.page.locator('#service-name')).toHaveValue(name);
+    await expect(this.page.locator('#service-name')).toBeFocused();
     if (fields.username !== undefined) {
       await this.page.locator('#username').fill(fields.username);
     }
