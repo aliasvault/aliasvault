@@ -6,7 +6,7 @@ import { suggestMergeCandidates } from '@aliasvault/client/items/MergeSuggestion
 import { getItemAccountLabel } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, type ListRenderItem } from 'react-native';
 
@@ -106,8 +106,6 @@ export default function ItemMergeScreen(): React.ReactNode {
   const [allItems, setAllItems] = useState<DisplayItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  // Opened with both items (from the selection bar): cancel leaves the screen instead of going back to the picker.
-  const openedWithPair = useRef(Boolean(otherId && otherManifestId));
 
   useEffect(() => {
     let cancelled = false;
@@ -152,15 +150,9 @@ export default function ItemMergeScreen(): React.ReactNode {
   const pick = useCallback((other: DisplayItem): void => router.setParams({ otherManifestId: other.ManifestId, otherId: other.Id }), [router]);
 
   /**
-   * Leave the merge form: back to the picker, or off the screen when it was opened with both items.
+   * Leave the merge form and go back to the picker.
    */
-  const closeForm = useCallback((): void => {
-    if (openedWithPair.current) {
-      router.back();
-      return;
-    }
-    router.setParams({ otherManifestId: undefined, otherId: undefined });
-  }, [router]);
+  const closeForm = useCallback((): void => router.setParams({ otherManifestId: undefined, otherId: undefined }), [router]);
 
   /**
    * Open the kept item in place of this screen.

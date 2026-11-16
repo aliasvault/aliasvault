@@ -9,7 +9,6 @@ import WarningBox from '@/components/alerts/WarningBox';
 import ItemIcon from '@/components/items/ItemIcon';
 import ItemUrlLine from '@/components/items/ItemUrlLine';
 import Button from '@/components/shared/Button';
-import FormModal from '@/components/shared/FormModal';
 import Icon from '@/components/shared/Icon';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -19,7 +18,6 @@ type ItemMergeFormProps = {
   items: [ItemRef, ItemRef];
   onClose: () => void;
   onMerged: (item: ItemRef) => void;
-  variant?: 'modal' | 'inline';
 };
 
 /**
@@ -32,7 +30,7 @@ function keyOf(side: MergeSide): string {
 /**
  * Merge two items: pick the item to keep, then the value to keep for every field both fill differently.
  */
-const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged, variant = 'modal' }) => {
+const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const notifications = useNotifications();
@@ -44,7 +42,6 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
   const [first, second] = sides;
   const [targetKey, setTargetKey] = useState<string | null>(() => (first && second ? keyOf(suggestTarget(first, second)) : null));
   const [picks, setPicks] = useState<Record<string, string>>({});
-  const [isTouched, setIsTouched] = useState(false);
 
   if (!first || !second || !targetKey) {
     return null;
@@ -120,10 +117,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
         key={pick}
         id={`merge-choice-${conflict.key}-${choice}`}
         type="button"
-        onClick={() => {
-          setPicks({ ...picks, [conflict.key]: pick });
-          setIsTouched(true);
-        }}
+        onClick={() => setPicks({ ...picks, [conflict.key]: pick })}
         aria-pressed={isChosen}
         className={`flex-1 min-w-0 text-left px-3 py-2 rounded-lg border text-sm ${isChosen ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10 text-gray-900 dark:text-white' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
       >
@@ -159,10 +153,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
             const isKept = keyOf(side) === targetKey;
             return (
               <label key={keyOf(side)} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer ${isKept ? 'border-primary-500 bg-primary-50 dark:bg-primary-500/10' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                <input type="radio" name="merge-keep" checked={isKept} onChange={() => {
-                  setTargetKey(keyOf(side));
-                  setIsTouched(true);
-                }} className="accent-primary-500" />
+                <input type="radio" name="merge-keep" checked={isKept} onChange={() => setTargetKey(keyOf(side))} className="accent-primary-500" />
                 <ItemIcon item={side.item} sizeClass="w-8 h-8" />
                 <span className="min-w-0">
                   <span className="block truncate font-medium text-gray-900 dark:text-white">{side.item.Name || t('items.untitled')}</span>
@@ -211,19 +202,11 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
     </div>
   );
 
-  if (variant === 'inline') {
-    return (
-      <div className="space-y-5">
-        {body}
-        <div className="sm:flex sm:flex-row-reverse sm:justify-start gap-2">{actions}</div>
-      </div>
-    );
-  }
-
   return (
-    <FormModal isOpen title={t('items.merge.title')} footerContent={actions} submitOnEnter={false} closeOnOverlayClick={!isTouched} onClose={() => !isMerging && onClose()}>
+    <div className="space-y-5">
       {body}
-    </FormModal>
+      <div className="sm:flex sm:flex-row-reverse sm:justify-start gap-2">{actions}</div>
+    </div>
   );
 };
 

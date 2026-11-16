@@ -1,7 +1,7 @@
 /**
  * Category 21: Item merge (requires API)
  *
- * Merge two selected items into one, and merge an item with one picked in the merge dialog.
+ * Merge an item with one picked in the merge dialog, opened from the item menu.
  */
 import { test, expect } from '../fixtures';
 import { ITEM_VIEW_URL } from '../fixtures/WebApp';
@@ -11,7 +11,7 @@ test.describe('21. Item merge', () => {
     await app.login(testUser.username, testUser.password);
   });
 
-  test('21.1 should merge two selected items and keep the chosen password', async ({ app }) => {
+  test('21.1 should merge an item with its suggested duplicate and keep the chosen password', async ({ app }) => {
     const { page } = app;
 
     /**
@@ -24,13 +24,12 @@ test.describe('21. Item merge', () => {
       await app.createLogin('github copy', { url: 'https://github.com/login', username: 'bob', password: 'AnotherPassword2024!' });
     });
 
-    await test.step('select both items and open the merge dialog', async () => {
+    await test.step('open the merge dialog from the item menu and pick the suggested duplicate', async () => {
       await app.openVault();
-      await card('Merge GitHub').click({ modifiers: ['ControlOrMeta'] });
-      await expect(page.locator('#selection-merge')).toBeDisabled();
-      await card('github copy').click({ modifiers: ['ControlOrMeta'] });
-      await page.locator('#selection-merge').click();
+      await card('Merge GitHub').click({ button: 'right' });
+      await page.locator('#item-menu-merge').click();
       await expect(page.getByRole('heading', { name: 'Merge items' })).toBeVisible();
+      await page.locator('#merge-suggestions').locator('li', { hasText: 'github copy' }).locator('button').first().click();
     });
 
     await test.step('keep the older item and the newer password; the items show their URL', async () => {

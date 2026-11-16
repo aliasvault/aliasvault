@@ -6,7 +6,6 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@/entrypoints/popup/components/Alert';
-import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
 import ItemUrlLine from '@/entrypoints/popup/components/Items/ItemUrlLine';
@@ -19,7 +18,6 @@ type ItemMergeFormProps = {
   items: [ItemRef, ItemRef];
   onClose: () => void;
   onMerged: (item: ItemRef) => void;
-  variant?: 'modal' | 'inline';
 };
 
 /**
@@ -32,7 +30,7 @@ function keyOf(side: MergeSide): string {
 /**
  * Merge two items: pick the item to keep, then the value to keep for every field both fill differently.
  */
-const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged, variant = 'modal' }) => {
+const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { executeVaultMutationAsync } = useVaultMutate();
@@ -197,19 +195,11 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
     </div>
   );
 
-  if (variant === 'inline') {
-    return (
-      <div className="space-y-4">
-        {body}
-        {actions}
-      </div>
-    );
-  }
-
   return (
-    <ModalWrapper isOpen onClose={() => !isMerging && onClose()} title={t('items.merge.title')} bodyClassName="px-4 py-4" footer={actions}>
+    <div className="space-y-4">
       {body}
-    </ModalWrapper>
+      {actions}
+    </div>
   );
 };
 
