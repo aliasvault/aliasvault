@@ -1,6 +1,7 @@
 import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { decryptEmailList } from '@aliasvault/client/email/EmailDecryption';
 import { deleteEmails } from '@aliasvault/client/email/EmailDeletion';
+import { toRecentDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -177,44 +178,6 @@ const EmailsList: React.FC = () => {
   }, [setHeaderButtons, t]);
 
   /**
-   * Formats the date display for emails
-   */
-  const formatEmailDate = (dateSystem: string): string => {
-    const now = new Date();
-    const emailDate = new Date(dateSystem);
-    const secondsAgo = Math.floor((now.getTime() - emailDate.getTime()) / 1000);
-
-    if (secondsAgo < 60) {
-      return t('emails.time.justNow');
-    } else if (secondsAgo < 3600) {
-      // Less than 1 hour ago
-      const minutes = Math.floor(secondsAgo / 60);
-      if (minutes === 1) {
-        return t('emails.time.minutesAgo_single', { count: minutes });
-      } else {
-        return t('emails.time.minutesAgo_plural', { count: minutes });
-      }
-    } else if (secondsAgo < 86400) {
-      // Less than 24 hours ago
-      const hours = Math.floor(secondsAgo / 3600);
-      if (hours === 1) {
-        return t('emails.time.hoursAgo_single', { count: hours });
-      } else {
-        return t('emails.time.hoursAgo_plural', { count: hours });
-      }
-    } else if (secondsAgo < 172800) {
-      // Less than 48 hours ago
-      return t('emails.time.yesterday');
-    } else {
-      // Older than 48 hours
-      return emailDate.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit'
-      });
-    }
-  };
-
-  /**
    * Delete the emails waiting for confirmation and drop them from the list.
    */
   const confirmDelete = async (): Promise<void> => {
@@ -319,7 +282,7 @@ const EmailsList: React.FC = () => {
               <EmailCard
                 key={email.id}
                 email={email}
-                dateLabel={formatEmailDate(email.dateSystem)}
+                dateLabel={toRecentDisplayFormat(email.dateSystem, t)}
                 selectionMode={selection.isActive}
                 isSelected={selection.isSelected(email)}
                 onSelect={selection.toggle}

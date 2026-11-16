@@ -1,6 +1,6 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { MergeConflictKeys, planMerge, suggestTarget, type MergeChoice, type MergeChoices, type MergeConflict } from '@aliasvault/client/items/ItemMerge';
-import { toLocalDisplayFormat, toRelativeDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
+import { toRelativeDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import { getItemAccountLabel, type ItemType } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as Haptics from 'expo-haptics';
@@ -36,7 +36,7 @@ function keyOf(side: DisplayMergeSide): string {
  * Merge two items: pick the item to keep, then the value to keep for every field both fill differently.
  */
 export function ItemMergeForm({ items, onClose, onMerged }: ItemMergeFormProps): React.ReactNode {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const colors = useColors();
   const dbContext = useDb();
   const { executeVaultMutation } = useVaultMutate();
@@ -239,9 +239,9 @@ export function ItemMergeForm({ items, onClose, onMerged }: ItemMergeFormProps):
   const typeName = (type: ItemType): string => t(`itemTypes.${type.charAt(0).toLowerCase()}${type.slice(1)}.title`, { defaultValue: type });
 
   /**
-   * A stored date-time as a relative time in the UI language; the local date where the engine has no relative format.
+   * A stored date-time as a relative time, e.g. "3 days ago".
    */
-  const relativeTime = (value: string): string => (typeof Intl.RelativeTimeFormat === 'function' ? toRelativeDisplayFormat(value, i18n.language) : toLocalDisplayFormat(value));
+  const relativeTime = (value: string): string => toRelativeDisplayFormat(value, t);
 
   /**
    * Save the merge, then open the kept item.

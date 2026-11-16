@@ -1,3 +1,4 @@
+import { toRecentDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,7 +14,7 @@ import type { ItemRef } from '@aliasvault/client/database/ItemRef';
  */
 export type MailListEntry = {
   id: number;
-  date: Date;
+  dateSystem: string;
   fromName: string;
   fromEmail: string;
   toEmail: string;
@@ -33,12 +34,6 @@ type EmailRowProps = {
   isSelected: boolean;
   isNewEmail: boolean;
 };
-
-/**
- * Format a date as dd-MM.
- * @param date - the date
- */
-const formatShortDate = (date: Date): string => `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
 /**
  * A row in the mailbox list.
@@ -104,7 +99,7 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, isSel
               </div>
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-              {formatShortDate(email.date)}
+              {toRecentDisplayFormat(email.dateSystem, t)}
             </div>
           </div>
         </div>
