@@ -13,6 +13,8 @@ use sha2::{Digest, Sha256};
 use crate::common::encoding::format_uuid;
 use crate::common::error::{VaultError, VaultResult};
 
+pub use keys::{p256_scalar_to_jwk_pair, pkcs8_to_jwk_pair, JwkPair};
+
 /// COSE algorithm identifier of ES256 (ECDSA P-256 with SHA-256).
 pub const ALG_ES256: i64 = -7;
 
