@@ -288,6 +288,8 @@
     "hidePassword": "Sembunyikan kata sandi",
     "highRiskAction": "This is a high-risk action.",
     "home": "Halaman utama",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "Muat lebih banyak",
     "loading": "Memuat...",
     "loadingAttachments": "Memuat lampiran...",
@@ -345,8 +347,25 @@
     "showList": "Show list",
     "showPassword": "Tampilkan kata sandi",
     "success": "Berhasil",
+    "suggestions": {
+      "title": "Suggestions"
+    },
     "syncVaultData": "Sinkronkan data brankas",
     "syncingChanges": "Menyinkronkan perubahan...",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "Otentikasi dua faktor",
     "unavailable": "Unavailable",
     "undo": "Urungkan",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Email baru"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} jam yang lalu",
-      "hoursAgo_single": "{{count}} jam yang lalu",
-      "justNow": "baru saja",
-      "minutesAgo_plural": "{{count}} menit yang lalu",
-      "minutesAgo_single": "{{count}} menit yang lalu",
-      "yesterday": "kemarin"
-    },
     "title": "Email",
     "to": "Kepada:",
     "toColumn": "Kepada"
@@ -799,6 +810,17 @@
       "sourceFavicon": "From {{domain}}",
       "sourceNone": "No icon"
     },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
+    },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Belum ada email yang diterima",
     "noHistoryAvailable": "Tidak ada riwayat yang tersedia",
@@ -897,7 +919,6 @@
       "oldestFirst": "Terlama dahulu",
       "title": "Urutkan berdasarkan"
     },
-    "suggestions": "Saran",
     "switchBackToOriginalApp": "Kembali ke aplikasi semula untuk melanjutkan.",
     "tags": "Tags",
     "title": "Item",
@@ -906,6 +927,7 @@
       "itemCreated": "Item berhasil dibuat",
       "itemDeleted": "Item berhasil dihapus",
       "itemUpdated": "Item berhasil diperbarui",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Kata sandi disalin ke papan klip",
       "totpCodeCopied": "Nama pengguna disalin ke papan klip",
       "urlCopied": "URL disalin ke clipboard",
