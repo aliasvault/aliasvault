@@ -118,7 +118,6 @@ const ItemMerge: React.FC = () => {
 
       {pair ? (
         <ItemMergeForm
-          variant="inline"
           items={pair}
           onClose={() => setSearchParams({}, { replace: true })}
           onMerged={target => navigate(itemRoute(target), { replace: true })}

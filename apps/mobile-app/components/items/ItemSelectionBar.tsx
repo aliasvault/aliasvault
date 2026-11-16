@@ -5,9 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 import { toast } from 'sonner-native';
 
-import { itemMergeRoute } from '@/utils/ItemRoute';
-
-import { usePaneRouter } from '@/hooks/usePaneRouter';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
 import { SelectionBar, SelectionBarButton } from '@/components/common/SelectionBar';
@@ -29,14 +26,13 @@ type ItemSelectionBarProps = {
 };
 
 /**
- * Selection bar of the item list: move, merge and delete the selected items, plus their dialogs.
+ * Selection bar of the item list: move and delete the selected items, plus their dialogs.
  */
 export function ItemSelectionBar({ selection, visibleCount, folders, personalManifestId, currentFolder, onSelectAll, onClose, onDone }: ItemSelectionBarProps): React.ReactNode {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { showConfirm } = useDialog();
   const { executeVaultMutation } = useVaultMutate();
-  const paneRouter = usePaneRouter();
   const [showMovePicker, setShowMovePicker] = useState(false);
   const [isWorking, setIsWorking] = useState(false);
   /** The confirm to show once the move picker has closed; iOS drops an alert shown while a modal is still closing. */
@@ -65,15 +61,6 @@ export function ItemSelectionBar({ selection, visibleCount, folders, personalMan
     } finally {
       setIsWorking(false);
     }
-  };
-
-  /**
-   * Open the merge screen for the two selected items and leave selection mode.
-   */
-  const openMerge = (): void => {
-    const [first, second] = selection;
-    paneRouter.openDetail(itemMergeRoute(first, second));
-    onClose();
   };
 
   /**
@@ -135,7 +122,6 @@ export function ItemSelectionBar({ selection, visibleCount, folders, personalMan
     <>
       <SelectionBar count={count} visibleCount={visibleCount} onSelectAll={onSelectAll} onClose={onClose}>
         <SelectionBarButton icon="drive-file-move" label={t('items.selection.move')} onPress={() => setShowMovePicker(true)} disabled={count === 0 || isWorking} testID="selection-move" />
-        <SelectionBarButton icon="merge" label={t('items.merge.title')} onPress={openMerge} disabled={count !== 2 || isWorking} testID="selection-merge" />
         <SelectionBarButton icon="delete" label={t('common.delete')} onPress={confirmDelete} disabled={count === 0 || isWorking} danger testID="selection-delete" />
       </SelectionBar>
       <FolderSelectorModal

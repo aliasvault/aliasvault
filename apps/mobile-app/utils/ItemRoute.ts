@@ -19,12 +19,10 @@ export function itemEditRoute(item: ItemRef): '/(tabs)/items/[manifestId]/[id]/e
 }
 
 /**
- * The route that merges an item with another one, picked on the screen unless given.
+ * The route that merges an item with another one, picked on the screen.
  * @param item - The item to merge
- * @param other - The item to merge it with
  * @returns The route, typed as the merge screen's
  */
-export function itemMergeRoute(item: ItemRef, other?: ItemRef): '/(tabs)/items/[manifestId]/[id]/merge' {
-  const query = other ? `?otherManifestId=${encodeURIComponent(other.ManifestId)}&otherId=${other.Id}` : '';
-  return `/(tabs)/items/${encodeURIComponent(item.ManifestId)}/${item.Id}/merge${query}` as '/(tabs)/items/[manifestId]/[id]/merge';
+export function itemMergeRoute(item: ItemRef): '/(tabs)/items/[manifestId]/[id]/merge' {
+  return `/(tabs)/items/${encodeURIComponent(item.ManifestId)}/${item.Id}/merge` as '/(tabs)/items/[manifestId]/[id]/merge';
 }

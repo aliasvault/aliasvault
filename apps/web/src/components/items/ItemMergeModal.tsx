@@ -100,7 +100,7 @@ const ItemMergeModal: React.FC<ItemMergeModalProps> = ({ item: ref, onClose, onM
   return (
     <FormModal isOpen title={t('items.merge.title')} maxWidth="xl" showDefaultFooter={false} submitOnEnter={false} closeOnOverlayClick={!pair} showCloseButton onClose={onClose}>
       {pair ? (
-        <ItemMergeForm variant="inline" items={pair} onClose={() => setOther(null)} onMerged={onMerged} />
+        <ItemMergeForm items={pair} onClose={() => setOther(null)} onMerged={onMerged} />
       ) : (
         <div className="space-y-4 text-left">
           <div className="space-y-3">

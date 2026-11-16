@@ -1,7 +1,7 @@
 /**
  * Category 24: Item merge (Requires API + Authentication)
  *
- * Merge two selected items into one, and merge an item with one picked on the merge page.
+ * Merge an item with one picked on the merge page, opened from the item menu.
  */
 
 import { test, expect, TestClient, Timeouts } from '../fixtures';
@@ -14,7 +14,7 @@ test.describe('24. Item Merge', () => {
     await client?.cleanup();
   });
 
-  test('24.1 should merge two selected items and keep the chosen password', async ({ testUser, apiUrl }) => {
+  test('24.1 should merge an item with its suggested duplicate and keep the chosen password', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     const { popup } = client;
 
@@ -25,13 +25,12 @@ test.describe('24. Item Merge', () => {
       await client.goToVault().then((c) => c.createCredentialWithUrl('github copy', 'bob', 'AnotherPassword2024!', 'https://github.com/login'));
     });
 
-    await test.step('select both items and open the merge dialog', async () => {
+    await test.step('open the merge page from the item menu and pick the suggested duplicate', async () => {
       await client.goToVault();
-      await client.itemCard('Merge GitHub').click({ modifiers: ['ControlOrMeta'] });
-      await expect(popup.locator('#selection-merge')).toBeDisabled();
-      await client.itemCard('github copy').click({ modifiers: ['ControlOrMeta'] });
-      await popup.locator('#selection-merge').click();
-      await expect(popup.getByRole('heading', { name: 'Merge items' })).toBeVisible();
+      await client.itemCard('Merge GitHub').click({ button: 'right' });
+      await popup.locator('#item-menu-merge').click();
+      await expect(popup).toHaveURL(/\/merge/);
+      await popup.locator('#merge-suggestions').locator('li', { hasText: 'github copy' }).locator('button').first().click({ timeout: Timeouts.MEDIUM });
     });
 
     await test.step('keep the older item and the newer password; the items show their URL', async () => {
