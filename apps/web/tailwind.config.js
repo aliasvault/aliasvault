@@ -34,11 +34,16 @@ export default {
       },
       animation: {
         'drop-slot': 'drop-slot 150ms ease-out',
+        'toast-in': 'toast-in 200ms ease-out',
       },
       keyframes: {
         'drop-slot': {
           'from': { opacity: '0', transform: 'scaleY(0.6)' },
           'to': { opacity: '1', transform: 'scaleY(1)' },
+        },
+        'toast-in': {
+          'from': { opacity: '0', transform: 'translateY(0.5rem)' },
+          'to': { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },

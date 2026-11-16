@@ -96,6 +96,7 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
       await executeVaultMutationAsync(async () => {
         await dbContext.sqliteClient!.items.merge(targetRef, { Id: source.item.Id, ManifestId: source.item.ManifestId }, choices);
       });
+      notifications.addSuccessMessage(t('items.toasts.itemsMerged'), true);
       onMerged(targetRef);
     } catch (error) {
       // Failed push (e.g. server not reachable).

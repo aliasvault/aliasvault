@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
+import Toaster from '@/components/alerts/Toaster';
 import ClipboardCountdownBar from '@/components/layout/ClipboardCountdownBar';
 import Footer from '@/components/layout/Footer';
 import TopMenu from '@/components/layout/TopMenu';
@@ -96,12 +96,12 @@ const MainLayout: React.FC = () => {
         <div className="flex pt-16 mb-4 lg:mb-16 overflow-x-hidden bg-gray-100 dark:bg-gray-900 relative">
           <div id="main-content" className="relative w-full max-w-screen-2xl mx-auto h-full overflow-y-auto bg-gray-100 dark:bg-gray-900 min-h-[300px]">
             <main>
-              <GlobalNotificationDisplay />
               <Outlet />
             </main>
           </div>
         </div>
         <Footer />
+        <Toaster />
         {syncError && (
           <ConfirmModal title={t('common.error')} message={syncError} confirmText={t('common.close')} onClose={() => void clearSyncError()} />
         )}
