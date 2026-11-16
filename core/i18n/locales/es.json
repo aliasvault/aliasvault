@@ -288,6 +288,8 @@
     "hidePassword": "Ocultar contraseña",
     "highRiskAction": "Esta es una acción de alto riesgo.",
     "home": "Inicio",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "Cargar más",
     "loading": "Cargando...",
     "loadingAttachments": "Cargando archivos adjuntos...",
@@ -345,8 +347,25 @@
     "showList": "Mostrar lista",
     "showPassword": "Mostrar contraseña",
     "success": "Correcto",
+    "suggestions": {
+      "title": "Suggestions"
+    },
     "syncVaultData": "Sincronizar datos de bóveda",
     "syncingChanges": "Sincronizando cambios...",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "Autenticación de doble factor",
     "unavailable": "No disponible",
     "undo": "Deshacer",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Nuevo correo"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "Hace {{count}} h",
-      "hoursAgo_single": "Hace {{count}} h",
-      "justNow": "ahora mismo",
-      "minutesAgo_plural": "Hace {{count}} min",
-      "minutesAgo_single": "Hace {{count}} min",
-      "yesterday": "ayer"
-    },
     "title": "Correos electrónicos",
     "to": "Para:",
     "toColumn": "Para"
@@ -799,6 +810,17 @@
       "sourceFavicon": "De {{domain}}",
       "sourceNone": "Sin icono"
     },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
+    },
     "noAttachments": "No hay archivos adjuntos disponibles.",
     "noEmailsYet": "No se han recibido correos todavía.",
     "noHistoryAvailable": "Sin historial disponible",
@@ -897,7 +919,6 @@
       "oldestFirst": "Más antiguos primero",
       "title": "Ordenar por"
     },
-    "suggestions": "Sugerencias",
     "switchBackToOriginalApp": "Volver a la aplicación original para continuar.",
     "tags": "Tags",
     "title": "Elementos",
@@ -906,6 +927,7 @@
       "itemCreated": "Elemento creado con éxito",
       "itemDeleted": "Elemento eliminado con éxito",
       "itemUpdated": "Elemento actualizado con éxito",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Contraseña copiada al portapapeles",
       "totpCodeCopied": "Código TOTP copiado al portapapeles",
       "urlCopied": "URL copiada al portapapeles",
