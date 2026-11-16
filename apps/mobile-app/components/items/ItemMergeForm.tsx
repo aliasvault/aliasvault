@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { toast } from 'sonner-native';
 
 import type { DisplayMergeSide } from '@/utils/DisplayItem';
 import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
@@ -266,6 +267,7 @@ export function ItemMergeForm({ items, onClose, onMerged }: ItemMergeFormProps):
     emitter.emit('itemChanged', { previous: sourceRef } as ItemChangedEvent);
     emitter.emit('itemChanged', { previous: targetRef, current: targetRef } as ItemChangedEvent);
     HapticsUtility.notification(Haptics.NotificationFeedbackType.Success);
+    toast.success(t('items.toasts.itemsMerged'));
     onMerged(targetRef);
   };
 

@@ -927,6 +927,7 @@
       "itemCreated": "Item created successfully",
       "itemDeleted": "Item deleted successfully",
       "itemUpdated": "Item updated successfully",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Password copied to clipboard",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
