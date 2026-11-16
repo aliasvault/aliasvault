@@ -56,7 +56,7 @@
     },
     "reinitialize": {
       "attemptingToUnlockMessage": "Tentando desbloquear.",
-      "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período."
+      "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após tempo limite."
     },
     "status": {
       "decryptingVault": "Descriptografando cofre",
@@ -65,7 +65,7 @@
     "vaultError": {
       "copyErrorDetails": "Copiar detalhes do erro",
       "description": "Ocorreu um erro ao carregar seu cofre. Se este problema persistir, por favor, entre em contato com o suporte.",
-      "hideDetails": "Esconder detalhes do erro",
+      "hideDetails": "Ocultar detalhes do erro",
       "showDetails": "Mostrar detalhes do erro",
       "title": "Erro no Cofre"
     }
@@ -197,7 +197,7 @@
       "unlockWithWebAuthn": "Desbloquear com chave de acesso",
       "webAuthnNotSupportedError": "Seu navegador atual não tem suporte à extensão WebAuthn PRF. Por favor, faça login com sua senha."
     },
-    "unlockTitle": "Desbloquear Seu Cofre",
+    "unlockTitle": "Desbloqueie seu cofre",
     "unlockVault": "Desbloquear cofre",
     "unlockWithBiometric": "Desbloquear com {{biometric}}",
     "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
@@ -740,7 +740,7 @@
       "modal": {
         "folderNamePlaceholder": "Digite o nome da pasta"
       },
-      "newFolder": "Nova Pasta",
+      "newFolder": "Nova pasta",
       "selectFolder": "Selecionar Pasta"
     },
     "fullName": "Nome Completo",
@@ -1211,8 +1211,8 @@
     "batteryOptimizationDisabled": "Limpeza da área de transferência em segundo plano ativada",
     "batteryOptimizationHelpDescription": "A otimização de bateria do Android impede que a área de transferência seja limpa de forma confiável enquanto o aplicativo está em segundo plano. Desativar a otimização para o AliasVault garante a limpeza precisa em segundo plano e concede automaticamente as permissões de alarme necessárias.",
     "batteryOptimizationHelpTitle": "Ativar limpeza da área de transferência em segundo plano",
-    "blockScreenshots": "Block Screenshots",
-    "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
+    "blockScreenshots": "Bloquear capturas de tela",
+    "blockScreenshotsDescription": "Bloqueia capturas e gravações de tela no aplicativo.",
     "clearAllDisabledSites": "Limpar todos os sites desabilitados",
     "clientUrlHint": "O endereço da interface web da sua instância auto-hospedada",
     "clipboardClear": "Limpar área de transferência",
@@ -1276,8 +1276,8 @@
       "generators": "Generators",
       "screenPrivacy": "Screen privacy"
     },
-    "hideAppContents": "Hide App Contents",
-    "hideAppContentsDescription": "Hides the app contents in the app switcher.",
+    "hideAppContents": "Ocultar conteúdo do aplicativo",
+    "hideAppContentsDescription": "Oculta o conteúdo do aplicativo na tela de aplicativos recentes.",
     "identityGenerator": "Gerador de identidade",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
