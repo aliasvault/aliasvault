@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import '@/platform/CryptoPolyfill';
+import '@/platform/IgnoredWarnings';
 import '@/platform/MobilePlatform';
 import { resolveDeepLink } from '@/utils/DeepLinkResolver';
 import { clearExportDirectories } from '@/utils/FileUtility';
