@@ -1,3 +1,4 @@
+import { toRecentDisplayFormat } from '@aliasvault/client/utilities/DateHelpers';
 import { MaterialIcons } from '@expo/vector-icons';
 import { memo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -62,40 +63,6 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
 
     loadItem();
   }, [dbContext?.sqliteClient, email.toLocal, email.toDomain]);
-
-  /**
-   * Format the email date.
-   */
-  const formatEmailDate = (dateSystem: string): string => {
-    const now = new Date();
-    const emailDate = new Date(dateSystem);
-    const secondsAgo = Math.floor((now.getTime() - emailDate.getTime()) / 1000);
-
-    if (secondsAgo < 60) {
-      return t('emails.time.justNow');
-    } else if (secondsAgo < 3600) {
-      const minutes = Math.floor(secondsAgo / 60);
-      if (minutes === 1) {
-        return t('emails.time.minutesAgo_single', { count: minutes });
-      } else {
-        return t('emails.time.minutesAgo_plural', { count: minutes });
-      }
-    } else if (secondsAgo < 86400) {
-      const hours = Math.floor(secondsAgo / 3600);
-      if (hours === 1) {
-        return t('emails.time.hoursAgo_single', { count: hours });
-      } else {
-        return t('emails.time.hoursAgo_plural', { count: hours });
-      }
-    } else if (secondsAgo < 172800) {
-      return t('emails.time.yesterday');
-    } else {
-      return emailDate.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit'
-      });
-    }
-  };
 
   /**
    * Open the email.
@@ -211,7 +178,7 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
             <MaterialIcons name="attach-file" size={14} color={colors.textMuted} style={styles.attachmentIcon} />
           )}
           <ThemedText style={styles.emailDate}>
-            {formatEmailDate(email.dateSystem)}
+            {toRecentDisplayFormat(email.dateSystem, t)}
           </ThemedText>
         </View>
       </View>

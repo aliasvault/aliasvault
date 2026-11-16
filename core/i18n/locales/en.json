@@ -352,6 +352,20 @@
     },
     "syncVaultData": "Sync vault data",
     "syncingChanges": "Syncing changes...",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "Two-factor authentication",
     "unavailable": "Unavailable",
     "undo": "Undo",
@@ -435,14 +449,6 @@
       "newEmailTooltip": "New email"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} hrs ago",
-      "hoursAgo_single": "{{count}} hr ago",
-      "justNow": "just now",
-      "minutesAgo_plural": "{{count}} mins ago",
-      "minutesAgo_single": "{{count}} min ago",
-      "yesterday": "yesterday"
-    },
     "title": "Emails",
     "to": "To:",
     "toColumn": "To"

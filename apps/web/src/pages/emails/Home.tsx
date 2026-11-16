@@ -147,7 +147,7 @@ const EmailsHome: React.FC = () => {
         const item = lookup.get(toEmail.toLowerCase());
         return {
           id: email.id,
-          date: new Date(email.dateSystem),
+          dateSystem: email.dateSystem,
           fromName: email.fromDisplay,
           fromEmail: `${email.fromLocal}@${email.fromDomain}`,
           toEmail,

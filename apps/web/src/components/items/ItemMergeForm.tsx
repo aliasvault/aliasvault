@@ -33,7 +33,7 @@ function keyOf(side: MergeSide): string {
  * Merge two items: pick the item to keep, then the value to keep for every field both fill differently.
  */
 const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged, variant = 'modal' }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dbContext = useDb();
   const notifications = useNotifications();
   const { executeVaultMutationAsync } = useVaultMutate();
@@ -79,9 +79,9 @@ const ItemMergeForm: React.FC<ItemMergeFormProps> = ({ items, onClose, onMerged,
   const typeName = (type: ItemType): string => t(`itemTypes.${type.charAt(0).toLowerCase()}${type.slice(1)}.title`, { defaultValue: type });
 
   /**
-   * A stored date-time as a relative time in the UI language, e.g. "3 days ago".
+   * A stored date-time as a relative time, e.g. "3 days ago".
    */
-  const relativeTime = (value: string): string => toRelativeDisplayFormat(value, i18n.language);
+  const relativeTime = (value: string): string => toRelativeDisplayFormat(value, t);
 
   /**
    * Save the merge.
