@@ -1,4 +1,4 @@
-import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, JwkPair, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -85,4 +85,10 @@ export interface IRustCore {
   vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string>;
 
   createVaultSyncSession(requestJson: string): Promise<IVaultSyncSession>;
+
+  /** The key pair the vault stores for a PKCS#8 DER passkey private key (P-256 or RSA). */
+  passkeyPkcs8ToJwk(pkcs8Der: Uint8Array): Promise<JwkPair>;
+
+  /** The key pair the vault stores for a raw P-256 private scalar. */
+  passkeyP256ScalarToJwk(scalar: Uint8Array): Promise<JwkPair>;
 }

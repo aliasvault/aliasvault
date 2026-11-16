@@ -159,3 +159,10 @@ export type ReencryptedAccountKey = {
   newEncryptedAccountKey: string;
 };
 
+/**
+ * A passkey key pair as the JWK text the Passkeys table stores.
+ */
+export type JwkPair = {
+  publicKeyJwk: string;
+  privateKeyJwk: string;
+};

@@ -109,6 +109,9 @@ export const nativeRustCore: IRustCore = {
   vaultCodecLogoContentHash: (bytes) => call('vaultCodecLogoContentHash', base64(bytes)),
 
   createVaultSyncSession: () => notImplementedOnMobile('createVaultSyncSession', 'the vault sync engine is driven natively'),
+
+  passkeyPkcs8ToJwk: () => notImplementedOnMobile('passkeyPkcs8ToJwk', 'only the web app imports export files'),
+  passkeyP256ScalarToJwk: () => notImplementedOnMobile('passkeyP256ScalarToJwk', 'only the web app imports export files'),
 };
 
 
