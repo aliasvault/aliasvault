@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import AlertMessageSuccess from '@/components/alerts/AlertMessageSuccess';
-import { type Notification, type NotificationLink, useNotifications } from '@/context/NotificationContext';
+import { type Notification, useNotifications } from '@/context/NotificationContext';
 
 type GlobalNotificationDisplayProps = {
   marginTop?: boolean;
@@ -12,8 +12,8 @@ type GlobalNotificationDisplayProps = {
 };
 
 /**
- * Renders the queued global notifications inline. Messages are refreshed on navigation and whenever a message is
- * queued with notify.
+ * Renders the queued global notifications inline on the auth pages, when logged in they appear as toasts. 
+ * Messages are refreshed on navigation and whenever a message is queued with notify.
  */
 const GlobalNotificationDisplay: React.FC<GlobalNotificationDisplayProps> = ({ marginTop = true, marginBottom = false, paddingX = true }) => {
   const { takeMessages, version } = useNotifications();
@@ -29,14 +29,6 @@ const GlobalNotificationDisplay: React.FC<GlobalNotificationDisplayProps> = ({ m
     }
   }, [takeMessages, version, location.pathname]);
 
-  /**
-   * Hide the messages, then follow the link that was clicked.
-   */
-  const followLink = (link: NotificationLink) => (): void => {
-    setMessages([]);
-    link.onClick();
-  };
-
   if (messages.length === 0) {
     return null;
   }
@@ -44,7 +36,7 @@ const GlobalNotificationDisplay: React.FC<GlobalNotificationDisplayProps> = ({ m
   return (
     <div className={`messages-container grid ${paddingX ? 'px-4' : ''} ${marginTop ? 'pt-6' : ''} lg:gap-4 ${marginBottom ? 'pb-6' : ''}`}>
       {messages.filter(m => m.type === 'success').map((message, index) => (
-        <AlertMessageSuccess key={`success-${index}`} message={message.message} link={message.link && { text: message.link.text, onClick: followLink(message.link) }} />
+        <AlertMessageSuccess key={`success-${index}`} message={message.message} />
       ))}
       {messages.filter(m => m.type === 'error').map((message, index) => (
         <AlertMessageError key={`error-${index}`} message={message.message} />

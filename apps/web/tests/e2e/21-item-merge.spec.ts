@@ -45,6 +45,7 @@ test.describe('21. Item merge', () => {
 
     await test.step('the merged item holds both URLs and the chosen password', async () => {
       await app.expectItemView('Merge GitHub');
+      await expect(page.getByText('Items merged successfully')).toBeVisible();
       await expect(page.getByText('https://github.com/login')).toBeVisible();
       await page.getByRole('link', { name: 'Edit item' }).click();
       await expect(page.locator('#service-name')).toHaveValue('Merge GitHub');
