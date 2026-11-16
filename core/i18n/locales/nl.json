@@ -288,6 +288,8 @@
     "hidePassword": "Wachtwoord verbergen",
     "highRiskAction": "Dit is een zeer riskante actie.",
     "home": "Home",
+    "lastChanged": "Gewijzigd: {{time}}",
+    "lastUsed": "Gebruikt: {{time}}",
     "loadMore": "Laad meer",
     "loading": "Laden...",
     "loadingAttachments": "Bijlagen laden...",
@@ -345,8 +347,25 @@
     "showList": "Lijst weergeven",
     "showPassword": "Wachtwoord tonen",
     "success": "Succes",
+    "suggestions": {
+      "title": "Suggesties"
+    },
     "syncVaultData": "Vault synchroniseren",
     "syncingChanges": "Wijzigingen synchroniseren...",
+    "timeAgo": {
+      "days_one": "{{count}} dag geleden",
+      "days_other": "{{count}} dagen geleden",
+      "hours_one": "{{count}} uur geleden",
+      "hours_other": "{{count}} uur geleden",
+      "justNow": "zojuist",
+      "minutes_one": "{{count}} minuut geleden",
+      "minutes_other": "{{count}} minuten geleden",
+      "months_one": "{{count}} maand geleden",
+      "months_other": "{{count}} maanden geleden",
+      "years_one": "{{count}} jaar geleden",
+      "years_other": "{{count}} jaar geleden",
+      "yesterday": "gisteren"
+    },
     "twoFactorAuthentication": "Tweestapsverificatie",
     "unavailable": "Niet beschikbaar",
     "undo": "Ongedaan maken",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Nieuwe e-mail"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} uur geleden",
-      "hoursAgo_single": "{{count}} uur geleden",
-      "justNow": "zojuist",
-      "minutesAgo_plural": "{{count}} min. geleden",
-      "minutesAgo_single": "{{count}} min geleden",
-      "yesterday": "gisteren"
-    },
     "title": "E-mails",
     "to": "Aan:",
     "toColumn": "Naar"
@@ -799,6 +810,17 @@
       "sourceFavicon": "Van {{domain}}",
       "sourceNone": "Geen icoon"
     },
+    "merge": {
+      "title": "Items samenvoegen",
+      "action": "Samenvoegen",
+      "mergeWith": "Samenvoegen met...",
+      "searchHint": "Zoeken naar het item om mee samen te voegen.",
+      "keep": "Item om te bewaren",
+      "chooseValues": "Veldwaarden om te bewaren:",
+      "combined": "Alle andere velden waarden worden samengevoegd tot het samengevoegde item.",
+      "differentFolders": "Items kunnen alleen worden samengevoegd als ze in je eigen kluis of beide in dezelfde gedeelde map zijn.",
+      "differentTypes": "Deze itemtypes kunnen niet met elkaar worden samengevoegd: {{types}}."
+    },
     "noAttachments": "Geen bijlagen beschikbaar.",
     "noEmailsYet": "Nog geen e-mails ontvangen.",
     "noHistoryAvailable": "Nog geen geschiedenis",
@@ -897,7 +919,6 @@
       "oldestFirst": "Oudste eerst",
       "title": "Sorteren op"
     },
-    "suggestions": "Suggesties",
     "switchBackToOriginalApp": "Ga terug naar de andere app om door te gaan.",
     "tags": "Labels",
     "title": "Items",
@@ -906,6 +927,7 @@
       "itemCreated": "Item succesvol aangemaakt",
       "itemDeleted": "Item succesvol verwijderd",
       "itemUpdated": "Item succesvol bijgewerkt",
+      "itemsMerged": "Items succesvol samengevoegd",
       "passwordCopied": "Wachtwoord gekopieerd naar klembord",
       "totpCodeCopied": "TOTP-code gekopieerd naar klembord",
       "urlCopied": "URL gekopieerd naar klembord",
