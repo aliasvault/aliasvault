@@ -24,19 +24,16 @@ type NotificationContextType = {
   clearMessages: () => void;
   takeMessages: () => Notification[];
   version: number;
-  /** Counts clearMessages calls, so a display can also drop what it already shows. */
-  cleared: number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 /**
- * Global notifications: messages are queued here, then shown as toasts in the app and inline on the auth pages.
+ * Global notifications: messages are queued here and rendered inline at the top of the page.
  */
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queue = useRef<Notification[]>([]);
   const [version, setVersion] = useState(0);
-  const [cleared, setCleared] = useState(0);
 
   /**
    * Queue a message.
@@ -64,7 +61,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const clearMessages = useCallback((): void => {
     queue.current = [];
     setVersion(v => v + 1);
-    setCleared(c => c + 1);
   }, []);
 
   /**
@@ -76,7 +72,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return messages;
   }, []);
 
-  const value = useMemo(() => ({ addSuccessMessage, addErrorMessage, clearMessages, takeMessages, version, cleared }), [addSuccessMessage, addErrorMessage, clearMessages, takeMessages, version, cleared]);
+  const value = useMemo(() => ({ addSuccessMessage, addErrorMessage, clearMessages, takeMessages, version }), [addSuccessMessage, addErrorMessage, clearMessages, takeMessages, version]);
 
   return (
     <NotificationContext.Provider value={value}>
