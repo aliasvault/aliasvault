@@ -288,6 +288,8 @@
     "hidePassword": "隐藏密码",
     "highRiskAction": "这是高风险操作。",
     "home": "主页",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "加载更多",
     "loading": "加载中…",
     "loadingAttachments": "加载附件中…",
@@ -345,8 +347,25 @@
     "showList": "显示列表",
     "showPassword": "显示密码",
     "success": "成功",
+    "suggestions": {
+      "title": "Suggestions"
+    },
     "syncVaultData": "同步密码库数据",
     "syncingChanges": "正在同步更改…",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "两步验证",
     "unavailable": "不可用",
     "undo": "撤销",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "新邮件"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} 小时前",
-      "hoursAgo_single": "{{count}} 小时前",
-      "justNow": "刚刚",
-      "minutesAgo_plural": "{{count}} 分钟前",
-      "minutesAgo_single": "{{count}} 分钟前",
-      "yesterday": "昨天"
-    },
     "title": "邮件",
     "to": "收件人：",
     "toColumn": "收件人"
@@ -799,6 +810,17 @@
       "sourceFavicon": "从 {{domain}}",
       "sourceNone": "无图标"
     },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
+    },
     "noAttachments": "无附件。",
     "noEmailsYet": "尚未收到邮件。",
     "noHistoryAvailable": "暂无历史记录",
@@ -897,7 +919,6 @@
       "oldestFirst": "最早在前",
       "title": "排序方式"
     },
-    "suggestions": "建议",
     "switchBackToOriginalApp": "切换回原应用以继续。",
     "tags": "标签",
     "title": "项目",
@@ -906,6 +927,7 @@
       "itemCreated": "项目创建成功",
       "itemDeleted": "项目删除成功",
       "itemUpdated": "项目更新成功",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "密码已复制到剪贴板",
       "totpCodeCopied": "TOTP 验证码已复制到剪贴板",
       "urlCopied": "URL 已复制到剪贴板",
