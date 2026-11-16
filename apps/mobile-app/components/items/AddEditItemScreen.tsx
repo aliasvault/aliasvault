@@ -1,5 +1,6 @@
 import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { fieldTypeLabelKey } from '@aliasvault/client/items/FieldTypeLabel';
 import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import { switchItemTypeFieldValues, type FormFieldValue } from '@aliasvault/client/items/ItemTypeSwitch';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
@@ -1050,13 +1051,14 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
     // Handle multi-value fields (like URL)
     if (isMultiValue) {
-      const values = Array.isArray(value) && value.length > 0 ? value : (value ? [value as string] : ['']);
+      const values = Array.isArray(value) ? value : value ? [value] : [];
       return (
         <MultiValueField
           label={label}
           values={values}
           onValuesChange={(newValues) => handleFieldChange(fieldKey, newValues)}
           testID={testID}
+          addLabel={t(fieldTypeLabelKey(fieldType))}
         />
       );
     }
@@ -1254,14 +1256,15 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       borderStyle: 'dashed',
       borderWidth: 1,
       flexDirection: 'row',
-      gap: 4,
+      gap: 2,
       paddingHorizontal: 8,
-      paddingVertical: 4,
+      paddingVertical: 2,
     },
     addEmailBadgeText: {
       color: colors.textMuted,
       fontSize: 12,
       fontWeight: '500',
+      lineHeight: 16,
     },
   });
 

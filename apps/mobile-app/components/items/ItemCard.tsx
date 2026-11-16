@@ -20,7 +20,7 @@ import { useIsSelectedRoute } from '@/hooks/useTwoPane';
 import { useRecordItemCopy } from '@/hooks/useRecordItemCopy';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
-import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
+import { itemEditRoute, itemMergeRoute, itemRoute } from '@/utils/ItemRoute';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { getFieldValue, getItemAccountLabel, FieldKey } from '@aliasvault/models/vault';
@@ -94,6 +94,12 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
         navigate(() => {
           Keyboard.dismiss();
           router.push(itemEditRoute(item));
+        });
+        break;
+      case t('items.merge.mergeWith'):
+        navigate(() => {
+          Keyboard.dismiss();
+          paneRouter.openDetail(itemMergeRoute(item));
         });
         break;
       case t('common.duplicate'):
@@ -213,6 +219,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
         action(t('common.open'), 'eye', 'ic_ui_eye'),
         action(t('common.edit'), 'pencil', 'ic_ui_pencil_alt'),
         action(t('common.duplicate'), 'plus.square.on.square', 'ic_ui_document_duplicate'),
+        action(t('items.merge.mergeWith'), 'arrow.triangle.merge', 'ic_ui_merge'),
       ],
       copyGroup,
       // On Android a long-press already selects, so only iOS gets a Select entry.

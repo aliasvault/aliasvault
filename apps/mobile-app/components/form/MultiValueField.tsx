@@ -1,11 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, TextInput, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { View, TextInput, StyleSheet, Pressable, type TextInputInstance } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
-import { RobustPressable } from '@/components/ui/RobustPressable';
 
 type MultiValueFieldProps = {
   label: string;
@@ -13,86 +13,87 @@ type MultiValueFieldProps = {
   onValuesChange: (values: string[]) => void;
   placeholder?: string;
   testID?: string;
+  addLabel: string;
 };
 
 /**
- * Multi-value form field component for fields like URLs that support multiple values.
- * Displays multiple input fields with a "+" button to add more.
- * Empty values are automatically filtered out when saving, so no explicit remove button is needed.
+ * The non-empty values of a list of rows.
  */
-export const MultiValueField: React.FC<MultiValueFieldProps> = ({
-  label,
-  values,
-  onValuesChange,
-  placeholder,
-  testID,
-}) => {
+function filled(rows: string[]): string[] {
+  return rows.filter(row => typeof row === 'string' && row.trim() !== '');
+}
+
+/**
+ * A list of text inputs for a multi-value field, with an add button next to the label and a remove button per row.
+ */
+export const MultiValueField: React.FC<MultiValueFieldProps> = ({ label, values, onValuesChange, placeholder, testID, addLabel }) => {
   const colors = useColors();
+  const { t } = useTranslation();
+  const [rows, setRows] = useState<string[]>(values.length > 0 ? values : ['']);
+  const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const inputs = useRef<(TextInputInstance | null)[]>([]);
 
-  // Track local display values to prevent flickering when adding new fields
-  const [localValues, setLocalValues] = useState<string[]>(values.length > 0 ? values : ['']);
-
-  // Track if we recently added a field (to prevent immediate removal)
-  const recentlyAddedRef = useRef(false);
-  const addTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sync local values with props, but respect the recently added flag
+  /*
+   * Rows are local so an empty row survives while it is being edited; the parent only gets the filled values.
+   * A change from outside (a restored form, an item type switch) replaces the rows.
+   */
   useEffect(() => {
-    if (!recentlyAddedRef.current) {
-      setLocalValues(values.length > 0 ? values : ['']);
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs the local rows with a change from outside
+    setRows(current => {
+      const currentValues = filled(current);
+      const nextValues = filled(values);
+      const isSame = currentValues.length === nextValues.length && currentValues.every((value, index) => value === nextValues[index]);
+      return isSame ? current : nextValues.length > 0 ? nextValues : [''];
+    });
   }, [values]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
-    return () => {
-      if (addTimeoutRef.current) {
-        clearTimeout(addTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  /**
-   * Handle value change for a specific index.
-   */
-  const handleValueChange = useCallback((index: number, newValue: string): void => {
-    const newValues = [...localValues];
-    newValues[index] = newValue;
-    setLocalValues(newValues);
-    // Filter empty values for storage, but keep at least empty array
-    onValuesChange(newValues.filter(v => v.trim() !== ''));
-  }, [localValues, onValuesChange]);
-
-  /**
-   * Add a new empty value field.
-   */
-  const handleAddValue = useCallback((): void => {
-    // Set flag to prevent immediate removal of empty field
-    recentlyAddedRef.current = true;
-
-    // Clear any existing timeout
-    if (addTimeoutRef.current) {
-      clearTimeout(addTimeoutRef.current);
+    if (focusIndex !== null) {
+      inputs.current[focusIndex]?.focus();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the focus request is handled once
+      setFocusIndex(null);
     }
+  }, [focusIndex]);
 
-    const newValues = [...localValues, ''];
-    setLocalValues(newValues);
-    onValuesChange(newValues.filter(v => v.trim() !== ''));
+  /**
+   * Show new rows and hand the filled values to the parent.
+   */
+  const update = (next: string[]): void => {
+    setRows(next);
+    onValuesChange(filled(next));
+  };
 
-    // Allow removal after a delay (gives user time to start typing)
-    addTimeoutRef.current = setTimeout(() => {
-      recentlyAddedRef.current = false;
-    }, 1000);
-  }, [localValues, onValuesChange]);
+  /**
+   * Add an empty row and focus it; empty rows are dropped on save.
+   */
+  const add = (): void => {
+    setRows([...rows, '']);
+    setFocusIndex(rows.length);
+  };
+
+  /**
+   * Remove a row; the add button brings one back after the last is removed.
+   */
+  const remove = (index: number): void => {
+    update(rows.filter((_, i) => i !== index));
+  };
 
   const styles = StyleSheet.create({
     addButton: {
       alignItems: 'center',
-      borderLeftColor: colors.accentBorder,
-      borderLeftWidth: 1,
-      justifyContent: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 10,
+      borderColor: colors.accentBorder,
+      borderRadius: 999,
+      borderStyle: 'dashed',
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 2,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    addButtonText: {
+      color: colors.textMuted,
+      fontSize: 12,
+      lineHeight: 16,
     },
     input: {
       color: colors.text,
@@ -107,6 +108,7 @@ export const MultiValueField: React.FC<MultiValueFieldProps> = ({
       borderRadius: 6,
       borderWidth: 1,
       flexDirection: 'row',
+      marginBottom: 8,
     },
     inputGroup: {
       marginBottom: 6,
@@ -114,52 +116,69 @@ export const MultiValueField: React.FC<MultiValueFieldProps> = ({
     inputLabel: {
       color: colors.textMuted,
       fontSize: 12,
+    },
+    labelRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       marginBottom: 4,
     },
-    valueContainer: {
-      marginBottom: 8,
+    removeButton: {
+      alignItems: 'center',
+      alignSelf: 'stretch',
+      justifyContent: 'center',
+      opacity: 0.5,
+      width: 40,
+    },
+    removeButtonPressed: {
+      opacity: 1,
     },
   });
 
   return (
     <View style={styles.inputGroup}>
-      <ThemedText style={styles.inputLabel}>{label}</ThemedText>
-      {localValues.map((value, index) => {
-        const isLastInput = index === localValues.length - 1;
-        return (
-          <View key={`${testID || 'multi'}-${index}`} style={styles.valueContainer}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[
-                  styles.input,
-                  // Add extra right padding on the last input to prevent iOS clear button
-                  // from being covered by the add button
-                  isLastInput && Platform.OS === 'ios' && { paddingRight: 30 },
-                ]}
-                value={value}
-                onChangeText={(newValue) => handleValueChange(index, newValue)}
-                placeholder={placeholder}
-                placeholderTextColor={colors.textMuted}
-                autoCapitalize="none"
-                autoComplete="off"
-                autoCorrect={false}
-                clearButtonMode={Platform.OS === 'ios' ? 'while-editing' : 'never'}
-                testID={testID ? `${testID}-${index}` : undefined}
-                accessibilityLabel={testID ? `${testID}-${index}` : undefined}
-              />
-              {/* Show add button on the last input */}
-              {isLastInput && (
-                <RobustPressable
-                  style={styles.addButton}
-                  onPress={handleAddValue}
-                >
-                  <MaterialIcons name="add" size={20} color={colors.primary} />
-                </RobustPressable>
-              )}
-            </View>
-          </View>
-        );
-      })}
+      <View style={styles.labelRow}>
+        <ThemedText style={styles.inputLabel}>{label}</ThemedText>
+        <Pressable
+          style={({ pressed }) => [styles.addButton, pressed && { borderColor: colors.primary }]}
+          onPress={add}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          testID={testID ? `${testID}-add` : undefined}
+        >
+          <MaterialIcons name="add" size={14} color={colors.textMuted} />
+          <ThemedText style={styles.addButtonText}>{addLabel}</ThemedText>
+        </Pressable>
+      </View>
+      {rows.map((row, index) => (
+        <View key={index} style={styles.inputContainer}>
+          <TextInput
+            ref={element => {
+              inputs.current[index] = element;
+            }}
+            style={styles.input}
+            value={row}
+            onChangeText={(text) => update(rows.map((value, i) => (i === index ? text : value)))}
+            placeholder={placeholder}
+            placeholderTextColor={colors.textMuted}
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect={false}
+            testID={testID ? `${testID}-${index}` : undefined}
+            accessibilityLabel={testID ? `${testID}-${index}` : undefined}
+          />
+          <Pressable
+            style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
+            onPress={() => remove(index)}
+            hitSlop={{ top: 4, bottom: 4 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.remove')}
+            testID={testID ? `${testID}-remove-${index}` : undefined}
+          >
+            <MaterialIcons name="close" size={16} color={colors.textMuted} />
+          </Pressable>
+        </View>
+      ))}
     </View>
   );
 };
