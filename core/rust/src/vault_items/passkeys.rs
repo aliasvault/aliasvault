@@ -10,12 +10,13 @@ use super::{blob, sql_error, timestamp_ms, NewPasskey, PasskeyMergeCandidate, Va
 use crate::common::error::{VaultError, VaultResult};
 use crate::common::timestamp::now_vault_datetime;
 use crate::credential_matcher::{filter_credentials, AutofillMatchingMode, Credential, CredentialMatcherInput};
+use crate::passkey::bytes_to_guid;
 use crate::vault_model::id_key;
 
 /// The passkey columns plus the name and account of the item, which must be live (not deleted, not in the trash).
 const SELECT_WITH_ITEM: &str = "
     SELECT
-      p.Id, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.AdditionalData,
+      p.Id, p.CredentialId, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.AdditionalData,
       p.CreatedAt, p.UpdatedAt,
       i.Name AS ServiceName,
       (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0 ORDER BY fv.ValueIndex LIMIT 1) AS Username,
@@ -49,10 +50,21 @@ const INSERT_PASSKEY: &str = "
 
 const SOFT_DELETE_PASSKEY: &str = "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ?1 WHERE Id = ?2 AND ManifestId = ?3";
 
-/// The passkey with this credential id in any manifest, newest first when several manifests hold it.
+/// The passkey with this row id in any manifest, newest first when several manifests hold it.
 pub fn get_passkey_by_id(conn: &Connection, passkey_id: &str) -> VaultResult<Option<VaultPasskeyWithItem>> {
     let sql = format!("{SELECT_WITH_ITEM} AND p.Id = ?1 ORDER BY p.CreatedAt DESC, p.ManifestId LIMIT 1");
     conn.query_row(&sql, params![id_key(passkey_id)], passkey_with_item).optional().map_err(sql_error)
+}
+
+/// The passkey of a relying party with this WebAuthn credential id, in any manifest. A passkey is identified by its
+/// `CredentialId`; a row without one falls back to the 16 GUID bytes of its `Id`. When both forms match, the row
+/// without a `CredentialId` wins.
+pub fn get_passkey_by_credential_id(conn: &Connection, rp_id: &str, credential_id: &[u8]) -> VaultResult<Option<VaultPasskeyWithItem>> {
+    let row_id = bytes_to_guid(credential_id).ok().map(|guid| id_key(&guid));
+    let sql = format!(
+        "{SELECT_WITH_ITEM} AND p.RpId = ?3 AND (p.CredentialId = ?1 OR (p.CredentialId IS NULL AND p.Id = ?2)) ORDER BY p.CredentialId IS NULL DESC, p.CreatedAt DESC, p.ManifestId LIMIT 1"
+    );
+    conn.query_row(&sql, params![credential_id, row_id, rp_id], passkey_with_item).optional().map_err(sql_error)
 }
 
 /// The passkey with this id inside one manifest.
@@ -200,6 +212,7 @@ fn passkey_with_item(row: &Row<'_>) -> rusqlite::Result<VaultPasskeyWithItem> {
     Ok(VaultPasskeyWithItem {
         passkey: VaultPasskey {
             id: row.get("Id")?,
+            credential_id: blob(row, "CredentialId")?,
             item_id: row.get("ItemId")?,
             manifest_id: row.get("ManifestId")?,
             rp_id: row.get("RpId")?,

@@ -118,7 +118,7 @@ export async function buildPasskeyAssertion(
 
   const storedRecord: StoredPasskeyRecord = {
     rpId: storedPasskey.RpId,
-    credentialId: PasskeyHelper.guidToBase64url(storedPasskey.Id),
+    credentialId: PasskeyHelper.credentialIdBase64url(storedPasskey),
     publicKey,
     privateKey,
     userId: userIdBase64,

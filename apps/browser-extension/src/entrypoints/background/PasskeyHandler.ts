@@ -234,18 +234,8 @@ export async function handleGetMatchingPasskeys(
 
     // If the RP restricts to specific credentials, keep only those we actually hold.
     if (allowCredentialIds && allowCredentialIds.length > 0) {
-      const allowedGuids = new Set(
-        allowCredentialIds
-          .map((id) => {
-            try {
-              return PasskeyHelper.base64urlToGuid(id);
-            } catch {
-              return null;
-            }
-          })
-          .filter((id): id is string => id !== null)
-      );
-      passkeys = passkeys.filter((pk) => allowedGuids.has(pk.Id));
+      const allowed = new Set(allowCredentialIds);
+      passkeys = passkeys.filter((pk) => allowed.has(PasskeyHelper.credentialIdBase64url(pk)));
     }
 
     const options: ConditionalPasskeyOption[] = passkeys.map((pk) => {

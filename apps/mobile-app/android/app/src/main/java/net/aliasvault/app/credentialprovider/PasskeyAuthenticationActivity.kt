@@ -257,10 +257,9 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                 }
 
                 // Use PasskeyAuthenticator.getAssertion for signing
-                val credentialId = PasskeyAuthenticator.guidToBytes(passkey.id.toString())
                 val prfInputs = extractPrfInputs(requestObj)
                 val assertion = PasskeyAuthenticator.getAssertion(
-                    credentialId = credentialId,
+                    credentialId = passkey.webAuthnCredentialId(),
                     clientDataHash = clientDataHash,
                     rpId = passkey.rpId,
                     privateKeyJWK = passkey.privateKey,

@@ -46,13 +46,9 @@ extension VaultStore {
 
     // MARK: - Passkey Queries (Public API)
 
-    /// Get a passkey by its WebAuthn credential ID (not the parent item id), in any manifest.
-    public func getPasskey(byCredentialId credentialId: Data) throws -> Passkey? {
-        guard let credentialIdString = try? PasskeyAuthenticator.bytesToGuid(credentialId) else {
-            print("VaultStore+Passkey: Failed to convert credentialId bytes to UUID string")
-            return nil
-        }
-        return try requireDatabase().getPasskeyById(passkeyId: credentialIdString).flatMap { Self.passkey(from: $0.passkey) }
+    /// Get a relying party's passkey by its WebAuthn credential ID (its credentialId, or the bytes of its id when it has none), in any manifest.
+    public func getPasskey(byCredentialId credentialId: Data, rpId: String) throws -> Passkey? {
+        return try requireDatabase().getPasskeyByCredentialId(rpId: rpId, credentialId: credentialId).flatMap { Self.passkey(from: $0.passkey) }
     }
 
     /// Get all passkeys for an item.
@@ -155,7 +151,8 @@ extension VaultStore {
             updatedAt: date(row.updatedAtMs),
             isDeleted: false,
             manifestId: row.manifestId,
-            additionalData: row.additionalData
+            additionalData: row.additionalData,
+            credentialId: row.credentialId
         )
     }
 

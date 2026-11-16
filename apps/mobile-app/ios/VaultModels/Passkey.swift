@@ -5,7 +5,8 @@ import Foundation
  * Linked to a parent Item for UI display (service name, logo, etc.)
  */
 public struct Passkey: Codable, Hashable, Equatable {
-    public let id: UUID  // Passkey record ID which is also the webauthn credential ID
+    public let id: UUID  // Passkey record ID; the fallback WebAuthn credential ID when credentialId is nil
+    public let credentialId: Data?  // WebAuthn credential ID; nil falls back to the 16 bytes of id
     public let parentItemId: UUID  // Parent Item UUID (AliasVault internal ID)
     public let rpId: String  // Relying party identifier (domain)
     public let userHandle: Data?  // User ID/handle from RP (optional)
@@ -34,9 +35,11 @@ public struct Passkey: Codable, Hashable, Equatable {
         updatedAt: Date,
         isDeleted: Bool,
         manifestId: String? = nil,
-        additionalData: Data? = nil
+        additionalData: Data? = nil,
+        credentialId: Data? = nil
     ) {
         self.id = id
+        self.credentialId = credentialId
         self.parentItemId = parentItemId
         self.rpId = rpId
         self.userHandle = userHandle
@@ -50,6 +53,11 @@ public struct Passkey: Codable, Hashable, Equatable {
         self.isDeleted = isDeleted
         self.manifestId = manifestId
         self.additionalData = additionalData
+    }
+
+    /// The WebAuthn credential id the relying party knows: `credentialId`, or the 16 bytes of `id` when it is nil.
+    public var webAuthnCredentialId: Data {
+        return credentialId ?? withUnsafeBytes(of: id.uuid) { Data($0) }
     }
 
     public static func == (lhs: Passkey, rhs: Passkey) -> Bool {

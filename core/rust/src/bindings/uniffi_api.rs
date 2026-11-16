@@ -454,9 +454,14 @@ impl SqliteMemoryDatabase {
         self.inner.with_connection(|conn| vault_items::append_field_value(conn, &item_id, &manifest_id, &field_key, &value))
     }
 
-    /// The passkey with this credential id in any manifest.
+    /// The passkey with this row id in any manifest.
     pub fn get_passkey_by_id(&self, passkey_id: String) -> Result<Option<vault_items::VaultPasskeyWithItem>, VaultError> {
         self.inner.with_connection(|conn| vault_items::get_passkey_by_id(conn, &passkey_id))
+    }
+
+    /// The passkey with this WebAuthn credential id: matched on `CredentialId`, or on the GUID bytes of `Id` when it has none.
+    pub fn get_passkey_by_credential_id(&self, rp_id: String, credential_id: Vec<u8>) -> Result<Option<vault_items::VaultPasskeyWithItem>, VaultError> {
+        self.inner.with_connection(|conn| vault_items::get_passkey_by_credential_id(conn, &rp_id, &credential_id))
     }
 
     /// The passkey with this id inside one manifest.

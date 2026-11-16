@@ -35,7 +35,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
     TotpCodes: [],
     Passkeys: (credential.Passkeys ?? []).map(passkey => ({
       Id: passkey.Id ?? crypto.randomUUID(),
-      CredentialId: null,
+      CredentialId: passkey.CredentialId ?? null,
       ItemId: itemId,
       RpId: passkey.RpId,
       UserHandle: passkey.UserHandle ?? new Uint8Array(0),
@@ -43,7 +43,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
       PrivateKey: passkey.PrivateKey,
       PrfKey: passkey.PrfKey ?? null,
       DisplayName: passkey.DisplayName,
-      AdditionalData: null,
+      AdditionalData: passkey.AdditionalData ?? null,
       ...row,
     })),
   };

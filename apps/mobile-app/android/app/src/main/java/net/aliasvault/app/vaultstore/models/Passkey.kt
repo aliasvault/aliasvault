@@ -1,5 +1,6 @@
 package net.aliasvault.app.vaultstore.models
 
+import java.nio.ByteBuffer
 import java.util.Date
 import java.util.UUID
 
@@ -12,7 +13,7 @@ import java.util.UUID
  */
 data class Passkey(
     /**
-     * Passkey record ID which is also the WebAuthn credential ID.
+     * Passkey record ID; the fallback WebAuthn credential ID when credentialId is null.
      */
     val id: UUID,
 
@@ -68,6 +69,11 @@ data class Passkey(
     val additionalData: ByteArray? = null,
 
     /**
+     * WebAuthn credential ID; null falls back to the 16 bytes of id.
+     */
+    val credentialId: ByteArray? = null,
+
+    /**
      * The creation date of the passkey.
      */
     val createdAt: Date,
@@ -82,6 +88,13 @@ data class Passkey(
      */
     val isDeleted: Boolean,
 ) {
+    /**
+     * The WebAuthn credential id the relying party knows: credentialId, or the 16 bytes of id when it is null.
+     */
+    fun webAuthnCredentialId(): ByteArray {
+        return credentialId ?: ByteBuffer.allocate(16).putLong(id.mostSignificantBits).putLong(id.leastSignificantBits).array()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -108,6 +121,10 @@ data class Passkey(
             if (other.additionalData == null) return false
             if (!additionalData.contentEquals(other.additionalData)) return false
         } else if (other.additionalData != null) return false
+        if (credentialId != null) {
+            if (other.credentialId == null) return false
+            if (!credentialId.contentEquals(other.credentialId)) return false
+        } else if (other.credentialId != null) return false
         if (createdAt != other.createdAt) return false
         if (updatedAt != other.updatedAt) return false
         if (isDeleted != other.isDeleted) return false
@@ -127,6 +144,7 @@ data class Passkey(
         result = 31 * result + (prfKey?.contentHashCode() ?: 0)
         result = 31 * result + displayName.hashCode()
         result = 31 * result + (additionalData?.contentHashCode() ?: 0)
+        result = 31 * result + (credentialId?.contentHashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
         result = 31 * result + updatedAt.hashCode()
         result = 31 * result + isDeleted.hashCode()

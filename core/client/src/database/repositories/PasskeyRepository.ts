@@ -72,8 +72,12 @@ export class PasskeyRepository extends BaseRepository {
           : new Uint8Array(passkey.UserHandle);
       }
 
+      // Without a CredentialId, the WebAuthn credential id falls back to the bytes of the passkey Id.
+      const credentialIdData = passkey.CredentialId ? new Uint8Array(passkey.CredentialId) : null;
+
       await this.run(this.execute(PasskeyQueries.INSERT, [
         passkey.Id,
+        credentialIdData,
         passkey.ItemId,
         passkey.ManifestId,
         passkey.RpId,

@@ -118,15 +118,12 @@ public class CredentialIdentityStore {
             // Passkeys may store userName, otherwise use the credential's identifier
             let userName = passkey.userName ?? credential.identifier
 
-            // Convert passkey.Id to bytes for credentialID
-            let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
-
             // For passkeys, we use the rpId from the passkey itself, not the service URL
             // This is because passkeys are tied to the RP ID, which may differ from the service URL
             return ASPasskeyCredentialIdentity(
                 relyingPartyIdentifier: passkey.rpId,
                 userName: userName,
-                credentialID: credentialId ?? Data(),  // WebAuthn credential ID (16-byte GUID)
+                credentialID: passkey.webAuthnCredentialId,
                 userHandle: passkey.userHandle ?? Data(),
                 recordIdentifier: passkey.id.uuidString.lowercased()
             )

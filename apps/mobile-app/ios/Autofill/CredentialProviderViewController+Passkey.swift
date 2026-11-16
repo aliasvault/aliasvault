@@ -52,7 +52,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             let credentialID = credentialIdentity?.credentialID ?? Data()
 
             // Look up passkey by credential ID
-            guard let passkey = try vaultStore.getPasskey(byCredentialId: credentialID) else {
+            guard let passkey = try vaultStore.getPasskey(byCredentialId: credentialID, rpId: rpId) else {
                 // Ensure minimum duration even on error
                 let elapsed = Date().timeIntervalSince(startTime)
                 if elapsed < minimumDuration {
@@ -74,9 +74,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             }
 
             // Generate assertion
-            let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
             let assertion = try PasskeyAuthenticator.getAssertion(
-                credentialId: credentialId ?? Data(),
+                credentialId: passkey.webAuthnCredentialId,
                 clientDataHash: clientDataHash,
                 rpId: rpId,
                 privateKeyJWK: passkey.privateKey,
@@ -603,10 +602,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         prfInputs: PrfInputs? = nil
     ) throws {
         // Generate assertion using PasskeyAuthenticator
-        let credentialId = try? PasskeyAuthenticator.guidToBytes(passkey.id.uuidString)
-
         let assertion = try PasskeyAuthenticator.getAssertion(
-            credentialId: credentialId ?? Data(),
+            credentialId: passkey.webAuthnCredentialId,
             clientDataHash: clientDataHash,
             rpId: rpId,
             privateKeyJWK: passkey.privateKey,
