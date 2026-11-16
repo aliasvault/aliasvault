@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.util.Log
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.vaultstore.PasskeyWithItem
-import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -56,7 +55,7 @@ class CredentialIdentityStore private constructor(context: Context) {
      * @property rpId Relying Party ID
      * @property userName Username (optional)
      * @property itemName Name of the item holding the passkey (optional)
-     * @property credentialId Base64url-encoded credential ID (16-byte GUID)
+     * @property credentialId Base64url-encoded WebAuthn credential ID
      * @property userHandle Base64url-encoded user handle (optional)
      */
     data class PasskeyIdentity(
@@ -180,9 +179,8 @@ class CredentialIdentityStore private constructor(context: Context) {
         // Get userName - prefer passkey's userName, fallback to the item's username or email
         val userName = passkey.userName ?: entry.username ?: entry.email
 
-        // Convert passkey ID to credential ID (base64url-encoded bytes)
-        val credentialIdBytes = PasskeyAuthenticator.guidToBytes(passkey.id.toString())
-        val credentialId = Helpers.bytesToBase64url(credentialIdBytes)
+        // The WebAuthn credential id as base64url: the stored credentialId, or the bytes of the row id when it has none
+        val credentialId = Helpers.bytesToBase64url(passkey.webAuthnCredentialId())
 
         // Convert user handle to base64url if present
         val userHandle = passkey.userHandle?.let { Helpers.bytesToBase64url(it) }

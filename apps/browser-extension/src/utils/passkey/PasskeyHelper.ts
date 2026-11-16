@@ -1,7 +1,9 @@
-import { base64UrlToBytes, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
+import { bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
+
+import type { Passkey } from '@aliasvault/models/vault';
 
 /**
- * Credential id conversions between GUID text, bytes and base64url.
+ * The WebAuthn credential id of a stored passkey, and GUID to bytes conversions.
  */
 export class PasskeyHelper {
   /**
@@ -28,24 +30,6 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert byte array to GUID string.
-   */
-  private static bytesToGuid(bytes: Uint8Array): string {
-    if (bytes.length !== 16) {
-      throw new Error('Invalid byte length for GUID');
-    }
-    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-    // Reinsert dashes in canonical format 8-4-4-4-12
-    return [
-      hex.substr(0, 8),
-      hex.substr(8, 4),
-      hex.substr(12, 4),
-      hex.substr(16, 4),
-      hex.substr(20)
-    ].join('-');
-  }
-
-  /**
    * Convert GUID to base64url for WebAuthn credential ID
    */
   public static guidToBase64url(guid: string): string {
@@ -53,9 +37,16 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert base64url to GUID for database lookup
+   * The WebAuthn credential id of a stored passkey: its CredentialId, or the bytes of its Id when it has none.
    */
-  public static base64urlToGuid(base64url: string): string {
-    return PasskeyHelper.bytesToGuid(base64UrlToBytes(base64url));
+  public static credentialIdBytes(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): Uint8Array {
+    return passkey.CredentialId ? new Uint8Array(passkey.CredentialId) : PasskeyHelper.guidToBytes(passkey.Id);
+  }
+
+  /**
+   * The WebAuthn credential id of a stored passkey as base64url, the form relying parties send in allowCredentials.
+   */
+  public static credentialIdBase64url(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): string {
+    return bytesToBase64Url(PasskeyHelper.credentialIdBytes(passkey));
   }
 }

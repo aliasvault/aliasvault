@@ -360,12 +360,14 @@ export class AvuxImportService {
   private static mapAvuxPasskeyToImported(avuxPasskey: AvuxPasskey): ImportedPasskey {
     return {
       Id: avuxPasskey.id,
+      CredentialId: avuxPasskey.credentialId ? base64ToBytes(avuxPasskey.credentialId) : null,
       RpId: avuxPasskey.rpId,
       UserHandle: avuxPasskey.userHandle ? base64ToBytes(avuxPasskey.userHandle) : null,
       PublicKey: avuxPasskey.publicKey,
       PrivateKey: avuxPasskey.privateKey,
       PrfKey: avuxPasskey.prfKey ? base64ToBytes(avuxPasskey.prfKey) : null,
       DisplayName: avuxPasskey.displayName,
+      AdditionalData: avuxPasskey.additionalData ? base64ToBytes(avuxPasskey.additionalData) : null,
     };
   }
 

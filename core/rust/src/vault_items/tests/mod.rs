@@ -123,6 +123,41 @@ fn passkey_item_is_created_with_url_username_and_favicon() {
 }
 
 #[test]
+fn a_credential_id_finds_an_imported_passkey_or_the_row_its_guid_bytes_name() {
+    with_vault(|conn| {
+        const NATIVE: &str = "abcdef00-0000-4000-8000-000000000001";
+        const IMPORTED: &str = "00000000-0000-4000-8000-00000000aaaa";
+        create_item_with_passkey(conn, PERSONAL, ITEM, "Example", "https://example.com", None, &new_passkey(NATIVE, "example.com", b"u"), None).unwrap();
+        conn.execute(
+            "INSERT INTO Passkeys (Id, ManifestId, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?1, ?2, ?3, 'example.com', X'01', '{}', '{}', 'imported', X'0A0B0C0D', ?4, ?4, 0)",
+            params![IMPORTED, PERSONAL, ITEM, T0],
+        )
+        .unwrap();
+
+        let native_id = crate::passkey::guid_to_bytes(NATIVE).unwrap();
+        let native = get_passkey_by_credential_id(conn, "example.com", &native_id).unwrap().unwrap();
+        assert_eq!(native.passkey.id, NATIVE);
+        assert!(native.passkey.credential_id.is_none());
+
+        let imported = get_passkey_by_credential_id(conn, "example.com", &[10, 11, 12, 13]).unwrap().unwrap();
+        assert_eq!(imported.passkey.id, IMPORTED);
+        assert_eq!(imported.passkey.credential_id.as_deref(), Some(&[10u8, 11, 12, 13][..]));
+
+        assert!(get_passkey_by_credential_id(conn, "example.com", &crate::passkey::guid_to_bytes(IMPORTED).unwrap()).unwrap().is_none());
+        assert!(get_passkey_by_credential_id(conn, "example.com", &[1, 2, 3]).unwrap().is_none());
+        assert!(get_passkey_by_credential_id(conn, "other.example", &[10, 11, 12, 13]).unwrap().is_none());
+
+        // An imported row that claims the id of a row AliasVault created does not take its place.
+        conn.execute(
+            "INSERT INTO Passkeys (Id, ManifestId, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES ('00000000-0000-4000-8000-00000000bbbb', ?1, ?2, 'example.com', X'01', '{}', '{}', 'claims', ?3, '2999-01-01 00:00:00', ?4, 0)",
+            params![PERSONAL, ITEM, native_id, T0],
+        )
+        .unwrap();
+        assert_eq!(get_passkey_by_credential_id(conn, "example.com", &native_id).unwrap().unwrap().passkey.id, NATIVE);
+    });
+}
+
+#[test]
 fn replacing_a_passkey_keeps_the_item_and_drops_the_old_key() {
     with_vault(|conn| {
         create_item_with_passkey(conn, PERSONAL, ITEM, "Example", "https://example.com", None, &new_passkey("00000000-0000-4000-8000-000000000001", "example.com", b"u"), None).unwrap();

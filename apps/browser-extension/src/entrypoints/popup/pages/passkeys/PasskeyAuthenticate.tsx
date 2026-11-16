@@ -69,18 +69,9 @@ const PasskeyAuthenticate: React.FC = () => {
             // Filter by allowCredentials if specified
             let filteredPasskeys = passkeys;
             if (data.publicKey.allowCredentials && data.publicKey.allowCredentials.length > 0) {
-              // Convert the RP's base64url credential IDs to GUIDs for comparison
-              const allowedGuids = new Set(
-                data.publicKey.allowCredentials.map((c: { id: string }) => {
-                  try {
-                    return PasskeyHelper.base64urlToGuid(c.id);
-                  } catch (e) {
-                    console.warn('Failed to convert credential ID to GUID:', c.id, e);
-                    return null;
-                  }
-                }).filter((id: string | null): id is string => id !== null)
-              );
-              filteredPasskeys = passkeys.filter((pk: { Id: string }) => allowedGuids.has(pk.Id));
+              // The RP sends the base64url credential ids it accepts; each passkey is matched on its WebAuthn credential id.
+              const allowed = new Set(data.publicKey.allowCredentials.map((c: { id: string }) => c.id));
+              filteredPasskeys = passkeys.filter((pk: { Id: string; CredentialId?: Uint8Array | number[] | null }) => allowed.has(PasskeyHelper.credentialIdBase64url(pk)));
             }
 
             // Map to display format

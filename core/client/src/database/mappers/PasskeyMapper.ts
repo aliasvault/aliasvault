@@ -5,6 +5,7 @@ import type { Passkey } from '@aliasvault/models/vault';
  */
 export type PasskeyRow = {
   Id: string;
+  CredentialId: Uint8Array | null;
   ItemId: string;
   ManifestId: string;
   RpId: string;
@@ -58,6 +59,7 @@ export class PasskeyMapper {
   public static mapRow(row: PasskeyRow): Passkey {
     return {
       Id: row.Id,
+      CredentialId: row.CredentialId ? new Uint8Array(row.CredentialId) : null,
       ItemId: row.ItemId,
       ManifestId: row.ManifestId,
       RpId: row.RpId,
