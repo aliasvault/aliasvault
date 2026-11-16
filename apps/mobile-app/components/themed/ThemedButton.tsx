@@ -8,6 +8,7 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 
 type ThemedButtonProps = {
   title: string;
+  variant?: 'primary' | 'secondary';
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
@@ -21,6 +22,7 @@ type ThemedButtonProps = {
  */
 export const ThemedButton: React.FC<ThemedButtonProps> = ({
   title,
+  variant = 'primary',
   onPress,
   loading = false,
   disabled = false,
@@ -29,6 +31,8 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   testID,
 }) => {
   const colors = useColors();
+  const isSecondary = variant === 'secondary';
+  const textColor = isSecondary ? colors.text : colors.primarySurfaceText;
 
   const styles = StyleSheet.create({
     button: {
@@ -42,8 +46,16 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
       backgroundColor: colors.textMuted,
       opacity: 0.7,
     },
+    buttonSecondary: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderWidth: 1,
+    },
+    buttonSecondaryDisabled: {
+      opacity: 0.5,
+    },
     buttonText: {
-      color: colors.primarySurfaceText,
+      color: textColor,
       fontSize: 16,
       fontWeight: '600',
     },
@@ -56,7 +68,8 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
     <RobustPressable
       style={[
         styles.button,
-        disabled && styles.buttonDisabled,
+        isSecondary && styles.buttonSecondary,
+        disabled && (isSecondary ? styles.buttonSecondaryDisabled : styles.buttonDisabled),
         style,
       ]}
       onPress={onPress}
@@ -69,7 +82,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
       {loading && (
         <ActivityIndicator
           style={styles.loadingContainer}
-          color={colors.background}
+          color={textColor}
         />
       )}
     </RobustPressable>

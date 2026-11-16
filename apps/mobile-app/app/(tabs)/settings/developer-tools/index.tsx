@@ -45,10 +45,6 @@ export default function DeveloperToolsScreen(): React.ReactNode {
   const styles = StyleSheet.create({
     buttonSecondary: {
       marginTop: 24,
-      backgroundColor: colors.accentBackground,
-    },
-    buttonSecondaryText: {
-      color: colors.text,
     },
     headerText: {
       color: colors.textMuted,
@@ -122,7 +118,7 @@ export default function DeveloperToolsScreen(): React.ReactNode {
 
         <ThemedButton
           style={styles.buttonSecondary}
-          textStyle={styles.buttonSecondaryText}
+          variant="secondary"
           title="Hide developer tools"
           onPress={handleHideDeveloperTools}
         />

@@ -82,11 +82,6 @@ export default function AppReviewDebugScreen(): React.ReactNode {
   const styles = StyleSheet.create({
     button: {
       marginTop: 12,
-      backgroundColor: colors.primary,
-    },
-    buttonSecondary: {
-      marginTop: 12,
-      backgroundColor: colors.accentBackground,
     },
     headerText: {
       color: colors.textMuted,
@@ -159,7 +154,8 @@ export default function AppReviewDebugScreen(): React.ReactNode {
           onPress={handleRequestReview}
         />
         <ThemedButton
-          style={styles.buttonSecondary}
+          style={styles.button}
+          variant="secondary"
           title="Reset app review state"
           onPress={handleResetReviewState}
         />

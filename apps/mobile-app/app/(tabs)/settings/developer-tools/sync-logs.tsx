@@ -77,11 +77,6 @@ export default function SyncLogsScreen(): React.ReactNode {
   const styles = StyleSheet.create({
     button: {
       marginTop: 12,
-      backgroundColor: colors.primary,
-    },
-    buttonSecondary: {
-      marginTop: 12,
-      backgroundColor: colors.accentBackground,
     },
     emptyText: {
       color: colors.textMuted,
@@ -127,7 +122,8 @@ export default function SyncLogsScreen(): React.ReactNode {
           onPress={handleCopyLogs}
         />
         <ThemedButton
-          style={styles.buttonSecondary}
+          style={styles.button}
+          variant="secondary"
           title="Refresh"
           onPress={loadLogs}
         />
