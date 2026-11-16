@@ -288,6 +288,8 @@
     "hidePassword": "Hide password",
     "highRiskAction": "This is a high-risk action.",
     "home": "Home",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "Load more",
     "loading": "Loading...",
     "loadingAttachments": "Loading attachments...",
@@ -345,8 +347,25 @@
     "showList": "Show list",
     "showPassword": "Show password",
     "success": "Success",
+    "suggestions": {
+      "title": "Suggestions"
+    },
     "syncVaultData": "Sync vault data",
     "syncingChanges": "Syncing changes...",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "Two-factor authentication",
     "unavailable": "Unavailable",
     "undo": "Undo",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "New email"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} hrs ago",
-      "hoursAgo_single": "{{count}} hr ago",
-      "justNow": "just now",
-      "minutesAgo_plural": "{{count}} mins ago",
-      "minutesAgo_single": "{{count}} min ago",
-      "yesterday": "yesterday"
-    },
     "title": "Emails",
     "to": "To:",
     "toColumn": "To"
@@ -799,6 +810,17 @@
       "sourceFavicon": "From {{domain}}",
       "sourceNone": "No icon"
     },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
+    },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "No emails received yet.",
     "noHistoryAvailable": "No history available",
@@ -897,7 +919,6 @@
       "oldestFirst": "Oldest first",
       "title": "Sort by"
     },
-    "suggestions": "Suggestions",
     "switchBackToOriginalApp": "Switch back to the original app to continue.",
     "tags": "Tags",
     "title": "Items",
@@ -906,6 +927,7 @@
       "itemCreated": "Item created successfully",
       "itemDeleted": "Item deleted successfully",
       "itemUpdated": "Item updated successfully",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Password copied to clipboard",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
