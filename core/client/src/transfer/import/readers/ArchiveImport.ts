@@ -53,15 +53,15 @@ export function readArchiveJson(archive: ZipArchive, path: string): unknown {
 /**
  * Convert raw items one by one, so a malformed item is reported as a failure instead of exiting the import.
  * @param entries - The raw items, in export order
- * @param convert - Converts one item; null skips it
+ * @param convert - Converts one item, given its position; null skips it
  * @param titleOf - Best-effort title of an item, read straight from the entry
  * @returns The credentials and the per-item failures
  */
-export function convertArchiveItems<T>(entries: T[], convert: (entry: T) => ImportedCredential | null, titleOf: (entry: T) => string | null): ImportFileResult {
+export function convertArchiveItems<T>(entries: T[], convert: (entry: T, index: number) => ImportedCredential | null, titleOf: (entry: T) => string | null): ImportFileResult {
   const result: ImportFileResult = { Credentials: [], FailedItems: [] };
   entries.forEach((entry, index) => {
     try {
-      const credential = convert(entry);
+      const credential = convert(entry, index);
       if (credential) {
         result.Credentials.push(credential);
       }

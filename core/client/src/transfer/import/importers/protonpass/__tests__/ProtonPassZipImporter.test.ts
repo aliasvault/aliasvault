@@ -2,12 +2,14 @@ import { ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
 import { createZipArchive, textToZipBytes } from '../../../../shared/ZipArchive';
-import { byName, convertToItems, itemByName, readFixtureBytes } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, generatePasskeyKey, itemByName, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
 import { importProtonPassZip } from '../ProtonPassZipImporter';
 
+import { protonPasskeyContent, protonStoredPasskey } from './protonPasskeyFixtures';
+
 describe('ProtonPassZipImporter', () => {
-  it('imports a Proton Pass .zip export', () => {
-    const imported = (importProtonPassZip(readFixtureBytes(import.meta.dirname, 'protonpass.zip'))).Credentials;
+  it('imports a Proton Pass .zip export', async () => {
+    const imported = (await importProtonPassZip(readFixtureBytes(import.meta.dirname, 'protonpass.zip'))).Credentials;
     expect(imported).toHaveLength(10);
 
     const loginWithTotp = byName(imported, 'Test proton 1');
@@ -83,7 +85,7 @@ describe('ProtonPassZipImporter', () => {
     expect(convertedLogin.TotpCodes[0].SecretKey).toBe('PLW4SB3PQ7MKVXY2MXF4NEXS6Y');
   });
 
-  it('reads "username" as the email and "urls" as the URLs when a login has no itemEmail or autofillUrls', () => {
+  it('reads "username" as the email and "urls" as the URLs when a login has no itemEmail or autofillUrls', async () => {
     /**
      * A login item.
      * @param name - The item name
@@ -103,11 +105,41 @@ describe('ProtonPassZipImporter', () => {
       },
     });
 
-    const imported = importProtonPassZip(createZipArchive({ 'Proton Pass/data.json': textToZipBytes(dataJson) })).Credentials;
+    const imported = (await importProtonPassZip(createZipArchive({ 'Proton Pass/data.json': textToZipBytes(dataJson) }))).Credentials;
 
     const usernameOnly = byName(imported, 'Username only');
     expect(usernameOnly.Email).toBe('john');
     expect(usernameOnly.ServiceUrls).toEqual(['https://username.example.com/']);
     expect(byName(imported, 'Empty autofillUrls').ServiceUrls).toEqual(['https://urls.example.com/']);
+  });
+
+  it('imports the passkeys of a login', async () => {
+    const { scalar } = await generatePasskeyKey();
+    const passkey = { keyId: 'k1', content: protonPasskeyContent(protonStoredPasskey(scalar)), domain: 'example.com', rpId: 'example.com', rpName: 'Example', userName: 'jane' };
+    const dataJson = JSON.stringify({
+      encrypted: false,
+      vaults: {
+        v1: {
+          name: 'Personal',
+          items: [
+            { itemId: 'a', state: 1, data: { metadata: { name: 'With passkey' }, type: 'login', content: { itemUsername: 'jane', password: '', urls: [], passkeys: [passkey] } } },
+            { itemId: 'b', state: 2, data: { metadata: { name: 'Trashed' }, type: 'login', content: { passkeys: [passkey] } } },
+            { itemId: 'c', state: 1, data: { metadata: { name: 'Broken passkey' }, type: 'login', content: { itemUsername: 'joe', passkeys: [{ ...passkey, content: 'gqFjkQGhdgE=' }] } } },
+          ],
+        },
+      },
+    });
+
+    const result = await importProtonPassZip(createZipArchive({ 'Proton Pass/data.json': textToZipBytes(dataJson) }), testPasskeyKeys);
+
+    expect(result.Credentials.map(credential => credential.ServiceName)).toEqual(['With passkey', 'Broken passkey']);
+    const imported = byName(result.Credentials, 'With passkey');
+    expect(imported.ServiceUrls).toEqual(['https://example.com']);
+    expect(imported.Passkeys).toHaveLength(1);
+    expect(itemByName(convertToItems(result.Credentials), 'With passkey').Passkeys[0].RpId).toBe('example.com');
+
+    // The item with the unreadable passkey is kept and reported.
+    expect(byName(result.Credentials, 'Broken passkey').Passkeys).toBeUndefined();
+    expect(result.FailedItems.map(failure => [failure.Index, failure.ItemTitle, failure.ExceptionType])).toEqual([[2, 'Broken passkey', 'PasskeyImportError']]);
   });
 });

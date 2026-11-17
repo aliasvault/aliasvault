@@ -48,7 +48,7 @@ const extensionOf = (filename: string): string => {
 };
 
 /** Parses the bytes of one export file format. */
-type FileParser = (fileBytes: Uint8Array) => ImportFileResult;
+type FileParser = (fileBytes: Uint8Array) => ImportFileResult | Promise<ImportFileResult>;
 
 /**
  * A parser for a text (CSV) export.

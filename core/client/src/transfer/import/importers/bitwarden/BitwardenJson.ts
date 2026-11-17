@@ -1,5 +1,5 @@
 import { parseDateTime } from '../../../shared/DateTimeUtils';
-import { getProperty, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
+import { getProperty, isJsonObject, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
 
 /*
  * The Bitwarden JSON export (data.json inside a .zip export).
@@ -93,6 +93,8 @@ export type BitwardenLogin = {
   Username: string | null;
   Password: string | null;
   Totp: string | null;
+  /** The passkeys as raw JSON. */
+  Fido2Credentials: JsonObject[];
 };
 
 /**
@@ -220,11 +222,13 @@ function parseBitwardenLogin(obj: JsonObject | null): BitwardenLogin | null {
   if (!obj) {
     return null;
   }
+  const passkeys = getProperty(obj, 'fido2Credentials');
   return {
     Uris: readObjectArray(obj, 'uris', (uri): BitwardenUri => ({ Match: readNumber(uri, 'match'), Uri: readString(uri, 'uri') })),
     Username: readString(obj, 'username'),
     Password: readString(obj, 'password'),
     Totp: readString(obj, 'totp'),
+    Fido2Credentials: Array.isArray(passkeys) ? passkeys.filter(isJsonObject) : [],
   };
 }
 
