@@ -75,9 +75,13 @@ export function collectHierarchicalFolderPaths(credentials: ImportedCredential[]
  * Whether an imported credential duplicates an item already in the vault.
  * @param existing - The vault item
  * @param imported - The imported credential
- * @returns True when title, folder path, username, password and notes all match
+ * @returns True when title, folder path, username, password and notes all match and the import brings no passkey or TOTP code the item lacks
  */
 export function isDuplicateItem(existing: Item, imported: ImportedCredential): boolean {
+  if ((imported.Passkeys?.length && !existing.HasPasskey) || (imported.TwoFactorSecret && !existing.HasTotp)) {
+    return false;
+  }
+
   if (!existing.Name || existing.Name.toLowerCase() !== (imported.ServiceName ?? '').toLowerCase()) {
     return false;
   }

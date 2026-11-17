@@ -96,6 +96,17 @@ export function readString(obj: JsonObject, name: string): string | null {
 }
 
 /**
+ * Read a property that should be a string, without failing on another type.
+ * @param obj - The object
+ * @param name - The property name
+ * @returns The string, or null when absent or not a string
+ */
+export function readStringOrNull(obj: JsonObject, name: string): string | null {
+  const value = getProperty(obj, name);
+  return typeof value === 'string' ? value : null;
+}
+
+/**
  * Read a number property.
  * @param obj - The object
  * @param name - The property name

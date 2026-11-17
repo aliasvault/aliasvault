@@ -104,7 +104,8 @@ export type ProtonPassContent = {
   Urls: (string | null)[] | null;
   AutofillUrls: ProtonPassAutofillUrl[] | null;
   TotpUri: string | null;
-  Passkeys: ProtonPassPasskey[] | null;
+  /** The passkeys as raw JSON. */
+  Passkeys: JsonObject[];
   CardholderName: string | null;
   Number: string | null;
   VerificationNumber: string | null;
@@ -124,16 +125,6 @@ export type ProtonPassAutofillUrl = {
   Url: string | null;
   /** One of {@link ProtonPassAutofillModes}. */
   Mode: number | null;
-};
-
-/**
- * A passkey.
- */
-export type ProtonPassPasskey = {
-  CredentialId: string | null;
-  RpId: string | null;
-  RpName: string | null;
-  UserName: string | null;
 };
 
 /**
@@ -265,7 +256,7 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
   if (!obj) {
     return null;
   }
-  
+
   const passkeys = getProperty(obj, 'passkeys');
 
   return {
@@ -275,9 +266,7 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
     Urls: readStringArray(obj, 'urls'),
     AutofillUrls: readObjectArray(obj, 'autofillUrls', parseProtonPassAutofillUrl),
     TotpUri: readString(obj, 'totpUri'),
-    Passkeys: Array.isArray(passkeys)
-      ? passkeys.filter(isJsonObject).map((passkey): ProtonPassPasskey => ({ CredentialId: readString(passkey, 'credentialId'), RpId: readString(passkey, 'rpId'), RpName: readString(passkey, 'rpName'), UserName: readString(passkey, 'userName') }))
-      : null,
+    Passkeys: Array.isArray(passkeys) ? passkeys.filter(isJsonObject) : [],
     CardholderName: readString(obj, 'cardholderName'),
     Number: readString(obj, 'number'),
     VerificationNumber: readString(obj, 'verificationNumber'),

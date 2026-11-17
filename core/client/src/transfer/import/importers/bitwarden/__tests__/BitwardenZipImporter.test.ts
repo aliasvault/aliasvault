@@ -1,14 +1,15 @@
 import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
+import { bytesToBase64Url } from '../../../../../utilities/Base64';
 import { createZipArchive, textToZipBytes } from '../../../../shared/ZipArchive';
-import { byName, convertToItems, itemByName, readFixtureBytes } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, generatePasskeyKey, itemByName, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
 import { ImportException, ImportStage } from '../../../models/ImportException';
 import { importBitwardenZip } from '../BitwardenZipImporter';
 
 describe('BitwardenZipImporter', () => {
-  it('imports a Bitwarden ZIP with attachments', () => {
-    const result = importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden.zip'));
+  it('imports a Bitwarden ZIP with attachments', async () => {
+    const result = await importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden.zip'));
     const imported = result.Credentials;
     expect(imported).toHaveLength(5);
 
@@ -69,7 +70,7 @@ describe('BitwardenZipImporter', () => {
     expect(convertedLogin.TotpCodes[0].SecretKey).toBe('JBSWY3DPEHPK3PXP');
   });
 
-  it('ignores directory entries when reading Bitwarden ZIP attachments', () => {
+  it('ignores directory entries when reading Bitwarden ZIP attachments', async () => {
     const itemId = 'item-with-attachment-uuid';
     const fileName = 'dataset_Backup_keys.json';
     const fileBytes = new TextEncoder().encode('{"keys":"value"}');
@@ -90,7 +91,7 @@ describe('BitwardenZipImporter', () => {
       [`attachments/${itemId}/${fileName}`]: fileBytes,
     });
 
-    const imported = (importBitwardenZip(zipBytes)).Credentials;
+    const imported = (await importBitwardenZip(zipBytes)).Credentials;
 
     expect(imported).toHaveLength(1);
     const credential = imported[0];
@@ -101,12 +102,12 @@ describe('BitwardenZipImporter', () => {
     expect(credential.Attachments!.some(a => a.Blob.length === 0)).toBe(false);
   });
 
-  it('reports an encrypted Bitwarden export clearly', () => {
+  it('reports an encrypted Bitwarden export clearly', async () => {
     const zipBytes = createZipArchive({ 'data.json': textToZipBytes('{"encrypted":true,"folders":[],"items":[]}') });
 
     let caught: unknown;
     try {
-      importBitwardenZip(zipBytes);
+      await importBitwardenZip(zipBytes);
     } catch (error) {
       caught = error;
     }
@@ -117,7 +118,7 @@ describe('BitwardenZipImporter', () => {
     expect((caught as ImportException).message).toContain('unencrypted');
   });
 
-  it('reads attachments from the folder named after the item, numbering items with the same name', () => {
+  it('reads attachments from the folder named after the item, numbering items with the same name', async () => {
     /**
      * A login item.
      * @param id - The item id
@@ -137,7 +138,7 @@ describe('BitwardenZipImporter', () => {
       'attachments/Server_1/key.pem': textToZipBytes('second'),
     });
 
-    const imported = importBitwardenZip(zipBytes).Credentials;
+    const imported = (await importBitwardenZip(zipBytes)).Credentials;
 
     /**
      * The attachments of an imported item as "name=content".
@@ -151,7 +152,7 @@ describe('BitwardenZipImporter', () => {
     expect(attachmentsOf(3)).toBeUndefined();
   });
 
-  it('imports SSH key, bank account, driver\'s license and passport items as notes with their fields', () => {
+  it('imports SSH key, bank account, driver\'s license and passport items as notes with their fields', async () => {
     /**
      * An item of a type AliasVault has no type for.
      * @param type - The Bitwarden item type
@@ -172,7 +173,7 @@ describe('BitwardenZipImporter', () => {
       ],
     });
 
-    const imported = importBitwardenZip(createZipArchive({ 'data.json': textToZipBytes(dataJson) })).Credentials;
+    const imported = (await importBitwardenZip(createZipArchive({ 'data.json': textToZipBytes(dataJson) }))).Credentials;
 
     expect(imported.every(credential => credential.ItemType === ItemTypes.Note && credential.Notes === 'note')).toBe(true);
     /**
@@ -185,5 +186,64 @@ describe('BitwardenZipImporter', () => {
     expect(fieldsOf('Bank')).toEqual(['Bank name=Example Bank (Text)', 'Account number=12345678 (Hidden)', 'IBAN=NL00BANK0123456789 (Hidden)']);
     expect(fieldsOf('License')).toEqual(['First name=John (Text)', 'Last name=Doe (Text)', 'License number=D123 (Text)']);
     expect(fieldsOf('Passport')).toEqual(['Surname=Doe (Text)', 'Given name=John (Text)', 'Passport number=X123 (Text)']);
+  });
+
+  it('imports the passkeys of a Bitwarden export', async () => {
+    const result = await importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden_passkeys.zip'), testPasskeyKeys);
+    expect(result.FailedItems).toEqual([]);
+    expect(result.Credentials.flatMap(credential => credential.Passkeys ?? [])).toHaveLength(1);
+
+    const login = byName(result.Credentials, 'webauthn.io');
+    expect(login.Username).toBe('bitwarden');
+    expect(login.ServiceUrls).toEqual(['https://webauthn.io/']);
+    expect(byName(result.Credentials, 'Example Shop').Passkeys).toBeUndefined();
+
+    // A Bitwarden credential id is a GUID; its 16 bytes are what the relying party knows the passkey by.
+    const passkey = login.Passkeys![0];
+    expect(passkey.RpId).toBe('webauthn.io');
+    expect(passkey.DisplayName).toBe('bitwarden');
+    expect(Buffer.from(passkey.CredentialId!).toString('hex')).toBe('fc79010a87c741318409e71541605729');
+    expect(new TextDecoder().decode(passkey.UserHandle!)).toBe('webauthnio-bitwarden');
+    expect(JSON.parse(passkey.PrivateKey)).toMatchObject({ kty: 'EC', crv: 'P-256', d: expect.any(String) as string });
+    expect(passkey.PrfKey).toBeNull();
+
+    const stored = itemByName(convertToItems(result.Credentials), 'webauthn.io').Passkeys[0];
+    expect(stored.CredentialId).toEqual(passkey.CredentialId);
+    expect(stored.PrivateKey).toBe(passkey.PrivateKey);
+  });
+
+  it('keeps an item whose passkey cannot be read and reports it', async () => {
+    const key = bytesToBase64Url((await generatePasskeyKey()).pkcs8);
+    /**
+     * A login with one passkey.
+     * @param name - The item name
+     * @param passkey - The members of the passkey
+     * @returns The item JSON
+     */
+    const login = (name: string, passkey: object): object => ({ id: name, type: 1, name, login: { uris: [], username: 'jane', password: 'pw', totp: null, fido2Credentials: [{ rpId: 'example.com', userDisplayName: 'Jane', ...passkey }] } });
+    const dataJson = JSON.stringify({
+      encrypted: false,
+      folders: [],
+      items: [
+        login('Imported id', { credentialId: 'b64.AQIDBAU', keyValue: key }),
+        login('No key', { credentialId: 'fc79010a-87c7-4131-8409-e71541605729', keyValue: '' }),
+        login('Not a key', { credentialId: 'fc79010a-87c7-4131-8409-e71541605729', keyValue: 'AAECAwQFBg' }),
+        login('Not a GUID', { credentialId: 'not-a-guid', keyValue: key }),
+      ],
+    });
+
+    const result = await importBitwardenZip(createZipArchive({ 'data.json': textToZipBytes(dataJson) }), testPasskeyKeys);
+
+    // A credential id Bitwarden imported itself is base64url behind a prefix; an item without a URL gets the relying party.
+    const imported = byName(result.Credentials, 'Imported id');
+    expect(Array.from(imported.Passkeys![0].CredentialId!)).toEqual([1, 2, 3, 4, 5]);
+    expect(imported.Passkeys![0].UserHandle).toBeNull();
+    expect(imported.ServiceUrls).toEqual(['https://example.com']);
+
+    expect(result.Credentials).toHaveLength(4);
+    expect(byName(result.Credentials, 'No key').Password).toBe('pw');
+    expect(result.Credentials.filter(credential => credential.Passkeys)).toHaveLength(1);
+    expect(result.FailedItems.map(failure => [failure.Index, failure.ItemTitle, failure.ExceptionType])).toEqual([[1, 'No key', 'PasskeyImportError'], [2, 'Not a key', 'PasskeyImportError'], [3, 'Not a GUID', 'PasskeyImportError']]);
+    expect(result.FailedItems[0].Message).toBe('A passkey of this item could not be imported: see item #1 in the export.');
   });
 });

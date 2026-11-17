@@ -7,8 +7,10 @@ import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { mapItemType } from '../../readers/FieldParsers';
 import { readStringAtPath } from '../../readers/JsonReader';
+import { addPasskeys, rustPasskeyKeys, type PasskeyKeyConverter, type PendingPasskeys } from '../../readers/PasskeyImport';
 
 import { ProtonPassItemStates, getProtonPassLoginUrls, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassContent, type ProtonPassItem } from './ProtonPassJson';
+import { readProtonPassPasskey } from './ProtonPassPasskey';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportedCreditcard } from '../../models/ImportedCreditcard';
@@ -36,10 +38,11 @@ const ITEM_TYPES = {
 /**
  * Import a Proton Pass .zip export. Every vault except the default one becomes a folder, with its own folders below it.
  * @param archiveBytes - The archive bytes
+ * @param keys - Converts passkey keys, the Rust core by default
  * @returns The credentials and the items that could not be read
  * @throws {ImportException} When the archive cannot be opened, data.json cannot be read or the export is encrypted.
  */
-export function importProtonPassZip(archiveBytes: Uint8Array): ImportFileResult {
+export async function importProtonPassZip(archiveBytes: Uint8Array, keys: PasskeyKeyConverter = rustPasskeyKeys): Promise<ImportFileResult> {
   const archive = openArchive(archiveBytes);
   if (archive.has(ENCRYPTED_DATA_PATH)) {
     throw new ImportException(ImportStage.Parse, 'Encrypted Proton Pass exports (data.pgp) are not supported.');
@@ -58,7 +61,8 @@ export function importProtonPassZip(archiveBytes: Uint8Array): ImportFileResult 
   });
   const files = archive.filesUnder(FILES_PATH);
 
-  return convertArchiveItems(entries, ({ element, vaultPath, foldersById }) => {
+  const pendingPasskeys: PendingPasskeys[] = [];
+  const result = convertArchiveItems(entries, ({ element, vaultPath, foldersById }, index) => {
     const item = parseProtonPassItem(element);
     if (item.State === ProtonPassItemStates.Trashed || !item.Data) {
       return null;
@@ -66,8 +70,14 @@ export function importProtonPassZip(archiveBytes: Uint8Array): ImportFileResult 
     const folderPath = [vaultPath, buildFolderPath(item.FolderId, foldersById)].filter(part => !isBlank(part)).join('/');
     const credential = convertItem(item, nullIfBlank(folderPath));
     addFiles(credential, item, files);
+    const passkeys = item.Data.Type?.toLowerCase() === 'login' ? item.Data.Content?.Passkeys ?? [] : [];
+    if (passkeys.length > 0) {
+      pendingPasskeys.push({ Credential: credential, Index: index, Passkeys: passkeys });
+    }
     return credential;
   }, ({ element }) => readStringAtPath(element, 'data', 'metadata', 'name'));
+
+  return addPasskeys(result, pendingPasskeys, passkey => readProtonPassPasskey(passkey, keys));
 }
 
 /**

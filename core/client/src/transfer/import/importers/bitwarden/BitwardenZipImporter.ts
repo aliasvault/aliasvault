@@ -4,8 +4,10 @@ import { isBlank, nonBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { isJsonObject, readString, readStringAtPath, type JsonObject } from '../../readers/JsonReader';
+import { addPasskeys, rustPasskeyKeys, type PasskeyKeyConverter, type PendingPasskeys } from '../../readers/PasskeyImport';
 
 import { BitwardenFieldTypes, BitwardenItemTypes, parseBitwardenItem, parseBitwardenJsonExport, type BitwardenIdentity, type BitwardenItem } from './BitwardenJson';
+import { readBitwardenPasskey } from './BitwardenPasskey';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportFileResult } from '../../models/ImportFileResult';
@@ -25,12 +27,13 @@ const ITEM_TYPES: Readonly<Record<number, ItemType>> = {
 const ATTACHMENTS_PATH = 'attachments/';
 
 /**
- * Import a Bitwarden .zip export: data.json plus the attachments stored in a folder per item.
+ * Import a Bitwarden .zip export: data.json, with the passkeys of its logins, plus the attachments stored in a folder per item.
  * @param archiveBytes - The archive bytes
+ * @param keys - Converts passkey keys, the Rust core by default
  * @returns The credentials and the items that could not be read
  * @throws {ImportException} When the archive cannot be opened, data.json cannot be read or the export is encrypted.
  */
-export function importBitwardenZip(archiveBytes: Uint8Array): ImportFileResult {
+export async function importBitwardenZip(archiveBytes: Uint8Array, keys: PasskeyKeyConverter = rustPasskeyKeys): Promise<ImportFileResult> {
   const archive = openArchive(archiveBytes);
   const exportData = parseBitwardenJsonExport(readArchiveJson(archive, 'data.json'));
   if (exportData.Encrypted) {
@@ -40,14 +43,20 @@ export function importBitwardenZip(archiveBytes: Uint8Array): ImportFileResult {
   const folderNames = new Map(exportData.Folders.filter(folder => !isBlank(folder.Id) && !isBlank(folder.Name)).map(folder => [folder.Id!, folder.Name!]));
   const attachmentFolders = matchAttachmentFolders(exportData.Items, readAttachmentFolders(archive.filesUnder(ATTACHMENTS_PATH)));
 
-  return convertArchiveItems(exportData.Items, element => {
+  const pendingPasskeys: PendingPasskeys[] = [];
+  const result = convertArchiveItems(exportData.Items, (element, index) => {
     const item = parseBitwardenItem(element);
     const credential = convertItem(item, item.FolderId ? folderNames.get(item.FolderId) ?? null : null);
     for (const [filename, data] of attachmentFolders.get(element) ?? []) {
       addAttachment(credential, filename, data);
     }
+    if (credential.ItemType === ItemTypes.Login && item.Login && item.Login.Fido2Credentials.length > 0) {
+      pendingPasskeys.push({ Credential: credential, Index: index, Passkeys: item.Login.Fido2Credentials });
+    }
     return credential;
   }, element => readStringAtPath(element, 'name'));
+
+  return addPasskeys(result, pendingPasskeys, passkey => readBitwardenPasskey(passkey, keys));
 }
 
 /**

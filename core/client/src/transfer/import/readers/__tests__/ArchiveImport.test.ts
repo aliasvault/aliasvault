@@ -9,12 +9,12 @@ import { JsonException } from '../JsonReader';
 import type { ImportFileResult } from '../../models/ImportFileResult';
 
 describe('ArchiveImport', () => {
-  it('reports a corrupt archive as an Archive stage failure', () => {
+  it('reports a corrupt archive as an Archive stage failure', async () => {
     const corruptBytes = new TextEncoder().encode('definitely not a zip');
 
     let caught: unknown;
     try {
-      importBitwardenZip(corruptBytes);
+      await importBitwardenZip(corruptBytes);
     } catch (error) {
       caught = error;
     }
@@ -24,12 +24,12 @@ describe('ArchiveImport', () => {
     expect((caught as ImportException).message).toContain('not a valid ZIP archive');
   });
 
-  it('reports a missing manifest as a Parse stage failure', () => {
+  it('reports a missing manifest as a Parse stage failure', async () => {
     const zipBytes = createZipArchive({});
 
     let caught: unknown;
     try {
-      importBitwardenZip(zipBytes);
+      await importBitwardenZip(zipBytes);
     } catch (error) {
       caught = error;
     }
@@ -40,12 +40,12 @@ describe('ArchiveImport', () => {
     expect((caught as ImportException).message).toContain('not found');
   });
 
-  it('reports malformed JSON with the parse error', () => {
+  it('reports malformed JSON with the parse error', async () => {
     const zipBytes = createZipArchive({ 'data.json': textToZipBytes('{"encrypted":false,"folders":[],"items":[{') });
 
     let caught: unknown;
     try {
-      importBitwardenZip(zipBytes);
+      await importBitwardenZip(zipBytes);
     } catch (error) {
       caught = error;
     }
@@ -57,10 +57,10 @@ describe('ArchiveImport', () => {
     expect((caught as ImportException).innerError).toBeInstanceOf(JsonException);
   });
 
-  it('collects a malformed item as a per-item failure', () => {
+  it('collects a malformed item as a per-item failure', async () => {
     const zipBytes = createZipArchive({ 'data.json': textToZipBytes('{"encrypted":false,"folders":[],"items":[{"name":"Broken","type":"not-a-number"},{"type":1,"name":"Fine","login":{"username":"u","password":"p"}}]}') });
 
-    const result: ImportFileResult = importBitwardenZip(zipBytes);
+    const result: ImportFileResult = await importBitwardenZip(zipBytes);
 
     expect(result.Credentials).toHaveLength(1);
     expect(result.Credentials[0].ServiceName).toBe('Fine');
