@@ -34,7 +34,7 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Geavanceerde instellingen",
-      "customApiUrl": "Aangepaste API URL",
+      "customApiUrl": "Aangepaste API-URL",
       "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",
       "customProxyHeaders": "Aangepaste proxy headers",
       "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar je AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
@@ -408,7 +408,7 @@
     "emailContent": "E-mailinhoud",
     "emailDetails": "E-mail details",
     "emailNotFound": "E-mail niet gevonden",
-    "emptyMessage": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
+    "emptyMessage": "Je hebt nog geen berichten ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
     "formatSource": "Bron",
@@ -471,7 +471,7 @@
     "login": {
       "email": "E-mail",
       "password": "Wachtwoord",
-      "url": "Website URL",
+      "url": "Website-URL",
       "username": "Gebruikersnaam"
     },
     "notes": {
@@ -518,7 +518,7 @@
       "duplicateCredentialsWarning": "{{count}} dubbele credential(s) werden gevonden en worden niet geïmporteerd.",
       "encryptedFilePasswordPrompt": "Dit bestand is versleuteld. Voer het wachtwoord in dat je hebt gebruikt bij het maken van de export.",
       "extractFaviconsLabel": "Favicons ophalen voor services met URLs",
-      "extractingFavicons": "Favicons ophalen... {{current}} / {{total}}",
+      "extractingFavicons": "Favicons uitpakken... {{current}} / {{total}}",
       "faviconExtractionNote": "Opmerking: Favicons ophalen is ingeschakeld. Dit proces kan enkele minuten duren, afhankelijk van het aantal credentials met URL's. Houd de pagina open.",
       "foldersDetected": "{{count}} map(en) gevonden",
       "importAttachmentsLabel": "Importeer gevonden bijlagen",
@@ -560,7 +560,7 @@
       "enpassDescription": "Importeer wachtwoorden uit Enpass",
       "enpassInstructionsPart1": "Om je Enpass wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Doe dit door Enpass te openen, ga naar 'Menu' > 'Bestand' > 'Export' > en selecteer vervolgens het CSV formaat.",
       "firefoxDescription": "Importeer wachtwoorden uit de Firefox Password Manager",
-      "firefoxInstructionsPart1": "Om je Firefox wachtwoorden te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door je Firefox browser te openen, naar menu > 'Wachtwoorden' te gaan. Klik vervolgens op het menu-icoon in de rechterbovenhoek en selecteer 'Wachtwoorden exporteren'.",
+      "firefoxInstructionsPart1": "Om je Firefox wachtwoorden te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door je Firefox browser te openen, naar menu > 'Wachtwoorden' te gaan. Klik vervolgens op het menu-pictogram in de rechterbovenhoek en selecteer 'Wachtwoorden exporteren'.",
       "genericCsvDescription": "Importeer credentials met een sjabloon CSV bestand",
       "genericCsvInstructionsPart1": "Wordt de wachtwoordmanager die je gebruikt niet ondersteund? Je kunt je inloggegevens altijd naar AliasVault importeren met een generiek CSV-sjabloonformaat.",
       "genericCsvStep1": "Download het AliasVault Import CSV",
@@ -601,7 +601,7 @@
     "editCustomField": "Aangepast veld bewerken",
     "enterFieldName": "Voer de veldnaam in",
     "fieldLabel": "Veldlabel",
-    "fieldType": "Veldtype",
+    "fieldType": "Type veld",
     "fieldTypes": {
       "date": "Datum",
       "email": "E-mail",
@@ -621,7 +621,7 @@
       "title": "Opmerking"
     },
     "secureNote": "Veilige notitie",
-    "typeLabel": "Itemtype"
+    "typeLabel": "Type item"
   },
   "items": {
     "addEdit": {
@@ -656,7 +656,7 @@
       "createNewTitle": "Nieuwe credential aanmaken",
       "description": "Kies een actie voor de app of website die autofill heeft aangevraagd.",
       "findExistingDescription": "Selecteer een bestaande credential uit je vault om te koppelen aan het bovenstaande adres.",
-      "title": "Autofill verzoek"
+      "title": "Autofill-verzoek"
     },
     "autofillUrlAdded": {
       "message": "Autofill zal nu deze credential tonen de volgende keer dat je de app opent.",
@@ -755,9 +755,9 @@
       "selectFolder": "Map selecteren"
     },
     "fullName": "Volledige naam",
-    "hasAttachments": "Met bijlage",
-    "hasPasskey": "Met wachtwoord",
-    "hasTotp": "Met 2FA code",
+    "hasAttachments": "Bevat bijlagen",
+    "hasPasskey": "Bevat passkey",
+    "hasTotp": "Bevat 2FA-code",
     "home": {
       "createFirstItemManuallyText": "Maak je eerste vault item handmatig aan.",
       "emptyFolderMessage": "Deze map is leeg.",
@@ -800,15 +800,15 @@
         "travel": "Reizen",
         "work": "Werk"
       },
-      "builtinLogos": "Icoon bibliotheek",
-      "chooseLogo": "Kies icoon",
-      "currentLogo": "Huidige icoon",
-      "fetchFromWebsite": "Icoon ophalen van website",
-      "refetchFromWebsite": "Icoon (opnieuw) ophalen van website",
-      "sourceBuiltin": "Ingebouwde icoon",
-      "sourceCustom": "Aangepast icoon",
+      "builtinLogos": "Pictogrambibliotheek",
+      "chooseLogo": "Pictogram kiezen",
+      "currentLogo": "Huidige pictogram",
+      "fetchFromWebsite": "Pictogram ophalen vanaf website",
+      "refetchFromWebsite": "Pictogram (opnieuw) ophalen van website",
+      "sourceBuiltin": "Ingebouwd pictogram",
+      "sourceCustom": "Aangepast pictogram",
       "sourceFavicon": "Van {{domain}}",
-      "sourceNone": "Geen icoon"
+      "sourceNone": "Geen pictogram"
     },
     "merge": {
       "title": "Items samenvoegen",
@@ -817,7 +817,7 @@
       "searchHint": "Zoeken naar het item om mee samen te voegen.",
       "keep": "Item om te bewaren",
       "chooseValues": "Veldwaarden om te bewaren:",
-      "combined": "Alle andere velden waarden worden samengevoegd tot het samengevoegde item.",
+      "combined": "De waarden van alle andere velden worden samengevoegd tot het samengevoegde item.",
       "differentFolders": "Items kunnen alleen worden samengevoegd als ze in je eigen kluis of beide in dezelfde gedeelde map zijn.",
       "differentTypes": "Deze itemtypes kunnen niet met elkaar worden samengevoegd: {{types}}."
     },
@@ -912,12 +912,12 @@
     "searchPlaceholder": "Vault doorzoeken...",
     "selectEmailDomain": "Selecteer e-maildomein",
     "separator": "Scheidingsteken",
-    "serviceUrl": "Website URL",
+    "serviceUrl": "Service-URL",
     "sort": {
       "alphabetical": "Alfabetisch (A-Z)",
       "newestFirst": "Nieuwste eerst",
       "oldestFirst": "Oudste eerst",
-      "title": "Sorteren op"
+      "title": "Sortering"
     },
     "switchBackToOriginalApp": "Ga terug naar de andere app om door te gaan.",
     "tags": "Labels",
@@ -958,7 +958,7 @@
       "copyLink": "Link kopiëren",
       "openLink": "Open link",
       "shareLink": "Link delen",
-      "title": "URL opties"
+      "title": "URL-opties"
     },
     "vaultSyncFailed": "Vault synchronisatie mislukt",
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
@@ -1011,7 +1011,7 @@
   "native": {
     "NSFaceIDUsageDescription": "AliasVault gebruikt Face ID om je versleutelingssleutel veilig op te slaan, waardoor je toegang krijgt tot je versleutelde gegevens met gezichtsherkenning.",
     "addPasskeySubtitle": "Passkey toevoegen aan bestaand item",
-    "aliasvaultIcon": "AliasVault pictogram",
+    "aliasvaultIcon": "AliasVault-pictogram",
     "attemptsWarning": "Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord {{count}} vaker invult.",
     "authRequired": "Authenticatie vereist",
     "authRequiredMessage": "Schakel biometrische ontgrendeling of een pincode in de AliasVault-app in om passkeys te gebruiken.",
@@ -1134,7 +1134,7 @@
       "attachPasskey": "Passkey toevoegen",
       "attachingToCredential": "Passkey toevoegen aan: {{serviceName}}",
       "confirmReplace": "Vervanging bevestigen",
-      "createFor": "Maak een nieuwe passkey voor",
+      "createFor": "Een nieuwe passkey aanmaken voor",
       "createNewPasskey": "Nieuwe passkey aanmaken",
       "replacingPasskey": "Passkey vervangen: {{displayName}}",
       "selectExistingLogin": "Toevoegen aan bestaande login:",
@@ -1143,7 +1143,7 @@
       "title": "Passkey aanmaken",
       "titleLabel": "Titel",
       "titlePlaceholder": "Voer een naam in voor deze passkey",
-      "unsupportedAlgorithm": "Deze website vereist een wachtwoord dat AliasVault niet ondersteunt."
+      "unsupportedAlgorithm": "Deze website vereist een type passkey dat AliasVault niet ondersteunt."
     },
     "helpText": "Passkeys worden aangemaakt op de website wanneer er om wordt gevraagd. Ze kunnen niet handmatig worden bewerkt. Om deze toegangssleutel te verwijderen, kun je deze verwijderen uit deze credential. Om deze passkey te vervangen of een nieuwe te maken, bezoek de website in kwestie en volg de instructies.",
     "passkey": "Passkey",
@@ -1154,7 +1154,7 @@
       "passkeyProviderOn": "Passkey provider ingeschakeld"
     },
     "site": "Website",
-    "useBrowserPasskey": "Gebruik browser passkey"
+    "useBrowserPasskey": "Browser-passkey gebruiken"
   },
   "settings": {
     "about": {
@@ -1173,7 +1173,7 @@
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
       "docsLink": "Bekijk hier meer Android specifieke informatie.",
       "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in Android. Volg de instructies hieronder om deze in te schakelen.",
-      "openAutofillSettings": "Open Autofill Instellingen",
+      "openAutofillSettings": "Open Autofill-instellingen",
       "showSearchText": "Toon zoektekst",
       "showSearchTextDescription": "Toon de zoektekst die AliasVault ontvangt van Android om te zoeken naar overeenkomende credentials",
       "step1": "1. Open Android Instellingen via de onderstaande knop en verander de \"Autofill preferred service\" naar \"AliasVault\"",
@@ -1214,17 +1214,17 @@
     "autoLockTimeoutDescription": "Vergrendel de vault automatisch na inactiviteit",
     "autoLockTimeoutHelp": "De vault zal alleen vergrendelen na de opgegeven periode van inactiviteit (geen automatisch invullen of extensie geopend). De vault wordt altijd vergrendeld wanneer de browser wordt afgesloten, ongeacht deze instelling.",
     "autofill": "Autofill & passkeys",
-    "autofillDisabledDescription": "Autofill suggesties zijn uitgeschakeld",
-    "autofillEnabled": "Autofill",
-    "autofillEnabledDescription": "Autofill suggesties verschijnen op login formulieren",
+    "autofillDisabledDescription": "Autofill-suggesties zijn uitgeschakeld",
+    "autofillEnabled": "Autofill inschakelen",
+    "autofillEnabledDescription": "Autofill-suggesties verschijnen op loginformulieren",
     "autofillMatching": "Autofill matching",
     "autofillMatchingDefault": "URL + subdomein + naam wildcard",
     "autofillMatchingMode": "Autofill matching modus",
     "autofillMatchingModeDescription": "Bepaalt op welke manier credentials worden beschouwd als matches en worden getoond als suggestie in de autofill popup voor een bepaalde website.",
     "autofillMatchingUrlExact": "Exacte URL-domein",
     "autofillMatchingUrlSubdomain": "URL + subdomein",
-    "autofillSettings": "Autofill instellingen",
-    "autofillSettingsDescription": "Schakel de autofill pop-up in of uit op webpagina's",
+    "autofillSettings": "Autofill-instellingen",
+    "autofillSettingsDescription": "De autofill pop-up op webpagina's in-/uitschakelen",
     "autofillSetup": {
       "alreadyConfigured": "Al geconfigureerd",
       "howToEnable": "Autofill & passkeys inschakelen:"
@@ -1253,13 +1253,13 @@
     "clipboardLocalOnlyDescription": "Houd gekopieerde inloggegevens op dit apparaat in plaats van ze te synchroniseren met andere Apple-apparaten via het universele klembord.",
     "clipboardLocalOnlyDisabledWarning": "Als dit uit staat, kunnen gekopieerde inloggegevens synchroniseren met je andere Apple-apparaten (Mac, iPad, enz.) via het universele klembord.",
     "contextMenuDescription": "Klik met de rechtermuisknop op invoervelden om AliasVault opties te zien",
-    "contextMenuSettings": "Context menu instellingen",
+    "contextMenuSettings": "Contextmenu-instellingen",
     "copyTotpOnFill": "TOTP-code kopiëren bij automatisch invullen",
     "copyTotpOnFillDescription": "Wanneer je autofill gebruikt met een credential voorzien van een 2FA code, wordt de 2FA-code automatisch naar het klembord gekopieerd, zodat je deze handmatig in het volgende veld kunt plakken.",
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
-    "customApiUrl": "API URL",
-    "customClientUrl": "Client URL",
+    "customApiUrl": "API-URL",
+    "customClientUrl": "Client-URL",
     "dark": "Donker",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
     "disabledForThisSite": "Uitgeschakeld voor deze site",
@@ -1327,7 +1327,7 @@
       "step4": "4. Schakel \"AliasVault\" in",
       "step5": "5. Schakel andere opties (bijvoorbeeld \"iCloud Passwords\") uit om conflicten te voorkomen"
     },
-    "keyboardShortcuts": "Snelkoppelingen",
+    "keyboardShortcuts": "Sneltoetsen",
     "language": "Taal",
     "languageSystemMessage": "Wijzig de app-taal via de app instellingen.",
     "light": "Licht",
@@ -1341,8 +1341,8 @@
     },
     "openSettings": "Open Instellingen",
     "openWebApp": "Web-app openen",
-    "passkeySettings": "Passkey instellingen",
-    "passkeysEnabled": "Toegangssleutels inschakelen",
+    "passkeySettings": "Passkey-instellingen",
+    "passkeysEnabled": "Passkeys inschakelen",
     "passwordConfirm": {
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
@@ -1390,7 +1390,7 @@
         "description": "Met deze optie kun je je vault volledig legen en tegelijkertijd je account en e-mail aliassen behouden. Gebruik deze optie als je alle geïmporteerde en aangemaakte credentials wilt verwijderen en opnieuw wilt beginnen."
       }
     },
-    "rightClickContextMenu": "Rechtermuisknop menu",
+    "rightClickContextMenu": "Rechtermuisknop contextmenu",
     "security": "Beveiliging",
     "securitySettings": {
       "activeSessions": {
@@ -1497,14 +1497,14 @@
         "changePasswordAndRotate": "Wachtwoord wijzigen en sleutels roteren",
         "optionRotateKeys": "Ook alle encryptiesleutels roteren",
         "optionRotateKeysDescription": "Alleen nodig als je vermoedt dat je sleutels zijn blootgesteld, bijvoorbeeld als je apparaat gecompromitteerd of gestolen is. Het versleutelt je kluis opnieuw en meldt alle andere apparaten af.",
-        "riskAfterwards": "Daarna log je opnieuw in op je andere apparaten en stel je opnieuw een pincode, toegangssleutel of biometrische ontgrendeling in.",
+        "riskAfterwards": "Daarna log je opnieuw in op je andere apparaten en stel je opnieuw een pincode, passkey of biometrische ontgrendeling in.",
         "riskBackup": "Exporteer eerst een back-up van je kluis (Instellingen > Importeren / Exporteren). Een sleutelrotatie-operatie kan niet ongedaan worden gemaakt.",
         "riskSignOut": "Laat je andere apparaten het synchroniseren afronden en log dan uit bij hen. Niet-gesynchroniseerde wijzigingen op apparaten die ingelogd blijven, gaan verloren."
       },
       "passkeyUnlock": {
-        "disableButton": "Passkey ontgrendeling uitschakelen",
+        "disableButton": "Passkey-ontgrendeling uitschakelen",
         "disabledDescription": "Als je de AliasVault pagina of het tabblad ververst, moet je je hoofdwachtwoord opnieuw invoeren. Met een passkey kun je je vault direct ontgrendelen. Wanneer ingeschakeld, is jouw hoofdwachtwoord lokaal versleuteld met behulp van de PRF-extensie van de passkey. Opmerking: de passkey zal alleen werken voor het huidige apparaat en de browser waar je deze hebt ingeschakeld.",
-        "enableButton": "Passkey ontgrendeling inschakelen",
+        "enableButton": "Passkey-ontgrendeling inschakelen",
         "enableErrorMessage": "Er is een fout opgetreden bij het inschakelen van Quick Vault Unlock. Probeer het (later) opnieuw.",
         "enabledDescription": "Je hoofdwachtwoord is versleuteld met de passkey (PRF) en lokaal opgeslagen. Wanneer je de AliasVault pagina of tabblad ververst, kun je je vault ontgrendelen met je passkey. Als je de passkey wilt uitschakelen, kun je dat doen met de onderstaande knop. Je hoofdwachtwoord zal nog steeds werken om de vault te ontgrendelen.",
         "experimentalWarning": "Deze functie wordt momenteel ondersteund door AliasVault browserextensie en iOS app. Android ondersteuning komt binnenkort. Als je problemen ondervindt, kunt je deze functie op elk gewenst moment uitschakelen.",
@@ -1529,7 +1529,7 @@
     "selectLanguage": "Selecteer taal",
     "serverConfiguration": "Serverconfiguratie",
     "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
-    "serverUrl": "Server URL",
+    "serverUrl": "Server-URL",
     "serverVersion": "Server versie",
     "sessionsAndLogs": "Sessies & logbestanden",
     "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
@@ -1549,11 +1549,11 @@
       "deleteAllLogosSuccessMessage": "Het logo van {{count}} items is verwijderd.",
       "itemsWithAttachmentsLabel": "Items met bijlagen",
       "itemsWithLogosLabel": "Items met een logo",
-      "logoManagementDescription": "Logo's worden opgehaald van de website van elk item. Je kunt elk logo verwijderen om ruimte terug te winnen, of ze opnieuw downloaden om verbeterde versies op te halen.",
+      "logoManagementDescription": "Logo's worden gehaald van het favicon van de website van elk item. Je kunt elk logo verwijderen om ruimte terug te winnen, of ze opnieuw downloaden om verbeterde versies te krijgen.",
       "logoManagementTitle": "Beheer logo's",
       "pageDescription": "Bekijk een schatting van de grootte van je vault. Voor de beste synchronisatie prestaties wordt aangeraden om je vault klein te houden en items te verwijderen die je niet meer nodig hebt.",
       "redownloadAllLogosButton": "Alle logo's opnieuw downloaden",
-      "redownloadAllLogosConfirmMessage": "Dit haalt het logo opnieuw op voor elke credential met een website-URL, en vervangt het bestaande logo. Afhankelijk van de grootte van je vault kan dit even duren. Doorgaan?",
+      "redownloadAllLogosConfirmMessage": "Dit haalt het favicon opnieuw op voor elk inloggegeven met een website-URL, ter vervanging van het bestaande logo. Afhankelijk van de grootte van je kluis kan dit even duren. Doorgaan?",
       "redownloadAllLogosConfirmTitle": "Alle logo's opnieuw downloaden?",
       "redownloadAllLogosSuccessMessage": "Het logo van {{count}} items is bijgewerkt.",
       "serverTotalDescription": "De exacte grootte van je versleutelde vault zoals opgeslagen op de server, inclusief bijlagen en logo's.",
@@ -1587,9 +1587,9 @@
     "useDefault": "Standaard gebruiken",
     "validation": {
       "apiUrlInvalid": "Voer een geldige API URL in",
-      "apiUrlRequired": "API URL is vereist",
-      "clientUrlInvalid": "Voer een geldige client URL in",
-      "clientUrlRequired": "Client URL is vereist"
+      "apiUrlRequired": "API-URL is vereist",
+      "clientUrlInvalid": "Voer een geldige client-URL in",
+      "clientUrlRequired": "Client-URL is vereist"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "vaultUnlockSettings": {
@@ -1724,9 +1724,9 @@
     "footer": {
       "copyrightText": "Alle rechten voorbehouden.",
       "tipCreateShortcut": "Tip: Gebruik de sneltoets g+c (go create) om snel een nieuwe alias aan te maken.",
-      "tipFindShortcut": "Tip: Gebruik de g+f (ga zoeken) sneltoets om het zoekveld te focussen.",
-      "tipHomeShortcut": "Tip: Gebruik de g+h (ga home) sneltoets om naar de startpagina te gaan.",
-      "tipLockShortcut": "Tip: Gebruik de g+l (go lock) sneltoets om de vault te vergrendelen."
+      "tipFindShortcut": "Tip: Gebruik de sneltoets g+f (go find) om het zoekveld te focussen.",
+      "tipHomeShortcut": "Tip: Gebruik de sneltoets g+h (go home) om naar de startpagina te gaan.",
+      "tipLockShortcut": "Tip: Gebruik de sneltoets g+l (go lock) om de vault te vergrendelen."
     },
     "topMenu": {
       "betaLabel": "BETA",
