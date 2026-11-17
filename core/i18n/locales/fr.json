@@ -819,7 +819,7 @@
       "chooseValues": "Valeurs du champ à conserver :",
       "combined": "Tous les autres champs sont combinés dans l'élément fusionné.",
       "differentFolders": "Les éléments ne peuvent être fusionnés que s'ils se trouvent dans votre propre coffre ou dans le même dossier partagé.",
-      "differentTypes": "These item types can't be merged with each other: {{types}}."
+      "differentTypes": "Ces types d'objets ne peuvent pas être fusionnés entre eux : {{types}}."
     },
     "noAttachments": "Aucune pièce jointe disponible.",
     "noEmailsYet": "Pas encore d'e-mails reçus.",
@@ -927,7 +927,7 @@
       "itemCreated": "Élément créé avec succès",
       "itemDeleted": "Élément supprimé avec succès",
       "itemUpdated": "Élément mis à jour avec succès",
-      "itemsMerged": "Items merged successfully",
+      "itemsMerged": "Eléments fusionnés avec succès",
       "passwordCopied": "Mot de passe copié dans le presse-papiers",
       "totpCodeCopied": "Code à usage unique copié dans le presse-papiers",
       "urlCopied": "URL copiée dans le presse-papier",
