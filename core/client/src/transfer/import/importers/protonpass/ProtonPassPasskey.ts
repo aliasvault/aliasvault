@@ -5,15 +5,17 @@ import { isJsonObject, readStringOrNull, type JsonObject } from '../../readers/J
 import { readMessagePack } from '../../readers/MessagePack';
 import { buildPasskey, type PasskeyKeyConverter } from '../../readers/PasskeyImport';
 
+import type { JwkPair } from '../../../../rust/RustCoreTypes';
 import type { ImportedPasskey } from '../../models/ImportedPasskey';
 
 /** The only version of the stored passkey this reads. */
 const FORMAT_VERSION = 1;
 
-/** COSE key parameters of an EC2 key (RFC 9053): the curve, with 1 for P-256, and the private scalar. */
+/** COSE key parameters (RFC 9053): the curve, and the private key (the scalar of an EC2 key, the seed of an OKP key). */
 const COSE_CURVE = -1;
-const COSE_PRIVATE_SCALAR = -4;
+const COSE_PRIVATE_KEY = -4;
 const COSE_CURVE_P256 = 1;
+const COSE_CURVE_ED25519 = 6;
 
 /**
  * Read one entry of `content.passkeys`. Its base64 `content` is MessagePack `{ c: <bytes>, v: 1 }`, where `c` is
@@ -21,7 +23,7 @@ const COSE_CURVE_P256 = 1;
  * @param passkey - The passkey JSON
  * @param keys - Converts the key
  * @returns The passkey
- * @throws {ImportException} When the content is missing, of another version or holds no P-256 key.
+ * @throws {ImportException} When the content is missing, of another version or holds no P-256 or Ed25519 key.
  */
 export async function readProtonPassPasskey(passkey: JsonObject, keys: PasskeyKeyConverter): Promise<ImportedPasskey> {
   const content = readStringOrNull(passkey, 'content');
@@ -35,7 +37,7 @@ export async function readProtonPassPasskey(passkey: JsonObject, keys: PasskeyKe
     RpId: text(stored, 'rid'),
     CredentialId: bytesOf(member(stored, 'cid')),
     UserHandle: bytesOf(member(stored, 'uhd')),
-    Keys: await keys.fromP256Scalar(privateScalar(member(stored, 'key'))),
+    Keys: await storedKeyPair(member(stored, 'key'), keys),
     PrfSecret: isJsonObject(hmacSecret) ? bytesOf(member(hmacSecret, 'cred_with_uv')) : null,
     DisplayNames: [text(stored, 'udn'), text(stored, 'un'), readStringOrNull(passkey, 'userDisplayName'), readStringOrNull(passkey, 'userName')],
   });
@@ -60,11 +62,12 @@ export function readStoredPasskey(content: Uint8Array): JsonObject {
 }
 
 /**
- * The private scalar of a stored COSE key, which must be an EC2 key on P-256.
+ * The key pair of a stored COSE key, which must be an EC2 key on P-256 or an OKP key on Ed25519.
  * @param key - The stored key
- * @returns The scalar
+ * @param keys - Converts the private key
+ * @returns The key pair
  */
-function privateScalar(key: unknown): Uint8Array {
+async function storedKeyPair(key: unknown, keys: PasskeyKeyConverter): Promise<JwkPair> {
   const parameters = isJsonObject(key) && Array.isArray(member(key, 'par')) ? member(key, 'par') as unknown[] : [];
   /**
    * The value of a key parameter, each stored as a `[label, value]` pair of tagged objects.
@@ -82,15 +85,20 @@ function privateScalar(key: unknown): Uint8Array {
 
   // An integer is stored as the 16 little-endian bytes of an i128.
   const curveValue = member(parameter(COSE_CURVE) ?? {}, 'c');
-  const curve = isJsonObject(curveValue) ? bytesOf(member(curveValue, 'inner')) : null;
-  const keyType = isJsonObject(key) ? member(key, 'kty') : null;
-  const isP256 = isJsonObject(keyType) && member(keyType, 'c') === 'EC2' && curve !== null && curve[0] === COSE_CURVE_P256 && curve.subarray(1).every(byte => byte === 0);
-  const scalarValue = parameter(COSE_PRIVATE_SCALAR);
-  const scalar = scalarValue && member(scalarValue, 't') === 'bytes' ? bytesOf(member(scalarValue, 'c')) : null;
-  if (!isP256 || !scalar) {
-    throw new ImportException(ImportStage.Parse, 'The Proton Pass passkey key is not a P-256 private key');
+  const curveBytes = isJsonObject(curveValue) ? bytesOf(member(curveValue, 'inner')) : null;
+  const curve = curveBytes && curveBytes.length > 0 && curveBytes.subarray(1).every(byte => byte === 0) ? curveBytes[0] : null;
+  const keyTypeValue = isJsonObject(key) ? member(key, 'kty') : null;
+  const keyType = isJsonObject(keyTypeValue) ? member(keyTypeValue, 'c') : null;
+  const privateValue = parameter(COSE_PRIVATE_KEY);
+  const privateKey = privateValue && member(privateValue, 't') === 'bytes' ? bytesOf(member(privateValue, 'c')) : null;
+
+  if (privateKey && keyType === 'EC2' && curve === COSE_CURVE_P256) {
+    return keys.fromP256Scalar(privateKey);
   }
-  return scalar;
+  if (privateKey && keyType === 'OKP' && curve === COSE_CURVE_ED25519) {
+    return keys.fromEd25519Seed(privateKey);
+  }
+  throw new ImportException(ImportStage.Parse, 'The Proton Pass passkey key is not a P-256 or Ed25519 private key');
 }
 
 /**

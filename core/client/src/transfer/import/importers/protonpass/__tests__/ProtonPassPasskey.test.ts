@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { base64UrlToBytes, bytesToBase64 } from '../../../../../utilities/Base64';
-import { generatePasskeyKey, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
+import { generateEd25519Seed, generatePasskeyKey, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
 import { readProtonPassPasskey, readStoredPasskey } from '../ProtonPassPasskey';
 
 import { protonPasskeyContent, protonStoredPasskey } from './protonPasskeyFixtures';
@@ -24,7 +24,7 @@ describe('ProtonPassPasskey', () => {
     expect(stored.ext).toEqual({ hmac_secret: { cred_with_uv: [1, 2, 3, 4], cred_without_uv: [5, 6, 7, 8] } });
 
     // The vector's key holds no P-256 scalar, so the passkey is refused instead of stored without a key.
-    await expect(readProtonPassPasskey({ content: bytesToBase64(PROTON_VECTOR) }, testPasskeyKeys)).rejects.toThrow('not a P-256 private key');
+    await expect(readProtonPassPasskey({ content: bytesToBase64(PROTON_VECTOR) }, testPasskeyKeys)).rejects.toThrow('not a P-256 or Ed25519 private key');
   });
 
   it('reads a passkey with its key, PRF secret and names', async () => {
@@ -45,9 +45,20 @@ describe('ProtonPassPasskey', () => {
 
   it('refuses content it cannot read', async () => {
     const { scalar } = await generatePasskeyKey();
+    const seed = generateEd25519Seed();
+    /**
+     * A stored passkey with another key type than its curve calls for.
+     * @param stored - The stored passkey
+     * @param kty - The key type to write
+     * @returns The stored passkey
+     */
+    const withKeyType = (stored: object, kty: string): object => ({ ...stored, key: { ...(stored as { key: object }).key, kty: { t: 'assign', c: kty } } });
     const unreadable = [
       { content: protonPasskeyContent(protonStoredPasskey(scalar), 2) },
       { content: protonPasskeyContent(protonStoredPasskey(scalar, 2)) },
+      { content: protonPasskeyContent(withKeyType(protonStoredPasskey(seed, 6), 'EC2')) },
+      { content: protonPasskeyContent(withKeyType(protonStoredPasskey(scalar), 'OKP')) },
+      { content: protonPasskeyContent(protonStoredPasskey(seed.subarray(0, 31), 6)) },
       { content: protonPasskeyContent(protonStoredPasskey(new Uint8Array(0))) },
       { content: protonPasskeyContent({ ...protonStoredPasskey(scalar), cid: [] }) },
       { content: bytesToBase64(PROTON_VECTOR.subarray(0, 300)) },
