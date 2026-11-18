@@ -914,9 +914,16 @@
     "separator": "Skilletegn",
     "serviceUrl": "Tjeneste-URL",
     "sort": {
-      "alphabetical": "Alfabetisk (A-Å)",
-      "newestFirst": "Nyeste først",
-      "oldestFirst": "Ældste først",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Navn",
       "title": "Sorter efter"
     },
     "switchBackToOriginalApp": "Skift tilbage til den oprindelige app for at fortsætte.",
