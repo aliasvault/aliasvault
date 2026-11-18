@@ -914,9 +914,16 @@
     "separator": "구분자",
     "serviceUrl": "서비스 URL",
     "sort": {
-      "alphabetical": "가나다순 (A-Z)",
-      "newestFirst": "최신순",
-      "oldestFirst": "오래된 순",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "이름",
       "title": "정렬 기준"
     },
     "switchBackToOriginalApp": "계속하려면 원래 앱으로 돌아가세요.",
