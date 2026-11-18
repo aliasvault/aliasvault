@@ -82,7 +82,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
     addField(FieldKey.AliasBirthdate, alias.BirthDate ? formatDateOnly(alias.BirthDate) : null);
   }
 
-  const totpCode = credential.TwoFactorSecret ? buildTotpCode(credential.TwoFactorSecret, itemId, row) : null;
+  const totpCode = credential.TwoFactorSecret ? buildTotpCode(credential.TwoFactorSecret, credential.TwoFactorName ?? '', itemId, row) : null;
   if (totpCode) {
     item.TotpCodes.push(totpCode);
   }
@@ -119,13 +119,14 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
 /**
  * Build the TOTP code of an imported 2FA secret. An invalid secret is logged and skipped so the item itself still imports.
  * @param secret - The bare secret or otpauth:// URI
+ * @param name - The name the source gave the code, may be blank
  * @param itemId - The item id
  * @param row - The row timestamps
  * @returns The TOTP code, or null when the secret is invalid
  */
-function buildTotpCode(secret: string, itemId: string, row: Pick<TotpCodeEntity, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): TotpCodeEntity | null {
+function buildTotpCode(secret: string, name: string, itemId: string, row: Pick<TotpCodeEntity, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): TotpCodeEntity | null {
   try {
-    const sanitized = sanitizeTotpSecretKey(secret);
+    const sanitized = sanitizeTotpSecretKey(secret, name);
     return { Id: crypto.randomUUID(), ItemId: itemId, Name: sanitized.name, SecretKey: sanitized.secretKey, Algorithm: sanitized.algorithm, Digits: sanitized.digits, Period: sanitized.period, ...row };
   } catch (error) {
     logExpected('Error importing TOTP code', error);

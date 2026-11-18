@@ -5,7 +5,7 @@ import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { mapItemType, parseUrls } from '../../readers/FieldParsers';
 
-import { getProtonPassLoginUrls, parseProtonPassAutofillUrls } from './ProtonPassJson';
+import { applyProtonPassContent, getProtonPassLoginUrls, isProtonPassDefaultVault, parseProtonPassAutofillUrls, parseProtonPassCsvNoteContent } from './ProtonPassJson';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 
@@ -29,7 +29,11 @@ const ITEM_TYPES = {
   // A Proton Pass alias is an email alias, not an identity, so it imports as a standard Login type.
   alias: ItemTypes.Login,
   creditcard: ItemTypes.CreditCard,
+  identity: ItemTypes.Alias,
 };
+
+/** The row types whose note column holds their content as JSON. */
+const JSON_NOTE_TYPES: ReadonlySet<string> = new Set(['creditcard', 'identity']);
 
 /**
  * Import a Proton Pass CSV export.
@@ -37,18 +41,27 @@ const ITEM_TYPES = {
  * @returns The imported credentials
  */
 export function importProtonPassCsv(fileContent: string): ImportedCredential[] {
-  return readImportCsv(fileContent, COLUMNS).map(record => ({
-    ServiceName: record.name,
-    ServiceUrls: readUrls(record.url, record.autofillUrls),
-    Email: record.email,
-    Username: record.username,
-    Password: record.password,
-    Notes: record.note,
-    TwoFactorSecret: record.totp,
-    // The vault becomes the folder.
-    FolderPath: nullIfBlank(record.vault),
-    ItemType: mapItemType(record.type, ITEM_TYPES),
-  }));
+  return readImportCsv(fileContent, COLUMNS).map(record => {
+    const credential: ImportedCredential = {
+      ServiceName: record.name,
+      ServiceUrls: readUrls(record.url, record.autofillUrls),
+      Email: record.email,
+      Username: record.username,
+      Password: record.password,
+      Notes: record.note,
+      TwoFactorSecret: record.totp,
+      // Every vault except the default one becomes a folder, as in the .zip import.
+      FolderPath: isProtonPassDefaultVault(record.vault) ? null : nullIfBlank(record.vault),
+      ItemType: mapItemType(record.type, ITEM_TYPES),
+    };
+
+    const noteContent = JSON_NOTE_TYPES.has(record.type.toLowerCase()) ? parseProtonPassCsvNoteContent(record.note) : null;
+    if (noteContent) {
+      credential.Notes = nullIfBlank(noteContent.Note);
+      applyProtonPassContent(credential, record.type, noteContent.Content);
+    }
+    return credential;
+  });
 }
 
 /**

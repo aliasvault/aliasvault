@@ -18,6 +18,8 @@ export type ImportedCredential = {
   Email?: string | null;
   /** 2FA secret key, either bare or as an otpauth:// URI. */
   TwoFactorSecret?: string | null;
+  /** Name of the 2FA code; when blank, the name comes from the otpauth:// URI label. */
+  TwoFactorName?: string | null;
   Notes?: string | null;
   CreatedAt?: Date | null;
   UpdatedAt?: Date | null;

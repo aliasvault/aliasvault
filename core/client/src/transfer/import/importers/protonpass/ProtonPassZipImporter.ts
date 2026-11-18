@@ -1,4 +1,4 @@
-import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
+import { FieldTypes, ItemTypes, type FieldType } from '@aliasvault/models/vault';
 
 import { fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
 import { buildFolderPath, type FolderNode } from '../../../shared/FolderPaths';
@@ -9,22 +9,21 @@ import { mapItemType } from '../../readers/FieldParsers';
 import { readStringAtPath } from '../../readers/JsonReader';
 import { addPasskeys, rustPasskeyKeys, type PasskeyKeyConverter, type PendingPasskeys } from '../../readers/PasskeyImport';
 
-import { ProtonPassItemStates, getProtonPassLoginUrls, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassContent, type ProtonPassItem } from './ProtonPassJson';
+import { ProtonPassItemStates, applyProtonPassContent, getProtonPassLoginUrls, isProtonPassDefaultVault, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassItem } from './ProtonPassJson';
 import { readProtonPassPasskey } from './ProtonPassPasskey';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
-import type { ImportedCreditcard } from '../../models/ImportedCreditcard';
 import type { ImportFileResult } from '../../models/ImportFileResult';
 
 const DATA_JSON_PATH = 'Proton Pass/data.json';
 const ENCRYPTED_DATA_PATH = 'Proton Pass/data.pgp';
 const FILES_PATH = 'Proton Pass/files/';
 
-/** The default vault; its items go to the root folder instead of a "Personal" folder. */
-const DEFAULT_VAULT_NAME = 'personal';
-
 /** The ".<hex export id>" Proton Pass inserts before the extension of an exported attachment name. */
 const EXPORT_ID_PATTERN = /\.[0-9a-f]+(\.[^.]+)?$/;
+
+/** The "yyyy-MM-dd" date of a timestamp field. */
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /** A Proton Pass alias is an email alias, not an identity, so it imports as a Login. */
 const ITEM_TYPES = {
@@ -54,7 +53,7 @@ export async function importProtonPassZip(archiveBytes: Uint8Array, keys: Passke
   }
 
   const vaults = [...exportData.Vaults.values()];
-  const rootVault = vaults.find(vault => vault.Name?.toLowerCase() === DEFAULT_VAULT_NAME);
+  const rootVault = vaults.find(vault => isProtonPassDefaultVault(vault.Name));
   const entries = vaults.flatMap(vault => {
     const foldersById = new Map<string, FolderNode>(vault.Folders.map(folder => [folder.FolderId ?? '', folder]));
     return vault.Items.map(element => ({ element, vaultPath: vault === rootVault ? null : vault.Name, foldersById }));
@@ -117,75 +116,44 @@ function convertItem(item: ProtonPassItem, folderPath: string | null): ImportedC
       credential.Username = item.AliasEmail;
       break;
     case 'creditcard':
-      if (content) {
-        credential.Creditcard = {
-          CardholderName: nullIfBlank(content.CardholderName),
-          Number: nullIfBlank(content.Number),
-          Cvv: nullIfBlank(content.VerificationNumber),
-          Pin: nullIfBlank(content.Pin),
-          ...parseExpirationDate(content.ExpirationDate),
-        };
-      }
-      break;
     case 'identity':
       if (content) {
-        applyIdentity(credential, content);
+        applyProtonPassContent(credential, data.Type, content);
       }
       break;
   }
 
   for (const field of data.ExtraFields ?? []) {
-    const value = field.Data?.Content;
-    if (isBlank(field.FieldName) || isBlank(value)) {
+    const value = field.Data?.Content ?? field.Data?.TotpUri ?? field.Data?.Timestamp ?? null;
+    if (isBlank(value)) {
       continue;
     }
 
-    // A TOTP field, or any field holding an otpauth:// URI, fills the 2FA slot when the login has none.
+    // A TOTP field, or any field holding an otpauth:// URI, fills the 2FA slot when the login has none, named after the field.
     const type = field.Type?.toLowerCase();
     if ((type === 'totp' || value.toLowerCase().startsWith('otpauth://')) && isBlank(credential.TwoFactorSecret)) {
       credential.TwoFactorSecret = value;
+      credential.TwoFactorName = nullIfBlank(field.FieldName);
       continue;
     }
 
-    addCustomField(credential, field.FieldName, value, type === 'hidden' ? FieldTypes.Hidden : FieldTypes.Text);
+    addCustomField(credential, field.FieldName, value, extraFieldType(type, value));
   }
 
   return credential;
 }
 
 /**
- * Split a Proton Pass expiration, written as "YYYY-MM" (or "MMYY" by older versions), into month and year.
- * @param expirationDate - The expiration text
- * @returns The month and year, empty when the format is not recognised
+ * The AliasVault type of a custom field; a timestamp that is not a "yyyy-MM-dd" date stays text.
+ * @param type - The Proton Pass field type, lowercase
+ * @param value - The field value
+ * @returns The field type
  */
-function parseExpirationDate(expirationDate: string | null): Pick<ImportedCreditcard, 'ExpiryMonth' | 'ExpiryYear'> {
-  const value = expirationDate?.trim() ?? '';
-  const yearMonth = /^(\d{4})-(\d{1,2})$/.exec(value);
-  if (yearMonth) {
-    return { ExpiryYear: yearMonth[1], ExpiryMonth: yearMonth[2].padStart(2, '0') };
+function extraFieldType(type: string | undefined, value: string): FieldType {
+  if (type === 'hidden') {
+    return FieldTypes.Hidden;
   }
-  const monthYear = /^(\d{2})(\d{2})$/.exec(value);
-  return monthYear ? { ExpiryMonth: monthYear[1], ExpiryYear: `20${monthYear[2]}` } : {};
-}
-
-/**
- * Take the name and email of an identity; without first and last name, the full name splits on its first space.
- * @param credential - The credential to fill
- * @param content - The identity content
- */
-function applyIdentity(credential: ImportedCredential, content: ProtonPassContent): void {
-  let firstName = content.FirstName;
-  let lastName = content.LastName;
-  if (isBlank(firstName) && isBlank(lastName) && !isBlank(content.FullName)) {
-    const [first, ...rest] = content.FullName.split(' ').filter(part => part.length > 0);
-    firstName = first ?? null;
-    lastName = rest.length > 0 ? rest.join(' ') : null;
-  }
-
-  credential.Alias = { FirstName: nullIfBlank(firstName), LastName: nullIfBlank(lastName) };
-  if (!isBlank(content.Email)) {
-    credential.Email = content.Email;
-  }
+  return type === 'timestamp' && DATE_ONLY_PATTERN.test(value) ? FieldTypes.Date : FieldTypes.Text;
 }
 
 /**
