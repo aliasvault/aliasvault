@@ -914,9 +914,16 @@
     "separator": "Separator",
     "serviceUrl": "URL serviciu",
     "sort": {
-      "alphabetical": "Alfabetic (A-Z)",
-      "newestFirst": "Cele mai noi primele",
-      "oldestFirst": "Cele mai vechi primele",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Nume",
       "title": "Filtrează după"
     },
     "switchBackToOriginalApp": "Revino la aplicația inițială pentru a continua.",
