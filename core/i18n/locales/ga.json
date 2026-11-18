@@ -914,9 +914,16 @@
     "separator": "Deighilteoir",
     "serviceUrl": "URL na seirbhíse",
     "sort": {
-      "alphabetical": "Aibítre (AZ)",
-      "newestFirst": "Is nua ar dtús",
-      "oldestFirst": "Is sine ar dtús",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Ainm",
       "title": "Sórtáil de réir"
     },
     "switchBackToOriginalApp": "Téigh ar ais chuig an aip bhunaidh le leanúint ar aghaidh.",
