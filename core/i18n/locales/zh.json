@@ -914,9 +914,16 @@
     "separator": "分隔符",
     "serviceUrl": "服务 URL",
     "sort": {
-      "alphabetical": "字母顺序（A-Z）",
-      "newestFirst": "最新在前",
-      "oldestFirst": "最早在前",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "名称",
       "title": "排序方式"
     },
     "switchBackToOriginalApp": "切换回原应用以继续。",
