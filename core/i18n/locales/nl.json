@@ -914,9 +914,16 @@
     "separator": "Scheidingsteken",
     "serviceUrl": "Service-URL",
     "sort": {
-      "alphabetical": "Alfabetisch (A-Z)",
-      "newestFirst": "Nieuwste eerst",
-      "oldestFirst": "Oudste eerst",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Naam",
       "title": "Sortering"
     },
     "switchBackToOriginalApp": "Ga terug naar de andere app om door te gaan.",
