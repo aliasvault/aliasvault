@@ -1,4 +1,4 @@
-import { passkeyP256ScalarToJwk, passkeyPkcs8ToJwk } from '../../../rust/RustCore';
+import { passkeyEd25519SeedToJwk, passkeyP256ScalarToJwk, passkeyPkcs8ToJwk } from '../../../rust/RustCore';
 import { isBlank } from '../../shared/StringUtils';
 import { ImportException, ImportStage } from '../models/ImportException';
 
@@ -17,16 +17,18 @@ const PRF_SECRET_BYTES = 32;
  * Converts the private key of another provider's passkey to the JWK pair the vault stores.
  */
 export type PasskeyKeyConverter = {
-  /** From a PKCS#8 DER private key (P-256 or RSA). */
+  /** From a PKCS#8 DER private key (P-256, Ed25519 or RSA). */
   fromPkcs8(pkcs8Der: Uint8Array): Promise<JwkPair>;
   /** From a raw P-256 private scalar. */
   fromP256Scalar(scalar: Uint8Array): Promise<JwkPair>;
+  /** From a raw Ed25519 private key (its 32-byte seed). */
+  fromEd25519Seed(seed: Uint8Array): Promise<JwkPair>;
 };
 
 /**
  * The key converter of the Rust core, which every importer uses unless a test passes its own.
  */
-export const rustPasskeyKeys: PasskeyKeyConverter = { fromPkcs8: passkeyPkcs8ToJwk, fromP256Scalar: passkeyP256ScalarToJwk };
+export const rustPasskeyKeys: PasskeyKeyConverter = { fromPkcs8: passkeyPkcs8ToJwk, fromP256Scalar: passkeyP256ScalarToJwk, fromEd25519Seed: passkeyEd25519SeedToJwk };
 
 /**
  * What a provider's export says about one passkey.

@@ -86,9 +86,12 @@ export interface IRustCore {
 
   createVaultSyncSession(requestJson: string): Promise<IVaultSyncSession>;
 
-  /** The key pair the vault stores for a PKCS#8 DER passkey private key (P-256 or RSA). */
+  /** The key pair the vault stores for a PKCS#8 DER passkey private key (P-256, Ed25519 or RSA). */
   passkeyPkcs8ToJwk(pkcs8Der: Uint8Array): Promise<JwkPair>;
 
   /** The key pair the vault stores for a raw P-256 private scalar. */
   passkeyP256ScalarToJwk(scalar: Uint8Array): Promise<JwkPair>;
+
+  /** The key pair the vault stores for a raw Ed25519 private key (its 32-byte seed). */
+  passkeyEd25519SeedToJwk(seed: Uint8Array): Promise<JwkPair>;
 }

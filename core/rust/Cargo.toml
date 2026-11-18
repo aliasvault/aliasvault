@@ -98,8 +98,8 @@ usvg = { version = "0.49", default-features = false, features = ["writer"], opti
 # Image dimensions from file headers, to bound what embedded logo images decode to (already a usvg dependency)
 imagesize = { version = "0.15", optional = true }
 
-# Ed25519 account signing keys
-ed25519-dalek = { version = "2", default-features = false, features = ["std", "zeroize"] }
+# Ed25519 account signing keys, and imported Ed25519 passkeys (PKCS#8)
+ed25519-dalek = { version = "2", default-features = false, features = ["std", "zeroize", "pkcs8"] }
 
 # rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
