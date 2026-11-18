@@ -914,9 +914,16 @@
     "separator": "Separator",
     "serviceUrl": "Adres URL usługi",
     "sort": {
-      "alphabetical": "Alfabetycznie (A-Z)",
-      "newestFirst": "Od najnowszych",
-      "oldestFirst": "Od najstarszych",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Nazwa",
       "title": "Sortuj według"
     },
     "switchBackToOriginalApp": "Wróć do oryginalnej aplikacji, aby kontynuować.",
