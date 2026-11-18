@@ -914,15 +914,15 @@
     "separator": "Scheidingsteken",
     "serviceUrl": "Service-URL",
     "sort": {
-      "dateCreated": "Date created",
+      "dateCreated": "Datum aangemaakt",
       "groups": {
-        "last30Days": "Last 30 days",
-        "last7Days": "Last 7 days",
-        "older": "Older",
-        "today": "Today"
+        "last30Days": "Afgelopen 30 dagen",
+        "last7Days": "Afgelopen 7 dagen",
+        "older": "Eerder",
+        "today": "Vandaag"
       },
-      "lastModified": "Last modified",
-      "lastUsed": "Last used",
+      "lastModified": "Laatst gewijzigd",
+      "lastUsed": "Laatst gebruikt",
       "name": "Naam",
       "title": "Sortering"
     },
