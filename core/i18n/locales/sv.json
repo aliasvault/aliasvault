@@ -914,9 +914,16 @@
     "separator": "Avskiljare",
     "serviceUrl": "Tjänstens webbadress",
     "sort": {
-      "alphabetical": "Alfabetiskt (A-Z)",
-      "newestFirst": "Nyast först",
-      "oldestFirst": "Äldst först",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Namn",
       "title": "Sortera efter"
     },
     "switchBackToOriginalApp": "Byt tillbaka till den ursprungliga appen för att fortsätta.",
