@@ -914,9 +914,16 @@
     "separator": "Elválasztó",
     "serviceUrl": "Szolgáltatási webcím",
     "sort": {
-      "alphabetical": "Betűrendben (A-Z)",
-      "newestFirst": "Legújabb elől",
-      "oldestFirst": "Legrégebbi elől",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Név",
       "title": "Rendezés"
     },
     "switchBackToOriginalApp": "Váltson át az eredeti app-ra a folytatáshoz.",
