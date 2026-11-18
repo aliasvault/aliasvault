@@ -42,14 +42,13 @@ const SORT_ORDER_PARTS: Record<CredentialSortOrder, { field: ItemSortField; dire
 
 /**
  * The date groups of the last used and last modified sorts, newest first, with their translation keys.
- * Only an item that was never used has no date, and goes in the "never" group.
+ * An item without a recorded use goes in "older".
  */
 export const RECENCY_GROUPS = {
   today: 'items.sort.groups.today',
   last7Days: 'items.sort.groups.last7Days',
   last30Days: 'items.sort.groups.last30Days',
   older: 'items.sort.groups.older',
-  never: 'common.never',
 } as const;
 
 /**
@@ -93,7 +92,7 @@ export function nextSortOrder(current: CredentialSortOrder, field: ItemSortField
 }
 
 /**
- * Sort entries in the given order, as a new array. Items that were never used count as the least recently used.
+ * Sort entries in the given order, as a new array. Items without a recorded use count as the least recently used.
  * @param entries - The entries to sort
  * @param order - The sort order
  * @param getItem - Reads the item of an entry
@@ -135,7 +134,7 @@ export function recencyGroupStarts<T>(entries: readonly T[], order: CredentialSo
   let previous: RecencyGroup | null = null;
   return entries.map(entry => {
     const date = sortDate(getItem(entry), field);
-    const group = date ? recencyGroup(date, reference) : 'never';
+    const group = date ? recencyGroup(date, reference) : 'older';
     const starts = group === previous ? null : group;
     previous = group;
     return starts;
@@ -148,7 +147,7 @@ export function recencyGroupStarts<T>(entries: readonly T[], order: CredentialSo
  * @param reference - The moment to group against
  * @returns The group
  */
-export function recencyGroup(value: string, reference: Date): Exclude<RecencyGroup, 'never'> {
+export function recencyGroup(value: string, reference: Date): RecencyGroup {
   const date = fromStandardFormat(value);
   const days = Math.round((startOfDay(reference) - startOfDay(date)) / 86400000);
   if (days <= 0) {
@@ -161,7 +160,7 @@ export function recencyGroup(value: string, reference: Date): Exclude<RecencyGro
 }
 
 /**
- * The date an item sorts on for a date field, or an empty string for an item that was never used.
+ * The date an item sorts on for a date field, or an empty string for an item without a recorded use.
  */
 function sortDate(item: SortableItem, field: Exclude<ItemSortField, 'name'>): string {
   switch (field) {

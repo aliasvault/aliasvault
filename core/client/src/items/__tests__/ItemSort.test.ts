@@ -95,10 +95,10 @@ describe('recencyGroupStarts', () => {
     expect(recencyGroupStarts([...sorted].reverse(), CredentialSortOrder.RecentlyUsedLast, entry => entry, REFERENCE)).toEqual(['older', null, 'last7Days', 'today', null]);
   });
 
-  it('groups never used items apart when sorted on last use', () => {
-    const neverUsed = item('x', daysAgo(1), daysAgo(1));
-    expect(recencyGroupStarts([sorted[0], neverUsed], CredentialSortOrder.RecentlyUsedFirst, entry => entry, REFERENCE)).toEqual(['today', 'never']);
-    expect(recencyGroupStarts([sorted[0], neverUsed], CredentialSortOrder.RecentlyModifiedFirst, entry => entry, REFERENCE)).toEqual(['today', 'last7Days']);
+  it('groups items without a recorded use as older when sorted on last use', () => {
+    const unused = item('x', daysAgo(1), daysAgo(1));
+    expect(recencyGroupStarts([sorted[0], sorted[3], unused], CredentialSortOrder.RecentlyUsedFirst, entry => entry, REFERENCE)).toEqual(['today', 'older', null]);
+    expect(recencyGroupStarts([sorted[0], unused], CredentialSortOrder.RecentlyModifiedFirst, entry => entry, REFERENCE)).toEqual(['today', 'last7Days']);
   });
 
   it('has no groups for the other fields', () => {
