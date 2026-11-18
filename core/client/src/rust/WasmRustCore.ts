@@ -136,6 +136,7 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
 
     passkeyPkcs8ToJwk: (pkcs8Der): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyPkcs8ToJwk(pkcs8Der)) as JwkPair),
     passkeyP256ScalarToJwk: (scalar): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyP256ScalarToJwk(scalar)) as JwkPair),
+    passkeyEd25519SeedToJwk: (seed): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyEd25519SeedToJwk(seed)) as JwkPair),
 
     createVaultSyncSession: (requestJson): Promise<IVaultSyncSession> => ready((): IVaultSyncSession => {
       const session = new core.VaultSyncSession(requestJson);

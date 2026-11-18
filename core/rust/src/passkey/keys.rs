@@ -1,6 +1,7 @@
 //! Passkey key pairs: generation, conversion of keys imported from other providers, the JWK text they are stored as,
 //! their COSE public key, and signing.
 
+use ed25519_dalek::Signer as _;
 use p256::ecdsa::signature::Signer;
 use p256::ecdsa::{Signature, SigningKey};
 use p256::elliptic_curve::Generate;
@@ -37,7 +38,7 @@ pub struct JwkPair {
     pub private_key_jwk: String,
 }
 
-/// The JWK of an EC passkey key, also read for the `kty` of an RSA one. Unknown members are ignored on read.
+/// The JWK of an EC or OKP (Ed25519) passkey key, also read for the `kty` of an RSA one. Unknown members are ignored on read.
 #[derive(Default, Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 struct PasskeyJwk {
     #[serde(default)]
@@ -61,7 +62,8 @@ pub(super) fn generate(algorithm: i64) -> VaultResult<GeneratedKey> {
     }
 }
 
-/// Sign `data` with a stored private key: a DER ECDSA signature for an EC key, a PKCS#1 v1.5 signature for an RSA key.
+/// Sign `data` with a stored private key: a DER ECDSA signature for an EC key, a PKCS#1 v1.5 signature for an RSA key,
+/// a raw 64-byte signature for an Ed25519 key.
 pub(super) fn sign(private_key_jwk: &str, data: &[u8]) -> VaultResult<Vec<u8>> {
     let jwk: PasskeyJwk = serde_json::from_str(private_key_jwk).map_err(|e| VaultError::General(format!("Invalid passkey JWK: {e}")))?;
     match jwk.kty.as_str() {
@@ -77,24 +79,49 @@ pub(super) fn sign(private_key_jwk: &str, data: &[u8]) -> VaultResult<Vec<u8>> {
             let signature: Signature = key.sign(data);
             Ok(signature.to_der().as_bytes().to_vec())
         }
+        // Only imported passkeys have one: the authenticator never creates an Ed25519 key.
+        "OKP" if jwk.crv.as_deref() == Some("Ed25519") => {
+            let d = jwk.d.as_deref().ok_or_else(|| VaultError::General("Passkey JWK has no private key".to_string()))?;
+            let key = ed25519_key_from_seed(&Zeroizing::new(base64url_decode(d)?))?;
+            Ok(key.sign(data).to_bytes().to_vec())
+        }
         other => Err(VaultError::General(format!("Unsupported passkey key type \"{other}\""))),
     }
 }
 
-/// The key pair of another provider's PKCS#8 DER private key (P-256 or RSA).
+/// The key pair of another provider's PKCS#8 DER private key (P-256, Ed25519 or RSA).
 pub fn pkcs8_to_jwk_pair(der: &[u8]) -> VaultResult<JwkPair> {
     if let Ok(key) = p256::SecretKey::from_pkcs8_der(der) {
         return ec_jwk_pair(&SigningKey::from(&key));
     }
+    if let Ok(key) = ed25519_dalek::SigningKey::from_pkcs8_der(der) {
+        return ed25519_jwk_pair(&key);
+    }
     if let Ok(key) = RsaPrivateKey::from_pkcs8_der(der) {
         return Ok(JwkPair { public_key_jwk: rsa_public_to_jwk(&key.to_public_key(), None)?, private_key_jwk: rsa_private_to_jwk(&key, None)? });
     }
-    Err(VaultError::General("The passkey key is not a PKCS#8 P-256 or RSA private key".to_string()))
+    Err(VaultError::General("The passkey key is not a PKCS#8 P-256, Ed25519 or RSA private key".to_string()))
 }
 
 /// The key pair of a raw P-256 private scalar.
 pub fn p256_scalar_to_jwk_pair(d: &[u8]) -> VaultResult<JwkPair> {
     ec_jwk_pair(&signing_key_from_scalar(d)?)
+}
+
+/// The key pair of a raw Ed25519 private key (its 32-byte seed), as RFC 8037 OKP JWKs.
+pub fn ed25519_seed_to_jwk_pair(seed: &[u8]) -> VaultResult<JwkPair> {
+    ed25519_jwk_pair(&ed25519_key_from_seed(seed)?)
+}
+
+/// The public key is derived from the private key, never taken from an export.
+fn ed25519_jwk_pair(key: &ed25519_dalek::SigningKey) -> VaultResult<JwkPair> {
+    let mut public = PasskeyJwk::default();
+    public.kty = "OKP".into();
+    public.crv = Some("Ed25519".into());
+    public.x = Some(base64url_encode(key.verifying_key().as_bytes()));
+    let mut private = public.clone();
+    private.d = Some(base64url_encode(&Zeroizing::new(key.to_bytes().to_vec())));
+    Ok(JwkPair { public_key_jwk: to_json(&public)?, private_key_jwk: to_json(&private)? })
 }
 
 fn generate_es256() -> VaultResult<GeneratedKey> {
@@ -151,6 +178,11 @@ fn ec_jwks(key: &SigningKey, x: &[u8], y: &[u8]) -> (PasskeyJwk, PasskeyJwk) {
     let mut private = public.clone();
     private.d = Some(base64url_encode(&Zeroizing::new(key.to_bytes().to_vec())));
     (public, private)
+}
+
+fn ed25519_key_from_seed(seed: &[u8]) -> VaultResult<ed25519_dalek::SigningKey> {
+    let seed: &[u8; 32] = seed.try_into().map_err(|_| VaultError::General("Invalid Ed25519 private key".to_string()))?;
+    Ok(ed25519_dalek::SigningKey::from_bytes(seed))
 }
 
 fn to_json(jwk: &PasskeyJwk) -> VaultResult<String> {

@@ -112,6 +112,7 @@ export const nativeRustCore: IRustCore = {
 
   passkeyPkcs8ToJwk: () => notImplementedOnMobile('passkeyPkcs8ToJwk', 'only the web app imports export files'),
   passkeyP256ScalarToJwk: () => notImplementedOnMobile('passkeyP256ScalarToJwk', 'only the web app imports export files'),
+  passkeyEd25519SeedToJwk: () => notImplementedOnMobile('passkeyEd25519SeedToJwk', 'only the web app imports export files'),
 };
 
 
