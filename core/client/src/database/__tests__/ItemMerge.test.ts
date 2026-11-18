@@ -172,6 +172,7 @@ describe('merging items', () => {
     // A logo fetch or folder move only bumps Items.UpdatedAt, which is not a change of the content.
     client.executeUpdate('UPDATE Items SET CreatedAt = ?, UpdatedAt = ? WHERE Id = ?', ['2025-01-01 00:00:00.000', '2026-10-01 00:00:00.000', ref.Id]);
     client.executeUpdate('UPDATE FieldValues SET UpdatedAt = ? WHERE ItemId = ?', ['2026-03-01 00:00:00.000', ref.Id]);
+    expect(client.items.getAll()[0]).toMatchObject({ LastChangedAt: '2026-03-01 00:00:00.000', LastUsedAt: undefined });
     for (const [device, usedAt] of [['phone', '2026-06-01 00:00:00.000'], ['laptop', '2026-05-01 00:00:00.000']]) {
       client.executeUpdate(
         'INSERT INTO ItemStats (ManifestId, Id, DeviceId, LastUsedAt, UseCount, LastAutofilledAt, AutofillCount, LastCopiedAt, CopyCount, LastPasskeyAuthAt, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, 1, NULL, 0, NULL, 0, ?, ?, 0)',
@@ -181,6 +182,7 @@ describe('merging items', () => {
 
     expect(client.items.getActivity(ref)).toEqual({ LastChangedAt: '2026-03-01 00:00:00.000', LastUsedAt: '2026-06-01 00:00:00.000' });
     expect(client.items.getMergeSide(ref)).toMatchObject({ lastChangedAt: '2026-03-01 00:00:00.000', lastUsedAt: '2026-06-01 00:00:00.000' });
+    expect(client.items.getAll()[0]).toMatchObject({ LastChangedAt: '2026-03-01 00:00:00.000', LastUsedAt: '2026-06-01 00:00:00.000' });
   });
 
   it('refuses items that cannot be merged and leaves both as they are', async () => {

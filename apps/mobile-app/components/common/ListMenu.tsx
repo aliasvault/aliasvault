@@ -1,3 +1,4 @@
+import { ITEM_SORT_FIELDS, nextSortOrder, sortOrderParts } from '@aliasvault/client/items/ItemSort';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
@@ -6,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 
 import { useColors } from '@/hooks/useColorScheme';
-import { SORT_OPTIONS } from '@/hooks/useItemSort';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -51,6 +51,8 @@ export function ListMenu({
     return null;
   }
 
+  const sortParts = sortOrder ? sortOrderParts(sortOrder) : null;
+
   // Calculate default top offset based on platform
   const defaultTopOffset = Platform.OS === 'ios' ? insets.top + 112 : 8;
   const menuTop = topOffset ?? defaultTopOffset;
@@ -91,6 +93,9 @@ export function ListMenu({
     },
     menuItemIcon: {
       width: 18,
+    },
+    menuItemLabel: {
+      flex: 1,
     },
     menuItemText: {
       color: colors.text,
@@ -134,16 +139,16 @@ export function ListMenu({
             {onSelect && <View style={styles.separator} />}
           </>
         )}
-        {onSelect && SORT_OPTIONS.map((option) => (
+        {onSelect && sortOrder && ITEM_SORT_FIELDS.map((option) => (
           <TouchableOpacity
-            key={option.value}
+            key={option.field}
             style={styles.menuItem}
             onPress={() => {
-              onSelect(option.value);
+              onSelect(nextSortOrder(sortOrder, option.field));
               onClose();
             }}
           >
-            {sortOrder === option.value ? (
+            {sortParts?.field === option.field ? (
               <MaterialIcons
                 name="check"
                 size={18}
@@ -155,10 +160,14 @@ export function ListMenu({
             )}
             <ThemedText style={[
               styles.menuItemText,
-              sortOrder === option.value && styles.menuItemTextActive
+              styles.menuItemLabel,
+              sortParts?.field === option.field && styles.menuItemTextActive
             ]}>
               {t(option.labelKey)}
             </ThemedText>
+            {sortParts?.field === option.field && (
+              <MaterialIcons name={sortParts.direction === 'asc' ? 'arrow-upward' : 'arrow-downward'} size={16} color={colors.primary} />
+            )}
           </TouchableOpacity>
         ))}
         {actions && actions.length > 0 && (selection || onSelect) && <View style={styles.separator} />}

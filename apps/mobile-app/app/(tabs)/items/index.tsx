@@ -19,6 +19,7 @@ import { itemRoute } from '@/utils/ItemRoute';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
+import { useRecencyGroupStarts, useSortedItems } from '@/hooks/useItemSort';
 import { useLayoutChangeCache } from '@/hooks/useLayoutChangeCache';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -42,6 +43,7 @@ import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPil
 import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { ItemFilterMenu } from '@/components/items/ItemFilterMenu';
+import { ItemRecencyGroupHeader } from '@/components/items/ItemRecencyGroupHeader';
 import { ItemSelectionBar } from '@/components/items/ItemSelectionBar';
 import { SharedFolderInvitationModal } from '@/components/sharing/SharedFolderInvitationModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -258,24 +260,8 @@ export function ItemsScreen(): React.ReactNode {
   /**
    * Sort the filtered items based on the current sort order.
    */
-  const sortedItems = useMemo(() => {
-    const itemsCopy = [...filteredItems];
-    switch (sortOrder) {
-      case CredentialSortOrder.NewestFirst:
-        return itemsCopy.sort((a, b) =>
-          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
-        );
-      case CredentialSortOrder.Alphabetical:
-        return itemsCopy.sort((a, b) =>
-          (a.Name || '').localeCompare(b.Name || '')
-        );
-      case CredentialSortOrder.OldestFirst:
-      default:
-        return itemsCopy.sort((a, b) =>
-          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
-        );
-    }
-  }, [filteredItems, sortOrder]);
+  const sortedItems = useSortedItems(filteredItems, sortOrder);
+  const groupStarts = useRecencyGroupStarts(sortedItems, sortOrder);
 
   const selection = useListSelection(sortedItems, toSelectedItem, selectedItemKey);
   const { exit: exitSelection, toggle: toggleSelected, enter: enterSelection } = selection;
@@ -939,21 +925,24 @@ export function ItemsScreen(): React.ReactNode {
               progressViewOffset={Platform.OS === 'ios' ? insets.top : undefined}
             />
           }
-          renderItem={({ item: itm }) =>
+          renderItem={({ item: itm, index }) =>
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard
-                item={itm}
-                onItemDelete={onItemDelete}
-                onItemDuplicate={onItemDuplicate}
-                showFolderPath={!!searchQuery}
-                isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
-                selectionMode={selection.isActive}
-                isSelected={selection.isSelected(itm)}
-                onToggleSelect={toggleItem}
-                onSelectFromMenu={selectFromMenu}
-              />
+              <>
+                <ItemRecencyGroupHeader group={groupStarts?.[index]} isFirst={index === 0} />
+                <ItemCard
+                  item={itm}
+                  onItemDelete={onItemDelete}
+                  onItemDuplicate={onItemDuplicate}
+                  showFolderPath={!!searchQuery}
+                  isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
+                  selectionMode={selection.isActive}
+                  isSelected={selection.isSelected(itm)}
+                  onToggleSelect={toggleItem}
+                  onSelectFromMenu={selectFromMenu}
+                />
+              </>
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}

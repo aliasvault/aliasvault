@@ -32,6 +32,8 @@ export type Item = {
     HasTotp?: boolean;
     CreatedAt: string;
     UpdatedAt: string;
+    LastChangedAt?: string;
+    LastUsedAt?: string;
 }
 
 /**

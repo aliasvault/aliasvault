@@ -3,6 +3,7 @@ import { CredentialSortOrder } from '@aliasvault/client/database/repositories/Se
 import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ITEM_SORT_FIELDS, RECENCY_GROUPS, nextSortOrder, recencyGroupStarts, sortItemEntries, sortOrderParts, toSortOrder, type ItemSortField } from '@aliasvault/client/items/ItemSort';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey } from '@aliasvault/client/sharing/SharingView';
@@ -65,12 +66,8 @@ const VIEW_MODE_OPTIONS: { value: ViewMode; labelKey: string }[] = [
   { value: 'table', labelKey: 'items.home.tableViewOption' },
 ];
 
-/** Sort orders in the list menu. */
-const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
-  { value: CredentialSortOrder.OldestFirst, labelKey: 'items.sort.oldestFirst' },
-  { value: CredentialSortOrder.NewestFirst, labelKey: 'items.sort.newestFirst' },
-  { value: CredentialSortOrder.Alphabetical, labelKey: 'items.sort.alphabetical' },
-];
+/** The table column each sort field sorts on; the table has no last used or last modified column, so those sorts show no column as sorted. */
+const TABLE_SORT_COLUMNS: Record<ItemSortField, string> = { lastUsed: 'LastUsedAt', lastModified: 'LastChangedAt', created: 'CreatedAt', name: 'Service' };
 
 /**
  * The items URL for a folder and filter. The filter is always in the query string so it survives navigation.
@@ -92,6 +89,8 @@ const applyTableSort = (entries: ItemListEntry[], column: string, direction: Sor
     case 'Service': return [...entries].sort((a, b) => byString(a.service, b.service));
     case 'Username': return [...entries].sort((a, b) => byString(a.username, b.username));
     case 'Email': return [...entries].sort((a, b) => byString(a.email, b.email));
+    case 'LastUsedAt': return sortItemEntries(entries, toSortOrder('lastUsed', direction), entry => entry.item);
+    case 'LastChangedAt': return sortItemEntries(entries, toSortOrder('lastModified', direction), entry => entry.item);
     default: return [...entries].sort((a, b) => (a.createdAt.getTime() - b.createdAt.getTime()) * (column === 'CreatedAt' ? sign : 1));
   }
 };
@@ -142,19 +141,9 @@ const ItemsHome: React.FC = () => {
    * Table sort follows the sort order setting.
    */
   const syncTableSortWithSortOrder = useCallback((order: CredentialSortOrder): void => {
-    switch (order) {
-      case CredentialSortOrder.NewestFirst:
-        setTableSortColumn('CreatedAt');
-        setTableSortDirection('desc');
-        break;
-      case CredentialSortOrder.Alphabetical:
-        setTableSortColumn('Service');
-        setTableSortDirection('asc');
-        break;
-      default:
-        setTableSortColumn('CreatedAt');
-        setTableSortDirection('asc');
-    }
+    const { field, direction } = sortOrderParts(order);
+    setTableSortColumn(TABLE_SORT_COLUMNS[field]);
+    setTableSortDirection(direction);
   }, []);
 
   /**
@@ -247,12 +236,14 @@ const ItemsHome: React.FC = () => {
     if (viewMode === 'table') {
       return applyTableSort(filtered, tableSortColumn, tableSortDirection);
     }
-    switch (sortOrder) {
-      case CredentialSortOrder.NewestFirst: return [...filtered].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-      case CredentialSortOrder.Alphabetical: return [...filtered].sort((a, b) => (a.service ?? '').localeCompare(b.service ?? ''));
-      default: return [...filtered].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    }
+    return sortItemEntries(filtered, sortOrder, entry => entry.item);
   }, [items, folderRef, showFolders, filterType, viewMode, tableSortColumn, tableSortDirection, sortOrder]);
+
+  /**
+   * The date group header above each grid card that starts one, when sorted on last use.
+   */
+  const groupStarts = useMemo(() => (viewMode === 'grid' ? recencyGroupStarts(allFilteredAndSortedItems, sortOrder, entry => entry.item) : null), [allFilteredAndSortedItems, viewMode, sortOrder]);
+  const sortParts = sortOrderParts(sortOrder);
 
   const selectableItems = useMemo((): Item[] => allFilteredAndSortedItems.map(entry => entry.item), [allFilteredAndSortedItems]);
   const selection = useListSelection(selectableItems, toSelectedItem, selectedItemKey);
@@ -620,8 +611,11 @@ const ItemsHome: React.FC = () => {
               ))}
               <MenuSeparator />
               <MenuHeading>{t('items.sort.title')}</MenuHeading>
-              {SORT_OPTIONS.map(option => (
-                <MenuRadioItem key={option.value} checked={sortOrder === option.value} onClick={() => setSortOrder(option.value)}>{t(option.labelKey)}</MenuRadioItem>
+              {ITEM_SORT_FIELDS.map(option => (
+                <MenuRadioItem key={option.field} checked={sortParts.field === option.field} onClick={() => setSortOrder(nextSortOrder(sortOrder, option.field))}>
+                  <span className="flex-1">{t(option.labelKey)}</span>
+                  {sortParts.field === option.field && <Icon name={sortParts.direction === 'asc' ? 'arrow-narrow-up' : 'arrow-narrow-down'} className="w-4 h-4" />}
+                </MenuRadioItem>
               ))}
             </EllipsisMenu>
             <RefreshButton onClick={refreshVault} buttonText={t('common.refresh')} />
@@ -700,15 +694,20 @@ const ItemsHome: React.FC = () => {
                   </div>
                 </div>
               )}
-              {filteredAndSortedItems.map(entry => (
-                <ItemCard
-                  key={scopedKey(entry.manifestId, entry.id)}
-                  entry={entry}
-                  onMutated={loadItems}
-                  isSelectionMode={selection.isActive}
-                  isSelected={selection.isSelected(entry.item)}
-                  onSelect={range => selection.toggle(entry.item, range)} />
-              ))}
+              {filteredAndSortedItems.map((entry, index) => {
+                const group = groupStarts?.[index];
+                return (
+                  <React.Fragment key={scopedKey(entry.manifestId, entry.id)}>
+                    {group && <h3 className={`col-span-full text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 ${index > 0 ? 'pt-2' : ''}`}>{t(RECENCY_GROUPS[group])}</h3>}
+                    <ItemCard
+                      entry={entry}
+                      onMutated={loadItems}
+                      isSelectionMode={selection.isActive}
+                      isSelected={selection.isSelected(entry.item)}
+                      onSelect={range => selection.toggle(entry.item, range)} />
+                  </React.Fragment>
+                );
+              })}
             </div>
           )}
 
