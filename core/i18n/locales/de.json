@@ -914,9 +914,16 @@
     "separator": "Trennzeichen",
     "serviceUrl": "URL des Dienstes",
     "sort": {
-      "alphabetical": "Alphabetisch (A-Z)",
-      "newestFirst": "Neuste zuerst",
-      "oldestFirst": "Älteste zuerst",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Name",
       "title": "Sortieren nach"
     },
     "switchBackToOriginalApp": "Wechsel zurück zur ursprünglichen App, um fortzufahren.",
