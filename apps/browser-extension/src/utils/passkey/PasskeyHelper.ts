@@ -1,6 +1,9 @@
-import { bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
+import { base64UrlToBytes, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
 
 import type { Passkey } from '@aliasvault/models/vault';
+
+/** The WebAuthn size limit of a credential id. */
+const MAX_CREDENTIAL_ID_BYTES = 1023;
 
 /**
  * The WebAuthn credential id of a stored passkey, and GUID to bytes conversions.
@@ -48,5 +51,25 @@ export class PasskeyHelper {
    */
   public static credentialIdBase64url(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): string {
     return bytesToBase64Url(PasskeyHelper.credentialIdBytes(passkey));
+  }
+
+  /**
+   * The passkeys the relying party accepts in allowCredentials, or all of them when it lists none.
+   * The page sends the ids as standard base64, so they are normalized to base64url before comparing; an id that is not
+   * valid base64 or not 1 to 1023 bytes long matches nothing.
+   */
+  public static filterByAllowCredentials<T extends Pick<Passkey, 'Id' | 'CredentialId'>>(passkeys: T[], allowCredentialIds: string[] | undefined): T[] {
+    if (!allowCredentialIds || allowCredentialIds.length === 0) {
+      return passkeys;
+    }
+    const allowed = new Set(allowCredentialIds.flatMap(id => {
+      try {
+        const bytes = base64UrlToBytes(id);
+        return bytes.length > 0 && bytes.length <= MAX_CREDENTIAL_ID_BYTES ? [bytesToBase64Url(bytes)] : [];
+      } catch {
+        return [];
+      }
+    }));
+    return passkeys.filter(passkey => allowed.has(PasskeyHelper.credentialIdBase64url(passkey)));
   }
 }

@@ -66,13 +66,8 @@ const PasskeyAuthenticate: React.FC = () => {
             const rpId = data.publicKey.rpId || new URL(data.origin).hostname;
             const passkeys = dbContext.sqliteClient!.passkeys.getByRpId(rpId);
 
-            // Filter by allowCredentials if specified
-            let filteredPasskeys = passkeys;
-            if (data.publicKey.allowCredentials && data.publicKey.allowCredentials.length > 0) {
-              // The RP sends the base64url credential ids it accepts; each passkey is matched on its WebAuthn credential id.
-              const allowed = new Set(data.publicKey.allowCredentials.map((c: { id: string }) => c.id));
-              filteredPasskeys = passkeys.filter((pk: { Id: string; CredentialId?: Uint8Array | number[] | null }) => allowed.has(PasskeyHelper.credentialIdBase64url(pk)));
-            }
+            // Keep the passkeys whose WebAuthn credential id the RP lists in allowCredentials, if it lists any.
+            const filteredPasskeys = PasskeyHelper.filterByAllowCredentials(passkeys, data.publicKey.allowCredentials?.map((c: { id: string }) => c.id));
 
             // Map to display format
             setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; ItemId: string; ManifestId: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
