@@ -914,15 +914,15 @@
     "separator": "Separatore",
     "serviceUrl": "URL servizio",
     "sort": {
-      "dateCreated": "Date created",
+      "dateCreated": "Data di creazione",
       "groups": {
-        "last30Days": "Last 30 days",
-        "last7Days": "Last 7 days",
-        "older": "Older",
-        "today": "Today"
+        "last30Days": "Ultimi 30 giorni",
+        "last7Days": "Ultimi 7 giorni",
+        "older": "I più vecchi",
+        "today": "Oggi"
       },
-      "lastModified": "Last modified",
-      "lastUsed": "Last used",
+      "lastModified": "Ultimi modificati",
+      "lastUsed": "Ultimo utilizzo",
       "name": "Nome",
       "title": "Ordina per"
     },
