@@ -2,29 +2,36 @@ import { describe, expect, it } from 'vitest';
 
 import { base64UrlToBytes, bytesToBase64 } from '../../../../../utilities/Base64';
 import { generateEd25519Seed, generatePasskeyKey, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
+import { openArchive, readArchiveJson } from '../../../readers/ArchiveImport';
+import { readStringOrNull } from '../../../readers/JsonReader';
+import { parseProtonPassItem, parseProtonPassJsonExport } from '../ProtonPassJson';
 import { readProtonPassPasskey, readStoredPasskey } from '../ProtonPassPasskey';
 
 import { protonPasskeyContent, protonStoredPasskey } from './protonPasskeyFixtures';
 
 /*
- * protonpass-passkey-v3.msgpack is the SERIALIZED_V3 regression vector of Proton's own serializer
- * (proton-pass-common, passkey_handling.rs): a stored passkey in the current layout. Its key is filler, not a
- * usable P-256 key.
+ * The one passkey in protonpass.zip, registered on webauthn.io as av-passkey. Its key is random on every
+ * registration, so the tests compare it with the rest of the export and never with fixed bytes.
  */
-const PROTON_VECTOR = readFixtureBytes(import.meta.dirname, 'protonpass-passkey-v3.msgpack');
+const EXPORT = parseProtonPassJsonExport(readArchiveJson(openArchive(readFixtureBytes(import.meta.dirname, 'protonpass.zip')), 'Proton Pass/data.json'));
+const EXPORTED_PASSKEY = [...EXPORT.Vaults.values()].flatMap(vault => vault.Items.map(parseProtonPassItem)).flatMap(item => item.Data?.Content?.Passkeys ?? [])[0];
+const EXPORTED_CONTENT = base64UrlToBytes(readStringOrNull(EXPORTED_PASSKEY, 'content') ?? '');
 
 describe('ProtonPassPasskey', () => {
-  it('reads the stored passkey of the vector of Proton itself', async () => {
-    const stored = readStoredPasskey(PROTON_VECTOR);
-    expect(stored.rid).toBe('some_rp_id');
-    expect(stored.cid).toEqual([1, 2, 3, 4, 5]);
-    expect(stored.udn).toBe('user_display_name');
-    expect(stored.un).toBe('username');
-    expect((stored.key as { kty: object }).kty).toEqual({ t: 'assign', c: 'EC2' });
-    expect(stored.ext).toEqual({ hmac_secret: { cred_with_uv: [1, 2, 3, 4], cred_without_uv: [5, 6, 7, 8] } });
+  it('reads the passkey of a Proton Pass export', async () => {
+    const stored = readStoredPasskey(EXPORTED_CONTENT);
+    expect(stored.rid).toBe('webauthn.io');
+    expect(stored.un).toBe('av-passkey');
+    expect((stored.key as { kty: object }).kty).toEqual({ t: 'assign', c: 'OKP' });
 
-    // The vector's key holds no P-256 scalar, so the passkey is refused instead of stored without a key.
-    await expect(readProtonPassPasskey({ content: bytesToBase64(PROTON_VECTOR) }, testPasskeyKeys)).rejects.toThrow('not a P-256 or Ed25519 private key');
+    const passkey = await readProtonPassPasskey(EXPORTED_PASSKEY, testPasskeyKeys);
+    expect(passkey.RpId).toBe('webauthn.io');
+    expect(passkey.DisplayName).toBe('av-passkey');
+    expect(passkey.PrfKey).toBeNull();
+    // The export repeats the credential id and user handle next to the content: the stored ones must match them.
+    expect(passkey.CredentialId).toEqual(base64UrlToBytes(readStringOrNull(EXPORTED_PASSKEY, 'credentialId')!));
+    expect(passkey.UserHandle).toEqual(base64UrlToBytes(readStringOrNull(EXPORTED_PASSKEY, 'userHandle')!));
+    expect(JSON.parse(passkey.PrivateKey)).toMatchObject({ kty: 'OKP', crv: 'Ed25519', d: expect.any(String) as string });
   });
 
   it('reads a passkey with its key, PRF secret and names', async () => {
@@ -61,7 +68,7 @@ describe('ProtonPassPasskey', () => {
       { content: protonPasskeyContent(protonStoredPasskey(seed.subarray(0, 31), 6)) },
       { content: protonPasskeyContent(protonStoredPasskey(new Uint8Array(0))) },
       { content: protonPasskeyContent({ ...protonStoredPasskey(scalar), cid: [] }) },
-      { content: bytesToBase64(PROTON_VECTOR.subarray(0, 300)) },
+      { content: bytesToBase64(EXPORTED_CONTENT.subarray(0, 300)) },
       { content: bytesToBase64(new Uint8Array(5000).fill(0x91)) },
       { content: 'not base64 !' },
       { rpId: 'example.com' },

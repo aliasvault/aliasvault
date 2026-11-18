@@ -11,6 +11,7 @@ describe('convertToItem', () => {
       { ServiceName: 'Sha512Service', TwoFactorSecret: 'otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60' },
       { ServiceName: 'PlainService', TwoFactorSecret: 'JBSWY3DPEHPK3PXP' },
       { ServiceName: 'UppercaseScheme', TwoFactorSecret: 'OTPAUTH://TOTP/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example&algorithm=SHA256' },
+      { ServiceName: 'NamedCode', TwoFactorSecret: 'otpauth://totp/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example', TwoFactorName: ' Work phone ' },
     ];
 
     const items = convertToItems(credentials);
@@ -24,6 +25,7 @@ describe('convertToItem', () => {
     expect(withDefaults.Digits).toBe(TOTP_DEFAULT_DIGITS);
     expect(withDefaults.Period).toBe(TOTP_DEFAULT_PERIOD);
     expect(itemByName(items, 'UppercaseScheme').TotpCodes[0]).toMatchObject({ Name: 'Example: me', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA256' });
+    expect(itemByName(items, 'NamedCode').TotpCodes[0]).toMatchObject({ Name: 'Work phone', SecretKey: 'JBSWY3DPEHPK3PXP' });
   });
 
   it('assigns folders when converting to items', () => {

@@ -1,4 +1,4 @@
-import { createECDH, createPrivateKey, generateKeyPairSync, webcrypto } from 'node:crypto';
+import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify, webcrypto, type JsonWebKey } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -7,6 +7,7 @@ import { convertToItem } from '../writers/ItemConverter';
 import type { JwkPair } from '../../../rust/RustCoreTypes';
 import type { ItemEntity } from '../../shared/VaultEntities';
 import type { ImportedCredential } from '../models/ImportedCredential';
+import type { ImportedPasskey } from '../models/ImportedPasskey';
 import type { PasskeyKeyConverter } from '../readers/PasskeyImport';
 
 /*
@@ -163,4 +164,18 @@ export async function generatePasskeyKey(): Promise<{ pkcs8: Uint8Array; scalar:
   const pair = await webcrypto.subtle.generateKey(P256, true, ['sign']);
   const jwk = await webcrypto.subtle.exportKey('jwk', pair.privateKey);
   return { pkcs8: new Uint8Array(await webcrypto.subtle.exportKey('pkcs8', pair.privateKey)), scalar: new Uint8Array(Buffer.from(jwk.d!, 'base64url')) };
+}
+
+/**
+ * Whether the private key of an imported passkey signs a challenge its public key verifies.
+ * @param passkey - The passkey
+ * @returns True when the key pair works
+ */
+export function passkeyCanSign(passkey: ImportedPasskey): boolean {
+  const privateKey = createPrivateKey({ key: JSON.parse(passkey.PrivateKey) as JsonWebKey, format: 'jwk' });
+  const publicKey = createPublicKey({ key: JSON.parse(passkey.PublicKey) as JsonWebKey, format: 'jwk' });
+  const challenge = Buffer.from('aliasvault-challenge');
+  // Ed25519 hashes internally and takes no digest.
+  const digest = privateKey.asymmetricKeyType === 'ed25519' ? null : 'sha256';
+  return verify(digest, challenge, publicKey, sign(digest, challenge, privateKey));
 }

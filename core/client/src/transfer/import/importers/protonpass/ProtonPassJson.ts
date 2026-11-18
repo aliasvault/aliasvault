@@ -1,5 +1,11 @@
-import { isBlank } from '../../../shared/StringUtils';
+import { FieldTypes } from '@aliasvault/models/vault';
+
+import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { addCustomField } from '../../readers/ArchiveImport';
 import { getProperty, isJsonObject, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
+
+import type { ImportedCredential } from '../../models/ImportedCredential';
+import type { ImportedCreditcard } from '../../models/ImportedCreditcard';
 
 /*
  * The Proton Pass JSON export (data.json inside a .zip export).
@@ -10,6 +16,9 @@ export const ProtonPassItemStates = { Active: 1, Trashed: 2 } as const;
 
 /** Proton Pass autofill URL modes. */
 export const ProtonPassAutofillModes = { Default: 0, Exact: 1, Never: 2, StartWith: 3, Pattern: 4, RegularExpression: 5, ExactPath: 6 } as const;
+
+/** The default vault; its items go to the root folder instead of a "Personal" folder. */
+const DEFAULT_VAULT_NAME = 'personal';
 
 /** Autofill modes whose URL is a website. */
 const URL_AUTOFILL_MODES: ReadonlySet<number> = new Set([ProtonPassAutofillModes.Default, ProtonPassAutofillModes.Exact, ProtonPassAutofillModes.StartWith, ProtonPassAutofillModes.ExactPath]);
@@ -116,6 +125,14 @@ export type ProtonPassContent = {
   LastName: string | null;
   FullName: string | null;
   Email: string | null;
+  PhoneNumber: string | null;
+  StreetAddress: string | null;
+  Floor: string | null;
+  City: string | null;
+  County: string | null;
+  StateOrProvince: string | null;
+  ZipOrPostalCode: string | null;
+  CountryOrRegion: string | null;
 };
 
 /**
@@ -132,7 +149,7 @@ export type ProtonPassAutofillUrl = {
  */
 export type ProtonPassExtraField = {
   FieldName: string | null;
-  /** text, hidden, totp or date. */
+  /** text, hidden, totp or timestamp. */
   Type: string | null;
   Data: ProtonPassExtraFieldData | null;
 };
@@ -141,7 +158,12 @@ export type ProtonPassExtraField = {
  * Custom field data.
  */
 export type ProtonPassExtraFieldData = {
+  /** The value of a text or hidden field. */
   Content: string | null;
+  /** The otpauth:// URI of a totp field. */
+  TotpUri: string | null;
+  /** The "yyyy-MM-dd" date of a timestamp field. */
+  Timestamp: string | null;
 };
 
 /**
@@ -243,7 +265,7 @@ function parseProtonPassExtraField(obj: JsonObject): ProtonPassExtraField {
   return {
     FieldName: readString(obj, 'fieldName'),
     Type: readString(obj, 'type'),
-    Data: data ? { Content: readString(data, 'content') } : null,
+    Data: data ? { Content: readString(data, 'content'), TotpUri: readString(data, 'totpUri'), Timestamp: readString(data, 'timestamp') } : null,
   };
 }
 
@@ -277,6 +299,14 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
     LastName: readString(obj, 'lastName'),
     FullName: readString(obj, 'fullName'),
     Email: readString(obj, 'email'),
+    PhoneNumber: readString(obj, 'phoneNumber'),
+    StreetAddress: readString(obj, 'streetAddress'),
+    Floor: readString(obj, 'floor'),
+    City: readString(obj, 'city'),
+    County: readString(obj, 'county'),
+    StateOrProvince: readString(obj, 'stateOrProvince'),
+    ZipOrPostalCode: readString(obj, 'zipOrPostalCode'),
+    CountryOrRegion: readString(obj, 'countryOrRegion'),
   };
 }
 
@@ -287,6 +317,32 @@ function parseProtonPassContent(obj: JsonObject | null): ProtonPassContent | nul
  */
 function parseProtonPassAutofillUrl(obj: JsonObject): ProtonPassAutofillUrl {
   return { Url: readString(obj, 'url'), Mode: readNumber(obj, 'mode') };
+}
+
+/**
+ * Whether a vault is the default vault, whose items import into the root folder.
+ * @param name - The vault name
+ * @returns True for the default vault
+ */
+export function isProtonPassDefaultVault(name: string | null): boolean {
+  return name?.trim().toLowerCase() === DEFAULT_VAULT_NAME;
+}
+
+/**
+ * Read the note column of a CSV export row for a credit card or identity, which holds its content and note as JSON.
+ * @param json - The column text
+ * @returns The content and the item note, or null when the column is not a JSON object
+ */
+export function parseProtonPassCsvNoteContent(json: string | null): { Content: ProtonPassContent; Note: string | null } | null {
+  if (isBlank(json)) {
+    return null;
+  }
+  try {
+    const parsed: unknown = JSON.parse(json);
+    return isJsonObject(parsed) ? { Content: parseProtonPassContent(parsed)!, Note: readString(parsed, 'note') } : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -317,4 +373,66 @@ export function getProtonPassLoginUrls(autofillUrls: ProtonPassAutofillUrl[] | n
     return autofillUrls.filter(url => url.Mode !== null && URL_AUTOFILL_MODES.has(url.Mode)).map(url => url.Url);
   }
   return urls ?? [];
+}
+
+/**
+ * Fill the card details or the identity of a credential from the content of a creditCard or identity item.
+ * @param credential - The credential to fill
+ * @param type - The item type
+ * @param content - The item content
+ */
+export function applyProtonPassContent(credential: ImportedCredential, type: string | null, content: ProtonPassContent): void {
+  switch (type?.toLowerCase()) {
+    case 'creditcard':
+      credential.Creditcard = {
+        CardholderName: nullIfBlank(content.CardholderName),
+        Number: nullIfBlank(content.Number),
+        Cvv: nullIfBlank(content.VerificationNumber),
+        Pin: nullIfBlank(content.Pin),
+        ...parseExpirationDate(content.ExpirationDate),
+      };
+      break;
+    case 'identity':
+      applyIdentity(credential, content);
+      break;
+  }
+}
+
+/**
+ * Split a Proton Pass expiration, written as "YYYY-MM" (or "MMYY" by older versions), into month and year.
+ * @param expirationDate - The expiration text
+ * @returns The month and year, empty when the format is not recognised
+ */
+function parseExpirationDate(expirationDate: string | null): Pick<ImportedCreditcard, 'ExpiryMonth' | 'ExpiryYear'> {
+  const value = expirationDate?.trim() ?? '';
+  const yearMonth = /^(\d{4})-(\d{1,2})$/.exec(value);
+  if (yearMonth) {
+    return { ExpiryYear: yearMonth[1], ExpiryMonth: yearMonth[2].padStart(2, '0') };
+  }
+  const monthYear = /^(\d{2})(\d{2})$/.exec(value);
+  return monthYear ? { ExpiryMonth: monthYear[1], ExpiryYear: `20${monthYear[2]}` } : {};
+}
+
+/**
+ * Take the name and email of an identity, and its phone and address as custom fields; without first and last name,
+ * the full name splits on its first space.
+ * @param credential - The credential to fill
+ * @param content - The identity content
+ */
+function applyIdentity(credential: ImportedCredential, content: ProtonPassContent): void {
+  let firstName = content.FirstName;
+  let lastName = content.LastName;
+  if (isBlank(firstName) && isBlank(lastName) && !isBlank(content.FullName)) {
+    const [first, ...rest] = content.FullName.split(' ').filter(part => part.length > 0);
+    firstName = first ?? null;
+    lastName = rest.length > 0 ? rest.join(' ') : null;
+  }
+
+  credential.Alias = { FirstName: nullIfBlank(firstName), LastName: nullIfBlank(lastName) };
+  if (!isBlank(content.Email)) {
+    credential.Email = content.Email;
+  }
+
+  addCustomField(credential, 'Phone', content.PhoneNumber, FieldTypes.Phone);
+  addCustomField(credential, 'Address', nonBlank([content.StreetAddress, content.Floor, content.City, content.County, content.StateOrProvince, content.ZipOrPostalCode, content.CountryOrRegion]).join(', '));
 }
