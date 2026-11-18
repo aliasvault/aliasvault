@@ -40,12 +40,13 @@ export function toMessagePack(value: unknown): number[] {
 }
 
 /**
- * The stored form of a passkey for example.com.
- * @param scalar - The private scalar
+ * The stored form of a passkey for example.com: an EC2 key, or an OKP (EdDSA) key for curve 6 (Ed25519).
+ * @param privateKey - The private scalar, or the seed of an Ed25519 key
  * @param curve - The COSE curve, 1 (P-256) by default
  * @returns The stored passkey
  */
-export function protonStoredPasskey(scalar: Uint8Array, curve: number = 1): object {
+export function protonStoredPasskey(privateKey: Uint8Array, curve: number = 1): object {
+  const isEd25519 = curve === 6;
   /**
    * A COSE key parameter.
    * @param label - The COSE label
@@ -55,12 +56,12 @@ export function protonStoredPasskey(scalar: Uint8Array, curve: number = 1): obje
   const parameter = (label: number, value: object): object[] => [{ t: 'int', c: label }, value];
   return {
     key: {
-      kty: { t: 'assign', c: 'EC2' },
+      kty: { t: 'assign', c: isEd25519 ? 'OKP' : 'EC2' },
       kid: [],
-      alg: { t: 'assign', c: 'ES256' },
+      alg: { t: 'assign', c: isEd25519 ? 'EdDSA' : 'ES256' },
       kops: [],
       biv: [],
-      par: [parameter(-1, { t: 'int', c: { inner: [curve, ...new Array<number>(15).fill(0)] } }), parameter(-2, { t: 'bytes', c: [1, 2] }), parameter(-4, { t: 'bytes', c: Array.from(scalar) })],
+      par: [parameter(-1, { t: 'int', c: { inner: [curve, ...new Array<number>(15).fill(0)] } }), parameter(-2, { t: 'bytes', c: [1, 2] }), parameter(-4, { t: 'bytes', c: Array.from(privateKey) })],
     },
     cid: Array.from({ length: 20 }, (_, index) => index + 1),
     rid: 'example.com',
