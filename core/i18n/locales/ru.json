@@ -914,9 +914,16 @@
     "separator": "Разделитель",
     "serviceUrl": "URL сервиса",
     "sort": {
-      "alphabetical": "По алфавиту (А–Я)",
-      "newestFirst": "Сначала новые",
-      "oldestFirst": "Сначала старые",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Имя",
       "title": "Сортировка"
     },
     "switchBackToOriginalApp": "Вернитесь в приложение для продолжения.",
