@@ -391,7 +391,7 @@
     "loginWithPasskey": "Log in met passkey",
     "new": "Nieuw",
     "noMatchesFound": "Geen resultaten gevonden",
-    "noTotpItemsFound": "Geen 2FA code overeenkomsten gevonden",
+    "noTotpItemsFound": "Geen 2FA codes gevonden",
     "openAliasVaultToUpgrade": "Open AliasVault om te upgraden",
     "savePrompt": {
       "neverForThisSite": "Nooit voor deze site",
