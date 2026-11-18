@@ -914,9 +914,16 @@
     "separator": "Pemisah",
     "serviceUrl": "Layanan URL",
     "sort": {
-      "alphabetical": "Abjad (A-Z)",
-      "newestFirst": "Terbaru dahulu",
-      "oldestFirst": "Terlama dahulu",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Nama",
       "title": "Urutkan berdasarkan"
     },
     "switchBackToOriginalApp": "Kembali ke aplikasi semula untuk melanjutkan.",
