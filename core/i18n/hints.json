@@ -371,7 +371,7 @@
   "items.sort.dateCreated": "Sort option in the item list menu: sort on the date the item was created",
   "items.sort.groups.last30Days": "Header in the item list, sorted by last used or last modified, above items used or modified 7 to 30 days ago",
   "items.sort.groups.last7Days": "Header in the item list, sorted by last used or last modified, above items used or modified 1 to 7 days ago",
-  "items.sort.groups.older": "Header in the item list, sorted by last used or last modified, above items used or modified over 30 days ago",
+  "items.sort.groups.older": "Header in the item list, sorted by last used or last modified, above items used or modified over 30 days ago, or without a recorded use",
   "items.sort.groups.today": "Header in the item list, sorted by last used or last modified, above items used or modified today",
   "items.sort.lastModified": "Sort option in the item list menu: sort on when the item's contents were last changed",
   "items.sort.lastUsed": "Sort option in the item list menu: sort on when the item was last used (autofilled, copied, passkey sign-in)",
