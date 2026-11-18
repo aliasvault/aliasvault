@@ -128,7 +128,7 @@
       "verifyingTwoFactorCodeMessage": "קוד האימות הדו־שלבי נבדק…"
     },
     "loginTitle": "כניסה ל־AliasVault",
-    "loginWithMobile": "Log in using Mobile App",
+    "loginWithMobile": "כניסה באמצעות היישומון לנייד",
     "logoutConfirm": "לצאת?",
     "masterPassword": "סיסמת על",
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons.",
