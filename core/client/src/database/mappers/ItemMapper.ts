@@ -34,6 +34,8 @@ export type ItemRow = {
   UpdatedAt: string;
   DeletedAt?: string | null;
   ArchivedAt?: string | null;
+  LastChangedAt?: string | null;
+  LastUsedAt?: string | null;
 }
 
 /**
@@ -91,7 +93,9 @@ export class ItemMapper {
       HasAttachment: row.HasAttachment === 1,
       HasTotp: row.HasTotp === 1,
       CreatedAt: row.CreatedAt,
-      UpdatedAt: row.UpdatedAt
+      UpdatedAt: row.UpdatedAt,
+      LastChangedAt: row.LastChangedAt ?? undefined,
+      LastUsedAt: row.LastUsedAt ?? undefined
     };
   }
 

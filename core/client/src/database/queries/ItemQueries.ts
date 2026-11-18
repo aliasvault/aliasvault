@@ -4,6 +4,23 @@
  */
 export class ItemQueries {
   /**
+   * SQL expression: when the item aliased `i` last changed, its creation or the newest change to a child row (removed rows
+   * included). Items.UpdatedAt is not used, as logo fetches and folder moves bump it.
+   */
+  public static readonly LAST_CHANGED_AT = `MAX(
+      i.CreatedAt,
+      COALESCE((SELECT MAX(fv.UpdatedAt) FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId), ''),
+      COALESCE((SELECT MAX(tc.UpdatedAt) FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId), ''),
+      COALESCE((SELECT MAX(att.UpdatedAt) FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId), ''),
+      COALESCE((SELECT MAX(pk.UpdatedAt) FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId), '')
+    )`;
+
+  /**
+   * SQL expression: when the item aliased `i` was last used on any device (ItemStats holds one row per device), or NULL.
+   */
+  public static readonly LAST_USED_AT = `(SELECT MAX(st.LastUsedAt) FROM ItemStats st WHERE st.Id = i.Id AND st.ManifestId = i.ManifestId AND st.IsDeleted = 0)`;
+
+  /**
    * Base SELECT for items with common fields.
    * Includes LEFT JOIN to the item's logo row, which carries the image bytes for a favicon or an
    * uploaded image, and the catalog key for a built-in logo (which has no bytes). Folder paths are
@@ -26,26 +43,11 @@ export class ItemQueries {
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
       i.UpdatedAt,
-      i.ArchivedAt
+      i.ArchivedAt,
+      ${ItemQueries.LAST_CHANGED_AT} AS LastChangedAt,
+      ${ItemQueries.LAST_USED_AT} AS LastUsedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId`;
-
-  /**
-   * SQL expression: when the item aliased `i` last changed, its creation or the newest change to a child row (removed rows
-   * included). Items.UpdatedAt is not used, as logo fetches and folder moves bump it.
-   */
-  public static readonly LAST_CHANGED_AT = `MAX(
-      i.CreatedAt,
-      COALESCE((SELECT MAX(fv.UpdatedAt) FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId), ''),
-      COALESCE((SELECT MAX(tc.UpdatedAt) FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId), ''),
-      COALESCE((SELECT MAX(att.UpdatedAt) FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId), ''),
-      COALESCE((SELECT MAX(pk.UpdatedAt) FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId), '')
-    )`;
-
-  /**
-   * SQL expression: when the item aliased `i` was last used on any device (ItemStats holds one row per device), or NULL.
-   */
-  public static readonly LAST_USED_AT = `(SELECT MAX(st.LastUsedAt) FROM ItemStats st WHERE st.Id = i.Id AND st.ManifestId = i.ManifestId AND st.IsDeleted = 0)`;
 
   /**
    * When an item last changed and when it was last used.

@@ -2,6 +2,7 @@ import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ITEM_SORT_FIELDS, nextSortOrder, sortOrderParts } from '@aliasvault/client/items/ItemSort';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
@@ -22,7 +23,7 @@ import { runSharingOperation, sharingFailureMessage } from '@/utils/SharingError
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useHeaderInset } from '@/hooks/useHeaderInset';
-import { SORT_OPTIONS, useItemSort, useSortedItems } from '@/hooks/useItemSort';
+import { useItemSort, useRecencyGroupStarts, useSortedItems } from '@/hooks/useItemSort';
 import { useLayoutChangeCache } from '@/hooks/useLayoutChangeCache';
 import { useListSelection } from '@/hooks/useListSelection';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -46,6 +47,7 @@ import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
+import { ItemRecencyGroupHeader } from '@/components/items/ItemRecencyGroupHeader';
 import { ItemSelectionBar } from '@/components/items/ItemSelectionBar';
 import { SharedFolderAccessModal } from '@/components/sharing/SharedFolderAccessModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -169,6 +171,9 @@ export default function FolderViewScreen(): React.ReactNode {
    * Sort the filtered items based on the current sort order.
    */
   const sortedItems = useSortedItems(filteredItems, sortOrder);
+  const groupStarts = useRecencyGroupStarts(sortedItems, sortOrder);
+  const sortParts = sortOrderParts(sortOrder);
+  const sortArrowSymbol = sortParts.direction === 'asc' ? 'arrow.up' : 'arrow.down';
 
   const selection = useListSelection(sortedItems, toSelectedItem, selectedItemKey);
   const { exit: exitSelection, toggle: toggleSelected, enter: enterSelection } = selection;
@@ -1005,8 +1010,8 @@ export default function FolderViewScreen(): React.ReactNode {
                 </Stack.Toolbar.Menu>
               )}
               <Stack.Toolbar.Menu inline title={t('items.sort.title')}>
-                {SORT_OPTIONS.map((option) => (
-                  <Stack.Toolbar.MenuAction key={option.value} isOn={sortOrder === option.value} onPress={() => void changeSortOrder(option.value)}>{t(option.labelKey)}</Stack.Toolbar.MenuAction>
+                {ITEM_SORT_FIELDS.map((option) => (
+                  <Stack.Toolbar.MenuAction key={option.field} isOn={sortParts.field === option.field} icon={sortParts.field === option.field ? sortArrowSymbol : undefined} onPress={() => void changeSortOrder(nextSortOrder(sortOrder, option.field))}>{t(option.labelKey)}</Stack.Toolbar.MenuAction>
                 ))}
               </Stack.Toolbar.Menu>
               {((canShareFolder && folder) || canEditFolder || canDeleteFolder) && (
@@ -1053,20 +1058,23 @@ export default function FolderViewScreen(): React.ReactNode {
             tintColor={colors.primary}
           />
         }
-        renderItem={({ item: itm }) =>
+        renderItem={({ item: itm, index }) =>
           isLoadingItems ? (
             <SkeletonLoader count={1} height={60} parts={2} />
           ) : (
-            <ItemCard
-              item={itm}
-              onItemDelete={onItemDelete}
-              onItemDuplicate={onItemDuplicate}
-              isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
-              selectionMode={selection.isActive}
-              isSelected={selection.isSelected(itm)}
-              onToggleSelect={toggleItem}
-              onSelectFromMenu={selectFromMenu}
-            />
+            <>
+              <ItemRecencyGroupHeader group={groupStarts?.[index]} isFirst={index === 0} />
+              <ItemCard
+                item={itm}
+                onItemDelete={onItemDelete}
+                onItemDuplicate={onItemDuplicate}
+                isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey}
+                selectionMode={selection.isActive}
+                isSelected={selection.isSelected(itm)}
+                onToggleSelect={toggleItem}
+                onSelectFromMenu={selectFromMenu}
+              />
+            </>
           )
         }
         ListEmptyComponent={renderEmptyComponent() as React.ReactElement}

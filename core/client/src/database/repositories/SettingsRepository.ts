@@ -17,6 +17,11 @@ export enum CredentialSortOrder {
   OldestFirst = 'OldestFirst',
   NewestFirst = 'NewestFirst',
   Alphabetical = 'Alphabetical',
+  ReverseAlphabetical = 'ReverseAlphabetical',
+  RecentlyUsedFirst = 'RecentlyUsedFirst',
+  RecentlyUsedLast = 'RecentlyUsedLast',
+  RecentlyModifiedFirst = 'RecentlyModifiedFirst',
+  RecentlyModifiedLast = 'RecentlyModifiedLast',
 }
 
 /**

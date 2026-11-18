@@ -3,6 +3,7 @@ import { CredentialSortOrder } from '@aliasvault/client/database/repositories/Se
 import { selectedItemKey, toSelectedItem } from '@aliasvault/client/items/BulkItemActions';
 import { canHaveSubfolders, compareFolderNames, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ITEM_SORT_FIELDS, RECENCY_GROUPS, nextSortOrder, recencyGroupStarts, sortItems, sortOrderParts } from '@aliasvault/client/items/ItemSort';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { canAdministerGroup, sharingText, holdsManifestKey, MAX_SHARED_VAULT_NAME_LENGTH } from '@aliasvault/client/sharing/SharingView';
@@ -70,15 +71,6 @@ const CURRENT_SITE_SUGGESTION_MIN_ITEMS = 5;
  * How many items render per infinite scroll batch, so a large vault does not render thousands of item cards at once.
  */
 const ITEM_BATCH_SIZE = 200;
-
-/**
- * Sort order options with their translation keys
- */
-const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
-  { value: CredentialSortOrder.OldestFirst, labelKey: 'items.sort.oldestFirst' },
-  { value: CredentialSortOrder.NewestFirst, labelKey: 'items.sort.newestFirst' },
-  { value: CredentialSortOrder.Alphabetical, labelKey: 'items.sort.alphabetical' },
-];
 
 /**
  * Get stored filter from localStorage if not expired
@@ -756,24 +748,13 @@ const ItemsList: React.FC = () => {
   /**
    * Sort the filtered items based on the current sort order.
    */
-  const sortedItems = useMemo(() => {
-    const itemsCopy = [...filteredItems];
-    switch (sortOrder) {
-      case CredentialSortOrder.NewestFirst:
-        return itemsCopy.sort((a, b) =>
-          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
-        );
-      case CredentialSortOrder.Alphabetical:
-        return itemsCopy.sort((a, b) =>
-          (a.Name || '').localeCompare(b.Name || '')
-        );
-      case CredentialSortOrder.OldestFirst:
-      default:
-        return itemsCopy.sort((a, b) =>
-          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
-        );
-    }
-  }, [filteredItems, sortOrder]);
+  const sortedItems = useMemo(() => sortItems(filteredItems, sortOrder), [filteredItems, sortOrder]);
+  const sortParts = sortOrderParts(sortOrder);
+
+  /**
+   * The date group header above each item that starts one, when sorted on last use.
+   */
+  const groupStarts = useMemo(() => recencyGroupStarts(sortedItems, sortOrder, item => item), [sortedItems, sortOrder]);
 
   /**
    * Start again at the first batch whenever the list itself changes (search, filter, folder or sort order).
@@ -1066,8 +1047,11 @@ const ItemsList: React.FC = () => {
               </>
             )}
             <MenuHeading>{t('items.sort.title')}</MenuHeading>
-            {SORT_OPTIONS.map((option) => (
-              <MenuRadioItem key={option.value} checked={sortOrder === option.value} onClick={() => void changeSortOrder(option.value)}>{t(option.labelKey)}</MenuRadioItem>
+            {ITEM_SORT_FIELDS.map((option) => (
+              <MenuRadioItem key={option.field} checked={sortParts.field === option.field} onClick={() => void changeSortOrder(nextSortOrder(sortOrder, option.field))}>
+                <span className="flex-1">{t(option.labelKey)}</span>
+                {sortParts.field === option.field && <Icon name={sortParts.direction === 'asc' ? 'arrow-narrow-up' : 'arrow-narrow-down'} className="w-4 h-4" />}
+              </MenuRadioItem>
             ))}
           </EllipsisMenu>
           <ReloadButton onClick={() => void refreshVault()} />
@@ -1235,25 +1219,32 @@ const ItemsList: React.FC = () => {
           {/* Items */}
           {visibleItems.length > 0 && (
             <ul ref={rowsRef} id="items-list" role="listbox" aria-multiselectable={isSelecting || undefined} className="space-y-2">
-              {visibleItems.map((item, index) => (
-                <ItemCard
-                  key={scopedKey(item.ManifestId, item.Id)}
-                  item={item}
-                  showFolderPath={!!listSearchTerm}
-                  currentFolderPath={currentFolderPath}
-                  isActive={activeKind === 'item' && activeIndex === index}
-                  optionId={itemIdFor(index)}
-                  isHighlighted={highlightedItem !== null && isSameItem(item, highlightedItem)}
-                  isMarked={openedRow === scopedKey(item.ManifestId, item.Id)}
-                  onClick={openItem}
-                  onOpen={rememberOpenedItem}
-                  onDuplicate={handleDuplicateItem}
-                  onDelete={setDeleteItem}
-                  selectionMode={isSelecting}
-                  isSelected={isSelecting && selection.isSelected(item)}
-                  onSelect={toggleSelected}
-                />
-              ))}
+              {visibleItems.map((item, index) => {
+                const group = groupStarts?.[index];
+                return (
+                  <React.Fragment key={scopedKey(item.ManifestId, item.Id)}>
+                    {group && (
+                      <li role="presentation" className={`px-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 ${index > 0 ? 'pt-2' : ''}`}>{t(RECENCY_GROUPS[group])}</li>
+                    )}
+                    <ItemCard
+                      item={item}
+                      showFolderPath={!!listSearchTerm}
+                      currentFolderPath={currentFolderPath}
+                      isActive={activeKind === 'item' && activeIndex === index}
+                      optionId={itemIdFor(index)}
+                      isHighlighted={highlightedItem !== null && isSameItem(item, highlightedItem)}
+                      isMarked={openedRow === scopedKey(item.ManifestId, item.Id)}
+                      onClick={openItem}
+                      onOpen={rememberOpenedItem}
+                      onDuplicate={handleDuplicateItem}
+                      onDelete={setDeleteItem}
+                      selectionMode={isSelecting}
+                      isSelected={isSelecting && selection.isSelected(item)}
+                      onSelect={toggleSelected}
+                    />
+                  </React.Fragment>
+                );
+              })}
             </ul>
           )}
 
