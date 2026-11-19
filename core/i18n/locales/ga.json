@@ -914,15 +914,15 @@
     "separator": "Deighilteoir",
     "serviceUrl": "URL na seirbhíse",
     "sort": {
-      "dateCreated": "Date created",
+      "dateCreated": "Dáta cruthaithe",
       "groups": {
-        "last30Days": "Last 30 days",
-        "last7Days": "Last 7 days",
-        "older": "Older",
-        "today": "Today"
+        "last30Days": "30 lá anuas",
+        "last7Days": "7 lá anuas",
+        "older": "Níos sine",
+        "today": "Inniu"
       },
-      "lastModified": "Last modified",
-      "lastUsed": "Last used",
+      "lastModified": "Athraithe go deireanach",
+      "lastUsed": "Úsáidte go deireanach",
       "name": "Ainm",
       "title": "Sórtáil de réir"
     },
