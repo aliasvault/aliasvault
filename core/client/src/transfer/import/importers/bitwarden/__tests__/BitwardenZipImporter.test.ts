@@ -1,73 +1,23 @@
-import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
+import { ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
 import { bytesToBase64Url } from '../../../../../utilities/Base64';
 import { createZipArchive, textToZipBytes } from '../../../../shared/ZipArchive';
-import { byName, convertToItems, generatePasskeyKey, itemByName, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
+import { byName, generatePasskeyKey, readFixtureBytes, testPasskeyKeys } from '../../../__tests__/testHelpers';
 import { ImportException, ImportStage } from '../../../models/ImportException';
 import { importBitwardenZip } from '../BitwardenZipImporter';
 
+import { expectBitwardenTemplateItems } from './bitwardenTemplate';
+
 describe('BitwardenZipImporter', () => {
-  it('imports a Bitwarden ZIP with attachments', async () => {
-    const result = await importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden.zip'));
-    const imported = result.Credentials;
-    expect(imported).toHaveLength(5);
+  it('imports a Bitwarden .zip export', async () => {
+    const result = await importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden.zip'), testPasskeyKeys);
 
-    const login = byName(imported, 'Example Login');
-    expect(login.Username).toBe('testuser@example.com');
-    expect(login.Password).toBe('SecurePassword123!');
-    expect(login.ServiceUrls).toEqual(['https://example.com']);
-    expect(login.TwoFactorSecret).toBe('otpauth://totp/Example:testuser@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Example');
-    expect(login.FolderPath).toBe('Personal');
-    expect(login.ItemType).toBe(ItemTypes.Login);
-
-    // Custom fields of every type (Text=0, Hidden=1, Boolean=2); linked fields (3) are skipped.
-    expect(login.CustomFieldValues).toHaveLength(3);
-    const securityQuestion = login.CustomFieldValues!.find(f => f.Label === 'Security Question')!;
-    expect(securityQuestion.Value).toBe('My first pet');
-    expect(securityQuestion.FieldType).toBe(FieldTypes.Text);
-    const apiKey = login.CustomFieldValues!.find(f => f.Label === 'API Key')!;
-    expect(apiKey.Value).toBe('sk_test_123456789');
-    expect(apiKey.FieldType).toBe(FieldTypes.Hidden);
-    const twoFactorEnabled = login.CustomFieldValues!.find(f => f.Label === 'Two Factor Enabled')!;
-    expect(twoFactorEnabled.Value).toBe('true');
-    expect(twoFactorEnabled.FieldType).toBe(FieldTypes.Text);
-    expect(login.Notes).toBe('This is a test login item');
-
-    const note = byName(imported, 'Secure Note');
-    expect(note.Notes).toBe('This is a secure note with sensitive information');
-    expect(note.ItemType).toBe(ItemTypes.Note);
-    expect(note.FolderPath).toBeNull();
-
-    const card = byName(imported, 'My Credit Card');
-    expect(card.Notes).toBe('Primary card');
-    expect(card.FolderPath).toBe('Work');
-    expect(card.ItemType).toBe(ItemTypes.CreditCard);
-    expect(card.Creditcard!.CardholderName).toBe('John Doe');
-    expect(card.Creditcard!.Number).toBe('4111111111111111');
-    expect(card.Creditcard!.ExpiryMonth).toBe('12');
-    expect(card.Creditcard!.ExpiryYear).toBe('2025');
-    expect(card.Creditcard!.Cvv).toBe('123');
-
-    const identity = byName(imported, 'Personal Identity');
-    expect(identity.ItemType).toBe(ItemTypes.Alias);
-    expect(identity.Alias!.FirstName).toBe('John');
-    expect(identity.Alias!.LastName).toBe('Doe');
-    expect(identity.Email).toBe('john@example.com');
-    expect(identity.Notes).toContain('Company: Example Corp');
-    expect(identity.Notes).toContain('Phone: +1234567890');
-    expect(identity.Notes).toContain('Address: 123 Main St, Apt 4B, New York, NY, 10001, US');
-
-    const withAttachment = byName(imported, 'Login with Attachment');
-    expect(withAttachment.Username).toBe('admin');
-    expect(withAttachment.Password).toBe('AdminPass456!');
-
-    const convertedItems = convertToItems(imported);
-    expect(convertedItems).toHaveLength(5);
-    const convertedLogin = itemByName(convertedItems, 'Example Login');
-    expect(convertedLogin.ItemType).toBe(ItemTypes.Login);
-    expect(convertedLogin.TotpCodes).toHaveLength(1);
-    expect(convertedLogin.TotpCodes[0].SecretKey).toBe('JBSWY3DPEHPK3PXP');
+    expectBitwardenTemplateItems(result);
+    // Attachments are read from "attachments/<item name>/"; data.json does not list them.
+    const attachments = byName(result.Credentials, 'AV Login Attachment').Attachments?.map(attachment => `${attachment.Filename}=${new TextDecoder().decode(attachment.Blob)}`);
+    expect(attachments).toEqual(['av-attachment.txt=attachment-1', 'av-attachment-2.txt=attachment-2']);
+    expect(result.Credentials.filter(credential => credential.Attachments).map(credential => credential.ServiceName)).toEqual(['AV Login Attachment']);
   });
 
   it('ignores directory entries when reading Bitwarden ZIP attachments', async () => {
@@ -186,30 +136,6 @@ describe('BitwardenZipImporter', () => {
     expect(fieldsOf('Bank')).toEqual(['Bank name=Example Bank (Text)', 'Account number=12345678 (Hidden)', 'IBAN=NL00BANK0123456789 (Hidden)']);
     expect(fieldsOf('License')).toEqual(['First name=John (Text)', 'Last name=Doe (Text)', 'License number=D123 (Text)']);
     expect(fieldsOf('Passport')).toEqual(['Surname=Doe (Text)', 'Given name=John (Text)', 'Passport number=X123 (Text)']);
-  });
-
-  it('imports the passkeys of a Bitwarden export', async () => {
-    const result = await importBitwardenZip(readFixtureBytes(import.meta.dirname, 'bitwarden_passkeys.zip'), testPasskeyKeys);
-    expect(result.FailedItems).toEqual([]);
-    expect(result.Credentials.flatMap(credential => credential.Passkeys ?? [])).toHaveLength(1);
-
-    const login = byName(result.Credentials, 'webauthn.io');
-    expect(login.Username).toBe('bitwarden');
-    expect(login.ServiceUrls).toEqual(['https://webauthn.io/']);
-    expect(byName(result.Credentials, 'Example Shop').Passkeys).toBeUndefined();
-
-    // A Bitwarden credential id is a GUID; its 16 bytes are what the relying party knows the passkey by.
-    const passkey = login.Passkeys![0];
-    expect(passkey.RpId).toBe('webauthn.io');
-    expect(passkey.DisplayName).toBe('bitwarden');
-    expect(Buffer.from(passkey.CredentialId!).toString('hex')).toBe('fc79010a87c741318409e71541605729');
-    expect(new TextDecoder().decode(passkey.UserHandle!)).toBe('webauthnio-bitwarden');
-    expect(JSON.parse(passkey.PrivateKey)).toMatchObject({ kty: 'EC', crv: 'P-256', d: expect.any(String) as string });
-    expect(passkey.PrfKey).toBeNull();
-
-    const stored = itemByName(convertToItems(result.Credentials), 'webauthn.io').Passkeys[0];
-    expect(stored.CredentialId).toEqual(passkey.CredentialId);
-    expect(stored.PrivateKey).toBe(passkey.PrivateKey);
   });
 
   it('keeps an item whose passkey cannot be read and reports it', async () => {
