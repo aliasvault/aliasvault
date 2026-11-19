@@ -1,6 +1,6 @@
 {
   "name": "aliasvault.admin",
-  "version": "0.31.3",
+  "version": "0.31.4",
   "description": "",
   "main": "index.js",
   "scripts": {

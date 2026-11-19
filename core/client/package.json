@@ -1,6 +1,6 @@
 {
     "name": "@aliasvault/client",
-    "version": "0.31.3",
+    "version": "0.31.4",
     "description": "Typescript AliasVault client core.",
     "type": "module",
     "private": true,
