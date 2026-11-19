@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:1.31.9-alpine
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
