@@ -1,82 +1,72 @@
-import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
-import { describe, expect, it, vi } from 'vitest';
+import { ItemTypes } from '@aliasvault/models/vault';
+import { describe, expect, it } from 'vitest';
 
-import { parseFolderPath } from '../../../../shared/FolderPaths';
 import { byName, convertToItems, itemByName, readFixtureText } from '../../../__tests__/testHelpers';
-import { collectHierarchicalFolderPaths } from '../../../writers/ImportDuplicateDetection';
 import { importBitwardenCsv } from '../BitwardenCsvImporter';
 
-import type { ImportedCredential } from '../../../models/ImportedCredential';
-
-/**
- * Converts the Bitwarden fixture, which holds one invalid TOTP secret that the importer logs and skips.
- */
-function convertBitwardenFixture(imported: ImportedCredential[]): ReturnType<typeof convertToItems> {
-  const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  try {
-    const items = convertToItems(imported);
-    expect(consoleWarn).toHaveBeenCalledTimes(1);
-    return items;
-  } finally {
-    consoleWarn.mockRestore();
-  }
-}
+import { fieldsOf } from './bitwardenTemplate';
 
 describe('BitwardenCsvImporter', () => {
-  it('imports Bitwarden CSV', () => {
+  it('imports a Bitwarden CSV export', () => {
     const imported = importBitwardenCsv(readFixtureText(import.meta.dirname, 'bitwarden.csv'));
-    expect(imported).toHaveLength(12);
+    // The CSV holds only logins and notes, so it has no card or identity; trashed items are left out.
+    expect(imported).toHaveLength(14);
+    expect(imported.map(credential => credential.ItemType).filter(type => type !== ItemTypes.Login)).toEqual([ItemTypes.Note, ItemTypes.Note]);
+    // It has no attachments or passkeys.
+    expect(imported.some(credential => credential.Attachments || credential.Passkeys)).toBe(false);
 
-    // One entry has an invalid TOTP secret ("!" in it); conversion must not throw.
-    const convertedItems = convertBitwardenFixture(imported);
-    expect(itemByName(convertedItems, 'TutaNota4').TotpCodes).toHaveLength(0);
-    expect(itemByName(convertedItems, 'TutaNota').TotpCodes).toHaveLength(1);
-    expect(itemByName(convertedItems, 'TutaNota3').TotpCodes).toHaveLength(1);
+    const basic = byName(imported, 'AV Login Basic');
+    expect(basic.Username).toBe('av-basic');
+    expect(basic.Password).toBe('Pw-Basic-1!');
+    expect(basic.ServiceUrls).toEqual(['https://login.example.com/']);
+    expect(basic.Notes).toBe('Basic note');
+    expect(basic.FolderPath).toBeNull();
 
-    const tutaNota = byName(imported, 'TutaNota');
-    expect(tutaNota.Username).toBe('avtest2@tutamail.com');
-    expect(tutaNota.Password).toBe('blabla');
-    expect(tutaNota.TwoFactorSecret).toBe('otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30');
+    const totp = byName(imported, 'AV Login TOTP');
+    expect(totp.Username).toBe('av-totp@example.com');
+    expect(totp.TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
 
-    const aliasVault = byName(imported, 'Aliasvault.com');
-    expect(aliasVault.ServiceUrls?.[0]).toBe('https://www.aliasvault.com');
-    expect(aliasVault.Username).toBe('root');
-    expect(aliasVault.Password).toBe('toor');
+    // The URLs of a login are one comma separated column.
+    expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com/', 'https://b.example.org/login', 'https://c.example.net:8443/']);
 
-    const multiUrl = byName(imported, 'TutaNota3');
-    expect(multiUrl.ServiceUrls).toEqual(['https://www.aliasvault.com', 'https://app.aliasvault.com', 'https://downloads.aliasvault.com']);
-    expect(multiUrl.Username).toBe('avtest3@tutamail.com');
-    expect(multiUrl.TwoFactorSecret).toBe('otpauth://totp/Test%20name%3Atest%40test.org?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&issuer=Alias%20Vault');
+    // The fields column has a "name: value" line per field, without the field type.
+    expect(fieldsOf(imported, 'AV Login Custom Fields')).toEqual(['AV Text=Region EU (Text)', 'AV Hidden=1234 (Text)', 'AV Bool=true (Text)']);
 
-    const multiUrlItem = itemByName(convertedItems, 'TutaNota3');
-    const urlFieldValues = multiUrlItem.FieldValues.filter(fv => fv.FieldKey === FieldKey.LoginUrl).sort((a, b) => a.Weight - b.Weight);
-    expect(urlFieldValues.map(fv => fv.Value)).toEqual(['https://www.aliasvault.com', 'https://app.aliasvault.com', 'https://downloads.aliasvault.com']);
-    expect(urlFieldValues.map(fv => fv.Weight)).toEqual([0, 1, 2]);
+    const withPasskey = byName(imported, 'AV Login Passkey');
+    expect(withPasskey.Username).toBe('av-passkey');
+    expect(withPasskey.Notes).toBe('');
 
-    // The TOTP name is URL-decoded from the otpauth URI.
-    const totp = multiUrlItem.TotpCodes[0];
-    expect(totp).toBeDefined();
-    expect(totp.SecretKey).toBe('PLW4SB3PQ7MKVXY2MXF4NEXS6Y');
-    expect(totp.Name).toBe('Alias Vault: Test name:test@test.org');
+    expect(byName(imported, 'AV Login Folder').FolderPath).toBe('AV Work');
+    expect(byName(imported, 'AV Login Nested Folder').FolderPath).toBe('AV Work/AV Sub');
+    expect(byName(imported, 'AV Login Empty Password').Password).toBe('');
 
-    expect(byName(imported, 'ProjectItem').FolderPath).toBe('Work/Projects');
-    expect(byName(imported, 'ActiveProjectItem').FolderPath).toBe('Work/Projects/Active');
-    expect(byName(imported, 'BankAccount').FolderPath).toBe('Personal/Finance/Banking');
-    expect(byName(imported, 'SavingsAccount').FolderPath).toBe('Personal/Finance/Banking/Savings');
+    const special = byName(imported, 'AV Login Special Chars äöü 日本');
+    expect(special.Username).toBe('av-spécial, "quoted"');
+    expect(special.Password).toBe('Pw,"10";\'\\ €ü');
+    expect(special.ServiceUrls).toEqual(['https://special.example.com/path?a=1&b=2']);
+    expect(special.Notes).toBe('Line one, with a comma and "quotes"\n\nLine three; semicolon');
 
-    expect(parseFolderPath('Work/Projects/Active')).toEqual(['Work', 'Projects', 'Active']);
-    expect(parseFolderPath('Personal/Finance/Banking/Savings')).toEqual(['Personal', 'Finance', 'Banking', 'Savings']);
+    expect(byName(imported, 'AV Login No URL').ServiceUrls).toBeNull();
+
+    expect(byName(imported, 'AV Note').Notes).toBe('Short secure note');
+    expect(byName(imported, 'AV Note Long').Notes).toBe(new Array(100).fill('0123456789 The quick brown fox jumps over the lazy dog.').join('\n'));
+
+    // Bitwarden has no tags; the favorite column has no AliasVault equivalent.
+    const tags = byName(imported, 'AV Login Tags');
+    expect(tags.Username).toBe('av-tags');
+    expect(tags.ServiceUrls).toEqual(['https://tags.example.com']);
+
+    const convertedItems = convertToItems(imported);
+    expect(convertedItems).toHaveLength(14);
+    expect(itemByName(convertedItems, 'AV Login TOTP').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'JBSWY3DPEHPK3PXP' })]);
   });
 
-  it('imports Bitwarden folders', () => {
-    const imported = importBitwardenCsv(readFixtureText(import.meta.dirname, 'bitwarden.csv'));
-    expect(imported.filter(c => c.FolderPath === 'Business')).toHaveLength(6);
-    expect(collectHierarchicalFolderPaths(imported)).toContain('Business');
-  });
+  it('splits each line of the fields column on its first ": "', () => {
+    const csv = [
+      'folder,favorite,type,name,notes,fields,reprompt,archivedDate,login_uri,login_username,login_password,login_totp',
+      ',,login,Fields,,"Question: Where: here\r\n\r\nNo separator\r\nEmpty: \r\n: No name",0,,,user,pw,',
+    ].join('\r\n');
 
-  it('detects Bitwarden item types', () => {
-    const imported = importBitwardenCsv(readFixtureText(import.meta.dirname, 'bitwarden.csv'));
-    const items = convertBitwardenFixture(imported);
-    expect(items.filter(i => i.ItemType === ItemTypes.Login).length).toBeGreaterThan(0);
+    expect(fieldsOf(importBitwardenCsv(csv), 'Fields')).toEqual(['Question=Where: here (Text)']);
   });
 });
