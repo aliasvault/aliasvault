@@ -1,0 +1,406 @@
+{
+  "encrypted": false,
+  "folders": [
+    {
+      "name": "AV Work",
+      "id": "232d187a-0f7f-468b-b1f7-b50700d7c69c"
+    },
+    {
+      "name": "AV Work/AV Sub",
+      "id": "d7e47828-3399-4855-b1c2-b50700d7da52"
+    }
+  ],
+  "items": [
+    {
+      "type": 3,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "e939ce23-eda6-4d2d-8f53-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Card",
+      "notes": "Card note",
+      "fields": [],
+      "card": {
+        "cardholderName": "AV Cardholder",
+        "brand": "Visa",
+        "number": "4111111111111111",
+        "expMonth": "12",
+        "expYear": "2030",
+        "code": "123"
+      },
+      "passwordHistory": [
+        {
+          "password": "PIN: 4321",
+          "lastUsedDate": "2026-11-19T13:07:23.306Z"
+        }
+      ],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:07:23.433Z"
+    },
+    {
+      "type": 4,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "8f8b9f9c-6ec8-4228-98f8-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Identity",
+      "fields": [],
+      "identity": {
+        "firstName": "Avery",
+        "lastName": "Vault",
+        "address1": "Examplestreet 1",
+        "address2": "Address 2",
+        "address3": "Address 3",
+        "city": "Exampletown",
+        "state": "Noord-Holland",
+        "postalCode": "1234 AB",
+        "country": "Netherlands",
+        "email": "identity@example.com",
+        "phone": "+31201234567"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:52:52.400Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "bc20b0e1-5472-4aa0-8055-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Attachment",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://attach.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-attach",
+        "password": "Pw-Attach-5!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:05:02.300Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "4241d2e0-e10f-4ccb-a648-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Basic",
+      "notes": "Basic note",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://login.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-basic",
+        "password": "Pw-Basic-1!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:01:24.866Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "1b061fd3-f166-4cf0-aea0-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Custom Fields",
+      "fields": [
+        {
+          "type": 0,
+          "name": "AV Text",
+          "value": "Region EU"
+        },
+        {
+          "type": 1,
+          "name": "AV Hidden",
+          "value": "1234"
+        },
+        {
+          "type": 2,
+          "name": "AV Bool",
+          "value": "true"
+        }
+      ],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://custom.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-custom",
+        "password": "Pw-Custom-4!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:04:19.896Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "a606cc9e-a0bf-4246-9dfd-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Empty Password",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://empty.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-empty"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:01:34.370Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "b099b270-0735-4ea8-af82-b50700d62715",
+      "collectionIds": null,
+      "folderId": "232d187a-0f7f-468b-b1f7-b50700d7c69c",
+      "name": "AV Login Folder",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://folder.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-folder",
+        "password": "Pw-Folder-7!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:06:14.470Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "b29c8873-7eb1-4d04-af83-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Multi URL",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://a.example.com/"
+          },
+          {
+            "uri": "https://b.example.org/login"
+          },
+          {
+            "uri": "https://c.example.net:8443/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-multi",
+        "password": "Pw-Multi-3!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:03:29.723Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "f2d8eff6-0eaa-4d34-bf65-b50700d62715",
+      "collectionIds": null,
+      "folderId": "d7e47828-3399-4855-b1c2-b50700d7da52",
+      "name": "AV Login Nested Folder",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://nested.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-nested",
+        "password": "Pw-Nested-8!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:06:23.733Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "26759325-62f9-4908-b4ce-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login No URL",
+      "fields": [],
+      "login": {
+        "uris": [],
+        "fido2Credentials": [],
+        "username": "av-nourl",
+        "password": "Pw-NoUrl-11!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:01:53.760Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "b2aa09a8-0742-4d2e-8b2e-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Passkey",
+      "notes": "",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://webauthn.io/"
+          }
+        ],
+        "fido2Credentials": [
+          {
+            "credentialId": "bf81c454-dd6f-41e3-903e-13d84a6c9c7d",
+            "keyType": "public-key",
+            "keyAlgorithm": "ECDSA",
+            "keyCurve": "P-256",
+            "keyValue": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgM2DqUESOcAl4OodSKmBAiuzkjT2NMgSuENEt6BsMLcWhRANCAASZHxySAnwtQkT4wf0TrXi3OCvPr3eJD_fx1stulPQlUaSmhYBeKvRrl5IzJ_rjoRMorXYXD4I1DRUAyDs60M-d",
+            "rpId": "webauthn.io",
+            "counter": "0",
+            "discoverable": "true",
+            "creationDate": "2026-11-19T13:13:08.377Z",
+            "userHandle": "d2ViYXV0aG5pby1hdi1wYXNza2V5",
+            "userName": "av-passkey",
+            "rpName": "webauthn.io",
+            "userDisplayName": "av-passkey"
+          }
+        ],
+        "username": "av-passkey",
+        "password": "Pw-Passkey-6!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:52:59.186Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "e179f271-44fa-4ace-a558-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login Special Chars äöü 日本",
+      "notes": "Line one, with a comma and \"quotes\"\n\nLine three; semicolon",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://special.example.com/path?a=1&b=2"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-spécial, \"quoted\"",
+        "password": "Pw,\"10\";'\\ €ü"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:02:07.310Z"
+    },
+    {
+      "type": 1,
+      "favorite": true,
+      "reprompt": 0,
+      "id": "4f3b1642-4a4f-4a47-91cb-b50700e52611",
+      "collectionIds": null,
+      "name": "AV Login Tags",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://tags.example.com"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-tags",
+        "password": "Pw-Tags-17!"
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T13:54:18.286Z",
+      "revisionDate": "2026-11-19T13:54:28.420Z"
+    },
+    {
+      "type": 1,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "64eddb7d-b3b0-4ddb-b4c6-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Login TOTP",
+      "fields": [],
+      "login": {
+        "uris": [
+          {
+            "uri": "https://totp.example.com/"
+          }
+        ],
+        "fido2Credentials": [],
+        "username": "av-totp@example.com",
+        "password": "Pw-Totp-2!",
+        "totp": "JBSWY3DPEHPK3PXP"
+      },
+      "passwordHistory": [
+        {
+          "password": "TOTP name: otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?issuer=AV%20Login%20TOTP&secret=JBSWY3DPEHPK3PXP&algorithm=SHA1&digits=6&period=30",
+          "lastUsedDate": "2026-11-19T13:00:37.598Z"
+        }
+      ],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:02:11.726Z"
+    },
+    {
+      "type": 2,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "6014b797-cb3b-4fa1-9c79-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Note",
+      "notes": "Short secure note",
+      "fields": [],
+      "secureNote": {
+        "type": 0
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:02:15.886Z"
+    },
+    {
+      "type": 2,
+      "favorite": false,
+      "reprompt": 0,
+      "id": "074b3719-8041-431f-a473-b50700d62715",
+      "collectionIds": null,
+      "name": "AV Note Long",
+      "notes": "0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.\n0123456789 The quick brown fox jumps over the lazy dog.",
+      "fields": [],
+      "secureNote": {
+        "type": 0
+      },
+      "passwordHistory": [],
+      "creationDate": "2026-11-19T12:59:42.353Z",
+      "revisionDate": "2026-11-19T13:02:20.286Z"
+    }
+  ]
+}
