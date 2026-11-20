@@ -513,7 +513,7 @@
       "decryptAndContinueButton": "فك التشفير والمتابعة",
       "decryptingFile": "جارٍ فك تشفير الملف...",
       "decryptionErrorGeneric": "تعذّر فك تشفير الملف. يرجى التحقق من أن الملف غير تالف والمحاولة مرة أخرى.",
-      "decryptionPasswordHint": "هذه هي كلمة المرور التي عيّنتها عند إنشاء التصدير المشفر (ملف .avex)، وليست كلمة المرور الرئيسية لخزنتك.",
+      "decryptionPasswordHint": "هذه هي كلمة المرور التي عيّنتها عند إنشاء التصدير المشفر (ملف avex)، وليست كلمة المرور الرئيسية لخزنتك.",
       "decryptionPasswordLabel": "كلمة مرور فك التشفير",
       "duplicateCredentialsWarning": "تم العثور على {{count}} من بيانات الاعتماد المكررة ولن يتم استيرادها.",
       "encryptedFilePasswordPrompt": "هذا الملف مشفر. يرجى إدخال كلمة المرور التي استخدمتها عند إنشاء التصدير.",
@@ -833,7 +833,7 @@
     "passwordLength": "Password Length",
     "passwordSettings": "Password Settings",
     "passwordSettingsPopup": {
-      "avoidAmbiguousCharsLabel": "Avoid ambiguous characters (1, l, I, 0, O, etc.)",
+      "avoidAmbiguousCharsLabel": "تجنب الأحرف الغامضة (1 وl وI و0 وO وغيرها)",
       "includeLowercaseLabel": "Include lowercase letters (a-z)",
       "includeNumbersLabel": "Include numbers (0-9)",
       "includeSpecialCharsLabel": "Include special characters (!@#$%^&*)",
