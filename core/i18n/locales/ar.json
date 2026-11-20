@@ -662,8 +662,8 @@
       "message": "يجب أن يعرض الملء التلقائي بيانات الاعتماد هذه في المرة التالية التي تفتح فيها التطبيق.",
       "title": "تم ربط بيانات الاعتماد"
     },
-    "avoidAmbiguousCharacters": "تجنب الأحرف الملتبسة (o و0 وغيرها)",
-    "avoidAmbiguousChars": "تجنب الأحرف الملتبسة",
+    "avoidAmbiguousCharacters": "تجنب الأحرف الغامضة (o و0 وغيرها)",
+    "avoidAmbiguousChars": "تجنب الأحرف الغامضة",
     "birthDatePlaceholder": "YYYY-MM-DD",
     "capitalization": "حالة الأحرف",
     "cardInformation": "معلومات البطاقة",
