@@ -518,6 +518,24 @@ mod sqlite_js {
     }
 }
 
+/// The JWK pair the vault stores for a PKCS#8 DER passkey private key (P-256, Ed25519 or RSA): a `JwkPair` as JSON.
+#[wasm_bindgen(js_name = passkeyPkcs8ToJwk)]
+pub fn passkey_pkcs8_to_jwk_js(pkcs8_der: &[u8]) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::passkey::pkcs8_to_jwk_pair(pkcs8_der).map_err(js_err)?).map_err(js_err)
+}
+
+/// The JWK pair the vault stores for a raw P-256 private scalar: a `JwkPair` as JSON.
+#[wasm_bindgen(js_name = passkeyP256ScalarToJwk)]
+pub fn passkey_p256_scalar_to_jwk_js(scalar: &[u8]) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::passkey::p256_scalar_to_jwk_pair(scalar).map_err(js_err)?).map_err(js_err)
+}
+
+/// The JWK pair the vault stores for a raw Ed25519 private key (its 32-byte seed): a `JwkPair` as JSON.
+#[wasm_bindgen(js_name = passkeyEd25519SeedToJwk)]
+pub fn passkey_ed25519_seed_to_jwk_js(seed: &[u8]) -> Result<String, JsValue> {
+    serde_json::to_string(&crate::passkey::ed25519_seed_to_jwk_pair(seed).map_err(js_err)?).map_err(js_err)
+}
+
 /// Passkey authenticator bindings for the browser extension. Results are plain objects with Uint8Array bytes.
 mod passkey_js {
     use js_sys::{Object, Reflect, Uint8Array};

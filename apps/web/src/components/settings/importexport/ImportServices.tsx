@@ -1,6 +1,7 @@
 import { AliasVaultCsvImportService } from '@aliasvault/client/transfer/import/importers/aliasvault/AliasVaultCsvImportService';
 import { AvuxImportService } from '@aliasvault/client/transfer/import/importers/aliasvault/AvuxImportService';
 import { importBitwardenCsv } from '@aliasvault/client/transfer/import/importers/bitwarden/BitwardenCsvImporter';
+import { importBitwardenJson } from '@aliasvault/client/transfer/import/importers/bitwarden/BitwardenJsonImporter';
 import { importBitwardenZip } from '@aliasvault/client/transfer/import/importers/bitwarden/BitwardenZipImporter';
 import { importChromeCsv } from '@aliasvault/client/transfer/import/importers/chrome/ChromeCsvImporter';
 import { importDashlaneCsv } from '@aliasvault/client/transfer/import/importers/dashlane/DashlaneCsvImporter';
@@ -48,13 +49,19 @@ const extensionOf = (filename: string): string => {
 };
 
 /** Parses the bytes of one export file format. */
-type FileParser = (fileBytes: Uint8Array) => ImportFileResult;
+type FileParser = (fileBytes: Uint8Array) => ImportFileResult | Promise<ImportFileResult>;
 
 /**
  * A parser for a text (CSV) export.
  * @param importFromCsv - the CSV importer
  */
 const csv = (importFromCsv: (fileContent: string) => ImportedCredential[]): FileParser => (fileBytes) => ({ Credentials: importFromCsv(decodeFileContent(fileBytes)), FailedItems: [] });
+
+/**
+ * A parser for a JSON export.
+ * @param importFromJson - the JSON importer
+ */
+const json = (importFromJson: (fileContent: string) => Promise<ImportFileResult>): FileParser => (fileBytes) => importFromJson(decodeFileContent(fileBytes));
 
 /**
  * Picks the correct parser based on the file extension.
@@ -105,7 +112,7 @@ type FileImportService = {
 
 const FILE_IMPORT_SERVICES: FileImportService[] = [
   { serviceName: '1Password', logoUrl: '/img/importers/1password.svg', descriptionKey: 'importExport.services.onePasswordDescription', instructionKeys: ['importExport.services.onePasswordInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.1pux': importOnePassword1pux, '.csv': csv(importOnePasswordCsv) } },
-  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.csv': csv(importBitwardenCsv) } },
+  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.json': json(importBitwardenJson), '.csv': csv(importBitwardenCsv) } },
   { serviceName: 'Chrome', logoUrl: '/img/importers/chrome.svg', descriptionKey: 'importExport.services.chromeDescription', instructionKeys: ['importExport.services.chromeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importChromeCsv) } },
   { serviceName: 'Dashlane', logoUrl: '/img/importers/dashlane.svg', descriptionKey: 'importExport.services.dashlaneDescription', instructionKeys: ['importExport.services.dashlaneInstructionsPart1', 'importExport.services.dashlaneInstructionsPart2'], parsers: { '.csv': csv(importDashlaneCsv) } },
   { serviceName: 'Dropbox Passwords', logoUrl: '/img/importers/dropbox.svg', descriptionKey: 'importExport.services.dropboxDescription', instructionKeys: ['importExport.services.dropboxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importDropboxCsv) } },

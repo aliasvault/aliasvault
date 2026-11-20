@@ -11,6 +11,7 @@ export class PasskeyQueries {
   public static readonly GET_BY_RP_ID = `
     SELECT
       p.Id,
+      p.CredentialId,
       p.ItemId,
       p.ManifestId,
       p.RpId,
@@ -38,6 +39,7 @@ export class PasskeyQueries {
   public static readonly GET_BY_ID_WITH_ITEM = `
     SELECT
       p.Id,
+      p.CredentialId,
       p.ItemId,
       p.ManifestId,
       p.RpId,
@@ -64,6 +66,7 @@ export class PasskeyQueries {
   public static readonly GET_BY_ITEM_ID = `
     SELECT
       p.Id,
+      p.CredentialId,
       p.ItemId,
       p.ManifestId,
       p.RpId,
@@ -85,10 +88,10 @@ export class PasskeyQueries {
    */
   public static readonly INSERT = `
     INSERT INTO Passkeys (
-      Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey,
+      Id, CredentialId, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey,
       PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Soft delete passkey by ID.

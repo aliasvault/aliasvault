@@ -57,6 +57,9 @@ const CARD_FIELDS: Readonly<Record<string, 'CardholderName' | 'Number' | 'Cvv' |
 };
 const EXPIRY_TITLES = new Set(['expiry date', 'expiration date', 'expires']);
 
+/** The label 1Password gives a new one-time password field, which does not name the code. */
+const DEFAULT_TOTP_TITLE = 'one-time password';
+
 /** The text members of a field value in the order they are tried, with the field type each maps to. */
 const TEXT_VALUE_MEMBERS: readonly ['String' | 'Concealed' | 'Url' | 'CreditCardNumber' | 'Menu' | 'Phone', FieldType][] = [
   ['String', FieldTypes.Text],
@@ -124,10 +127,6 @@ function convertItem(item: OnePasswordItem, folderPath: string | null, files: Ma
   if (item.Overview?.Urls && item.Overview.Urls.length > 0) {
     credential.ServiceUrls = nonBlank(item.Overview.Urls.map(url => url.Url));
   }
-  if (item.Overview?.Tags && item.Overview.Tags.length > 0) {
-    credential.Tags = nonBlank(item.Overview.Tags);
-  }
-
   for (const field of item.Details?.LoginFields ?? []) {
     if (field.Designation === 'username' && !isBlank(field.Value)) {
       credential.Username = field.Value;
@@ -161,8 +160,8 @@ function convertItem(item: OnePasswordItem, folderPath: string | null, files: Ma
 }
 
 /**
- * Apply one section field: a file becomes an attachment, a TOTP field the 2FA secret, and every other field a
- * custom field, after identity and card fields have also filled their own slots.
+ * Apply one section field: a file becomes an attachment, a TOTP field the 2FA secret, identity and card fields fill
+ * their own slots, and every other field becomes a custom field.
  * @param credential - The credential to fill
  * @param field - The field
  * @param files - The archive's files under files/
@@ -187,6 +186,7 @@ function applySectionField(credential: ImportedCredential, field: OnePasswordFie
 
   if (!isBlank(value.Totp)) {
     credential.TwoFactorSecret = value.Totp;
+    credential.TwoFactorName = field.Title.toLowerCase() === DEFAULT_TOTP_TITLE ? null : field.Title;
     return;
   }
 
@@ -195,32 +195,46 @@ function applySectionField(credential: ImportedCredential, field: OnePasswordFie
 
   if (credential.ItemType === ItemTypes.Alias) {
     credential.Alias ??= {};
-    applyIdentityField(credential.Alias, title, value, resolved.value);
+    if (applyIdentityField(credential, credential.Alias, title, value, resolved.value)) {
+      return;
+    }
   }
   if (credential.ItemType === ItemTypes.CreditCard) {
     credential.Creditcard ??= {};
-    applyCardField(credential.Creditcard, title, value, nullIfBlank(resolved.value));
+    if (applyCardField(credential.Creditcard, title, value, nullIfBlank(resolved.value))) {
+      return;
+    }
   }
 
   addCustomField(credential, field.Title, resolved.value, resolved.fieldType);
 }
 
 /**
- * Fill an identity slot from a section field.
+ * Fill an identity slot from a section field; the first email field becomes the email of the item.
+ * @param credential - The credential to fill
  * @param alias - The alias to fill
  * @param title - The lower case field title
  * @param value - The field value
  * @param text - The field value as text
+ * @returns True when the field filled a slot
  */
-function applyIdentityField(alias: ImportedAlias, title: string, value: OnePasswordFieldValue, text: string | null): void {
+function applyIdentityField(credential: ImportedCredential, alias: ImportedAlias, title: string, value: OnePasswordFieldValue, text: string | null): boolean {
   if (isBlank(text)) {
-    return;
+    return false;
   }
   if (Object.hasOwn(IDENTITY_FIELDS, title)) {
     alias[IDENTITY_FIELDS[title]] = text;
-  } else if (BIRTH_DATE_TITLES.has(title)) {
-    alias.BirthDate = fromUnixTimeSeconds(value.Date);
+    return true;
   }
+  if (BIRTH_DATE_TITLES.has(title)) {
+    alias.BirthDate = fromUnixTimeSeconds(value.Date);
+    return true;
+  }
+  if (title === 'email' && isBlank(credential.Email)) {
+    credential.Email = text;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -230,21 +244,25 @@ function applyIdentityField(alias: ImportedAlias, title: string, value: OnePassw
  * @param title - The lower case field title
  * @param value - The field value
  * @param text - The field value as non-blank text, or null
+ * @returns True when the field filled a slot
  */
-function applyCardField(card: ImportedCreditcard, title: string, value: OnePasswordFieldValue, text: string | null): void {
+function applyCardField(card: ImportedCreditcard, title: string, value: OnePasswordFieldValue, text: string | null): boolean {
   if (Object.hasOwn(CARD_FIELDS, title)) {
     const slot = CARD_FIELDS[title];
     const slotValue = slot === 'Number' ? nullIfBlank(value.CreditCardNumber) ?? text : text;
     if (slotValue) {
       card[slot] = slotValue;
+      return true;
     }
   } else if (EXPIRY_TITLES.has(title)) {
     const monthYear = /^(\d{4})(\d{2})$/.exec(String(value.MonthYear ?? ''));
     if (monthYear) {
       card.ExpiryYear = monthYear[1];
       card.ExpiryMonth = monthYear[2];
+      return true;
     }
   }
+  return false;
 }
 
 /**

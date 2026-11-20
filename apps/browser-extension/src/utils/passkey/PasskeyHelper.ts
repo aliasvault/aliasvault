@@ -1,7 +1,12 @@
 import { base64UrlToBytes, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
 
+import type { Passkey } from '@aliasvault/models/vault';
+
+/** The WebAuthn size limit of a credential id. */
+const MAX_CREDENTIAL_ID_BYTES = 1023;
+
 /**
- * Credential id conversions between GUID text, bytes and base64url.
+ * The WebAuthn credential id of a stored passkey, and GUID to bytes conversions.
  */
 export class PasskeyHelper {
   /**
@@ -28,24 +33,6 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert byte array to GUID string.
-   */
-  private static bytesToGuid(bytes: Uint8Array): string {
-    if (bytes.length !== 16) {
-      throw new Error('Invalid byte length for GUID');
-    }
-    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-    // Reinsert dashes in canonical format 8-4-4-4-12
-    return [
-      hex.substr(0, 8),
-      hex.substr(8, 4),
-      hex.substr(12, 4),
-      hex.substr(16, 4),
-      hex.substr(20)
-    ].join('-');
-  }
-
-  /**
    * Convert GUID to base64url for WebAuthn credential ID
    */
   public static guidToBase64url(guid: string): string {
@@ -53,9 +40,36 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert base64url to GUID for database lookup
+   * The WebAuthn credential id of a stored passkey: its CredentialId, or the bytes of its Id when it has none.
    */
-  public static base64urlToGuid(base64url: string): string {
-    return PasskeyHelper.bytesToGuid(base64UrlToBytes(base64url));
+  public static credentialIdBytes(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): Uint8Array {
+    return passkey.CredentialId ? new Uint8Array(passkey.CredentialId) : PasskeyHelper.guidToBytes(passkey.Id);
+  }
+
+  /**
+   * The WebAuthn credential id of a stored passkey as base64url, the form relying parties send in allowCredentials.
+   */
+  public static credentialIdBase64url(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): string {
+    return bytesToBase64Url(PasskeyHelper.credentialIdBytes(passkey));
+  }
+
+  /**
+   * The passkeys the relying party accepts in allowCredentials, or all of them when it lists none.
+   * The page sends the ids as standard base64, so they are normalized to base64url before comparing; an id that is not
+   * valid base64 or not 1 to 1023 bytes long matches nothing.
+   */
+  public static filterByAllowCredentials<T extends Pick<Passkey, 'Id' | 'CredentialId'>>(passkeys: T[], allowCredentialIds: string[] | undefined): T[] {
+    if (!allowCredentialIds || allowCredentialIds.length === 0) {
+      return passkeys;
+    }
+    const allowed = new Set(allowCredentialIds.flatMap(id => {
+      try {
+        const bytes = base64UrlToBytes(id);
+        return bytes.length > 0 && bytes.length <= MAX_CREDENTIAL_ID_BYTES ? [bytesToBase64Url(bytes)] : [];
+      } catch {
+        return [];
+      }
+    }));
+    return passkeys.filter(passkey => allowed.has(PasskeyHelper.credentialIdBase64url(passkey)));
   }
 }

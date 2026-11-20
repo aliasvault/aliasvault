@@ -1,5 +1,118 @@
-type,name,url,email,username,password,note,totp,createTime,modifyTime,vault
-login,Test proton 1,https://www.website.com/,,user1,pass1,,otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30,1744362003,1744362003,Personal
-alias,Test alias,,testalias.gating981@passinbox.com,,,,,1744362031,1744362052,Personal
-login,Test proton2,,,testuser2,testpassword2,,,1744362088,1744362088,Personal
-login,testwithoutpass,,,testuser,,,,1744362100,1744362110,Personal
+type,name,url,autofillUrls,email,username,password,note,totp,createTime,modifyTime,vault
+login,AV Login Basic,https://login.example.com/,"[{""url"":""https://login.example.com/"",""mode"":0}]",,av-basic,Pw-Basic-1!,Basic note,,1795031204,1795031204,Personal
+login,AV Login TOTP,https://totp.example.com/,"[{""url"":""https://totp.example.com/"",""mode"":0}]",av-totp@example.com,,Pw-Totp-2!,,,1795031255,1795034155,Personal
+login,AV Login Multi URL,"https://a.example.com/, https://b.example.org/login, https://c.example.net:8443/","[{""url"":""https://a.example.com/"",""mode"":0},{""url"":""https://b.example.org/login"",""mode"":0},{""url"":""https://c.example.net:8443/"",""mode"":0}]",,av-multi,Pw-Multi-3!,,,1795031294,1795031294,Personal
+login,AV Login Custom Fields,https://custom.example.com/,"[{""url"":""https://custom.example.com/"",""mode"":0}]",,av-custom,Pw-Custom-4!,,,1795031613,1795031613,Personal
+login,AV Login Attachment,https://attach.example.com/,"[{""url"":""https://attach.example.com/"",""mode"":0}]",,av-attach,Pw-Attach-5!,,,1795031799,1795033766,Personal
+login,AV Login Passkey,https://webauthn.io/,"[{""url"":""https://webauthn.io/"",""mode"":0}]",,av-passkey,Pw-Passkey-6!,Autosaved on https://webauthn.io/,,1795031886,1795031917,Personal
+login,AV Login Folder,https://folder.example.com/,"[{""url"":""https://folder.example.com/"",""mode"":0}]",,av-folder,Pw-Folder-7!,,,1795032103,1795033605,Personal
+login,AV Login Nested Folder,https://nested.example.com/,"[{""url"":""https://nested.example.com/"",""mode"":0}]",,av-nested,Pw-Nested-8!,,,1795032077,1795032273,Personal
+login,AV Login Empty Password,https://empty.example.com/,"[{""url"":""https://empty.example.com/"",""mode"":0}]",,av-empty,,,,1795032296,1795032296,Personal
+login,AV Login Special Chars äöü 日本,https://special.example.com/path?a=1&b=2,"[{""url"":""https://special.example.com/path?a=1&b=2"",""mode"":0}]",,"av-spécial, ""quoted""","Pw,""10"";'\ €ü","Line one, with a comma and ""quotes""
+
+Line three; semicolon",,1795032326,1795032326,Personal
+login,AV Login No URL,,,,av-nourl,Pw-NoUrl-11!,,,1795032349,1795032349,Personal
+creditCard,AV Card,,,,,,"{""cardholderName"":""AV Cardholder"",""cardType"":2,""number"":""4111111111111111"",""verificationNumber"":""123"",""expirationDate"":""2030-12"",""pin"":""4321"",""note"":""Card note""}",,1795032395,1795032395,Personal
+identity,Avery,,,,,,"{""fullName"":""Avery Vault"",""email"":"""",""phoneNumber"":""+31201234567"",""firstName"":"""",""middleName"":"""",""lastName"":"""",""birthdate"":"""",""gender"":"""",""extraPersonalDetails"":[],""organization"":"""",""streetAddress"":""Examplestreet 1"",""zipOrPostalCode"":""1234 AB"",""city"":""Exampletown"",""stateOrProvince"":""Noord-Holland"",""countryOrRegion"":""Netherlands"",""floor"":"""",""county"":"""",""extraAddressDetails"":[],""socialSecurityNumber"":"""",""passportNumber"":"""",""licenseNumber"":"""",""website"":"""",""xHandle"":"""",""secondPhoneNumber"":"""",""linkedin"":"""",""reddit"":"""",""facebook"":"""",""yahoo"":"""",""instagram"":"""",""extraContactDetails"":[],""company"":"""",""jobTitle"":"""",""personalWebsite"":"""",""workPhoneNumber"":"""",""workEmail"":"""",""extraWorkDetails"":[],""extraSections"":[],""note"":""""}",,1795032461,1795032461,Personal
+note,AV Note,,,,,,Short secure note,,1795032479,1795032479,Personal
+note,AV Note Long,,,,,,"0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.",,1795032522,1795032522,Personal
+login,AV Login Trashed,https://trashed.example.com/,"[{""url"":""https://trashed.example.com/"",""mode"":0}]",,av-trashed,Pw-Trashed-16!,,,1795032550,1795032554,Personal

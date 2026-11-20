@@ -1,8 +1,8 @@
 import { parseDateTime } from '../../../shared/DateTimeUtils';
-import { getProperty, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
+import { getProperty, isJsonObject, readBoolean, readNumber, readObject, readObjectArray, readString, readStringArray, requireObject, type JsonObject } from '../../readers/JsonReader';
 
 /*
- * The Bitwarden JSON export (data.json inside a .zip export).
+ * The Bitwarden JSON export: a .json export, or the data.json inside a .zip export.
  */
 
 /** Bitwarden item types. */
@@ -52,6 +52,7 @@ export type BitwardenItem = {
   Name: string | null;
   Notes: string | null;
   Favorite: boolean;
+  CreationDate: Date | null;
   RevisionDate: Date | null;
   PasswordHistory: BitwardenPasswordHistory[] | null;
   Fields: BitwardenField[] | null;
@@ -93,6 +94,8 @@ export type BitwardenLogin = {
   Username: string | null;
   Password: string | null;
   Totp: string | null;
+  /** The passkeys as raw JSON. */
+  Fido2Credentials: JsonObject[];
 };
 
 /**
@@ -196,6 +199,7 @@ export function parseBitwardenItem(element: unknown): BitwardenItem {
     Name: readString(obj, 'name'),
     Notes: readString(obj, 'notes'),
     Favorite: readBoolean(obj, 'favorite') ?? false,
+    CreationDate: parseDateTime(readString(obj, 'creationDate')),
     RevisionDate: parseDateTime(readString(obj, 'revisionDate')),
     PasswordHistory: readObjectArray(obj, 'passwordHistory', (entry): BitwardenPasswordHistory => ({ LastUsedDate: parseDateTime(readString(entry, 'lastUsedDate')), Password: readString(entry, 'password') })),
     Fields: readObjectArray(obj, 'fields', (field): BitwardenField => ({ Name: readString(field, 'name'), Value: readString(field, 'value'), LinkedId: readNumber(field, 'linkedId'), Type: readNumber(field, 'type') ?? 0 })),
@@ -220,11 +224,13 @@ function parseBitwardenLogin(obj: JsonObject | null): BitwardenLogin | null {
   if (!obj) {
     return null;
   }
+  const passkeys = getProperty(obj, 'fido2Credentials');
   return {
     Uris: readObjectArray(obj, 'uris', (uri): BitwardenUri => ({ Match: readNumber(uri, 'match'), Uri: readString(uri, 'uri') })),
     Username: readString(obj, 'username'),
     Password: readString(obj, 'password'),
     Totp: readString(obj, 'totp'),
+    Fido2Credentials: Array.isArray(passkeys) ? passkeys.filter(isJsonObject) : [],
   };
 }
 

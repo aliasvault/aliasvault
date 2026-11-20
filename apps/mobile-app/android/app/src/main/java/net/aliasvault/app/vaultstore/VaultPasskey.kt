@@ -18,7 +18,7 @@ class VaultPasskey(
     // region Passkey Queries
 
     /**
-     * Get a passkey by its id (the WebAuthn credential id, not the parent item id), in any manifest.
+     * Get a passkey by its row id (not the parent item id), in any manifest.
      */
     fun getPasskeyById(passkeyId: UUID): Passkey? {
         return database.connection().getPasskeyById(passkeyId.toString())?.let { toPasskey(it.passkey) }
@@ -109,6 +109,7 @@ class VaultPasskey(
                 prfKey = row.prfKey,
                 displayName = row.displayName,
                 additionalData = row.additionalData,
+                credentialId = row.credentialId,
                 createdAt = Date(row.createdAtMs),
                 updatedAt = Date(row.updatedAtMs),
                 isDeleted = false,

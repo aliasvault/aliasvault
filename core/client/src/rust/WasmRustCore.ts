@@ -7,7 +7,7 @@ import initWasm, * as core from '#wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, AvexHeader, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, JwkPair, KeyChainOpenResult, MobileLoginApproval, ParsedEmail, PinFailure, ReencryptedAccountKey, RsaKeyPair, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -133,6 +133,10 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
 
     vaultCodecLogoIdFor: (manifestId, kind, source): Promise<string> => ready(() => core.vaultCodecLogoIdFor(manifestId, kind, source)),
     vaultCodecLogoContentHash: (bytes): Promise<string> => ready(() => core.vaultCodecLogoContentHash(bytes)),
+
+    passkeyPkcs8ToJwk: (pkcs8Der): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyPkcs8ToJwk(pkcs8Der)) as JwkPair),
+    passkeyP256ScalarToJwk: (scalar): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyP256ScalarToJwk(scalar)) as JwkPair),
+    passkeyEd25519SeedToJwk: (seed): Promise<JwkPair> => ready(() => JSON.parse(core.passkeyEd25519SeedToJwk(seed)) as JwkPair),
 
     createVaultSyncSession: (requestJson): Promise<IVaultSyncSession> => ready((): IVaultSyncSession => {
       const session = new core.VaultSyncSession(requestJson);

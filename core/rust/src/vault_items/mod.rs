@@ -10,8 +10,8 @@ mod tests;
 
 pub use items::{append_field_value, get_all_active_items, get_totp_codes_for_item};
 pub use passkeys::{
-    add_passkey_to_item, create_item_with_passkey, get_all_passkeys_with_items, get_items_without_passkey_for_rp_id, get_passkey_by_id,
-    get_passkey_in_manifest, get_passkeys_for_item, get_passkeys_for_rp_id, replace_passkey,
+    add_passkey_to_item, create_item_with_passkey, get_all_passkeys_with_items, get_items_without_passkey_for_rp_id, get_passkey_by_credential_id,
+    get_passkey_by_id, get_passkey_in_manifest, get_passkeys_for_item, get_passkeys_for_rp_id, replace_passkey,
 };
 pub use stats::{record_item_use, ItemUsageAction};
 
@@ -69,6 +69,7 @@ pub struct VaultItemField {
 #[serde(rename_all = "camelCase")]
 pub struct VaultPasskey {
     pub id: String,
+    pub credential_id: Option<Vec<u8>>,
     pub item_id: String,
     pub manifest_id: String,
     pub rp_id: String,

@@ -12,7 +12,7 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { AccountKeyHierarchy, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey } from './RustCoreTypes';
+import type { AccountKeyHierarchy, FaviconTarget, IdentityNameInput, IdentityRequest, JwkPair, KeyChainOpenResult, ParsedEmail, PinFailure, ReencryptedAccountKey } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
@@ -347,4 +347,25 @@ function getFieldValues(item: Item, fieldKey: string): string[] {
     return field.Value.filter(v => v && v.length > 0);
   }
   return field.Value ? [field.Value] : [];
+}
+
+/**
+ * The key pair the vault stores for a PKCS#8 DER passkey private key (P-256, Ed25519 or RSA).
+ */
+export async function passkeyPkcs8ToJwk(pkcs8Der: Uint8Array): Promise<JwkPair> {
+  return rustCore().passkeyPkcs8ToJwk(pkcs8Der);
+}
+
+/**
+ * The key pair the vault stores for a raw P-256 private scalar.
+ */
+export async function passkeyP256ScalarToJwk(scalar: Uint8Array): Promise<JwkPair> {
+  return rustCore().passkeyP256ScalarToJwk(scalar);
+}
+
+/**
+ * The key pair the vault stores for a raw Ed25519 private key (its 32-byte seed).
+ */
+export async function passkeyEd25519SeedToJwk(seed: Uint8Array): Promise<JwkPair> {
+  return rustCore().passkeyEd25519SeedToJwk(seed);
 }
