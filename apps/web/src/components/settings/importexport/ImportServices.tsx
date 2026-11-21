@@ -11,6 +11,7 @@ import { importEnpassCsv } from '@aliasvault/client/transfer/import/importers/en
 import { importFirefoxCsv } from '@aliasvault/client/transfer/import/importers/firefox/FirefoxCsvImporter';
 import { getGenericCsvTemplate, importGenericCsv } from '@aliasvault/client/transfer/import/importers/generic/GenericCsvImporter';
 import { importKeePassCsv } from '@aliasvault/client/transfer/import/importers/keepass/KeePassCsvImporter';
+import { importKeePassXml } from '@aliasvault/client/transfer/import/importers/keepass/KeePassXmlImporter';
 import { importKeePassXcCsv } from '@aliasvault/client/transfer/import/importers/keepassxc/KeePassXcCsvImporter';
 import { importLastPassCsv } from '@aliasvault/client/transfer/import/importers/lastpass/LastPassCsvImporter';
 import { importNordPassCsv } from '@aliasvault/client/transfer/import/importers/nordpass/NordPassCsvImporter';
@@ -58,10 +59,10 @@ type FileParser = (fileBytes: Uint8Array) => ImportFileResult | Promise<ImportFi
 const csv = (importFromCsv: (fileContent: string) => ImportedCredential[]): FileParser => (fileBytes) => ({ Credentials: importFromCsv(decodeFileContent(fileBytes)), FailedItems: [] });
 
 /**
- * A parser for a JSON export.
- * @param importFromJson - the JSON importer
+ * A parser for a text (JSON or XML) export whose importer reports the items it could not read.
+ * @param importFromText - the importer
  */
-const json = (importFromJson: (fileContent: string) => Promise<ImportFileResult>): FileParser => (fileBytes) => importFromJson(decodeFileContent(fileBytes));
+const text = (importFromText: (fileContent: string) => Promise<ImportFileResult>): FileParser => (fileBytes) => importFromText(decodeFileContent(fileBytes));
 
 /**
  * Picks the correct parser based on the file extension.
@@ -112,7 +113,7 @@ type FileImportService = {
 
 const FILE_IMPORT_SERVICES: FileImportService[] = [
   { serviceName: '1Password', logoUrl: '/img/importers/1password.svg', descriptionKey: 'importExport.services.onePasswordDescription', instructionKeys: ['importExport.services.onePasswordInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.1pux': importOnePassword1pux, '.csv': csv(importOnePasswordCsv) } },
-  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.json': json(importBitwardenJson), '.csv': csv(importBitwardenCsv) } },
+  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.json': text(importBitwardenJson), '.csv': csv(importBitwardenCsv) } },
   { serviceName: 'Chrome', logoUrl: '/img/importers/chrome.svg', descriptionKey: 'importExport.services.chromeDescription', instructionKeys: ['importExport.services.chromeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importChromeCsv) } },
   { serviceName: 'Dashlane', logoUrl: '/img/importers/dashlane.svg', descriptionKey: 'importExport.services.dashlaneDescription', instructionKeys: ['importExport.services.dashlaneInstructionsPart1', 'importExport.services.dashlaneInstructionsPart2'], parsers: { '.csv': csv(importDashlaneCsv) } },
   { serviceName: 'Dropbox Passwords', logoUrl: '/img/importers/dropbox.svg', descriptionKey: 'importExport.services.dropboxDescription', instructionKeys: ['importExport.services.dropboxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importDropboxCsv) } },
@@ -120,7 +121,7 @@ const FILE_IMPORT_SERVICES: FileImportService[] = [
   { serviceName: 'Enpass', logoUrl: '/img/importers/enpass.svg', descriptionKey: 'importExport.services.enpassDescription', instructionKeys: ['importExport.services.enpassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importEnpassCsv) } },
   { serviceName: 'Firefox', logoUrl: '/img/importers/firefox.svg', descriptionKey: 'importExport.services.firefoxDescription', instructionKeys: ['importExport.services.firefoxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importFirefoxCsv) } },
   { serviceName: 'KeePass', logoUrl: '/img/importers/keepass.svg', descriptionKey: 'importExport.services.keePassDescription', instructionKeys: ['importExport.services.keePassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importKeePassCsv) } },
-  { serviceName: 'KeePassXC', logoUrl: '/img/importers/keepassxc.svg', descriptionKey: 'importExport.services.keePassXCDescription', instructionKeys: ['importExport.services.keePassXCInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importKeePassXcCsv) } },
+  { serviceName: 'KeePassXC', logoUrl: '/img/importers/keepassxc.svg', descriptionKey: 'importExport.services.keePassXCDescription', instructionKeys: ['importExport.services.keePassXCInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.xml': text(importKeePassXml), '.csv': csv(importKeePassXcCsv) } },
   { serviceName: 'LastPass', logoUrl: '/img/importers/lastpass.svg', descriptionKey: 'importExport.services.lastPassDescription', instructionKeys: ['importExport.services.lastPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importLastPassCsv) } },
   { serviceName: 'NordPass', logoUrl: '/img/importers/nordpass.svg', descriptionKey: 'importExport.services.nordPassDescription', instructionKeys: ['importExport.services.nordPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importNordPassCsv) } },
   { serviceName: 'Proton Pass', logoUrl: '/img/importers/protonpass.svg', descriptionKey: 'importExport.services.protonPassDescription', instructionKeys: ['importExport.services.protonPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importProtonPassZip, '.csv': csv(importProtonPassCsv) } },
