@@ -280,7 +280,7 @@
       "vaultTooLarge": "密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。",
       "wrongPassword": "密码错误，请重试。"
     },
-    "expand": "Expand",
+    "expand": "展开",
     "generate": "生成",
     "help": "帮助",
     "hide": "隐藏",
@@ -288,6 +288,8 @@
     "hidePassword": "隐藏密码",
     "highRiskAction": "这是高风险操作。",
     "home": "主页",
+    "lastChanged": "上次更改：{{time}}",
+    "lastUsed": "上次使用：{{time}}",
     "loadMore": "加载更多",
     "loading": "加载中…",
     "loadingAttachments": "加载附件中…",
@@ -342,11 +344,28 @@
     "share": "分享",
     "show": "显示",
     "showDetails": "显示详情",
-    "showList": "Show list",
+    "showList": "显示列表",
     "showPassword": "显示密码",
     "success": "成功",
+    "suggestions": {
+      "title": "建议"
+    },
     "syncVaultData": "同步密码库数据",
     "syncingChanges": "正在同步更改…",
+    "timeAgo": {
+      "days_one": "{{count}} 天前",
+      "days_other": "{{count}} 天前",
+      "hours_one": "{{count}} 小时前",
+      "hours_other": "{{count}} 小时前",
+      "justNow": "刚刚",
+      "minutes_one": "{{count}} 分钟前",
+      "minutes_other": "{{count}} 分钟前",
+      "months_one": "{{count}} 个月前",
+      "months_other": "{{count}} 个月前",
+      "years_one": "{{count}} 年前",
+      "years_other": "{{count}} 年前",
+      "yesterday": "昨天"
+    },
     "twoFactorAuthentication": "两步验证",
     "unavailable": "不可用",
     "undo": "撤销",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "新邮件"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} 小时前",
-      "hoursAgo_single": "{{count}} 小时前",
-      "justNow": "刚刚",
-      "minutesAgo_plural": "{{count}} 分钟前",
-      "minutesAgo_single": "{{count}} 分钟前",
-      "yesterday": "昨天"
-    },
     "title": "邮件",
     "to": "收件人：",
     "toColumn": "收件人"
@@ -799,6 +810,17 @@
       "sourceFavicon": "从 {{domain}}",
       "sourceNone": "无图标"
     },
+    "merge": {
+      "title": "合并项目",
+      "action": "合并",
+      "mergeWith": "合并到...",
+      "searchHint": "搜索要合并的项目。",
+      "keep": "需保留的项目",
+      "chooseValues": "需保留的字段值：",
+      "combined": "所有其他字段的值被合并到合并后的项目中。",
+      "differentFolders": "只有当两项均位于您自己的密码库中，或均位于同一个共享文件夹内时，才能将它们合并。",
+      "differentTypes": "这些项目类型无法相互合并：{{types}}。"
+    },
     "noAttachments": "无附件。",
     "noEmailsYet": "尚未收到邮件。",
     "noHistoryAvailable": "暂无历史记录",
@@ -892,12 +914,18 @@
     "separator": "分隔符",
     "serviceUrl": "服务 URL",
     "sort": {
-      "alphabetical": "字母顺序（A-Z）",
-      "newestFirst": "最新在前",
-      "oldestFirst": "最早在前",
+      "dateCreated": "创建日期",
+      "groups": {
+        "last30Days": "过去 30 天",
+        "last7Days": "过去 7 天",
+        "older": "较早",
+        "today": "今天"
+      },
+      "lastModified": "上次修改",
+      "lastUsed": "上次使用",
+      "name": "名称",
       "title": "排序方式"
     },
-    "suggestions": "建议",
     "switchBackToOriginalApp": "切换回原应用以继续。",
     "tags": "标签",
     "title": "项目",
@@ -906,6 +934,7 @@
       "itemCreated": "项目创建成功",
       "itemDeleted": "项目删除成功",
       "itemUpdated": "项目更新成功",
+      "itemsMerged": "项目合并成功",
       "passwordCopied": "密码已复制到剪贴板",
       "totpCodeCopied": "TOTP 验证码已复制到剪贴板",
       "urlCopied": "URL 已复制到剪贴板",

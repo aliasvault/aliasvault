@@ -288,6 +288,8 @@
     "hidePassword": "Приховати пароль",
     "highRiskAction": "This is a high-risk action.",
     "home": "Головна",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "Завантажити більше",
     "loading": "Завантаження даних...",
     "loadingAttachments": "Завантаження вкладень...",
@@ -345,8 +347,25 @@
     "showList": "Show list",
     "showPassword": "Показати пароль",
     "success": "Успішно",
+    "suggestions": {
+      "title": "Suggestions"
+    },
     "syncVaultData": "Синхронізувати дані сховища",
     "syncingChanges": "Syncing changes...",
+    "timeAgo": {
+      "days_one": "{{count}} day ago",
+      "days_other": "{{count}} days ago",
+      "hours_one": "{{count}} hr ago",
+      "hours_other": "{{count}} hrs ago",
+      "justNow": "just now",
+      "minutes_one": "{{count}} min ago",
+      "minutes_other": "{{count}} mins ago",
+      "months_one": "{{count}} month ago",
+      "months_other": "{{count}} months ago",
+      "years_one": "{{count}} year ago",
+      "years_other": "{{count}} years ago",
+      "yesterday": "yesterday"
+    },
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "unavailable": "Unavailable",
     "undo": "Скасувати",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Нове повідомлення"
     },
     "sizeKB": "КБ",
-    "time": {
-      "hoursAgo_plural": "{{count}} годин тому",
-      "hoursAgo_single": "{{count}} година тому",
-      "justNow": "щойно",
-      "minutesAgo_plural": "{{count}} хвилин тому",
-      "minutesAgo_single": "{{count}} хвилина тому",
-      "yesterday": "учора"
-    },
     "title": "Електронні листи",
     "to": "До:",
     "toColumn": "До"
@@ -799,6 +810,17 @@
       "sourceFavicon": "From {{domain}}",
       "sourceNone": "No icon"
     },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
+    },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Поки що не отримано жодних електронних листів.",
     "noHistoryAvailable": "No history available",
@@ -892,12 +914,18 @@
     "separator": "Separator",
     "serviceUrl": "URL-адреса сервісу",
     "sort": {
-      "alphabetical": "Alphabetical (A-Z)",
-      "newestFirst": "Newest first",
-      "oldestFirst": "Oldest first",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Ім’я",
       "title": "Sort by"
     },
-    "suggestions": "Suggestions",
     "switchBackToOriginalApp": "Switch back to the original app to continue.",
     "tags": "Теги",
     "title": "Об'єкти",
@@ -906,6 +934,7 @@
       "itemCreated": "Item created successfully",
       "itemDeleted": "Item deleted successfully",
       "itemUpdated": "Item updated successfully",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Пароль скопійовано в буфер обміну",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
