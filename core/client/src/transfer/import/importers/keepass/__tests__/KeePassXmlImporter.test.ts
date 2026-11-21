@@ -1,11 +1,11 @@
 import { randomBytes } from 'node:crypto';
 
-import { FieldTypes } from '@aliasvault/models/vault';
+import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { gzipSync, strToU8 } from 'fflate';
 import { describe, expect, it } from 'vitest';
 
 import { bytesToBase64, bytesToBase64Url } from '../../../../../utilities/Base64';
-import { byName, convertToItems, generatePasskeyKey, itemByName, passkeyCanSign, testPasskeyKeys } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, generatePasskeyKey, itemByName, passkeyCanSign, readFixtureText, testPasskeyKeys } from '../../../__tests__/testHelpers';
 import { ImportException } from '../../../models/ImportException';
 import { importKeePassXml } from '../KeePassXmlImporter';
 
@@ -46,7 +46,81 @@ const pem = (pkcs8: Uint8Array, lineBreaks: boolean): string => {
 };
 
 describe('KeePassXmlImporter', () => {
-  it('reads ISO dates and the attachment pool of a KeePass 2 export, and leaves out the recycle bin and old versions', async () => {
+  it('imports a KeePass 2 XML export', async () => {
+    const result = await importKeePassXml(readFixtureText(import.meta.dirname, 'keepass.xml'), testPasskeyKeys);
+    expect(result.FailedItems).toEqual([]);
+    const imported = result.Credentials;
+    // KeePass has no card or identity entries; the card and the trashed login sit in the recycle bin and are left out.
+    expect(imported).toHaveLength(14);
+    expect(imported.find(credential => credential.Username === 'av-trashed' || credential.ServiceName === 'AV Card')).toBeUndefined();
+
+    // The root group is the vault root; KeePass 2 writes ISO dates.
+    const basic = byName(imported, 'AV Login Basic');
+    expect(basic.ItemType).toBe(ItemTypes.Login);
+    expect(basic.Username).toBe('av-basic');
+    expect(basic.Password).toBe('Pw-Basic-1!');
+    expect(basic.ServiceUrls).toEqual(['https://login.example.com']);
+    expect(basic.Notes).toBe('Basic note');
+    expect(basic.FolderPath).toBeNull();
+    expect(basic.CreatedAt!.getUTCFullYear()).toBeGreaterThanOrEqual(2026);
+    expect(basic.CreatedAt!.getTime()).toBeLessThanOrEqual(basic.UpdatedAt!.getTime());
+    expect(basic.TwoFactorSecret).toBeNull();
+
+    // This database was made in KeePassXC, so the TOTP code is an otpauth URI in the "otp" field.
+    const totp = byName(imported, 'AV Login TOTP');
+    expect(totp.TwoFactorSecret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
+    expect(totp.CustomFieldValues).toBeUndefined();
+
+    const multiUrl = byName(imported, 'AV Login Multi URL');
+    expect(multiUrl.ServiceUrls).toEqual(['https://a.example.com', 'https://b.example.org/login', 'https://c.example.net:8443']);
+    expect(multiUrl.CustomFieldValues).toBeUndefined();
+
+    // This export has one text field.
+    expect(byName(imported, 'AV Login Custom Fields').CustomFieldValues?.map(custom => [custom.Label, custom.Value, custom.FieldType])).toEqual([['AV Text', 'Region EU', FieldTypes.Text]]);
+
+    // KeePass 2 writes the attachment contents into every XML export, gzipped.
+    const attachments = byName(imported, 'AV Login Attachment').Attachments;
+    expect(attachments?.map(attachment => `${attachment.Filename}=${new TextDecoder().decode(attachment.Blob)}`)).toEqual(['av-attachment.txt=attachment-1', 'av-attachment-2.txt=attachment-2']);
+
+    // The passkey fields are only in an old version of this entry, which is not imported; the entry has a KeePass 2 TOTP code.
+    const withPasskey = byName(imported, 'AV Login Passkey');
+    expect(withPasskey.Username).toBe('av-passkey');
+    expect(withPasskey.Password).toBe('Pw-Passkey-6!');
+    expect(withPasskey.ServiceUrls).toEqual(['https://webauthn.io']);
+    expect(withPasskey.CustomFieldValues).toBeUndefined();
+    expect(withPasskey.Passkeys).toBeUndefined();
+    expect(withPasskey.TwoFactorSecret).toBe('otpauth://totp/?secret=JBSWY3DPEHPK3PXP&issuer=');
+
+    expect(byName(imported, 'AV Login Folder').FolderPath).toBe('AV Work');
+    expect(byName(imported, 'AV Login Nested Folder').FolderPath).toBe('AV Work/AV Sub');
+    expect(byName(imported, 'AV Login Empty Password').Password).toBeNull();
+
+    const special = byName(imported, 'AV Login Special Chars äöü 日本');
+    expect(special.Username).toBe('av-spécial, "quoted"');
+    expect(special.Password).toBe('Pw,"10";\'\\ €ü');
+    expect(special.ServiceUrls).toEqual(['https://special.example.com/path?a=1&b=2']);
+    expect(special.Notes).toBe('Line one, with a comma and "quotes"\n\nLine three; semicolon');
+
+    expect(byName(imported, 'AV Login No URL').ServiceUrls).toBeUndefined();
+
+    const note = byName(imported, 'AV Note');
+    expect(note.ItemType).toBe(ItemTypes.Note);
+    expect(note.Notes).toBe('Short secure note');
+    expect(byName(imported, 'AV Note Long').Notes).toBe(new Array(100).fill('0123456789 The quick brown fox jumps over the lazy dog.').join('\n'));
+
+    // Tags are not imported.
+    const tags = byName(imported, 'AV Login Tags');
+    expect(tags.Username).toBe('av-tags');
+    expect(tags.Tags).toBeUndefined();
+
+    const items = convertToItems(imported);
+    expect(items).toHaveLength(14);
+    expect(itemByName(items, 'AV Login TOTP').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'JBSWY3DPEHPK3PXP' })]);
+    expect(itemByName(items, 'AV Login Attachment').Attachments).toHaveLength(2);
+    expect(itemByName(items, 'AV Login Passkey').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'JBSWY3DPEHPK3PXP', Digits: 6, Period: 30, Algorithm: 'SHA1' })]);
+  });
+
+  it('reads an uncompressed attachment pool, and leaves out the recycle bin and old versions', async () => {
     const recycleBin = 'cmVjeWNsZWJpbnJlY3ljbA==';
     const meta = `<Binaries><Binary ID="0" Compressed="True">${bytesToBase64(gzipSync(strToU8('attachment-1')))}</Binary><Binary ID="1">${bytesToBase64(strToU8('attachment-2'))}</Binary></Binaries><RecycleBinEnabled>True</RecycleBinEnabled><RecycleBinUUID>${recycleBin}</RecycleBinUUID>`;
     const root = entry(

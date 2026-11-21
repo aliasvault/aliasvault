@@ -1,0 +1,1219 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<KeePassFile>
+	<Meta>
+		<Generator>KeePass</Generator>
+		<SettingsChanged>2026-11-20T10:09:02Z</SettingsChanged>
+		<DatabaseName>AliasVault-import</DatabaseName>
+		<DatabaseNameChanged>2026-11-20T10:09:16Z</DatabaseNameChanged>
+		<DatabaseDescription></DatabaseDescription>
+		<DatabaseDescriptionChanged>2026-11-20T10:09:02Z</DatabaseDescriptionChanged>
+		<DefaultUserName></DefaultUserName>
+		<DefaultUserNameChanged>2026-11-20T10:09:02Z</DefaultUserNameChanged>
+		<MaintenanceHistoryDays>365</MaintenanceHistoryDays>
+		<Color></Color>
+		<MasterKeyChanged>2026-11-20T10:09:29Z</MasterKeyChanged>
+		<MasterKeyChangeRec>-1</MasterKeyChangeRec>
+		<MasterKeyChangeForce>-1</MasterKeyChangeForce>
+		<MemoryProtection>
+			<ProtectTitle>False</ProtectTitle>
+			<ProtectUserName>False</ProtectUserName>
+			<ProtectPassword>True</ProtectPassword>
+			<ProtectURL>False</ProtectURL>
+			<ProtectNotes>False</ProtectNotes>
+		</MemoryProtection>
+		<RecycleBinEnabled>True</RecycleBinEnabled>
+		<RecycleBinUUID>g5pMFycbR2eLvEWFEJ1prA==</RecycleBinUUID>
+		<RecycleBinChanged>2026-11-20T10:22:58Z</RecycleBinChanged>
+		<EntryTemplatesGroup>AAAAAAAAAAAAAAAAAAAAAA==</EntryTemplatesGroup>
+		<EntryTemplatesGroupChanged>2026-11-20T10:09:02Z</EntryTemplatesGroupChanged>
+		<HistoryMaxItems>10</HistoryMaxItems>
+		<HistoryMaxSize>6291456</HistoryMaxSize>
+		<LastSelectedGroup>P0/xU8TLScGjQn8cWg7a2Q==</LastSelectedGroup>
+		<LastTopVisibleGroup>P0/xU8TLScGjQn8cWg7a2Q==</LastTopVisibleGroup>
+		<Binaries>
+			<Binary ID="0" Compressed="True">H4sIAAAAAAAEAEssKUlMzshNzSvRNQQAdiwTyAwAAAA=</Binary>
+			<Binary ID="1" Compressed="True">H4sIAAAAAAAEAEssKUlMzshNzSvRNQIAzH0aUQwAAAA=</Binary>
+		</Binaries>
+		<CustomData>
+			<Item>
+				<Key>_CREATED_chrome-laptop</Key>
+				<Value>20/11/2026 14:18</Value>
+				<LastModificationTime>2026-11-20T14:18:19Z</LastModificationTime>
+			</Item>
+			<Item>
+				<Key>_LAST_MODIFIED</Key>
+				<Value>Fri Nov 20 14:23:10 2026 GMT</Value>
+			</Item>
+			<Item>
+				<Key>KPXC_BROWSER_chrome-laptop</Key>
+				<Value>mim8mE9dlc0obVSUm+di08QDSkbQm4oxbj50fwLLnmw=</Value>
+				<LastModificationTime>2026-11-20T14:18:19Z</LastModificationTime>
+			</Item>
+			<Item>
+				<Key>KPXC_DECRYPTION_TIME_PREFERENCE</Key>
+				<Value>1000</Value>
+				<LastModificationTime>2026-11-20T10:18:45Z</LastModificationTime>
+			</Item>
+			<Item>
+				<Key>KPXC_RANDOM_SLUG</Key>
+				<Value>e881ce46a1281f4517f3b82b3d8fe15421850adbc2194781328dc9b7b5e66489d413a87b19fc4d19e467b49b880f514bca16f100b65a4a01f1fe428476ecd85c7069acfc9a744e5bdde88f609c5fb7d7ff24054fbb6355b4011c5bc94e04800cb5c6b3ca0e9a80e8fd90f18651bf556c3f7d6b7849c3dac29095b807b9842634331f512e5b59a5f838f18e403f55b146240ebeab7efa9cdcd6652528762ac3764cc29de35e7be0adc24873cc7292287113c3d4cbfcec36c580762f8eae67d9d13d7b39541d28a92070b4b4d4997e8dd11472b21265a497c301fc5a7a4500076924e0cb72d9e5b9bed2709090a6ab257f0ab44b593f1e04868df4733e6f589acc8b31d84ecfe0840f7eedf9f25b71f9c7cd7724013f7a8d78933c09db47c0f8d903889ab57d7c7117f798ac7f9a424c9e9977903454d34ad3621f5b438af2bd86992a80a23530820ddb1bfadc2c8d1966c8e033c986b642198b92e86cc60418d58accbbe546921cb0e9a5c12cc0a749a3d369e1649e80b482be489573eb92a2d807391da68c45677d5a0c7c80c6260e80c2692ac23e86bb0b99aa426f8eeb14d5f3c8583653ad4f9c5a5d982f</Value>
+				<LastModificationTime>2026-11-20T14:23:10Z</LastModificationTime>
+			</Item>
+		</CustomData>
+	</Meta>
+	<Root>
+		<Group>
+			<UUID>P0/xU8TLScGjQn8cWg7a2Q==</UUID>
+			<Name>Root</Name>
+			<Notes></Notes>
+			<IconID>48</IconID>
+			<Times>
+				<CreationTime>2026-11-20T10:09:02Z</CreationTime>
+				<LastModificationTime>2026-11-20T10:24:49Z</LastModificationTime>
+				<LastAccessTime>2026-11-20T10:24:49Z</LastAccessTime>
+				<ExpiryTime>2026-11-20T10:09:02Z</ExpiryTime>
+				<Expires>False</Expires>
+				<UsageCount>0</UsageCount>
+				<LocationChanged>2026-11-20T10:09:02Z</LocationChanged>
+			</Times>
+			<IsExpanded>True</IsExpanded>
+			<DefaultAutoTypeSequence></DefaultAutoTypeSequence>
+			<EnableAutoType>Null</EnableAutoType>
+			<EnableSearching>Null</EnableSearching>
+			<LastTopVisibleEntry>hB7ny4iDTt6QnNdglTLDLw==</LastTopVisibleEntry>
+			<Entry>
+				<UUID>hB7ny4iDTt6QnNdglTLDLw==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:09:59Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:10:43Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:10:43Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:09:59Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:10:43Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value>Basic note</Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Basic-1!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Basic</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://login.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-basic</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>ysWzhbKUQoS3atSYZuvlfQ==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:10:45Z</CreationTime>
+					<LastModificationTime>2026-11-20T14:23:10Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T14:23:10Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:10:45Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:11:37Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>otp</Key>
+					<Value ProtectInMemory="True">otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&amp;period=30&amp;digits=6&amp;issuer=AV%20Login%20TOTP</Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Totp-2!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login TOTP</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://totp.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-totp@example.com</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History>
+					<Entry>
+						<UUID>ysWzhbKUQoS3atSYZuvlfQ==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags></Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:10:45Z</CreationTime>
+							<LastModificationTime>2026-11-20T10:11:37Z</LastModificationTime>
+							<LastAccessTime>2026-11-20T10:11:37Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:10:45Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>0</UsageCount>
+							<LocationChanged>2026-11-20T10:11:37Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Totp-2!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login TOTP</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://totp.example.com</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-totp@example.com</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+					</Entry>
+				</History>
+			</Entry>
+			<Entry>
+				<UUID>qn5LVx5uQH2XeU+Y+5mYTQ==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:12:13Z</CreationTime>
+					<LastModificationTime>2026-11-20T14:21:07Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T14:21:07Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:12:13Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:12:47Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>KP2A_URL</Key>
+					<Value>https://b.example.org/login</Value>
+				</String>
+				<String>
+					<Key>KP2A_URL_1</Key>
+					<Value>https://c.example.net:8443</Value>
+				</String>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Multi-3!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Multi URL</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://a.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-multi</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History>
+					<Entry>
+						<UUID>qn5LVx5uQH2XeU+Y+5mYTQ==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags></Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:12:13Z</CreationTime>
+							<LastModificationTime>2026-11-20T10:12:47Z</LastModificationTime>
+							<LastAccessTime>2026-11-20T10:12:47Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:12:13Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>0</UsageCount>
+							<LocationChanged>2026-11-20T10:12:47Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Multi-3!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login Multi URL</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://a.example.com</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-multi</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+					</Entry>
+				</History>
+			</Entry>
+			<Entry>
+				<UUID>NyUAVB5FTHG8dyE99leV2Q==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:14:10Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:15:08Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:15:08Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:14:10Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:15:08Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>AV Text</Key>
+					<Value>Region EU</Value>
+				</String>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Custom-4!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Custom Fields</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://custom.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-custom</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>cu/+8CgRSXqHiU/voOJCjw==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:15:13Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:16:10Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:16:10Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:15:13Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:16:10Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Attach-5!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Attachment</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://attach.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-attach</Value>
+				</String>
+				<Binary>
+					<Key>av-attachment.txt</Key>
+					<Value Ref="0" />
+				</Binary>
+				<Binary>
+					<Key>av-attachment-2.txt</Key>
+					<Value Ref="1" />
+				</Binary>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>FQvYbJnVSwq7boxa5y1uGA==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags>Passkey</Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:16:13Z</CreationTime>
+					<LastModificationTime>2026-11-21T17:47:58Z</LastModificationTime>
+					<LastAccessTime>2026-11-21T17:47:58Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:16:13Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>2</UsageCount>
+					<LocationChanged>2026-11-20T10:16:38Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Passkey-6!</Value>
+				</String>
+				<String>
+					<Key>TimeOtp-Secret-Base32</Key>
+					<Value ProtectInMemory="True">JBSWY3DPEHPK3PXP</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Passkey</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://webauthn.io</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-passkey</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<CustomData>
+					<Item>
+						<Key>_LAST_MODIFIED</Key>
+						<Value>Fri Nov 20 14:20:34 2026 GMT</Value>
+					</Item>
+					<Item>
+						<Key>KeePassXC-Browser Settings</Key>
+						<Value>{"Allow":["webauthn.io"],"Deny":[],"Realm":""}</Value>
+					</Item>
+				</CustomData>
+				<History>
+					<Entry>
+						<UUID>FQvYbJnVSwq7boxa5y1uGA==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags></Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:16:13Z</CreationTime>
+							<LastModificationTime>2026-11-20T10:16:38Z</LastModificationTime>
+							<LastAccessTime>2026-11-20T10:16:38Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:16:13Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>0</UsageCount>
+							<LocationChanged>2026-11-20T10:16:38Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Passkey-6!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login Passkey</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://webauthn.io</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-passkey</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+					</Entry>
+					<Entry>
+						<UUID>FQvYbJnVSwq7boxa5y1uGA==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags>Passkey</Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:16:13Z</CreationTime>
+							<LastModificationTime>2026-11-20T14:20:34Z</LastModificationTime>
+							<LastAccessTime>2026-11-20T14:20:34Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:16:13Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>0</UsageCount>
+							<LocationChanged>2026-11-20T10:16:38Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>KPEX_PASSKEY_CREDENTIAL_ID</Key>
+							<Value ProtectInMemory="True">js_Kst-08N_RWIahxnwVV59HxVhNI76_vihSAvz2jgk</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_FLAG_BE</Key>
+							<Value>1</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_FLAG_BS</Key>
+							<Value>1</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_PRIVATE_KEY_PEM</Key>
+							<Value ProtectInMemory="True">-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIJnLFNG0UREhjrzdn2qWqg4MR+Dlxm0aHU6fcqdsfIjb
+-----END PRIVATE KEY-----
+</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_RELYING_PARTY</Key>
+							<Value>webauthn.io</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_USER_HANDLE</Key>
+							<Value ProtectInMemory="True">d2ViYXV0aG5pby1hdi1wYXNza2V5</Value>
+						</String>
+						<String>
+							<Key>KPEX_PASSKEY_USERNAME</Key>
+							<Value>av-passkey</Value>
+						</String>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Passkey-6!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login Passkey</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://webauthn.io</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-passkey</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+						<CustomData>
+							<Item>
+								<Key>_LAST_MODIFIED</Key>
+								<Value>Fri Nov 20 14:20:34 2026 GMT</Value>
+							</Item>
+							<Item>
+								<Key>KeePassXC-Browser Settings</Key>
+								<Value>{"Allow":["webauthn.io"],"Deny":[],"Realm":""}</Value>
+							</Item>
+						</CustomData>
+					</Entry>
+					<Entry>
+						<UUID>FQvYbJnVSwq7boxa5y1uGA==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags>Passkey</Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:16:13Z</CreationTime>
+							<LastModificationTime>2026-11-21T17:47:08Z</LastModificationTime>
+							<LastAccessTime>2026-11-21T17:47:08Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:16:13Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>1</UsageCount>
+							<LocationChanged>2026-11-20T10:16:38Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Passkey-6!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login Passkey</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://webauthn.io</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-passkey</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+						<CustomData>
+							<Item>
+								<Key>_LAST_MODIFIED</Key>
+								<Value>Fri Nov 20 14:20:34 2026 GMT</Value>
+							</Item>
+							<Item>
+								<Key>KeePassXC-Browser Settings</Key>
+								<Value>{"Allow":["webauthn.io"],"Deny":[],"Realm":""}</Value>
+							</Item>
+						</CustomData>
+					</Entry>
+				</History>
+			</Entry>
+			<Entry>
+				<UUID>I84mIGYfT7CjpC6EIHmGsA==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:17:53Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:18:11Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:18:11Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:17:53Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:18:11Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True"></Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Empty Password</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://empty.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-empty</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>ZyEGQFSeSweXWLWqPzW4Tw==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:18:48Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:19:14Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:19:14Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:18:48Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:19:14Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value>Line one, with a comma and "quotes"
+
+Line three; semicolon</Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw,"10";'\ €ü</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Special Chars äöü 日本</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://special.example.com/path?a=1&amp;b=2</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-spécial, "quoted"</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>/5gKzjHwThGdUWUiumR5RQ==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:21:45Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:21:59Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:21:59Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:21:45Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:21:59Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-NoUrl-11!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login No URL</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-nourl</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>qbm/IkrqRn2v5fbGgpPnkQ==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:23:03Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:23:09Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:23:09Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:23:03Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:23:09Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value>Short secure note</Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True"></Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Note</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value></Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>Ql5hZUvXSHqFpukc2NBf0Q==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags></Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:23:12Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:23:43Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:23:43Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:23:12Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:23:43Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value>0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.</Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True"></Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Note Long</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value></Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Entry>
+				<UUID>0PH74roHSOueBsc516TI4Q==</UUID>
+				<IconID>0</IconID>
+				<ForegroundColor></ForegroundColor>
+				<BackgroundColor></BackgroundColor>
+				<OverrideURL></OverrideURL>
+				<Tags>av-tag-one;av-tag-two</Tags>
+				<Times>
+					<CreationTime>2026-11-20T10:24:15Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:24:49Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:24:49Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:24:15Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:24:49Z</LocationChanged>
+				</Times>
+				<String>
+					<Key>Notes</Key>
+					<Value></Value>
+				</String>
+				<String>
+					<Key>Password</Key>
+					<Value ProtectInMemory="True">Pw-Tags-17!</Value>
+				</String>
+				<String>
+					<Key>Title</Key>
+					<Value>AV Login Tags</Value>
+				</String>
+				<String>
+					<Key>URL</Key>
+					<Value>https://tags.example.com</Value>
+				</String>
+				<String>
+					<Key>UserName</Key>
+					<Value>av-tags</Value>
+				</String>
+				<AutoType>
+					<Enabled>True</Enabled>
+					<DataTransferObfuscation>0</DataTransferObfuscation>
+				</AutoType>
+				<History />
+			</Entry>
+			<Group>
+				<UUID>rpyR+MMTREOjS7vrWs693Q==</UUID>
+				<Name>AV Work</Name>
+				<Notes></Notes>
+				<IconID>48</IconID>
+				<Times>
+					<CreationTime>2026-11-20T10:16:47Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:17:20Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:17:20Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:16:47Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:16:53Z</LocationChanged>
+				</Times>
+				<IsExpanded>True</IsExpanded>
+				<DefaultAutoTypeSequence></DefaultAutoTypeSequence>
+				<EnableAutoType>Null</EnableAutoType>
+				<EnableSearching>Null</EnableSearching>
+				<LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+				<Entry>
+					<UUID>c0RDrn4TTdygRHq5xDbJlw==</UUID>
+					<IconID>0</IconID>
+					<ForegroundColor></ForegroundColor>
+					<BackgroundColor></BackgroundColor>
+					<OverrideURL></OverrideURL>
+					<Tags></Tags>
+					<Times>
+						<CreationTime>2026-11-20T10:17:03Z</CreationTime>
+						<LastModificationTime>2026-11-20T10:17:20Z</LastModificationTime>
+						<LastAccessTime>2026-11-20T10:17:20Z</LastAccessTime>
+						<ExpiryTime>2026-11-20T10:17:03Z</ExpiryTime>
+						<Expires>False</Expires>
+						<UsageCount>0</UsageCount>
+						<LocationChanged>2026-11-20T10:17:20Z</LocationChanged>
+					</Times>
+					<String>
+						<Key>Notes</Key>
+						<Value></Value>
+					</String>
+					<String>
+						<Key>Password</Key>
+						<Value ProtectInMemory="True">Pw-Folder-7!</Value>
+					</String>
+					<String>
+						<Key>Title</Key>
+						<Value>AV Login Folder</Value>
+					</String>
+					<String>
+						<Key>URL</Key>
+						<Value>https://folder.example.com</Value>
+					</String>
+					<String>
+						<Key>UserName</Key>
+						<Value>av-folder</Value>
+					</String>
+					<AutoType>
+						<Enabled>True</Enabled>
+						<DataTransferObfuscation>0</DataTransferObfuscation>
+					</AutoType>
+					<History />
+				</Entry>
+				<Group>
+					<UUID>p/nOiEUmTjaP2c42earRlQ==</UUID>
+					<Name>AV Sub</Name>
+					<Notes></Notes>
+					<IconID>48</IconID>
+					<Times>
+						<CreationTime>2026-11-20T10:16:56Z</CreationTime>
+						<LastModificationTime>2026-11-20T10:17:48Z</LastModificationTime>
+						<LastAccessTime>2026-11-20T10:17:48Z</LastAccessTime>
+						<ExpiryTime>2026-11-20T10:16:56Z</ExpiryTime>
+						<Expires>False</Expires>
+						<UsageCount>0</UsageCount>
+						<LocationChanged>2026-11-20T10:17:00Z</LocationChanged>
+					</Times>
+					<IsExpanded>True</IsExpanded>
+					<DefaultAutoTypeSequence></DefaultAutoTypeSequence>
+					<EnableAutoType>Null</EnableAutoType>
+					<EnableSearching>Null</EnableSearching>
+					<LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+					<Entry>
+						<UUID>hhpnX/hmQU+dgaejtrJwrA==</UUID>
+						<IconID>0</IconID>
+						<ForegroundColor></ForegroundColor>
+						<BackgroundColor></BackgroundColor>
+						<OverrideURL></OverrideURL>
+						<Tags></Tags>
+						<Times>
+							<CreationTime>2026-11-20T10:17:24Z</CreationTime>
+							<LastModificationTime>2026-11-20T10:17:48Z</LastModificationTime>
+							<LastAccessTime>2026-11-20T10:17:48Z</LastAccessTime>
+							<ExpiryTime>2026-11-20T10:17:24Z</ExpiryTime>
+							<Expires>False</Expires>
+							<UsageCount>0</UsageCount>
+							<LocationChanged>2026-11-20T10:17:48Z</LocationChanged>
+						</Times>
+						<String>
+							<Key>Notes</Key>
+							<Value></Value>
+						</String>
+						<String>
+							<Key>Password</Key>
+							<Value ProtectInMemory="True">Pw-Nested-8!</Value>
+						</String>
+						<String>
+							<Key>Title</Key>
+							<Value>AV Login Nested Folder</Value>
+						</String>
+						<String>
+							<Key>URL</Key>
+							<Value>https://nested.example.com</Value>
+						</String>
+						<String>
+							<Key>UserName</Key>
+							<Value>av-nested</Value>
+						</String>
+						<AutoType>
+							<Enabled>True</Enabled>
+							<DataTransferObfuscation>0</DataTransferObfuscation>
+						</AutoType>
+						<History />
+					</Entry>
+				</Group>
+			</Group>
+			<Group>
+				<UUID>g5pMFycbR2eLvEWFEJ1prA==</UUID>
+				<Name>Recycle Bin</Name>
+				<Notes></Notes>
+				<IconID>43</IconID>
+				<Times>
+					<CreationTime>2026-11-20T10:22:58Z</CreationTime>
+					<LastModificationTime>2026-11-20T10:24:12Z</LastModificationTime>
+					<LastAccessTime>2026-11-20T10:24:12Z</LastAccessTime>
+					<ExpiryTime>2026-11-20T10:22:58Z</ExpiryTime>
+					<Expires>False</Expires>
+					<UsageCount>0</UsageCount>
+					<LocationChanged>2026-11-20T10:22:58Z</LocationChanged>
+				</Times>
+				<IsExpanded>True</IsExpanded>
+				<DefaultAutoTypeSequence></DefaultAutoTypeSequence>
+				<EnableAutoType>False</EnableAutoType>
+				<EnableSearching>False</EnableSearching>
+				<LastTopVisibleEntry>AAAAAAAAAAAAAAAAAAAAAA==</LastTopVisibleEntry>
+				<Entry>
+					<UUID>ar0pp621S5Oc8TCP4Qe7rw==</UUID>
+					<IconID>0</IconID>
+					<ForegroundColor></ForegroundColor>
+					<BackgroundColor></BackgroundColor>
+					<OverrideURL></OverrideURL>
+					<Tags></Tags>
+					<PreviousParentGroup>P0/xU8TLScGjQn8cWg7a2Q==</PreviousParentGroup>
+					<Times>
+						<CreationTime>2026-11-20T10:22:04Z</CreationTime>
+						<LastModificationTime>2026-11-20T10:22:58Z</LastModificationTime>
+						<LastAccessTime>2026-11-20T10:22:58Z</LastAccessTime>
+						<ExpiryTime>2026-11-20T10:22:04Z</ExpiryTime>
+						<Expires>False</Expires>
+						<UsageCount>0</UsageCount>
+						<LocationChanged>2026-11-20T10:22:58Z</LocationChanged>
+					</Times>
+					<String>
+						<Key>Notes</Key>
+						<Value></Value>
+					</String>
+					<String>
+						<Key>Password</Key>
+						<Value ProtectInMemory="True"></Value>
+					</String>
+					<String>
+						<Key>Title</Key>
+						<Value>AV Card</Value>
+					</String>
+					<String>
+						<Key>URL</Key>
+						<Value></Value>
+					</String>
+					<String>
+						<Key>UserName</Key>
+						<Value></Value>
+					</String>
+					<AutoType>
+						<Enabled>True</Enabled>
+						<DataTransferObfuscation>0</DataTransferObfuscation>
+					</AutoType>
+					<History />
+				</Entry>
+				<Entry>
+					<UUID>krlYPHxqTMyXBocg7BT0yQ==</UUID>
+					<IconID>0</IconID>
+					<ForegroundColor></ForegroundColor>
+					<BackgroundColor></BackgroundColor>
+					<OverrideURL></OverrideURL>
+					<Tags></Tags>
+					<PreviousParentGroup>P0/xU8TLScGjQn8cWg7a2Q==</PreviousParentGroup>
+					<Times>
+						<CreationTime>2026-11-20T10:23:47Z</CreationTime>
+						<LastModificationTime>2026-11-20T10:24:12Z</LastModificationTime>
+						<LastAccessTime>2026-11-20T10:24:12Z</LastAccessTime>
+						<ExpiryTime>2026-11-20T10:23:47Z</ExpiryTime>
+						<Expires>False</Expires>
+						<UsageCount>0</UsageCount>
+						<LocationChanged>2026-11-20T10:24:12Z</LocationChanged>
+					</Times>
+					<String>
+						<Key>Notes</Key>
+						<Value></Value>
+					</String>
+					<String>
+						<Key>Password</Key>
+						<Value ProtectInMemory="True">Pw-Trashed-16!</Value>
+					</String>
+					<String>
+						<Key>Title</Key>
+						<Value>AV Login Thrashed</Value>
+					</String>
+					<String>
+						<Key>URL</Key>
+						<Value>https://trashed.example.com</Value>
+					</String>
+					<String>
+						<Key>UserName</Key>
+						<Value>av-trashed</Value>
+					</String>
+					<AutoType>
+						<Enabled>True</Enabled>
+						<DataTransferObfuscation>0</DataTransferObfuscation>
+					</AutoType>
+					<History />
+				</Entry>
+			</Group>
+		</Group>
+		<DeletedObjects />
+	</Root>
+</KeePassFile>

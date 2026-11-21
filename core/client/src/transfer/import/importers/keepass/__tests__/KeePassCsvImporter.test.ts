@@ -1,41 +1,56 @@
+import { ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { readFixtureText, byName } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, readFixtureText } from '../../../__tests__/testHelpers';
 import { importKeePassCsv } from '../KeePassCsvImporter';
 
 describe('KeePassCsvImporter', () => {
-  it('imports KeePass CSV', () => {
+  it('imports a KeePass CSV export', () => {
     const imported = importKeePassCsv(readFixtureText(import.meta.dirname, 'keepass.csv'));
-    expect(imported).toHaveLength(2);
+    // The CSV has no groups, so the card and the trashed login in the recycle bin are included; KeePass has no identity entries.
+    expect(imported).toHaveLength(16);
+    expect(byName(imported, 'AV Login Thrashed').Username).toBe('av-trashed');
+    // The CSV has fixed columns, so no folders, dates, TOTP codes, custom fields, attachments or passkeys.
+    expect(imported.some(credential => credential.FolderPath || credential.CreatedAt || credential.TwoFactorSecret || credential.CustomFieldValues || credential.Attachments || credential.Passkeys)).toBe(false);
 
-    const sample = byName(imported, 'Sample Entry');
-    expect(sample.ServiceUrls?.[0]).toBe('https://keepass.info/');
-    expect(sample.Username).toBe('User Name');
-    expect(sample.Password).toBe('Password');
-    expect(sample.Notes).toBe('Notes');
+    const basic = byName(imported, 'AV Login Basic');
+    expect(basic.ItemType).toBe(ItemTypes.Login);
+    expect(basic.Username).toBe('av-basic');
+    expect(basic.Password).toBe('Pw-Basic-1!');
+    expect(basic.ServiceUrls).toEqual(['https://login.example.com']);
+    expect(basic.Notes).toBe('Basic note');
 
-    const sample2 = byName(imported, 'Sample Entry #2');
-    expect(sample2.ServiceUrls?.[0]).toBe('https://keepass.info/help/kb/testform.html');
-    expect(sample2.Username).toBe('Michael321');
-    expect(sample2.Password).toBe('12345');
-    expect(sample2.Notes).toBe('');
+    expect(byName(imported, 'AV Login TOTP').Username).toBe('av-totp@example.com');
+    // The CSV holds only the main URL.
+    expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com']);
+    expect(byName(imported, 'AV Login Folder').Password).toBe('Pw-Folder-7!');
+    expect(byName(imported, 'AV Login Empty Password').Password).toBe('');
+
+    // KeePass writes quotes as \" and backslashes as \\.
+    const special = byName(imported, 'AV Login Special Chars äöü 日本');
+    expect(special.Username).toBe('av-spécial, "quoted"');
+    expect(special.Password).toBe('Pw,"10";\'\\ €ü');
+    expect(special.ServiceUrls).toEqual(['https://special.example.com/path?a=1&b=2']);
+    expect(special.Notes).toBe('Line one, with a comma and "quotes"\n\nLine three; semicolon');
+
+    expect(byName(imported, 'AV Login No URL').ServiceUrls).toBeNull();
+
+    // An entry without a user name, password or URL is a note.
+    const note = byName(imported, 'AV Note');
+    expect(note.ItemType).toBe(ItemTypes.Note);
+    expect(note.Notes).toBe('Short secure note');
+    expect(byName(imported, 'AV Note Long').Notes).toBe(new Array(100).fill('0123456789 The quick brown fox jumps over the lazy dog.').join('\n'));
+    expect(byName(imported, 'AV Card').ItemType).toBe(ItemTypes.Note);
+
+    expect(byName(imported, 'AV Login Tags').Username).toBe('av-tags');
+
+    expect(convertToItems(imported)).toHaveLength(16);
   });
 
-  it('imports KeePass CSV with special characters and double quotes', () => {
-    const imported = importKeePassCsv(readFixtureText(import.meta.dirname, 'keepass_special_chars.csv'));
-    expect(imported).toHaveLength(3);
+  it('reads a value that ends with a backslash or has a backslash before a quote', () => {
+    const imported = importKeePassCsv('"Account","Login Name","Password","Web Site","Comments"\r\n"Entry","user\\\\","a\\\\\\"b","",""\r\n');
 
-    const special = imported.find(c => c.ServiceName?.startsWith('Entry with'))!;
-    expect(special.ServiceName).toBe('Entry with "notes" special chars');
-    expect(special.ServiceUrls?.[0]).toBeUndefined();
-    expect(special.Username).toBe('');
-    expect(special.Password).toBe('DVfIsb4TGkL7oKCwyiet');
-    expect(special.Notes).toBe('Note "with quotes"\'as\'d as/d/asd/ z\'s\'sd a8e89A)_@()@\'":ÄS"d\';asd;á\'sd');
-
-    const sample = byName(imported, 'Sample Entry');
-    expect(sample.ServiceUrls?.[0]).toBe('https://keepass.info/');
-    expect(sample.Username).toBe('User Name');
-    expect(sample.Password).toBe('Password');
-    expect(sample.Notes).toBe('Notes');
+    expect(imported[0].Username).toBe('user\\');
+    expect(imported[0].Password).toBe('a\\"b');
   });
 });
