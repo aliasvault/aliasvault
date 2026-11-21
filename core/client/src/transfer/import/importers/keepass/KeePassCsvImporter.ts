@@ -1,3 +1,5 @@
+import { ItemTypes } from '@aliasvault/models/vault';
+
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -18,20 +20,24 @@ const COLUMNS = {
  * @returns The imported credentials
  */
 export function importKeePassCsv(fileContent: string): ImportedCredential[] {
-  return readImportCsv(fileContent, COLUMNS, decodeKeePassField).map(record => ({
-    ServiceName: record.Account,
-    ServiceUrls: parseUrls(record.WebSite),
-    Username: record.LoginName,
-    Password: record.Password,
-    Notes: record.Comments,
-  }));
+  return readImportCsv(toStandardCsv(fileContent), COLUMNS).map(record => {
+    const urls = parseUrls(record.WebSite);
+    return {
+      ServiceName: record.Account,
+      ServiceUrls: urls,
+      Username: record.LoginName,
+      Password: record.Password,
+      Notes: record.Comments,
+      ItemType: !record.LoginName && !record.Password && !urls ? ItemTypes.Note : ItemTypes.Login,
+    };
+  });
 }
 
 /**
- * Decode KeePass 1.x field encoding, which writes quotes as \" and backslashes as \\.
- * @param value - The field value
- * @returns The decoded value
+ * Convert KeePass escaping (\" and \\ inside quoted fields) to standard CSV quoting ("").
+ * @param fileContent - The CSV file content
+ * @returns The content as standard CSV
  */
-function decodeKeePassField(value: string): string {
-  return value.replace(/\\(["\\])/g, '$1');
+function toStandardCsv(fileContent: string): string {
+  return fileContent.replace(/\\(["\\])/g, (_, char: string) => (char === '"' ? '""' : '\\'));
 }
