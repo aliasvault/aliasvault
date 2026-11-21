@@ -1,4 +1,118 @@
 "Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
-"Test1","Sample Entry","User Name","Password","https://keepass.info/","Notes","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
-"Test1","Sample Entry #2","Michael321","12345","https://keepass.info/help/kb/testform.html","","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
-"Database/Windows/Windowssub1","Nested Entry","testuser","testpass123","https://example.com/","Nested folder test","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
+"Root","AV Login Basic","av-basic","Pw-Basic-1!","https://login.example.com","Basic note","","0","2026-11-20T10:10:43Z","2026-11-20T10:09:59Z"
+"Root","AV Login TOTP","av-totp@example.com","Pw-Totp-2!","https://totp.example.com","","otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP","0","2026-11-20T14:23:10Z","2026-11-20T10:10:45Z"
+"Root","AV Login Multi URL","av-multi","Pw-Multi-3!","https://a.example.com","","","0","2026-11-20T14:21:07Z","2026-11-20T10:12:13Z"
+"Root","AV Login Custom Fields","av-custom","Pw-Custom-4!","https://custom.example.com","","","0","2026-11-20T10:15:08Z","2026-11-20T10:14:10Z"
+"Root","AV Login Attachment","av-attach","Pw-Attach-5!","https://attach.example.com","","","0","2026-11-20T10:16:10Z","2026-11-20T10:15:13Z"
+"Root","AV Login Passkey","av-passkey","Pw-Passkey-6!","https://webauthn.io","","","0","2026-11-20T14:20:34Z","2026-11-20T10:16:13Z"
+"Root","AV Login Empty Password","av-empty","","https://empty.example.com","","","0","2026-11-20T10:18:11Z","2026-11-20T10:17:53Z"
+"Root","AV Login Special Chars äöü 日本","av-spécial, ""quoted""","Pw,""10"";'\ €ü","https://special.example.com/path?a=1&b=2","Line one, with a comma and ""quotes""
+
+Line three; semicolon","","0","2026-11-20T10:19:14Z","2026-11-20T10:18:48Z"
+"Root","AV Login No URL","av-nourl","Pw-NoUrl-11!","","","","0","2026-11-20T10:21:59Z","2026-11-20T10:21:45Z"
+"Root","AV Note","","","","Short secure note","","0","2026-11-20T10:23:09Z","2026-11-20T10:23:03Z"
+"Root","AV Note Long","","","","0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.
+0123456789 The quick brown fox jumps over the lazy dog.","","0","2026-11-20T10:23:43Z","2026-11-20T10:23:12Z"
+"Root","AV Login Tags","av-tags","Pw-Tags-17!","https://tags.example.com","","","0","2026-11-20T10:24:49Z","2026-11-20T10:24:15Z"
+"Root/AV Work","AV Login Folder","av-folder","Pw-Folder-7!","https://folder.example.com","","","0","2026-11-20T10:17:20Z","2026-11-20T10:17:03Z"
+"Root/AV Work/AV Sub","AV Login Nested Folder","av-nested","Pw-Nested-8!","https://nested.example.com","","","0","2026-11-20T10:17:48Z","2026-11-20T10:17:24Z"
+"Root/Recycle Bin","AV Card","","","","","","0","2026-11-20T10:22:58Z","2026-11-20T10:22:04Z"
+"Root/Recycle Bin","AV Login Thrashed","av-trashed","Pw-Trashed-16!","https://trashed.example.com","","","0","2026-11-20T10:24:12Z","2026-11-20T10:23:47Z"
