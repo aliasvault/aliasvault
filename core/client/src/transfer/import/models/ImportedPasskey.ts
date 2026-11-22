@@ -2,9 +2,7 @@
  * A passkey in the intermediary import format.
  */
 export type ImportedPasskey = {
-  /** The passkey id from the original record, preserved through import/export. */
-  Id?: string | null;
-  /** The WebAuthn credential id the relying party knows; null falls back to the bytes of Id. */
+  /** The WebAuthn credential id the relying party knows. */
   CredentialId?: Uint8Array | null;
   RpId: string;
   /** The user handle (user id provided by the relying party). */

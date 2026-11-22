@@ -1,6 +1,7 @@
 import { FieldTypes, isItemType, ItemTypes, LogoKinds, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, type FieldType, type LogoKind } from '@aliasvault/models/vault';
 
 import { base64ToBytes } from '../../../../utilities/Base64';
+import { guidToBytes } from '../../../../utilities/Guid';
 import { parseDateTime } from '../../../shared/DateTimeUtils';
 import { buildFolderPath } from '../../../shared/FolderPaths';
 import { formatTotpUri } from '../../../shared/TotpUri';
@@ -167,8 +168,7 @@ export class AvuxImportService {
   }
 
   /**
-   * Build the complete item graph of a manifest item, under new ids. Passkeys keep theirs, since the WebAuthn
-   * credential id the relying party knows is derived from it.
+   * Build the complete item graph of a manifest item, under new ids.
    * @param item - The manifest item
    * @param credential - The credential summary of the item, for its dates and item type
    * @param sharedRows - The definitions, tags and logos the items share
@@ -221,8 +221,8 @@ export class AvuxImportService {
         ...row,
       })),
       Passkeys: item.passkeys.map(passkey => ({
-        Id: passkey.id.length > 0 ? passkey.id : crypto.randomUUID(),
-        CredentialId: passkey.credentialId ? base64ToBytes(passkey.credentialId) : null,
+        Id: crypto.randomUUID(),
+        CredentialId: AvuxImportService.passkeyCredentialId(passkey),
         ItemId: itemId,
         RpId: passkey.rpId,
         UserHandle: passkey.userHandle ? base64ToBytes(passkey.userHandle) : new Uint8Array(0),
@@ -353,14 +353,22 @@ export class AvuxImportService {
   }
 
   /**
+   * The WebAuthn credential id of a manifest passkey: the one it names, else the bytes of its id.
+   * @param avuxPasskey - The manifest passkey
+   * @returns The credential id, or null when it names none and its id is not a GUID
+   */
+  private static passkeyCredentialId(avuxPasskey: AvuxPasskey): Uint8Array | null {
+    return avuxPasskey.credentialId ? base64ToBytes(avuxPasskey.credentialId) : guidToBytes(avuxPasskey.id);
+  }
+
+  /**
    * Map a manifest passkey to an imported passkey.
    * @param avuxPasskey - The manifest passkey
    * @returns The imported passkey
    */
   private static mapAvuxPasskeyToImported(avuxPasskey: AvuxPasskey): ImportedPasskey {
     return {
-      Id: avuxPasskey.id,
-      CredentialId: avuxPasskey.credentialId ? base64ToBytes(avuxPasskey.credentialId) : null,
+      CredentialId: AvuxImportService.passkeyCredentialId(avuxPasskey),
       RpId: avuxPasskey.rpId,
       UserHandle: avuxPasskey.userHandle ? base64ToBytes(avuxPasskey.userHandle) : null,
       PublicKey: avuxPasskey.publicKey,

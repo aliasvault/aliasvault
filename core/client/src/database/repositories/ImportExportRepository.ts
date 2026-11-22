@@ -419,10 +419,7 @@ export class ImportExportRepository extends BaseRepository {
     }
 
     for (const passkey of item.Passkeys) {
-      yield* this.execute(
-        'INSERT INTO Passkeys (Id, CredentialId, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
-        [passkey.Id, passkey.CredentialId, item.Id, manifestId, passkey.RpId, passkey.UserHandle, passkey.PublicKey, passkey.PrivateKey, passkey.PrfKey, passkey.DisplayName, passkey.AdditionalData, toStandardFormat(passkey.CreatedAt), toStandardFormat(passkey.UpdatedAt)]
-      );
+      yield* this.insertPasskey(passkey, item.Id, manifestId, toStandardFormat(passkey.UpdatedAt));
     }
 
     for (const attachment of item.Attachments) {
@@ -447,6 +444,19 @@ export class ImportExportRepository extends BaseRepository {
     }
   }
 
+  /**
+   * Write a passkey of an imported item.
+   * @param passkey - The passkey
+   * @param itemId - The item it belongs to
+   * @param manifestId - The manifest of that item
+   * @param updatedAt - The UpdatedAt of the row
+   */
+  private *insertPasskey(passkey: PasskeyEntity, itemId: string, manifestId: string, updatedAt: string): DbOp<void> {
+    yield* this.execute(
+      'INSERT INTO Passkeys (Id, CredentialId, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
+      [passkey.Id, passkey.CredentialId, itemId, manifestId, passkey.RpId, passkey.UserHandle, passkey.PublicKey, passkey.PrivateKey, passkey.PrfKey, passkey.DisplayName, passkey.AdditionalData, toStandardFormat(passkey.CreatedAt), updatedAt]
+    );
+  }
   /**
    * Write a custom field definition, once per import.
    * @param definition - The definition
