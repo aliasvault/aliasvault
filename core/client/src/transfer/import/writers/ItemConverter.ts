@@ -34,7 +34,7 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
     Attachments: (credential.Attachments ?? []).map(attachment => ({ Id: crypto.randomUUID(), ItemId: itemId, Filename: attachment.Filename, Blob: attachment.Blob, ...row })),
     TotpCodes: [],
     Passkeys: (credential.Passkeys ?? []).map(passkey => ({
-      Id: passkey.Id ?? crypto.randomUUID(),
+      Id: crypto.randomUUID(),
       CredentialId: passkey.CredentialId ?? null,
       ItemId: itemId,
       RpId: passkey.RpId,
