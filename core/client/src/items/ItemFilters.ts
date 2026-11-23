@@ -80,9 +80,67 @@ export function applyTypeFilter<T extends FilterableItem>(items: T[], filterType
 const isSecretField = (field: ItemField): boolean => field.IsHidden || field.FieldType === FieldTypes.Password || field.FieldType === FieldTypes.Hidden;
 
 /**
+ * A character that is part of a word (letter, digit or combining mark).
+ */
+const WORD_CHAR = /[\p{L}\p{N}\p{M}]/u;
+
+/**
+ * Scripts written without spaces between words (Han, kana, Thai, Lao, Myanmar, Khmer), where word starts cannot be detected.
+ */
+const NO_SPACE_SCRIPT_CHAR = /[\u0E00-\u0EFF\u1000-\u109F\u1780-\u17FF\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9F\u{20000}-\u{3FFFF}]/u;
+
+/**
+ * Index of the first occurrence of `word` in `text` at the start of a word, or -1.
+ * A word that starts with punctuation (".com", "@gmail") or with a script written without spaces may match anywhere.
+ */
+function wordStartIndex(text: string, word: string): number {
+  const first = String.fromCodePoint(word.codePointAt(0) ?? 0);
+  const anywhere = !WORD_CHAR.test(first) || NO_SPACE_SCRIPT_CHAR.test(first);
+
+  let index = text.indexOf(word);
+  while (index !== -1) {
+    if (anywhere || index === 0 || !WORD_CHAR.test(Array.from(text.slice(Math.max(0, index - 2), index)).pop() ?? '')) {
+      return index;
+    }
+    index = text.indexOf(word, index + 1);
+  }
+  return -1;
+}
+
+/**
+ * Whether a search word matches `text`: at the start of a word, so "bank" matches "My Bank" and "bank.com" but not "Databank".
+ * A `*` matches any characters, so a leading `*` drops the word-start rule ("*bank" matches "Databank").
+ */
+export function matchesSearchWord(text: string, word: string): boolean {
+  if (!word.includes('*')) {
+    return wordStartIndex(text, word) !== -1;
+  }
+
+  const parts = word.split('*').filter(part => part.length > 0);
+  if (parts.length === 0) {
+    return true;
+  }
+
+  const firstIndex = word.startsWith('*') ? text.indexOf(parts[0]) : wordStartIndex(text, parts[0]);
+  if (firstIndex === -1) {
+    return false;
+  }
+
+  let end = firstIndex + parts[0].length;
+  for (const part of parts.slice(1)) {
+    const index = text.indexOf(part, end);
+    if (index === -1) {
+      return false;
+    }
+    end = index + part.length;
+  }
+  return true;
+}
+
+/**
  * Apply the free-text search filter to a list of items.
- * Splits the term into words and keeps items where every word appears in the name,
- * a field value or a field label. Secret field values are never searched, so typing part
+ * Splits the term into words and keeps items where every word starts a word in the name,
+ * a field value or a field label (see `matchesSearchWord`). Secret field values are never searched, so typing part
  * of a password cannot reveal which items hold it. Shared with the current-site suggestion
  * so the suggested match count always equals what the search field itself returns.
  */
@@ -106,8 +164,6 @@ export function applySearchFilter<T extends Pick<Item, 'Name' | 'Fields'>>(items
       searchableFields.push(field.Label?.toLowerCase() ?? '');
     });
 
-    return searchWords.every(word =>
-      searchableFields.some(field => field.includes(word))
-    );
+    return searchWords.every(word => searchableFields.some(field => matchesSearchWord(field, word)));
   });
 }
