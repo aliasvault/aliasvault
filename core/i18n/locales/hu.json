@@ -547,6 +547,8 @@
       "uploadExportFileText": "{{service}} export fájl feltöltése:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Jelszavak importálása korábbi AliasVault mentésből",
       "aliasVaultInstructionsPart1": "Importálja a korábban létrehozott AliasVault biztonsági mentését.",
       "bitwardenDescription": "Jelszavak importálása a Bitwarden széfjéből",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Jelszavak importálása Strongbox-ból",
       "strongboxInstructionsPart1": "Ahhoz, hogy importálni tudja a Strongbox széfjét, exportálnia kell azt CSV formátumba. Ezt megteheti ha bemegy a 'Fájl' > 'Adatbázis exportálás' (CSV-be) menübe.",
       "template": "template",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Miután elkészült az export fájl, lentebb fel tudja tölteni."
     }
   },
