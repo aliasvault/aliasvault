@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Добавить",
+    "added": "Added",
     "alias": "Псевдоним",
     "attachmentDownloadFailed": "Не удалось загрузить вложение",
     "attachments": "Вложения",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Рекомендуется",
     "serviceCard": {
       "attachmentsDetected": "Вложений: {{count}}, {{size}}",
-      "confirmImportText": "Импортировать записи ({{count}})? Обратите внимание: процесс может занять некоторое время.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Расшифровать и продолжить",
       "decryptingFile": "Расшифровка файла...",
       "decryptionErrorGeneric": "Не удалось расшифровать файл. Убедитесь, что он не поврежден, и попробуйте еще раз.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Пароль для расшифровки",
       "duplicateCredentialsWarning": "Найдено дубликатов: {{count}}. Они не будут импортированы.",
       "encryptedFilePasswordPrompt": "Этот файл зашифрован. Введите пароль, который вы указали при создании резервной копии.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Загрузить иконки для сервисов с URL",
       "extractingFavicons": "Извлечение иконок... {{current}} / {{total}}",
       "faviconExtractionNote": "Примечание: Включено извлечение иконок. Этот процесс может занять несколько минут в зависимости от количества записей с URL. Пожалуйста, не закрывайте страницу.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "Не удалось обработать некоторые элементы ({{count}}), они будут пропущены.",
       "importSuccessMessage": "Импорт завершен. Добавлено записей: {{count}}.",
       "moreCredentials": "... и еще {{count}} записей",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Без логотипа",
       "noNewCredentials": "Новых записей для импорта не найдено.",
       "previewInstructions": "Проверьте правильность распознанных данных перед продолжением:",
