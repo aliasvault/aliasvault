@@ -213,7 +213,7 @@
   },
   "common": {
     "add": "Añadir",
-    "added": "Added",
+    "added": "Añadido",
     "alias": "Alias",
     "attachmentDownloadFailed": "Error al descargar el archivo adjunto",
     "attachments": "Archivos adjuntos",
@@ -510,7 +510,7 @@
     "recommendedLabel": "Recomendado",
     "serviceCard": {
       "attachmentsDetected": "{{count}} adjunto(s), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "¿Estás seguro que quieres continuar? Nota: el proceso de importación puede tardar un poco.",
       "decryptAndContinueButton": "Descifrar y continuar",
       "decryptingFile": "Descifrando archivo...",
       "decryptionErrorGeneric": "Error al descifrar el archivo. Por favor, comprueba que el archivo no está dañado e inténtalo de nuevo.",
@@ -547,6 +547,8 @@
       "uploadExportFileText": "Sube tu archivo de exportación {{service}}:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importar desde copia de seguridad de AliasVault",
       "aliasVaultInstructionsPart1": "Importa tu copia de seguridad de AliasVault previamente creada.",
       "bitwardenDescription": "Importar contraseñas de Bitwarden",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Importar contraseñas de Strongbox",
       "strongboxInstructionsPart1": "Para importar la bóveda de Strongbox, necesita exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar base de datos' (a CSV).",
       "template": "plantilla",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Una vez que haya exportado el archivo, puedes subirlo a continuación."
     }
   },
