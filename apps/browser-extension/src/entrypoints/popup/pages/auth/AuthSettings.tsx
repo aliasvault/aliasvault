@@ -375,7 +375,7 @@ const AuthSettings: React.FC = () => {
         </div>
 
         <div>
-          <LanguageSwitcher variant="dropdown" size="sm" />
+          <LanguageSwitcher />
         </div>
       </div>
 

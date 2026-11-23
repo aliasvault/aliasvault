@@ -67,13 +67,6 @@ export async function loadTranslations(language: string): Promise<ContentTransla
 }
 
 /**
- * Get language config by code
- */
-export function getLanguageConfig(code: string): ILanguageConfig | undefined {
-  return AVAILABLE_LANGUAGES.find(lang => lang.code === code);
-}
-
-/**
  * Get nested value from object using dot notation
  */
 export function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
