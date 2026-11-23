@@ -547,6 +547,8 @@
       "uploadExportFileText": "העלאת קובץ הייצוא שלך מ־{{service}}:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Import from AliasVault backup",
       "aliasVaultInstructionsPart1": "Import your previously created AliasVault backup.",
       "bitwardenDescription": "ייבוא סיסמאות מכספת ה־Bitwarden שלך",
@@ -588,6 +590,7 @@
       "strongboxDescription": "ייבוא סיסמאות מ־Stronbox",
       "strongboxInstructionsPart1": "כדי לייבא את כספת ה־Strongbox שלך, יש לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי גישה לתפריט ‚קובץ’ ובחירה ב‚ייצוא מסד נתונים’ (ל־CSV).",
       "template": "תבנית",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "לאחר ייצוא הקובץ, אפשר להעלות אותו להלן."
     }
   },
