@@ -34,6 +34,12 @@ type ImportOptionProps = {
 };
 
 /**
+ * Whether the import fetches a favicon for a credential: it has a URL and carries no logo of its own.
+ * @param credential - The imported credential
+ */
+const needsFavicon = (credential: ImportedCredential): boolean => !credential.FaviconBytes && !credential.AliasVaultItem?.Logo && (credential.ServiceUrls?.length ?? 0) > 0;
+
+/**
  * One import option checkbox, with an optional detail in parentheses after the label.
  */
 const ImportOption: React.FC<ImportOptionProps> = ({ checked, onChange, label, detail }) => (
@@ -163,6 +169,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const [totalFaviconsToExtract, setTotalFaviconsToExtract] = useState(0);
   const faviconExtractionAbort = useRef<AbortController | null>(null);
   const extractedFavicons = useRef(new Map<string, Uint8Array>());
+  const hasFaviconCandidates = importedCredentials.some(needsFavicon);
 
   const [isSavingCredentials, setIsSavingCredentials] = useState(false);
   const [credentialSaveProgress, setCredentialSaveProgress] = useState(0);
@@ -393,7 +400,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     faviconExtractionAbort.current = abort;
 
     const targetsBySource = new Map<string, FaviconTarget>();
-    for (const credential of importedCredentials.filter(c => !c.FaviconBytes && !c.AliasVaultItem?.Logo)) {
+    for (const credential of importedCredentials.filter(needsFavicon)) {
       const target = await selectFaviconTarget(credential.ServiceUrls ?? []);
       if (target && !targetsBySource.has(target.source)) {
         targetsBySource.set(target.source, target);
@@ -484,7 +491,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     await yieldToPaint();
 
     try {
-      if (extractFavicons && importedCredentials.length > 0) {
+      if (extractFavicons && hasFaviconCandidates) {
         await extractFaviconsForCredentials();
         if (faviconExtractionAbort.current?.signal.aborted) {
           return;
@@ -732,7 +739,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       </div>
       {hasItemsToWrite && (
         <div className="mb-4 space-y-2">
-          {importedCredentials.length > 0 && <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t('importExport.serviceCard.extractFaviconsLabel')} />}
+          {hasFaviconCandidates && <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t('importExport.serviceCard.extractFaviconsLabel')} />}
           {detectedFolderPaths.length > 0 && (
             <ImportOption checked={importFolders} onChange={setImportFolders} label={t('importExport.serviceCard.importFoldersLabel')} detail={t('importExport.serviceCard.foldersDetected', { count: detectedFolderPaths.length })} />
           )}
@@ -779,7 +786,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         <>
           <div className="mb-4">
             <Text className="mb-4">{t('importExport.serviceCard.confirmImportQuestion')}</Text>
-            {extractFavicons && importedCredentials.length > 0 && (
+            {extractFavicons && hasFaviconCandidates && (
               <div className="p-4 mb-4 text-sm rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
                 <p>{t('importExport.serviceCard.faviconExtractionNote')}</p>
               </div>
