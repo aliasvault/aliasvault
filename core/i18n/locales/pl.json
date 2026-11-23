@@ -547,8 +547,8 @@
       "uploadExportFileText": "Prześlij plik sejfu {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
-      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
+      "aegisDescription": "Importuj kody 2FA z Aegis Authenticator",
+      "aegisInstructionsPart1": "Aby zaimportować swoje kody Aegis, musisz je wyeksportować jako niezaszyfrowany plik JSON. Możesz to zrobić w Aegis, przechodząc do 'Ustawienia' > 'Import i eksport' > 'Eksport', wybierając 'Aegis (.JSON)' i wyłączając szyfrowanie.",
       "aliasVaultDescription": "Importuj z kopii zapasowej AliasVault",
       "aliasVaultInstructionsPart1": "Importuj poprzednio utworzoną kopię zapasową AliasVaulta.",
       "bitwardenDescription": "Importuj hasła z sejfu Bitwarden",
@@ -590,7 +590,7 @@
       "strongboxDescription": "Importuj hasła z Strongbox",
       "strongboxInstructionsPart1": "Aby zaimportować sejf Strongbox, należy wyeksportować go jako plik CSV. Przejdź do menu „Plik” i wybierz opcję „Eksportuj bazę danych” (do pliku CSV).",
       "template": "szablon",
-      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFactorMergeHint": "Każdy kod jest importowany jako oddzielny element. Aby dodać kod do istniejącego logowania, kliknij prawym przyciskiem myszy i wybierz 'Scal'.",
       "uploadInstructions": "Po wyeksportowaniu pliku możesz go przesłać poniżej."
     }
   },
@@ -817,14 +817,14 @@
       "sourceNone": "Bez ikony"
     },
     "merge": {
-      "title": "Połącz elementy",
-      "action": "Połącz",
-      "mergeWith": "Połącz z...",
+      "title": "Scal elementy",
+      "action": "Scal",
+      "mergeWith": "Scal z...",
       "searchHint": "Szukaj elementu to połączenia.",
       "keep": "Przedmiot do zachowania",
       "chooseValues": "Wartości pola do zachowania:",
       "combined": "Wszystkie pozostałe wartości pól są połączone w jeden element.",
-      "differentFolders": "Elementy mogą być połączone tylko wtedy, gdy są we własnym sejfie lub w tym samym udostępnionym folderze.",
+      "differentFolders": "Elementy mogą być scalone tylko wtedy, gdy są we własnym sejfie lub w tym samym udostępnionym folderze.",
       "differentTypes": "Tego typu elementów nie można ze sobą połączyć: {{types}}."
     },
     "noAttachments": "Brak załącznika",
@@ -940,7 +940,7 @@
       "itemCreated": "Element utworzony pomyślnie",
       "itemDeleted": "Element został pomyślnie usunięty",
       "itemUpdated": "Element zaktualizowany pomyślnie",
-      "itemsMerged": "Elementy zostały połączone",
+      "itemsMerged": "Elementy zostały scalone",
       "passwordCopied": "Hasło skopiowane do schowka",
       "totpCodeCopied": "Kod TOTP skopiowano do schowka",
       "urlCopied": "Adres URL skopiowany do schowka",
