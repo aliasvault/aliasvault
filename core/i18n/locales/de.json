@@ -280,7 +280,7 @@
       "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut."
     },
-    "expand": "Expand",
+    "expand": "Erweitern",
     "generate": "Erzeugen",
     "help": "Hilfe",
     "hide": "Ausblenden",
@@ -288,6 +288,8 @@
     "hidePassword": "Passwort ausblenden",
     "highRiskAction": "Das ist eine risikoreiche Aktion.",
     "home": "Startseite",
+    "lastChanged": "Geändert: {{time}}",
+    "lastUsed": "Verwendet: {{time}}",
     "loadMore": "Mehr laden",
     "loading": "Lade...",
     "loadingAttachments": "Anhänge werden geladen...",
@@ -342,11 +344,28 @@
     "share": "Teilen",
     "show": "Anzeigen",
     "showDetails": "Details anzeigen",
-    "showList": "Show list",
+    "showList": "Liste anzeigen",
     "showPassword": "Passwort anzeigen",
     "success": "Erfolg",
+    "suggestions": {
+      "title": "Vorschläge"
+    },
     "syncVaultData": "Tresor synchronisieren",
     "syncingChanges": "Änderungen synchronisieren...",
+    "timeAgo": {
+      "days_one": "vor {{count}} Tag",
+      "days_other": "vor {{count}} Tagen",
+      "hours_one": "vor {{count}} Stunde",
+      "hours_other": "vor {{count}} Stunden",
+      "justNow": "gerade eben",
+      "minutes_one": "vor {{count}} Minute",
+      "minutes_other": "vor {{count}} Minuten",
+      "months_one": "vor {{count}} Monat",
+      "months_other": "vor {{count}} Monaten",
+      "years_one": "vor {{count}} Jahr",
+      "years_other": "vor {{count}} Jahren",
+      "yesterday": "gestern"
+    },
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
     "unavailable": "Nicht verfügbar",
     "undo": "Rückgängig machen",
@@ -359,9 +378,9 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "title": "Confirm autofill"
+      "description": "Fülle diesen Login nur aus, wenn Du ihn selbst ausgewählt hast und dieser Website vertraust.",
+      "fillOn": "Du bist dabei, einen Login auf {{host}} auszufüllen.",
+      "title": "Autofill bestätigen"
     },
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill Benutzername/Passwort",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Neue E-Mail"
     },
     "sizeKB": "kB",
-    "time": {
-      "hoursAgo_plural": "vor {{count}} Stunden",
-      "hoursAgo_single": "vor {{count}} Stunde",
-      "justNow": "gerade eben",
-      "minutesAgo_plural": "vor {{count}} Minuten",
-      "minutesAgo_single": "vor {{count}} Minute",
-      "yesterday": "gestern"
-    },
     "title": "E-Mails",
     "to": "An:",
     "toColumn": "An"
@@ -799,6 +810,17 @@
       "sourceFavicon": "Von {{domain}}",
       "sourceNone": "Kein Symbol"
     },
+    "merge": {
+      "title": "Elemente zusammenführen",
+      "action": "Zusammenführen",
+      "mergeWith": "Zusammenführen mit...",
+      "searchHint": "Suche nach dem zu zusammenzuführenden Element.",
+      "keep": "Zu behaltendes Element",
+      "chooseValues": "Zu behaltende Feldwerte:",
+      "combined": "Alle anderen Feldwerte werden zu dem zusammengeführten Element zusammengefasst.",
+      "differentFolders": "Elemente können nur zusammengeführt werden, wenn sie in Deinem eigenen Tresor oder beide im selben gemeinsamen Ordner liegen.",
+      "differentTypes": "Diese Element-Typen können nicht miteinander zusammengeführt werden: {{types}}."
+    },
     "noAttachments": "Kein Anhang verfügbar.",
     "noEmailsYet": "Bisher wurden noch keine E-Mails empfangen.",
     "noHistoryAvailable": "Keine Historie verfügbar",
@@ -892,12 +914,18 @@
     "separator": "Trennzeichen",
     "serviceUrl": "URL des Dienstes",
     "sort": {
-      "alphabetical": "Alphabetisch (A-Z)",
-      "newestFirst": "Neuste zuerst",
-      "oldestFirst": "Älteste zuerst",
+      "dateCreated": "Erstellungsdatum",
+      "groups": {
+        "last30Days": "Letzte 30 Tage",
+        "last7Days": "Letzte 7 Tage",
+        "older": "Älter",
+        "today": "Heute"
+      },
+      "lastModified": "Zuletzt geändert",
+      "lastUsed": "Zuletzt genutzt",
+      "name": "Name",
       "title": "Sortieren nach"
     },
-    "suggestions": "Vorschläge",
     "switchBackToOriginalApp": "Wechsel zurück zur ursprünglichen App, um fortzufahren.",
     "tags": "Schlagwörter",
     "title": "Elemente",
@@ -906,6 +934,7 @@
       "itemCreated": "Element erfolgreich erstellt",
       "itemDeleted": "Element erfolgreich gelöscht",
       "itemUpdated": "Element erfolgreich aktualisiert",
+      "itemsMerged": "Elemente erfolgreich zusammengeführt",
       "passwordCopied": "Passwort in die Zwischenablage kopiert",
       "totpCodeCopied": "TOTP-Code in die Zwischenablage kopiert",
       "urlCopied": "URL in die Zwischenablage kopiert",
@@ -993,14 +1022,14 @@
     "attemptsWarning": "Ungültiges Passwort. Noch {{count}} Versuche bis zur Abmeldung.",
     "authRequired": "Authentifizierung erforderlich",
     "authRequiredMessage": "Bitte aktiviere die biometrische Authentifizierung oder die PIN-Sperre, um Autofill zu verwenden.",
-    "autofillConfirmFillTitle": "Fill in {{app}}?",
+    "autofillConfirmFillTitle": "{{app}} ausfüllen?",
     "autofillFailedToRetrieve": "Abruf der Daten fehlgeschlagen. Öffne die App",
     "autofillNoMatchFound": "Keine Übereinstimmungen gefunden",
     "autofillOpenApp": "App öffnen",
     "autofillServiceDescription": "AliasVault Autofill",
-    "autofillTrustApp": "Trust {{app}}",
-    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
-    "autofillTrustAppTitle": "Trust this app?",
+    "autofillTrustApp": "{{app}} vertrauen",
+    "autofillTrustAppMessage": "Diese App fragt nach Deinem {{domain}} Login. Sobald sie vertrauenswürdig ist, kann sie Passwörter und Passkeys für jede Webseite anfordern, bis Du sie in den Autofill-Einstellungen entfernst.",
+    "autofillTrustAppTitle": "Dieser App vertrauen?",
     "autofillVaultLocked": "Der Tresor ist gesperrt",
     "biometricStoreKeySubtitle": "Authentifiziere Dich, um Deinen Schlüssel sicher im Android Keystore zu speichern. Dies ermöglicht einen sicheren Zugriff auf Deinen Tresor.",
     "biometricStoreKeyTitle": "Schlüssel speichern",
@@ -1045,8 +1074,8 @@
     "passkeyAddToExisting": "Oder füge den Passkey einem vorhandenen Element hinzu",
     "passkeyAddToExistingLabel": "Oder füge den Passkey einem vorhandenen Element hinzu:",
     "passkeyAuthenticating": "Authentifizierung läuft...",
-    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
-    "passkeyBlockedTitle": "Blocked by AliasVault",
+    "passkeyBlockedMessage": "AliasVault konnte nicht verifizieren, dass {{app}} Passkeys für {{domain}} verwenden kann, die Anfrage wurde daher blockiert. Wenn Du denkst, dass dies ein Fehler ist, wende Dich an den Entwickler der App.",
+    "passkeyBlockedTitle": "Blockiert durch AliasVault",
     "passkeyCheckingConnection": "Verbindung wird überprüft...",
     "passkeyCreating": "Erstelle Passkey...",
     "passkeyCreationFailed": "Fehler beim Erstellen des Passkeys",
@@ -1156,8 +1185,8 @@
       "showSearchTextDescription": "Füge den Text ein, den AliasVault von Android erhält und der verwendet wird, um nach passenden Anmeldedaten zu suchen",
       "step1": "1. Tippe unten auf die Schaltfläche, um die Android-Einstellungen zu öffnen. Wähle \"AliasVault\" anschließend als bevorzugten Dienst aus",
       "step2": "2. Manche Apps wie Google Chrome erfordern möglicherweise eine manuelle Konfiguration in ihren Einstellungen, um Drittanbieter-Autofill-Apps zuzulassen. Die meisten Apps sollten jedoch standardmäßig mit Autofill funktionieren.",
-      "trustedApps": "Trusted apps",
-      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
+      "trustedApps": "Vertrauenswürdige Apps",
+      "trustedAppsDescription": "Apps, denen Du erlaubt hast, Passwörter und Passkeys aus Deinem Tresor anzufordern, obwohl AliasVault diese nicht automatisch überprüfen konnte. Entferne eine App, um erneut gefragt zu werden."
     },
     "apiUrlHint": "Die API-Endpunkt-URL (normalerweise Client-URL + /api)",
     "appVersion": "App-Version",

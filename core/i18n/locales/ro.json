@@ -280,7 +280,7 @@
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou."
     },
-    "expand": "Expand",
+    "expand": "Extinde",
     "generate": "Generează",
     "help": "Ajutor",
     "hide": "Ascunde",
@@ -288,6 +288,8 @@
     "hidePassword": "Ascunde parola",
     "highRiskAction": "Această acțiune prezintă riscuri ridicate.",
     "home": "Acasă",
+    "lastChanged": "Modificat: {{time}}",
+    "lastUsed": "Utilizat: {{time}}",
     "loadMore": "Încarcă mai multe",
     "loading": "Se încarcă...",
     "loadingAttachments": "Se încarcă atașamentele...",
@@ -342,11 +344,28 @@
     "share": "Distribuie",
     "show": "Afișează",
     "showDetails": "Afișează detalii",
-    "showList": "Show list",
+    "showList": "Afișează lista",
     "showPassword": "Afișează parola",
     "success": "Succes",
+    "suggestions": {
+      "title": "Sugestii"
+    },
     "syncVaultData": "Sincronizează datele seifului",
     "syncingChanges": "Se sincronizează modificările...",
+    "timeAgo": {
+      "days_one": "Acum {{count}} zi",
+      "days_other": "Acum {{count}} zile",
+      "hours_one": "Acum {{count}} oră",
+      "hours_other": "Acum {{count}} ore",
+      "justNow": "chiar acum",
+      "minutes_one": "Acum {{count}} minut",
+      "minutes_other": "Acum {{count}} minute",
+      "months_one": "Acum {{count}} lună",
+      "months_other": "Acum {{count}} luni",
+      "years_one": "Acum {{count}} an",
+      "years_other": "Acum {{count}} ani",
+      "yesterday": "ieri"
+    },
     "twoFactorAuthentication": "Autentificare cu doi factori",
     "unavailable": "Indisponibil",
     "undo": "Revocă",
@@ -359,9 +378,9 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "title": "Confirm autofill"
+      "description": "Completează această autentificare doar dacă ai ales-o tu și ai încredere în acest site.",
+      "fillOn": "Ești pe cale să completezi datele de autentificare pe {{host}}.",
+      "title": "Confirmă completarea automată"
     },
     "autofillTotp": "Completare automată 2FA",
     "autofillWithAliasVault": "Completează automat numele de utilizator/parola",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "E-mail nou"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} ore în urmă",
-      "hoursAgo_single": "{{count}} oră în urmă",
-      "justNow": "acum",
-      "minutesAgo_plural": "{{count}} minute în urmă",
-      "minutesAgo_single": "{{count}} minut în urmă",
-      "yesterday": "ieri"
-    },
     "title": "E-mailuri",
     "to": "Către:",
     "toColumn": "Către"
@@ -799,6 +810,17 @@
       "sourceFavicon": "De la {{domain}}",
       "sourceNone": "Fără pictogramă"
     },
+    "merge": {
+      "title": "Combină elementele",
+      "action": "Combină",
+      "mergeWith": "Combină cu...",
+      "searchHint": "Caută elementul cu care dorești să combini.",
+      "keep": "Element de păstrat",
+      "chooseValues": "Valorile câmpurilor de păstrat:",
+      "combined": "Valorile tuturor celorlalte câmpuri vor fi reunite în elementul rezultat în urma combinării.",
+      "differentFolders": "Elementele pot fi combinate doar dacă se află ambele în seiful tău personal sau în același dosar partajat.",
+      "differentTypes": "Aceste tipuri de elemente nu pot fi combinate între ele: {{types}}."
+    },
     "noAttachments": "Nu există atașamente disponibile.",
     "noEmailsYet": "Nu ai primit niciun e-mail încă.",
     "noHistoryAvailable": "Niciun istoric disponibil",
@@ -892,12 +914,18 @@
     "separator": "Separator",
     "serviceUrl": "URL serviciu",
     "sort": {
-      "alphabetical": "Alfabetic (A-Z)",
-      "newestFirst": "Cele mai noi primele",
-      "oldestFirst": "Cele mai vechi primele",
+      "dateCreated": "Data creării",
+      "groups": {
+        "last30Days": "Ultimele 30 de zile",
+        "last7Days": "Ultimele 7 de zile",
+        "older": "Mai vechi",
+        "today": "Astăzi"
+      },
+      "lastModified": "Ultima modificare",
+      "lastUsed": "Ultima utilizare",
+      "name": "Nume",
       "title": "Filtrează după"
     },
-    "suggestions": "Sugestii",
     "switchBackToOriginalApp": "Revino la aplicația inițială pentru a continua.",
     "tags": "Etichete",
     "title": "Elemente",
@@ -906,6 +934,7 @@
       "itemCreated": "Element creat cu succes",
       "itemDeleted": "Element șters cu succes",
       "itemUpdated": "Element actualizat cu succes",
+      "itemsMerged": "Elementele au fost combinate cu succes",
       "passwordCopied": "Parolă copiată în clipboard",
       "totpCodeCopied": "Cod TOTP copiat în clipboard",
       "urlCopied": "URL copiat în clipboard",
@@ -993,14 +1022,14 @@
     "attemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{count}} ori.",
     "authRequired": "Autentificare necesară",
     "authRequiredMessage": "Activează biometria sau deblocarea prin PIN în aplicația AliasVault pentru a folosi completarea automată.",
-    "autofillConfirmFillTitle": "Fill in {{app}}?",
+    "autofillConfirmFillTitle": "Completezi în {{app}}?",
     "autofillFailedToRetrieve": "Preluare eșuată, deschide aplicația",
     "autofillNoMatchFound": "Nicio potrivire găsită",
     "autofillOpenApp": "Deschide aplicația",
     "autofillServiceDescription": "Completare automată AliasVault",
-    "autofillTrustApp": "Trust {{app}}",
-    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
-    "autofillTrustAppTitle": "Trust this app?",
+    "autofillTrustApp": "Ai încredere în {{app}}",
+    "autofillTrustAppMessage": "Această aplicație solicită datele tale de autentificare pentru {{domain}}. După ce o marchezi ca fiind de încredere, aceasta va putea solicita parole și chei de acces passkeys pentru orice site web, până când o elimini din setările de completare automată.",
+    "autofillTrustAppTitle": "Ai încredere în această aplicație?",
     "autofillVaultLocked": "Seif blocat",
     "biometricStoreKeySubtitle": "Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.",
     "biometricStoreKeyTitle": "Stocare cheie de criptare",
@@ -1045,8 +1074,8 @@
     "passkeyAddToExisting": "Sau adaugă Passkey la un element existent",
     "passkeyAddToExistingLabel": "Sau adaugă passkey la un element existent:",
     "passkeyAuthenticating": "Autentificare...",
-    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
-    "passkeyBlockedTitle": "Blocked by AliasVault",
+    "passkeyBlockedMessage": "AliasVault nu a putut verifica dacă {{app}} are permisiunea de a utiliza chei de acces passkeys pentru {{domain}}, prin urmare solicitarea a fost blocată. Dacă crezi că este o eroare, contactează dezvoltatorul aplicației.",
+    "passkeyBlockedTitle": "Blocat de AliasVault",
     "passkeyCheckingConnection": "Se verifică conexiunea...",
     "passkeyCreating": "Se creează passkey-ul...",
     "passkeyCreationFailed": "Crearea passkey-ului a eșuat",
@@ -1156,8 +1185,8 @@
       "showSearchTextDescription": "Include textul pe care AliasVault îl primește de la Android și pe care îl folosește pentru a căuta datele de autentificare corespunzătoare",
       "step1": "1. Deschide setările Android folosind butonul de mai jos și schimbă „Serviciul de completare automată” în „AliasVault",
       "step2": "2. Unele aplicații, de exemplu Google Chrome, pot necesita configurare manuală în setările lor pentru a permite aplicațiilor terțe de completare automată. Totuși, majoritatea aplicațiilor ar trebui să funcționeze cu completarea automată în mod implicit.",
-      "trustedApps": "Trusted apps",
-      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
+      "trustedApps": "Aplicații de încredere",
+      "trustedAppsDescription": "Aplicații cărora le-ai permis să solicite parole și chei de acces passkeys din seiful tău, deși AliasVault nu le-a putut verifica automat. Elimină o aplicație pentru a fi întrebat din nou."
     },
     "apiUrlHint": "URL-ul endpoint-ului API (de obicei URL client + /api)",
     "appVersion": "Versiune aplicație",

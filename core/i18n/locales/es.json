@@ -280,7 +280,7 @@
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor la acepte. Intenta eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelve a intentarlo.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtalo de nuevo."
     },
-    "expand": "Expand",
+    "expand": "Expandir",
     "generate": "Generar",
     "help": "Ayuda",
     "hide": "Esconder",
@@ -288,6 +288,8 @@
     "hidePassword": "Ocultar contraseña",
     "highRiskAction": "Esta es una acción de alto riesgo.",
     "home": "Inicio",
+    "lastChanged": "Cambiado: {{time}}",
+    "lastUsed": "Usado: {{time}}",
     "loadMore": "Cargar más",
     "loading": "Cargando...",
     "loadingAttachments": "Cargando archivos adjuntos...",
@@ -342,11 +344,28 @@
     "share": "Compartir",
     "show": "Mostrar",
     "showDetails": "Mostrar detalles",
-    "showList": "Show list",
+    "showList": "Mostrar lista",
     "showPassword": "Mostrar contraseña",
     "success": "Correcto",
+    "suggestions": {
+      "title": "Sugerencias"
+    },
     "syncVaultData": "Sincronizar datos de bóveda",
     "syncingChanges": "Sincronizando cambios...",
+    "timeAgo": {
+      "days_one": "Hace {{count}} día",
+      "days_other": "Hace {{count}} días",
+      "hours_one": "Hace {{count}} h",
+      "hours_other": "Hace {{count}} horas",
+      "justNow": "ahora mismo",
+      "minutes_one": "Hace {{count}} min",
+      "minutes_other": "Hace {{count}} min",
+      "months_one": "Hace {{count}} mes",
+      "months_other": "Hace {{count}} meses",
+      "years_one": "Hace {{count}} año",
+      "years_other": "Hace {{count}} años",
+      "yesterday": "ayer"
+    },
     "twoFactorAuthentication": "Autenticación de doble factor",
     "unavailable": "No disponible",
     "undo": "Deshacer",
@@ -359,9 +378,9 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "title": "Confirm autofill"
+      "description": "Sólo rellene este inicio de sesión si lo eligió usted mismo y confía en este sitio web.",
+      "fillOn": "Estás a punto de completar un inicio de sesión en {{host}}.",
+      "title": "Confirmar autorrelleno"
     },
     "autofillTotp": "Autorrelleno de 2FA",
     "autofillWithAliasVault": "Autorrellenar nombre de usuario/contraseña",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Nuevo correo"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "Hace {{count}} h",
-      "hoursAgo_single": "Hace {{count}} h",
-      "justNow": "ahora mismo",
-      "minutesAgo_plural": "Hace {{count}} min",
-      "minutesAgo_single": "Hace {{count}} min",
-      "yesterday": "ayer"
-    },
     "title": "Correos electrónicos",
     "to": "Para:",
     "toColumn": "Para"
@@ -799,6 +810,17 @@
       "sourceFavicon": "De {{domain}}",
       "sourceNone": "Sin icono"
     },
+    "merge": {
+      "title": "Fusionar artículos",
+      "action": "Combinar",
+      "mergeWith": "Fusionar con...",
+      "searchHint": "Busca el elemento con el que fusionar.",
+      "keep": "Elemento a conservar",
+      "chooseValues": "Valores de campo a conservar:",
+      "combined": "Todos los otros campos se combinan en el elemento fusionado.",
+      "differentFolders": "Los objetos sólo pueden ser fusionados cuando están en tu propia bóveda o ambos en la misma carpeta compartida.",
+      "differentTypes": "Estos tipos de objetos no se pueden combinar entre sí: {{types}}."
+    },
     "noAttachments": "No hay archivos adjuntos disponibles.",
     "noEmailsYet": "No se han recibido correos todavía.",
     "noHistoryAvailable": "Sin historial disponible",
@@ -892,12 +914,18 @@
     "separator": "Separador",
     "serviceUrl": "URL del servicio",
     "sort": {
-      "alphabetical": "Alfabéticamente (A-Z)",
-      "newestFirst": "Más nuevos primero",
-      "oldestFirst": "Más antiguos primero",
+      "dateCreated": "Fecha de creación",
+      "groups": {
+        "last30Days": "Últimos 30 días",
+        "last7Days": "Últimos 7 días",
+        "older": "Más antiguo",
+        "today": "Hoy"
+      },
+      "lastModified": "Última modificación",
+      "lastUsed": "Último uso",
+      "name": "Nombre",
       "title": "Ordenar por"
     },
-    "suggestions": "Sugerencias",
     "switchBackToOriginalApp": "Volver a la aplicación original para continuar.",
     "tags": "Tags",
     "title": "Elementos",
@@ -906,6 +934,7 @@
       "itemCreated": "Elemento creado con éxito",
       "itemDeleted": "Elemento eliminado con éxito",
       "itemUpdated": "Elemento actualizado con éxito",
+      "itemsMerged": "Elementos fusionados correctamente",
       "passwordCopied": "Contraseña copiada al portapapeles",
       "totpCodeCopied": "Código TOTP copiado al portapapeles",
       "urlCopied": "URL copiada al portapapeles",
@@ -993,14 +1022,14 @@
     "attemptsWarning": "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta {{count}} veces más.",
     "authRequired": "Se requiere autentificación",
     "authRequiredMessage": "Por favor, habilite la autenticación biométrica o PIN en la aplicación principal de AliasVault para continuar.",
-    "autofillConfirmFillTitle": "Fill in {{app}}?",
+    "autofillConfirmFillTitle": "¿Rellenar {{app}}?",
     "autofillFailedToRetrieve": "Fallo al recuperar, abrir aplicación",
     "autofillNoMatchFound": "No se ha encontrado ninguna coincidencia",
     "autofillOpenApp": "Abrir aplicación",
     "autofillServiceDescription": "AutoFill de AliasVault",
-    "autofillTrustApp": "Trust {{app}}",
-    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
-    "autofillTrustAppTitle": "Trust this app?",
+    "autofillTrustApp": "Confiar en {{app}}",
+    "autofillTrustAppMessage": "Esta aplicación te está pidiendo tus datos de inicio de sesión de {{domain}}. Una vez que le hayas dado tu consentimiento, podrá solicitar contraseñas y claves de acceso para cualquier sitio web hasta que la elimines en la configuración de Autocompletar.",
+    "autofillTrustAppTitle": "¿Confiar en esta aplicación?",
     "autofillVaultLocked": "Bóveda bloqueada",
     "biometricStoreKeySubtitle": "Autenticar para almacenar tu clave de cifrado de forma segura en el almacén de claves Android. Esto habilita el acceso seguro a tu bóveda.",
     "biometricStoreKeyTitle": "Guardar clave de cifrado",
@@ -1045,8 +1074,8 @@
     "passkeyAddToExisting": "O, añadir llave de acceso a un elemento existente",
     "passkeyAddToExistingLabel": "O, añadir llave de acceso a un elemento existente:",
     "passkeyAuthenticating": "Autenticando...",
-    "passkeyBlockedMessage": "AliasVault could not verify that {{app}} may use passkeys for {{domain}}, so the request was blocked. If you think this is a mistake, contact the developer of the app.",
-    "passkeyBlockedTitle": "Blocked by AliasVault",
+    "passkeyBlockedMessage": "AliasVault no pudo verificar que {{app}} puede usar claves de acceso para {{domain}}, por lo que la solicitud fue bloqueada. Si crees que esto es un error, contacta con el desarrollador de la aplicación.",
+    "passkeyBlockedTitle": "Bloqueado por AliasVault",
     "passkeyCheckingConnection": "Comprobando la conexión...",
     "passkeyCreating": "Creando llave de acceso...",
     "passkeyCreationFailed": "Fallo al crear la llave de acceso",
@@ -1156,8 +1185,8 @@
       "showSearchTextDescription": "Incluye el texto que recibe AliasVault de Android para buscar una credencial coincidente",
       "step1": "1. Abre la configuración de Android a través del botón de abajo, y cambia el \"servicio preferido de autorrelleno\" a \"AliasVault\"",
       "step2": "2. Algunas aplicaciones, por ejemplo, Google Chrome, pueden requerir configuración manual en tus ajustes para permitir aplicaciones de relleno automático de terceros. Sin embargo, la mayoría de las aplicaciones deberían funcionar con autorrelleno de forma predeterminada.",
-      "trustedApps": "Trusted apps",
-      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
+      "trustedApps": "Apps de confianza",
+      "trustedAppsDescription": "Aplicaciones permitidas solicitar contraseñas y contraseñas de tu bóveda aunque AliasVault no pudo verificarlas automáticamente. Elimina una aplicación para que se te pregunte de nuevo."
     },
     "apiUrlHint": "La URL del endpoint de la API (generalmente URL del cliente + /api)",
     "appVersion": "Versión de la app",
@@ -1547,7 +1576,7 @@
     "totpAutofill": "Codigo 2FA de autorelleno",
     "totpAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de código 2FA",
     "twoColumnLayout": "Diseño en dos columnas",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayoutDescription": "Muestra la lista y el elemento seleccionado uno al lado del otro en horizontal.",
     "unlockMethod": {
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Introduce tu PIN de nuevo para confirmar",

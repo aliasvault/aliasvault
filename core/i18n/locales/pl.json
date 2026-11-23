@@ -280,7 +280,7 @@
       "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie."
     },
-    "expand": "Expand",
+    "expand": "Rozwiń",
     "generate": "Wygeneruj",
     "help": "Pomoc",
     "hide": "Ukryj",
@@ -288,6 +288,8 @@
     "hidePassword": "Ukryj hasło",
     "highRiskAction": "Jest to działanie wysokiego ryzyka.",
     "home": "Panel główny",
+    "lastChanged": "Zmieniono: {{time}}",
+    "lastUsed": "Użyto: {{time}}",
     "loadMore": "Załaduj więcej",
     "loading": "Wczytywanie...",
     "loadingAttachments": "Ładowanie załączników...",
@@ -330,7 +332,7 @@
     "save": "Zapisz",
     "saving": "Zapisywanie...",
     "select": "Zaznacz",
-    "selectItemMessage": "Select an item to view its details",
+    "selectItemMessage": "Wybierz element, aby wyświetlić jego szczegóły",
     "selection": {
       "count": "{{count}} Zaznaczony",
       "disable": "Wyłącz zaznaczenie",
@@ -342,11 +344,28 @@
     "share": "Udostępnij",
     "show": "Pokaż",
     "showDetails": "Pokaż szczegóły",
-    "showList": "Show list",
+    "showList": "Pokaż listę",
     "showPassword": "Pokaż hasło",
     "success": "Gotowe",
+    "suggestions": {
+      "title": "Sugestie"
+    },
     "syncVaultData": "Synchronizacja danych z sejfu",
     "syncingChanges": "Synchronizacja zmian...",
+    "timeAgo": {
+      "days_one": "{{count}} dzień temu",
+      "days_other": "{{count}} dni temu",
+      "hours_one": "{{count}} godzinę temu",
+      "hours_other": "{{count}} godzin temu",
+      "justNow": "w tej chwili",
+      "minutes_one": "{{count}} minutę temu",
+      "minutes_other": "{{count}} minut temu",
+      "months_one": "{{count}} miesiąc temu",
+      "months_other": "{{count}} miesięcy temu",
+      "years_one": "{{count}} rok temu",
+      "years_other": "{{count}} lat temu",
+      "yesterday": "wczoraj"
+    },
     "twoFactorAuthentication": "Weryfikacja dwuskładnikowa",
     "unavailable": "Niedostępny",
     "undo": "Cofnij",
@@ -359,9 +378,9 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Only fill this login if you picked it yourself and trust this website.",
-      "fillOn": "You are about to fill a login on {{host}}.",
-      "title": "Confirm autofill"
+      "description": "Wypełnij ten login tylko wtedy, gdy sam go wybrałeś i zaufałeś tej witrynie.",
+      "fillOn": "Zamierzasz wypełnić login na {{host}}.",
+      "title": "Potwierdź autouzupełnianie"
     },
     "autofillTotp": "Autouzupełnianie uwierzytelniania dwuskładnikowego",
     "autofillWithAliasVault": "Autouzupełnianie nazwy użytkownika/hasła",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "Nowa wiadomość e-mail"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} godzin temu",
-      "hoursAgo_single": "{{count}} godzinę temu",
-      "justNow": "przed chwilą",
-      "minutesAgo_plural": "{{count}} minut temu",
-      "minutesAgo_single": "{{count}} minut temu",
-      "yesterday": "wczoraj"
-    },
     "title": "Wiadomości e-mail",
     "to": "Do:",
     "toColumn": "Do"
@@ -799,6 +810,17 @@
       "sourceFavicon": "Od {{domain}}",
       "sourceNone": "Bez ikony"
     },
+    "merge": {
+      "title": "Połącz elementy",
+      "action": "Połącz",
+      "mergeWith": "Połącz z...",
+      "searchHint": "Szukaj elementu to połączenia.",
+      "keep": "Przedmiot do zachowania",
+      "chooseValues": "Wartości pola do zachowania:",
+      "combined": "Wszystkie pozostałe wartości pól są połączone w jeden element.",
+      "differentFolders": "Elementy mogą być połączone tylko wtedy, gdy są we własnym sejfie lub w tym samym udostępnionym folderze.",
+      "differentTypes": "Tego typu elementów nie można ze sobą połączyć: {{types}}."
+    },
     "noAttachments": "Brak załącznika",
     "noEmailsYet": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
     "noHistoryAvailable": "Brak dostępnej historii",
@@ -892,12 +914,18 @@
     "separator": "Separator",
     "serviceUrl": "Adres URL usługi",
     "sort": {
-      "alphabetical": "Alfabetycznie (A-Z)",
-      "newestFirst": "Od najnowszych",
-      "oldestFirst": "Od najstarszych",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Nazwa",
       "title": "Sortuj według"
     },
-    "suggestions": "Propozycje",
     "switchBackToOriginalApp": "Wróć do oryginalnej aplikacji, aby kontynuować.",
     "tags": "Znaczniki",
     "title": "Elementy",
@@ -906,6 +934,7 @@
       "itemCreated": "Element utworzony pomyślnie",
       "itemDeleted": "Element został pomyślnie usunięty",
       "itemUpdated": "Element zaktualizowany pomyślnie",
+      "itemsMerged": "Elementy zostały połączone",
       "passwordCopied": "Hasło skopiowane do schowka",
       "totpCodeCopied": "Kod TOTP skopiowano do schowka",
       "urlCopied": "Adres URL skopiowany do schowka",
@@ -993,14 +1022,14 @@
     "attemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{count}} więcej razy.",
     "authRequired": "Wymagane uwierzytelnienie",
     "authRequiredMessage": "Aby korzystać z funkcji autouzupełniania, włącz metodę odblokowania za pomocą danych biometrycznych lub kodu PIN w głównej aplikacji AliasVault.",
-    "autofillConfirmFillTitle": "Fill in {{app}}?",
+    "autofillConfirmFillTitle": "Wypełnić {{app}}?",
     "autofillFailedToRetrieve": "Nie udało się pobrać, otwórz aplikację",
     "autofillNoMatchFound": "Brak dopasowania",
     "autofillOpenApp": "Otwórz aplikację",
     "autofillServiceDescription": "AliasVault autouzupełnianie",
-    "autofillTrustApp": "Trust {{app}}",
-    "autofillTrustAppMessage": "This app is asking for your {{domain}} login. Once trusted, it can request passwords and passkeys for any website until you remove it in the Autofill settings.",
-    "autofillTrustAppTitle": "Trust this app?",
+    "autofillTrustApp": "Zaufaj {{app}}",
+    "autofillTrustAppMessage": "Ta aplikacja prosi o twoje logowanie {{domain}} . Po zaufaniu może żądać haseł i kluczy dla dowolnej strony internetowej, dopóki nie usuniesz ich w ustawieniach autouzupełniania.",
+    "autofillTrustAppTitle": "Zaufać tej aplikacji?",
     "autofillVaultLocked": "Sejf jest zablokowany",
     "biometricStoreKeySubtitle": "Uwierzytelnij się, aby bezpiecznie przechowywać klucz szyfrujący w magazynie kluczy systemu Android. Umożliwia to bezpieczny dostęp do sejfu.",
     "biometricStoreKeyTitle": "Klucz szyfrujący sejfu",
@@ -1156,8 +1185,8 @@
       "showSearchTextDescription": "AliasVault otrzymuje z Androida dane, których używa do wyszukania pasujących danych logowania",
       "step1": "1. Otwórz ustawienia systemu Android za pomocą poniższego przycisku i zmień „preferowaną usługę autouzupełniania” na „AliasVault”",
       "step2": "2. Niektóre aplikacje, np. Google Chrome, mogą wymagać ręcznej konfiguracji w ustawieniach, aby zezwolić na korzystanie z aplikacji innych firm do automatycznego wypełniania formularzy. Jednak większość aplikacji powinna domyślnie obsługiwać funkcję automatycznego wypełniania formularzy.",
-      "trustedApps": "Trusted apps",
-      "trustedAppsDescription": "Apps you allowed to request passwords and passkeys from your vault although AliasVault could not verify them automatically. Remove an app to be asked again."
+      "trustedApps": "Zaufana aplikacja",
+      "trustedAppsDescription": "Aplikacje, którym zezwoliłeś na żądanie haseł i haseł z sejfu, mimo że AliasVault nie mógł zweryfikować ich automatycznie. Usuń aplikację, która zostanie ponownie zapytana."
     },
     "apiUrlHint": "Adres URL punktu końcowego API (zazwyczaj adres URL klienta + /api)",
     "appVersion": "Wersja aplikacji",
@@ -1546,8 +1575,8 @@
     "theme": "Motyw",
     "totpAutofill": "Autouzupełnianie kodów 2FA",
     "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
-    "twoColumnLayout": "Two-column layout",
-    "twoColumnLayoutDescription": "Shows the list and the selected item side by side in landscape.",
+    "twoColumnLayout": "Układ dwukolumnowy",
+    "twoColumnLayoutDescription": "Wyświetla listę i wybrany element obok siebie w orientacji poziomej.",
     "unlockMethod": {
       "confirmPin": "Potwierdź kod PIN",
       "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",

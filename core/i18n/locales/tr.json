@@ -77,7 +77,7 @@
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
     "uploadSuccess": "Files uploaded successfully.",
-    "uploading": "Uploading..."
+    "uploading": "Yükleniyor..."
   },
   "auth": {
     "authCode": "Doğrulama Kodu",
@@ -90,7 +90,7 @@
     "enableBiometric": "{{biometric}}’i etkinleştirmek istiyor musunuz?",
     "enterAuthCode": "6 rakamlı kodu yazın",
     "enterPassword": "Kasayı açmak için parolanızı girin",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
+    "enterPinToUnlock": "Kasanızın kilidini açmak için şifrenizi girin",
     "errors": {
       "credentialsRequired": "Kullanıcı adı ve parola gerekiyor",
       "enterPassword": "Lütfen parolanızı girin",
@@ -282,22 +282,24 @@
     },
     "expand": "Expand",
     "generate": "Oluştur",
-    "help": "Help",
+    "help": "Yardım",
     "hide": "Gizle",
-    "hideDetails": "Hide details",
-    "hidePassword": "Hide password",
+    "hideDetails": "Detayları Gizle",
+    "hidePassword": "Şifreyi Gizle",
     "highRiskAction": "This is a high-risk action.",
     "home": "Ana Sayfa",
+    "lastChanged": "Changed: {{time}}",
+    "lastUsed": "Used: {{time}}",
     "loadMore": "Daha fazla yükle",
     "loading": "Yükleniyor...",
     "loadingAttachments": "Ekler yükleniyor...",
     "loadingEmails": "E-postalar yükleniyor…",
     "loadingTotpCodes": "Loading TOTP codes...",
-    "loadingVault": "Loading vault...",
+    "loadingVault": "Kasa Yükleniyor...",
     "lockVault": "Kasayı kilitle",
     "loggedIn": "Logged in",
     "logout": "Çıkış yap",
-    "moreOptions": "More options",
+    "moreOptions": "Daha Fazla Seçenek",
     "never": "Asla",
     "next": "İleri",
     "no": "Hayır",
@@ -306,18 +308,18 @@
     "notice": "Bildirim",
     "offlineMode": "Operating in offline mode",
     "ok": "Tamam",
-    "open": "Open",
-    "openInNewWindow": "Open in new window",
+    "open": "Açık",
+    "openInNewWindow": "Yeni pencerede aç",
     "or": "yada",
     "pageNavigation": "Page navigation",
-    "passkeys": "Passkeys",
+    "passkeys": "Geçiş Anahtarları",
     "password": "Parola",
     "passwordStrength": {
       "fair": "Good",
-      "good": "Great",
-      "strong": "Excellent",
-      "title": "Password Strength",
-      "veryWeak": "Keep going",
+      "good": "Güzel",
+      "strong": "Mükemmel",
+      "title": "Şifre Güvenlik Seviyesi",
+      "veryWeak": "Çok Düşük",
       "weak": "Getting better"
     },
     "previous": "Previous",
@@ -339,18 +341,35 @@
     },
     "serviceName": "Hizmet Adı",
     "settings": "Ayarlar",
-    "share": "Share",
+    "share": "Paylaş",
     "show": "Göster",
-    "showDetails": "Show details",
-    "showList": "Show list",
-    "showPassword": "Show password",
+    "showDetails": "Detayları Göster",
+    "showList": "Listeyi Göster",
+    "showPassword": "Şifreyi Göster",
     "success": "Başarılı",
+    "suggestions": {
+      "title": "Öneriler"
+    },
     "syncVaultData": "Sync vault data",
     "syncingChanges": "Syncing changes...",
+    "timeAgo": {
+      "days_one": "{{count}} gün önce",
+      "days_other": "{{count}} gün önce",
+      "hours_one": "{{count}} saat önce",
+      "hours_other": "{{count}} saat önce",
+      "justNow": "şimdi",
+      "minutes_one": "{{count}} dakika önce",
+      "minutes_other": "{{count}} dakika önce",
+      "months_one": "{{count}} ay önce",
+      "months_other": "{{count}} ay önce",
+      "years_one": "{{count}} yıl önce",
+      "years_other": "{{count}} yıl önce",
+      "yesterday": "dün"
+    },
     "twoFactorAuthentication": "İki faktörlü kimlik doğrulama",
     "unavailable": "Unavailable",
     "undo": "Undo",
-    "updateApp": "Update app",
+    "updateApp": "Uygulamayı güncelle",
     "use": "Kullan",
     "username": "Kullanıcı Adı",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -366,19 +385,19 @@
     "autofillTotp": "Autofill 2FA",
     "autofillWithAliasVault": "Autofill username/password",
     "dismissPopup": "Dismiss popup",
-    "generateRandomPassword": "Generate random password (copy to clipboard)",
+    "generateRandomPassword": "Rastgele şifre oluştur (Pano'ya kopyala)",
     "hideFor1Hour": "Hide for 1 hour (current site)",
     "hidePermanently": "Hide permanently (current site)",
-    "loginWithPasskey": "Login with passkey",
-    "new": "New",
-    "noMatchesFound": "No matches found",
+    "loginWithPasskey": "Geçiş Anahtarıyla giriş yap",
+    "new": "Yeni",
+    "noMatchesFound": "Eşleşme Bulunamadı",
     "noTotpItemsFound": "No 2FA code matches found",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "savePrompt": {
       "neverForThisSite": "Never for this site",
       "title": "Save to AliasVault?"
     },
-    "vaultLocked": "AliasVault is locked.",
+    "vaultLocked": "AliasVault kilitlendi.",
     "vaultUpgradeRequired": "Vault upgrade required."
   },
   "emails": {
@@ -399,8 +418,8 @@
     "home": {
       "autoRefreshEnabledTooltip": "Auto-refresh enabled",
       "bulkDeleteEmailConfirmation": "This action cannot be undone.",
-      "bulkDeleteEmailSuccess_one": "Deleted {{count}} email",
-      "bulkDeleteEmailSuccess_other": "Deleted {{count}} emails",
+      "bulkDeleteEmailSuccess_one": "{{count}} e posta silindi",
+      "bulkDeleteEmailSuccess_other": "{{count}} e posta silindi",
       "bulkDeleteEmailTitle_one": "Delete {{count}} email?",
       "bulkDeleteEmailTitle_other": "Delete {{count}} emails?",
       "claimDoesNotExistError": "An error occurred while trying to load the emails. Please try to edit and save any credential entry to synchronize the database, then try again.",
@@ -430,14 +449,6 @@
       "newEmailTooltip": "New email"
     },
     "sizeKB": "KB",
-    "time": {
-      "hoursAgo_plural": "{{count}} saat önce",
-      "hoursAgo_single": "{{count}} saat önce",
-      "justNow": "biraz önce",
-      "minutesAgo_plural": "{{count}} dakika önce",
-      "minutesAgo_single": "{{count}} dakika önce",
-      "yesterday": "dün"
-    },
     "title": "E-postalar",
     "to": "Alıcı:",
     "toColumn": "Alıcı"
@@ -512,8 +523,8 @@
       "foldersDetected": "{{count}} folder(s) detected",
       "importAttachmentsLabel": "Import detected attachments",
       "importButton": "Import",
-      "importErrorCopyDetailsButton": "Copy details",
-      "importErrorDetailsIntro": "Please copy the details below and share them when reporting this issue.",
+      "importErrorCopyDetailsButton": "Detayları kopyala",
+      "importErrorDetailsIntro": "Lütfen aşağıda detayları kopyala ve hatayı bildirirken paylaş.",
       "importErrorFileTooLarge": "File size exceeds {{size}}MB limit.",
       "importErrorGeneric": "An error occurred during import. Please try again.",
       "importErrorInvalidFile": "Please select a valid export file to import.",
@@ -584,7 +595,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Kredi Kartı"
     },
     "deleteCustomField": "Delete custom field",
     "editCustomField": "Edit Custom Field",
@@ -594,11 +605,11 @@
     "fieldTypes": {
       "date": "Tarih",
       "email": "E-Posta",
-      "hidden": "Hidden",
+      "hidden": "Gizlendi",
       "hiddenMasked": "Hidden (masked text)",
-      "number": "Number",
+      "number": "Numara",
       "password": "Parola",
-      "phone": "Phone",
+      "phone": "Telefon",
       "text": "Text",
       "textArea": "Text Area",
       "url": "URL"
@@ -607,21 +618,21 @@
       "title": "Giriş"
     },
     "note": {
-      "title": "Note"
+      "title": "Not"
     },
-    "secureNote": "Secure Note",
+    "secureNote": "Güvenlik Notu",
     "typeLabel": "Item Type"
   },
   "items": {
     "addEdit": {
       "addItemDescription": "Create a new item below.",
-      "deletePasskeyButton": "Delete passkey",
+      "deletePasskeyButton": "Geçiş Anahtarını Sil",
       "editItemDescription": "Edit the existing item below.",
       "errorSavingItem": "Error saving item. Please try again.",
       "passkeyHelpText": "Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.",
       "passkeyWillBeDeleted": "This passkey will be deleted when you save this item.",
       "removeField": "Remove field",
-      "savingVaultMessage": "Saving vault...",
+      "savingVaultMessage": "Kasa Kaydediliyor...",
       "serviceNamePlaceholder": "E.g. Facebook"
     },
     "addFieldMenu": {
@@ -657,8 +668,8 @@
     "capitalization": "Capitalization",
     "cardInformation": "Card Information",
     "changePasswordComplexity": "Change password complexity",
-    "clearFilter": "Clear filter",
-    "clearSearch": "Clear search",
+    "clearFilter": "Filtreyi Sıfırla",
+    "clearSearch": "Aramayı Sil",
     "contextMenu": {
       "copyEmail": "E-postayı Kopyala",
       "copyPassword": "Parolayı Kopyala",
@@ -707,13 +718,13 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Are you sure?",
+      "deleteConfirm": "Emin Misin ?",
       "title": "{{field}} history"
     },
     "fileSavedTo": "File saved to",
     "filters": {
       "showFolders": "Folders",
-      "totp": "2FA Codes"
+      "totp": "2 Aşamalı Doğrulama Kodları"
     },
     "folderSelector": {
       "noFolder": "No folder",
@@ -798,6 +809,17 @@
       "sourceCustom": "Custom icon",
       "sourceFavicon": "From {{domain}}",
       "sourceNone": "No icon"
+    },
+    "merge": {
+      "title": "Merge items",
+      "action": "Merge",
+      "mergeWith": "Merge with...",
+      "searchHint": "Search for the item to merge with.",
+      "keep": "Item to keep",
+      "chooseValues": "Field values to keep:",
+      "combined": "All other fields values are combined into the merged item.",
+      "differentFolders": "Items can only be merged when they're both in your own vault or both in the same shared folder.",
+      "differentTypes": "These item types can't be merged with each other: {{types}}."
     },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Henüz e-posta alınmadı.",
@@ -892,12 +914,18 @@
     "separator": "Separator",
     "serviceUrl": "Hizmet URL'i",
     "sort": {
-      "alphabetical": "Alphabetical (A-Z)",
-      "newestFirst": "Newest first",
-      "oldestFirst": "Oldest first",
+      "dateCreated": "Date created",
+      "groups": {
+        "last30Days": "Last 30 days",
+        "last7Days": "Last 7 days",
+        "older": "Older",
+        "today": "Today"
+      },
+      "lastModified": "Last modified",
+      "lastUsed": "Last used",
+      "name": "Ad",
       "title": "Sort by"
     },
-    "suggestions": "Suggestions",
     "switchBackToOriginalApp": "Switch back to the original app to continue.",
     "tags": "Tags",
     "title": "Items",
@@ -906,6 +934,7 @@
       "itemCreated": "Item created successfully",
       "itemDeleted": "Item deleted successfully",
       "itemUpdated": "Item updated successfully",
+      "itemsMerged": "Items merged successfully",
       "passwordCopied": "Password copied to clipboard",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
