@@ -547,6 +547,8 @@
       "uploadExportFileText": "Chargez votre fichier d'export {{service}}:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importer depuis la sauvegarde de AliasVault",
       "aliasVaultInstructionsPart1": "Importez votre sauvegarde AliasVault précédemment créée.",
       "bitwardenDescription": "Importer les mots de passe depuis votre coffre-fort Bitwarden",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Importer des mots de passe depuis Strongbox",
       "strongboxInstructionsPart1": "Afin d'importer votre coffre-fort Strongbox, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en allant dans le menu 'Fichier' et en sélectionnant 'Exporter la base de données' (vers CSV).",
       "template": "modèle",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous."
     }
   },
