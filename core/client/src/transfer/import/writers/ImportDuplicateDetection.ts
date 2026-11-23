@@ -1,14 +1,32 @@
 import { FieldKey, getFieldValue, type Item } from '@aliasvault/models/vault';
 
+import { scopedKey, type ItemRef } from '../../../database/ItemRef';
 import { parseFolderPath } from '../../shared/FolderPaths';
+
+import { isEmptyEnrichment, type ItemEnrichment } from './ItemEnrichment';
 
 import type { ImportedCredential } from '../models/ImportedCredential';
 
 /**
- * What the import preview learned about a parsed file, once duplicates of credentials already in the vault are dropped.
+ * A parsed credential that completes an item the vault already holds.
+ */
+export type ImportEnrichment = {
+  credential: ImportedCredential;
+  target: ItemRef;
+  additions: ItemEnrichment;
+};
+
+/**
+ * Determines what a credential adds to a vault item it matches; null or an empty enrichment means nothing.
+ */
+export type EnrichmentPlanner = (existing: Item, imported: ImportedCredential) => ItemEnrichment | null;
+
+/**
+ * Import preview stats.
  */
 export type ImportPreview = {
   credentials: ImportedCredential[];
+  enrichments: ImportEnrichment[];
   duplicateCount: number;
   folderPaths: string[];
   attachmentCount: number;
@@ -16,27 +34,54 @@ export type ImportPreview = {
 };
 
 /**
- * Drop the credentials the vault already contains based on a duplicate check.
+ * Sort the parsed credentials into new ones, updates to existing ones, and duplicates that are dropped.
  * @param existingItems - The items already in the vault
  * @param credentials - The parsed credentials
+ * @param planEnrichment - Determines what a credential adds to an existing item it matches
  * @returns The preview
  */
-export function detectAndRemoveDuplicates(existingItems: Item[], credentials: ImportedCredential[]): ImportPreview {
-  const duplicates = new Set(credentials.filter(imported => existingItems.some(existing => isDuplicateItem(existing, imported))));
-  const remaining = credentials.filter(credential => !duplicates.has(credential));
-
+export function detectAndRemoveDuplicates(existingItems: Item[], credentials: ImportedCredential[], planEnrichment: EnrichmentPlanner): ImportPreview {
+  const remaining: ImportedCredential[] = [];
+  const enrichments: ImportEnrichment[] = [];
+  const enrichedItemKeys = new Set<string>();
+  let duplicateCount = 0;
   let attachmentCount = 0;
   let attachmentsTotalSize = 0;
-  for (const credential of remaining) {
-    for (const attachment of credential.Attachments ?? []) {
+
+  /**
+   * Count the attachments an import writes.
+   */
+  const countAttachments = (attachments: { Blob?: Uint8Array | null }[]): void => {
+    for (const attachment of attachments) {
       attachmentCount++;
       attachmentsTotalSize += attachment.Blob?.length ?? 0;
     }
+  };
+
+  for (const credential of credentials) {
+    const matches = existingItems.filter(existing => isDuplicateItem(existing, credential));
+    if (matches.length === 0) {
+      remaining.push(credential);
+      countAttachments(credential.Attachments ?? []);
+      continue;
+    }
+
+    const plans = matches.map(item => ({ item, enrichment: planEnrichment(item, credential) }));
+    const target = plans.some(plan => !plan.enrichment || isEmptyEnrichment(plan.enrichment)) ? undefined : plans.find(plan => !enrichedItemKeys.has(scopedKey(plan.item.ManifestId, plan.item.Id)));
+    if (!target?.enrichment) {
+      duplicateCount++;
+      continue;
+    }
+
+    enrichedItemKeys.add(scopedKey(target.item.ManifestId, target.item.Id));
+    enrichments.push({ credential, target: { Id: target.item.Id, ManifestId: target.item.ManifestId }, additions: target.enrichment });
+    countAttachments(target.enrichment.Attachments);
   }
 
   return {
     credentials: remaining,
-    duplicateCount: duplicates.size,
+    enrichments,
+    duplicateCount,
     folderPaths: collectHierarchicalFolderPaths(remaining),
     attachmentCount,
     attachmentsTotalSize,
@@ -72,16 +117,12 @@ export function collectHierarchicalFolderPaths(credentials: ImportedCredential[]
 }
 
 /**
- * Whether an imported credential duplicates an item already in the vault.
+ * Whether an imported credential is the same entry as an item already in the vault.
  * @param existing - The vault item
  * @param imported - The imported credential
- * @returns True when title, folder path, username, password and notes all match and the import brings no passkey or TOTP code the item lacks
+ * @returns True when title, folder path, username, password and notes all match
  */
 export function isDuplicateItem(existing: Item, imported: ImportedCredential): boolean {
-  if ((imported.Passkeys?.length && !existing.HasPasskey) || (imported.TwoFactorSecret && !existing.HasTotp)) {
-    return false;
-  }
-
   if (!existing.Name || existing.Name.toLowerCase() !== (imported.ServiceName ?? '').toLowerCase()) {
     return false;
   }

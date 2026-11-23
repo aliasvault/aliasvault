@@ -1,11 +1,12 @@
-import { LogoKinds, type ItemType, type LogoKind } from '@aliasvault/models/vault';
+import { getSystemField, LogoKinds, type ItemType, type LogoKind } from '@aliasvault/models/vault';
 
 import { AliasVaultCsvExportService } from '../../transfer/export/AliasVaultCsvExportService';
 import { fromStandardFormat, toStandardFormat } from '../../utilities/DateHelpers';
 import { BaseRepository } from '../BaseRepository';
-import { scopedKey } from '../ItemRef';
+import { scopedKey, type ItemRef } from '../ItemRef';
 import { AttachmentQueries, FieldDefinitionQueries, FieldHistoryQueries, FieldValueQueries, TotpCodeQueries } from '../queries/ItemQueries';
 
+import type { ExistingFieldValue, ExistingItemData, ItemEnrichment } from '../../transfer/import/writers/ItemEnrichment';
 import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity, VaultExportData } from '../../transfer/shared/VaultEntities';
 import type { IDatabaseClient } from '../BaseRepository';
 import type { DbOp } from '../DbOp';
@@ -457,6 +458,91 @@ export class ImportExportRepository extends BaseRepository {
       [passkey.Id, passkey.CredentialId, itemId, manifestId, passkey.RpId, passkey.UserHandle, passkey.PublicKey, passkey.PrivateKey, passkey.PrfKey, passkey.DisplayName, passkey.AdditionalData, toStandardFormat(passkey.CreatedAt), updatedAt]
     );
   }
+
+  /**
+   * Read what an item holds, as far as an import compares it to complete the item.
+   * @param ref - The item, named by its manifest and id
+   * @returns The item's live field values, TOTP secrets, passkey count and attachment names and sizes
+   */
+  public *getExistingItemData(ref: ItemRef): DbOp<ExistingItemData> {
+    const key = [ref.Id, ref.ManifestId];
+    const fieldValues = yield* this.query<ExistingFieldValue>(
+      'SELECT fv.FieldKey, fd.Label, fd.FieldType, fv.Value, fv.Weight FROM FieldValues fv LEFT JOIN FieldDefinitions fd ON fd.Id = fv.FieldDefinitionId AND fd.ManifestId = fv.ManifestId WHERE fv.ItemId = ? AND fv.ManifestId = ? AND fv.IsDeleted = 0',
+      key
+    );
+    const totpCodes = yield* this.query<{ SecretKey: string }>('SELECT SecretKey FROM TotpCodes WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0', key);
+    const passkeys = yield* this.query<{ Total: number }>('SELECT COUNT(*) AS Total FROM Passkeys WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0', key);
+    const attachments = yield* this.query<{ Filename: string; Size: number }>('SELECT Filename, COALESCE(LENGTH(Blob), 0) AS Size FROM Attachments WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0', key);
+
+    return { FieldValues: fieldValues, TotpSecretKeys: totpCodes.map(code => code.SecretKey), PasskeyCount: passkeys[0]?.Total ?? 0, Attachments: attachments };
+  }
+
+  /**
+   * Add the rows of an enrichment to an item the vault already holds, leaving the rows it has untouched.
+   * @param ref - The item, named by its manifest and id
+   * @param enrichment - The rows to add (see planItemEnrichment)
+   * @param session - What this import already wrote, shared across its items
+   */
+  public async insertItemEnrichment(ref: ItemRef, enrichment: ItemEnrichment, session: ImportWriteSession = createImportWriteSession()): Promise<void> {
+    return this.withTransaction(() => this.run(this.insertEnrichmentRows(ref, enrichment, session)));
+  }
+
+  /**
+   * Write the rows of an enrichment. They are new to the item, so they are stamped now and win a merge from an
+   * earlier removal of the same field.
+   * @param ref - The item
+   * @param enrichment - The rows to add
+   * @param session - What this import already wrote
+   */
+  private *insertEnrichmentRows(ref: ItemRef, enrichment: ItemEnrichment, session: ImportWriteSession): DbOp<void> {
+    const { Id: itemId, ManifestId: manifestId } = ref;
+    const now = this.now();
+
+    const storedRows = yield* this.query<{ Id: string; FieldKey: string | null; FieldDefinitionId: string | null; Value: string; ValueIndex: number; IsDeleted: number }>(FieldValueQueries.GET_ALL_FOR_ITEM, [itemId, manifestId]);
+    const removedRows = new Set(storedRows.filter(row => row.IsDeleted && row.FieldKey));
+
+    // The next free position per field: after the live values of a multi-value field.
+    const nextValueIndexes = new Map<string, number>();
+    for (const row of storedRows.filter(stored => !stored.IsDeleted)) {
+      const fieldIdentity = row.FieldDefinitionId ?? row.FieldKey ?? '';
+      nextValueIndexes.set(fieldIdentity, Math.max(nextValueIndexes.get(fieldIdentity) ?? 0, row.ValueIndex + 1));
+    }
+
+    for (const fieldValue of enrichment.FieldValues) {
+      if (fieldValue.FieldDefinition) {
+        yield* this.insertFieldDefinition(fieldValue.FieldDefinition, manifestId, session);
+      }
+
+      const value = fieldValue.Value ?? '';
+      const fieldIdentity = fieldValue.FieldDefinitionId ?? fieldValue.FieldKey ?? '';
+      const valueIndex = nextValueIndexes.get(fieldIdentity) ?? 0;
+      nextValueIndexes.set(fieldIdentity, valueIndex + 1);
+
+      // A removed system field gets its row back instead of a second row; a multi-value field only for the same value.
+      const isMultiValue = getSystemField(fieldValue.FieldKey ?? '')?.IsMultiValue ?? false;
+      const removedRow = [...removedRows].find(row => row.FieldKey === fieldValue.FieldKey && (!isMultiValue || row.Value === value));
+      if (removedRow) {
+        removedRows.delete(removedRow);
+        yield* this.execute(FieldValueQueries.UPDATE, [value, fieldValue.Weight, valueIndex, now, removedRow.Id, manifestId]);
+        continue;
+      }
+
+      yield* this.execute(FieldValueQueries.INSERT, [fieldValue.Id, itemId, manifestId, fieldValue.FieldDefinitionId, fieldValue.FieldKey, value, fieldValue.Weight, valueIndex, toStandardFormat(fieldValue.CreatedAt), now, 0]);
+    }
+
+    for (const totpCode of enrichment.TotpCodes) {
+      yield* this.execute(TotpCodeQueries.INSERT, [totpCode.Id, totpCode.Name, totpCode.SecretKey, totpCode.Algorithm, totpCode.Digits, totpCode.Period, itemId, manifestId, toStandardFormat(totpCode.CreatedAt), now, 0]);
+    }
+
+    for (const passkey of enrichment.Passkeys) {
+      yield* this.insertPasskey(passkey, itemId, manifestId, now);
+    }
+
+    for (const attachment of enrichment.Attachments) {
+      yield* this.execute(AttachmentQueries.INSERT, [attachment.Id, attachment.Filename, attachment.Blob, itemId, manifestId, toStandardFormat(attachment.CreatedAt), now, 0]);
+    }
+  }
+
   /**
    * Write a custom field definition, once per import.
    * @param definition - The definition

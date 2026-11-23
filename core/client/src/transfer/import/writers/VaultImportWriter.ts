@@ -7,7 +7,10 @@ import { isBlank } from '../../shared/StringUtils';
 import { ImportException, ImportStage } from '../models/ImportException';
 
 import { convertToItem } from './ItemConverter';
+import { isEmptyEnrichment, planItemEnrichment, type ItemEnrichment } from './ItemEnrichment';
 
+import type { ImportEnrichment } from './ImportDuplicateDetection';
+import type { ItemRef } from '../../../database/ItemRef';
 import type { SqliteClient } from '../../../database/SqliteClient';
 import type { ItemEntity } from '../../shared/VaultEntities';
 import type { ImportedCredential } from '../models/ImportedCredential';
@@ -17,6 +20,7 @@ import type { ImportedCredential } from '../models/ImportedCredential';
  */
 export type VaultImportOptions = {
   folderNameToId?: Map<string, string> | null;
+  enrichments?: ImportEnrichment[];
   importAttachments: boolean;
   extractedFavicons: Map<string, Uint8Array>;
   onProgress?: (saved: number, total: number) => Promise<void> | void;
@@ -71,15 +75,18 @@ export class VaultImportWriter {
   }
 
   /**
-   * Convert the credentials to items and write them into the vault, one transaction per item.
+   * Convert the credentials to items and write them into the vault, one transaction per item, then complete the
+   * existing items the import enriches.
    * @param sqliteClient - The vault
-   * @param credentials - The credentials to import
-   * @param options - Folder mapping, attachments and favicons
-   * @returns The number of items written
+   * @param credentials - The new credentials to import
+   * @param options - Folder mapping, enrichments, attachments and favicons
+   * @returns The number of items written or completed
    * @throws {ImportException} With stage Save when an item cannot be written.
    */
   public static async importCredentialsToVault(sqliteClient: SqliteClient, credentials: ImportedCredential[], options: VaultImportOptions): Promise<number> {
     const session = createImportWriteSession();
+    const enrichments = options.enrichments ?? [];
+    const total = credentials.length + enrichments.length;
 
     // One logo row per kind and source per import session.
     const sessionLogoIds = new Map<string, string | null>();
@@ -95,10 +102,41 @@ export class VaultImportWriter {
         throw new ImportException(ImportStage.Save, `Failed to save item #${index + 1} of ${credentials.length} ("${item.Name ?? ''}"): ${error instanceof Error ? error.message : String(error)}`, error);
       }
 
-      await options.onProgress?.(index + 1, credentials.length);
+      await options.onProgress?.(index + 1, total);
     }
 
-    return credentials.length;
+    for (let index = 0; index < enrichments.length; index++) {
+      const { credential, target } = enrichments[index];
+      try {
+        const enrichment = VaultImportWriter.planEnrichment(sqliteClient, target, credential);
+        if (enrichment && !options.importAttachments) {
+          enrichment.Attachments = [];
+        }
+        if (enrichment && !isEmptyEnrichment(enrichment)) {
+          await sqliteClient.importExport.insertItemEnrichment(target, enrichment, session);
+        }
+      } catch (error) {
+        throw new ImportException(ImportStage.Save, `Failed to update existing item "${credential.ServiceName ?? ''}": ${error instanceof Error ? error.message : String(error)}`, error);
+      }
+
+      await options.onProgress?.(credentials.length + index + 1, total);
+    }
+
+    return total;
+  }
+
+  /**
+   * Determine what a credential adds to the vault item it matches. Only items of the personal manifest are completed.
+   * @param sqliteClient - The vault
+   * @param target - The vault item
+   * @param credential - The credential
+   * @returns The rows the item lacks, or null for an item of another manifest
+   */
+  public static planEnrichment(sqliteClient: SqliteClient, target: ItemRef, credential: ImportedCredential): ItemEnrichment | null {
+    if (target.ManifestId !== sqliteClient.getPersonalManifestId()) {
+      return null;
+    }
+    return planItemEnrichment(sqliteClient.importExport.getExistingItemData(target), credential.AliasVaultItem ?? convertToItem(credential, null));
   }
 
   /**

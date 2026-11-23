@@ -2,7 +2,7 @@ import { BulkFaviconService } from '@aliasvault/client/items/BulkFaviconService'
 import { selectFaviconTarget } from '@aliasvault/client/rust/RustCore';
 import { AvexImportService, AvexDecryptionError } from '@aliasvault/client/transfer/import/importers/aliasvault/AvexImportService';
 import { ImportException, ImportStage } from '@aliasvault/client/transfer/import/models/ImportException';
-import { detectAndRemoveDuplicates } from '@aliasvault/client/transfer/import/writers/ImportDuplicateDetection';
+import { detectAndRemoveDuplicates, type ImportEnrichment } from '@aliasvault/client/transfer/import/writers/ImportDuplicateDetection';
 import { VaultImportWriter } from '@aliasvault/client/transfer/import/writers/VaultImportWriter';
 import { yieldToPaint } from '@aliasvault/client/utilities/YieldToPaint';
 import React, { useCallback, useRef, useState } from 'react';
@@ -156,6 +156,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const [detectedAttachmentCount, setDetectedAttachmentCount] = useState(0);
   const [detectedAttachmentsTotalSize, setDetectedAttachmentsTotalSize] = useState(0);
   const [duplicateCredentialsCount, setDuplicateCredentialsCount] = useState(0);
+  const [enrichments, setEnrichments] = useState<ImportEnrichment[]>([]);
 
   const [isExtractingFavicons, setIsExtractingFavicons] = useState(false);
   const [faviconExtractionProgress, setFaviconExtractionProgress] = useState(0);
@@ -235,6 +236,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     setCurrentStep(ImportStep.FileUpload);
     setImportError(null);
     setImportedCredentials([]);
+    setEnrichments([]);
     setDecryptionPassword('');
     pendingAvexBytes.current = null;
     pendingAvexFilename.current = null;
@@ -246,12 +248,14 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   }, []);
 
   /**
-   * Drop the credentials the vault already holds and determine what is left for the preview.
+   * Drop the credentials the vault already holds in full and determine what is left for the preview.
    */
   const detectDuplicatesAndPreview = (credentials: ImportedCredential[]): void => {
-    const existingItems = dbContext.sqliteClient?.items.getAll() ?? [];
-    const preview = detectAndRemoveDuplicates(existingItems, credentials);
+    const sqliteClient = dbContext.sqliteClient;
+    const existingItems = sqliteClient?.items.getAll() ?? [];
+    const preview = detectAndRemoveDuplicates(existingItems, credentials, (existing, imported) => sqliteClient ? VaultImportWriter.planEnrichment(sqliteClient, existing, imported) : null);
     setImportedCredentials(preview.credentials);
+    setEnrichments(preview.enrichments);
     setDuplicateCredentialsCount(preview.duplicateCount);
     setDetectedFolderPaths(preview.folderPaths);
     setDetectedAttachmentCount(preview.attachmentCount);
@@ -429,7 +433,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
 
     setIsSavingCredentials(true);
     setCredentialSaveProgress(0);
-    setTotalCredentialsToSave(importedCredentials.length);
+    setTotalCredentialsToSave(importedCredentials.length + enrichments.length);
 
     try {
       await executeVaultMutationAsync(async () => {
@@ -437,6 +441,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
 
         await VaultImportWriter.importCredentialsToVault(sqliteClient, importedCredentials, {
           folderNameToId,
+          enrichments,
           importAttachments,
           extractedFavicons: extractedFavicons.current,
           /**
@@ -462,7 +467,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       return;
     }
 
-    notifications.addSuccessMessage(t('importExport.serviceCard.importSuccessMessage', { count: importedCredentials.length }));
+    notifications.addSuccessMessage(importedCredentials.length > 0 ? t('importExport.serviceCard.importSuccessMessage', { count: importedCredentials.length }) : t('common.success'));
     navigate('/items');
   };
 
@@ -479,7 +484,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     await yieldToPaint();
 
     try {
-      if (extractFavicons) {
+      if (extractFavicons && importedCredentials.length > 0) {
         await extractFaviconsForCredentials();
         if (faviconExtractionAbort.current?.signal.aborted) {
           return;
@@ -529,14 +534,14 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
    * The red error block with the copyable diagnostic payload, shared by the upload and password steps.
    */
   const renderImportError = (): React.ReactNode => (
-    <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
+    <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
       <p>{importError}</p>
       {errorPayload && (
         <>
-          <p className="mt-3 mb-2 text-sm">{t('importExport.serviceCard.importErrorDetailsIntro')}</p>
+          <p className="mt-3 mb-2">{t('importExport.serviceCard.importErrorDetailsIntro')}</p>
           <pre className="text-xs whitespace-pre-wrap break-words bg-red-50 dark:bg-red-50 p-2 rounded border border-red-200 dark:border-red-300 select-all">{errorPayload}</pre>
           <div className="mt-2">
-            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="text-sm underline font-medium hover:no-underline">{t('importExport.serviceCard.importErrorCopyDetailsButton')}</button>
+            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="underline font-medium hover:no-underline">{t('importExport.serviceCard.importErrorCopyDetailsButton')}</button>
           </div>
         </>
       )}
@@ -600,7 +605,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
    * The callout listing the items that could not be parsed.
    */
   const renderParseFailures = (): React.ReactNode => (
-    <div className="mb-4 p-4 rounded-lg bg-amber-50 border border-amber-300 dark:bg-amber-500/10 dark:border-amber-500/40" role="alert">
+    <div className="mb-4 p-4 text-sm rounded-lg bg-amber-50 border border-amber-300 dark:bg-amber-500/10 dark:border-amber-500/40" role="alert">
       <div className="flex items-start gap-2 mb-2">
         <Icon name="exclamation" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-500" />
         <p className="font-medium text-amber-900 dark:text-amber-100">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
@@ -632,54 +637,102 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     </div>
   );
 
+  const hasItemsToWrite = importedCredentials.length > 0 || enrichments.length > 0;
+
+  /**
+   * One line of the import summary: green with a checkmark for what the import writes, gray for what it skips.
+   */
+  const renderSummaryLine = (text: string, isWritten: boolean): React.ReactNode => (
+    <li className={`flex items-start gap-2 ${isWritten ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+      <Icon name={isWritten ? 'check-circle' : 'information-circle'} className="w-5 h-5 shrink-0 mt-0.5" />
+      <span>{text}</span>
+    </li>
+  );
+
+  /**
+   * The summary of what the import adds, updates and skips.
+   */
+  const renderImportSummary = (): React.ReactNode => (
+    <ul className="mb-4 p-4 space-y-2 text-sm rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700/50 empty:hidden" role="status">
+      {importedCredentials.length > 0 && renderSummaryLine(t('importExport.serviceCard.newItemsImportInfo', { count: importedCredentials.length }), true)}
+      {enrichments.length > 0 && renderSummaryLine(t('importExport.serviceCard.existingItemsUpdateInfo', { count: enrichments.length }), true)}
+      {duplicateCredentialsCount > 0 && renderSummaryLine(t('importExport.serviceCard.duplicateCredentialsWarning', { count: duplicateCredentialsCount }), false)}
+    </ul>
+  );
+
+  /**
+   * Name the kinds of data an import adds to an existing item.
+   */
+  const describeAdditions = ({ additions }: ImportEnrichment): string => {
+    const kinds = new Set<string>();
+    for (const fieldValue of additions.FieldValues) {
+      kinds.add(fieldValue.FieldKey ? t(`fieldLabels.${fieldValue.FieldKey}`, { defaultValue: fieldValue.FieldKey }) : t('common.customFields'));
+    }
+    if (additions.Passkeys.length > 0) {
+      kinds.add(t('common.passkeys'));
+    }
+    if (additions.TotpCodes.length > 0) {
+      kinds.add(t('items.filters.totp'));
+    }
+    if (additions.Attachments.length > 0) {
+      kinds.add(t('common.attachments'));
+    }
+    return [...kinds].join(', ');
+  };
+
+  /**
+   * The first few credentials of a preview, with one detail per credential in the last column.
+   */
+  const renderPreviewTable = (detailColumn: string, rows: { credential: ImportedCredential; detail: string }[]): React.ReactNode => (
+    <>
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            {[t('importExport.serviceCard.serviceColumn'), t('common.username'), detailColumn].map(column => (
+              <th key={column} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{column}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          {rows.slice(0, PREVIEW_ROW_COUNT).map((row, index) => (
+            <tr key={index}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{row.credential.ServiceName}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{row.credential.Username}</td>
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{row.detail}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {rows.length > PREVIEW_ROW_COUNT && (
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('importExport.serviceCard.moreCredentials', { count: rows.length - PREVIEW_ROW_COUNT })}</p>
+      )}
+    </>
+  );
+
   /**
    * The preview step.
    */
   const renderPreviewStep = (): React.ReactNode => (
     <>
       <div className="mb-4">
-        {duplicateCredentialsCount > 0 && (
-          <div className="p-4 mb-4 text-gray-700 bg-gray-100 rounded-lg dark:bg-gray-700/50 dark:text-gray-300" role="alert">
-            <p>{t('importExport.serviceCard.duplicateCredentialsWarning', { count: duplicateCredentialsCount })}</p>
-          </div>
-        )}
+        {renderImportSummary()}
 
         {parseFailures.length > 0 && renderParseFailures()}
 
-        {importedCredentials.length === 0 ? (
-          <div className="p-4 mb-4 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
-            <p>{t('importExport.serviceCard.noNewCredentials')}</p>
-          </div>
-        ) : (
+        {importedCredentials.length > 0 ? (
           <>
             <Text className="mb-4">{t('importExport.serviceCard.previewInstructions')}</Text>
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('importExport.serviceCard.serviceColumn')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.username')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.password')}</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {importedCredentials.slice(0, PREVIEW_ROW_COUNT).map((credential, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{credential.ServiceName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{credential.Username}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{'*'.repeat(credential.Password?.length ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {importedCredentials.length > PREVIEW_ROW_COUNT && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('importExport.serviceCard.moreCredentials', { count: importedCredentials.length - PREVIEW_ROW_COUNT })}</p>
-            )}
+            {renderPreviewTable(t('common.password'), importedCredentials.map(credential => ({ credential, detail: '*'.repeat(credential.Password?.length ?? 0) })))}
           </>
+        ) : enrichments.length > 0 ? renderPreviewTable(t('common.added'), enrichments.map(enrichment => ({ credential: enrichment.credential, detail: describeAdditions(enrichment) }))) : (
+          <div className="p-4 mb-4 text-sm rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
+            <p>{t('importExport.serviceCard.noNewCredentials')}</p>
+          </div>
         )}
       </div>
-      {importedCredentials.length > 0 && (
+      {hasItemsToWrite && (
         <div className="mb-4 space-y-2">
-          <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t('importExport.serviceCard.extractFaviconsLabel')} />
+          {importedCredentials.length > 0 && <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t('importExport.serviceCard.extractFaviconsLabel')} />}
           {detectedFolderPaths.length > 0 && (
             <ImportOption checked={importFolders} onChange={setImportFolders} label={t('importExport.serviceCard.importFoldersLabel')} detail={t('importExport.serviceCard.foldersDetected', { count: detectedFolderPaths.length })} />
           )}
@@ -690,7 +743,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       )}
       <div className="flex justify-end mt-6 space-x-2">
         <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
-        {importedCredentials.length > 0 && <Button onClick={handleNextStep} color="primary" arrow="forward">{t('common.next')}</Button>}
+        {hasItemsToWrite && <Button onClick={handleNextStep} color="primary" arrow="forward">{t('common.next')}</Button>}
       </div>
     </>
   );
@@ -725,9 +778,9 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       ) : (
         <>
           <div className="mb-4">
-            <Text className="mb-4">{t('importExport.serviceCard.confirmImportText', { count: importedCredentials.length })}</Text>
-            {extractFavicons && (
-              <div className="p-4 mb-4 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
+            <Text className="mb-4">{t('importExport.serviceCard.confirmImportQuestion')}</Text>
+            {extractFavicons && importedCredentials.length > 0 && (
+              <div className="p-4 mb-4 text-sm rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
                 <p>{t('importExport.serviceCard.faviconExtractionNote')}</p>
               </div>
             )}
