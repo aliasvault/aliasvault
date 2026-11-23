@@ -81,7 +81,7 @@
   },
   "auth": {
     "authCode": "身份验证码",
-    "authCodeNote": "注：如果您无法访问您的身份验证器设备，您可以通过网站登录并使用恢复码重置您的两步验证。",
+    "authCodeNote": "注：如果您无法访问您的身份验证器设备，您可以通过网站登录并使用恢复码重置您的双因素验证。",
     "biometricPrompt": "您想使用 {{biometric}} 来解锁密码库吗？",
     "browseVault": "浏览密码库内容",
     "confirmLogout": "确定要退出登录吗？您需要使用主密码重新登录才能访问密码库。",
@@ -118,14 +118,14 @@
       "loginWithAuthenticatorLink": "使用验证其代码登录。",
       "loginWithRecoveryCodeLink": "使用恢复码登录。",
       "lostPasswordLink": "忘记密码？",
-      "recoveryCodeDescription": "您已请求使用恢复码登录。恢复码是一次性代码，可用于登录您的账户。请注意，如果您在登录后不手动禁用两步验证（2FA），下次登录时仍会要求您输入两步验证（2FA）动态验证码。",
+      "recoveryCodeDescription": "您已请求使用恢复码登录。恢复码是一次性代码，可用于登录您的账户。请注意，如果您在登录后不手动禁用双因素验证（2FA），下次登录时仍会要求您输入双因素验证（2FA）动态验证码。",
       "recoveryCodeLabel": "恢复码",
       "recoveryCodeVerificationTitle": "恢复码验证",
       "regainedAccessText": "又可以访问您的身份验证器了？",
       "rememberMachineLabel": "记住此设备",
       "twoFactorAuthenticationDescription": "您的登录信息受身份验证器保护，请在下方输入您的身份验证器代码。",
       "verifyingRecoveryCodeMessage": "正在验证恢复码……",
-      "verifyingTwoFactorCodeMessage": "正在验证两步验证（2FA）代码……"
+      "verifyingTwoFactorCodeMessage": "正在验证双因素验证（2FA）代码……"
     },
     "loginTitle": "登录到 AliasVault",
     "loginWithMobile": "使用移动应用登录",
@@ -367,7 +367,7 @@
       "years_other": "{{count}} 年前",
       "yesterday": "昨天"
     },
-    "twoFactorAuthentication": "两步验证",
+    "twoFactorAuthentication": "双因素验证",
     "unavailable": "不可用",
     "undo": "撤销",
     "updateApp": "更新应用",
@@ -383,7 +383,7 @@
       "fillOn": "您即将在 {{host}} 上填充登录。",
       "title": "确认自动填充"
     },
-    "autofillTotp": "自动填充两步验证码",
+    "autofillTotp": "自动填充双因素验证码",
     "autofillWithAliasVault": "自动填充用户名/密码",
     "dismissPopup": "关闭弹窗",
     "generateRandomPassword": "生成随机密码（复制到剪贴板）",
@@ -392,7 +392,7 @@
     "loginWithPasskey": "使用通行密钥登录",
     "new": "新建",
     "noMatchesFound": "未找到匹配项",
-    "noTotpItemsFound": "未找到匹配的两步验证码",
+    "noTotpItemsFound": "未找到匹配的双因素验证码",
     "openAliasVaultToUpgrade": "打开 AliasVault 进行升级",
     "savePrompt": {
       "neverForThisSite": "此网站不再显示",
@@ -547,6 +547,8 @@
       "uploadExportFileText": "上传您的 {{service}} 导出文件："
     },
     "services": {
+      "aegisDescription": "从 Aegis Authenticator 导入双因素验证码",
+      "aegisInstructionsPart1": "若要导入 Aegis 验证码，您需要将其导出为未加密的 JSON 文件。您可以在 Aegis 中执行此操作：前往“设置” > “导入与导出” > “导出”，选择“Aegis (.JSON)”格式，并关闭加密选项。",
       "aliasVaultDescription": "从 AliasVault 备份导入",
       "aliasVaultInstructionsPart1": "导入您之前创建的 AliasVault 备份文件。",
       "bitwardenDescription": "从您的 Bitwarden 密码库导入密码",
@@ -588,6 +590,7 @@
       "strongboxDescription": "从 Strongbox 导入密码",
       "strongboxInstructionsPart1": "要导入您的 Strongbox 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出数据库”（至 CSV）来完成此操作。",
       "template": "模板",
+      "twoFactorMergeHint": "每个代码均作为独立项目导入。若要将代码添加到现有的登录中，请右键点击该项目并选择“合并”。",
       "uploadInstructions": "您可以在下方上传导出的文件。"
     }
   },
@@ -727,7 +730,7 @@
     "fileSavedTo": "文件已保存至",
     "filters": {
       "showFolders": "文件夹",
-      "totp": "两步验证码"
+      "totp": "双因素验证码"
     },
     "folderSelector": {
       "noFolder": "无文件夹",
@@ -760,7 +763,7 @@
     "fullName": "全名",
     "hasAttachments": "含附件",
     "hasPasskey": "含通行密钥",
-    "hasTotp": "含两步验证码",
+    "hasTotp": "含双因素验证码",
     "home": {
       "createFirstItemManuallyText": "手动创建您的第一个密码库项目。",
       "emptyFolderMessage": "此文件夹为空。",
@@ -1205,8 +1208,8 @@
       "pageDescription": "安装浏览器扩展和移动应用，以便从所有设备访问您的密码库，并在网站上自动填写凭据。",
       "pageTitle": "扩展与应用"
     },
-    "autoCopyTotpOnAutofill": "自动将两步验证码复制到剪贴板",
-    "autoCopyTotpOnAutofillDescription": "自动填充凭据后，自动将第一个两步验证码复制到剪贴板",
+    "autoCopyTotpOnAutofill": "自动将双因素验证码复制到剪贴板",
+    "autoCopyTotpOnAutofillDescription": "自动填充凭据后，自动将第一个双因素验证码复制到剪贴板",
     "autoLock": "自动锁定超时时间",
     "autoLockOptions": {
       "15minutes": "15 分钟",
@@ -1265,7 +1268,7 @@
     "contextMenuDescription": "右键点击文本输入框即可访问 AliasVault 选项",
     "contextMenuSettings": "上下文菜单设置",
     "copyTotpOnFill": "复制 TOTP 验证码到自动填充",
-    "copyTotpOnFillDescription": "自动填充两步验证凭据时，自动将其 TOTP 验证码复制到剪贴板，以便您可以将其粘贴到下一个字段中。",
+    "copyTotpOnFillDescription": "自动填充双因素验证凭据时，自动将其 TOTP 验证码复制到剪贴板，以便您可以将其粘贴到下一个字段中。",
     "credentialAutofill": "凭据自动填充",
     "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",
     "customApiUrl": "API URL",
@@ -1486,19 +1489,19 @@
       },
       "description": "管理您的账户和密码库安全设置。",
       "disable2fa": {
-        "confirmDisableButton": "确认禁用两步验证（2FA）",
-        "failedToDisable2Fa": "禁用两步验证（2FA）失败。",
-        "pageDescription": "禁用两步验证（2FA）意味着您只需密码即可登录。",
-        "pageTitle": "禁用两步验证（2FA）",
-        "twoFactorDisabledSuccess": "两步验证（2FA）已成功禁用。",
-        "twoFactorNotEnabled": "尚未启用两步验证（2FA）。"
+        "confirmDisableButton": "确认禁用双因素验证（2FA）",
+        "failedToDisable2Fa": "禁用双因素验证（2FA）失败。",
+        "pageDescription": "禁用双因素验证（2FA）意味着您只需密码即可登录。",
+        "pageTitle": "禁用双因素验证（2FA）",
+        "twoFactorDisabledSuccess": "双因素验证（2FA）已成功禁用。",
+        "twoFactorNotEnabled": "尚未启用双因素验证（2FA）。"
       },
       "enable2fa": {
-        "failedToEnable2Fa": "启用两步验证失败。",
-        "pageDescription": "启用两步验证可提高您密码库的安全性。",
-        "pageTitle": "启用两步验证",
+        "failedToEnable2Fa": "启用双因素验证失败。",
+        "pageDescription": "启用双因素验证可提高您密码库的安全性。",
+        "pageTitle": "启用双因素验证",
         "qrCodeInstructions": "使用您的身份验证器应用扫描此二维码，或手动输入以下密钥：",
-        "twoFactorEnabledSuccess": "两步验证已成功启用。下次登录时，您需要输入两步验证码。",
+        "twoFactorEnabledSuccess": "双因素验证已成功启用。下次登录时，您需要输入双因素验证码。",
         "verificationCodePlaceholder": "输入验证码",
         "verifyAndEnableButton": "验证并启用"
       },
@@ -1531,9 +1534,9 @@
         "warningTitle": "将这些恢复代码存放在安全的地方。"
       },
       "twoFactor": {
-        "disabledMessage": "两步验证当前已禁用。为提高您的账户安全性，建议您启用此功能。",
-        "enabledMessage": "两步验证当前已启用。",
-        "notEnabledWarning": "您的密码库目前仅可通过主密码访问。我们建议您启用两步验证，以提高账户安全性。"
+        "disabledMessage": "双因素验证当前已禁用。为提高您的账户安全性，建议您启用此功能。",
+        "enabledMessage": "双因素验证当前已启用。",
+        "notEnabledWarning": "您的密码库目前仅可通过主密码访问。我们建议您启用双因素验证，以提高账户安全性。"
       }
     },
     "selectLanguage": "选择语言",
@@ -1576,8 +1579,8 @@
     },
     "temporaryUntil": "直到",
     "theme": "主题",
-    "totpAutofill": "两步验证码自动填充",
-    "totpAutofillDescription": "检测到两步验证码字段时显示自动填充弹窗",
+    "totpAutofill": "双因素验证码自动填充",
+    "totpAutofillDescription": "检测到双因素验证码字段时显示自动填充弹窗",
     "twoColumnLayout": "双列布局",
     "twoColumnLayoutDescription": "横屏时将列表与所选项目并排显示。",
     "unlockMethod": {
@@ -1652,24 +1655,24 @@
     }
   },
   "totp": {
-    "addCode": "添加两步验证码",
+    "addCode": "添加双因素验证码",
     "addName": "添加名称（可选）",
-    "addTotpCodeDescription": "添加两步验证码",
-    "addTotpCodeModalTitle": "添加两步验证 TOTP 码",
+    "addTotpCodeDescription": "添加双因素验证码",
+    "addTotpCodeModalTitle": "添加双因素验证 TOTP 码",
     "algorithm": "算法",
     "closeFormButton": "关闭表单",
     "defaultName": "身份验证器",
     "deleteCodeConfirmation": "您确定要删除此 TOTP 验证码吗？",
     "deleteCodeTitle": "删除 TOTP 验证码",
-    "deleteTotpCodeConfirmation": "您确定要删除两步验证码“{{name}}”吗？",
-    "deleteTotpCodeTitle": "删除两步验证码",
+    "deleteTotpCodeConfirmation": "您确定要删除双因素验证码“{{name}}”吗？",
+    "deleteTotpCodeTitle": "删除双因素验证码",
     "digits": "位数",
     "enterManually": "输入密钥",
     "errors": {
       "invalidSecretKey": "密钥格式无效。",
       "scanFailed": "扫描二维码失败，请重试。"
     },
-    "instructions": "输入要添加两步验证的网站显示的密钥。",
+    "instructions": "输入要添加双因素验证的网站显示的密钥。",
     "nameOptional": "名称（可选）",
     "parameterSummary": "{{algorithm}} · {{digits}} 位数 · {{period}} 秒",
     "period": "时间步长",
@@ -1677,9 +1680,9 @@
     "scanQrCode": "扫描二维码",
     "secretKey": "密钥",
     "secretKeyPlaceholder": "输入密钥（手动输入）",
-    "totpInstructions": "如果网站为您的账户提供或要求两步验证（2FA），请复制密钥或二维码 URI 并将其粘贴到下方。",
+    "totpInstructions": "如果网站为您的账户提供或要求双因素验证（2FA），请复制密钥或二维码 URI 并将其粘贴到下方。",
     "viewer": {
-      "noTotpCodesMessage": "没有可用的两步验证码"
+      "noTotpCodesMessage": "没有可用的双因素验证码"
     }
   },
   "upgrade": {
@@ -1763,8 +1766,8 @@
       "soonSuffix": "（即将推出）",
       "tipsStepTitle": "提示",
       "tutorialStepTitle": "教程",
-      "twoFactorTipContent": "两步验证为您的账户增加了额外的安全层。您需要输入身份验证器的验证码或提供恢复代码，才能访问加密的密码库。",
-      "twoFactorTipTitle": "在安全设置中启用两步验证",
+      "twoFactorTipContent": "双因素验证为您的账户增加了额外的安全层。您需要输入身份验证器的验证码或提供恢复代码，才能访问加密的密码库。",
+      "twoFactorTipTitle": "在安全设置中启用双因素验证",
       "welcomeMessage": "您的密码库已成功创建！通过为每个注册的服务创建唯一别名，保护您的在线隐私。让我们了解 AliasVault 的工作原理，然后创建您的第一个安全别名。"
     }
   }
