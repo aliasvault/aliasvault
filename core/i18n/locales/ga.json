@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Cuir leis",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Theip ar an gceangaltán a íoslódáil",
     "attachments": "Ceangaltáin",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Molta",
     "serviceCard": {
       "attachmentsDetected": "{{count}} ceangaltán(í), {{size}}",
-      "confirmImportText": "An bhfuil tú cinnte gur mian leat dintiúir ({{count}}) a allmhairiú? Tabhair faoi deara: d'fhéadfadh go dtógfadh an próiseas allmhairithe tamall gairid.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Díchriptigh agus Lean ar aghaidh",
       "decryptingFile": "Ag díchriptiú comhaid...",
       "decryptionErrorGeneric": "Theip ar an gcomhad a dhíchriptiú. Seiceáil le do thoil nach bhfuil an comhad truaillithe agus déan iarracht arís.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Pasfhocal Díchriptithe",
       "duplicateCredentialsWarning": "Fuarthas {{count}} dintiúir(í) dhúblacha agus ní dhéanfar iad a allmhairiú.",
       "encryptedFilePasswordPrompt": "Tá an comhad seo criptithe. Cuir isteach an focal faire a d'úsáid tú agus an t-easpórtáil á cruthú agat.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Bain deilbhíní favic do sheirbhísí le URLanna",
       "extractingFavicons": "Ag baint deilbhíní favicon... {{current}} / {{total}}",
       "faviconExtractionNote": "Nóta: Tá eastóscadh Favicon cumasaithe. Féadfaidh an próiseas seo roinnt nóiméad a thógáil ag brath ar líon na ndintiúir le URLanna. Coinnigh an leathanach ar oscailt le do thoil.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "Níorbh fhéidir {{count}} mír(eanna) a pharsáil agus scipeálfar iad.",
       "importSuccessMessage": "Dintiúir {{count}} allmhairithe go rathúil.",
       "moreCredentials": "... agus {{count}} dintiúir eile",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Gan lógó",
       "noNewCredentials": "Ní bhfuarthas aon dintiúir nua le hallmhairiú.",
       "previewInstructions": "Seiceáil an bhfuil cuma cheart ar na dintiúir braite seo a leanas sula leanann tú ar aghaidh:",
