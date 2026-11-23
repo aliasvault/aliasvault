@@ -40,6 +40,15 @@ export type ItemEdit = {
 export const DEFAULT_SERVICE_URL = 'https://';
 
 /**
+ * A URL as typed or pasted, without the placeholder scheme in front of a scheme of its own.
+ * @param url - The value of a URL input
+ * @returns The URL
+ */
+export function withoutDuplicateScheme(url: string): string {
+  return /^https:\/\/[a-z][a-z0-9+.-]*:\/\//i.test(url) ? url.substring(DEFAULT_SERVICE_URL.length) : url;
+}
+
+/**
  * A field edit for a system field with a value.
  */
 const newSystemFieldEdit = (fieldKey: string, value: string): FieldEdit | null => {

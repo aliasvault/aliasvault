@@ -11,15 +11,12 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useSaveItem } from '@/hooks/useSaveItem';
-import { createNewItemEdit, type ItemEdit, setFieldValue } from '@/models/ItemEdit';
+import { createNewItemEdit, DEFAULT_SERVICE_URL, type ItemEdit, setFieldValue, withoutDuplicateScheme } from '@/models/ItemEdit';
 import { generateIdentity } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { UiIconName } from '@aliasvault/models/icons';
-
-/** The URL prefilled in the website field. */
-const DEFAULT_SERVICE_URL = 'https://';
 
 /** The icon of each item type in the type selector. */
 const TYPE_ICONS: Record<ItemType, UiIconName> = {
@@ -228,7 +225,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
               id="serviceUrl"
               type="text"
               value={serviceUrl}
-              onChange={(e) => setServiceUrl(e.target.value)}
+              onChange={(e) => setServiceUrl(withoutDuplicateScheme(e.target.value))}
               onFocus={(e) => {
                 if (e.target.value === DEFAULT_SERVICE_URL) {
                   setTimeout(() => e.target.setSelectionRange(DEFAULT_SERVICE_URL.length, DEFAULT_SERVICE_URL.length), 1); 
