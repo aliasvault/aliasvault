@@ -143,6 +143,23 @@ describe('AvuxExportService', () => {
     expect(recoveryValue.FieldDefinition!.Weight).toBe(5);
   });
 
+  it('re-imports a passkey under a new id with the credential id the relying party knows', () => {
+    const passkey = { ItemId: '', RpId: 'example.com', UserHandle: null, PublicKey: '{}', PrivateKey: '{}', PrfKey: null, DisplayName: 'Example', AdditionalData: null, CreatedAt: new Date(), UpdatedAt: new Date(), IsDeleted: false };
+    const derived = createTestItem('Derived', ItemTypes.Login, { [FieldKey.LoginUsername]: 'user' });
+    derived.Passkeys.push({ ...passkey, Id: '44444444-4444-4444-8444-444444444444', CredentialId: null });
+    const named = createTestItem('Named', ItemTypes.Login, { [FieldKey.LoginUsername]: 'user' });
+    named.Passkeys.push({ ...passkey, Id: crypto.randomUUID(), CredentialId: new Uint8Array([1, 2, 3]) });
+
+    const imported = AvuxImportService.importFromAvux(exportItems([derived, named]));
+
+    const idBytes = [0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 0x84, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44];
+    const derivedItem = byName(imported, 'Derived').AliasVaultItem!;
+    expect(derivedItem.Passkeys[0].Id).not.toBe('44444444-4444-4444-8444-444444444444');
+    expect(Array.from(derivedItem.Passkeys[0].CredentialId!)).toEqual(idBytes);
+    expect(Array.from(byName(imported, 'Derived').Passkeys![0].CredentialId!)).toEqual(idBytes);
+    expect(Array.from(byName(imported, 'Named').AliasVaultItem!.Passkeys[0].CredentialId!)).toEqual([1, 2, 3]);
+  });
+
   it('re-imports exported logos', () => {
     const githubLogo: LogoEntity = { Id: crypto.randomUUID(), Kind: 'favicon', Source: 'github.com', Name: null, FileData: new Uint8Array([1, 2, 3, 4, 5]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false };
     const googleLogo: LogoEntity = { Id: crypto.randomUUID(), Kind: 'favicon', Source: 'google.com', Name: null, FileData: new Uint8Array([6, 7, 8, 9, 10]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false };
