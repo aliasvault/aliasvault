@@ -524,7 +524,7 @@
       "importAttachmentsLabel": "Import detected attachments",
       "importButton": "Import",
       "importErrorCopyDetailsButton": "Detayları kopyala",
-      "importErrorDetailsIntro": "Please copy the details below and share them when reporting this issue.",
+      "importErrorDetailsIntro": "Lütfen aşağıda detayları kopyala ve hatayı bildirirken paylaş.",
       "importErrorFileTooLarge": "File size exceeds {{size}}MB limit.",
       "importErrorGeneric": "An error occurred during import. Please try again.",
       "importErrorInvalidFile": "Please select a valid export file to import.",
@@ -595,7 +595,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Kredi Kartı"
     },
     "deleteCustomField": "Delete custom field",
     "editCustomField": "Edit Custom Field",
@@ -605,11 +605,11 @@
     "fieldTypes": {
       "date": "Tarih",
       "email": "E-Posta",
-      "hidden": "Hidden",
+      "hidden": "Gizlendi",
       "hiddenMasked": "Hidden (masked text)",
-      "number": "Number",
+      "number": "Numara",
       "password": "Parola",
-      "phone": "Phone",
+      "phone": "Telefon",
       "text": "Text",
       "textArea": "Text Area",
       "url": "URL"
@@ -618,21 +618,21 @@
       "title": "Giriş"
     },
     "note": {
-      "title": "Note"
+      "title": "Not"
     },
-    "secureNote": "Secure Note",
+    "secureNote": "Güvenlik Notu",
     "typeLabel": "Item Type"
   },
   "items": {
     "addEdit": {
       "addItemDescription": "Create a new item below.",
-      "deletePasskeyButton": "Delete passkey",
+      "deletePasskeyButton": "Geçiş Anahtarını Sil",
       "editItemDescription": "Edit the existing item below.",
       "errorSavingItem": "Error saving item. Please try again.",
       "passkeyHelpText": "Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.",
       "passkeyWillBeDeleted": "This passkey will be deleted when you save this item.",
       "removeField": "Remove field",
-      "savingVaultMessage": "Saving vault...",
+      "savingVaultMessage": "Kasa Kaydediliyor...",
       "serviceNamePlaceholder": "E.g. Facebook"
     },
     "addFieldMenu": {
@@ -668,8 +668,8 @@
     "capitalization": "Capitalization",
     "cardInformation": "Card Information",
     "changePasswordComplexity": "Change password complexity",
-    "clearFilter": "Clear filter",
-    "clearSearch": "Clear search",
+    "clearFilter": "Filtreyi Sıfırla",
+    "clearSearch": "Aramayı Sil",
     "contextMenu": {
       "copyEmail": "E-postayı Kopyala",
       "copyPassword": "Parolayı Kopyala",
@@ -718,13 +718,13 @@
     "excludedCharsDescription": "Generated passwords will never contain these characters.",
     "excludedCharsLabel": "Exclude characters",
     "fieldHistory": {
-      "deleteConfirm": "Are you sure?",
+      "deleteConfirm": "Emin Misin ?",
       "title": "{{field}} history"
     },
     "fileSavedTo": "File saved to",
     "filters": {
       "showFolders": "Folders",
-      "totp": "2FA Codes"
+      "totp": "2 Aşamalı Doğrulama Kodları"
     },
     "folderSelector": {
       "noFolder": "No folder",
