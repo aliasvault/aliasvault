@@ -85,7 +85,7 @@ Want to add a completely new language to AliasVault?
 ### Questions About Translation?
 
 - **Discord**: Join our [community server](https://discord.gg/DsaXMTEtpF) - Ask in #translations
-- **Email**: [contact@support@aliasvault.com](mailto:support@aliasvault.com)
+- **Email**: [support@aliasvault.com](mailto:support@aliasvault.com)
 - **Crowdin**: Use the discussion feature for specific strings
 
 Thank you for helping make AliasVault accessible to more people!
