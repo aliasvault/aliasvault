@@ -213,7 +213,7 @@
   },
   "common": {
     "add": "Aggiungi",
-    "added": "Added",
+    "added": "Aggiunto",
     "alias": "Alias",
     "attachmentDownloadFailed": "Download allegato non riuscito",
     "attachments": "Allegati",
@@ -510,7 +510,7 @@
     "recommendedLabel": "Consigliato",
     "serviceCard": {
       "attachmentsDetected": "{{count}} allegato(i), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Sei sicuro di voler continuare? Nota: il processo di importazione può richiedere un po' di tempo.",
       "decryptAndContinueButton": "Decifra e continua",
       "decryptingFile": "Decifratura file...",
       "decryptionErrorGeneric": "Decifratura del file non riuscita. Verificare che il file non sia danneggiato e riprovare.",
@@ -518,7 +518,7 @@
       "decryptionPasswordLabel": "Password di decifratura",
       "duplicateCredentialsWarning": "{{count}} credenziali duplicate sono state trovate e non verranno importate.",
       "encryptedFilePasswordPrompt": "Questo file è cifrato. Per favore inserisci la password che hai usato quando hai creato l'esportazione.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} elementi esistenti saranno aggiornati con nuovi dati.",
       "extractFaviconsLabel": "Estrai le icone preferenziali per i servizi con URL",
       "extractingFavicons": "Estrazione delle favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Nota: L'estrazione di Favicon è abilitata. Questo processo può richiedere diversi minuti a seconda del numero di credenziali con URL. Si prega di mantenere aperta la pagina.",
@@ -536,7 +536,7 @@
       "importPartialFailureWarning": "{{count}} elementi non possono essere analizzati e saranno saltati.",
       "importSuccessMessage": "{{count}} credenziali importate con successo.",
       "moreCredentials": "... e {{count}} altre credenziali",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} nuovi elementi saranno importati.",
       "noLogoText": "Nessun logo",
       "noNewCredentials": "Non sono state trovate nuove credenziali da importare.",
       "previewInstructions": "Controlla se le seguenti credenziali rilevate siano corrette prima di continuare:",
@@ -547,6 +547,8 @@
       "uploadExportFileText": "Carica il tuo file di esportazione {{service}}:"
     },
     "services": {
+      "aegisDescription": "Importa codici 2FA da Aegis Authenticator",
+      "aegisInstructionsPart1": "Per importare i tuoi codici Aegis, devi esportarli come file JSON non cifrato. Puoi farlo in Aegis andando a 'Impostazioni' > 'Importa ed esporta' > 'Esporta', selezionando 'Aegis (.JSON)' e disattivando la cifratura.",
       "aliasVaultDescription": "Importa da backup di AliasVault",
       "aliasVaultInstructionsPart1": "Importa il backup AliasVault creato in precedenza.",
       "bitwardenDescription": "Importa password dalla tua cassaforte Bitwarden",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Importa password da Strongbox",
       "strongboxInstructionsPart1": "Per importare la cassaforte Strongbox, è necessario esportarla come file CSV. Puoi farlo andando al menu 'File' e selezionando 'Esporta banca dati' (per CSV).",
       "template": "modello",
+      "twoFactorMergeHint": "Ogni codice viene importato come elemento separato. Per aggiungere un codice ad un login esistente, fai clic con il pulsante destro del mouse e scegli 'Unisci'.",
       "uploadInstructions": "Una volta esportato il file, puoi caricarlo qui sotto."
     }
   },
