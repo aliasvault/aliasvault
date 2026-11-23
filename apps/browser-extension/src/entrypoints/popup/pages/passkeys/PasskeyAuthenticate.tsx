@@ -16,7 +16,7 @@ import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
-import type { PendingPasskeyGetRequest } from '@/utils/passkey/types';
+import type { PendingPasskeyGetRequest } from '@/utils/passkey/PasskeyTypes';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**

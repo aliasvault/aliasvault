@@ -1,7 +1,7 @@
 import { passkeyCreate, passkeyGetAssertion, passkeyPickAlgorithm } from '@aliasvault/client/rust/WasmPasskey';
 import { base64UrlToBytes, bytesToBase64, bytesToBase64Url } from '@aliasvault/client/utilities/Base64';
 
-import type { CreateRequest, GetRequest, StoredPasskeyRecord } from './types';
+import type { CreateRequest, GetRequest, StoredPasskeyRecord } from './PasskeyTypes';
 import type { PasskeyPrfResults } from '@aliasvault/client/rust/WasmPasskey';
 
 /**

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import type { ConditionalPasskeyOption } from '@/utils/passkey/types';
+import type { ConditionalPasskeyOption } from '@/utils/passkey/PasskeyTypes';
 
 // Mock the messaging layer to observe the background round-trip.
 const { sendMessageMock } = vi.hoisted(() => ({ sendMessageMock: vi.fn() }));

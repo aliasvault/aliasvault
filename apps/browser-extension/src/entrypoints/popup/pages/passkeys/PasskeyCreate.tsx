@@ -24,7 +24,7 @@ import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
-import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
+import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/PasskeyTypes';
 
 import type { Item, Passkey } from '@aliasvault/models/vault';
 

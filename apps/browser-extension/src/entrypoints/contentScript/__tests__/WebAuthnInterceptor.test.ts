@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import type { WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
 import {
   cloneWebAuthnEventDetail,
   getWebAuthnRequestRpId,
   validateWebAuthnEventDetail,
   validateWebAuthnRequest
 } from '@/utils/passkey/WebAuthnRequestValidation';
+import type { WebAuthnGetEventDetail } from '@/utils/passkey/WebAuthnTypes';
 
 import { isSameOriginWithAncestors } from '../WebAuthnInterceptor';
 

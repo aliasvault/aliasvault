@@ -12,7 +12,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import type { PendingPasskeyRequest } from '@/utils/passkey/types';
+import type { PendingPasskeyRequest } from '@/utils/passkey/PasskeyTypes';
 
 type PasskeyVaultLockedProps = {
   subtitle: string;
