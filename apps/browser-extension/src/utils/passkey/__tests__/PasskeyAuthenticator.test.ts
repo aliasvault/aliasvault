@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import { PasskeyAuthenticator } from '../PasskeyAuthenticator';
 
-import type { CreateRequest, GetRequest, StoredPasskeyRecord } from '../types';
+import type { CreateRequest, GetRequest, StoredPasskeyRecord } from '../PasskeyTypes';
 
 /**
  * Helper function to decode base64url strings

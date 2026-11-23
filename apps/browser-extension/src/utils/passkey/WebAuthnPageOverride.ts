@@ -12,7 +12,7 @@ import type {
   WebAuthnGetResponseDetail,
   ProviderCreateCredential,
   ProviderGetCredential
-} from '@/utils/passkey/webauthn.types';
+} from '@/utils/passkey/WebAuthnTypes';
 
 /**
  * Install the navigator.credentials override in the current page (main world).

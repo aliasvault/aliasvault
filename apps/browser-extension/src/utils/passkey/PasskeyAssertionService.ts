@@ -14,7 +14,7 @@ import type {
   PasskeyGetCredentialResponse,
   StoredPasskeyRecord,
   WebAuthnPublicKeyGetPayload
-} from './types';
+} from './PasskeyTypes';
 import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 
 /**

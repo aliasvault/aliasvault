@@ -12,8 +12,8 @@
  */
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import type { ConditionalPasskeyOption, PasskeyGetCredentialResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
-import type { WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
+import type { ConditionalPasskeyOption, PasskeyGetCredentialResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/PasskeyTypes';
+import type { WebAuthnGetEventDetail } from '@/utils/passkey/WebAuthnTypes';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**

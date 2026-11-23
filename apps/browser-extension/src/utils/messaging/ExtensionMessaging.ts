@@ -18,7 +18,7 @@ import type { TwoFactorPrompt } from '@/entrypoints/background/TwoFactorStateHan
 import type { SharingActionResponse } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { SavePromptPersistedState } from '@/utils/loginDetector';
-import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
+import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/PasskeyTypes';
 import type { AutofillConfirmAnswer, AutofillConfirmation } from '@/utils/types/messaging/AutofillConfirmation';
 import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';

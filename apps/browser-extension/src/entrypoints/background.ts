@@ -21,8 +21,8 @@ import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
 import type { IExtensionMessageProtocol } from "@/utils/messaging/ExtensionMessaging";
+import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/PasskeyTypes';
 import { isRpIdAllowedForCaller } from '@/utils/passkey/RelyingPartyValidation';
-import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
 import { getWebAuthnRequestRpId, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 

@@ -25,7 +25,7 @@ import type {
   ConditionalPasskeyOption,
   MatchingPasskeysResponse,
   WebAuthnAssertionResponse
-} from '@/utils/passkey/types';
+} from '@/utils/passkey/PasskeyTypes';
 
 import { browser } from '#imports';
 

@@ -5,11 +5,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
 import {
   cloneWebAuthnEventDetail,
   validateWebAuthnEventDetail
 } from '@/utils/passkey/WebAuthnRequestValidation';
+import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/passkey/WebAuthnTypes';
 
 import { clearConditionalPasskeyRequestIfMatches, registerConditionalPasskeyRequest } from './ConditionalPasskey';
 

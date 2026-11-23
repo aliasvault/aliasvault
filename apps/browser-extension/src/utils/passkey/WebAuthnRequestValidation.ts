@@ -1,4 +1,4 @@
-import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
+import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/passkey/WebAuthnTypes';
 
 type WebAuthnRequestType = 'create' | 'get';
 type WebAuthnBridgeDetail = WebAuthnCreateEventDetail | WebAuthnGetEventDetail;
