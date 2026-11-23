@@ -11,7 +11,7 @@ import languageData from '../languages.json' with { type: 'json' };
  * Display metadata for a single language.
  */
 export interface ILanguageInfo {
-  /** Two-letter ISO 639-1 language code (e.g. 'en', 'nl'). */
+  /** ISO 639-1 language code, with a region for a regional variant (e.g. 'nl', 'pt-BR'). */
   code: string;
   /** Emoji flag for the language. */
   flag: string;
@@ -51,24 +51,23 @@ export function isLanguageCode(code: string | null | undefined): code is string 
 }
 
 /**
- * Normalize an app/UI language tag to a two-letter lowercase ISO code (e.g. 'nl-NL' -> 'nl').
+ * Normalize an app/UI language tag to its lowercase base language code (e.g. 'nl-NL' -> 'nl', 'fil-PH' -> 'fil').
  * @param code The language tag.
- * @returns The two-letter lowercase code.
+ * @returns The lowercase base language code.
  */
 export function normalizeLanguageCode(code: string | null | undefined): string {
-  return (code ?? '').slice(0, 2).toLowerCase();
+  return (code ?? '').split(/[-_]/)[0].toLowerCase();
 }
 
 /**
- * Look up the display metadata for an ISO language code.
+ * Look up the display metadata for a language code or locale tag (e.g. 'nl', 'nl-BE', 'pt-BR').
  * Falls back to a globe flag and the raw code for unknown languages.
- * @param code The ISO language code (case-insensitive).
+ * @param code The language code or locale tag (case-insensitive).
  * @returns The flag + label info for the code.
  */
 export function getLanguageInfo(code: string): ILanguageInfo {
-  const iso = normalizeLanguageCode(code);
-  const match = LANGUAGES.find((l) => l.code === iso);
-  return match ?? { code, flag: '🌐', label: code };
+  const match = matchAvailableLanguage(code, LANGUAGES.map((l) => l.code));
+  return LANGUAGES.find((l) => l.code === match) ?? { code, flag: '🌐', label: code };
 }
 
 /**
@@ -112,14 +111,9 @@ export function matchAvailableLanguage(appLanguage: string | null | undefined, a
     }
   }
 
-  // 3. Base language code match (e.g. an unlisted 'en-ZZ' still resolves to 'en').
+  // 3. Base language, matched the same way (an unlisted 'en-ZZ' resolves to 'en', an unlisted 'pt-ZZ' to the variant listing 'pt').
   const base = normalizeLanguageCode(appLanguage);
-  const baseMatch = availableCodes.find((c) => c.toLowerCase() === base);
-  if (baseMatch) {
-    return baseMatch;
-  }
-
-  return null;
+  return base !== lower ? matchAvailableLanguage(base, availableCodes) : null;
 }
 
 /**

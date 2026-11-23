@@ -96,11 +96,19 @@ function render(target, lang) {
   return `<?xml version="1.0" encoding="utf-8"?>\n<!-- ${target.comment}. ${GENERATED_NOTE} -->\n<resources>\n${[...constants, ...strings].join('\n')}\n</resources>\n`;
 }
 
+/**
+ * The Android resource qualifier of a language: "pt-rBR" for a two-letter region, the BCP 47 form "b+zh+Hant" for any other tag.
+ * @param {string} lang
+ */
+const androidLocale = (lang) => (/^[a-z]{2}(-[A-Z]{2})?$/.test(lang) ? lang.replace('-', '-r') : `b+${lang.replaceAll('-', '+')}`);
+
 const stale = [];
 let written = 0;
 for (const target of targets) {
   for (const lang of languages) {
-    const relative = target.path.replace('{lang}', lang).replace('{-lang}', lang === 'en' ? '' : `-${lang}`);
+    /* iOS takes the tag as-is (pt-BR.lproj, zh-Hant.lproj). */
+    const nativeLang = target.platform === 'android' ? androidLocale(lang) : lang;
+    const relative = target.path.replace('{lang}', nativeLang).replace('{-lang}', lang === 'en' ? '' : `-${nativeLang}`);
     const file = path.join(REPO_ROOT, relative);
     const content = render(target, lang);
     const current = existsSync(file) ? readFileSync(file) : undefined;

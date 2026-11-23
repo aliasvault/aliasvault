@@ -1,4 +1,5 @@
 import { englishTranslations, type TranslationTree } from '@aliasvault/i18n';
+import { matchAvailableLanguage } from '@aliasvault/i18n/languages';
 import { loadTranslations } from '@aliasvault/i18n/load';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -13,12 +14,7 @@ import { DEFAULT_LANGUAGE, LANGUAGE_CODES } from './config';
  */
 export const detectLanguage = (): string => {
   const stored = getLocalPreference(LocalPreferenceKeys.APP_LANGUAGE);
-  if (stored && LANGUAGE_CODES.includes(stored)) {
-    return stored;
-  }
-
-  const browserLang = navigator.language.split('-')[0];
-  return LANGUAGE_CODES.includes(browserLang) ? browserLang : DEFAULT_LANGUAGE;
+  return matchAvailableLanguage(stored, LANGUAGE_CODES) ?? matchAvailableLanguage(navigator.language, LANGUAGE_CODES) ?? DEFAULT_LANGUAGE;
 };
 
 /**

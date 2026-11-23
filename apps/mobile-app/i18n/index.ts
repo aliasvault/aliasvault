@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import { ALL_TRANSLATIONS } from '@aliasvault/i18n/all';
+import { DEFAULT_LANGUAGE, LANGUAGE_CODES, matchAvailableLanguage } from '@aliasvault/i18n/languages';
 
 const resources = Object.fromEntries(Object.entries(ALL_TRANSLATIONS).map(([code, translation]) => [code, { translation }]));
 
@@ -11,9 +12,7 @@ const resources = Object.fromEntries(Object.entries(ALL_TRANSLATIONS).map(([code
  */
 const initI18n = async (): Promise<void> => {
   // Always use system language, no custom storage
-  const locales = getLocales();
-  const deviceLanguage = locales[0]?.languageCode ?? 'en';
-  const selectedLanguage = resources[deviceLanguage as keyof typeof resources] ? deviceLanguage : 'en';
+  const selectedLanguage = matchAvailableLanguage(getLocales()[0]?.languageTag, LANGUAGE_CODES) ?? DEFAULT_LANGUAGE;
 
   // eslint-disable-next-line import/no-named-as-default-member
   await i18n

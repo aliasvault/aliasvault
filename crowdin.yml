@@ -27,4 +27,9 @@ files:
   - source: /core/i18n/locales/en.json
     translation: /core/i18n/locales/%two_letters_code%.json
     type: json
+    # Overrides %two_letters_code% for Crowdin languages that share a two-letter code, so each one writes its own locale file.
+    languages_mapping:
+      two_letters_code:
+        pt-BR: pt-BR
+        pt-PT: pt-PT
 commit_message: 'Update translations from Crowdin [ci skip]'
