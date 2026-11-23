@@ -1,0 +1,126 @@
+{
+    "version": 1,
+    "header": {
+        "slots": null,
+        "params": null
+    },
+    "db": {
+        "version": 3,
+        "entries": [
+            {
+                "type": "totp",
+                "uuid": "7dc36725-cec9-4b39-a381-0c24d48114b3",
+                "name": "av-totp@example.com",
+                "issuer": "AV Login TOTP",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "JBSWY3DPEHPK3PXP",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "period": 30
+                },
+                "groups": []
+            },
+            {
+                "type": "totp",
+                "uuid": "f8421a30-13a4-4122-8b8c-9ce3377b08bd",
+                "name": "av-basic",
+                "issuer": "AV Login Basic",
+                "note": "2FA note",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWUEYLTNFRS2MBQGAYDAMBS",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "period": 30
+                },
+                "groups": []
+            },
+            {
+                "type": "totp",
+                "uuid": "7c9ac723-6421-4f2b-9710-a551bc034777",
+                "name": "av-passkey",
+                "issuer": "webauthn.io",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWVAYLTONVWK6JNGAYDAMBT",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "period": 30
+                },
+                "groups": []
+            },
+            {
+                "type": "totp",
+                "uuid": "fcaeb8fb-ae21-4192-a401-365cc73c95b6",
+                "name": "av-folder@example.com",
+                "issuer": "Folder",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWUM33MMRSXELJQGAYDAMBU",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "period": 30
+                },
+                "groups": []
+            },
+            {
+                "type": "totp",
+                "uuid": "154302ec-00d1-4f89-bc37-83461b964801",
+                "name": "av-other",
+                "issuer": "AV Login Basic",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWU65DIMVZC2MBQGAYDAMBV",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "period": 30
+                },
+                "groups": []
+            },
+            {
+                "type": "totp",
+                "uuid": "23ade979-be9c-44dd-8c3a-d6170c9ecb58",
+                "name": "av-standalone@example.org",
+                "issuer": "AV Standalone äöü 日本",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWVG5DBNZSGC3DPNZSS2MBW",
+                    "algo": "SHA256",
+                    "digits": 8,
+                    "period": 60
+                },
+                "groups": []
+            },
+            {
+                "type": "hotp",
+                "uuid": "69091672-f4d3-4544-8b56-c534550aa211",
+                "name": "av-counter",
+                "issuer": "AV Counter",
+                "note": "",
+                "favorite": false,
+                "icon": null,
+                "info": {
+                    "secret": "IFLC2MSGIEWUG33VNZ2GK4RNGAYDAMBX",
+                    "algo": "SHA1",
+                    "digits": 6,
+                    "counter": 5
+                },
+                "groups": []
+            }
+        ],
+        "groups": [],
+        "icons_optimized": true
+    }
+}
