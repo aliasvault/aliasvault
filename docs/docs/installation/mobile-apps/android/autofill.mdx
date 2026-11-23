@@ -1,10 +1,14 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 sidebar_label: "Autofill & Passkeys"
 ---
+import TOCInline from '@theme/TOCInline';
+
 # Android Autofill & Passkeys
 
 This page explains how autofill and passkeys work in the AliasVault Android app.
+
+<TOCInline toc={toc} />
 
 ## Android Autofill APIs
 
@@ -51,8 +55,15 @@ To configure AliasVault as the autofill provider in Chrome:
 
 When you have correctly set up native autofill it should look like the examples below. Whenever you focus on a username, email or password field, the autofill popup will be triggered:
 
-<img src="/assets/img/android/autofill/one-option.png" alt="Android Autofill Popup Example" width="300" height="auto">
-<img src="/assets/img/android/autofill/no-match.png" alt="Android Autofill Popup Example" width="300" height="auto">
+<img src="/assets/img/android/autofill/one-option.png" alt="Android Autofill Popup Example" width="300" height="auto" />
+<img src="/assets/img/android/autofill/no-match.png" alt="Android Autofill Popup Example" width="300" height="auto" />
+
+## Known Limitations
+
+### Port numbers are ignored
+Android only passes the host of a web page to autofill services, never the port. AliasVault therefore cannot tell `192.168.1.10:8080` and `192.168.1.10:9000` apart on Android: every entry on the same IP address or hostname is suggested, whatever port it has. This is a limitation of the Android autofill API and affects all third-party password managers.
+
+AliasVault shows at most 10 suggestions. If more entries share the same host, use the `Open app` option in the autofill popup to search for the right one. The browser extension does take the port into account.
 
 ## Frequently Asked Questions
 

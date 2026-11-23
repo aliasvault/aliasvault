@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 sidebar_label: "Build from Source"
 ---
 # Building AliasVault Android App from Source
