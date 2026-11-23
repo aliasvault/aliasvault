@@ -277,6 +277,7 @@
   "importExport.services.strongboxDescription": "Description for Strongbox import service",
   "importExport.services.strongboxInstructionsPart1": "Strongbox export instructions part 1",
   "importExport.services.template": "Link text at the end of \"Download the AliasVault Import CSV\", downloads the CSV template",
+  "importExport.services.twoFactorMergeHint": "Shown when importing 2FA codes from an authenticator app. 'Merge' must match the Merge action in the item's menu (items.merge.action)",
   "importExport.services.uploadInstructions": "Common instruction for file upload",
   "itemTypes.alias.title": "Alias item type name",
   "itemTypes.creditCard.title": "Credit Card item type name",

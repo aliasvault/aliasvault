@@ -1,11 +1,13 @@
 import { BulkFaviconService } from '@aliasvault/client/items/BulkFaviconService';
+import { resolveTotpEntry } from '@aliasvault/client/items/OtpAuthUri';
+import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { selectFaviconTarget } from '@aliasvault/client/rust/RustCore';
 import { AvexImportService, AvexDecryptionError } from '@aliasvault/client/transfer/import/importers/aliasvault/AvexImportService';
 import { ImportException, ImportStage } from '@aliasvault/client/transfer/import/models/ImportException';
 import { detectAndRemoveDuplicates, type ImportEnrichment } from '@aliasvault/client/transfer/import/writers/ImportDuplicateDetection';
 import { VaultImportWriter } from '@aliasvault/client/transfer/import/writers/VaultImportWriter';
 import { yieldToPaint } from '@aliasvault/client/utilities/YieldToPaint';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +16,7 @@ import Button from '@/components/shared/Button';
 import Icon from '@/components/shared/Icon';
 import Modal from '@/components/shared/Modal';
 import Text from '@/components/shared/Text';
+import { formatTotpCode } from '@/components/totp/TotpViewer';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -51,6 +54,40 @@ const ImportOption: React.FC<ImportOptionProps> = ({ checked, onChange, label, d
 );
 
 /**
+ * The current code of an imported 2FA secret, renewed at every time step, so the user can compare it with the source app.
+ */
+const ImportedTotpCode: React.FC<{ secret: string }> = ({ secret }) => {
+  const [code, setCode] = useState('');
+  const entry = useMemo(() => resolveTotpEntry(secret, ''), [secret]);
+
+  useEffect(() => {
+    if (!entry) {
+      return undefined;
+    }
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    /**
+     * Show the code of the current time step and schedule the next one.
+     */
+    const refresh = (): void => {
+      void generateTotpCode(entry.secretKey, { Algorithm: entry.algorithm, Digits: entry.digits, Period: entry.period }).then(next => {
+        if (!cancelled) {
+          setCode(next ?? '');
+        }
+      });
+      timer = setTimeout(refresh, (entry.period - ((Date.now() / 1000) % entry.period)) * 1000);
+    };
+    refresh();
+    return (): void => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [entry]);
+
+  return <span className="font-mono tabular-nums">{formatTotpCode(code)}</span>;
+};
+
+/**
  * The steps of the import wizard, in order.
  */
 enum ImportStep {
@@ -62,6 +99,34 @@ enum ImportStep {
 
 /** The last step index, for the progress bar. */
 const LAST_STEP = ImportStep.Confirm;
+
+/**
+ * What the preview step shows.
+ */
+enum PreviewLayout {
+  /** New items, with their (masked) passwords. */
+  Passwords,
+  /** New items from a 2FA app export, with their current codes. */
+  TotpCodes,
+  /** The data a re-import adds to items the vault already holds. */
+  Additions,
+  /** Nothing to import. */
+  Empty,
+}
+
+/**
+ * The preview layout for an import.
+ * @param credentials - The new credentials
+ * @param enrichmentCount - The number of existing items the import adds to
+ */
+const previewLayoutOf = (credentials: ImportedCredential[], enrichmentCount: number): PreviewLayout => {
+  if (credentials.length === 0) {
+    return enrichmentCount > 0 ? PreviewLayout.Additions : PreviewLayout.Empty;
+  }
+  // A 2FA app export holds codes and no passwords.
+  const hasOnlyCodes = credentials.some(credential => credential.TwoFactorSecret) && credentials.every(credential => !credential.Password);
+  return hasOnlyCodes ? PreviewLayout.TotpCodes : PreviewLayout.Passwords;
+};
 
 /**
  * Browser-memory safety ceiling for the uploaded file, not a server limit: the file is parsed client-side and
@@ -170,6 +235,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const faviconExtractionAbort = useRef<AbortController | null>(null);
   const extractedFavicons = useRef(new Map<string, Uint8Array>());
   const hasFaviconCandidates = importedCredentials.some(needsFavicon);
+  const previewLayout = previewLayoutOf(importedCredentials, enrichments.length);
 
   const [isSavingCredentials, setIsSavingCredentials] = useState(false);
   const [credentialSaveProgress, setCredentialSaveProgress] = useState(0);
@@ -690,7 +756,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   /**
    * The first few credentials of a preview, with one detail per credential in the last column.
    */
-  const renderPreviewTable = (detailColumn: string, rows: { credential: ImportedCredential; detail: string }[]): React.ReactNode => (
+  const renderPreviewTable = (detailColumn: string, rows: { credential: ImportedCredential; detail: React.ReactNode }[]): React.ReactNode => (
     <>
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-700">
@@ -717,6 +783,36 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   );
 
   /**
+   * The new credentials with the instructions above them, with one detail per credential in the last column.
+   */
+  const renderNewItemsPreview = (detailColumn: string, detailOf: (credential: ImportedCredential) => React.ReactNode): React.ReactNode => (
+    <>
+      <Text className="mb-4">{t('importExport.serviceCard.previewInstructions')}</Text>
+      {renderPreviewTable(detailColumn, importedCredentials.map(credential => ({ credential, detail: detailOf(credential) })))}
+    </>
+  );
+
+  /**
+   * The preview of the current layout.
+   */
+  const renderPreview = (): React.ReactNode => {
+    switch (previewLayout) {
+      case PreviewLayout.Passwords:
+        return renderNewItemsPreview(t('common.password'), credential => '*'.repeat(credential.Password?.length ?? 0));
+      case PreviewLayout.TotpCodes:
+        return renderNewItemsPreview(t('items.filters.totp'), credential => (credential.TwoFactorSecret ? <ImportedTotpCode secret={credential.TwoFactorSecret} /> : null));
+      case PreviewLayout.Additions:
+        return renderPreviewTable(t('common.added'), enrichments.map(enrichment => ({ credential: enrichment.credential, detail: describeAdditions(enrichment) })));
+      case PreviewLayout.Empty:
+        return (
+          <div className="p-4 mb-4 text-sm rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
+            <p>{t('importExport.serviceCard.noNewCredentials')}</p>
+          </div>
+        );
+    }
+  };
+
+  /**
    * The preview step.
    */
   const renderPreviewStep = (): React.ReactNode => (
@@ -726,16 +822,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
 
         {parseFailures.length > 0 && renderParseFailures()}
 
-        {importedCredentials.length > 0 ? (
-          <>
-            <Text className="mb-4">{t('importExport.serviceCard.previewInstructions')}</Text>
-            {renderPreviewTable(t('common.password'), importedCredentials.map(credential => ({ credential, detail: '*'.repeat(credential.Password?.length ?? 0) })))}
-          </>
-        ) : enrichments.length > 0 ? renderPreviewTable(t('common.added'), enrichments.map(enrichment => ({ credential: enrichment.credential, detail: describeAdditions(enrichment) }))) : (
-          <div className="p-4 mb-4 text-sm rounded-lg bg-amber-50 border border-amber-300 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/40 dark:text-amber-100" role="alert">
-            <p>{t('importExport.serviceCard.noNewCredentials')}</p>
-          </div>
-        )}
+        {renderPreview()}
       </div>
       {hasItemsToWrite && (
         <div className="mb-4 space-y-2">
