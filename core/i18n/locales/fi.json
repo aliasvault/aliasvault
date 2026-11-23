@@ -547,6 +547,8 @@
       "uploadExportFileText": "Lataa {{service}} vientitiedostosi ulospäin:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Import from AliasVault backup",
       "aliasVaultInstructionsPart1": "Import your previously created AliasVault backup.",
       "bitwardenDescription": "Tuo salasanat Bitwarden-holvistasi",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Tuo salasanat Strongboxista",
       "strongboxInstructionsPart1": "Tuodaksesi StrongBox holvisi, sinun pitää tallentaa se CSV-tiedostona. Voit tehdä sen menemällä valikkoon > \"File\" ja valitsemalla \"Export Database (to CSV\".",
       "template": "template",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Kun olet vienyt tiedoston, voit ladata sen ulospäin alta."
     }
   },
