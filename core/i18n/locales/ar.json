@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "إضافة",
+    "added": "Added",
     "alias": "الاسم المستعار",
     "attachmentDownloadFailed": "تعذّر تنزيل المرفق",
     "attachments": "المرفقات",
@@ -509,7 +510,7 @@
     "recommendedLabel": "موصى به",
     "serviceCard": {
       "attachmentsDetected": "{{count}} مرفق(ات)، {{size}}",
-      "confirmImportText": "هل أنت متأكد أنك تريد استيراد ({{count}}) من بيانات الاعتماد؟ لاحظ: قد تستغرق عملية الاستيراد بعض الوقت.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "فك التشفير والمتابعة",
       "decryptingFile": "جارٍ فك تشفير الملف...",
       "decryptionErrorGeneric": "تعذّر فك تشفير الملف. يرجى التحقق من أن الملف غير تالف والمحاولة مرة أخرى.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "كلمة مرور فك التشفير",
       "duplicateCredentialsWarning": "تم العثور على {{count}} من بيانات الاعتماد المكررة ولن يتم استيرادها.",
       "encryptedFilePasswordPrompt": "هذا الملف مشفر. يرجى إدخال كلمة المرور التي استخدمتها عند إنشاء التصدير.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "استخراج الأيقونات المفضلة للخدمات ذات الروابط",
       "extractingFavicons": "جارٍ استخراج الأيقونات المفضلة... {{current}} / {{total}}",
       "faviconExtractionNote": "ملاحظة: استخراج الأيقونات المفضلة مفعّل. قد تستغرق هذه العملية عدة دقائق حسب عدد بيانات الاعتماد ذات الروابط. يرجى إبقاء الصفحة مفتوحة.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "تعذّر تحليل {{count}} عنصرًا وسيتم تخطيها.",
       "importSuccessMessage": "تم استيراد {{count}} من بيانات الاعتماد بنجاح.",
       "moreCredentials": "... و{{count}} من بيانات الاعتماد الأخرى",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "لا يوجد شعار",
       "noNewCredentials": "لم يتم العثور على بيانات اعتماد جديدة للاستيراد.",
       "previewInstructions": "تحقق مما إذا كانت بيانات الاعتماد المكتشفة التالية تبدو صحيحة قبل المتابعة:",

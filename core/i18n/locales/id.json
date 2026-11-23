@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Tambah",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Gagal mengunduh lampiran",
     "attachments": "Lampiran",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Direkomendasikan",
     "serviceCard": {
       "attachmentsDetected": "{{count}} lampiran, {{size}}",
-      "confirmImportText": "Apakah Anda yakin ingin mengimpor kredensial ({{count}})? Catatan: Proses impor mungkin memerlukan waktu sebentar.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Buka Enkripsi dan Lanjutkan",
       "decryptingFile": "Mendekripsi berkas...",
       "decryptionErrorGeneric": "Gagal mendekripsi berkas. Silakan periksa apakah berkas tersebut tidak rusak, lalu coba lagi.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Kata Sandi Dekripsi",
       "duplicateCredentialsWarning": "{{count}} kredensial duplikat telah ditemukan dan tidak akan diimpor.",
       "encryptedFilePasswordPrompt": "Berkas ini telah dienkripsi. Silakan masukkan kata sandi yang Anda gunakan saat membuat ekspor tersebut.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Ekstrak favicon untuk layanan yang memiliki URL",
       "extractingFavicons": "Sedang mengekstrak favicon... {{current}} / {{total}}",
       "faviconExtractionNote": "Catatan: Fitur ekstraksi favicon telah diaktifkan. Proses ini dapat memakan waktu beberapa menit, tergantung pada jumlah kredensial yang disertai URL. Harap biarkan halaman ini tetap terbuka.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} item tidak dapat diproses dan akan dilewati.",
       "importSuccessMessage": "Kredensial {{count}} telah berhasil diimpor.",
       "moreCredentials": "... dan {{count}} kredensial lainnya",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Tidak ada logo",
       "noNewCredentials": "Tidak ditemukan kredensial baru yang dapat diimpor.",
       "previewInstructions": "Pastikan kredensial yang terdeteksi berikut ini sudah benar sebelum melanjutkan:",

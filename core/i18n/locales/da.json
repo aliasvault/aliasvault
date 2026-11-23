@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Tilføj",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Kunne ikke downloade vedhæftet fil",
     "attachments": "Vedhæftede filer",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Anbefalet",
     "serviceCard": {
       "attachmentsDetected": "{{count}} vedhæftning(er), {{size}}",
-      "confirmImportText": "Er du sikker på, at du vil importere ({{count}}) loginoplysninger? Bemærk: importprocessen kan tage et øjeblik.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Dekrypter og fortsæt",
       "decryptingFile": "Dekrypterer fil...",
       "decryptionErrorGeneric": "Kunne ikke dekryptere filen. Kontroller, at filen ikke er beskadiget, og prøv igen.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Dekryptering Kode",
       "duplicateCredentialsWarning": "{{count}} duplikerede loginoplysninger blev fundet og vil ikke blive importeret.",
       "encryptedFilePasswordPrompt": "Denne fil er krypteret. Angiv den adgangskode, du brugte, da du oprettede eksporten.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Udpak favicons for tjenester med URL'er",
       "extractingFavicons": "Udpakker favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Bemærk: Favicon-udpakning er aktiveret. Denne proces kan tage flere minutter afhængigt af antallet af loginoplysninger med URL'er. Venligst hold siden åben.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} element(er) kunne ikke fortolkes og vil blive sprunget over.",
       "importSuccessMessage": "Importerede med succes {{count}} loginoplysninger.",
       "moreCredentials": "... og {{count}} flere loginoplysninger",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Intet logo",
       "noNewCredentials": "Der blev ikke fundet nogen nye loginoplysninger at importere.",
       "previewInstructions": "Kontroller om følgende fundne loginoplysninger ser korrekte ud, før du fortsætter:",

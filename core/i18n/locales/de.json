@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Hinzufügen",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Herunterladen des Anhangs ist fehlgeschlagen",
     "attachments": "Anhänge",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Empfohlen",
     "serviceCard": {
       "attachmentsDetected": "{{count}} Anhänge, {{size}}",
-      "confirmImportText": "Bist Du sicher, dass Du die Zugangsdaten ({{count}}) importieren möchtest? Hinweis: Der Importprozess kann eine kurze Zeit dauern.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Entschlüsseln und Fortfahren",
       "decryptingFile": "Entschlüssele Datei...",
       "decryptionErrorGeneric": "Fehler beim Entschlüsseln der Datei. Bitte überprüfe, ob die Datei nicht beschädigt ist und versuche es erneut.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Entschlüsselungspasswort",
       "duplicateCredentialsWarning": "{{count}} doppelte Anmeldeinformation(en) wurden gefunden und werden nicht importiert.",
       "encryptedFilePasswordPrompt": "Diese Datei ist verschlüsselt. Bitte gib das Passwort ein, das Du beim Erstellen des Exports verwendet hast.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Favicons für Dienste mit URLs extrahieren",
       "extractingFavicons": "Lade Favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Hinweis: Favicon-Extraktion ist aktiviert. Dieser Prozess kann mehrere Minuten dauern, abhängig von der Anzahl der Anmeldedaten mit URLs. Bitte die Seite offen halten.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} Einträge konnten nicht analysiert werden und werden übersprungen.",
       "importSuccessMessage": "Es wurden erfolgreich {{count}} Zugangsdaten importiert.",
       "moreCredentials": "... und {{count}} weitere Anmeldeinformationen",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Kein Logo",
       "noNewCredentials": "Es wurden keine neuen Zugangsdaten zum Importieren gefunden.",
       "previewInstructions": "Überprüfe, ob die folgenden erkannten Anmeldeinformationen korrekt sind, bevor Du fortfährst:",

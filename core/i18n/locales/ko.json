@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "추가",
+    "added": "Added",
     "alias": "에일리어스",
     "attachmentDownloadFailed": "첨부 파일을 다운로드하지 못했습니다",
     "attachments": "첨부 파일",
@@ -509,7 +510,7 @@
     "recommendedLabel": "권장",
     "serviceCard": {
       "attachmentsDetected": "첨부 파일 {{count}}개, {{size}}",
-      "confirmImportText": "Are you sure you want to import ({{count}}) credentials? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "복호화 후 계속",
       "decryptingFile": "파일 복호화 중...",
       "decryptionErrorGeneric": "파일을 복호화하지 못했습니다. 파일이 손상되지 않았는지 확인하고 다시 시도하세요.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "복호화 비밀번호",
       "duplicateCredentialsWarning": "중복된 로그인 정보 {{count}}개가 발견되어 가져오지 않습니다.",
       "encryptedFilePasswordPrompt": "이 파일은 암호화되어 있습니다. 내보내기 파일을 만들 때 사용한 비밀번호를 입력하세요.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "URL이 있는 서비스의 파비콘 추출",
       "extractingFavicons": "파비콘 추출 중... {{current}} / {{total}}",
       "faviconExtractionNote": "참고: 파비콘 추출이 활성화되어 있습니다. URL이 포함된 로그인 정보 수에 따라 몇 분 정도 걸릴 수 있습니다. 페이지를 열어 둔 상태로 유지하세요.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}}개의 항목을 구문 분석할 수 없어 건너뜁니다.",
       "importSuccessMessage": "Successfully imported {{count}} credentials.",
       "moreCredentials": "... and {{count}} more credentials",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "로고 없음",
       "noNewCredentials": "가져올 새 로그인 정보가 없습니다.",
       "previewInstructions": "계속하기 전에 감지된 다음 로그인 정보가 올바른지 확인하세요:",

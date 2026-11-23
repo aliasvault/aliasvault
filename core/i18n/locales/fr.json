@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Ajouter",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Échec du téléchargement de la pièce jointe",
     "attachments": "Pièces jointes",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Recommandé",
     "serviceCard": {
       "attachmentsDetected": "{{count}} pièce(s) jointe(s), {{size}}",
-      "confirmImportText": "Êtes-vous sûr de vouloir importer les ({{count}}) identifiants ? \nNote: le processus d'importation peut prendre un court moment.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Déchiffrer et continuer",
       "decryptingFile": "Déchiffrement du fichier...",
       "decryptionErrorGeneric": "Impossible de déchiffrer le fichier. Veuillez vérifier que le fichier n'est pas corrompu et réessayez.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Mot de passe de déchiffrement",
       "duplicateCredentialsWarning": "Les {{count}} identifiants en double ont été trouvés et ne seront pas importés.",
       "encryptedFilePasswordPrompt": "Ce fichier est chiffré. Veuillez entrer le mot de passe que vous avez utilisé lors de la création de l'exportation.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Extraire les icônes de favoris pour les services avec des URLs",
       "extractingFavicons": "Extraction des icônes de favoris ... {{current}} / {{total}}",
       "faviconExtractionNote": "Remarque : l'extraction des icônes de favoris est activée. Ce processus peut prendre plusieurs minutes selon le nombre d'identifiants avec des URL. Veuillez garder la page ouverte.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} élément(s) n'ont pas pu être analysés et seront ignorés.",
       "importSuccessMessage": "{{count}} identifiants importés avec succès.",
       "moreCredentials": "... et {{count}} identifiants supplémentaires",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Aucun logo",
       "noNewCredentials": "Aucun nouvel identifiant n'a été trouvé à importer.",
       "previewInstructions": "Vérifiez si les identifiants détectés ci-dessous semblent corrects avant de continuer :",
