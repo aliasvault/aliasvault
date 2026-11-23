@@ -25,7 +25,7 @@ const LanguageSettings: React.FC = () => {
           <div className="p-4">
             <div>
               <p className="font-medium text-gray-900 dark:text-white mb-3">{t('settings.selectLanguage')}</p>
-              <LanguageSwitcher variant="dropdown" size="sm" />
+              <LanguageSwitcher />
             </div>
           </div>
         </div>
