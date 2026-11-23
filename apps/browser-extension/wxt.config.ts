@@ -119,7 +119,11 @@ export default defineConfig({
       },
       web_accessible_resources: [{
         resources: [
-          "webauthn.js",
+          /*
+           * Chrome and Edge run the WebAuthn page script as a MAIN-world content script (webauthn-main.content.ts),
+           * as a webauthn.js loaded by the page interferes with Chromium's Connection-Allowlist.
+           */
+          ...(browser === 'chrome' || browser === 'edge' ? [] : ["webauthn.js"]),
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]

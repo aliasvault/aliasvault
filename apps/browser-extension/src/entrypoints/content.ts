@@ -2,13 +2,13 @@
  * Content script entry point - handles autofill UI, login detection, and WebAuthn passkey interception
  */
 
-import '@/entrypoints/contentScript/style.css';
 import { setPlatform } from '@aliasvault/client/platform';
 
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { fillItem, injectIcon, isFilledFromVault, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { consumeUnlockResume, getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
+import contentStyles from '@/entrypoints/contentScript/style.css?inline';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
@@ -221,6 +221,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       position: 'inline',
       anchor: 'body',
       mode: SHADOW_ROOT_MODE,
+      css: contentStyles,
       /**
        * Mount handler for early save prompt restore.
        */
@@ -374,7 +375,7 @@ function initializeLoginDetector(container: HTMLElement): void {
 
 export default defineContentScript({
   matches: ['<all_urls>'],
-  cssInjectionMode: 'ui',
+  cssInjectionMode: 'manual',
   allFrames: true,
   matchAboutBlank: true,
   runAt: 'document_start',
@@ -405,6 +406,7 @@ export default defineContentScript({
       position: 'inline',
       anchor: 'body',
       mode: SHADOW_ROOT_MODE,
+      css: contentStyles,
       /**
        * Handle mount.
        */
