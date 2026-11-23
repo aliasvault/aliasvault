@@ -547,6 +547,8 @@
       "uploadExportFileText": "Uaslódáil do chomhad easpórtála {{service}}:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Iompórtáil ó chúltaca AliasVault",
       "aliasVaultInstructionsPart1": "Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.",
       "bitwardenDescription": "Iompórtáil pasfhocail ó do chruinneachán Bitwarden",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Pasfhocail a allmhairiú ó Strongbox",
       "strongboxInstructionsPart1": "Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.",
       "template": "teimpléad",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos."
     }
   },
