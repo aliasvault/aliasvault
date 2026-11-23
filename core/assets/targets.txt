@@ -15,6 +15,7 @@ browsers/safari.svg apps/web/public/img/browser-icons/safari.svg
 platforms/android.svg apps/web/public/img/mobile-icons/android.svg
 platforms/ios.svg apps/web/public/img/mobile-icons/ios.svg
 importers/1password.svg apps/web/public/img/importers/1password.svg
+importers/aegis.svg apps/web/public/img/importers/aegis.svg
 importers/bitwarden.svg apps/web/public/img/importers/bitwarden.svg
 browsers/chrome.svg apps/web/public/img/importers/chrome.svg
 importers/dashlane.svg apps/web/public/img/importers/dashlane.svg
