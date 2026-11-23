@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Hozzáadás",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Sikertelen csatolmány letöltés",
     "attachments": "Csatolmányok",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Ajánlott",
     "serviceCard": {
       "attachmentsDetected": "{{count}} csatolmány, {{size}}",
-      "confirmImportText": "Biztosan importálni akar ({{count}}) bejegyzést? Figyelem: az importálási folyamat eltarthat egy ideig.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Dekódolás és folytatás",
       "decryptingFile": "Fájl dekódolása...",
       "decryptionErrorGeneric": "A fájl dekódolása sikertelen. Kérem ellenőrizze, hogy hibás e a fájl, és próbálja újra.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Dekódoló jelszó",
       "duplicateCredentialsWarning": "A rendszer {{count}} dupla bejegyzést talált, és importálja azokat.",
       "encryptedFilePasswordPrompt": "A fájl titkosított. Adja meg a jelszót, amit az exportálásnál használt.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Hivatkozással rendelkező bejegyzések ikonjainak letöltése",
       "extractingFavicons": "Ikonok letöltése... {{current}} / {{total}}",
       "faviconExtractionNote": "Megjegyzés: Az ikonok letöltése be van kapcsolva. Ez a folyamat több percig is eltarthat a weboldallal ellátott bejegyzések mennyiségétől függően. Kérem hagyja az oldalt nyitva.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} elemet nem lehetett elemezni, ezért átugrásra kerülnek.",
       "importSuccessMessage": "{{count}} sikeresen importálásra került.",
       "moreCredentials": "... további {{count}} bejegyzés",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Nincs logó",
       "noNewCredentials": "Nincs új importálható bejegyzés.",
       "previewInstructions": "Ellenőrizze a következő észlelt bejegyzéseket a folytatás előtt:",

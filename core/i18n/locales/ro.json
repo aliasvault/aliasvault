@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Adaugă",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Descărcarea atașamentului a eșuat",
     "attachments": "Atașamente",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Recomandat",
     "serviceCard": {
       "attachmentsDetected": "{{count}} atașament(e), {{size}}",
-      "confirmImportText": "Ești sigur că vrei să imporți ({{count}}) date de autentificare? Atenție: procesul de import poate dura puțin timp.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Decriptează și continuă",
       "decryptingFile": "Se decriptează fișierul...",
       "decryptionErrorGeneric": "Decriptarea fișierului a eșuat. Verifică dacă fișierul nu este corupt și încearcă din nou.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Parolă de decriptare",
       "duplicateCredentialsWarning": "Au fost găsite {{count}} date de autentificare duplicate, care nu vor fi importate.",
       "encryptedFilePasswordPrompt": "Acest fișier este criptat. Introdu parola pe care ai folosit-o la crearea exportului.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Extrage pictogramele pentru serviciile cu URL-uri",
       "extractingFavicons": "Se extrag pictogramele… {{current}} / {{total}}",
       "faviconExtractionNote": "Notă: Extragerea pictogramelor este activată. Acest proces poate dura câteva minute, în funcție de numărul de date de autentificare cu URL-uri. Păstrează pagina deschisă.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} element(e) nu au putut fi procesate și vor fi omise.",
       "importSuccessMessage": "Au fost importate cu succes {{count}} date de autentificare.",
       "moreCredentials": "... și încă {{count}} date de autentificare",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Fără logo",
       "noNewCredentials": "Nu au fost găsite date de autentificare noi de importat.",
       "previewInstructions": "Verifică dacă următoarele date de autentificare detectate sunt corecte înainte de a continua:",

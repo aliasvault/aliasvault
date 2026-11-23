@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "添加",
+    "added": "Added",
     "alias": "别名",
     "attachmentDownloadFailed": "下载附件失败",
     "attachments": "附件",
@@ -509,7 +510,7 @@
     "recommendedLabel": "推荐",
     "serviceCard": {
       "attachmentsDetected": "{{count}} 个附件，共 {{size}}",
-      "confirmImportText": "您确定要导入（{{count}}）个凭据吗？注意：导入过程可能需要一些时间。",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "解密并继续",
       "decryptingFile": "解密文件中…",
       "decryptionErrorGeneric": "文件解密失败。请检查文件是否损坏，然后重试。",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "解密密码",
       "duplicateCredentialsWarning": "发现 {{count}} 个重复凭据，将不会导入。",
       "encryptedFilePasswordPrompt": "此文件已加密。请输入您创建导出文件时使用的密码。",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "提取具有 URL 的服务的网站图标",
       "extractingFavicons": "正在提取网站图标… {{current}} / {{total}}",
       "faviconExtractionNote": "注意：已启用网站图标提取。此过程可能需要几分钟，具体时间取决于包含 URL 的凭据数量。请保持页面处于打开状态。",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} 个项目无法解析，将被跳过。",
       "importSuccessMessage": "已成功导入 {{count}} 个凭据。",
       "moreCredentials": "…还有 {{count}} 个凭证未显示",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "无徽标",
       "noNewCredentials": "未找到需要导入的新凭据。",
       "previewInstructions": "在继续之前，请检查以下检测到的凭据是否正确：",

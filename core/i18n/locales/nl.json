@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Toevoegen",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Downloaden van bijlage mislukt",
     "attachments": "Bijlagen",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Aanbevolen",
     "serviceCard": {
       "attachmentsDetected": "{{count}} bijlage(n), {{size}}",
-      "confirmImportText": "Weet je zeker dat je ({{count}}) credentials wilt importeren? Opmerking: het importproces kan even duren.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Decrypten en doorgaan",
       "decryptingFile": "Bestand decrypten...",
       "decryptionErrorGeneric": "Het decrypten van het bestand is mislukt. Controleer of het bestand niet beschadigd is en probeer het opnieuw.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Decryptie wachtwoord",
       "duplicateCredentialsWarning": "{{count}} dubbele credential(s) werden gevonden en worden niet geïmporteerd.",
       "encryptedFilePasswordPrompt": "Dit bestand is versleuteld. Voer het wachtwoord in dat je hebt gebruikt bij het maken van de export.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Favicons ophalen voor services met URLs",
       "extractingFavicons": "Favicons uitpakken... {{current}} / {{total}}",
       "faviconExtractionNote": "Opmerking: Favicons ophalen is ingeschakeld. Dit proces kan enkele minuten duren, afhankelijk van het aantal credentials met URL's. Houd de pagina open.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} item(s) konden niet worden verwerkt en zullen worden overgeslagen.",
       "importSuccessMessage": "Succesvol {{count}} credentials geïmporteerd.",
       "moreCredentials": "... en {{count}} meer credentials",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Geen logo",
       "noNewCredentials": "Geen nieuwe credentials gevonden om te importeren.",
       "previewInstructions": "Controleer of de volgende gedetecteerde credentials correct zijn voordat je verdergaat:",

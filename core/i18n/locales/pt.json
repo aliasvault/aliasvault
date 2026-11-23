@@ -213,6 +213,7 @@
   },
   "common": {
     "add": "Adicionar",
+    "added": "Added",
     "alias": "Alias",
     "attachmentDownloadFailed": "Falha ao transferir anexo",
     "attachments": "Anexos",
@@ -509,7 +510,7 @@
     "recommendedLabel": "Recomendado",
     "serviceCard": {
       "attachmentsDetected": "{{count}} anexo(s), {{size}}",
-      "confirmImportText": "Tem certeza que deseja importar ({{count}}) credenciais? Nota: o processo de importação pode levar algum tempo.",
+      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Descodificar e Continuar",
       "decryptingFile": "A descodificar o arquivo...",
       "decryptionErrorGeneric": "Falha ao descodificar o arquivo. Por favor, confirme que o arquivo não está corrompido e tente novamente.",
@@ -517,6 +518,7 @@
       "decryptionPasswordLabel": "Senha de Descodificação",
       "duplicateCredentialsWarning": "{{count}} credencial(is) duplicada(s) foram encontradas e não serão importadas.",
       "encryptedFilePasswordPrompt": "Este arquivo está criptografado. Por favor, insira a senha que utilizou ao criar a exportação.",
+      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
       "extractFaviconsLabel": "Extrair ícones de favorito dos serviços com URLs",
       "extractingFavicons": "Extraindo ícones de favorito... {{current}} / {{total}}",
       "faviconExtractionNote": "Nota: extração de ícones de favorito está ativado. Este processo pode levar vários minutos dependendo do número de credenciais com URLs. Por favor, mantenha a página aberta.",
@@ -534,6 +536,7 @@
       "importPartialFailureWarning": "{{count}} item(ns) não foram processados e serão pulados.",
       "importSuccessMessage": "{{count}} credenciais importadas com sucesso.",
       "moreCredentials": "... e mais {{count}} credenciais",
+      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Sem logo",
       "noNewCredentials": "Nenhuma credencial foi encontrada para importar.",
       "previewInstructions": "Verifique se as seguintes credenciais encontradas parecem corretas antes de continuar:",
