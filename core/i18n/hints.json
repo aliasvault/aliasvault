@@ -204,7 +204,6 @@
   "importExport.passwordVerificationFailed": "Generic error message for password verification failure",
   "importExport.recommendedLabel": "Label for recommended option",
   "importExport.serviceCard.attachmentsDetected": "Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. \"3.9 MB\")",
-  "importExport.serviceCard.confirmImportText": "Confirmation text before importing. {0} is the credential count",
   "importExport.serviceCard.decryptAndContinueButton": "Button text for decryption",
   "importExport.serviceCard.decryptingFile": "Progress text during decryption",
   "importExport.serviceCard.decryptionErrorGeneric": "Generic error message for decryption failure",
