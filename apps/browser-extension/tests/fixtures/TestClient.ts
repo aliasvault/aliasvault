@@ -75,7 +75,7 @@ export class TestClient {
 
     // Use a locator so the button is re-resolved if the app re-renders mid-click.
     await this.popup.locator('button#settings').click();
-    await this.popup.selectOption('select', ['custom']);
+    await this.popup.selectOption('select#api-connection', ['custom']);
     await this.popup.fill('input#custom-api-url', apiUrl);
     await this.popup.click('button#back');
     await waitForLoginForm(this.popup);
@@ -98,7 +98,7 @@ export class TestClient {
     await waitForPopupReady(this.popup);
     const settingsButton = this.popup.locator('button#settings');
     await settingsButton.click();
-    await expect(this.popup.locator('select')).toBeVisible();
+    await expect(this.popup.locator('select#api-connection')).toBeVisible();
     return this;
   }
 

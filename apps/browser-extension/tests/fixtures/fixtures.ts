@@ -172,7 +172,7 @@ export async function configureApiUrl(popup: Page, apiUrl: string): Promise<void
   await popup.locator('button#settings').click();
 
   // Select "Self-hosted" (custom) option
-  await popup.selectOption('select', ['custom']);
+  await popup.selectOption('select#api-connection', ['custom']);
 
   // Fill in the custom URL input
   await popup.fill('input#custom-api-url', apiUrl);
