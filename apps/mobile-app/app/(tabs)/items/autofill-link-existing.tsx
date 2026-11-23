@@ -62,8 +62,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   const [isSaving, setIsSaving] = useState(false);
 
   /**
-   * Load Login-typed items from the local vault. We don't need credit
-   * cards / notes here because the URL field only applies to logins.
+   * Load the Login and Alias items from the local vault, the two types that carry a login URL.
    */
   useEffect(() => {
     /**
@@ -72,7 +71,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
     const load = async (): Promise<void> => {
       try {
         const all = await dbContext.sqliteClient!.items.getAll();
-        const logins = all.filter(item => item.ItemType === ItemTypes.Login);
+        const logins = all.filter(item => item.ItemType === ItemTypes.Login || item.ItemType === ItemTypes.Alias);
         setItems(logins);
       } catch (err) {
         console.error('Error loading items for autofill link flow:', err);
