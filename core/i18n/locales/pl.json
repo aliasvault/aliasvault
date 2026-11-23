@@ -547,6 +547,8 @@
       "uploadExportFileText": "Prześlij plik sejfu {{service}}:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importuj z kopii zapasowej AliasVault",
       "aliasVaultInstructionsPart1": "Importuj poprzednio utworzoną kopię zapasową AliasVaulta.",
       "bitwardenDescription": "Importuj hasła z sejfu Bitwarden",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Importuj hasła z Strongbox",
       "strongboxInstructionsPart1": "Aby zaimportować sejf Strongbox, należy wyeksportować go jako plik CSV. Przejdź do menu „Plik” i wybierz opcję „Eksportuj bazę danych” (do pliku CSV).",
       "template": "szablon",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Po wyeksportowaniu pliku możesz go przesłać poniżej."
     }
   },
