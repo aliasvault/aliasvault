@@ -1,12 +1,7 @@
-import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, ItemTypes } from '@aliasvault/models/vault';
-
-import { buildOtpAuthUri } from '../../../../items/OtpAuthUri';
-import { isBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
-import { UnsupportedOtpCodeError } from '../../models/UnsupportedOtpCodeError';
 import { convertArchiveItems } from '../../readers/ArchiveImport';
 import { getProperty, parseJson, readArray, readNumber, readObject, readString, readStringAtPath, requireObject, type JsonObject } from '../../readers/JsonReader';
-import { sanitizeTotpSecretKey } from '../../writers/TotpHelper';
+import { convertTwoFactorEntry } from '../../readers/TwoFactorImport';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportFileResult } from '../../models/ImportFileResult';
@@ -61,47 +56,17 @@ function readEntries(root: JsonObject): unknown[] {
  * Convert an entry to a login holding its code.
  * @param entry - The entry
  * @returns The credential
- * @throws {UnsupportedOtpCodeError} When the entry holds a code AliasVault cannot generate.
  */
 function convertEntry(entry: JsonObject): ImportedCredential {
-  const type = (readString(entry, 'type') ?? '').toUpperCase();
-  if (type !== 'TOTP') {
-    throw new UnsupportedOtpCodeError(`${type || 'Unknown'} codes are not supported, only TOTP.`);
-  }
-
-  const info = readObject(entry, 'info');
-  if (!info) {
-    throw new UnsupportedOtpCodeError('The entry holds no code.');
-  }
-
-  const issuer = readString(entry, 'issuer')?.trim() ?? '';
-  const account = readString(entry, 'name')?.trim() ?? '';
-  const note = readString(entry, 'note');
-  return {
-    ServiceName: issuer || account,
-    Username: account || null,
-    Notes: isBlank(note) ? null : note,
-    TwoFactorSecret: buildTotpUri(info),
-    ItemType: ItemTypes.Login,
-  };
-}
-
-/**
- * The otpauth:// URI of a TOTP code, which carries its parameters into the import.
- * @param info - The entry's "info" object
- * @returns The URI
- * @throws {UnsupportedOtpCodeError} When the algorithm, digits or period cannot be generated.
- */
-function buildTotpUri(info: JsonObject): string {
-  const algorithm = (readString(info, 'algo') ?? 'SHA1').toUpperCase();
-  const digits = readNumber(info, 'digits') ?? 6;
-  const period = readNumber(info, 'period') ?? 30;
-  // The normalizers fall back to the defaults for anything else, which would silently give wrong codes.
-  if (normalizeTotpAlgorithm(algorithm) !== algorithm || normalizeTotpDigits(digits) !== digits || normalizeTotpPeriod(period) !== period) {
-    throw new UnsupportedOtpCodeError(`TOTP codes with ${algorithm}, ${digits} digits and a ${period} second period are not supported.`);
-  }
-
-  const uri = buildOtpAuthUri('', readString(info, 'secret') ?? '', '', { Algorithm: algorithm, Digits: digits, Period: period });
-  sanitizeTotpSecretKey(uri);
-  return uri;
+  const info = readObject(entry, 'info') ?? {};
+  return convertTwoFactorEntry({
+    name: readString(entry, 'issuer'),
+    account: readString(entry, 'name'),
+    note: readString(entry, 'note'),
+    type: readString(entry, 'type'),
+    secret: readString(info, 'secret'),
+    algorithm: readString(info, 'algo'),
+    digits: readNumber(info, 'digits'),
+    period: readNumber(info, 'period'),
+  });
 }

@@ -1,25 +1,9 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { convertToItems, itemByName, readFixtureText } from '../../../__tests__/testHelpers';
+import { convertToItems, itemByName, itemByUsername, readFixtureText } from '../../../__tests__/testHelpers';
 import { ImportException, ImportStage } from '../../../models/ImportException';
 import { importAegisJson } from '../AegisJsonImporter';
-
-import type { ItemEntity } from '../../../../shared/VaultEntities';
-
-/**
- * The item holding a code for an account.
- * @param items - The items
- * @param account - The account (username)
- * @returns The item
- */
-function itemOfAccount(items: ItemEntity[], account: string): ItemEntity {
-  const item = items.find(candidate => candidate.FieldValues.some(field => field.FieldKey === 'login.username' && field.Value === account));
-  if (!item) {
-    throw new Error(`No item for '${account}'`);
-  }
-  return item;
-}
 
 /**
  * An Aegis export holding the given entries.
@@ -54,8 +38,8 @@ describe('AegisJsonImporter', () => {
     expect(result.Credentials.map(credential => credential.Notes ?? null)).toEqual([null, '2FA note', null, null, null, null]);
 
     expect(itemByName(items, 'AV Login TOTP').TotpCodes).toEqual([expect.objectContaining({ Name: '', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA1', Digits: 6, Period: 30 })]);
-    expect(itemOfAccount(items, 'av-basic').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWUEYLTNFRS2MBQGAYDAMBS' })]);
-    expect(itemOfAccount(items, 'av-other').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWU65DIMVZC2MBQGAYDAMBV' })]);
+    expect(itemByUsername(items, 'av-basic').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWUEYLTNFRS2MBQGAYDAMBS' })]);
+    expect(itemByUsername(items, 'av-other').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWU65DIMVZC2MBQGAYDAMBV' })]);
     expect(itemByName(items, 'webauthn.io').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWVAYLTONVWK6JNGAYDAMBT' })]);
     expect(itemByName(items, 'Folder').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWUM33MMRSXELJQGAYDAMBU' })]);
     expect(itemByName(items, 'AV Standalone äöü 日本').TotpCodes).toEqual([expect.objectContaining({ SecretKey: 'IFLC2MSGIEWVG5DBNZSGC3DPNZSS2MBW', Algorithm: 'SHA256', Digits: 8, Period: 60 })]);
