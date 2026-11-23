@@ -243,48 +243,7 @@ public class PasskeyProviderViewModel: ObservableObject {
     }
 
     func filterCredentials() {
-        let lowercasedSearch = searchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if lowercasedSearch.isEmpty {
-            filteredCredentials = credentials
-            return
-        }
-
-        // Split search term into words for AND search
-        let searchWords = lowercasedSearch
-            .components(separatedBy: .whitespacesAndNewlines)
-            .filter { !$0.isEmpty }
-
-        if searchWords.isEmpty {
-            filteredCredentials = credentials
-            return
-        }
-
-        // Filter credentials where all search words match (each in at least one field)
-        filteredCredentials = credentials.filter { credential in
-            // Prepare searchable fields including passkey rpIds
-            var searchableFields = [
-                credential.serviceName?.lowercased() ?? "",
-                credential.username?.lowercased() ?? "",
-                credential.email?.lowercased() ?? "",
-                credential.notes?.lowercased() ?? ""
-            ]
-
-            // Add all associated URLs to searchable fields
-            searchableFields.append(contentsOf: credential.serviceUrls.map { $0.lowercased() })
-
-            // Add passkey rpId to searchable fields
-            if let passkey = credential.passkey {
-                searchableFields.append(passkey.rpId.lowercased())
-            }
-
-            // All search words must be found (each in at least one field)
-            return searchWords.allSatisfy { word in
-                searchableFields.contains { field in
-                    field.contains(word)
-                }
-            }
-        }
+        filteredCredentials = ItemSearchMatcher.filterCredentials(credentials, searchText: searchText)
     }
 
     func selectCredential(_ credential: AutofillCredential) {
