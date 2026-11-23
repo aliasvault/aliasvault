@@ -547,6 +547,8 @@
       "uploadExportFileText": "Unggah berkas ekspor {{service}} Anda:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Impor dari cadangan AliasVault",
       "aliasVaultInstructionsPart1": "Impor cadangan AliasVault yang telah Anda buat sebelumnya.",
       "bitwardenDescription": "Impor kata sandi dari brankas Bitwarden Anda",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Impor kata sandi dari Strongbox",
       "strongboxInstructionsPart1": "Untuk mengimpor brankas Strongbox Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka menu ‘File’ dan memilih ‘Ekspor Database’ (ke CSV).",
       "template": "template",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "Setelah Anda mengekspor berkas tersebut, Anda dapat mengunggahnya di bawah ini."
     }
   },
