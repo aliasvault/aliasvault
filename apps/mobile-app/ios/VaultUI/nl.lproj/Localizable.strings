@@ -29,10 +29,10 @@
 "password" = "Wachtwoord";
 "items_load_error" = "Laden van items mislukt. Open de AliasVault app om te controleren op updates.";
 "no_item_selected" = "Geen item geselecteerd.";
-"copy_username" = "Kopieer gebruikersnaam";
-"copy_password" = "Kopieer wachtwoord";
-"copy_email" = "Kopieer e-mail";
-"copy_totp_code" = "Kopieer TOTP Code";
+"copy_username" = "Gebruikersnaam kopiëren";
+"copy_password" = "Wachtwoord kopiëren";
+"copy_email" = "E-mailadres kopiëren";
+"copy_totp_code" = "TOTP-code kopiëren";
 "view_details" = "Bekijk details";
 "username_copied" = "Gebruikersnaam gekopieerd";
 "password_copied" = "Wachtwoord gekopieerd";
@@ -40,7 +40,7 @@
 "totp_code_copied" = "TOTP code gekopieerd";
 "totp_code" = "TOTP-code";
 "search_items" = "Zoek items...";
-"create_passkey_title" = "Passkey aanmaken";
+"create_passkey_title" = "Nieuwe passkey aanmaken";
 "create_passkey_subtitle" = "Registreer een nieuwe passkey voor deze website. Deze wordt veilig opgeslagen in je vault en wordt automatisch gesynchroniseerd met je andere apparaten.";
 "create_passkey_button_confirm" = "Passkey aanmaken";
 "passkey" = "Passkey";
@@ -51,7 +51,7 @@
 "no_passkeys_match" = "Er zijn geen passkeys gevonden die overeenkomen met je zoekopdracht";
 "select_passkey" = "Selecteer passkey";
 "passkeys_load_error" = "Laden van passkeys mislukt. Open de AliasVault app om te controleren op updates.";
-"create_new_passkey" = "Passkey aanmaken";
+"create_new_passkey" = "Nieuwe passkey aanmaken";
 "select_passkey_to_replace" = "Of vervang een bestaande passkey";
 "replace_passkey" = "Passkey vervangen";
 "replace_passkey_explanation" = "Dit zal de bestaande passkey vervangen door een nieuwe. Houd er rekening mee dat je oude passkey wordt overschreven en niet langer toegankelijk is. Als je in plaats hiervan een aparte passkey wilt maken, ga dan terug naar het vorige scherm.";
@@ -70,6 +70,6 @@
 "max_attempts_reached" = "Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen.";
 "pin_setup_title" = "Pincode instellen";
 "pin_setup_subtitle" = "Kies een pincode om je vault te ontgrendelen";
-"pin_confirm_title" = "Bevestig pincode";
+"pin_confirm_title" = "Pincode bevestigen";
 "pin_confirm_subtitle" = "Voer je pincode opnieuw in om te bevestigen";
 "pin_mismatch" = "Pincodes komen niet overeen. Probeer het opnieuw.";
