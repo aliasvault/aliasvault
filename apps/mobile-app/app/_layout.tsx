@@ -25,7 +25,7 @@ import { DbProvider } from '@/context/DbContext';
 import { DialogProvider } from '@/context/DialogContext';
 import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { WebApiProvider } from '@/context/WebApiContext';
-import { initI18n } from '@/i18n';
+import { initI18n, useSystemLanguage } from '@/i18n';
 import { runStartupMigrations } from '@/migrations';
 
 SplashScreen.preventAutoHideAsync();
@@ -61,6 +61,8 @@ function RootLayoutNav() : React.ReactNode {
   const hasBooted = useRef(false);
   const splashHidden = useRef(false);
   const { bootHandled } = navigation;
+
+  useSystemLanguage();
 
   useEffect(() => {
     if (hasBooted.current) {
