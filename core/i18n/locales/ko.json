@@ -547,6 +547,8 @@
       "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
+      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "AliasVault 백업에서 가져오기",
       "aliasVaultInstructionsPart1": "이전에 생성한 AliasVault 백업을 가져옵니다.",
       "bitwardenDescription": "Bitwarden 보관함에서 비밀번호 가져오기",
@@ -588,6 +590,7 @@
       "strongboxDescription": "Strongbox에서 비밀번호 가져오기",
       "strongboxInstructionsPart1": "Strongbox 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '파일' 메뉴로 이동하여 '데이터베이스 내보내기'(CSV로)를 선택하면 됩니다.",
       "template": "template",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
       "uploadInstructions": "파일을 내보낸 후 아래에 업로드할 수 있습니다."
     }
   },
