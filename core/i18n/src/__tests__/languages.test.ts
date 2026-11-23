@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import {
   DEFAULT_LANGUAGE,
+  LANGUAGE_CODES,
   LANGUAGES,
   getLanguageInfo,
   matchAvailableLanguage,
@@ -16,10 +17,12 @@ const DICEWARE_CODES = ['en', 'nl', 'de', 'fr', 'es', 'it', 'ro'];
 
 describe('Languages', () => {
   describe('normalizeLanguageCode', () => {
-    it('takes the first two characters, lowercased', () => {
+    it('takes the base language subtag, lowercased', () => {
       expect(normalizeLanguageCode('nl-NL')).toBe('nl');
       expect(normalizeLanguageCode('EN')).toBe('en');
       expect(normalizeLanguageCode('de-CH')).toBe('de');
+      expect(normalizeLanguageCode('pt_BR')).toBe('pt');
+      expect(normalizeLanguageCode('fil-PH')).toBe('fil');
     });
 
     it('handles null/undefined/empty', () => {
@@ -35,6 +38,13 @@ describe('Languages', () => {
       expect(nl.code).toBe('nl');
       expect(nl.label).toBe('Nederlands');
       expect(nl.alternativeCodes).toContain('nl-BE');
+    });
+
+    it('resolves regional codes and locale tags to their language entry', () => {
+      expect(getLanguageInfo('pt-BR').flag).toBe('🇧🇷');
+      expect(getLanguageInfo('pt-PT').flag).toBe('🇵🇹');
+      expect(getLanguageInfo('pt').code).toBe('pt-BR');
+      expect(getLanguageInfo('nl-BE').code).toBe('nl');
     });
 
     it('falls back to a globe + raw code for unknown languages', () => {
@@ -68,6 +78,23 @@ describe('Languages', () => {
       expect(matchAvailableLanguage('en-US', DICEWARE_CODES)).toBe('en');
     });
 
+    it('maps Portuguese to the regional UI languages, a bare (or stored legacy) pt to Brazilian', () => {
+      expect(matchAvailableLanguage('pt', LANGUAGE_CODES)).toBe('pt-BR');
+      expect(matchAvailableLanguage('pt-BR', LANGUAGE_CODES)).toBe('pt-BR');
+      expect(matchAvailableLanguage('pt-PT', LANGUAGE_CODES)).toBe('pt-PT');
+      expect(matchAvailableLanguage('pt-AO', LANGUAGE_CODES)).toBe('pt-PT');
+      expect(matchAvailableLanguage('pt-ZZ', LANGUAGE_CODES)).toBe('pt-BR');
+    });
+
+    it('falls back to the default variant when the listed variant is not available', () => {
+      expect(matchAvailableLanguage('pt-AO', ['en', 'pt-BR'])).toBe('pt-BR');
+    });
+
+    it('maps a regional code to a feature that only has the bare language', () => {
+      expect(matchAvailableLanguage('pt-BR', ['en', 'pt'])).toBe('pt');
+      expect(matchAvailableLanguage('pt-PT', ['en', 'pt'])).toBe('pt');
+    });
+
     it('is case-insensitive', () => {
       expect(matchAvailableLanguage('NL-BE', IDENTITY_CODES)).toBe('nl');
       expect(matchAvailableLanguage('En-Us', IDENTITY_CODES)).toBe('en');
@@ -83,6 +110,8 @@ describe('Languages', () => {
       expect(matchAvailableLanguage('ja', IDENTITY_CODES)).toBeNull();
       // Polish is a known UI language but not a Diceware wordlist.
       expect(matchAvailableLanguage('pl-PL', DICEWARE_CODES)).toBeNull();
+      // Filipino is not Finnish.
+      expect(matchAvailableLanguage('fil-PH', ['en', 'fi'])).toBeNull();
     });
 
     it('returns null for empty/invalid input', () => {

@@ -1,3 +1,5 @@
+import { matchAvailableLanguage } from '@aliasvault/i18n/languages';
+
 import { LANGUAGE_CODES } from '@/i18n/config';
 import { getLocalPreference, removeLocalPreference, setLocalPreference } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
@@ -51,8 +53,8 @@ export function cleanUpLegacyStorage(): void {
    * login, so blazorCulture is the more recent of the two.
    */
   const storedLanguage = getLocalPreference(LocalPreferenceKeys.APP_LANGUAGE);
-  const legacyLanguage = getLocalPreference('blazorCulture') ?? jsonStringValue(storedLanguage);
-  if (legacyLanguage !== null && LANGUAGE_CODES.includes(legacyLanguage)) {
+  const legacyLanguage = matchAvailableLanguage(getLocalPreference('blazorCulture') ?? jsonStringValue(storedLanguage), LANGUAGE_CODES);
+  if (legacyLanguage !== null) {
     setLocalPreference(LocalPreferenceKeys.APP_LANGUAGE, legacyLanguage);
   } else if (jsonStringValue(storedLanguage) !== null) {
     removeLocalPreference(LocalPreferenceKeys.APP_LANGUAGE);

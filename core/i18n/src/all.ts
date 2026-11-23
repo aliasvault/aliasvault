@@ -16,7 +16,8 @@ import it from '../locales/it.json';
 import ko from '../locales/ko.json';
 import nl from '../locales/nl.json';
 import pl from '../locales/pl.json';
-import pt from '../locales/pt.json';
+import ptBR from '../locales/pt-BR.json';
+import ptPT from '../locales/pt-PT.json';
 import ro from '../locales/ro.json';
 import ru from '../locales/ru.json';
 import sv from '../locales/sv.json';
@@ -28,4 +29,4 @@ import type { TranslationTree } from './index';
 /**
  * The translations of every UI language.
  */
-export const ALL_TRANSLATIONS: Record<string, TranslationTree> = { da, de, en, es, fi, fr, ga, he, hu, id, it, ko, nl, pl, pt, ro, ru, sv, uk, zh };
+export const ALL_TRANSLATIONS: Record<string, TranslationTree> = { da, de, en, es, fi, fr, ga, he, hu, id, it, ko, nl, pl, 'pt-BR': ptBR, 'pt-PT': ptPT, ro, ru, sv, uk, zh };

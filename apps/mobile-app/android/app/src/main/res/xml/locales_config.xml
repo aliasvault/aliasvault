@@ -14,7 +14,8 @@
     <locale android:name="ko" />
     <locale android:name="nl" />
     <locale android:name="pl" />
-    <locale android:name="pt" />
+    <locale android:name="pt-BR" />
+    <locale android:name="pt-PT" />
     <locale android:name="ro" />
     <locale android:name="ru" />
     <locale android:name="sv" />

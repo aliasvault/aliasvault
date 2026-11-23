@@ -1,5 +1,5 @@
 {
-  "$comment": "Native translation files generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Per target: path ({lang} = language code, {-lang} = \"-\" + code except for English), native key -> shared key (or { key, format } where format maps an i18next placeholder to the native format specifier). Android constants are written to the default file only, as translatable=\"false\".",
+  "$comment": "Native translation files generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Per target: path ({lang} = language code, {-lang} = \"-\" + code except for English; Android writes a two-letter region as an \"r\" qualifier, e.g. values-pt-rBR, and any other tag in BCP 47 form, e.g. values-b+zh+Hant), native key -> shared key (or { key, format } where format maps an i18next placeholder to the native format specifier). Android constants are written to the default file only, as translatable=\"false\".",
   "targets": [
     {
       "platform": "ios",

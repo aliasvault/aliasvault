@@ -1,4 +1,5 @@
 import { ALL_TRANSLATIONS } from '@aliasvault/i18n/all';
+import { matchAvailableLanguage } from '@aliasvault/i18n/languages';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -17,15 +18,8 @@ import { storage } from '#imports';
  * Detect the user's preferred language from localStorage or browser settings
  */
 const detectLanguage = async (): Promise<string> => {
-  // Check localStorage first
   const stored = await storage.getItem(StorageKeys.LANGUAGE) as string;
-  if (stored && LANGUAGE_CODES.includes(stored)) {
-    return stored;
-  }
-
-  // Fall back to browser language
-  const browserLang = navigator.language.split('-')[0];
-  return LANGUAGE_CODES.includes(browserLang) ? browserLang : DEFAULT_LANGUAGE;
+  return matchAvailableLanguage(stored, LANGUAGE_CODES) ?? matchAvailableLanguage(navigator.language, LANGUAGE_CODES) ?? DEFAULT_LANGUAGE;
 };
 
 /**

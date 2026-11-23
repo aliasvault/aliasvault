@@ -3,6 +3,8 @@
  * This is used to translate strings in non-React contexts, such as the background and content scripts.
  */
 
+import { matchAvailableLanguage } from '@aliasvault/i18n/languages';
+
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -29,13 +31,13 @@ export async function getCurrentLanguage(): Promise<string> {
     }
 
     const langFromStorage = await storage.getItem(StorageKeys.LANGUAGE) as string;
-    if (langFromStorage && LANGUAGE_CODES.includes(langFromStorage)) {
-      return langFromStorage;
+    const storedLanguage = matchAvailableLanguage(langFromStorage, LANGUAGE_CODES);
+    if (storedLanguage) {
+      return storedLanguage;
     }
 
     // If no language is set in storage, detect browser language and save it
-    const browserLang = navigator.language.split('-')[0];
-    const detectedLanguage = LANGUAGE_CODES.includes(browserLang) ? browserLang : DEFAULT_LANGUAGE;
+    const detectedLanguage = matchAvailableLanguage(navigator.language, LANGUAGE_CODES) ?? DEFAULT_LANGUAGE;
 
     // Save the detected language to storage for future use
     await storage.setItem(StorageKeys.LANGUAGE, detectedLanguage);

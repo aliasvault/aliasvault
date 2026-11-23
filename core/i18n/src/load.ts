@@ -28,7 +28,8 @@ async function importLocale(code: string): Promise<{ default: TranslationTree }>
     case 'ko': return import('../locales/ko.json');
     case 'nl': return import('../locales/nl.json');
     case 'pl': return import('../locales/pl.json');
-    case 'pt': return import('../locales/pt.json');
+    case 'pt-BR': return import('../locales/pt-BR.json');
+    case 'pt-PT': return import('../locales/pt-PT.json');
     case 'ro': return import('../locales/ro.json');
     case 'ru': return import('../locales/ru.json');
     case 'sv': return import('../locales/sv.json');

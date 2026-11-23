@@ -1,3 +1,4 @@
+import { matchAvailableLanguage } from '@aliasvault/i18n/languages';
 import { useEffect } from 'react';
 
 import { useDb } from '@/context/DbContext';
@@ -23,8 +24,8 @@ export function useVaultLanguage(enabled: boolean): void {
       return;
     }
 
-    const vaultLanguage = sqliteClient.settings.getSetting(APP_LANGUAGE_SETTING, '');
-    if (LANGUAGE_CODES.includes(vaultLanguage)) {
+    const vaultLanguage = matchAvailableLanguage(sqliteClient.settings.getSetting(APP_LANGUAGE_SETTING, ''), LANGUAGE_CODES);
+    if (vaultLanguage) {
       if (vaultLanguage !== i18n.language) {
         void changeLanguage(vaultLanguage);
       }
