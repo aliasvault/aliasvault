@@ -3,6 +3,7 @@ import { FieldTypes, type FieldType } from '@aliasvault/models/vault';
 import { isBlank } from '../../shared/StringUtils';
 import { ZipArchive } from '../../shared/ZipArchive';
 import { ImportException, ImportStage } from '../models/ImportException';
+import { UnsupportedOtpCodeError } from '../models/UnsupportedOtpCodeError';
 
 import { JsonException, parseJson } from './JsonReader';
 
@@ -73,8 +74,8 @@ export function convertArchiveItems<T>(entries: T[], convert: (entry: T, index: 
 }
 
 /**
- * Build the failure entry of an item. Only JSON errors carry their message; any other error could hold item content,
- * so it is reported by type only.
+ * Build the failure entry of an item. Only JSON and unsupported 2FA code errors carry their message; any other error
+ * could hold item content, so it is reported by type only.
  * @param index - Zero-based position of the item within the file
  * @param title - Best-effort title of the item
  * @param error - The error thrown while processing the item
@@ -83,6 +84,9 @@ export function convertArchiveItems<T>(entries: T[], convert: (entry: T, index: 
 export function buildItemFailure(index: number, title: string | null, error: unknown): ImportFailure {
   if (error instanceof JsonException) {
     return { Index: index, ItemTitle: title, ExceptionType: 'JsonException', Message: `Failed to parse item: ${error.message}` };
+  }
+  if (error instanceof UnsupportedOtpCodeError) {
+    return { Index: index, ItemTitle: title, ExceptionType: error.name, Message: error.message };
   }
 
   const exceptionType = error instanceof Error ? error.name : 'Error';
