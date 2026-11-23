@@ -18,10 +18,12 @@ import { importLastPassCsv } from '@aliasvault/client/transfer/import/importers/
 import { importNordPassCsv } from '@aliasvault/client/transfer/import/importers/nordpass/NordPassCsvImporter';
 import { importOnePassword1pux } from '@aliasvault/client/transfer/import/importers/onepassword/OnePassword1puxImporter';
 import { importOnePasswordCsv } from '@aliasvault/client/transfer/import/importers/onepassword/OnePasswordCsvImporter';
+import { importOtpAuthList } from '@aliasvault/client/transfer/import/importers/otpauth/OtpAuthListImporter';
 import { importProtonPassCsv } from '@aliasvault/client/transfer/import/importers/protonpass/ProtonPassCsvImporter';
 import { importProtonPassZip } from '@aliasvault/client/transfer/import/importers/protonpass/ProtonPassZipImporter';
 import { importRoboformCsv } from '@aliasvault/client/transfer/import/importers/roboform/RoboformCsvImporter';
 import { importStrongboxCsv } from '@aliasvault/client/transfer/import/importers/strongbox/StrongboxCsvImporter';
+import { importTwoFas } from '@aliasvault/client/transfer/import/importers/twofas/TwoFasImporter';
 import { decodeFileContent } from '@aliasvault/client/transfer/import/readers/CsvImport';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
@@ -114,13 +116,15 @@ type FileImportService = {
 
 const FILE_IMPORT_SERVICES: FileImportService[] = [
   { serviceName: '1Password', logoUrl: '/img/importers/1password.svg', descriptionKey: 'importExport.services.onePasswordDescription', instructionKeys: ['importExport.services.onePasswordInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.1pux': importOnePassword1pux, '.csv': csv(importOnePasswordCsv) } },
-  { serviceName: 'Aegis', logoUrl: '/img/importers/aegis.svg', descriptionKey: 'importExport.services.aegisDescription', instructionKeys: ['importExport.services.aegisInstructionsPart1', 'importExport.services.uploadInstructions', 'importExport.services.twoFactorMergeHint'], parsers: { '.json': text(importAegisJson) } },
+  { serviceName: '2FAS', logoUrl: '/img/importers/2fas.svg', descriptionKey: 'importExport.services.twoFactorAppDescription', instructionKeys: ['importExport.services.twoFasInstructionsPart1', 'importExport.services.uploadInstructions', 'importExport.services.twoFactorMergeHint'], parsers: { '.2fas': text(importTwoFas) } },
+  { serviceName: 'Aegis', logoUrl: '/img/importers/aegis.svg', descriptionKey: 'importExport.services.twoFactorAppDescription', instructionKeys: ['importExport.services.aegisInstructionsPart1', 'importExport.services.uploadInstructions', 'importExport.services.twoFactorMergeHint'], parsers: { '.json': text(importAegisJson) } },
   { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.json': text(importBitwardenJson), '.csv': csv(importBitwardenCsv) } },
   { serviceName: 'Chrome', logoUrl: '/img/importers/chrome.svg', descriptionKey: 'importExport.services.chromeDescription', instructionKeys: ['importExport.services.chromeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importChromeCsv) } },
   { serviceName: 'Dashlane', logoUrl: '/img/importers/dashlane.svg', descriptionKey: 'importExport.services.dashlaneDescription', instructionKeys: ['importExport.services.dashlaneInstructionsPart1', 'importExport.services.dashlaneInstructionsPart2'], parsers: { '.csv': csv(importDashlaneCsv) } },
   { serviceName: 'Dropbox Passwords', logoUrl: '/img/importers/dropbox.svg', descriptionKey: 'importExport.services.dropboxDescription', instructionKeys: ['importExport.services.dropboxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importDropboxCsv) } },
   { serviceName: 'Edge', logoUrl: '/img/importers/edge.svg', descriptionKey: 'importExport.services.edgeDescription', instructionKeys: ['importExport.services.edgeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importEdgeCsv) } },
   { serviceName: 'Enpass', logoUrl: '/img/importers/enpass.svg', descriptionKey: 'importExport.services.enpassDescription', instructionKeys: ['importExport.services.enpassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importEnpassCsv) } },
+  { serviceName: 'Ente Auth', logoUrl: '/img/importers/ente-auth.png', descriptionKey: 'importExport.services.twoFactorAppDescription', instructionKeys: ['importExport.services.enteAuthInstructionsPart1', 'importExport.services.uploadInstructions', 'importExport.services.twoFactorMergeHint'], parsers: { '.txt': text(importOtpAuthList) } },
   { serviceName: 'Firefox', logoUrl: '/img/importers/firefox.svg', descriptionKey: 'importExport.services.firefoxDescription', instructionKeys: ['importExport.services.firefoxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importFirefoxCsv) } },
   { serviceName: 'KeePass', logoUrl: '/img/importers/keepass.svg', descriptionKey: 'importExport.services.keePassDescription', instructionKeys: ['importExport.services.keePassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.xml': text(importKeePassXml), '.csv': csv(importKeePassCsv) } },
   { serviceName: 'KeePassXC', logoUrl: '/img/importers/keepassxc.svg', descriptionKey: 'importExport.services.keePassXCDescription', instructionKeys: ['importExport.services.keePassXCInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.xml': text(importKeePassXml), '.csv': csv(importKeePassXcCsv) } },
@@ -137,7 +141,7 @@ const FILE_IMPORT_SERVICES: FileImportService[] = [
 const ImportServiceFromFile: React.FC<{ service: FileImportService }> = ({ service }) => {
   const { t } = useTranslation();
   return (
-    <ImportServiceCard serviceName={service.serviceName} description={t(service.descriptionKey)} logoUrl={service.logoUrl} acceptedFileExtensions={Object.keys(service.parsers)} processFile={parseByExtension(service.parsers)}>
+    <ImportServiceCard serviceName={service.serviceName} description={t(service.descriptionKey, { service: service.serviceName })} logoUrl={service.logoUrl} acceptedFileExtensions={Object.keys(service.parsers)} processFile={parseByExtension(service.parsers)}>
       {service.instructionKeys.map(key => <Instruction key={key}>{t(key)}</Instruction>)}
     </ImportServiceCard>
   );
@@ -186,6 +190,20 @@ const ImportServiceGenericCsv: React.FC = () => {
 };
 
 /**
+ * Import from a text file with one otpauth:// URL per line, which many authenticator apps can export.
+ */
+const ImportServiceGenericTwoFactor: React.FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <ImportServiceCard serviceName="Generic 2FA" description={t('importExport.services.otpAuthListDescription')} logoUrl="/img/importers/generic-2fa.svg" acceptedFileExtensions={['.txt']} processFile={parseByExtension({ '.txt': text(importOtpAuthList) })}>
+      <Instruction>{t('importExport.services.otpAuthListInstructionsPart1')}</Instruction>
+      <Instruction>{t('importExport.services.twoFactorMergeHint')}</Instruction>
+    </ImportServiceCard>
+  );
+};
+
+/**
  * All import cards, in display order.
  */
 const ImportServices: React.FC = () => (
@@ -193,6 +211,7 @@ const ImportServices: React.FC = () => (
     <ImportServiceAliasVault />
     {FILE_IMPORT_SERVICES.map(service => <ImportServiceFromFile key={service.serviceName} service={service} />)}
     <ImportServiceGenericCsv />
+    <ImportServiceGenericTwoFactor />
   </>
 );
 

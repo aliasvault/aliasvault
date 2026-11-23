@@ -15,6 +15,7 @@ browsers/safari.svg apps/web/public/img/browser-icons/safari.svg
 platforms/android.svg apps/web/public/img/mobile-icons/android.svg
 platforms/ios.svg apps/web/public/img/mobile-icons/ios.svg
 importers/1password.svg apps/web/public/img/importers/1password.svg
+importers/2fas.svg apps/web/public/img/importers/2fas.svg
 importers/aegis.svg apps/web/public/img/importers/aegis.svg
 importers/bitwarden.svg apps/web/public/img/importers/bitwarden.svg
 browsers/chrome.svg apps/web/public/img/importers/chrome.svg
@@ -22,7 +23,9 @@ importers/dashlane.svg apps/web/public/img/importers/dashlane.svg
 importers/dropbox.svg apps/web/public/img/importers/dropbox.svg
 browsers/edge.svg apps/web/public/img/importers/edge.svg
 importers/enpass.svg apps/web/public/img/importers/enpass.svg
+importers/ente-auth.png apps/web/public/img/importers/ente-auth.png
 browsers/firefox.svg apps/web/public/img/importers/firefox.svg
+importers/generic-2fa.svg apps/web/public/img/importers/generic-2fa.svg
 importers/generic-csv.svg apps/web/public/img/importers/generic-csv.svg
 importers/keepass.svg apps/web/public/img/importers/keepass.svg
 importers/keepassxc.svg apps/web/public/img/importers/keepassxc.svg

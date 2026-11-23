@@ -2,6 +2,8 @@ import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync, sig
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { FieldKey } from '@aliasvault/models/vault';
+
 import { convertToItem } from '../writers/ItemConverter';
 
 import type { JwkPair } from '../../../rust/RustCoreTypes';
@@ -58,6 +60,20 @@ export function itemByName(items: ItemEntity[], name: string): ItemEntity {
   const item = items.find(i => i.Name === name);
   if (!item) {
     throw new Error(`No item named '${name}'`);
+  }
+  return item;
+}
+
+/**
+ * The first item with a given username, for items that share a name.
+ * @param items - The items
+ * @param username - The username
+ * @returns The item
+ */
+export function itemByUsername(items: ItemEntity[], username: string): ItemEntity {
+  const item = items.find(i => i.FieldValues.some(field => field.FieldKey === FieldKey.LoginUsername && field.Value === username));
+  if (!item) {
+    throw new Error(`No item with username '${username}'`);
   }
   return item;
 }
