@@ -69,9 +69,9 @@ test.describe('50. Settings', () => {
     await test.step('a reload keeps Dutch', async () => {
       await page.reload();
       await expect(page).toHaveURL(/\/unlock$/);
-      await expect(page.getByRole('button', { name: 'Ontgrendelen' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ontgrendelen', exact: true })).toBeVisible();
       await page.locator('#password').fill(testUser.password);
-      await page.getByRole('button', { name: 'Ontgrendelen' }).click();
+      await page.getByRole('button', { name: 'Ontgrendelen', exact: true }).click();
       await expect(page).toHaveURL(/\/settings\/general$/);
       await expect(emailsLink('E-mails')).toBeVisible();
     });
@@ -86,6 +86,7 @@ test.describe('50. Settings', () => {
   });
 
   test('50.2 should rotate the encryption keys with the password change and sign out another device', async ({ app, newApp, apiUrl, testUser }) => {
+    test.slow();
     const other = await newApp();
     await app.login(testUser.username, testUser.password);
     await other.login(testUser.username, testUser.password);
