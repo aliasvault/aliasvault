@@ -333,23 +333,25 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     }
   });
 
-  // Inject the page script
-  const script = document.createElement('script');
-  script.src = browser.runtime.getURL('/webauthn.js');
-  script.async = true;
-  (document.head || document.documentElement).appendChild(script);
-  /**
-   * onload
-   */
-  script.onload = () : void => {
-    script.remove();
-  };
-  /**
-   * onerror
-   */
-  script.onerror = () : void => {
-    // Ignore
-  };
+  // Inject the page script; Chrome and Edge run it as the MAIN-world content script webauthn-main.content.ts instead
+  if (!import.meta.env.CHROME && !import.meta.env.EDGE) {
+    const script = document.createElement('script');
+    script.src = browser.runtime.getURL('/webauthn.js');
+    script.async = true;
+    (document.head || document.documentElement).appendChild(script);
+    /**
+     * onload
+     */
+    script.onload = () : void => {
+      script.remove();
+    };
+    /**
+     * onerror
+     */
+    script.onerror = () : void => {
+      // Ignore
+    };
+  }
 
   interceptorInitialized = true;
 }

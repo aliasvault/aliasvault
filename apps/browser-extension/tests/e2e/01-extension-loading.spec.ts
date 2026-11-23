@@ -33,4 +33,18 @@ test.describe.serial('1. Extension Loading', () => {
     expect(swUrl).toContain(extensionId);
     expect(swUrl).toContain('background');
   });
+
+  test('1.3 should override navigator.credentials on web pages', async ({ context }) => {
+    const page = await context.newPage();
+    await page.route('https://webauthn-test-domain.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>WebAuthn</title>' }));
+    await page.goto('https://webauthn-test-domain.com/');
+
+    const patched = await page.evaluate(() => {
+      const isPatched = (fn: unknown): boolean => (fn as { __aliasVaultPatched?: boolean }).__aliasVaultPatched === true;
+      return { get: isPatched(navigator.credentials.get), create: isPatched(navigator.credentials.create) };
+    });
+    expect(patched).toEqual({ get: true, create: true });
+
+    await page.close();
+  });
 });
