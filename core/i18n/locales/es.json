@@ -218,7 +218,7 @@
     "attachmentDownloadFailed": "Error al descargar el archivo adjunto",
     "attachments": "Archivos adjuntos",
     "back": "Atrás",
-    "backspace": "Borrar el último dígito",
+    "backspace": "Borrar el último carácter",
     "beforeYouContinue": "Antes de continuar:",
     "cancel": "Cancelar",
     "clipboardCountdown": {
@@ -271,7 +271,7 @@
       "unexpectedErrorContactSupport": "Se ha producido un error inesperado. Inténtalo de nuevo y ponte en contacto con el servicio de asistencia si el problema persiste.",
       "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtalo de nuevo.",
-      "updateRequiredTitle": "Se requiere una actualización",
+      "updateRequiredTitle": "Actualización requerida",
       "vaultDataUnreadable": "No se han podido leer los datos de tu bóveda, por lo que no es posible acceder a ellos en este momento. Ponte en contacto con el servicio de asistencia.",
       "vaultIsLocked": "La bóveda está bloqueada",
       "vaultLoadError": "Algo salió mal al cargar tu bóveda. Por favor, copia los detalles de error a continuación y ponte en contacto con soporte para obtener ayuda.",
@@ -379,7 +379,7 @@
   },
   "content": {
     "autofillConfirm": {
-      "description": "Sólo rellene este inicio de sesión si lo eligió usted mismo y confía en este sitio web.",
+      "description": "Solamente rellena este inicio de sesión si lo elegiste tú y confías en este sitio web.",
       "fillOn": "Estás a punto de completar un inicio de sesión en {{host}}.",
       "title": "Confirmar autorrelleno"
     },
@@ -526,11 +526,11 @@
       "importAttachmentsLabel": "Importar archivos adjuntos detectados",
       "importButton": "Importar",
       "importErrorCopyDetailsButton": "Copiar detalles",
-      "importErrorDetailsIntro": "Por favor, copie los detalles a continuación y compártelos cuando reporte este problema.",
+      "importErrorDetailsIntro": "Por favor, copia los detalles a continuación y compártelos cuando reportes este problema.",
       "importErrorFileTooLarge": "El tamaño del archivo supera el límite de {{size}}MB.",
       "importErrorGeneric": "Se ha producido un error durante la importación. Por favor, inténtalo de nuevo.",
       "importErrorInvalidFile": "Por favor, selecciona un archivo de exportación válido para importar.",
-      "importErrorUnsupportedFormat": "Formato de archivo no soportado. Formatos soportados: {{formats}}",
+      "importErrorUnsupportedFormat": "Formato de archivo no compatible. Formatos soportados: {{formats}}",
       "importFoldersLabel": "Importar carpetas",
       "importFromServiceTitle": "Importar desde {{service}}",
       "importPartialFailureWarning": "No se pudo analizar {{count}} artículo(s) y se omitirá.",
@@ -539,8 +539,8 @@
       "newItemsImportInfo": "{{count}} new item(s) will be imported.",
       "noLogoText": "Sin logo",
       "noNewCredentials": "No se encontraron nuevas credenciales para importar.",
-      "previewInstructions": "comprueba si las siguientes credenciales detectadas parecen correctas antes de continuar:",
-      "savingCredentials": "Guardando credenciales en vault... {{current}} / {{total}}",
+      "previewInstructions": "Comprueba si las siguientes credenciales detectadas parecen correctas antes de continuar:",
+      "savingCredentials": "Guardando credenciales en bóveda... {{current}} / {{total}}",
       "serviceColumn": "Servicio",
       "supportedFormats": "Formatos admitidos",
       "syncingVault": "Sincronizando bóveda al servidor...",
@@ -635,11 +635,11 @@
       "deletePasskeyButton": "Eliminar llave",
       "editItemDescription": "Editar el elemento existente a continuación.",
       "errorSavingItem": "Error al guardar el elemento. Inténtalo de nuevo.",
-      "passkeyHelpText": "Las llaves de acceso se crean a través de la extensión del navegador o de las aplicaciones móviles cuando un sitio web lo solicita. No se pueden editar o crear manualmente a través de la aplicación web. Para eliminar esta clave de acceso, utiliza el botón de borrar a continuación. Para reemplazar o crear una nueva llave, visite el sitio web y siga tus indicaciones.",
-      "passkeyWillBeDeleted": "Esta llave de acceso se eliminará cuando guarde este elemento.",
+      "passkeyHelpText": "Las llaves de acceso se crean a través de la extensión del navegador o de las aplicaciones móviles cuando un sitio web lo solicita. No se pueden editar o crear manualmente a través de la aplicación web. Para eliminar esta clave de acceso, utiliza el botón de borrar a continuación. Para reemplazar o crear una nueva llave, visita el sitio web y siga tus indicaciones.",
+      "passkeyWillBeDeleted": "Esta llave de acceso se eliminará cuando guardes este elemento.",
       "removeField": "Eliminar campo",
       "savingVaultMessage": "Guardando bóveda...",
-      "serviceNamePlaceholder": "Ejemplo: Facebook"
+      "serviceNamePlaceholder": "Ej.: Facebook"
     },
     "addFieldMenu": {
       "defaultFieldLabel": "Campo {{number}}"
@@ -690,7 +690,7 @@
       "deleteItemNotFoundError": "Error al eliminar. Elemento no encontrado.",
       "deleteSuccessMessage": "Elemento eliminado con éxito.",
       "noCancelButton": "No, cancelar",
-      "yesImSureButton": "Si, estoy seguro"
+      "yesImSureButton": "Sí, estoy seguro"
     },
     "deleteConfirm": "¿Realmente quieres eliminar este elemento? Esta acción no se puede revertir.",
     "deleteHistoryConfirm": "¿Realmente deseass eliminar este registro del historial?",
@@ -719,12 +719,12 @@
     },
     "emailLoadError": "Se ha producido un error al cargar los correos electrónicos. Por favor, inténtalo de nuevo más tarde.",
     "emailUnexpectedError": "Se ha producido un error inesperado al cargar los correos electrónicos. Por favor, inténtalo de nuevo más tarde.",
-    "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edita el elemento y pulse el icono de la carpeta en el campo nombre.",
+    "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edita el elemento y pulsa el icono de la carpeta en el campo nombre.",
     "errorLoadingItems": "Error al cargar elementos",
     "excludedCharsDescription": "Las contraseñas generadas no contendrán estos caracteres.",
     "excludedCharsLabel": "Caracteres excluidos",
     "fieldHistory": {
-      "deleteConfirm": "¿Está seguro?",
+      "deleteConfirm": "¿Confirmas?",
       "title": "Historial {{field}}"
     },
     "fileSavedTo": "Archivo guardado en",
@@ -853,9 +853,9 @@
     "passwordTypeDiceware": "Frase de contraseña",
     "previewNotSupported": "Vista previa no disponible",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
-    "privateEmailDescription": "E2E cifrado, totalmente privado.",
+    "privateEmailDescription": "Cifrado de extremo a extremo, totalmente privado.",
     "privateEmailTitle": "Correo electrónico privado",
-    "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
+    "publicEmailDescription": "Privacidad anónima pero limitada. El contenido de correos electrónicos puede ser leído por cualquiera que conozca la dirección.",
     "publicEmailTitle": "Proveedores de Correo Temporal Públicos",
     "quickCreate": {
       "createItemErrorMessage": "Error al crear un nuevo elemento. Por favor, inténtalo de nuevo (más tarde) o cierra la sesión y vuelve a entrar.",
@@ -881,11 +881,11 @@
       "deletePermanently": "Eliminar permanentemente",
       "description": "Estos elementos serán eliminados permanentemente después de {{days}} días. Puedes restaurarlos o eliminarlos inmediatamente.",
       "emptyAll": "Vaciar todo",
-      "expiringSoon": "Caduca pronto",
+      "expiringSoon": "Expira pronto",
       "itemDeleted": "Elemento eliminado permanentemente",
       "itemRestored": "Elemento restaurado",
       "noItems": "No hay elementos eliminados",
-      "noItemsDescription": "Los elementos que borre aparecerán aquí durante {{days}} días antes de ser eliminados permanentemente.",
+      "noItemsDescription": "Los elementos que borres aparecerán aquí durante {{days}} días antes de ser eliminados permanentemente.",
       "restore": "Restaurar",
       "title": "Eliminados recientemente"
     },
@@ -894,7 +894,7 @@
     "search": {
       "noResultsFoundMessage": "No hay resultados",
       "searchHelpText": "Escriba un término para buscar, puede ser el nombre del servicio, la descripción o la dirección de correo electrónico.",
-      "searchTooShortMessage": "Por favor escriba más caracteres",
+      "searchTooShortMessage": "Por favor escribe más caracteres",
       "searchingForMessage": "Buscando \"{{search}}\"",
       "searchingMessage": "Buscando..."
     },
