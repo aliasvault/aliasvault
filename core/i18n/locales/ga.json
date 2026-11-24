@@ -213,7 +213,7 @@
   },
   "common": {
     "add": "Cuir leis",
-    "added": "Added",
+    "added": "Curtha leis",
     "alias": "Alias",
     "attachmentDownloadFailed": "Theip ar an gceangaltán a íoslódáil",
     "attachments": "Ceangaltáin",
@@ -510,7 +510,7 @@
     "recommendedLabel": "Molta",
     "serviceCard": {
       "attachmentsDetected": "{{count}} ceangaltán(í), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "An bhfuil tú cinnte gur mian leat leanúint ar aghaidh? Nóta: d’fhéadfadh tamall beag a bheith i gceist leis an bpróiseas allmhairithe.",
       "decryptAndContinueButton": "Díchriptigh agus Lean ar aghaidh",
       "decryptingFile": "Ag díchriptiú comhaid...",
       "decryptionErrorGeneric": "Theip ar an gcomhad a dhíchriptiú. Seiceáil le do thoil nach bhfuil an comhad truaillithe agus déan iarracht arís.",
@@ -518,7 +518,7 @@
       "decryptionPasswordLabel": "Pasfhocal Díchriptithe",
       "duplicateCredentialsWarning": "Fuarthas {{count}} dintiúir(í) dhúblacha agus ní dhéanfar iad a allmhairiú.",
       "encryptedFilePasswordPrompt": "Tá an comhad seo criptithe. Cuir isteach an focal faire a d'úsáid tú agus an t-easpórtáil á cruthú agat.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "Déanfar {{count}} mír atá ann cheana a nuashonrú le sonraí nua.",
       "extractFaviconsLabel": "Bain deilbhíní favic do sheirbhísí le URLanna",
       "extractingFavicons": "Ag baint deilbhíní favicon... {{current}} / {{total}}",
       "faviconExtractionNote": "Nóta: Tá eastóscadh Favicon cumasaithe. Féadfaidh an próiseas seo roinnt nóiméad a thógáil ag brath ar líon na ndintiúir le URLanna. Coinnigh an leathanach ar oscailt le do thoil.",
@@ -536,7 +536,7 @@
       "importPartialFailureWarning": "Níorbh fhéidir {{count}} mír(eanna) a pharsáil agus scipeálfar iad.",
       "importSuccessMessage": "Dintiúir {{count}} allmhairithe go rathúil.",
       "moreCredentials": "... agus {{count}} dintiúir eile",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "Iompórtálfar {{count}} mír nua.",
       "noLogoText": "Gan lógó",
       "noNewCredentials": "Ní bhfuarthas aon dintiúir nua le hallmhairiú.",
       "previewInstructions": "Seiceáil an bhfuil cuma cheart ar na dintiúir braite seo a leanas sula leanann tú ar aghaidh:",
@@ -547,8 +547,8 @@
       "uploadExportFileText": "Uaslódáil do chomhad easpórtála {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
-      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
+      "aegisDescription": "Iompórtáil cóid 2FA ó Aegis Authenticator",
+      "aegisInstructionsPart1": "Chun do chódanna Aegis a allmhairiú, ní mór duit iad a onnmhairiú mar chomhad JSON gan chriptiú. Is féidir leat é seo a dhéanamh in Aegis trí dhul chuig 'Socruithe' > 'Allmhairiú & Onnmhairiú' > 'Onnmhairiú', 'Aegis (.JSON)' a roghnú, agus an criptiú a mhúchadh.",
       "aliasVaultDescription": "Iompórtáil ó chúltaca AliasVault",
       "aliasVaultInstructionsPart1": "Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.",
       "bitwardenDescription": "Iompórtáil pasfhocail ó do chruinneachán Bitwarden",
@@ -590,7 +590,7 @@
       "strongboxDescription": "Pasfhocail a allmhairiú ó Strongbox",
       "strongboxInstructionsPart1": "Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.",
       "template": "teimpléad",
-      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFactorMergeHint": "Déantar gach cód a allmhairiú mar mhír ar leith. Chun cód a chur le sonraí logála atá ann cheana, cliceáil ar dheis air agus roghnaigh 'Cumaisc'.",
       "uploadInstructions": "Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos."
     }
   },
