@@ -23,7 +23,7 @@ importers/dashlane.svg apps/web/public/img/importers/dashlane.svg
 importers/dropbox.svg apps/web/public/img/importers/dropbox.svg
 browsers/edge.svg apps/web/public/img/importers/edge.svg
 importers/enpass.svg apps/web/public/img/importers/enpass.svg
-importers/ente-auth.png apps/web/public/img/importers/ente-auth.png
+importers/ente-auth.svg apps/web/public/img/importers/ente-auth.svg
 browsers/firefox.svg apps/web/public/img/importers/firefox.svg
 importers/generic-2fa.svg apps/web/public/img/importers/generic-2fa.svg
 importers/generic-csv.svg apps/web/public/img/importers/generic-csv.svg
