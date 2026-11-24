@@ -213,7 +213,7 @@
   },
   "common": {
     "add": "Ajouter",
-    "added": "Added",
+    "added": "Ajouté",
     "alias": "Alias",
     "attachmentDownloadFailed": "Échec du téléchargement de la pièce jointe",
     "attachments": "Pièces jointes",
@@ -510,7 +510,7 @@
     "recommendedLabel": "Recommandé",
     "serviceCard": {
       "attachmentsDetected": "{{count}} pièce(s) jointe(s), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Êtes-vous sûr de vouloir continuer ? Remarque : le processus d'importation peut prendre un peu de temps.",
       "decryptAndContinueButton": "Déchiffrer et continuer",
       "decryptingFile": "Déchiffrement du fichier...",
       "decryptionErrorGeneric": "Impossible de déchiffrer le fichier. Veuillez vérifier que le fichier n'est pas corrompu et réessayez.",
@@ -518,7 +518,7 @@
       "decryptionPasswordLabel": "Mot de passe de déchiffrement",
       "duplicateCredentialsWarning": "Les {{count}} identifiants en double ont été trouvés et ne seront pas importés.",
       "encryptedFilePasswordPrompt": "Ce fichier est chiffré. Veuillez entrer le mot de passe que vous avez utilisé lors de la création de l'exportation.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} élément(s) existant(s) seront mis à jour avec de nouvelles données.",
       "extractFaviconsLabel": "Extraire les icônes de favoris pour les services avec des URLs",
       "extractingFavicons": "Extraction des icônes de favoris ... {{current}} / {{total}}",
       "faviconExtractionNote": "Remarque : l'extraction des icônes de favoris est activée. Ce processus peut prendre plusieurs minutes selon le nombre d'identifiants avec des URL. Veuillez garder la page ouverte.",
@@ -536,7 +536,7 @@
       "importPartialFailureWarning": "{{count}} élément(s) n'ont pas pu être analysés et seront ignorés.",
       "importSuccessMessage": "{{count}} identifiants importés avec succès.",
       "moreCredentials": "... et {{count}} identifiants supplémentaires",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} nouveau(x) élément(s) seront importés.",
       "noLogoText": "Aucun logo",
       "noNewCredentials": "Aucun nouvel identifiant n'a été trouvé à importer.",
       "previewInstructions": "Vérifiez si les identifiants détectés ci-dessous semblent corrects avant de continuer :",
@@ -547,8 +547,8 @@
       "uploadExportFileText": "Chargez votre fichier d'export {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
-      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
+      "aegisDescription": "Importer des codes 2FA depuis Aegis Authenticator",
+      "aegisInstructionsPart1": "Afin d'importer vos codes Aegis, vous devez les exporter en format JSON non chiffré. Vous pouvez le faire dans Aegis en allant dans 'Paramètres' > 'Importation & Export' > 'Export', en sélectionnant 'Aegis (.JSON)' et en désactivant le chiffrement.",
       "aliasVaultDescription": "Importer depuis la sauvegarde de AliasVault",
       "aliasVaultInstructionsPart1": "Importez votre sauvegarde AliasVault précédemment créée.",
       "bitwardenDescription": "Importer les mots de passe depuis votre coffre-fort Bitwarden",
@@ -590,7 +590,7 @@
       "strongboxDescription": "Importer des mots de passe depuis Strongbox",
       "strongboxInstructionsPart1": "Afin d'importer votre coffre-fort Strongbox, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en allant dans le menu 'Fichier' et en sélectionnant 'Exporter la base de données' (vers CSV).",
       "template": "modèle",
-      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFactorMergeHint": "Chaque code est importé comme un élément séparé. Pour ajouter un code à une connexion existante, faites un clic droit dessus et choisissez « Fusionner ».",
       "uploadInstructions": "Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous."
     }
   },
