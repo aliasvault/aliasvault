@@ -44,7 +44,7 @@
     "@webext-core/messaging": "^3.0.1",
     "buffer": "^6.0.3",
     "globals": "^16.0.0",
-    "i18next": "^26.2.0",
+    "i18next": "^26.7.2",
     "otpauth": "^9.3.6",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
