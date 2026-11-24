@@ -518,7 +518,7 @@
       "decryptionPasswordLabel": "Contraseña de descifrado",
       "duplicateCredentialsWarning": "Se han encontrado {{count}} credenciales duplicadas y no serán importadas.",
       "encryptedFilePasswordPrompt": "Este archivo está cifrado. Por favor, introduce la contraseña que utilizaste al crear la exportación.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "Se actualizará con nuevos datos {{count}} elemento(s) existente(s).",
       "extractFaviconsLabel": "Extraer favicons para servicios con URL",
       "extractingFavicons": "Extrayendo favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Nota: La extracción de Favicon está habilitada. Este proceso puede tardar varios minutos dependiendo del número de credenciales con URLs. Por favor, mantén la página abierta.",
@@ -536,7 +536,7 @@
       "importPartialFailureWarning": "No se pudo analizar {{count}} artículo(s) y se omitirá.",
       "importSuccessMessage": "{{count}}  credenciales importadas correctamente.",
       "moreCredentials": "... y {{count}} credenciales más",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "Se importará {{count}} nuevo(s) elemento(s).",
       "noLogoText": "Sin logo",
       "noNewCredentials": "No se encontraron nuevas credenciales para importar.",
       "previewInstructions": "Comprueba si las siguientes credenciales detectadas parecen correctas antes de continuar:",
@@ -547,8 +547,8 @@
       "uploadExportFileText": "Sube tu archivo de exportación {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
-      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
+      "aegisDescription": "Importa códigos 2FA del autentificador Aegis",
+      "aegisInstructionsPart1": "Para importar tus códigos de Aegis debes exportarlos como un archivo JSON sin encriptar. Puedes hacer esto en Aegis yendo a \"Opciones\" > \"Importar y Exportar\" > \"Exportar\", seleccionando \"Aegis (.JSON)\" y desactivando la encriptación.",
       "aliasVaultDescription": "Importar desde copia de seguridad de AliasVault",
       "aliasVaultInstructionsPart1": "Importa tu copia de seguridad de AliasVault previamente creada.",
       "bitwardenDescription": "Importar contraseñas de Bitwarden",
@@ -590,7 +590,7 @@
       "strongboxDescription": "Importar contraseñas de Strongbox",
       "strongboxInstructionsPart1": "Para importar la bóveda de Strongbox, necesita exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar base de datos' (a CSV).",
       "template": "plantilla",
-      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFactorMergeHint": "Cada código es importado como un elemento diferente. Para añadir un código a un inicio de sesión existente, haz clic derecho en él y elige \"Unir\".",
       "uploadInstructions": "Una vez que haya exportado el archivo, puedes subirlo a continuación."
     }
   },
