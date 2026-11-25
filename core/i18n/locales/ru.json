@@ -547,7 +547,6 @@
       "uploadExportFileText": "Загрузите {{service}} файл экспорта:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Импорт из резервной копии AliasVault",
       "aliasVaultInstructionsPart1": "Импортируйте ранее созданную резервную копию AliasVault.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Чтобы импортировать пароли из Microsoft Edge, вам необходимо экспортировать их в виде CSV-файла. Для этого перейдите в \"Меню\" > \"Настройки\" > \"Профили\" > \"Пароли\" > ... > \"Экспорт паролей\".",
       "enpassDescription": "Импорт паролей из Enpass",
       "enpassInstructionsPart1": "Чтобы импортировать пароли из Enpass, вам необходимо экспортировать их в виде CSV-файла. Для этого откройте Enpass, перейдите в 'Меню' > 'Файл' > 'Экспорт' и выберите 'CSV-файл (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Импорт паролей из Firefox",
       "firefoxInstructionsPart1": "Чтобы импортировать пароли из Firefox, сначала экспортируйте их в CSV‑файл. Для этого откройте Firefox, перейдите в меню > «Пароли», нажмите на значок меню в правом верхнем углу и выберите «Экспорт паролей».",
       "genericCsvDescription": "Импорт учетных данных в формате CSV шаблона",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Чтобы импортировать пароли из NordPass, вам необходимо экспортировать их в формате CSV. Это можно сделать в приложении или веб-хранилище NordPass: перейдите в «Settings» > «Export Items» и выберите формат CSV.",
       "onePasswordDescription": "Импорт паролей из 1Password",
       "onePasswordInstructionsPart1": "Чтобы импортировать хранилище 1Password, его необходимо сначала экспортировать. Для этого войдите в свою учетную запись в приложении 1Password для ПК (Windows / macOS / Linux), откройте меню «Файл» и выберите «Экспорт».",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Импорт паролей из Proton Pass",
       "protonPassInstructionsPart1": "Чтобы импортировать ваше хранилище Proton Pass, его нужно сначала экспортировать. Это можно сделать в расширении Proton Pass для браузера: перейдите в \"Настройки\" > \"Экспорт\".",
       "roboformDescription": "Импорт паролей из RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Импорт паролей из Strongbox",
       "strongboxInstructionsPart1": "Чтобы импортировать хранилище Strongbox, сначала экспортируйте его в CSV‑файл. Для этого откройте меню «Файл» и выберите «Экспортировать базу данных» (CSV).",
       "template": "шаблон",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "После экспорта файла вы можете загрузить его ниже."
     }
   },
