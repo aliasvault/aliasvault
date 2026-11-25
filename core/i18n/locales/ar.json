@@ -547,7 +547,6 @@
       "uploadExportFileText": "ارفع ملف التصدير الخاص بـ {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "استيراد من نسخة AliasVault الاحتياطية",
       "aliasVaultInstructionsPart1": "استورد نسخة AliasVault الاحتياطية التي أنشأتها سابقًا.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "لاستيراد كلمات مرور Microsoft Edge الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق الانتقال إلى القائمة > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.",
       "enpassDescription": "استيراد كلمات المرور من Enpass",
       "enpassInstructionsPart1": "لاستيراد كلمات مرور Enpass الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح Enpass، والانتقال إلى 'Menu' > 'File' > 'Export' واختيار 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "استيراد كلمات المرور من مدير كلمات المرور في Firefox",
       "firefoxInstructionsPart1": "لاستيراد كلمات مرور Firefox الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح متصفح Firefox، والانتقال إلى القائمة > 'Passwords'. ثم انقر على أيقونة القائمة في الزاوية العلوية اليمنى واختر 'Export passwords'.",
       "genericCsvDescription": "استيراد بيانات الاعتماد باستخدام تنسيق قالب CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "لاستيراد كلمات مرور NordPass الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح تطبيق NordPass أو الخزنة عبر الويب، والانتقال إلى 'Settings' > 'Export Items'، واختيار تنسيق CSV.",
       "onePasswordDescription": "استيراد كلمات المرور من خزنة 1Password الخاصة بك",
       "onePasswordInstructionsPart1": "لاستيراد خزنة 1Password الخاصة بك، تحتاج إلى تصديرها. يمكنك القيام بذلك عن طريق تسجيل الدخول إلى حساب 1Password الخاص بك في تطبيق 1Password 8 لسطح المكتب (Windows / MacOS / Linux)، والانتقال إلى قائمة 'File' واختيار 'Export'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "استيراد كلمات المرور من Proton Pass",
       "protonPassInstructionsPart1": "لاستيراد خزنة Proton Pass الخاصة بك، تحتاج إلى تصديرها. يمكنك القيام بذلك في إضافة متصفح Proton Pass عن طريق الانتقال إلى 'Settings' > 'Export'.",
       "roboformDescription": "استيراد كلمات المرور من RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "استيراد كلمات المرور من Strongbox",
       "strongboxInstructionsPart1": "لاستيراد خزنة Strongbox الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق الانتقال إلى قائمة 'File' واختيار 'Export Database' (إلى CSV).",
       "template": "قالب",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "بمجرد تصدير الملف، يمكنك رفعه أدناه."
     }
   },
