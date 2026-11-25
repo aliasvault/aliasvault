@@ -547,7 +547,6 @@
       "uploadExportFileText": "Prześlij plik sejfu {{service}}:"
     },
     "services": {
-      "aegisDescription": "Importuj kody 2FA z Aegis Authenticator",
       "aegisInstructionsPart1": "Aby zaimportować swoje kody Aegis, musisz je wyeksportować jako niezaszyfrowany plik JSON. Możesz to zrobić w Aegis, przechodząc do 'Ustawienia' > 'Import i eksport' > 'Eksport', wybierając 'Aegis (.JSON)' i wyłączając szyfrowanie.",
       "aliasVaultDescription": "Importuj z kopii zapasowej AliasVault",
       "aliasVaultInstructionsPart1": "Importuj poprzednio utworzoną kopię zapasową AliasVaulta.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Aby zaimportować swoje hasła Microsoft Edge, musisz je wyeksportować jako plik CSV. Możesz to zrobić przechodząc do Menu > Ustawienia > Hasło i autouzupełnianie > Menedżer haseł Microsoft > ... > Eksport haseł.",
       "enpassDescription": "Importuj hasła z Enpass",
       "enpassInstructionsPart1": "Aby zaimportować hasła z Enpass, należy je wyeksportować jako plik CSV. Można to zrobić otwierając Enpass, przejść do 'Menu' > 'Plik' > 'Eksport' i wybrać 'plik CSV (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importuj hasła z menedżera haseł przeglądarki Firefox",
       "firefoxInstructionsPart1": "Aby zaimportować sejf z przeglądarki Firefox, należy je wyeksportować jako plik CSV. Otwórz przeglądarkę Firefox, przejdź do menu > „Hasła”, kliknij ikonę menu w prawym górnym rogu i wybierz opcję „Eksportuj hasła”.",
       "genericCsvDescription": "Importuj dane uwierzytelniające przy użyciu szablonu w formacie CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Aby zaimportować swoje hasła NordPass musisz je wyeksportować jako plik CSV. Otwórz aplikację NordPass lub sejf internetowy. Przejdź do 'Ustawienia' > 'Eksport elementów' i wybierz format CSV.",
       "onePasswordDescription": "Importuj hasła z sejfu 1Password",
       "onePasswordInstructionsPart1": "Aby zaimportować sejf 1Password, zaloguj się na swoje konto 1Password w aplikacji komputerowej 1Password 8 (Windows / MacOS / Linux), przejdź do menu \"Plik\" i wybierz \"Eksportuj\".",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importuj hasła z Proton Pass",
       "protonPassInstructionsPart1": "Aby zaimportować sejf Proton Pass, w rozszerzeniu Proton Pass przeglądarki wybierz 'Ustawienia' > 'Eksportuj'.",
       "roboformDescription": "Importuj hasła z RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Importuj hasła z Strongbox",
       "strongboxInstructionsPart1": "Aby zaimportować sejf Strongbox, należy wyeksportować go jako plik CSV. Przejdź do menu „Plik” i wybierz opcję „Eksportuj bazę danych” (do pliku CSV).",
       "template": "szablon",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Każdy kod jest importowany jako oddzielny element. Aby dodać kod do istniejącego logowania, kliknij prawym przyciskiem myszy i wybierz 'Scal'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Po wyeksportowaniu pliku możesz go przesłać poniżej."
     }
   },
