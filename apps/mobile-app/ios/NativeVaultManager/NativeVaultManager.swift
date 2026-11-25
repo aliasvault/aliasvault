@@ -565,6 +565,67 @@ public class NativeVaultManager: NSObject {
         }
     }
 
+    // MARK: - Credential exchange (FIDO CXF)
+
+    @objc
+    func credentialExchangeExportSummary(_ resolve: @escaping RCTPromiseResolveBlock,
+                                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let result = try Self.parseExportResult(try vaultStore.exportCredentialExchange())
+            resolve(result.counts)
+        } catch {
+            Self.rejectCredentialExchange(reject, error)
+        }
+    }
+
+    @objc
+    func credentialExchangeExport(_ resolve: @escaping RCTPromiseResolveBlock,
+                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard #available(iOS 26.0, *) else {
+            reject(Self.credentialExchangeErrorCode, "Credential exchange needs iOS 26", nil)
+            return
+        }
+        Task {
+            do {
+                let result = try Self.parseExportResult(try vaultStore.exportCredentialExchange())
+                let anchor: ASPresentationAnchor = try await MainActor.run {
+                    guard let window = RCTPresentedViewController()?.view.window ?? UIApplication.shared.connectedScenes.compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first else {
+                        throw NSError(domain: "CredentialExchange", code: 2, userInfo: [NSLocalizedDescriptionKey: "No window to present the export from"])
+                    }
+                    return window
+                }
+                try await CredentialExchange.export(
+                    document: result.document,
+                    exporterRpId: VaultStore.credentialExchangeExporterRpId,
+                    exporterDisplayName: VaultStore.credentialExchangeExporterDisplayName,
+                    anchor: anchor
+                )
+                await MainActor.run { resolve(result.counts) }
+            } catch {
+                await MainActor.run { Self.rejectCredentialExchange(reject, error) }
+            }
+        }
+    }
+
+    /// The core's `ExportResult` JSON split into the document and the counts for UI reporting.
+    private static func parseExportResult(_ json: String) throws -> (document: String, counts: [String: Any]) {
+        guard let result = try JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any], let document = result["document"] as? String else {
+            throw NSError(domain: "CredentialExchange", code: 1, userInfo: [NSLocalizedDescriptionKey: "The export result has no document"])
+        }
+        let counts: [String: Any] = [
+            "itemCount": result["itemCount"] ?? 0,
+            "passkeyCount": result["passkeyCount"] ?? 0,
+            "totpCount": result["totpCount"] ?? 0
+        ]
+        return (document, counts)
+    }
+
+    private static let credentialExchangeErrorCode = "CREDENTIAL_EXCHANGE_ERROR"
+
+    private static func rejectCredentialExchange(_ reject: RCTPromiseRejectBlock, _ error: Error) {
+        reject(credentialExchangeErrorCode, error.localizedDescription, error)
+    }
+
     @objc
     func removeCredentialIdentities(_ resolve: @escaping RCTPromiseResolveBlock,
                                    rejecter reject: @escaping RCTPromiseRejectBlock) {
@@ -1657,6 +1718,8 @@ private enum RustCoreDispatcher {
 
         case "vaultCodecLogoIdFor": return try json(RustCoreFramework.vaultCodecLogoIdFor(manifestId: try args.string(0), kind: try args.string(1), source: try args.string(2)))
         case "vaultCodecLogoContentHash": return try json(RustCoreFramework.vaultCodecLogoContentHash(bytes: try args.data(0)))
+
+        case "passkeyPkcs8ToJwk": return try RustCoreFramework.passkeyPkcs8ToJwk(pkcs8Der: try args.data(0))
 
         default: throw DispatchError.unknownFunction(name)
         }

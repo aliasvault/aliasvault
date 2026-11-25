@@ -110,7 +110,7 @@ export const nativeRustCore: IRustCore = {
 
   createVaultSyncSession: () => notImplementedOnMobile('createVaultSyncSession', 'the vault sync engine is driven natively'),
 
-  passkeyPkcs8ToJwk: () => notImplementedOnMobile('passkeyPkcs8ToJwk', 'only the web app imports export files'),
+  passkeyPkcs8ToJwk: (pkcs8Der) => call('passkeyPkcs8ToJwk', base64(pkcs8Der)),
   passkeyP256ScalarToJwk: () => notImplementedOnMobile('passkeyP256ScalarToJwk', 'only the web app imports export files'),
   passkeyEd25519SeedToJwk: () => notImplementedOnMobile('passkeyEd25519SeedToJwk', 'only the web app imports export files'),
 };
