@@ -139,7 +139,7 @@
     "noAccountYet": "Não possui conta?",
     "passwordAttemptsWarning": "Senha incorreta. Você será desconectado se você digitar a senha incorretamente mais {{remainingAttempts}} vezes.",
     "passwordPlaceholder": "Digite sua senha",
-    "pinInput": "PIN input",
+    "pinInput": "Inserir PIN",
     "register": {
       "passwordLabel": "Sua senha",
       "passwordPlaceholder": "••••••••",
@@ -213,7 +213,7 @@
   },
   "common": {
     "add": "Adicionar",
-    "added": "Added",
+    "added": "Adicionado",
     "alias": "Alias",
     "attachmentDownloadFailed": "Falha ao baixar anexo",
     "attachments": "Anexos",
