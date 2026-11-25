@@ -1,0 +1,17 @@
+<!-- Discourse login form: the account field is type="email" but takes an email or a username, with id "login-account-name" and the label "Email / Username" -->
+<form id="login-form" method="post">
+  <div id="credentials">
+    <div class="input-group">
+      <input id="login-account-name" type="email" autocomplete="username" autocorrect="off" autocapitalize="off" autofocus="autofocus" tabindex="1">
+      <label class="alt-placeholder" for="login-account-name">Email / Username</label>
+    </div>
+    <div class="input-group">
+      <input id="login-account-password" type="password" autocomplete="current-password" maxlength="200" tabindex="1">
+      <label class="alt-placeholder" for="login-account-password">Password</label>
+      <div class="login__password-links">
+        <a href="" id="forgot-password-link" tabindex="2">Forgot password?</a>
+      </div>
+    </div>
+  </div>
+  <button id="login-button" class="btn btn-large btn-primary" type="button" tabindex="2">Log in</button>
+</form>

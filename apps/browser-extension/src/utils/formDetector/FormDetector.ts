@@ -1144,8 +1144,10 @@ export class FormDetector {
        * Only filter out if:
        * 1. Label contains BOTH username and email keywords (dual-purpose label)
        * 2. AND the field's name/id contains username pattern but NOT email pattern
+       * 3. AND the field is not an <input type="email">, as the username field
+       *    detection only looks at text inputs and would not pick it up
        */
-      if (labelHasUsername && labelHasEmail) {
+      if (labelHasUsername && labelHasEmail && field.type !== 'email') {
         const hasUsernameInNameOrId = includeTerms(CombinedFieldPatterns.username).some(pattern =>
           fieldAttributes.includes(pattern)
         );
