@@ -547,7 +547,6 @@
       "uploadExportFileText": "Unggah berkas ekspor {{service}} Anda:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Impor dari cadangan AliasVault",
       "aliasVaultInstructionsPart1": "Impor cadangan AliasVault yang telah Anda buat sebelumnya.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Untuk mengimpor kata sandi Microsoft Edge Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka Menu > Pengaturan > Kata Sandi dan Pengisian Otomatis > Pengelola Kata Sandi Microsoft > ... > Ekspor kata sandi.",
       "enpassDescription": "Impor kata sandi dari Enpass",
       "enpassInstructionsPart1": "Untuk mengimpor kata sandi Enpass Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka Enpass, memilih ‘Menu’ > ‘File’ > ‘Ekspor’, lalu memilih ‘Berkas CSV (.csv)’.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Impor kata sandi dari Pengelola Kata Sandi Firefox Anda",
       "firefoxInstructionsPart1": "Untuk mengimpor kata sandi Firefox Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka peramban Firefox, lalu pilih menu > ‘Kata Sandi’. Selanjutnya, klik ikon menu di pojok kanan atas dan pilih ‘Ekspor kata sandi’.",
       "genericCsvDescription": "Impor kredensial menggunakan templat dalam format CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Untuk mengimpor kata sandi NordPass Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka aplikasi NordPass atau brankas web, lalu masuk ke ‘Pengaturan’ > ‘Ekspor Item’, dan memilih format CSV.",
       "onePasswordDescription": "Impor kata sandi dari brankas 1Password Anda",
       "onePasswordInstructionsPart1": "Untuk mengimpor brankas 1Password Anda, Anda perlu mengekspornya terlebih dahulu. Anda dapat melakukannya dengan masuk ke akun 1Password Anda di aplikasi desktop 1Password 8 (Windows / macOS / Linux), membuka menu ‘File’, lalu memilih ‘Ekspor’.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Impor kata sandi dari Proton Pass",
       "protonPassInstructionsPart1": "Untuk mengimpor brankas Proton Pass Anda, Anda perlu mengekspornya terlebih dahulu. Anda dapat melakukannya di ekstensi browser Proton Pass dengan membuka ‘Pengaturan’ > ‘Ekspor’.",
       "roboformDescription": "Impor kata sandi dari RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Impor kata sandi dari Strongbox",
       "strongboxInstructionsPart1": "Untuk mengimpor brankas Strongbox Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka menu ‘File’ dan memilih ‘Ekspor Database’ (ke CSV).",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Setelah Anda mengekspor berkas tersebut, Anda dapat mengunggahnya di bawah ini."
     }
   },
