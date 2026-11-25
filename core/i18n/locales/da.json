@@ -547,7 +547,6 @@
       "uploadExportFileText": "Upload din {{service}} eksportfil:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importer fra AliasVault backup",
       "aliasVaultInstructionsPart1": "Importer din tidligere oprettede AliasVault backup.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "For at importere dine Microsoft Edge-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at gå til Menu > Indstillinger > Adgangskoder og autofyld > Microsoft Password Manager > ... > Eksportér adgangskoder.",
       "enpassDescription": "Importer adgangskoder fra Enpass",
       "enpassInstructionsPart1": "For at importere dine Enpass-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne Enpass, gå til 'Menu' > 'File' (Fil) > 'Export' (Eksportér) og vælge 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importer adgangskoder fra din Firefox Password Manager",
       "firefoxInstructionsPart1": "For at importere dine Firefox-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne din Firefox-browser, gå til menuen > 'Adgangskoder'. Klik derefter på menuikonet i øverste højre hjørne og vælg 'Eksportér adgangskoder'.",
       "genericCsvDescription": "Importer loginoplysninger ved hjælp af et generisk CSV-skabelonformat",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "For at importere dine NordPass-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne NordPass-appen eller webboksen, gå til 'Indstillinger' > 'Eksportér emner' og vælge CSV-formatet.",
       "onePasswordDescription": "Importer adgangskoder fra din 1Password-boks",
       "onePasswordInstructionsPart1": "For at importere din 1Password boks, skal du eksportere den. Du kan gøre dette ved at logge ind på din 1Password konto i 1Password 8 desktop app (Windows / MacOS / Linux), gå til menuen 'Fil' og vælge 'Eksport'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importer adgangskoder fra Proton Pass",
       "protonPassInstructionsPart1": "For at importere din Proton Pass boks skal du eksportere den. Du kan gøre dette i Proton Pass browserudvidelsen ved at gå til 'Indstillinger' > 'Eksporter'.",
       "roboformDescription": "Importer adgangskoder fra RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Importer adgangskoder fra Strongbox",
       "strongboxInstructionsPart1": "For at importere din Strongbox-boks skal du eksportere den som en CSV-fil. Du kan gøre dette ved at gå til menuen 'File' (Fil) og vælge 'Export Database' (Eksportér database) til CSV.",
       "template": "skabelon",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Når du har eksporteret filen, kan du uploade den nedenfor."
     }
   },
