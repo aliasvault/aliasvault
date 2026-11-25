@@ -547,7 +547,6 @@
       "uploadExportFileText": "{{service}} export fájl feltöltése:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Jelszavak importálása korábbi AliasVault mentésből",
       "aliasVaultInstructionsPart1": "Importálja a korábban létrehozott AliasVault biztonsági mentését.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Ahhoz, hogy importálni tudja az Edge jelszavait, exportálnia kell azt CSV formátumba. Ezt megteheti a 'menü' > 'Beállítások' > 'Jelszavak és automatikus kitöltés' > 'Microsoft jelszókezelő' > ... > 'Jelszavak exportálása' almenüben.",
       "enpassDescription": "Jelszavak importálása Enpass-ból",
       "enpassInstructionsPart1": "Ahhoz, hogy importálni tudja az Enpass jelszavait, exportálnia kell azt CSV formátumba. Ezt megteheti a az Enpass megnyitása után 'Menü' > 'Fájl' > 'Exportálás'-on belül a 'CSV fájl (.csv)'-t választva.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Jelszavak importálása a Firefox Jelszó kezelőből",
       "firefoxInstructionsPart1": "Ahhoz, hogy importálni tudja a Firefox jelszavait, egy csv fájlt kell először exportálnia. Ezt megteheti a Firefox böngészőben ha a menü > 'Jelszavak' almenüben a jobb felső sarokban levő menüből a 'Jelszavak exportálása' pontot választja.",
       "genericCsvDescription": "Bejegyzések importálása minta CSV forma segítségével",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Ahhoz, hogy importálni tudja a NordPass jelszavait, exportálnia kell azt CSV formátumba Ezt megteheti az applikáció megnyitásával, vagy webes felületen való bejelentkezéssel, majd 'Beállatások' > 'Elemek exportálása' almenün belül a CSV formátumot választja.",
       "onePasswordDescription": "Jelszavak importálása a 1Password széfjéből",
       "onePasswordInstructionsPart1": "Az importáláshoz az 1Password széfjét először exportálnia kell. Ezt megteheti ha az asztali 1Password 8 alkalmazásban (Windows / MacOS / Linux), bemegy a 'Fájl' menübe, és azon belül az 'Export'-ot választja.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Jelszavak importálása Proton Pass-ból",
       "protonPassInstructionsPart1": "Ahhoz, hogy importálni tudja a Proton Pass széfét, exportálnia kell azt. Ezt megteheti a Proton Pass böngésző kiegészítőben levő 'Beállítások > 'Exportálás' almenüben.",
       "roboformDescription": "Jelszavak importálás a Roboform-ból",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Jelszavak importálása Strongbox-ból",
       "strongboxInstructionsPart1": "Ahhoz, hogy importálni tudja a Strongbox széfjét, exportálnia kell azt CSV formátumba. Ezt megteheti ha bemegy a 'Fájl' > 'Adatbázis exportálás' (CSV-be) menübe.",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Miután elkészült az export fájl, lentebb fel tudja tölteni."
     }
   },
