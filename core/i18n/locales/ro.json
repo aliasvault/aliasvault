@@ -547,7 +547,6 @@
       "uploadExportFileText": "Încarcă fișierul de export {{service}}:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importă din backup AliasVault",
       "aliasVaultInstructionsPart1": "Importă backup-ul AliasVault pe care l-ai creat anterior.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Pentru a importa parolele din Microsoft Edge, trebuie să le exporți ca fișier CSV. Poți face acest lucru mergând la Meniu > Setări > Parole și completare automată > Managerul de parole Microsoft > … > Exportă parolele.",
       "enpassDescription": "Importă parolele din Enpass",
       "enpassInstructionsPart1": "Pentru a importa parolele din Enpass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Enpass, accesând Meniu > Fișier > Export și selectând Fișier CSV (.csv).",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importă parolele din managerul de parole Firefox",
       "firefoxInstructionsPart1": "Pentru a importa parolele din Firefox, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectează 'Export passwords'.",
       "genericCsvDescription": "Importă parolele folosind un șablon CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Pentru a importa parolele din NordPass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând aplicația NordPass sau seiful web și accesând „Setări” > „Exportă elemente”. Apoi, selectează formatul CSV pentru a finaliza exportul.",
       "onePasswordDescription": "Importă parolele din 1Password",
       "onePasswordInstructionsPart1": "Pentru a importa seiful 1Password, exportă-l mai întâi. Conectează-te la contul tău în aplicația 1Password 8 (Windows / MacOS / Linux), apoi mergi la meniul „Fișier” și selectează „Export”.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importă parolele din Proton Pass",
       "protonPassInstructionsPart1": "Pentru a importa seiful Proton Pass, exportă-l mai întâi. Poți face asta din extensia de browser Proton Pass, mergând la „Setări” > „Export”.",
       "roboformDescription": "Importă parolele din RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Importă parolele din Strongbox",
       "strongboxInstructionsPart1": "Pentru a importa seiful Strongbox, trebuie să îl exporți ca fișier CSV. Poți face acest lucru mergând la meniul „File” și selectând „Export Database” (în format CSV).",
       "template": "șablon",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "După ce ai exportat fișierul, îl poți încărca mai jos."
     }
   },
