@@ -109,6 +109,13 @@ export interface Spec extends TurboModule {
   registerCredentialIdentities(): Promise<void>;
   removeCredentialIdentities(): Promise<void>;
 
+  // Credential exchange (FIDO CXF): same-device transfer with other password managers through AuthenticationServices.
+  // Only supported on iOS currently. Android implementation stubs throw NOT_IMPLEMENTED.
+  // What an export would hold: the personal manifest's active items, as the Rust exporter counts them.
+  credentialExchangeExportSummary(): Promise<{ itemCount: number; passkeyCount: number; totpCount: number }>;
+  // Hand those items to another app: shows the system destination picker, then transfers. Resolves with the same counts.
+  credentialExchangeExport(): Promise<{ itemCount: number; passkeyCount: number; totpCount: number }>;
+
   // Username management
   setUsername(username: string): Promise<void>;
   getUsername(): Promise<string | null>;

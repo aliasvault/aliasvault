@@ -418,6 +418,16 @@
     [vaultManager getAppInstallDate:resolve rejecter:reject];
 }
 
+// MARK: - Credential exchange (FIDO CXF)
+
+- (void)credentialExchangeExportSummary:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager credentialExchangeExportSummary:resolve rejecter:reject];
+}
+
+- (void)credentialExchangeExport:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager credentialExchangeExport:resolve rejecter:reject];
+}
+
 // MARK: - Client core bridge
 
 - (void)rustCall:(NSString *)name argsJson:(NSString *)argsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
