@@ -547,7 +547,6 @@
       "uploadExportFileText": "Lade Deine {{service}} Exportdatei hoch:"
     },
     "services": {
-      "aegisDescription": "2FA-Codes vom Aegis Authenticator importieren",
       "aegisInstructionsPart1": "Um Deine Aegis-Codes zu importieren, musst Du diese als unverschlüsselte JSON-Datei exportieren. Du kannst dies in Aegis tun, indem Du in 'Einstellungen' > 'Importieren & Exportieren' > 'Exportieren' gehst, 'Aegis (.JSON)' wählst und die Verschlüsselung ausschaltest.",
       "aliasVaultDescription": "Aus AliasVault-Sicherung importieren",
       "aliasVaultInstructionsPart1": "Importiere eine zuvor erstelle AliasVault-Sicherung.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Um Deine Microsoft Edge-Passwörter zu importieren, musst Du diese als CSV-Datei exportieren. Du kannst dies tun, indem Du im Menü > Einstellungen > Kennwörter und AutoAusfüllen > Microsoft-Kennwortmanager > ... > Kennwörter exportieren auswählst.",
       "enpassDescription": "Importiere Deine Passwörter aus Enpass",
       "enpassInstructionsPart1": "Um Deine Enpass-Passwörter zu importieren, musst Du diese als CSV-Datei exportieren. Du kannst dies tun, indem Du Enpass öffnest, im Menü 'Datei' > 'Export' auswählst und das CSV-Format verwendest.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importiere Deine Passwörter aus dem Firefox-Passwort-Manager.",
       "firefoxInstructionsPart1": "Um Deinen Firefox-Passwort-Manager zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Gehe dazu ins Menü \"Passwörter\". Klicke anschließend auf das Menü-Symbol in der rechten oberen Ecke und wähle \"Passwörter exportieren\".",
       "genericCsvDescription": "Importiere Deine Passwörter mithilfe einer CSV-Vorlage.",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Um Ihre NordPass Passwörter zu importieren, müssen Sie diese als CSV Datei exportieren. Sie können dies tun, indem Sie die NordPass App oder Web-Tresor öffnen, in \"Einstellungen\" > \"Elemente exportieren\" gehen und das CSV-Format auswählen.",
       "onePasswordDescription": "Importiere Deine Passwörter aus 1Password",
       "onePasswordInstructionsPart1": "Um Deinen 1Password-Tresor zu importieren, musst Du ihn zuerst exportieren. Melde Dich dazu in der 1Password-8-Desktop-App (Windows / macOS / Linux) bei Deinem Konto an, gehe ins \"Datei\"-Menü und wähle \"Exportieren\".",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importiere Deine Passwörter aus Proton Pass.",
       "protonPassInstructionsPart1": "Um Deinen Proton Pass-Tresor zu importieren, musst Du ihn zuerst exportieren. Du kannst dies über die Proton Pass-Browser-Erweiterung tun, indem Du auf \"Einstellungen\" > \"Export\" klickst.",
       "roboformDescription": "Importiere Deine Passwörter aus RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Importiere Deine Passwörter aus Strongbox.",
       "strongboxInstructionsPart1": "Um Deinen Strongbox-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Gehe dazu ins Menü \"Datei\" und wähle \"Datenbank exportieren\" (als CSV-Datei).",
       "template": "Vorlage",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Jeder Code wird als separates Element importiert. Um einen Code zu einem bestehenden Login hinzuzufügen, klicke mit der rechten Maustaste auf ihn und wähle 'Zusammenführen'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen."
     }
   },
