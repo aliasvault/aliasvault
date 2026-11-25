@@ -12,11 +12,16 @@ export type CredentialExchangeExportCounts = {
 };
 
 /**
+ * Whether this device can transfer credentials with another app. Currently supported:
+ * - iOS 26+
+ */
+export const isCredentialExchangeAvailable = Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26;
+
+/**
  * The deep link to the import screen when another app's export cold-started the app, else null.
  */
 export async function pendingImportDeepLink(): Promise<string | null> {
-  // Credential exchange is only implemented for iOS currently.
-  if (Platform.OS !== 'ios') {
+  if (!isCredentialExchangeAvailable) {
     return null;
   }
   try {
