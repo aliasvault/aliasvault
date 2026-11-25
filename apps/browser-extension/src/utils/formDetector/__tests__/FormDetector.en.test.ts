@@ -470,6 +470,24 @@ describe('FormDetector English tests', () => {
     });
   });
 
+  describe('English login form 9 detection (type="email" field with an "Email / Username" label)', () => {
+    const htmlFile = 'en-login-form9.html';
+
+    testField(FormField.Email, 'login-account-name', htmlFile);
+    testField(FormField.Password, 'login-account-password', htmlFile);
+
+    it('should detect a login form from the account field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const accountInput = document.getElementById('login-account-name');
+      const formDetector = new FormDetector(document, accountInput as HTMLElement);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+      expect(formDetector.getDetectedFieldType()).toBe(DetectedFieldType.Email);
+    });
+  });
+
   describe('English login form 6 detection (password input named "passcode")', () => {
     const htmlFile = 'en-login-form6.html';
 

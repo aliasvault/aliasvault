@@ -91,4 +91,24 @@ describe('FormFiller English', () => {
       }
     });
   });
+
+  describe('English login form 9 (type="email" field with an "Email / Username" label)', () => {
+    it('should fill the username of a credential without an email into the account field', async () => {
+      const dom = createTestDom('en-login-form9.html');
+      const doc = dom.window.document;
+
+      const accountInput = doc.getElementById('login-account-name') as HTMLInputElement;
+      const passwordInput = doc.getElementById('login-account-password') as HTMLInputElement;
+
+      const detectedFields = new FormDetector(doc, accountInput).getForm();
+      expect(detectedFields).not.toBeNull();
+
+      const credential: Credential = { ...mockCredential, Alias: { ...mockCredential.Alias, Email: undefined } };
+      const filler = new FormFiller(detectedFields!, vi.fn());
+      await filler.fillFields(credential);
+
+      expect(accountInput.value).toBe('testuser');
+      expect(passwordInput.value).toBe('testpass');
+    });
+  });
 });
