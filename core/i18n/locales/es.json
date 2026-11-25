@@ -547,7 +547,6 @@
       "uploadExportFileText": "Sube tu archivo de exportación {{service}}:"
     },
     "services": {
-      "aegisDescription": "Importa códigos 2FA del autentificador Aegis",
       "aegisInstructionsPart1": "Para importar tus códigos de Aegis debes exportarlos como un archivo JSON sin encriptar. Puedes hacer esto en Aegis yendo a \"Opciones\" > \"Importar y Exportar\" > \"Exportar\", seleccionando \"Aegis (.JSON)\" y desactivando la encriptación.",
       "aliasVaultDescription": "Importar desde copia de seguridad de AliasVault",
       "aliasVaultInstructionsPart1": "Importa tu copia de seguridad de AliasVault previamente creada.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Para importar tus contraseñas de Microsoft Edge, necesita exportarlas como un archivo CSV. Puede hacerlo yendo a Menú > Configuración > Contraseña y autorrelleno > Microsoft Password Manager > ... > Exportar contraseñas.",
       "enpassDescription": "Importar contraseñas de Enpass",
       "enpassInstructionsPart1": "Para importar tus contraseñas de Enpass, necesita exportarlas como un archivo CSV. Puede hacerlo abriendo Enpass, yendo a 'Menú' > 'Archivo' > 'Exportar' y seleccionando 'Archivo CSV (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importar contraseñas del administrador de contraseñas de Firefox",
       "firefoxInstructionsPart1": "Para importar tus contraseñas de Firefox, necesitas exportarlas como un archivo CSV. Puedes hacerlo abriendo tu navegador Firefox, yendo al menú > 'contraseñas'. Luego haz clic en el icono del menú en la esquina superior derecha y selecciona 'Exportar contraseñas'.",
       "genericCsvDescription": "Importar credenciales usando una plantilla CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Para importar tus contraseñas NordPass, necesitas exportarlas como un archivo CSV. Puede hacerlo abriendo la aplicación NordPass o la bóveda web, yendo a 'Configuración' > 'Exportar objetos', y seleccionando el formato CSV.",
       "onePasswordDescription": "Importar contraseñas de 1Password",
       "onePasswordInstructionsPart1": "Para importar la bóveda de 1Password necesitas exportarla. Puede hacerlo iniciando sesión en tu cuenta de 1Password en la aplicación de escritorio de 1Password 8 (Windows / MacOS / Linux), ir al menú 'Archivo' y seleccionar 'Exportar'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importar contraseñas de Proton Pass",
       "protonPassInstructionsPart1": "Para importar la bóveda Proton Pass necesitas exportarla. Puede hacerlo en la extensión del navegador Proton Pass yendo a 'Configuración' > 'Exportar'.",
       "roboformDescription": "Importar contraseñas de RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Importar contraseñas de Strongbox",
       "strongboxInstructionsPart1": "Para importar la bóveda de Strongbox, necesita exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar base de datos' (a CSV).",
       "template": "plantilla",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Cada código es importado como un elemento diferente. Para añadir un código a un inicio de sesión existente, haz clic derecho en él y elige \"Unir\".",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Una vez que haya exportado el archivo, puedes subirlo a continuación."
     }
   },
