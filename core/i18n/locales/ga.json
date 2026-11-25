@@ -547,7 +547,6 @@
       "uploadExportFileText": "Uaslódáil do chomhad easpórtála {{service}}:"
     },
     "services": {
-      "aegisDescription": "Iompórtáil cóid 2FA ó Aegis Authenticator",
       "aegisInstructionsPart1": "Chun do chódanna Aegis a allmhairiú, ní mór duit iad a onnmhairiú mar chomhad JSON gan chriptiú. Is féidir leat é seo a dhéanamh in Aegis trí dhul chuig 'Socruithe' > 'Allmhairiú & Onnmhairiú' > 'Onnmhairiú', 'Aegis (.JSON)' a roghnú, agus an criptiú a mhúchadh.",
       "aliasVaultDescription": "Iompórtáil ó chúltaca AliasVault",
       "aliasVaultInstructionsPart1": "Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Chun do phasfhocail Microsoft Edge a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go Roghchlár > Socruithe > Pasfhocal agus uathlíonadh > Bainisteoir Pasfhocal Microsoft > ... > Pasfhocail a easpórtáil.",
       "enpassDescription": "Pasfhocail a allmhairiú ó Enpass",
       "enpassInstructionsPart1": "Chun do phasfhocail Enpass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Enpass a oscailt, dul go 'Roghchlár' > 'Comhad' > 'Easpórtáil' agus 'Comhad CSV (.csv)' a roghnú.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Firefox",
       "firefoxInstructionsPart1": "Chun do phasfhocail Firefox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí do bhrabhsálaí Firefox a oscailt, dul go dtí an roghchlár > 'Pasfhocail'. Ansin cliceáil ar dheilbhín an roghchláir sa chúinne uachtarach ar dheis agus roghnaigh 'Pasfhocail a easpórtáil'.",
       "genericCsvDescription": "Dintiúir a allmhairiú ag baint úsáide as formáid teimpléid CSV",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "Chun do phasfhocail NordPass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh tríd an aip NordPass nó an cruinneachán gréasáin a oscailt, dul go 'Socruithe' > 'Easpórtáil Míreanna', agus an fhormáid CSV a roghnú.",
       "onePasswordDescription": "Iompórtáil pasfhocail ó do chruinneachán 1Password",
       "onePasswordInstructionsPart1": "Chun do stóras 1Password a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas 1Password san aip deisce 1Password 8 (Windows / MacOS / Linux), dul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' a roghnú.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Iompórtáil pasfhocail ó Proton Pass",
       "protonPassInstructionsPart1": "Chun do stór Proton Pass a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh i síneadh brabhsálaí Proton Pass trí dhul go 'Socruithe' > 'Easpórtáil'.",
       "roboformDescription": "Iompórtáil pasfhocail ó RoboForm",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Pasfhocail a allmhairiú ó Strongbox",
       "strongboxInstructionsPart1": "Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.",
       "template": "teimpléad",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Déantar gach cód a allmhairiú mar mhír ar leith. Chun cód a chur le sonraí logála atá ann cheana, cliceáil ar dheis air agus roghnaigh 'Cumaisc'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos."
     }
   },
