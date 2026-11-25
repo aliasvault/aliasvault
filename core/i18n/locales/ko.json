@@ -547,7 +547,6 @@
       "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
-      "aegisDescription": "Import 2FA codes from Aegis Authenticator",
       "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "AliasVault 백업에서 가져오기",
       "aliasVaultInstructionsPart1": "이전에 생성한 AliasVault 백업을 가져옵니다.",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "Microsoft Edge 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. 메뉴 > 설정 > 비밀번호 및 자동 완성 > Microsoft 비밀번호 관리자 > ... > 비밀번호 내보내기로 이동하면 됩니다.",
       "enpassDescription": "Enpass에서 비밀번호 가져오기",
       "enpassInstructionsPart1": "Enpass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Enpass를 열고 '메뉴' > '파일' > '내보내기'로 이동하여 'CSV 파일(.csv)'을 선택하면 됩니다.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Firefox 비밀번호 관리자에서 비밀번호 가져오기",
       "firefoxInstructionsPart1": "Firefox 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Firefox 브라우저를 열고 메뉴 > '비밀번호'로 이동한 다음, 오른쪽 상단의 메뉴 아이콘을 클릭하고 '비밀번호 내보내기'를 선택하면 됩니다.",
       "genericCsvDescription": "템플릿 CSV 형식을 사용하여 로그인 정보 가져오기",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "NordPass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. NordPass 앱 또는 웹 보관함을 열고 '설정' > '항목 내보내기'로 이동하여 CSV 형식을 선택하면 됩니다.",
       "onePasswordDescription": "1Password 보관함에서 비밀번호 가져오기",
       "onePasswordInstructionsPart1": "1Password 보관함을 가져오려면 먼저 내보내야 합니다. 1Password 8 데스크톱 앱(Windows / MacOS / Linux)에서 1Password 계정에 로그인한 후 '파일' 메뉴로 이동하여 '내보내기'를 선택하면 됩니다.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Proton Pass에서 비밀번호 가져오기",
       "protonPassInstructionsPart1": "Proton Pass 보관함을 가져오려면 먼저 내보내야 합니다. Proton Pass 브라우저 확장 프로그램에서 '설정' > '내보내기'로 이동하여 내보낼 수 있습니다.",
       "roboformDescription": "RoboForm에서 비밀번호 가져오기",
@@ -590,7 +592,9 @@
       "strongboxDescription": "Strongbox에서 비밀번호 가져오기",
       "strongboxInstructionsPart1": "Strongbox 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '파일' 메뉴로 이동하여 '데이터베이스 내보내기'(CSV로)를 선택하면 됩니다.",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "파일을 내보낸 후 아래에 업로드할 수 있습니다."
     }
   },
