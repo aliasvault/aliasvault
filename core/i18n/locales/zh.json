@@ -547,7 +547,6 @@
       "uploadExportFileText": "上传您的 {{service}} 导出文件："
     },
     "services": {
-      "aegisDescription": "从 Aegis Authenticator 导入双因素验证码",
       "aegisInstructionsPart1": "若要导入 Aegis 验证码，您需要将其导出为未加密的 JSON 文件。您可以在 Aegis 中执行此操作：前往“设置” > “导入与导出” > “导出”，选择“Aegis (.JSON)”格式，并关闭加密选项。",
       "aliasVaultDescription": "从 AliasVault 备份导入",
       "aliasVaultInstructionsPart1": "导入您之前创建的 AliasVault 备份文件。",
@@ -564,6 +563,7 @@
       "edgeInstructionsPart1": "要导入您的 Microsoft Edge 密码，您需要将其导出为 CSV 文件。您可以依次点击“菜单”>“设置”>“密码和自动填充”>“Microsoft 密码管理器”>“…”>“导出密码”来完成此操作。",
       "enpassDescription": "从 Enpass 导入密码",
       "enpassInstructionsPart1": "要导入您的 Enpass 密码，您需要将其导出为 CSV 文件。您可以打开 Enpass，依次点击“菜单”>“文件”>“导出”，然后选择“CSV 文件 (.csv)”来完成此操作。",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "从您的 Firefox 密码管理器导入密码",
       "firefoxInstructionsPart1": "要导入您的 Firefox 密码，您需要将其导出为 CSV 文件。您可以通过打开 Firefox 浏览器，进入菜单>“密码”。然后点击右上角的菜单图标并选择“导出密码”来完成此操作。",
       "genericCsvDescription": "使用 CSV 模板格式导入凭据",
@@ -583,6 +583,8 @@
       "nordPassInstructionsPart1": "要导入您的 NordPass 密码，您需要将其导出为 CSV 文件。您可以通过打开 NordPass 应用或网页版密码库，进入“设置”>“导出项目”，然后选择 CSV 格式来完成此操作。",
       "onePasswordDescription": "从您的 1Password 密码库导入密码",
       "onePasswordInstructionsPart1": "要导入您的 1Password 密码库，您需要先将其导出。您可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录您的 1Password 账户，然后转到“文件”菜单并选择“导出”来完成此操作。",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "从 Proton Pass 导入密码",
       "protonPassInstructionsPart1": "要导入您的 Proton Pass 密码库，您需要先将其导出。您可以在 Proton Pass 浏览器扩展中转到“设置”>“导出”来执行此操作。",
       "roboformDescription": "从 RoboForm 导入密码",
@@ -590,7 +592,9 @@
       "strongboxDescription": "从 Strongbox 导入密码",
       "strongboxInstructionsPart1": "要导入您的 Strongbox 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出数据库”（至 CSV）来完成此操作。",
       "template": "模板",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
       "twoFactorMergeHint": "每个代码均作为独立项目导入。若要将代码添加到现有的登录中，请右键点击该项目并选择“合并”。",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "您可以在下方上传导出的文件。"
     }
   },
