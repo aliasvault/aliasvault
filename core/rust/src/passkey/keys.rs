@@ -5,8 +5,8 @@ use ed25519_dalek::Signer as _;
 use p256::ecdsa::signature::Signer;
 use p256::ecdsa::{Signature, SigningKey};
 use p256::elliptic_curve::Generate;
-use p256::pkcs8::{DecodePrivateKey, EncodePublicKey};
-use rsa::pkcs8::{DecodePrivateKey as _, EncodePublicKey as _};
+use p256::pkcs8::{DecodePrivateKey, EncodePrivateKey, EncodePublicKey};
+use rsa::pkcs8::{DecodePrivateKey as _, EncodePrivateKey as _, EncodePublicKey as _};
 use rsa::traits::PublicKeyParts;
 use rsa::{Pkcs1v15Sign, RsaPrivateKey};
 use serde::{Deserialize, Serialize};
@@ -103,6 +103,24 @@ pub fn pkcs8_to_jwk_pair(der: &[u8]) -> VaultResult<JwkPair> {
     Err(VaultError::General("The passkey key is not a PKCS#8 P-256, Ed25519 or RSA private key".to_string()))
 }
 
+/// The PKCS#8 DER private key of a stored private key JWK (P-256, Ed25519 or RSA) used when exporting.
+pub(crate) fn private_key_jwk_to_pkcs8(private_key_jwk: &str) -> VaultResult<Zeroizing<Vec<u8>>> {
+    let jwk: PasskeyJwk = serde_json::from_str(private_key_jwk).map_err(|e| VaultError::General(format!("Invalid passkey JWK: {e}")))?;
+    let private_scalar = || -> VaultResult<Zeroizing<Vec<u8>>> {
+        let d = jwk.d.as_deref().ok_or_else(|| VaultError::General("Passkey JWK has no private key".to_string()))?;
+        Ok(Zeroizing::new(base64url_decode(d)?))
+    };
+    match jwk.kty.as_str() {
+        "RSA" => Ok(Zeroizing::new(rsa_private_from_jwk(private_key_jwk)?.to_pkcs8_der().map_err(pkcs8_error)?.as_bytes().to_vec())),
+        "EC" | "" => {
+            let key = p256::SecretKey::from(signing_key_from_scalar(&private_scalar()?)?);
+            Ok(Zeroizing::new(key.to_pkcs8_der().map_err(pkcs8_error)?.as_bytes().to_vec()))
+        }
+        "OKP" if jwk.crv.as_deref() == Some("Ed25519") => Ok(Zeroizing::new(ed25519_key_from_seed(&private_scalar()?)?.to_pkcs8_der().map_err(pkcs8_error)?.as_bytes().to_vec())),
+        other => Err(VaultError::General(format!("Unsupported passkey key type \"{other}\""))),
+    }
+}
+
 /// The key pair of a raw P-256 private scalar.
 pub fn p256_scalar_to_jwk_pair(d: &[u8]) -> VaultResult<JwkPair> {
     ec_jwk_pair(&signing_key_from_scalar(d)?)
@@ -187,6 +205,10 @@ fn ed25519_key_from_seed(seed: &[u8]) -> VaultResult<ed25519_dalek::SigningKey> 
 
 fn to_json(jwk: &PasskeyJwk) -> VaultResult<String> {
     serde_json::to_string(jwk).map_err(VaultError::from)
+}
+
+fn pkcs8_error(error: impl std::fmt::Display) -> VaultError {
+    VaultError::General(format!("PKCS#8 encoding failed: {error}"))
 }
 
 fn invalid_point() -> VaultError {
