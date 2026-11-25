@@ -51,6 +51,9 @@ Random identity (alias persona) generation: names from embedded per-language dic
 (decade-based for de/it/ro), birth date, email prefix and username. See
 `src/identity_generator/dictionaries/README.md` for the dictionary format.
 
+### credential_exchange
+Exports one or more manifests into a single FIDO Credential Exchange Format (CXF 1.0) document, for app-to-app transfers.
+
 ### crypto
 Argon2id key derivation, AES-256-GCM, RSA-OAEP key grants, the account key hierarchy and the SRP-6a handshake.
 

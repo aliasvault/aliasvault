@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use crate::common::encoding::{base64url_decode, hex_decode};
 use crate::crypto::jwk::{rsa_private_to_jwk, rsa_public_to_jwk};
-use crate::passkey::keys::{generate, sign};
+use crate::passkey::keys::{generate, private_key_jwk_to_pkcs8, sign};
 use crate::passkey::{ed25519_seed_to_jwk_pair, get_assertion, p256_scalar_to_jwk_pair, pkcs8_to_jwk_pair, ALG_ES256};
 
 /// A PKCS#8 P-256 private key as another provider exports it, from a sample export of Apple's Passwords app.
@@ -138,4 +138,21 @@ fn an_ed25519_key_needs_a_32_byte_seed_and_the_ed25519_curve() {
 
     let x25519 = r#"{"kty":"OKP","crv":"X25519","x":"AA","d":"CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk"}"#;
     assert!(sign(x25519, b"data").is_err());
+}
+
+#[test]
+fn stored_keys_round_trip_through_pkcs8() {
+    let rsa_key = rsa::RsaPrivateKey::new(&mut rand_core06::OsRng, 2048).unwrap();
+    let stored = [generate(ALG_ES256).unwrap().private_key_jwk.clone(), rsa_private_to_jwk(&rsa_key, None).unwrap(), ed25519_seed_to_jwk_pair(&[9u8; 32]).unwrap().private_key_jwk.clone()];
+    for private_key_jwk in stored {
+        let der = private_key_jwk_to_pkcs8(&private_key_jwk).unwrap();
+        assert_eq!(pkcs8_to_jwk_pair(&der).unwrap().private_key_jwk, private_key_jwk);
+    }
+}
+
+#[test]
+fn a_jwk_that_is_no_passkey_key_has_no_pkcs8_form() {
+    assert!(private_key_jwk_to_pkcs8("{\"kty\":\"oct\"}").is_err());
+    assert!(private_key_jwk_to_pkcs8("{\"kty\":\"EC\",\"crv\":\"P-256\"}").is_err());
+    assert!(private_key_jwk_to_pkcs8("not json").is_err());
 }

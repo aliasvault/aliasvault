@@ -36,6 +36,7 @@ pub mod vault_sync;
 pub mod sqlite_host;
 pub mod vault_items;
 pub mod passkey;
+pub mod credential_exchange;
 
 pub use common::error::VaultError;
 

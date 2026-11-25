@@ -433,6 +433,13 @@ impl SqliteMemoryDatabase {
     pub fn export(&self) -> Result<Vec<u8>, VaultError> {
         self.inner.export()
     }
+
+    /// The vault as a FIDO Credential Exchange Format document.
+    pub fn credential_exchange_export(&self, options_json: String) -> Result<String, VaultError> {
+        let options: crate::credential_exchange::ExportOptions = serde_json::from_str(&options_json)?;
+        let result = self.inner.with_connection(|conn| crate::credential_exchange::export_document(conn, &options))?;
+        Ok(serde_json::to_string(&result)?)
+    }
 }
 
 /// Item, passkey and usage-statistics operations on the open vault. Writes open no transaction of their own:
@@ -550,6 +557,12 @@ pub fn passkey_get_assertion(
     prf_secret: Option<Vec<u8>>,
 ) -> Result<crate::passkey::PasskeyAssertion, VaultError> {
     crate::passkey::get_assertion(&rp_id, &client_data_hash, &private_key_jwk, uv_performed, prf_inputs.as_ref(), prf_secret.as_deref())
+}
+
+/// The JWK pair the vault stores for a PKCS#8 DER passkey private key (P-256, Ed25519 or RSA): a `JwkPair` as JSON.
+#[uniffi::export]
+pub fn passkey_pkcs8_to_jwk(pkcs8_der: Vec<u8>) -> Result<String, VaultError> {
+    Ok(serde_json::to_string(&crate::passkey::pkcs8_to_jwk_pair(&pkcs8_der)?)?)
 }
 
 /// The 16 bytes of a passkey credential id from its GUID text.
