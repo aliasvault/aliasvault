@@ -1313,6 +1313,30 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    // MARK: - Credential exchange (FIDO CXF)
+
+    /**
+     * Credential exchange is currently only implemented on iOS; Android app throws not implemented on purpose.
+     */
+    private fun credentialExchangeNotImplemented(promise: Promise) {
+        promise.reject("NOT_IMPLEMENTED", "Credential exchange is not implemented on Android")
+    }
+
+    @ReactMethod
+    override fun credentialExchangeHasPendingImport(promise: Promise) = credentialExchangeNotImplemented(promise)
+
+    @ReactMethod
+    override fun credentialExchangeTakeImportToken(promise: Promise) = credentialExchangeNotImplemented(promise)
+
+    @ReactMethod
+    override fun credentialExchangeImport(token: String, promise: Promise) = credentialExchangeNotImplemented(promise)
+
+    @ReactMethod
+    override fun credentialExchangeExportSummary(promise: Promise) = credentialExchangeNotImplemented(promise)
+
+    @ReactMethod
+    override fun credentialExchangeExport(promise: Promise) = credentialExchangeNotImplemented(promise)
+
     // MARK: - Username Management
 
     /**
