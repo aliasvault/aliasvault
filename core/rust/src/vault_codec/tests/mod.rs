@@ -7,7 +7,6 @@ mod sharing;
 
 mod hash;
 mod integrity;
-mod normalize;
 mod row;
 
 use super::*;
@@ -86,6 +85,25 @@ fn the_bucket_layout_follows_the_registry() {
 /*
  * Canonicalize and materialize.
  */
+
+#[test]
+fn a_passkey_credential_id_is_filled_on_canonicalize_and_on_materialize() {
+    let passkey_id = "abcdef00-0000-4000-8000-000000000001";
+    let credential_id = json!({ "__b64": b64(&crate::passkey::guid_to_bytes(passkey_id).unwrap()) });
+    let out = canonicalize(vec![
+        table("Items", vec![row(&[("Id", json!("i1"))])]),
+        table("Passkeys", vec![row(&[("Id", json!(passkey_id)), ("ItemId", json!("i1")), ("CredentialId", serde_json::Value::Null)])]),
+    ]);
+    let mut manifest = manifest_of(&out).manifest.clone();
+    assert_eq!(manifest.tables["Passkeys"][0]["CredentialId"], credential_id, "canonicalize writes the filled id into the manifest");
+
+    // A manifest a client before 0.32.0 pushed carries no CredentialId.
+    manifest.tables.get_mut("Passkeys").unwrap()[0].remove("CredentialId");
+    let mut input = materialize_input(vec![manifest], vec![]);
+    input.schema_columns.get_mut("Passkeys").unwrap().push("CredentialId".to_string());
+    let tables = materialized_map(&materialize_as_sqlite(input).unwrap());
+    assert_eq!(tables["Passkeys"][0]["CredentialId"], credential_id, "materialize fills it before the row reaches SQLite");
+}
 
 #[test]
 fn a_vault_round_trips_through_manifest_buckets_and_blobs() {
