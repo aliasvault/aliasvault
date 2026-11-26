@@ -131,6 +131,14 @@ export default function SettingsLayout(): React.ReactNode {
             }}
           />
           <Stack.Screen
+            name="credential-exchange-export"
+            options={{
+              title: t('settings.credentialExchange.exportTitle'),
+              headerBackTitle: t('settings.importExport'),
+              ...defaultHeaderOptions,
+            }}
+          />
+          <Stack.Screen
             name="export-file"
             options={{
               title: t('settings.exportToFileTitle'),
