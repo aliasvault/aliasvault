@@ -5,8 +5,8 @@ import Foundation
  * Linked to a parent Item for UI display (service name, logo, etc.)
  */
 public struct Passkey: Codable, Hashable, Equatable {
-    public let id: UUID  // Passkey record ID; the fallback WebAuthn credential ID when credentialId is nil
-    public let credentialId: Data?  // WebAuthn credential ID; nil falls back to the 16 bytes of id
+    public let id: UUID  // Passkey record ID
+    public let credentialId: Data?  // WebAuthn credential ID; nil only on a row created before 0.32.0 and that didn't sync the vault yet (which upgrades this)
     public let parentItemId: UUID  // Parent Item UUID (AliasVault internal ID)
     public let rpId: String  // Relying party identifier (domain)
     public let userHandle: Data?  // User ID/handle from RP (optional)
@@ -55,8 +55,10 @@ public struct Passkey: Codable, Hashable, Equatable {
         self.additionalData = additionalData
     }
 
-    /// The WebAuthn credential id the relying party knows: `credentialId`, or the 16 bytes of `id` when it is nil.
+    /// The WebAuthn credential id the relying party knows: `credentialId`.
     public var webAuthnCredentialId: Data {
+        // LEGACY: a row created before 0.32.0 has no credentialId until a pull or schema rebuild rewrites the local vault,
+        // and uses the 16 bytes of `id`. TODO: remove once pre-0.32.0 clients are no longer supported.
         return credentialId ?? withUnsafeBytes(of: id.uuid) { Data($0) }
     }
 

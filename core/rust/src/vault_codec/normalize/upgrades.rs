@@ -8,7 +8,7 @@ use crate::vault_model::names::{ID_COL, PASSKEYS_TABLE};
 const CREDENTIAL_ID_COL: &str = "CredentialId";
 
 /// LEGACY: give every `Passkeys` row without a `CredentialId` (as clients before 0.32.0 create them) the 16 GUID bytes
-/// of its `Id`, the credential id its relying party received. TODO: remove once clients before 0.32.0 are no longer supported.
+/// of its `Id`, the credential id its relying party received. TODO: remove once pre-0.32.0 clients are no longer supported.
 pub(super) fn fill_missing_credential_ids(tables: &mut Tables) {
     let Some(rows) = tables.get_mut(PASSKEYS_TABLE) else { return };
     for row in rows.iter_mut().filter(|row| !has_bytes(row.get(CREDENTIAL_ID_COL))) {

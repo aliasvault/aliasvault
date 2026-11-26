@@ -40,9 +40,13 @@ export class PasskeyHelper {
   }
 
   /**
-   * The WebAuthn credential id of a stored passkey: its CredentialId, or the bytes of its Id when it has none.
+   * The WebAuthn credential id of a stored passkey: its CredentialId.
    */
   public static credentialIdBytes(passkey: Pick<Passkey, 'Id' | 'CredentialId'>): Uint8Array {
+    /*
+     * LEGACY: a row created before 0.32.0 has no CredentialId until a pull or schema rebuild rewrites the local vault, and
+     * uses the bytes of its Id. TODO: remove once pre-0.32.0 clients are no longer supported.
+     */
     return passkey.CredentialId ? new Uint8Array(passkey.CredentialId) : PasskeyHelper.guidToBytes(passkey.Id);
   }
 
