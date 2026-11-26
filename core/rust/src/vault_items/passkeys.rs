@@ -45,8 +45,8 @@ const INSERT_ITEM: &str = "
     VALUES (?1, ?2, 'Login', ?3, NULL, ?4, ?4, 0, ?5)";
 
 const INSERT_PASSKEY: &str = "
-    INSERT INTO Passkeys (Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, NULL, ?10, ?10, 0)";
+    INSERT INTO Passkeys (Id, CredentialId, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, NULL, ?11, ?11, 0)";
 
 const SOFT_DELETE_PASSKEY: &str = "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ?1 WHERE Id = ?2 AND ManifestId = ?3";
 
@@ -56,13 +56,13 @@ pub fn get_passkey_by_id(conn: &Connection, passkey_id: &str) -> VaultResult<Opt
     conn.query_row(&sql, params![id_key(passkey_id)], passkey_with_item).optional().map_err(sql_error)
 }
 
-/// The passkey of a relying party with this WebAuthn credential id, in any manifest. A passkey is identified by its
-/// `CredentialId`; a row without one falls back to the 16 GUID bytes of its `Id`. When both forms match, the row
-/// without a `CredentialId` wins.
+/// The passkey of a relying party with this WebAuthn credential id, in any manifest, matched on its `CredentialId`.
 pub fn get_passkey_by_credential_id(conn: &Connection, rp_id: &str, credential_id: &[u8]) -> VaultResult<Option<VaultPasskeyWithItem>> {
+    // LEGACY: a row created before 0.32.0 that no sync has filled yet has no CredentialId and matches on the GUID bytes of
+    // its Id. TODO: remove in the 1.0 release candidates.
     let row_id = bytes_to_guid(credential_id).ok().map(|guid| id_key(&guid));
     let sql = format!(
-        "{SELECT_WITH_ITEM} AND p.RpId = ?3 AND (p.CredentialId = ?1 OR (p.CredentialId IS NULL AND p.Id = ?2)) ORDER BY p.CredentialId IS NULL DESC, p.CreatedAt DESC, p.ManifestId LIMIT 1"
+        "{SELECT_WITH_ITEM} AND p.RpId = ?3 AND (p.CredentialId = ?1 OR (p.CredentialId IS NULL AND p.Id = ?2)) ORDER BY p.CredentialId IS NULL, p.CreatedAt DESC, p.ManifestId LIMIT 1"
     );
     conn.query_row(&sql, params![credential_id, row_id, rp_id], passkey_with_item).optional().map_err(sql_error)
 }
@@ -196,7 +196,7 @@ pub fn replace_passkey(conn: &Connection, old_passkey_id: &str, manifest_id: &st
 fn insert_passkey(conn: &Connection, item_id: &str, manifest_id: &str, passkey: &NewPasskey, now: &str) -> VaultResult<()> {
     conn.execute(
         INSERT_PASSKEY,
-        params![id_key(&passkey.id), item_id, manifest_id, passkey.rp_id, passkey.user_handle, passkey.public_key, passkey.private_key, passkey.prf_key, passkey.display_name, now],
+        params![id_key(&passkey.id), passkey.credential_id, item_id, manifest_id, passkey.rp_id, passkey.user_handle, passkey.public_key, passkey.private_key, passkey.prf_key, passkey.display_name, now],
     )
     .map_err(sql_error)?;
     Ok(())

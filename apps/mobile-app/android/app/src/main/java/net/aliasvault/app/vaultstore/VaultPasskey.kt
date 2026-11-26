@@ -145,6 +145,7 @@ class VaultPasskey(
     private fun toNewPasskey(passkey: Passkey): NewPasskey {
         return NewPasskey(
             id = passkey.id.toString(),
+            credentialId = passkey.webAuthnCredentialId(),
             rpId = passkey.rpId,
             userHandle = passkey.userHandle,
             publicKey = String(passkey.publicKey, Charsets.UTF_8),

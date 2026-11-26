@@ -99,6 +99,7 @@ pub struct VaultPasskeyWithItem {
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct NewPasskey {
     pub id: String,
+    pub credential_id: Vec<u8>,
     pub rp_id: String,
     pub user_handle: Option<Vec<u8>>,
     pub public_key: String,

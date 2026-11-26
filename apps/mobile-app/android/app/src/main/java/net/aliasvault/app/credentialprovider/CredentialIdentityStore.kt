@@ -179,7 +179,7 @@ class CredentialIdentityStore private constructor(context: Context) {
         // Get userName - prefer passkey's userName, fallback to the item's username or email
         val userName = passkey.userName ?: entry.username ?: entry.email
 
-        // The WebAuthn credential id as base64url: the stored credentialId, or the bytes of the row id when it has none
+        // The WebAuthn credential id as base64url (the stored credentialId)
         val credentialId = Helpers.bytesToBase64url(passkey.webAuthnCredentialId())
 
         // Convert user handle to base64url if present

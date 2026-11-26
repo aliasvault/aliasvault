@@ -486,7 +486,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     displayName: userDisplayName ?? userName ?? rpId,
                     createdAt: now,
                     updatedAt: now,
-                    isDeleted: false
+                    isDeleted: false,
+                    credentialId: credentialId
                 )
 
                 // Step 4: Store credential with passkey in database

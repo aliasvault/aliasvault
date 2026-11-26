@@ -365,6 +365,7 @@ const PasskeyCreate: React.FC = () => {
 
             await dbContext.sqliteClient!.passkeys.create({
               Id: newPasskeyGuid,
+              CredentialId: newPasskeyGuidBytes,
               ItemId: existingPasskey.ItemId,
               ManifestId: existingPasskey.ManifestId,
               RpId: stored.rpId,
@@ -394,6 +395,7 @@ const PasskeyCreate: React.FC = () => {
 
           await dbContext.sqliteClient!.passkeys.create({
             Id: newPasskeyGuid,
+            CredentialId: newPasskeyGuidBytes,
             ItemId: selectedItemToAttach.Id,
             ManifestId: selectedItemToAttach.ManifestId,
             RpId: stored.rpId,
@@ -439,6 +441,7 @@ const PasskeyCreate: React.FC = () => {
 
           await dbContext.sqliteClient!.passkeys.create({
             Id: newPasskeyGuid,
+            CredentialId: newPasskeyGuidBytes,
             ItemId: createdItem.Id,
             ManifestId: createdItem.ManifestId,
             RpId: stored.rpId,

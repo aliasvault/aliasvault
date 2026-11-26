@@ -163,6 +163,7 @@ extension VaultStore {
         }
         return NewPasskey(
             id: passkey.id.uuidString.lowercased(),
+            credentialId: passkey.webAuthnCredentialId,
             rpId: passkey.rpId,
             userHandle: passkey.userHandle,
             publicKey: publicKey,
