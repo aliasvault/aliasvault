@@ -195,3 +195,12 @@ export function passkeyCanSign(passkey: ImportedPasskey): boolean {
   const digest = privateKey.asymmetricKeyType === 'ed25519' ? null : 'sha256';
   return verify(digest, challenge, publicKey, sign(digest, challenge, privateKey));
 }
+
+/**
+ * The custom fields of a credential as `[label, value, field type]`.
+ * @param credential - The credential
+ * @returns The fields
+ */
+export function customFieldsOf(credential: ImportedCredential): (string | null | undefined)[][] {
+  return (credential.CustomFieldValues ?? []).map(field => [field.Label, field.Value, field.FieldType]);
+}
