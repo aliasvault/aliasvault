@@ -19,7 +19,7 @@ export type ImportEnrichment = {
 /**
  * Determines what a credential adds to a vault item it matches; null or an empty enrichment means nothing.
  */
-export type EnrichmentPlanner = (existing: Item, imported: ImportedCredential) => ItemEnrichment | null;
+export type EnrichmentDetector = (existing: Item, imported: ImportedCredential) => ItemEnrichment | null;
 
 /**
  * Import preview stats.
@@ -37,10 +37,10 @@ export type ImportPreview = {
  * Sort the parsed credentials into new ones, updates to existing ones, and duplicates that are dropped.
  * @param existingItems - The items already in the vault
  * @param credentials - The parsed credentials
- * @param planEnrichment - Determines what a credential adds to an existing item it matches
+ * @param detectEnrichment - Determines what a credential adds to an existing item it matches
  * @returns The preview
  */
-export function detectAndRemoveDuplicates(existingItems: Item[], credentials: ImportedCredential[], planEnrichment: EnrichmentPlanner): ImportPreview {
+export function detectAndRemoveDuplicates(existingItems: Item[], credentials: ImportedCredential[], detectEnrichment: EnrichmentDetector): ImportPreview {
   const remaining: ImportedCredential[] = [];
   const enrichments: ImportEnrichment[] = [];
   const enrichedItemKeys = new Set<string>();
@@ -66,8 +66,8 @@ export function detectAndRemoveDuplicates(existingItems: Item[], credentials: Im
       continue;
     }
 
-    const plans = matches.map(item => ({ item, enrichment: planEnrichment(item, credential) }));
-    const target = plans.some(plan => !plan.enrichment || isEmptyEnrichment(plan.enrichment)) ? undefined : plans.find(plan => !enrichedItemKeys.has(scopedKey(plan.item.ManifestId, plan.item.Id)));
+    const candidates = matches.map(item => ({ item, enrichment: detectEnrichment(item, credential) }));
+    const target = candidates.some(candidate => !candidate.enrichment || isEmptyEnrichment(candidate.enrichment)) ? undefined : candidates.find(candidate => !enrichedItemKeys.has(scopedKey(candidate.item.ManifestId, candidate.item.Id)));
     if (!target?.enrichment) {
       duplicateCount++;
       continue;

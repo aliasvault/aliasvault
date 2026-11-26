@@ -325,9 +325,9 @@ export default function CredentialExchangeImportScreen(): React.ReactNode {
                     <ThemedText style={styles.noteText}>{t('importExport.serviceCard.duplicateCredentialsWarning', { count: preview.duplicateCount })}</ThemedText>
                   </View>
                 )}
-                {summary.otherAsCustomFields > 0 && (
+                {summary.savedAsCustomFields > 0 && (
                   <View style={styles.note}>
-                    <ThemedText style={styles.noteText}>{t('settings.credentialExchange.summaryCustomFields', { count: summary.otherAsCustomFields })}</ThemedText>
+                    <ThemedText style={styles.noteText}>{t('settings.credentialExchange.summaryCustomFields', { count: summary.savedAsCustomFields })}</ThemedText>
                   </View>
                 )}
                 {summary.unsupported > 0 && (

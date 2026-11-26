@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { detectAndRemoveDuplicates } from '../ImportDuplicateDetection';
 import { convertToItem } from '../ItemConverter';
-import { isEmptyEnrichment, planItemEnrichment, type ExistingItemData, type ItemEnrichment } from '../ItemEnrichment';
+import { isEmptyEnrichment, detectItemEnrichment, type ExistingItemData, type ItemEnrichment } from '../ItemEnrichment';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportedCustomField } from '../../models/ImportedCustomField';
@@ -25,18 +25,18 @@ function customField(label: string, value: string, fieldType: FieldType = FieldT
 }
 
 /**
- * Plan what a credential adds to an item.
+ * Detect what a credential adds to an item.
  * @param existing - What the item holds
  * @param credential - The credential
  * @returns The enrichment
  */
-function plan(existing: Partial<ExistingItemData>, credential: ImportedCredential): ItemEnrichment {
-  return planItemEnrichment({ ...NOTHING, ...existing }, convertToItem(credential, null));
+function detect(existing: Partial<ExistingItemData>, credential: ImportedCredential): ItemEnrichment {
+  return detectItemEnrichment({ ...NOTHING, ...existing }, convertToItem(credential, null));
 }
 
-describe('planItemEnrichment', () => {
+describe('detectItemEnrichment', () => {
   it('adds a passkey, TOTP code and attachment the item lacks', () => {
-    const enrichment = plan({}, { ServiceName: 'Example', TwoFactorSecret: 'JBSWY3DPEHPK3PXP', Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] });
+    const enrichment = detect({}, { ServiceName: 'Example', TwoFactorSecret: 'JBSWY3DPEHPK3PXP', Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] });
 
     expect(enrichment.Passkeys).toHaveLength(1);
     expect(enrichment.TotpCodes.map(code => code.SecretKey)).toEqual(['JBSWY3DPEHPK3PXP']);
@@ -44,7 +44,7 @@ describe('planItemEnrichment', () => {
   });
 
   it('adds nothing the item already holds', () => {
-    const enrichment = plan(
+    const enrichment = detect(
       { TotpSecretKeys: ['jbsw y3dp ehpk 3pxp'], PasskeyCount: 1, Attachments: [{ Filename: 'A.txt', Size: 3 }], FieldValues: [{ FieldKey: FieldKey.LoginUrl, Label: null, FieldType: null, Value: 'https://example.com/', Weight: 0 }] },
       { ServiceName: 'Example', ServiceUrls: ['https://EXAMPLE.com'], TwoFactorSecret: 'JBSWY3DPEHPK3PXP', Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] }
     );
@@ -53,17 +53,17 @@ describe('planItemEnrichment', () => {
   });
 
   it('keeps the passkey of an item that has one', () => {
-    expect(plan({ PasskeyCount: 1 }, { ServiceName: 'Example', Passkeys: [PASSKEY] }).Passkeys).toEqual([]);
+    expect(detect({ PasskeyCount: 1 }, { ServiceName: 'Example', Passkeys: [PASSKEY] }).Passkeys).toEqual([]);
   });
 
   it('adds an attachment with a known name but another size', () => {
-    const enrichment = plan({ Attachments: [{ Filename: 'a.txt', Size: 3 }] }, { ServiceName: 'Example', Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(4) }] });
+    const enrichment = detect({ Attachments: [{ Filename: 'a.txt', Size: 3 }] }, { ServiceName: 'Example', Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(4) }] });
 
     expect(enrichment.Attachments).toHaveLength(1);
   });
 
   it('adds only the URLs the item lacks', () => {
-    const enrichment = plan(
+    const enrichment = detect(
       { FieldValues: [{ FieldKey: FieldKey.LoginUrl, Label: null, FieldType: null, Value: 'https://example.com', Weight: 0 }] },
       { ServiceName: 'Example', ServiceUrls: ['https://example.com', 'https://login.example.com', 'https://login.example.com'] }
     );
@@ -73,13 +73,13 @@ describe('planItemEnrichment', () => {
 
   it('fills an empty single-value field and never overwrites a filled one', () => {
     const credential: ImportedCredential = { ServiceName: 'Example', Username: 'new-user', Email: 'me@example.com' };
-    const enrichment = plan({ FieldValues: [{ FieldKey: FieldKey.LoginUsername, Label: null, FieldType: null, Value: 'old-user', Weight: 0 }] }, credential);
+    const enrichment = detect({ FieldValues: [{ FieldKey: FieldKey.LoginUsername, Label: null, FieldType: null, Value: 'old-user', Weight: 0 }] }, credential);
 
     expect(enrichment.FieldValues.map(fieldValue => [fieldValue.FieldKey, fieldValue.Value])).toEqual([[FieldKey.LoginEmail, 'me@example.com']]);
   });
 
   it('appends the custom fields whose label the item lacks', () => {
-    const enrichment = plan(
+    const enrichment = detect(
       { FieldValues: [{ FieldKey: null, Label: 'Security question', FieldType: FieldTypes.Text, Value: 'edited in the vault', Weight: 4 }] },
       { ServiceName: 'Example', CustomFieldValues: [customField('security QUESTION', 'from the file'), customField('Section', '', FieldTypes.Section), customField('Recovery code', '1234')] }
     );
@@ -88,7 +88,7 @@ describe('planItemEnrichment', () => {
   });
 
   it('gives an item without custom fields all of them, sections included', () => {
-    const enrichment = plan({}, { ServiceName: 'Example', CustomFieldValues: [customField('Section', '', FieldTypes.Section), customField('Recovery code', '1234')] });
+    const enrichment = detect({}, { ServiceName: 'Example', CustomFieldValues: [customField('Section', '', FieldTypes.Section), customField('Recovery code', '1234')] });
 
     expect(enrichment.FieldValues.map(fieldValue => fieldValue.FieldDefinition?.Label)).toEqual(['Section', 'Recovery code']);
   });
@@ -121,7 +121,7 @@ describe('detectAndRemoveDuplicates', () => {
   /**
    * Plans against items that hold their fields and, when flagged, the passkey and attachment.
    */
-  const planner = (existing: Item, imported: ImportedCredential): ItemEnrichment => plan({
+  const planner = (existing: Item, imported: ImportedCredential): ItemEnrichment => detect({
     FieldValues: existing.Fields.map(field => ({ FieldKey: field.FieldKey, Label: null, FieldType: null, Value: field.Value as string, Weight: 0 })),
     PasskeyCount: existing.HasPasskey ? 1 : 0,
     Attachments: existing.HasPasskey ? [{ Filename: 'a.txt', Size: 3 }] : [],

@@ -42,6 +42,7 @@ export type PasskeyParts = {
   PrfSecret?: Uint8Array | null;
   /** Names in order of preference; the first one with text is used, else the relying party id. */
   DisplayNames: (string | null)[];
+  AdditionalData?: Uint8Array | null;
 };
 
 /**
@@ -73,6 +74,7 @@ export function buildPasskey(parts: PasskeyParts): ImportedPasskey {
     PrivateKey: parts.Keys.privateKeyJwk,
     PrfKey: parts.PrfSecret?.length === PRF_SECRET_BYTES ? parts.PrfSecret : null,
     DisplayName: parts.DisplayNames.find(name => !isBlank(name)) ?? rpId,
+    AdditionalData: parts.AdditionalData ?? null,
   };
 }
 

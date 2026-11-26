@@ -1,18 +1,22 @@
-import { FieldKey, LogoKinds } from '@aliasvault/models/vault';
+import { FieldKey, LogoKinds, type Item } from '@aliasvault/models/vault';
 
+import { scopedKey } from '../../../database/ItemRef';
 import { createImportWriteSession } from '../../../database/repositories/ImportExportRepository';
 import { selectFaviconTarget } from '../../../rust/RustCore';
 import { buildFolderPath } from '../../shared/FolderPaths';
 import { isBlank } from '../../shared/StringUtils';
 import { ImportException, ImportStage } from '../models/ImportException';
 
+import { detectAndRemoveDuplicates, isDuplicateItem } from './ImportDuplicateDetection';
 import { convertToItem } from './ItemConverter';
-import { isEmptyEnrichment, planItemEnrichment, type ItemEnrichment } from './ItemEnrichment';
+import { isEmptyEnrichment, detectItemEnrichment, type ExistingItemData, type ItemEnrichment } from './ItemEnrichment';
 
-import type { ImportEnrichment } from './ImportDuplicateDetection';
+import type { ImportEnrichment, ImportPreview } from './ImportDuplicateDetection';
 import type { ItemRef } from '../../../database/ItemRef';
+import type { ImportExportRepository, ImportWriteSession } from '../../../database/repositories/ImportExportRepository';
 import type { SqliteClient } from '../../../database/SqliteClient';
-import type { ItemEntity } from '../../shared/VaultEntities';
+import type { FolderNode } from '../../shared/FolderPaths';
+import type { ItemEntity, LogoEntity } from '../../shared/VaultEntities';
 import type { ImportedCredential } from '../models/ImportedCredential';
 
 /**
@@ -27,6 +31,24 @@ export type VaultImportOptions = {
 };
 
 /**
+ * The part of a vault client the writer uses. This type allows both the web `SqliteClient` and the mobile `SqliteClient` to be able to be used.
+ */
+export type ImportTargetClient = {
+  getPersonalManifestId(): string | null | Promise<string | null>;
+  folders: {
+    getAll(): (FolderNode & { Id: string; ManifestId: string })[] | Promise<(FolderNode & { Id: string; ManifestId: string })[]>;
+    create(name: string, parent: { Id: string; ManifestId: string } | null): Promise<string>;
+  };
+  importExport: {
+    insertImportedItem(item: ItemEntity, logoId: string | null, session?: ImportWriteSession): Promise<void>;
+    resolveImportLogo: ImportExportRepository['resolveImportLogo'];
+    resolveCarriedLogo(logo: LogoEntity): Promise<string | null>;
+    getExistingItemData(ref: ItemRef): ExistingItemData | Promise<ExistingItemData>;
+    insertItemEnrichment(ref: ItemRef, enrichment: ItemEnrichment, session?: ImportWriteSession): Promise<void>;
+  };
+};
+
+/**
  * Writes imported credentials into the vault: creates the folders, resolves each item's logo and inserts the item
  * and its fields.
  */
@@ -38,17 +60,17 @@ export class VaultImportWriter {
    * @param folderPaths - The hierarchical folder paths, parents first (see collectHierarchicalFolderPaths)
    * @returns Folder paths to folder ids
    */
-  public static async createOrGetFolders(sqliteClient: SqliteClient, folderPaths: string[]): Promise<Map<string, string>> {
+  public static async createOrGetFolders(sqliteClient: ImportTargetClient, folderPaths: string[]): Promise<Map<string, string>> {
     const folderPathToId = new Map<string, string>();
     const idsByLowerPath = new Map<string, string>();
 
     // Imported items land in the personal manifest, so only its folders can hold them.
-    const manifestId = sqliteClient.getPersonalManifestId();
+    const manifestId = await sqliteClient.getPersonalManifestId();
     if (!manifestId) {
       throw new Error('VaultImportWriter: this client has no personal manifest recorded yet; sync once before importing.');
     }
 
-    const existingFolders = sqliteClient.folders.getAll().filter(folder => folder.ManifestId === manifestId);
+    const existingFolders = (await sqliteClient.folders.getAll()).filter(folder => folder.ManifestId === manifestId);
     const foldersById = new Map(existingFolders.map(folder => [folder.Id, folder]));
     for (const folder of existingFolders) {
       idsByLowerPath.set(buildFolderPath(folder.Id, foldersById).toLowerCase(), folder.Id);
@@ -83,7 +105,7 @@ export class VaultImportWriter {
    * @returns The number of items written or completed
    * @throws {ImportException} With stage Save when an item cannot be written.
    */
-  public static async importCredentialsToVault(sqliteClient: SqliteClient, credentials: ImportedCredential[], options: VaultImportOptions): Promise<number> {
+  public static async importCredentialsToVault(sqliteClient: ImportTargetClient, credentials: ImportedCredential[], options: VaultImportOptions): Promise<number> {
     const session = createImportWriteSession();
     const enrichments = options.enrichments ?? [];
     const total = credentials.length + enrichments.length;
@@ -105,10 +127,12 @@ export class VaultImportWriter {
       await options.onProgress?.(index + 1, total);
     }
 
+    const personalManifestId = enrichments.length > 0 ? await sqliteClient.getPersonalManifestId() : null;
     for (let index = 0; index < enrichments.length; index++) {
       const { credential, target } = enrichments[index];
       try {
-        const enrichment = VaultImportWriter.planEnrichment(sqliteClient, target, credential);
+        // Detected again at write time: the item may have changed since the preview.
+        const enrichment = target.ManifestId === personalManifestId ? VaultImportWriter.detectEnrichmentFor(await sqliteClient.importExport.getExistingItemData(target), credential) : null;
         if (enrichment && !options.importAttachments) {
           enrichment.Attachments = [];
         }
@@ -132,11 +156,43 @@ export class VaultImportWriter {
    * @param credential - The credential
    * @returns The rows the item lacks, or null for an item of another manifest
    */
-  public static planEnrichment(sqliteClient: SqliteClient, target: ItemRef, credential: ImportedCredential): ItemEnrichment | null {
+  public static detectEnrichment(sqliteClient: SqliteClient, target: ItemRef, credential: ImportedCredential): ItemEnrichment | null {
     if (target.ManifestId !== sqliteClient.getPersonalManifestId()) {
       return null;
     }
-    return planItemEnrichment(sqliteClient.importExport.getExistingItemData(target), credential.AliasVaultItem ?? convertToItem(credential, null));
+    return VaultImportWriter.detectEnrichmentFor(sqliteClient.importExport.getExistingItemData(target), credential);
+  }
+
+  /**
+   * Build the import preview on a client that reads asynchronously: what the matching items hold is read first.
+   * @param sqliteClient - The vault
+   * @param existingItems - The items already in the vault
+   * @param credentials - The parsed credentials
+   * @returns The preview
+   */
+  public static async previewImport(sqliteClient: ImportTargetClient, existingItems: Item[], credentials: ImportedCredential[]): Promise<ImportPreview> {
+    const personalManifestId = await sqliteClient.getPersonalManifestId();
+    const existingData = new Map<string, ExistingItemData>();
+    for (const item of existingItems) {
+      if (item.ManifestId === personalManifestId && credentials.some(credential => isDuplicateItem(item, credential))) {
+        existingData.set(scopedKey(item.ManifestId, item.Id), await sqliteClient.importExport.getExistingItemData(item));
+      }
+    }
+
+    return detectAndRemoveDuplicates(existingItems, credentials, (existing, imported) => {
+      const data = existingData.get(scopedKey(existing.ManifestId, existing.Id));
+      return data ? VaultImportWriter.detectEnrichmentFor(data, imported) : null;
+    });
+  }
+
+  /**
+   * What an imported credential adds to the existing vault item it matches, e.g. a passkey or 2FA code the item lacks.
+   * @param existing - What the item holds
+   * @param credential - The credential
+   * @returns The rows the item lacks
+   */
+  private static detectEnrichmentFor(existing: ExistingItemData, credential: ImportedCredential): ItemEnrichment {
+    return detectItemEnrichment(existing, credential.AliasVaultItem ?? convertToItem(credential, null));
   }
 
   /**
@@ -175,7 +231,7 @@ export class VaultImportWriter {
    * @param sessionLogoIds - Logo ids already resolved in this import, by kind and source
    * @returns The logo id, or null when the item gets no logo
    */
-  private static async resolveLogoId(sqliteClient: SqliteClient, item: ItemEntity, credential: ImportedCredential, extractedFavicons: Map<string, Uint8Array>, sessionLogoIds: Map<string, string | null>): Promise<string | null> {
+  private static async resolveLogoId(sqliteClient: ImportTargetClient, item: ItemEntity, credential: ImportedCredential, extractedFavicons: Map<string, Uint8Array>, sessionLogoIds: Map<string, string | null>): Promise<string | null> {
     try {
       const carriedLogo = item.Logo;
       if (carriedLogo) {
