@@ -150,6 +150,13 @@ pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: O
     crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref()).map_err(js_err)
 }
 
+/// The full RFC 822 bytes of a stored email source for an .eml file.
+#[wasm_bindgen(js_name = rebuildEmailSource)]
+pub fn rebuild_email_source_js(source: &[u8], detached_bodies: Vec<js_sys::Uint8Array>) -> Result<Vec<u8>, JsValue> {
+    let detached_bodies: Vec<Vec<u8>> = detached_bodies.iter().map(|body| body.to_vec()).collect();
+    crate::email_parser::rebuild_email_source(source, &detached_bodies).map_err(js_err)
+}
+
 /// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings` JSON (required).
 #[wasm_bindgen(js_name = argon2DeriveKey)]
 pub fn argon2_derive_key_js(password: String, salt: &str, encryption_settings: &str) -> Result<js_sys::Uint8Array, JsValue> {

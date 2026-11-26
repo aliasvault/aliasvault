@@ -77,6 +77,7 @@
   "common.confirm": "Button text to confirm an action",
   "common.continue": "Button text to continue with an action",
   "common.delete": "Button text for deleting an item",
+  "common.download": "Action that saves a file to the device (verb), e.g. an email as an .eml file",
   "common.duplicate": "Button text for duplicating an item",
   "common.duplicateErrorMessage": "Error message shown when duplicating an item failed",
   "common.duplicateSuccessMessage": "Success message shown after duplicating an item",

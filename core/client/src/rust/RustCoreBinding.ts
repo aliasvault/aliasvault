@@ -44,6 +44,7 @@ export interface IRustCore {
   parseEmailSource(source: Uint8Array): Promise<ParsedEmail>;
   decodeEmailSource(source: Uint8Array): Promise<Uint8Array>;
   extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array>;
+  rebuildEmailSource(source: Uint8Array, detachedBodies: Uint8Array[]): Promise<Uint8Array>;
 
   symmetricDecrypt(base64Ciphertext: string, keyBase64: string): Promise<string>;
   symmetricDecryptBytes(encrypted: Uint8Array, keyBase64: string): Promise<Uint8Array>;
