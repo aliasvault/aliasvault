@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use serde_json::{json, Value};
 
 use super::integrity;
-use super::normalize::{drop_deviceless_item_stats, normalize_id_spelling, normalize_row_shapes};
+use super::normalize::{normalize_for_codec, normalize_id_spelling, upgrade_legacy_rows};
 use super::hash::salted_blob_hash;
 use super::row::{blob_ref, inline_b64, is_deleted, str_col};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord};
@@ -59,14 +59,14 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
 
     let bucketed_names: Vec<String> = all_tables.keys().filter(|name| is_bucketed_table(name)).cloned().collect();
     let mut bucketed_rows: Tables = bucketed_names.into_iter().filter_map(|name| all_tables.remove_entry(&name)).collect();
-    drop_deviceless_item_stats(&mut bucketed_rows);
+    upgrade_legacy_rows(&mut bucketed_rows);
     let snapshots: Tables = referenced_tables().into_iter().filter_map(|name| all_tables.get(name).map(|rows| (name.to_string(), rows.clone()))).collect();
     let manifest_ids: Vec<String> = input.manifests.iter().map(|spec| spec.manifest_id.clone()).collect();
 
     let mut manifests = Vec::with_capacity(input.manifests.len());
     for mut partition in partition_by_manifest(all_tables, &input.manifests, &snapshots)? {
         integrity::repair(&mut partition.tables);
-        normalize_row_shapes(&mut partition.tables);
+        normalize_for_codec(&mut partition.tables);
         let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
         let tables: Tables = partition.tables.into_iter().map(|(name, records)| Ok((name.clone(), extract_table_blobs(&name, records, &partition.spec.manifest_salt, &mut blobs)?))).collect::<VaultResult<_>>()?;
         let extra = overflow.manifest_extra(&partition.spec.manifest_id);
@@ -246,7 +246,7 @@ pub fn extract_buckets(category: String, manifest_ids: Vec<String>, mut tables: 
     fold_overflow_tables(&mut tables, overflow.bucket_tables.get(&category));
     normalize_id_spelling(&mut tables);
     reject_unstamped_rows(&tables)?;
-    drop_deviceless_item_stats(&mut tables);
+    upgrade_legacy_rows(&mut tables);
 
     let mut buckets: Vec<DataBucket> = group_category_rows(tables, &manifest_ids).into_iter().map(|(manifest_id, tables)| bucket_with_extra(manifest_id, &category, tables, &overflow)).collect();
     buckets.sort_by(|a, b| a.manifest_id.cmp(&b.manifest_id));
