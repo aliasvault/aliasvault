@@ -326,7 +326,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const detectDuplicatesAndPreview = (credentials: ImportedCredential[]): void => {
     const sqliteClient = dbContext.sqliteClient;
     const existingItems = sqliteClient?.items.getAll() ?? [];
-    const preview = detectAndRemoveDuplicates(existingItems, credentials, (existing, imported) => sqliteClient ? VaultImportWriter.planEnrichment(sqliteClient, existing, imported) : null);
+    const preview = detectAndRemoveDuplicates(existingItems, credentials, (existing, imported) => sqliteClient ? VaultImportWriter.detectEnrichment(sqliteClient, existing, imported) : null);
     setImportedCredentials(preview.credentials);
     setEnrichments(preview.enrichments);
     setDuplicateCredentialsCount(preview.duplicateCount);

@@ -52,7 +52,7 @@ export function isEmptyEnrichment(enrichment: ItemEnrichment): boolean {
  * @param imported - The imported item
  * @returns The rows the vault item lacks
  */
-export function planItemEnrichment(existing: ExistingItemData, imported: ItemEntity): ItemEnrichment {
+export function detectItemEnrichment(existing: ExistingItemData, imported: ItemEntity): ItemEnrichment {
   const knownTotpSecrets = new Set(existing.TotpSecretKeys.map(normalizeTotpSecret));
   const totpCodes = imported.TotpCodes.filter(code => addIfNew(knownTotpSecrets, normalizeTotpSecret(code.SecretKey)));
 

@@ -14,6 +14,5 @@ export type ImportedPasskey = {
   /** The PRF (hmac-secret) secret, 32 bytes. */
   PrfKey?: Uint8Array | null;
   DisplayName: string;
-  /** Opaque extra data, carried on as-is through import and export. */
   AdditionalData?: Uint8Array | null;
 };

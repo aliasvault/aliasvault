@@ -480,7 +480,7 @@ export class ImportExportRepository extends BaseRepository {
   /**
    * Add the rows of an enrichment to an item the vault already holds, leaving the rows it has untouched.
    * @param ref - The item, named by its manifest and id
-   * @param enrichment - The rows to add (see planItemEnrichment)
+   * @param enrichment - The rows to add (see detectItemEnrichment)
    * @param session - What this import already wrote, shared across its items
    */
   public async insertItemEnrichment(ref: ItemRef, enrichment: ItemEnrichment, session: ImportWriteSession = createImportWriteSession()): Promise<void> {
