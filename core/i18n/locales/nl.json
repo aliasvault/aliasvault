@@ -283,7 +283,7 @@
     },
     "expand": "Uitbreiden",
     "generate": "Genereren",
-    "goToVault": "Go to vault",
+    "goToVault": "Ga naar de kluis",
     "help": "Hulp",
     "hide": "Verberg",
     "hideDetails": "Verberg details",
@@ -1277,12 +1277,12 @@
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
     "credentialExchange": {
-      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
-      "exportTitle": "Export to another app",
-      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
-      "importTitle": "Import from another app",
-      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
-      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+      "description": "Wachtwoorden, toegangscodes en 2FA-codes rechtstreeks van AliasVault overzetten naar een andere wachtwoordbeheerder op dit apparaat.",
+      "exportTitle": "Exporteren naar een andere app",
+      "importInstructionsIos": "Open de app waarvan je wilt importeren, bijv. iOS Wachtwoorden, kies vervolgens \"Data exporteren naar een andere app\" en selecteer AliasVault. AliasVault opent zodat je de items kunt beoordelen voordat ze worden opgeslagen.",
+      "importTitle": "Importeren uit een andere app",
+      "summaryCustomFields": "{{count}} item(s) van een type dat AliasVault niet heeft, zijn opgeslagen als aangepaste velden.",
+      "summaryUnsupported": "{{count}} referentie(s) die niet in AliasVault kunnen worden opgeslagen, zijn overgeslagen."
     },
     "customApiUrl": "API-URL",
     "customClientUrl": "Client-URL",
@@ -1295,7 +1295,7 @@
     "enabledForThisSite": "Ingeschakeld voor deze site",
     "exportConfirmTitle": "Vault exporteren",
     "exportSectionTitle": "Exporteren",
-    "exportToFileTitle": "Export to file",
+    "exportToFileTitle": "Exporteren naar bestand",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
@@ -1341,9 +1341,9 @@
       "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten."
     },
     "importExport": "Importeren / Exporteren",
-    "importFromFileTitle": "Import from file",
+    "importFromFileTitle": "Importeren vanuit bestand",
     "importSectionTitle": "Importeren",
-    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
+    "importWebNote": "Gebruik de AliasVault-webapp om wachtwoorden uit een bestand te importeren.",
     "iosAutofillSettings": {
       "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in iOS. Volg de instructies hieronder om deze in te schakelen.",
       "openIosSettings": "Open iOS instellingen",
