@@ -1,6 +1,7 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
 import { isBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -37,7 +38,7 @@ export function importLastPassCsv(fileContent: string): ImportedCredential[] {
       ServiceUrls: record.url === EMPTY_URL || record.url === SECURE_NOTE_URL ? null : parseUrls(record.url),
       Username: record.username,
       Password: record.password,
-      TwoFactorSecret: record.totp,
+      TwoFactorCodes: twoFactorCode(record.totp),
       Notes: record.extra,
       FolderPath: nullIfBlank(record.grouping),
     };

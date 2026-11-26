@@ -1,6 +1,7 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
 import { nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { dateTime, readCsvRecords, text, type CsvColumn, type CsvRecord } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
 
@@ -68,7 +69,7 @@ export class AliasVaultCsvImportService {
           LastName: record.AliasLastName,
           BirthDate: record.AliasBirthDate,
         },
-        TwoFactorSecret: record.TwoFactorSecret,
+        TwoFactorCodes: twoFactorCode(record.TwoFactorSecret),
         CreatedAt: record.CreatedAt,
         UpdatedAt: record.UpdatedAt,
         FolderPath: nullIfBlank(record.FolderPath),

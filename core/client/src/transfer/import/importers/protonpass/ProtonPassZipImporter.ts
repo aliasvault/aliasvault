@@ -3,6 +3,7 @@ import { FieldTypes, ItemTypes, type FieldType } from '@aliasvault/models/vault'
 import { fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
 import { buildFolderPath, type FolderNode } from '../../../shared/FolderPaths';
 import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { mapItemType } from '../../readers/FieldParsers';
@@ -103,7 +104,7 @@ function convertItem(item: ProtonPassItem, folderPath: string | null): ImportedC
         credential.Username = nullIfBlank(content.ItemUsername);
         credential.Email = nullIfBlank(content.ItemEmail);
         credential.Password = nullIfBlank(content.Password);
-        credential.TwoFactorSecret = nullIfBlank(content.TotpUri);
+        credential.TwoFactorCodes = twoFactorCode(content.TotpUri);
         const urls = nonBlank(getProtonPassLoginUrls(content.AutofillUrls, content.Urls));
         if (urls.length > 0) {
           credential.ServiceUrls = urls;
@@ -131,9 +132,8 @@ function convertItem(item: ProtonPassItem, folderPath: string | null): ImportedC
 
     // A TOTP field, or any field holding an otpauth:// URI, fills the 2FA slot when the login has none, named after the field.
     const type = field.Type?.toLowerCase();
-    if ((type === 'totp' || value.toLowerCase().startsWith('otpauth://')) && isBlank(credential.TwoFactorSecret)) {
-      credential.TwoFactorSecret = value;
-      credential.TwoFactorName = nullIfBlank(field.FieldName);
+    if ((type === 'totp' || value.toLowerCase().startsWith('otpauth://')) && !credential.TwoFactorCodes) {
+      credential.TwoFactorCodes = twoFactorCode(value, nullIfBlank(field.FieldName));
       continue;
     }
 

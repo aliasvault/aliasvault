@@ -36,7 +36,7 @@ function detect(existing: Partial<ExistingItemData>, credential: ImportedCredent
 
 describe('detectItemEnrichment', () => {
   it('adds a passkey, TOTP code and attachment the item lacks', () => {
-    const enrichment = detect({}, { ServiceName: 'Example', TwoFactorSecret: 'JBSWY3DPEHPK3PXP', Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] });
+    const enrichment = detect({}, { ServiceName: 'Example', TwoFactorCodes: [{ Secret: 'JBSWY3DPEHPK3PXP' }], Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] });
 
     expect(enrichment.Passkeys).toHaveLength(1);
     expect(enrichment.TotpCodes.map(code => code.SecretKey)).toEqual(['JBSWY3DPEHPK3PXP']);
@@ -46,7 +46,7 @@ describe('detectItemEnrichment', () => {
   it('adds nothing the item already holds', () => {
     const enrichment = detect(
       { TotpSecretKeys: ['jbsw y3dp ehpk 3pxp'], PasskeyCount: 1, Attachments: [{ Filename: 'A.txt', Size: 3 }], FieldValues: [{ FieldKey: FieldKey.LoginUrl, Label: null, FieldType: null, Value: 'https://example.com/', Weight: 0 }] },
-      { ServiceName: 'Example', ServiceUrls: ['https://EXAMPLE.com'], TwoFactorSecret: 'JBSWY3DPEHPK3PXP', Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] }
+      { ServiceName: 'Example', ServiceUrls: ['https://EXAMPLE.com'], TwoFactorCodes: [{ Secret: 'JBSWY3DPEHPK3PXP' }], Passkeys: [PASSKEY], Attachments: [{ Filename: 'a.txt', Blob: new Uint8Array(3) }] }
     );
 
     expect(isEmptyEnrichment(enrichment)).toBe(true);

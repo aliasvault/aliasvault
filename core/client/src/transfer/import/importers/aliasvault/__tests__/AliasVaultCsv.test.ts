@@ -28,7 +28,7 @@ describe('AliasVaultCsvImportService', () => {
     expect(credential3.Username).toBe('username3');
     expect(credential3.Password).toBe('');
     expect(credential3.Notes).toBe('without password');
-    expect(credential3.TwoFactorSecret).toBe('test');
+    expect(credential3.TwoFactorCodes?.[0].Secret).toBe('test');
     expect(credential3.CreatedAt?.toISOString().substring(0, 10)).toBe('2025-09-12');
     expect(credential3.UpdatedAt?.toISOString().substring(0, 10)).toBe('2025-09-12');
     expect(credential3.Alias?.Gender).toBe('');
@@ -41,7 +41,7 @@ describe('AliasVaultCsvImportService', () => {
     expect(service2.Username).toBe('username2');
     expect(service2.Password).toBe('password2');
     expect(service2.Notes).toBe('');
-    expect(service2.TwoFactorSecret).toBe('');
+    expect(service2.TwoFactorCodes).toBeNull();
     expect(service2.Email).toBe('service2@example.tld');
     expect(service2.Alias?.Gender).toBe('gender2');
     expect(service2.Alias?.FirstName).toBe('firstname2');
@@ -52,7 +52,7 @@ describe('AliasVaultCsvImportService', () => {
     expect(service1.Username).toBe('username1');
     expect(service1.Password).toBe('password1');
     expect(service1.Notes).toBe('notes1');
-    expect(service1.TwoFactorSecret).toBe('');
+    expect(service1.TwoFactorCodes).toBeNull();
     expect(service1.Email).toBe('email1@example.tld');
     expect(service1.Alias?.Gender).toBe('gender1');
     expect(service1.Alias?.FirstName).toBe('firstname1');

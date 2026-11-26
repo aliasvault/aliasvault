@@ -39,9 +39,9 @@ describe('KeePassXC XML export', () => {
     // KeePassXC keeps the TOTP code as an otpauth URI in the protected "otp" field, which is not imported as a custom field.
     const totp = byName(imported, 'AV Login TOTP');
     expect(totp.Username).toBe('av-totp@example.com');
-    expect(totp.TwoFactorSecret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
     expect(totp.CustomFieldValues).toBeUndefined();
-    expect(basic.TwoFactorSecret).toBeNull();
+    expect(basic.TwoFactorCodes).toBeNull();
 
     // Additional URLs follow the main URL; the entry's earlier versions in its history are left out.
     const multiUrl = byName(imported, 'AV Login Multi URL');

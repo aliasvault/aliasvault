@@ -44,8 +44,8 @@ describe('ProtonPassZipImporter', () => {
     expect(totp.Username).toBeNull();
     expect(totp.Email).toBe('av-totp@example.com');
     expect(totp.Password).toBe('Pw-Totp-2!');
-    expect(totp.TwoFactorSecret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?issuer=AV%20Login%20TOTP&secret=JBSWY3DPEHPK3PXP&algorithm=SHA1&digits=6&period=30');
-    expect(totp.TwoFactorName).toBe('TOTP name');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?issuer=AV%20Login%20TOTP&secret=JBSWY3DPEHPK3PXP&algorithm=SHA1&digits=6&period=30');
+    expect(totp.TwoFactorCodes?.[0].Name).toBe('TOTP name');
     expect(totp.CustomFieldValues).toBeUndefined();
 
     expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com/', 'https://b.example.org/login', 'https://c.example.net:8443/']);

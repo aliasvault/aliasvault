@@ -25,7 +25,7 @@ describe('EnpassCsvImporter', () => {
     expect(google.Email).toBe('email@email.com');
     expect(google.Password).toBe('password');
     expect(google.ServiceUrls?.[0]).toBe('https://accounts.google.com/');
-    expect(google.TwoFactorSecret).toBe('PLW4SB3PQ7MKVXY2MXF4NEXS6Y');
+    expect(google.TwoFactorCodes?.[0].Secret).toBe('PLW4SB3PQ7MKVXY2MXF4NEXS6Y');
     expect(google.Notes).toContain('Security question: secquestion');
     expect(google.Notes).toContain('Security answer: secanswer');
 

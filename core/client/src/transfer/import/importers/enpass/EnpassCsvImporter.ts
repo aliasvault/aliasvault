@@ -2,6 +2,7 @@ import { ItemTypes, type ItemType } from '@aliasvault/models/vault';
 
 import { parseDateExact, parseDateTime } from '../../../shared/DateTimeUtils';
 import { isBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { parseCsvRows } from '../../readers/CsvParser';
 import { parseUrls } from '../../readers/FieldParsers';
 
@@ -90,7 +91,7 @@ function parseRow(row: string[]): ImportedCredential {
     // A secure note row holds only the name and the note text.
     Notes: itemType === ItemTypes.Note && row.length === 2 ? row[1] : buildNotes(fields),
     ServiceUrls: parseUrls(fields.first('Website', 'URL')),
-    TwoFactorSecret: fields.first('One-time code', 'TOTP', 'OTP'),
+    TwoFactorCodes: twoFactorCode(fields.first('One-time code', 'TOTP', 'OTP')),
     Creditcard: itemType === ItemTypes.CreditCard ? parseCreditCard(fields) : undefined,
     Alias: itemType === ItemTypes.Alias ? parseAlias(fields) : undefined,
   };

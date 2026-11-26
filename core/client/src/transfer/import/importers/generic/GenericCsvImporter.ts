@@ -1,4 +1,5 @@
 import { isBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -49,7 +50,7 @@ export function importGenericCsv(fileContent: string): ImportedCredential[] {
       ServiceUrls: url && !URL_PLACEHOLDERS.has(url) ? parseUrls(url) : null,
       Username: record.username?.trim() ?? null,
       Password: record.password?.trim() ?? null,
-      TwoFactorSecret: record.totp_secret?.trim() ?? null,
+      TwoFactorCodes: twoFactorCode(record.totp_secret?.trim() ?? null),
       Notes: record.notes?.trim() ?? null,
       FolderPath: nullIfBlank(record.folder)?.trim() ?? null,
     };

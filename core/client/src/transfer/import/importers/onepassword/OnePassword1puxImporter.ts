@@ -2,6 +2,7 @@ import { FieldTypes, ItemTypes, type FieldType, type ItemType } from '@aliasvaul
 
 import { formatDateOnly, fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
 import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { readStringAtPath } from '../../readers/JsonReader';
@@ -185,8 +186,7 @@ function applySectionField(credential: ImportedCredential, field: OnePasswordFie
   }
 
   if (!isBlank(value.Totp)) {
-    credential.TwoFactorSecret = value.Totp;
-    credential.TwoFactorName = field.Title.toLowerCase() === DEFAULT_TOTP_TITLE ? null : field.Title;
+    credential.TwoFactorCodes = twoFactorCode(value.Totp, field.Title.toLowerCase() === DEFAULT_TOTP_TITLE ? null : field.Title);
     return;
   }
 

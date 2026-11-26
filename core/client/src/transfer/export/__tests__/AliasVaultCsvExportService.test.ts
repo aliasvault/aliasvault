@@ -108,7 +108,7 @@ describe('AliasVaultCsvExportService', () => {
     const imported = AliasVaultCsvImportService.importItemsFromCsv(csvText(AliasVaultCsvExportService.exportItemsToCsv([item], folders)));
 
     expect(imported[0].FolderPath).toBe('Work/Projects');
-    expect(imported[0].TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+    expect(imported[0].TwoFactorCodes?.[0].Secret).toBe('JBSWY3DPEHPK3PXP');
   });
 
   it('writes a non-default TOTP code as an otpauth URI that re-imports with its name and parameters', () => {
@@ -122,8 +122,8 @@ describe('AliasVaultCsvExportService', () => {
     const imported = AliasVaultCsvImportService.importItemsFromCsv(csvText(AliasVaultCsvExportService.exportItemsToCsv([sha512, sha256, sha1])));
     const items = convertToItems(imported);
 
-    expect(byName(imported, 'Sha1').TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
-    expect(byName(imported, 'Sha512').TwoFactorSecret).toMatch(/^otpauth:\/\/totp\//);
+    expect(byName(imported, 'Sha1').TwoFactorCodes?.[0].Secret).toBe('JBSWY3DPEHPK3PXP');
+    expect(byName(imported, 'Sha512').TwoFactorCodes?.[0].Secret).toMatch(/^otpauth:\/\/totp\//);
     expect(itemByName(items, 'Sha512').TotpCodes[0]).toMatchObject({ Name: 'GitHub: user@example.com', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA512', Digits: 8, Period: 60 });
     expect(itemByName(items, 'Sha256').TotpCodes[0]).toMatchObject({ Name: 'Work account', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA256', Digits: 6, Period: 30 });
     expect(itemByName(items, 'Sha1').TotpCodes[0]).toMatchObject({ SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA1', Digits: 6, Period: 30 });

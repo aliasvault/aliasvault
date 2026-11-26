@@ -8,10 +8,10 @@ import type { ImportedCredential } from '../../models/ImportedCredential';
 describe('convertToItem', () => {
   it('keeps the TOTP parameters of an imported otpauth URI', () => {
     const credentials: ImportedCredential[] = [
-      { ServiceName: 'Sha512Service', TwoFactorSecret: 'otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60' },
-      { ServiceName: 'PlainService', TwoFactorSecret: 'JBSWY3DPEHPK3PXP' },
-      { ServiceName: 'UppercaseScheme', TwoFactorSecret: 'OTPAUTH://TOTP/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example&algorithm=SHA256' },
-      { ServiceName: 'NamedCode', TwoFactorSecret: 'otpauth://totp/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example', TwoFactorName: ' Work phone ' },
+      { ServiceName: 'Sha512Service', TwoFactorCodes: [{ Secret: 'otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60' }] },
+      { ServiceName: 'PlainService', TwoFactorCodes: [{ Secret: 'JBSWY3DPEHPK3PXP' }] },
+      { ServiceName: 'UppercaseScheme', TwoFactorCodes: [{ Secret: 'OTPAUTH://TOTP/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example&algorithm=SHA256' }] },
+      { ServiceName: 'NamedCode', TwoFactorCodes: [{ Secret: 'otpauth://totp/Example:me?secret=JBSWY3DPEHPK3PXP&issuer=Example', Name: ' Work phone ' }] },
     ];
 
     const items = convertToItems(credentials);
@@ -31,7 +31,7 @@ describe('convertToItem', () => {
   it('skips an invalid TOTP secret and keeps the item', () => {
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
-      const items = convertToItems([{ ServiceName: 'Invalid', Username: 'user', TwoFactorSecret: 'NOT!BASE32' }]);
+      const items = convertToItems([{ ServiceName: 'Invalid', Username: 'user', TwoFactorCodes: [{ Secret: 'NOT!BASE32' }] }]);
 
       expect(itemByName(items, 'Invalid').TotpCodes).toEqual([]);
       expect(consoleWarn).toHaveBeenCalledTimes(1);

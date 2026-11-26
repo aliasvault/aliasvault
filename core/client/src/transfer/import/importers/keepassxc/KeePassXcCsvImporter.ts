@@ -1,5 +1,6 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { dateTime, optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -39,7 +40,7 @@ export function importKeePassXcCsv(fileContent: string): ImportedCredential[] {
       ServiceUrls: urls,
       Username: record.Username,
       Password: record.Password,
-      TwoFactorSecret: record.TOTP,
+      TwoFactorCodes: twoFactorCode(record.TOTP),
       Notes: record.Notes,
       FolderPath: groups.length > 0 ? groups.join('/') : null,
       CreatedAt: record.Created,

@@ -1,6 +1,7 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
 import { nonBlank, nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { mapItemType, parseUrls } from '../../readers/FieldParsers';
@@ -49,7 +50,7 @@ export function importProtonPassCsv(fileContent: string): ImportedCredential[] {
       Username: record.username,
       Password: record.password,
       Notes: record.note,
-      TwoFactorSecret: record.totp,
+      TwoFactorCodes: twoFactorCode(record.totp),
       // Every vault except the default one becomes a folder, as in the .zip import.
       FolderPath: isProtonPassDefaultVault(record.vault) ? null : nullIfBlank(record.vault),
       ItemType: mapItemType(record.type, ITEM_TYPES),

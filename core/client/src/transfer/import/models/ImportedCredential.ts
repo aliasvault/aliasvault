@@ -3,6 +3,7 @@ import type { ImportedAttachment } from './ImportedAttachment';
 import type { ImportedCreditcard } from './ImportedCreditcard';
 import type { ImportedCustomField } from './ImportedCustomField';
 import type { ImportedPasskey } from './ImportedPasskey';
+import type { ImportedTwoFactorCode } from './ImportedTwoFactorCode';
 import type { ItemEntity } from '../../shared/VaultEntities';
 import type { ItemType } from '@aliasvault/models/vault';
 
@@ -16,10 +17,8 @@ export type ImportedCredential = {
   Username?: string | null;
   Password?: string | null;
   Email?: string | null;
-  /** 2FA secret key, either bare or as an otpauth:// URI. */
-  TwoFactorSecret?: string | null;
-  /** Name of the 2FA code; when blank, the name comes from the otpauth:// URI label. */
-  TwoFactorName?: string | null;
+  /** The 2FA codes of the item. */
+  TwoFactorCodes?: ImportedTwoFactorCode[] | null;
   Notes?: string | null;
   CreatedAt?: Date | null;
   UpdatedAt?: Date | null;

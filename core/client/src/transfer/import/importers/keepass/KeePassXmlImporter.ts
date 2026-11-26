@@ -5,6 +5,7 @@ import { buildOtpAuthUri } from '../../../../items/OtpAuthUri';
 import { base64ToBytes, base64UrlToBytes } from '../../../../utilities/Base64';
 import { fromUnixTimeSeconds, parseDateTime } from '../../../shared/DateTimeUtils';
 import { isBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems } from '../../readers/ArchiveImport';
 import { addPasskeys, buildPasskey, rustPasskeyKeys, type PasskeyKeyConverter, type PendingPasskeys } from '../../readers/PasskeyImport';
@@ -180,12 +181,12 @@ function convertEntry(entry: KeePassEntry, fields: Map<string, KeePassField>, bi
     FolderPath: entry.FolderPath,
     CreatedAt: readDate(xmlChildText(times, 'CreationTime')),
     UpdatedAt: readDate(xmlChildText(times, 'LastModificationTime')),
-    TwoFactorSecret: readTotp(fields),
+    TwoFactorCodes: twoFactorCode(readTotp(fields)),
   };
   if (urls.length > 0) {
     credential.ServiceUrls = urls;
   }
-  const isNote = !credential.Username && !credential.Password && urls.length === 0 && !credential.TwoFactorSecret && !fields.has('KPEX_PASSKEY_PRIVATE_KEY_PEM');
+  const isNote = !credential.Username && !credential.Password && urls.length === 0 && !credential.TwoFactorCodes && !fields.has('KPEX_PASSKEY_PRIVATE_KEY_PEM');
   credential.ItemType = isNote ? ItemTypes.Note : ItemTypes.Login;
 
   for (const [name, field] of fields) {

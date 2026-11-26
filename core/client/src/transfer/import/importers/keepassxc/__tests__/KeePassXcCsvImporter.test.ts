@@ -26,8 +26,8 @@ describe('KeePassXcCsvImporter', () => {
     // KeePassXC writes the TOTP code as an otpauth URI.
     const totp = byName(imported, 'AV Login TOTP');
     expect(totp.Username).toBe('av-totp@example.com');
-    expect(totp.TwoFactorSecret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
-    expect(byName(imported, 'AV Login Basic').TwoFactorSecret).toBe('');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
+    expect(byName(imported, 'AV Login Basic').TwoFactorCodes).toBeNull();
 
     // The CSV holds only the main URL.
     expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com']);

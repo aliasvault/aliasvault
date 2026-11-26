@@ -11,7 +11,7 @@ describe('StrongboxCsvImporter', () => {
     const tutaNota = byName(imported, 'TutaNota');
     expect(tutaNota.Username).toBe('avtest2@tutamail.com');
     expect(tutaNota.Password).toBe('blabla');
-    expect(tutaNota.TwoFactorSecret).toBe('otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30');
+    expect(tutaNota.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30');
     expect(tutaNota.Notes).toContain('Recovery code for main account');
 
     const sample = byName(imported, 'Sample');

@@ -1,6 +1,7 @@
 import { FieldTypes, ItemTypes, type ItemType } from '@aliasvault/models/vault';
 
 import { isBlank, nonBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { ImportException, ImportStage } from '../../models/ImportException';
 import { addAttachment, addCustomField, convertArchiveItems } from '../../readers/ArchiveImport';
 import { parseJson, readString, readStringAtPath, type JsonObject } from '../../readers/JsonReader';
@@ -90,7 +91,7 @@ function convertItem(item: BitwardenItem, folderPath: string | null): ImportedCr
   if (credential.ItemType === ItemTypes.Login && item.Login) {
     credential.Username = item.Login.Username;
     credential.Password = item.Login.Password;
-    credential.TwoFactorSecret = item.Login.Totp;
+    credential.TwoFactorCodes = twoFactorCode(item.Login.Totp);
     if (item.Login.Uris && item.Login.Uris.length > 0) {
       credential.ServiceUrls = nonBlank(item.Login.Uris.map(uri => uri.Uri));
     }
