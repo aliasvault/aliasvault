@@ -1,3 +1,4 @@
+import { EML_MIME_TYPE, getEmlFileName } from '@aliasvault/client/email/EmailExport';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +9,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailBody } from '@/hooks/useEmailBody';
-import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, spamOk } from '@/utils/EmailViewModel';
+import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, getEmlBytes, hasSource, spamOk } from '@/utils/EmailViewModel';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
@@ -78,6 +79,20 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
     }
   };
 
+  /**
+   * Download the email as an .eml file.
+   */
+  const downloadEml = async (): Promise<void> => {
+    if (!email || !dbContext.sqliteClient) {
+      return;
+    }
+    try {
+      downloadBytes(getEmlFileName(email.subject), await getEmlBytes(webApi, dbContext.sqliteClient, email), EML_MIME_TYPE);
+    } catch (error) {
+      notifications.addErrorMessage(`${t('common.error')}: ${error instanceof Error ? error.message : String(error)}`, true);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-white border-l border-gray-200 dark:border-gray-700 rounded-l-lg">
       {email !== null ? (
@@ -93,6 +108,11 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
                 {availableModes.length > 1 && (
                   <button type="button" onClick={cycleViewMode} title={t('emails.formatSwitchTitle')} className="text-xs font-medium px-2 py-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-600">
                     {formatLabel}
+                  </button>
+                )}
+                {hasSource(email) && (
+                  <button type="button" onClick={() => void downloadEml()} id="download-email" title={t('common.download')} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <Icon name="download" className="h-5 w-5" />
                   </button>
                 )}
                 <button type="button" onClick={() => void showDeleteConfirmation()} id="delete-email" className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">

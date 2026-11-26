@@ -1,3 +1,4 @@
+import { EML_MIME_TYPE, getEmlFileName } from '@aliasvault/client/email/EmailExport';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +13,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailBody } from '@/hooks/useEmailBody';
-import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, spamOk } from '@/utils/EmailViewModel';
+import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, getEmlBytes, hasSource, spamOk } from '@/utils/EmailViewModel';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -129,6 +130,20 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
     }
   };
 
+  /**
+   * Download the email as an .eml file.
+   */
+  const downloadEml = async (): Promise<void> => {
+    if (!email || !dbContext.sqliteClient) {
+      return;
+    }
+    try {
+      downloadBytes(getEmlFileName(email.subject), await getEmlBytes(webApi, dbContext.sqliteClient, email), EML_MIME_TYPE);
+    } catch (error) {
+      notifications.addErrorMessage(`${t('common.error')}: ${error instanceof Error ? error.message : String(error)}`, true);
+    }
+  };
+
   return (
     <Modal id="emailModal" onBackdropClick={onClose} panelClassName="w-3/4 flex flex-col max-h-[90vh]">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -143,6 +158,11 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
           <div className="flex items-center gap-1 flex-shrink-0">
             {availableModes.length > 1 && (
               <ModalHeaderAction onClick={cycleViewMode} title={t('emails.formatSwitchTitle')}>{formatLabel}</ModalHeaderAction>
+            )}
+            {email !== null && hasSource(email) && (
+              <ModalHeaderAction onClick={() => void downloadEml()} title={t('common.download')}>
+                <Icon name="download" className="h-5 w-5" />
+              </ModalHeaderAction>
             )}
             {email !== null && (
               <ModalHeaderAction onClick={() => void showDeleteConfirmation()} title={t('common.delete')} variant="danger">

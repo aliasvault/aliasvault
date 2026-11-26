@@ -1,5 +1,6 @@
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
 import { decryptEmail } from '@aliasvault/client/email/EmailDecryption';
+import { getEmailEmlBytes } from '@aliasvault/client/email/EmailExport';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { decodeEmailSource } from '@aliasvault/client/rust/RustCore';
 
@@ -119,6 +120,19 @@ export async function getSourceText(email: EmailViewModel): Promise<string> {
     return '';
   }
   return email.sourceText;
+}
+
+/**
+ * The .eml bytes of an email: the SpamOK source, or the decrypted source with its detached attachments put back.
+ */
+export async function getEmlBytes(webApi: WebApiService, sqliteClient: SqliteClient, email: EmailViewModel): Promise<Uint8Array> {
+  if (email.isSpamOk) {
+    return new TextEncoder().encode(email.sourceText ?? '');
+  }
+  if (email.sourceBytes === null || email.raw === null) {
+    throw new Error('Email has no source');
+  }
+  return getEmailEmlBytes(webApi, email.raw, sqliteClient.encryptionKeys.getAll(), email.sourceBytes, email.attachments);
 }
 
 /**
