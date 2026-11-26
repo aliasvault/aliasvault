@@ -222,7 +222,7 @@ fn export_item(item: &VaultItem, document_id: &str, totp_codes: &[crate::vault_i
         exported.insert("modifiedAt".into(), json!(seconds));
     }
     exported.insert("title".into(), json!(item_title(item, passkeys)));
-    let urls: Vec<String> = fields.urls.iter().filter_map(|url| normalize_url(url)).collect();
+    let urls: Vec<String> = fields.urls.iter().filter_map(|url| exported_url(url)).collect();
     if !urls.is_empty() {
         exported.insert("scope".into(), json!({ "urls": urls, "androidApps": [] }));
     }
@@ -401,16 +401,10 @@ fn item_title(item: &VaultItem, passkeys: &[PasskeyRow]) -> String {
     }
 }
 
-/// A stored URL as the `uri` CXF expects: trimmed, with a scheme, and nothing that is not a single URL.
-fn normalize_url(raw: &str) -> Option<String> {
+/// A stored URL as it is exported: trimmed and otherwise as-is; a blank value or one with whitespace is left out.
+fn exported_url(raw: &str) -> Option<String> {
     let trimmed = raw.trim();
-    if trimmed.is_empty() || trimmed.chars().any(char::is_whitespace) {
-        return None;
-    }
-    if trimmed.contains("://") {
-        return Some(trimmed.to_string());
-    }
-    Some(format!("https://{trimmed}"))
+    (!trimmed.is_empty() && !trimmed.chars().any(char::is_whitespace)).then(|| trimmed.to_string())
 }
 
 fn unix_seconds(millis: i64) -> Option<u64> {
