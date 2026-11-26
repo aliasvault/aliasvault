@@ -283,6 +283,7 @@
     },
     "expand": "Espandi",
     "generate": "Genera",
+    "goToVault": "Go to vault",
     "help": "Aiuto",
     "hide": "Nascondi",
     "hideDetails": "Nascondi dettagli",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Quando è attivo il riempimento automatico di una credenziale con 2FA, copia automaticamente il suo codice TOTP negli appunti in modo da poterlo incollare nel campo successivo.",
     "credentialAutofill": "Riempimento automatico credenziali",
     "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
     "customClientUrl": "Url Client",
     "dark": "Scuro",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Abilitato per questo sito",
     "exportConfirmTitle": "Esporta cassaforte",
     "exportSectionTitle": "Esporta",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Imposta l'intervallo di età predefinito per generare nuove identità. Ciò influisce sulla data di nascita assegnata all'identità generata.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Imposta la lingua usata per generare nuove identità."
     },
     "importExport": "Importa / Esporta",
-    "importSectionDescription": "Importa le password da altri gestori di password o da una precedente esportazione AliasVault.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importa",
-    "importWebNote": "Per importare le credenziali dai gestori di password esistenti, si prega di accedere alla web app. La funzione d'importazione è attualmente disponibile solo sulla versione web.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "È possibile configurare AliasVault per fornire password nativa e funzionalità di riempimento automatico della password in iOS. Seguire le istruzioni qui sotto per abilitarlo.",
       "openIosSettings": "Apri Impostazioni iOS",
