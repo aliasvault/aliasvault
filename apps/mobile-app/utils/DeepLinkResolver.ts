@@ -42,6 +42,10 @@ export async function resolveOpenAction(
       return { path: '/(tabs)/settings/mobile-unlock/confirm' };
     }
 
+    case 'credential-exchange-import':
+      // Another app wants to export credentials to AliasVault (via credential exchange protocol).
+      return { path: '/(tabs)/settings/credential-exchange-import' };
+
     case '__debug__':
       if (!__DEV__) {
         return null;
@@ -59,12 +63,10 @@ export async function resolveOpenAction(
 }
 
 /**
- * Whether an `open/<action>` requires the vault to be unlocked before the
- * resolved target makes sense. Warm-start ActionHandler uses this to decide
- * between navigating directly and detouring through /reinitialize.
+ * Whether an `open/<action>` needs an unlocked vault before its target is shown. Every action does, except the debug ones.
  */
 export function openActionRequiresVaultUnlock(actionSegments: string[]): boolean {
-  return actionSegments[0] === 'mobile-unlock';
+  return actionSegments[0] !== '__debug__';
 }
 
 /**

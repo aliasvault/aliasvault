@@ -147,6 +147,14 @@ export default function SettingsLayout(): React.ReactNode {
             }}
           />
           <Stack.Screen
+            name="credential-exchange-import"
+            options={{
+              title: t('settings.credentialExchange.importTitle'),
+              headerBackTitle: t('settings.importExport'),
+              ...defaultHeaderOptions,
+            }}
+          />
+          <Stack.Screen
             name="security/index"
             options={{
               title: t('settings.accountSecurity'),

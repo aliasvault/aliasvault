@@ -1,11 +1,15 @@
 import { StyleSheet, View } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
+import { ThemedButton } from '@/components/themed/ThemedButton';
 
 type LoadingOverlayProps = {
   status: string;
+  /** Shows a cancel button below the indicator when set. */
+  onCancel?: () => void;
 };
 
 /**
@@ -15,10 +19,15 @@ type LoadingOverlayProps = {
  * It is used to indicate that a process is in progress and the user should wait.
  *
  */
-export default function LoadingOverlay({ status }: LoadingOverlayProps): React.ReactNode {
+export default function LoadingOverlay({ status, onCancel }: LoadingOverlayProps): React.ReactNode {
   const colors = useColors();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
+    cancelButton: {
+      marginTop: 24,
+      minWidth: 160,
+    },
     container: {
       alignItems: 'center',
       backgroundColor: colors.background,
@@ -35,6 +44,7 @@ export default function LoadingOverlay({ status }: LoadingOverlayProps): React.R
   return (
     <View style={styles.container}>
       <LoadingIndicator status={status} />
+      {onCancel && <ThemedButton title={t('common.cancel')} variant="secondary" onPress={onCancel} style={styles.cancelButton} testID="loading-overlay-cancel-button" />}
     </View>
   );
 }

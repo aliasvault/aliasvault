@@ -94,7 +94,7 @@ export default function ActionHandler() : React.ReactNode {
       if (openActionRequiresVaultUnlock(pathArray)) {
         /*
          * Vault must be unlocked before the target screen makes sense. If the
-         * app was opened (e.g.) via deep link while auto-locked, detour through
+         * app was opened (e.g.) via deep link while auto-locked, redirect to
          * /reinitialize first and forward to the target via setReturnUrl.
          */
         try {
