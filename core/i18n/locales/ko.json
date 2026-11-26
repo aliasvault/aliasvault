@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "생성",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "숨기기",
     "hideDetails": "세부 정보 숨기기",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "2단계 인증이 설정된 로그인 정보를 자동 완성할 때, 다음 필드에 바로 붙여넣을 수 있도록 TOTP 코드를 클립보드에 자동으로 복사합니다.",
     "credentialAutofill": "로그인 정보 자동 완성",
     "credentialAutofillDescription": "사용자 이름/비밀번호 필드가 감지되면 자동 완성 팝업을 표시합니다",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
     "customClientUrl": "클라이언트 URL",
     "dark": "다크",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "이 사이트에서 활성화됨",
     "exportConfirmTitle": "보관함 내보내기",
     "exportSectionTitle": "내보내기",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "경고: 보관함을 암호화되지 않은 파일로 내보내면 모든 비밀번호와 민감한 정보가 일반 텍스트로 노출됩니다. 신뢰할 수 있는 기기에서만 진행하고, 다음 사항을 반드시 지켜주세요:\n\n• 내보낸 파일을 안전한 위치에 보관하기\n• 더 이상 필요하지 않은 파일은 삭제하기\n• 내보낸 파일을 다른 사람과 절대 공유하지 않기\n\n내보내기를 계속 진행하시겠습니까?",
     "general": {
       "aliasGenerationAgeRangeDescription": "새 신원 정보를 생성할 때 기본 연령대를 설정합니다. 생성된 신원 정보에 할당되는 생년월일에 영향을 줍니다.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "새로운 신원 정보를 생성할 때 사용할 언어를 설정합니다."
     },
     "importExport": "가져오기 / 내보내기",
-    "importSectionDescription": "다른 비밀번호 관리자나 이전 AliasVault 내보내기 파일에서 비밀번호를 가져옵니다.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "가져오기",
-    "importWebNote": "기존 비밀번호 관리자에서 로그인 정보를 가져오려면 웹 앱에 로그인하세요. 가져오기 기능은 현재 웹 버전에서만 제공됩니다.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "AliasVault를 설정하여 iOS에서 네이티브 비밀번호 및 패스키 자동 완성 기능을 사용할 수 있습니다. 아래 설명에 따라 활성화하세요.",
       "openIosSettings": "iOS 설정 열기",
