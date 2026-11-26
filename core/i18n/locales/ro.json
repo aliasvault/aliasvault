@@ -283,6 +283,7 @@
     },
     "expand": "Extinde",
     "generate": "Generează",
+    "goToVault": "Go to vault",
     "help": "Ajutor",
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Când completezi automat datele de autentificare cu 2FA, copiază automat codul TOTP în clipboard, astfel încât să îl poți insera în câmpul următor.",
     "credentialAutofill": "Completează automat datele de autentificare",
     "credentialAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile de utilizator și parolă",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL API",
     "customClientUrl": "URL Client",
     "dark": "Întunecată",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Activat pentru acest site",
     "exportConfirmTitle": "Exportă seiful",
     "exportSectionTitle": "Export",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Setează limba care va fi utilizată la generarea noilor identități."
     },
     "importExport": "Importă / Exportă",
-    "importSectionDescription": "Importă parolele din alte managere de parole sau dintr-un export anterior AliasVault.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importă",
-    "importWebNote": "Pentru a importa datele de autentificare din alte managere de parole, trebuie să te autentifici în aplicația web. Funcția de import este momentan disponibilă doar în versiunea web.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Poți configura AliasVault pentru a oferi funcționalitatea nativă de completare automată a parolelor și passkey-urilor în iOS. Urmează instrucțiunile de mai jos pentru a o activa.",
       "openIosSettings": "Deschide Setări iOS",
