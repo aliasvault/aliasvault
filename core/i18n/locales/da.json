@@ -283,6 +283,7 @@
     },
     "expand": "Udvid",
     "generate": "Generer",
+    "goToVault": "Go to vault",
     "help": "Hjælp",
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Når du automatisk udfylder legitimationsoplysninger med 2FA, kopieres dens TOTP-kode automatisk til klippebordet, så du kan indsætte den i det næste felt.",
     "credentialAutofill": "Loginoplysninger autofyld",
     "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API-URL",
     "customClientUrl": "Klient-URL",
     "dark": "Mørk",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Aktiveret for dette websted",
     "exportConfirmTitle": "Eksporter boks",
     "exportSectionTitle": "Eksport",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede enheder og sørg for at:\n\n• Opbevar den eksporterede fil på et sikkert sted\n• Slet filen, når du ikke længere har brug for den\n• Del aldrig den eksporterede fil med andre\n\nEr du sikker på, at du vil fortsætte med eksporten?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Indstil det sprog, der skal bruges ved generering af nye identiteter."
     },
     "importExport": "Import / Eksport",
-    "importSectionDescription": "Importer dine adgangskoder fra andre adgangskodeadministratorer eller fra en tidligere AliasVault-eksport.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importer",
-    "importWebNote": "For at importere loginoplysninger fra eksisterende adgangskodeadministratorer skal du logge ind på web-appen. Importfunktionen er i øjeblikket kun tilgængelig i webversionen.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Du kan konfigurere AliasVault til at levere indbygget autofyld af adgangskoder og passkeys i iOS. Følg instruktionerne herunder for at aktivere det.",
       "openIosSettings": "Åbn iOS-indstillinger",
