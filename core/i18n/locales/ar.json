@@ -283,6 +283,7 @@
     },
     "expand": "توسيع",
     "generate": "توليد",
+    "goToVault": "Go to vault",
     "help": "مساعدة",
     "hide": "إخفاء",
     "hideDetails": "إخفاء التفاصيل",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "عند ملء بيانات اعتماد تتضمن 2FA تلقائيًا، انسخ رمز TOTP الخاص بها إلى الحافظة تلقائيًا حتى تتمكن من لصقه في الحقل التالي.",
     "credentialAutofill": "الملء التلقائي لبيانات الاعتماد",
     "credentialAutofillDescription": "إظهار نافذة الملء التلقائي عند اكتشاف حقول اسم المستخدم/كلمة المرور",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "رابط API",
     "customClientUrl": "رابط العميل",
     "dark": "داكن",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "مفعّل لهذا الموقع",
     "exportConfirmTitle": "تصدير الخزنة",
     "exportSectionTitle": "تصدير",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "تحذير: تصدير خزنتك إلى ملف غير مشفر سيكشف جميع كلمات المرور والمعلومات الحساسة الخاصة بك كنص عادي. لا تفعل ذلك إلا على أجهزة موثوقة وتأكد من:\n\n• تخزين الملف المُصدَّر في مكان آمن\n• حذف الملف عندما لا تعد بحاجة إليه\n• عدم مشاركة الملف المُصدَّر مع الآخرين أبدًا\n\nهل أنت متأكد أنك تريد متابعة التصدير؟",
     "general": {
       "aliasGenerationAgeRangeDescription": "عيّن نطاق العمر الافتراضي لتوليد هويات جديدة. يؤثر هذا على تاريخ الميلاد المعيَّن للهوية المولّدة.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "عيّن اللغة التي ستُستخدم عند توليد هويات جديدة."
     },
     "importExport": "استيراد / تصدير",
-    "importSectionDescription": "استورد كلمات المرور الخاصة بك من مديري كلمات مرور آخرين أو من تصدير AliasVault سابق.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "استيراد",
-    "importWebNote": "لاستيراد بيانات الاعتماد من مديري كلمات مرور موجودين، يرجى تسجيل الدخول إلى تطبيق الويب. ميزة الاستيراد متاحة حاليًا فقط في إصدار الويب.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "يمكنك تهيئة AliasVault لتوفير وظيفة الملء التلقائي الأصلية لكلمات المرور ومفاتيح المرور في iOS. اتبع التعليمات أدناه لتفعيلها.",
       "openIosSettings": "فتح إعدادات iOS",
