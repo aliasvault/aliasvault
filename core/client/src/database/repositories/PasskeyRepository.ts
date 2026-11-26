@@ -52,7 +52,7 @@ export class PasskeyRepository extends BaseRepository {
    * A passkey belongs to whichever manifest its item is in, so `ManifestId` names the item's manifest.
    * @param passkey - The passkey object to create
    */
-  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
+  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted' | 'CredentialId'> & { CredentialId: Uint8Array | number[] }): Promise<void> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
@@ -72,8 +72,7 @@ export class PasskeyRepository extends BaseRepository {
           : new Uint8Array(passkey.UserHandle);
       }
 
-      // Without a CredentialId, the WebAuthn credential id falls back to the bytes of the passkey Id.
-      const credentialIdData = passkey.CredentialId ? new Uint8Array(passkey.CredentialId) : null;
+      const credentialIdData = new Uint8Array(passkey.CredentialId);
 
       await this.run(this.execute(PasskeyQueries.INSERT, [
         passkey.Id,

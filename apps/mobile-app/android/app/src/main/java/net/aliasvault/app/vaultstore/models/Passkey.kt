@@ -13,7 +13,7 @@ import java.util.UUID
  */
 data class Passkey(
     /**
-     * Passkey record ID; the fallback WebAuthn credential ID when credentialId is null.
+     * Passkey record ID.
      */
     val id: UUID,
 
