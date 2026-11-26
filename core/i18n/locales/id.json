@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "Buat",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Sembunyikan",
     "hideDetails": "Sembunyikan rincian",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Saat Anda mengisi kredensial secara otomatis dengan 2FA, salin kode TOTP-nya secara otomatis ke papan klip agar Anda dapat menempelkannya ke kolom berikutnya.",
     "credentialAutofill": "Pengisian otomatis kredensial",
     "credentialAutofillDescription": "Tampilkan jendela pop-up pengisian otomatis saat kolom nama pengguna/kata sandi terdeteksi",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL API",
     "customClientUrl": "URL Klien",
     "dark": "Gelap",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Diaktifkan untuk situs ini",
     "exportConfirmTitle": "Ekspor Brankas",
     "exportSectionTitle": "Ekspor",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Peringatan: Mengekspor vault Anda ke berkas yang tidak terenkripsi akan membuat semua kata sandi dan informasi sensitif Anda terpapar dalam bentuk teks biasa. Lakukan hal ini hanya pada perangkat yang tepercaya dan pastikan Anda:\n\n• Menyimpan berkas hasil ekspor di lokasi yang aman\n• Menghapus berkas tersebut saat Anda tidak lagi membutuhkannya\n• Jangan pernah membagikan berkas hasil ekspor kepada orang lain\n\nApakah Anda yakin ingin melanjutkan proses ekspor?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Tentukan rentang usia default untuk pembuatan identitas baru. Hal ini memengaruhi tanggal lahir yang ditetapkan pada identitas yang dihasilkan.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Tentukan bahasa yang akan digunakan saat membuat identitas baru."
     },
     "importExport": "Impor / Ekspor",
-    "importSectionDescription": "Impor kata sandi Anda dari pengelola kata sandi lain atau dari file ekspor AliasVault sebelumnya.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Impor",
-    "importWebNote": "Untuk mengimpor kredensial dari pengelola kata sandi yang sudah ada, silakan masuk ke aplikasi web. Fitur impor saat ini hanya tersedia di versi web.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Anda dapat mengonfigurasi AliasVault agar menyediakan fitur pengisian otomatis kata sandi dan passkey bawaan di iOS. Ikuti petunjuk di bawah ini untuk mengaktifkannya.",
       "openIosSettings": "Buka Pengaturan iOS",
