@@ -1,3 +1,4 @@
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -24,7 +25,7 @@ export function importStrongboxCsv(fileContent: string): ImportedCredential[] {
     ServiceUrls: parseUrls(record.URL),
     Username: record.Username,
     Password: record.Password,
-    TwoFactorSecret: record.OTPAuth,
+    TwoFactorCodes: twoFactorCode(record.OTPAuth),
     Notes: record.Notes,
   }));
 }

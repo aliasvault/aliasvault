@@ -1,4 +1,5 @@
 import { nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../../readers/FieldParsers';
@@ -36,7 +37,7 @@ export function importDashlaneCsv(fileContent: string): ImportedCredential[] {
       ServiceUrls: parseUrls(record.url),
       Username: record.username,
       Password: record.password,
-      TwoFactorSecret: record.otpUrl,
+      TwoFactorCodes: twoFactorCode(record.otpUrl),
       Notes: notes.length > 0 ? notes.join('\n') : null,
       // The Dashlane category becomes the folder.
       FolderPath: nullIfBlank(record.category),

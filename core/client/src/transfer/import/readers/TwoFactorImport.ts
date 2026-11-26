@@ -2,6 +2,7 @@ import { ItemTypes, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPe
 
 import { buildOtpAuthUri } from '../../../items/OtpAuthUri';
 import { isBlank } from '../../shared/StringUtils';
+import { twoFactorCode } from '../models/ImportedTwoFactorCode';
 import { UnsupportedOtpCodeError } from '../models/UnsupportedOtpCodeError';
 import { sanitizeTotpSecretKey } from '../writers/TotpHelper';
 
@@ -57,7 +58,7 @@ export function convertTwoFactorEntry(entry: TwoFactorEntry): ImportedCredential
     ServiceName: name || account,
     Username: account || null,
     Notes: isBlank(entry.note) ? null : entry.note,
-    TwoFactorSecret: secret,
+    TwoFactorCodes: twoFactorCode(secret),
     ItemType: ItemTypes.Login,
   };
 }

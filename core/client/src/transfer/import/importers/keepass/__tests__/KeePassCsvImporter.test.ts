@@ -11,7 +11,7 @@ describe('KeePassCsvImporter', () => {
     expect(imported).toHaveLength(16);
     expect(byName(imported, 'AV Login Thrashed').Username).toBe('av-trashed');
     // The CSV has fixed columns, so no folders, dates, TOTP codes, custom fields, attachments or passkeys.
-    expect(imported.some(credential => credential.FolderPath || credential.CreatedAt || credential.TwoFactorSecret || credential.CustomFieldValues || credential.Attachments || credential.Passkeys)).toBe(false);
+    expect(imported.some(credential => credential.FolderPath || credential.CreatedAt || credential.TwoFactorCodes || credential.CustomFieldValues || credential.Attachments || credential.Passkeys)).toBe(false);
 
     const basic = byName(imported, 'AV Login Basic');
     expect(basic.ItemType).toBe(ItemTypes.Login);

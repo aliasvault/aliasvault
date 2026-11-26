@@ -13,7 +13,7 @@ describe('GenericCsvImporter', () => {
     expect(gmail.Username).toBe('your.email@gmail.com');
     expect(gmail.Password).toBe('your_password');
     expect(gmail.Notes).toBe('Important email account');
-    expect(gmail.TwoFactorSecret).toBe('');
+    expect(gmail.TwoFactorCodes).toBeNull();
     expect(gmail.FolderPath).toBe('Personal');
 
     const facebook = byName(imported, 'Facebook');
@@ -21,7 +21,7 @@ describe('GenericCsvImporter', () => {
     expect(facebook.Username).toBe('your.username');
     expect(facebook.Password).toBe('your_password');
     expect(facebook.Notes).toBe('Social media account');
-    expect(facebook.TwoFactorSecret).toBe('');
+    expect(facebook.TwoFactorCodes).toBeNull();
     expect(facebook.FolderPath).toBe('Personal/Social');
 
     const github = byName(imported, 'GitHub');
@@ -29,7 +29,7 @@ describe('GenericCsvImporter', () => {
     expect(github.Username).toBe('developer_username');
     expect(github.Password).toBe('your_password');
     expect(github.Notes).toBe('Development platform');
-    expect(github.TwoFactorSecret).toBe('your_totp_secret_here');
+    expect(github.TwoFactorCodes?.[0].Secret).toBe('your_totp_secret_here');
     expect(github.FolderPath).toBe('Work');
 
     const secureNote = byName(imported, 'Secure Note');
@@ -37,7 +37,7 @@ describe('GenericCsvImporter', () => {
     expect(secureNote.Username).toBe('');
     expect(secureNote.Password).toBe('');
     expect(secureNote.Notes).toBe('Important information or notes without login credentials');
-    expect(secureNote.TwoFactorSecret).toBe('');
+    expect(secureNote.TwoFactorCodes).toBeNull();
     expect(secureNote.FolderPath).toBeNull();
   });
 

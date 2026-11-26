@@ -21,7 +21,7 @@ describe('OnePasswordCsvImporter', () => {
 
     const totp = byName(imported, 'AV Login TOTP');
     expect(totp.Username).toBe('av-totp@example.com');
-    expect(totp.TwoFactorSecret).toBe('otpauth://totp/?secret=JBSWY3DPEHPK3PXP&period=30&algorithm=SHA1&digits=6');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/?secret=JBSWY3DPEHPK3PXP&period=30&algorithm=SHA1&digits=6');
 
     // The CSV holds only the first URL of a login.
     expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com']);

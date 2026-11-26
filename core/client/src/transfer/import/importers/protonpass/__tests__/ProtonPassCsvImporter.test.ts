@@ -26,7 +26,7 @@ describe('ProtonPassCsvImporter', () => {
     expect(totp.Email).toBe('av-totp@example.com');
     expect(totp.Username).toBe('');
     expect(totp.Password).toBe('Pw-Totp-2!');
-    expect(totp.TwoFactorSecret).toBe('');
+    expect(totp.TwoFactorCodes).toBeNull();
 
     expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com/', 'https://b.example.org/login', 'https://c.example.net:8443/']);
     expect(byName(imported, 'AV Login Passkey').Notes).toBe('Autosaved on https://webauthn.io/');
@@ -70,7 +70,7 @@ describe('ProtonPassCsvImporter', () => {
     const imported = importProtonPassCsv(csv);
 
     const withTotp = byName(imported, 'With TOTP');
-    expect(withTotp.TwoFactorSecret).toBe('otpauth://totp/AV?secret=JBSWY3DPEHPK3PXP');
+    expect(withTotp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/AV?secret=JBSWY3DPEHPK3PXP');
     expect(withTotp.ServiceUrls).toEqual(['https://totp.example.com/']);
     expect(withTotp.FolderPath).toBeNull();
     const alias = byName(imported, 'Alias');

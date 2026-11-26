@@ -24,7 +24,7 @@ describe('BitwardenCsvImporter', () => {
 
     const totp = byName(imported, 'AV Login TOTP');
     expect(totp.Username).toBe('av-totp@example.com');
-    expect(totp.TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('JBSWY3DPEHPK3PXP');
 
     // The URLs of a login are one comma separated column.
     expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com/', 'https://b.example.org/login', 'https://c.example.net:8443/']);

@@ -64,11 +64,11 @@ describe('KeePassXmlImporter', () => {
     expect(basic.FolderPath).toBeNull();
     expect(basic.CreatedAt!.getUTCFullYear()).toBeGreaterThanOrEqual(2026);
     expect(basic.CreatedAt!.getTime()).toBeLessThanOrEqual(basic.UpdatedAt!.getTime());
-    expect(basic.TwoFactorSecret).toBeNull();
+    expect(basic.TwoFactorCodes).toBeNull();
 
     // This database was made in KeePassXC, so the TOTP code is an otpauth URI in the "otp" field.
     const totp = byName(imported, 'AV Login TOTP');
-    expect(totp.TwoFactorSecret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
+    expect(totp.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/AV%20Login%20TOTP:av-totp%40example.com?secret=JBSWY3DPEHPK3PXP&period=30&digits=6&issuer=AV%20Login%20TOTP');
     expect(totp.CustomFieldValues).toBeUndefined();
 
     const multiUrl = byName(imported, 'AV Login Multi URL');
@@ -89,7 +89,7 @@ describe('KeePassXmlImporter', () => {
     expect(withPasskey.ServiceUrls).toEqual(['https://webauthn.io']);
     expect(withPasskey.CustomFieldValues).toBeUndefined();
     expect(withPasskey.Passkeys).toBeUndefined();
-    expect(withPasskey.TwoFactorSecret).toBe('otpauth://totp/?secret=JBSWY3DPEHPK3PXP&issuer=');
+    expect(withPasskey.TwoFactorCodes?.[0].Secret).toBe('otpauth://totp/?secret=JBSWY3DPEHPK3PXP&issuer=');
 
     expect(byName(imported, 'AV Login Folder').FolderPath).toBe('AV Work');
     expect(byName(imported, 'AV Login Nested Folder').FolderPath).toBe('AV Work/AV Sub');
@@ -164,7 +164,7 @@ describe('KeePassXmlImporter', () => {
 
     // TOTP fields never become custom fields.
     expect(imported.some(credential => credential.CustomFieldValues)).toBe(false);
-    expect(byName(imported, 'Steam').TwoFactorSecret).toBeNull();
+    expect(byName(imported, 'Steam').TwoFactorCodes).toBeNull();
     const items = convertToItems(imported);
     expect(itemByName(items, 'KeePassXC').TotpCodes).toEqual([expect.objectContaining({ SecretKey: secret, Digits: 6, Period: 30, Algorithm: 'SHA1' })]);
     expect(itemByName(items, 'KeePass 2').TotpCodes).toEqual([expect.objectContaining({ SecretKey: secret, Digits: 8, Period: 60, Algorithm: 'SHA512' })]);

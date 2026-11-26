@@ -82,9 +82,11 @@ export function convertToItem(credential: ImportedCredential, folderPathToId: Ma
     addField(FieldKey.AliasBirthdate, alias.BirthDate ? formatDateOnly(alias.BirthDate) : null);
   }
 
-  const totpCode = credential.TwoFactorSecret ? buildTotpCode(credential.TwoFactorSecret, credential.TwoFactorName ?? '', itemId, row) : null;
-  if (totpCode) {
-    item.TotpCodes.push(totpCode);
+  for (const code of credential.TwoFactorCodes ?? []) {
+    const totpCode = buildTotpCode(code.Secret, code.Name ?? '', itemId, row);
+    if (totpCode) {
+      item.TotpCodes.push(totpCode);
+    }
   }
 
   // Values of the same source definition share one definition.

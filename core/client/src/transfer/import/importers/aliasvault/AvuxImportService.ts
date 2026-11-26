@@ -96,10 +96,9 @@ export class AvuxImportService {
 
       AvuxImportService.extractFieldValues(credential, item.fieldValues, fieldDefinitionsById);
 
-      // The import format carries one TOTP per item, as a URI so its name and parameters survive.
+      // Each TOTP code is carried as a URI so its name and parameters survive.
       if (item.totpCodes.length > 0) {
-        const totpCode = item.totpCodes[0];
-        credential.TwoFactorSecret = formatTotpUri({ Name: totpCode.name, SecretKey: totpCode.secretKey, Algorithm: totpCode.algorithm, Digits: totpCode.digits, Period: totpCode.period });
+        credential.TwoFactorCodes = item.totpCodes.map(totpCode => ({ Secret: formatTotpUri({ Name: totpCode.name, SecretKey: totpCode.secretKey, Algorithm: totpCode.algorithm, Digits: totpCode.digits, Period: totpCode.period }) }));
       }
 
       if (item.passkeys.length > 0) {

@@ -124,7 +124,7 @@ const previewLayoutOf = (credentials: ImportedCredential[], enrichmentCount: num
     return enrichmentCount > 0 ? PreviewLayout.Additions : PreviewLayout.Empty;
   }
   // A 2FA app export holds codes and no passwords.
-  const hasOnlyCodes = credentials.some(credential => credential.TwoFactorSecret) && credentials.every(credential => !credential.Password);
+  const hasOnlyCodes = credentials.some(credential => credential.TwoFactorCodes?.length) && credentials.every(credential => !credential.Password);
   return hasOnlyCodes ? PreviewLayout.TotpCodes : PreviewLayout.Passwords;
 };
 
@@ -800,7 +800,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       case PreviewLayout.Passwords:
         return renderNewItemsPreview(t('common.password'), credential => '*'.repeat(credential.Password?.length ?? 0));
       case PreviewLayout.TotpCodes:
-        return renderNewItemsPreview(t('items.filters.totp'), credential => (credential.TwoFactorSecret ? <ImportedTotpCode secret={credential.TwoFactorSecret} /> : null));
+        return renderNewItemsPreview(t('items.filters.totp'), credential => credential.TwoFactorCodes?.map(code => <ImportedTotpCode key={code.Secret} secret={code.Secret} />) ?? null);
       case PreviewLayout.Additions:
         return renderPreviewTable(t('common.added'), enrichments.map(enrichment => ({ credential: enrichment.credential, detail: describeAdditions(enrichment) })));
       case PreviewLayout.Empty:

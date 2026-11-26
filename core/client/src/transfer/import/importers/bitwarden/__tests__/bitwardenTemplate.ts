@@ -42,7 +42,7 @@ export function expectBitwardenTemplateItems(result: ImportFileResult): void {
   const totp = byName(imported, 'AV Login TOTP');
   expect(totp.Username).toBe('av-totp@example.com');
   expect(totp.Password).toBe('Pw-Totp-2!');
-  expect(totp.TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+  expect(totp.TwoFactorCodes?.[0].Secret).toBe('JBSWY3DPEHPK3PXP');
   expect(totp.CustomFieldValues).toBeUndefined();
 
   expect(byName(imported, 'AV Login Multi URL').ServiceUrls).toEqual(['https://a.example.com/', 'https://b.example.org/login', 'https://c.example.net:8443/']);

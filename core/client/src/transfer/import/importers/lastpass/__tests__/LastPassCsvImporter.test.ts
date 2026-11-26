@@ -14,7 +14,7 @@ describe('LastPassCsvImporter', () => {
     expect(example.Username).toBe('Exampleusername');
     expect(example.Password).toBe('examplepassword');
     expect(example.Notes).toBe('Examplenotes');
-    expect(example.TwoFactorSecret).toBe('');
+    expect(example.TwoFactorCodes).toBeNull();
 
     // LastPass writes "http://" for entries without a URL.
     const withoutUrl = byName(imported, 'Userwithouturlornotes');
@@ -22,7 +22,7 @@ describe('LastPassCsvImporter', () => {
     expect(withoutUrl.Username).toBe('userwithouturlornotes');
     expect(withoutUrl.Password).toBe('userpass');
     expect(withoutUrl.Notes).toBe('');
-    expect(withoutUrl.TwoFactorSecret).toBe('');
+    expect(withoutUrl.TwoFactorCodes).toBeNull();
 
     // Secure notes use "http://sn".
     const secureNote = byName(imported, 'securenote1');
@@ -30,7 +30,7 @@ describe('LastPassCsvImporter', () => {
     expect(secureNote.Username).toBe('');
     expect(secureNote.Password).toBe('');
     expect(secureNote.Notes).toBe('Securenotecontent here');
-    expect(secureNote.TwoFactorSecret).toBe('');
+    expect(secureNote.TwoFactorCodes).toBeNull();
 
     const creditCard = byName(imported, 'Paymentcard1');
     expect(creditCard.ServiceUrls?.[0]).toBeUndefined();
@@ -42,7 +42,7 @@ describe('LastPassCsvImporter', () => {
     expect(creditCard.Creditcard!.Number).toBe('123456781234');
     expect(creditCard.Creditcard!.Cvv).toBe('1234');
     expect(creditCard.Notes).toBe('Creditcardnotes here');
-    expect(creditCard.TwoFactorSecret).toBe('');
+    expect(creditCard.TwoFactorCodes).toBeNull();
   });
 
   it('detects LastPass secure notes', () => {

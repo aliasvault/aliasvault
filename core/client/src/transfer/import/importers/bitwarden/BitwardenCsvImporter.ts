@@ -1,6 +1,7 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 
 import { nullIfBlank } from '../../../shared/StringUtils';
+import { twoFactorCode } from '../../models/ImportedTwoFactorCode';
 import { addCustomField } from '../../readers/ArchiveImport';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
@@ -43,7 +44,7 @@ export function importBitwardenCsv(fileContent: string): ImportedCredential[] {
       ServiceUrls: parseUrls(record.login_uri),
       Username: record.login_username,
       Password: record.login_password,
-      TwoFactorSecret: record.login_totp,
+      TwoFactorCodes: twoFactorCode(record.login_totp),
       Notes: record.notes,
       FolderPath: nullIfBlank(record.folder),
       ItemType: mapItemType(record.type, ITEM_TYPES),
