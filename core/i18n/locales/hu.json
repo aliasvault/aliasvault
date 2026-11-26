@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "Generálás",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Elrejtés",
     "hideDetails": "Részletek elrejtése",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Amikor egy bejegyzést illeszt be amely 2FA-val rendelkezik, automatikusan másolja a jelenlegi TOTP kódot is a vágólapra.",
     "credentialAutofill": "Bejegyzések kitöltése",
     "credentialAutofillDescription": "Felugró kitöltő ablak megjelenítése ha felhasználónév/jelszó mezőt érzékel",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API webcím",
     "customClientUrl": "Kliens webcím",
     "dark": "Sötét",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Ehhez az oldalhoz engedélyezve",
     "exportConfirmTitle": "Széf exportálása",
     "exportSectionTitle": "Exportálás",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szüksége\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Állítsa be a személyiség generáláshoz használt alap kor intervallumot. Ez hatással lesz a születési időre.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Állítsa be a személyazonosság generáláshoz használt nyelvet."
     },
     "importExport": "Importálás / Exportálás",
-    "importSectionDescription": "Importálja be jelszavait egy másik jelszókezelőből, vagy egy korábbi AliasVault exportból.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importálás",
-    "importWebNote": "Ahhoz, hogy más jelszókezelőkből tudjon importálni, be kell jelentkeznie a webes felületre. Az importálás sajnos jelenleg még csak a weben érhető el.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Az AliasVault-ot be tudja úgy állítani, hogy natívan töltse ki a jelszavakat és azonosítókulcsokat az iOS-ben. Kövesse a lenti leírást a beállításhoz.",
       "openIosSettings": "iOS beállítások megnyitása",
