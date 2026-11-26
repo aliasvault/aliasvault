@@ -157,7 +157,7 @@ fn merge_manifest_pair(server: Manifest, server_buckets: Vec<DataBucket>, local:
     // A delete that won can leave the other side's children under a tombstoned item, and a union of concurrently
     // added multi-value rows can leave two rows at the same ValueIndex: repair and normalize like any canonicalized manifest.
     crate::vault_codec::integrity::repair(&mut merged);
-    crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
+    crate::vault_codec::normalize::normalize_for_codec(&mut merged);
 
     // One bucket per category: the merged rows of the tables this build buckets, plus the server's tables of that
     // category it does not know; a merged bucket keeps the server's extra top-level keys.
@@ -216,7 +216,7 @@ fn pass_through(local: Manifest, local_buckets: Vec<DataBucket>) -> CanonicalMan
 /// incoming-only rows in first-occurrence order.
 fn merge_rows(config: &TableConfig, base_rows: Vec<CodecRecord>, incoming_rows: Vec<CodecRecord>, schema_columns: &HashMap<String, Vec<String>>, stats: &mut MergeStats) -> Vec<CodecRecord> {
     let identity_columns = config.identity_columns();
-    // Rows arrive in wire shape, so a canonical key may rely on stripped derived ids.
+    // Rows arrive in codec shape, so a canonical key may rely on stripped derived ids.
     let match_columns: &[&str] = if config.canonical_key_columns.is_empty() { &identity_columns } else { config.canonical_key_columns };
     let known_columns: Option<HashSet<&str>> = schema_columns.get(config.name).map(|cols| cols.iter().map(String::as_str).collect());
 

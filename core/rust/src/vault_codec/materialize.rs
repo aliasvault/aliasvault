@@ -41,7 +41,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
     let mut combined = super::sharing::combine_manifest_tables(manifests);
-    super::normalize::derive_missing_ids(&mut combined);
+    super::normalize::normalize_for_sqlite(&mut combined);
     super::normalize::normalize_id_spelling(&mut combined);
 
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());

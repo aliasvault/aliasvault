@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use serde_json::json;
 
 use crate::vault_codec::manifest::CodecRecord;
-use crate::vault_codec::normalize::*;
+use crate::vault_codec::normalize::shape::has_id;
+use crate::vault_codec::normalize::{field_history_id_for, field_value_id_for, normalize_for_codec};
 use crate::vault_model::names::{FIELD_KEY_COL, FIELD_VALUES_TABLE, ID_COL, ITEM_ID_COL};
 use crate::vault_model::MANIFEST_ID_COL;
 
@@ -53,7 +54,7 @@ fn field_value(id: Option<&str>, field_key: &str, value: &str, updated_at: &str)
 
 fn normalized(rows: Vec<CodecRecord>) -> Vec<CodecRecord> {
     let mut tables: HashMap<String, Vec<CodecRecord>> = [(FIELD_VALUES_TABLE.to_string(), rows)].into_iter().collect();
-    normalize_row_shapes(&mut tables);
+    normalize_for_codec(&mut tables);
     tables.remove(FIELD_VALUES_TABLE).unwrap()
 }
 

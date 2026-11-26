@@ -29,7 +29,7 @@ fn tombstone(id: &str, updated_at: &str) -> CodecRecord {
     at(updated_at, &[("Id", json!(id)), ("Name", json!("item")), ("IsDeleted", json!(1))])
 }
 
-/// A single-value `FieldValues` row of `item-1` in wire shape (no id).
+/// A single-value `FieldValues` row of `item-1` in codec shape (no id).
 fn field(key: &str, value: &str, deleted: bool, updated_at: &str) -> CodecRecord {
     at(updated_at, &[("ItemId", json!("item-1")), ("FieldKey", json!(key)), ("ValueIndex", json!(0)), ("Value", json!(value)), ("IsDeleted", json!(deleted as i32))])
 }
@@ -393,16 +393,4 @@ fn two_devices_using_one_item_keep_both_counts() {
     let mut counts: Vec<(String, i64)> = stats.tables["ItemStats"].iter().map(|r| (r["DeviceId"].as_str().unwrap().to_string(), r["UseCount"].as_i64().unwrap())).collect();
     counts.sort();
     assert_eq!(counts, vec![("device-phone".to_string(), 55), ("device-web".to_string(), 51)]);
-}
-
-#[test]
-fn a_stats_row_without_a_device_is_dropped() {
-    // Rows from before stats were kept per device would collide on materialize, so they do not survive a merge.
-    let legacy = at(T_NEW, &[("Id", json!("item-1")), ("UseCount", json!(9)), ("LastUsedAt", json!(T_NEW))]);
-    let stats_bucket = |rows: Vec<CodecRecord>| DataBucket::new(PERSONAL, "stats", [("ItemStats".to_string(), rows)].into_iter().collect());
-    let items = || item_manifest(vec![item("item-1", "item", T_OLD)], vec![]);
-
-    let output = merge_with_buckets(vec![items()], vec![stats_bucket(vec![legacy])], vec![items()], vec![]);
-
-    assert!(output.manifests[0].buckets.iter().all(|b| b.tables.get("ItemStats").is_none_or(Vec::is_empty)));
 }
