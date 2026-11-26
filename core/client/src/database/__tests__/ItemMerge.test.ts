@@ -70,7 +70,7 @@ describe('merging items', () => {
    * @param id - The passkey id
    */
   async function addPasskey(item: ItemRef, id: string): Promise<void> {
-    await client.passkeys.create({ Id: id, ItemId: item.Id, ManifestId: item.ManifestId, RpId: 'example.com', UserHandle: new Uint8Array([1]), PublicKey: '{}', PrivateKey: '{}', DisplayName: 'bob' } as Parameters<SqliteClient['passkeys']['create']>[0]);
+    await client.passkeys.create({ Id: id, CredentialId: new TextEncoder().encode(id), ItemId: item.Id, ManifestId: item.ManifestId, RpId: 'example.com', UserHandle: new Uint8Array([1]), PublicKey: '{}', PrivateKey: '{}', DisplayName: 'bob' } as Parameters<SqliteClient['passkeys']['create']>[0]);
   }
 
   /**

@@ -75,6 +75,27 @@ fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
 }
 
 #[test]
+fn account_upgrade_fills_the_passkey_credential_id() {
+    const PASSKEY: &str = "bbbbbbbb-0000-4000-8000-000000000001";
+    let unlock_key = crypto::aes_gcm::generate_key();
+    let server = FakeServer::new();
+    server.borrow_mut().publish_contentless_personal(3);
+    let mut host = legacy_device(&unlock_key, &server, |db| {
+        insert_item(db, ITEM_A, "Item");
+        db.execute("INSERT INTO Passkeys (ManifestId, Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 'example.com', X'01', 'pub', 'priv', 'Passkey', NULL, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, PASSKEY, ITEM_A, super::now(), super::now()]).unwrap();
+    });
+
+    let result = host.run("migrateManifest");
+
+    assert_eq!(result["success"], true, "{} {:?}", result, host.logs);
+    let credential_id = crate::passkey::guid_to_bytes(PASSKEY).unwrap();
+    let local: Vec<u8> = host.local.query_row("SELECT CredentialId FROM Passkeys", [], |row| row.get(0)).unwrap();
+    assert_eq!(local, credential_id, "the local vault holds the credential id the passkey was created with");
+    let manifest = decrypt_manifest(host.last_vault_write()["manifests"][0]["manifestBlob"].as_str().unwrap(), &host.vault_key, PERSONAL_MANIFEST_ID);
+    assert_eq!(manifest["tables"]["Passkeys"][0]["CredentialId"], json!({ "__b64": crate::common::encoding::base64_encode(&credential_id) }), "and so does the pushed manifest");
+}
+
+#[test]
 fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     // The migration encrypts every personal blob again under the new key; one it has no bytes for would stay under
     // the old key and never open again. The vault stays dirty and the migration runs again once the blob loads.

@@ -36,6 +36,7 @@ fn insert_value(conn: &Connection, manifest_id: &str, item_id: &str, field_key: 
 fn new_passkey(id: &str, rp_id: &str, user_handle: &[u8]) -> NewPasskey {
     NewPasskey {
         id: id.to_string(),
+        credential_id: crate::passkey::guid_to_bytes(id).unwrap(),
         rp_id: rp_id.to_string(),
         user_handle: Some(user_handle.to_vec()),
         public_key: "{\"kty\":\"EC\"}".to_string(),
@@ -123,37 +124,51 @@ fn passkey_item_is_created_with_url_username_and_favicon() {
 }
 
 #[test]
-fn a_credential_id_finds_an_imported_passkey_or_the_row_its_guid_bytes_name() {
+fn a_new_passkey_stores_the_credential_id_it_was_created_with() {
     with_vault(|conn| {
         const NATIVE: &str = "abcdef00-0000-4000-8000-000000000001";
-        const IMPORTED: &str = "00000000-0000-4000-8000-00000000aaaa";
         create_item_with_passkey(conn, PERSONAL, ITEM, "Example", "https://example.com", None, &new_passkey(NATIVE, "example.com", b"u"), None).unwrap();
-        conn.execute(
-            "INSERT INTO Passkeys (Id, ManifestId, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?1, ?2, ?3, 'example.com', X'01', '{}', '{}', 'imported', X'0A0B0C0D', ?4, ?4, 0)",
-            params![IMPORTED, PERSONAL, ITEM, T0],
-        )
-        .unwrap();
 
         let native_id = crate::passkey::guid_to_bytes(NATIVE).unwrap();
         let native = get_passkey_by_credential_id(conn, "example.com", &native_id).unwrap().unwrap();
         assert_eq!(native.passkey.id, NATIVE);
-        assert!(native.passkey.credential_id.is_none());
+        assert_eq!(native.passkey.credential_id.as_deref(), Some(&native_id[..]));
+    });
+}
+
+#[test]
+fn a_credential_id_finds_an_imported_passkey_or_a_legacy_row_by_its_guid_bytes() {
+    with_vault(|conn| {
+        const LEGACY: &str = "abcdef00-0000-4000-8000-000000000001";
+        const IMPORTED: &str = "00000000-0000-4000-8000-00000000aaaa";
+        create_item_with_passkey(conn, PERSONAL, ITEM, "Example", "https://example.com", None, &new_passkey("abcdef00-0000-4000-8000-00000000000f", "example.com", b"u"), None).unwrap();
+        let insert = |id: &str, name: &str, credential_id: Option<&[u8]>, created_at: &str| {
+            conn.execute(
+                "INSERT INTO Passkeys (Id, ManifestId, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?1, ?2, ?3, 'example.com', X'01', '{}', '{}', ?4, ?5, ?6, ?7, 0)",
+                params![id, PERSONAL, ITEM, name, credential_id, created_at, T0],
+            )
+            .unwrap();
+        };
+        // A row a client before 0.32.0 created, which no pull or schema rebuild has rewritten yet.
+        insert(LEGACY, "legacy", None, T0);
+        insert(IMPORTED, "imported", Some(&[10, 11, 12, 13]), T0);
+
+        let legacy_id = crate::passkey::guid_to_bytes(LEGACY).unwrap();
+        let legacy = get_passkey_by_credential_id(conn, "example.com", &legacy_id).unwrap().unwrap();
+        assert_eq!(legacy.passkey.id, LEGACY);
+        assert!(legacy.passkey.credential_id.is_none());
 
         let imported = get_passkey_by_credential_id(conn, "example.com", &[10, 11, 12, 13]).unwrap().unwrap();
         assert_eq!(imported.passkey.id, IMPORTED);
         assert_eq!(imported.passkey.credential_id.as_deref(), Some(&[10u8, 11, 12, 13][..]));
 
-        assert!(get_passkey_by_credential_id(conn, "example.com", &crate::passkey::guid_to_bytes(IMPORTED).unwrap()).unwrap().is_none());
+        assert!(get_passkey_by_credential_id(conn, "example.com", &crate::passkey::guid_to_bytes(IMPORTED).unwrap()).unwrap().is_none(), "a row with a CredentialId is never found by its Id");
         assert!(get_passkey_by_credential_id(conn, "example.com", &[1, 2, 3]).unwrap().is_none());
         assert!(get_passkey_by_credential_id(conn, "other.example", &[10, 11, 12, 13]).unwrap().is_none());
 
-        // An imported row that claims the id of a row AliasVault created does not take its place.
-        conn.execute(
-            "INSERT INTO Passkeys (Id, ManifestId, ItemId, RpId, UserHandle, PublicKey, PrivateKey, DisplayName, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES ('00000000-0000-4000-8000-00000000bbbb', ?1, ?2, 'example.com', X'01', '{}', '{}', 'claims', ?3, '2999-01-01 00:00:00', ?4, 0)",
-            params![PERSONAL, ITEM, native_id, T0],
-        )
-        .unwrap();
-        assert_eq!(get_passkey_by_credential_id(conn, "example.com", &native_id).unwrap().unwrap().passkey.id, NATIVE);
+        // A CredentialId match wins over the Id fallback, the same row that wins once a sync fills the legacy row.
+        insert("00000000-0000-4000-8000-00000000bbbb", "claims", Some(&legacy_id), "2999-01-01 00:00:00");
+        assert_eq!(get_passkey_by_credential_id(conn, "example.com", &legacy_id).unwrap().unwrap().passkey.display_name, "claims");
     });
 }
 
