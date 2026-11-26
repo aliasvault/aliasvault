@@ -283,6 +283,7 @@
     },
     "expand": "展开",
     "generate": "生成",
+    "goToVault": "Go to vault",
     "help": "帮助",
     "hide": "隐藏",
     "hideDetails": "隐藏详情",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "自动填充双因素验证凭据时，自动将其 TOTP 验证码复制到剪贴板，以便您可以将其粘贴到下一个字段中。",
     "credentialAutofill": "凭据自动填充",
     "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
     "customClientUrl": "客户端 URL",
     "dark": "深色",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "对此网站启用",
     "exportConfirmTitle": "导出密码库",
     "exportSectionTitle": "导出",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。请您仅在受信任的设备上执行此操作，并确保您：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n您确定要继续导出吗？",
     "general": {
       "aliasGenerationAgeRangeDescription": "设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。",
@@ -1331,9 +1341,9 @@
       "languageDescription": "设置生成新身份将使用的语言。"
     },
     "importExport": "导入 / 导出",
-    "importSectionDescription": "从其他密码管理器或先前的 AliasVault 导出文件中导入您的密码。",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "导入",
-    "importWebNote": "要从现有密码管理器导入凭据，请登录网页版应用。目前导入功能仅在网页版上可用。",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "您可以为 AliasVault 配置 iOS 原生密码和通行密钥自动填充功能，请依照以下说明进行启用。",
       "openIosSettings": "打开 iOS 设置",
