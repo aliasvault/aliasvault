@@ -3,6 +3,8 @@
 #[cfg(test)]
 mod tests;
 
+use std::ops::Range;
+
 use mail_parser::{GetHeader, Message, MessageParser, MessagePart, MimeHeaders};
 use serde::Serialize;
 
@@ -111,6 +113,39 @@ pub fn extract_email_attachment(source: &[u8], index: usize, detached_body: Opti
     Ok(attachment_at(&message, index)?.contents().to_vec())
 }
 
+/// Rebuild full RFC 822 bytes of a stored email source for saving it as an .eml file.
+pub fn rebuild_email_source(source: &[u8], detached_bodies: &[Vec<u8>]) -> VaultResult<Vec<u8>> {
+    let raw = decode_email_source(source)?;
+    let mut edits: Vec<(Range<usize>, Vec<u8>)> = Vec::new();
+    {
+        let message = parse_message(&raw)?;
+        for part in &message.parts {
+            let Some(part_index) = detached_part_index(part) else { continue };
+            let body = detached_bodies.get(part_index as usize).ok_or_else(|| VaultError::General(format!("The body of detached part {} is missing", part_index)))?;
+
+            for header in part.headers.iter().filter(|header| is_detached_part_header(header.name.as_str())) {
+                edits.push((header.offset_field as usize..header.offset_end as usize, Vec::new()));
+            }
+            edits.push((part.offset_body as usize..part.offset_end as usize, gunzip(body, MAX_DECOMPRESSED_EMAIL_BYTES)?));
+        }
+    }
+
+    edits.sort_by_key(|(range, _)| range.start);
+    let mut rebuilt = Vec::with_capacity(raw.len() + edits.iter().map(|(_, bytes)| bytes.len()).sum::<usize>());
+    let mut position = 0;
+    for (range, bytes) in edits {
+        if range.start < position || range.end < range.start || range.end > raw.len() {
+            return Err(VaultError::General("The detached parts of the email source overlap".to_string()));
+        }
+        rebuilt.extend_from_slice(&raw[position..range.start]);
+        rebuilt.extend_from_slice(&bytes);
+        position = range.end;
+    }
+    rebuilt.extend_from_slice(&raw[position..]);
+
+    Ok(rebuilt)
+}
+
 /// [`parse_email_source`] as JSON, for the uniffi bindings.
 pub fn parse_email_source_json(source: &[u8]) -> VaultResult<String> {
     Ok(serde_json::to_string(&parse_email_source(source)?)?)
@@ -129,6 +164,11 @@ fn attachment_at<'x>(message: &'x Message<'x>, index: usize) -> VaultResult<&'x 
 /// The index a detached attachment's body is stored under, or None while the body is inline.
 fn detached_part_index(part: &MessagePart<'_>) -> Option<u32> {
     header_u64(part, DETACHED_PART_INDEX_HEADER).and_then(|index| u32::try_from(index).ok())
+}
+
+/// Whether a header is one the server stamps on a detached part.
+fn is_detached_part_header(name: &str) -> bool {
+    name.eq_ignore_ascii_case(DETACHED_PART_INDEX_HEADER) || name.eq_ignore_ascii_case(DETACHED_PART_LENGTH_HEADER)
 }
 
 /// A header of a part as an unsigned number, or None when absent or not numeric.

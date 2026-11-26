@@ -129,6 +129,12 @@ pub fn extract_email_attachment(source: Vec<u8>, index: u32, detached_body: Opti
     crate::email_parser::extract_email_attachment(&source, index as usize, detached_body.as_deref())
 }
 
+/// The full RFC 822 bytes of a stored email source for an .eml file.
+#[uniffi::export]
+pub fn rebuild_email_source(source: Vec<u8>, detached_bodies: Vec<Vec<u8>>) -> Result<Vec<u8>, VaultError> {
+    crate::email_parser::rebuild_email_source(&source, &detached_bodies)
+}
+
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what [`vault_codec_logo_id_for`] then derives the row id from.
 #[uniffi::export]

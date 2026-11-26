@@ -31,6 +31,7 @@ import uniffi.aliasvault_core.normalizeSvgLogo
 import uniffi.aliasvault_core.openKeyChainWithAccountKey
 import uniffi.aliasvault_core.openKeyChainWithUnlockKey
 import uniffi.aliasvault_core.parseEmailSource
+import uniffi.aliasvault_core.rebuildEmailSource
 import uniffi.aliasvault_core.reencryptAccountKeyJson
 import uniffi.aliasvault_core.rsaDecrypt
 import uniffi.aliasvault_core.selectFaviconTarget
@@ -87,6 +88,7 @@ object RustCoreDispatcher {
             "parseEmailSource" -> parseEmailSource(args.bytes(0))
             "decodeEmailSource" -> json(decodeEmailSource(args.bytes(0)))
             "extractEmailAttachment" -> json(extractEmailAttachment(args.bytes(0), args.uint(1), args.optionalBytes(2)))
+            "rebuildEmailSource" -> json(rebuildEmailSource(args.bytes(0), args.bytesList(1)))
             "rsaDecrypt" -> json(rsaDecrypt(args.string(0), args.string(1)))
             "symmetricDecrypt" -> json(symmetricDecrypt(args.string(0), args.string(1)))
             "symmetricDecryptBytes" -> json(symmetricDecryptBytes(args.bytes(0), args.string(1)))
@@ -144,6 +146,8 @@ object RustCoreDispatcher {
         fun bytes(index: Int): ByteArray = Base64.decode(string(index), Base64.NO_WRAP)
 
         fun optionalBytes(index: Int): ByteArray? = optionalString(index)?.let { Base64.decode(it, Base64.NO_WRAP) }
+
+        fun bytesList(index: Int): List<ByteArray> = strings(index).map { Base64.decode(it, Base64.NO_WRAP) }
     }
 
     /** JSON-encode a plain string. */

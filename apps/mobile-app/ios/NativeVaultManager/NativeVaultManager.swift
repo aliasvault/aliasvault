@@ -1587,6 +1587,13 @@ private enum RustCoreDispatcher {
             guard let value = Data(base64Encoded: encoded) else { throw DispatchError.badArgument(index) }
             return value
         }
+
+        func dataList(_ index: Int) throws -> [Data] {
+            return try strings(index).map { encoded in
+                guard let value = Data(base64Encoded: encoded) else { throw DispatchError.badArgument(index) }
+                return value
+            }
+        }
     }
 
     static func call(name: String, argsJson: String) throws -> String {
@@ -1622,6 +1629,7 @@ private enum RustCoreDispatcher {
         case "decodeEmailSource": return try json(bytes: try RustCoreFramework.decodeEmailSource(source: try args.data(0)))
         case "extractEmailAttachment":
             return try json(bytes: try RustCoreFramework.extractEmailAttachment(source: try args.data(0), index: try args.uint32(1), detachedBody: try args.optionalData(2)))
+        case "rebuildEmailSource": return try json(bytes: try RustCoreFramework.rebuildEmailSource(source: try args.data(0), detachedBodies: try args.dataList(1)))
         case "rsaDecrypt": return try json(bytes: try RustCoreFramework.rsaDecrypt(base64Ciphertext: try args.string(0), privateKeyJwk: try args.string(1)))
         case "symmetricDecrypt": return try json(try RustCoreFramework.symmetricDecrypt(base64Ciphertext: try args.string(0), keyBase64: try args.string(1)))
         case "symmetricDecryptBytes": return try json(bytes: try RustCoreFramework.symmetricDecryptBytes(encrypted: try args.data(0), keyBase64: try args.string(1)))

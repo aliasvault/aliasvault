@@ -175,6 +175,13 @@ export async function extractEmailAttachment(source: Uint8Array, index: number, 
 }
 
 /**
+ * The full RFC 822 bytes of a stored email source for an .eml file.
+ */
+export async function rebuildEmailSource(source: Uint8Array, detachedBodies: Uint8Array[]): Promise<Uint8Array> {
+  return rustCore().rebuildEmailSource(source, detachedBodies);
+}
+
+/**
  * A fresh random salt for a new PIN wrap.
  */
 export async function pinGenerateSalt(): Promise<Uint8Array> {

@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "disabled": "Disabled",
     "dismiss": "Dismiss",
+    "download": "Download",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
     "duplicateSuccessMessage": "Item duplicated successfully.",

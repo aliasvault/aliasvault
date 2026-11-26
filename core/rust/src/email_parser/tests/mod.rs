@@ -213,6 +213,76 @@ fn extracts_attachments_from_compressed_source() {
     assert_eq!(extract_email_attachment(&compressed, 0, None).unwrap(), b"%PDF-hello");
 }
 
+/// An email with one attachment as MimeKit writes it on the server (LF line endings).
+const DETACHABLE_EMAIL: &str = "From: a@b.c\n\
+To: d@e.f\n\
+Subject: Big\n\
+MIME-Version: 1.0\n\
+Content-Type: multipart/mixed; boundary=\"b\"\n\
+\n\
+--b\n\
+Content-Type: text/plain\n\
+\n\
+Body\n\
+--b\n\
+Content-Type: application/octet-stream\n\
+Content-Disposition: attachment; filename=\"big.bin\"\n\
+Content-Transfer-Encoding: base64\n\
+\n\
+Zmlyc3Q=\n\
+--b--\n";
+
+/// [`DETACHABLE_EMAIL`] as the server stores it after detaching the attachment: MimeKit's output, captured as-is.
+const DETACHED_SKELETON: &str = "From: a@b.c\n\
+To: d@e.f\n\
+Subject: Big\n\
+MIME-Version: 1.0\n\
+Content-Type: multipart/mixed; boundary=\"b\"\n\
+\n\
+--b\n\
+Content-Type: text/plain\n\
+\n\
+Body\n\
+--b\n\
+Content-Type: application/octet-stream\n\
+Content-Disposition: attachment; filename=\"big.bin\"\n\
+Content-Transfer-Encoding: base64\n\
+X-AliasVault-Part: 0\n\
+X-AliasVault-Detached-Length: 5\n\
+\n\
+\n\
+--b--\n";
+
+/// The stored body of the detached attachment: its transfer-encoded content without the newline before the boundary.
+const DETACHED_BODY: &[u8] = b"Zmlyc3Q=";
+
+#[test]
+fn rebuilds_detached_source_to_the_original_message() {
+    let rebuilt = rebuild_email_source(&gzip(DETACHED_SKELETON.as_bytes()), &[gzip(DETACHED_BODY)]).unwrap();
+
+    assert_eq!(String::from_utf8(rebuilt.clone()).unwrap(), DETACHABLE_EMAIL);
+    assert_eq!(extract_email_attachment(&gzip(&rebuilt), 0, None).unwrap(), b"first");
+}
+
+#[test]
+fn rebuilds_detached_source_with_crlf_line_endings() {
+    let skeleton = DETACHED_SKELETON.replace('\n', "\r\n");
+    let rebuilt = rebuild_email_source(&gzip(skeleton.as_bytes()), &[gzip(DETACHED_BODY)]).unwrap();
+
+    assert_eq!(String::from_utf8(rebuilt).unwrap(), DETACHABLE_EMAIL.replace('\n', "\r\n"));
+}
+
+#[test]
+fn rebuild_without_detached_parts_returns_the_decoded_source() {
+    assert_eq!(rebuild_email_source(&gzip(MULTIPART_EMAIL.as_bytes()), &[]).unwrap(), MULTIPART_EMAIL.as_bytes());
+    assert_eq!(rebuild_email_source(&legacy_double_encode(UNICODE_EMAIL.as_bytes()), &[]).unwrap(), UNICODE_EMAIL.as_bytes());
+}
+
+#[test]
+fn rebuild_errors_when_a_detached_body_is_missing() {
+    assert!(rebuild_email_source(&gzip(DETACHED_SKELETON.as_bytes()), &[]).is_err(), "a missing body must error, not save an email without its attachment");
+}
+
 #[test]
 fn invalid_gzip_input_errors() {
     let bogus = [0x1f, 0x8b, 0x00, 0x01, 0x02];
