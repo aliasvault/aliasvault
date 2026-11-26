@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "יצירה",
+    "goToVault": "Go to vault",
     "help": "עזרה",
     "hide": "הסתרה",
     "hideDetails": "הסתרת פרטים",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "מילוי פרטי גישה אוטומטי",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "כתובת API",
     "customClientUrl": "כתובת לקוח",
     "dark": "כהה",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "פעיל לאתר הזה",
     "exportConfirmTitle": "ייצוא כספת",
     "exportSectionTitle": "ייצוא",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מכשירים מהימנים וגם לוודא:\n\n• שאחסנת את הקובץ המיוצר במקום בטוח\n• שמחקת את הקובץ אם אין בו צורך עוד\n • לעולם לא לשתף את הקובץ המיוצא עם אחרים\n\nלהמשיך בייצוא?",
     "general": {
       "aliasGenerationAgeRangeDescription": "הגדרת טווח הגילים כברירת המחדל ליצירת זהויות חדשות. ההגדרות הזאת משפיעה על תאריך הלידה שמוקצית לזהות שנוצרת.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות."
     },
     "importExport": "ייבוא / ייצוא",
-    "importSectionDescription": "אפשר לייבא את הסיסמאות שלך ממנהלי סיסמאות אחרים או מנתונים שיוצאו מ־AliasVault בעבר.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "ייבוא",
-    "importWebNote": "כדי לייבא פרטי גישה ממנהלי סיסמאות קיימים, נא להיכנס דרך יישום הדפדפן. יכולת הייבוא זמינה רק במהדורת הדפדפן.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "openIosSettings": "לפתוח את הגדרות iOS",
