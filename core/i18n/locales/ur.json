@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "جنریٹ کریں",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Hide",
     "hideDetails": "Hide details",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
     "customClientUrl": "Client URL",
     "dark": "Dark",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Enabled for this site",
     "exportConfirmTitle": "Export Vault",
     "exportSectionTitle": "Export",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Set the language that will be used when generating new identities."
     },
     "importExport": "Import / Export",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Import",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "openIosSettings": "Open iOS Settings",
