@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '@/platform/CryptoPolyfill';
 import '@/platform/IgnoredWarnings';
 import '@/platform/MobilePlatform';
+import { pendingImportDeepLink } from '@/utils/CredentialExchange';
 import { resolveDeepLink } from '@/utils/DeepLinkResolver';
 import { clearExportDirectories } from '@/utils/FileUtility';
 
@@ -82,7 +83,7 @@ function RootLayoutNav() : React.ReactNode {
     (async (): Promise<void> => {
       const [, initialUrl] = await Promise.all([initI18n(), Linking.getInitialURL(), runStartupMigrations()]);
 
-      const resolved = await resolveDeepLink(initialUrl ?? null);
+      const resolved = await resolveDeepLink(initialUrl ?? await pendingImportDeepLink());
       if (resolved) {
         navigation.setReturnUrl(resolved);
       }

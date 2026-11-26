@@ -568,6 +568,36 @@ public class NativeVaultManager: NSObject {
     // MARK: - Credential exchange (FIDO CXF)
 
     @objc
+    func credentialExchangeHasPendingImport(_ resolve: @escaping RCTPromiseResolveBlock,
+                                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(CredentialExchangeHandoff.hasPending)
+    }
+
+    @objc
+    func credentialExchangeTakeImportToken(_ resolve: @escaping RCTPromiseResolveBlock,
+                                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(CredentialExchangeHandoff.take()?.uuidString)
+    }
+
+    @objc
+    func credentialExchangeImport(_ token: String?,
+                                  resolver resolve: @escaping RCTPromiseResolveBlock,
+                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard #available(iOS 26.0, *), let token = token, let uuid = UUID(uuidString: token) else {
+            reject(Self.credentialExchangeErrorCode, "Credential exchange needs iOS 26 and a valid import token", nil)
+            return
+        }
+        Task {
+            do {
+                let document = try await CredentialExchange.importDocument(token: uuid)
+                await MainActor.run { resolve(document) }
+            } catch {
+                await MainActor.run { Self.rejectCredentialExchange(reject, error) }
+            }
+        }
+    }
+
+    @objc
     func credentialExchangeExportSummary(_ resolve: @escaping RCTPromiseResolveBlock,
                                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {

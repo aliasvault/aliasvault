@@ -17,6 +17,9 @@ internal class SceneDelegate: ExpoAppSceneDelegate {
     if let windowScene = scene as? UIWindowScene {
       screenCaptureProtection = ScreenCaptureProtection(scene: windowScene)
     }
+
+    // Credential exchange import: another password manager's export cold-started the app. Keep its token in memory for the app to after having booted.
+    connectionOptions.userActivities.forEach { CredentialExchangeHandoff.handle($0) }
   }
 
   // MARK: - Screen capture protection
@@ -29,5 +32,15 @@ internal class SceneDelegate: ExpoAppSceneDelegate {
   override func sceneWillEnterForeground(_ scene: UIScene) {
     super.sceneWillEnterForeground(scene)
     screenCaptureProtection?.sceneWillEnterForeground()
+  }
+
+  // MARK: - Credential exchange
+
+  override func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    if CredentialExchangeHandoff.handle(userActivity) {
+      CredentialExchangeHandoff.openImportScreen()
+      return
+    }
+    super.scene(scene, continue: userActivity)
   }
 }

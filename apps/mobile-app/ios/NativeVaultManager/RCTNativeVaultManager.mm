@@ -420,6 +420,18 @@
 
 // MARK: - Credential exchange (FIDO CXF)
 
+- (void)credentialExchangeHasPendingImport:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager credentialExchangeHasPendingImport:resolve rejecter:reject];
+}
+
+- (void)credentialExchangeTakeImportToken:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager credentialExchangeTakeImportToken:resolve rejecter:reject];
+}
+
+- (void)credentialExchangeImport:(NSString *)token resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager credentialExchangeImport:token resolver:resolve rejecter:reject];
+}
+
 - (void)credentialExchangeExportSummary:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager credentialExchangeExportSummary:resolve rejecter:reject];
 }

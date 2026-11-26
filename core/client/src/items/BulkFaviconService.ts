@@ -2,7 +2,7 @@ import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { selectFaviconTarget } from '../rust/RustCore';
 import { base64ToBytes } from '../utilities/Base64';
 
-import type { WebApiService } from '../api/WebApiService';
+import type { FaviconApi } from './FaviconService';
 import type SqliteClient from '../database/SqliteClient';
 import type { FaviconTarget } from '../rust/RustCore';
 
@@ -54,7 +54,7 @@ export class BulkFaviconService {
    * @param signal Aborts the extraction between batches
    * @returns The favicons by source plus the outcome
    */
-  public static async extractBulk(webApi: WebApiService, targets: FaviconTarget[], onProgress?: (processed: number) => Promise<void> | void, signal?: AbortSignal): Promise<BulkExtractResult> {
+  public static async extractBulk(webApi: FaviconApi, targets: FaviconTarget[], onProgress?: (processed: number) => Promise<void> | void, signal?: AbortSignal): Promise<BulkExtractResult> {
     const favicons = new Map<string, Uint8Array>();
 
     const urlBySource = new Map<string, string>();
@@ -115,7 +115,7 @@ export class BulkFaviconService {
    * @param signal Aborts the extraction between batches
    * @returns The extraction outcome and the number of items whose logo changed
    */
-  public static async refreshVaultFavicons(client: SqliteClient, webApi: WebApiService, onProgress?: (processed: number, total: number) => Promise<void> | void, signal?: AbortSignal): Promise<FaviconRefreshResult> {
+  public static async refreshVaultFavicons(client: SqliteClient, webApi: FaviconApi, onProgress?: (processed: number, total: number) => Promise<void> | void, signal?: AbortSignal): Promise<FaviconRefreshResult> {
     const candidates = client.logos.getFaviconRefreshCandidates();
     const assignments: { candidate: typeof candidates[number]; source: string | null }[] = [];
     const targetsBySource = new Map<string, FaviconTarget>();
