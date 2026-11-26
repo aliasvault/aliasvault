@@ -1,10 +1,12 @@
 import { Buffer } from 'buffer';
 
 import { decryptEmail, decryptEmailAttachment, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
+import { EML_MIME_TYPE, getEmailEmlBytes, getEmlFileName } from '@aliasvault/client/email/EmailExport';
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, type StyleProp, type TextStyle, ActivityIndicator, Linking, Text, TextInput, Platform, Pressable, ScrollView, RefreshControl } from 'react-native';
@@ -15,7 +17,7 @@ import { WebView, type WebViewNavigation } from 'react-native-webview';
 import ConversionUtility from '@/utils/ConversionUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
-import { getFileForFilename } from '@/utils/FileUtility';
+import { getExportDirectory, getFileForFilename } from '@/utils/FileUtility';
 import { itemRoute } from '@/utils/ItemRoute';
 import { isServerUnreachable } from '@/utils/ServerReachability';
 
@@ -239,6 +241,44 @@ function EmailDetails({ id }: { id: string | string[] | undefined }) : React.Rea
   };
 
   /**
+   * Save the email as an .eml file through the system share sheet.
+   */
+  const handleDownloadEml = useCallback(async (): Promise<void> => {
+    const sourceBytes = sourceBytesRef.current;
+    if (!dbContext?.sqliteClient || !decrypted || !sourceBytes) {
+      return;
+    }
+
+    const fileName = getEmlFileName(decrypted.email.subject);
+    const exportDir = getExportDirectory();
+    const file = getFileForFilename(exportDir, fileName);
+    try {
+      const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
+      const bytes = await getEmailEmlBytes(webApi, decrypted.email, encryptionKeys, sourceBytes, decrypted.attachments);
+
+      if (!exportDir.exists) {
+        exportDir.create({ intermediates: true });
+      }
+      if (file.exists) {
+        file.delete();
+      }
+      file.create();
+      await file.write(bytes);
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(file.uri, { dialogTitle: fileName, mimeType: EML_MIME_TYPE, UTI: 'com.apple.mail.email' });
+      }
+    } catch (err) {
+      console.error('handleDownloadEml error', err);
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+    } finally {
+      if (file.exists) {
+        file.delete();
+      }
+    }
+  }, [dbContext, decrypted, webApi, t]);
+
+  /**
    * Open links tapped inside the email body in the external browser.
    */
   const handleShouldStartLoadWithRequest = useCallback((request: WebViewNavigation): boolean => {
@@ -431,9 +471,10 @@ function EmailDetails({ id }: { id: string | string[] | undefined }) : React.Rea
       return;
     }
     // The Android menu has no checkmarks, so the active format is shown disabled.
-    const entries: Array<{ action: ContextMenuAction; key: 'details' | 'delete' | 'html' | 'plain' | 'source' }> = [
+    const entries: Array<{ action: ContextMenuAction; key: 'details' | 'download' | 'delete' | 'html' | 'plain' | 'source' }> = [
       { action: { title: isMetadataMaximized ? t('common.hideDetails') : t('common.showDetails') }, key: 'details' },
       ...(availableModes.length > 1 ? availableModes.map(mode => ({ action: { title: formatLabels[mode], disabled: viewMode === mode }, key: mode })) : []),
+      ...(hasSource ? [{ action: { title: t('common.download') }, key: 'download' as const }] : []),
       { action: { title: t('common.delete'), destructive: true }, key: 'delete' },
     ];
 
@@ -444,6 +485,8 @@ function EmailDetails({ id }: { id: string | string[] | undefined }) : React.Rea
       const key = entries[index]?.key;
       if (key === 'details') {
         setMetadataMaximized(prev => !prev);
+      } else if (key === 'download') {
+        void handleDownloadEml();
       } else if (key === 'delete') {
         handleDelete();
       } else if (key) {
@@ -463,7 +506,7 @@ function EmailDetails({ id }: { id: string | string[] | undefined }) : React.Rea
         </ContextMenu>
       ),
     });
-  }, [navigation, handleDelete, colors.primary, colors.accentBorder, styles.headerRightButton, availableModes, formatLabels, viewMode, isMetadataMaximized, t]);
+  }, [navigation, handleDelete, handleDownloadEml, hasSource, colors.primary, colors.accentBorder, styles.headerRightButton, availableModes, formatLabels, viewMode, isMetadataMaximized, t]);
 
   if (isLoading) {
     return (
@@ -614,6 +657,9 @@ function EmailDetails({ id }: { id: string | string[] | undefined }) : React.Rea
                 </Stack.Toolbar.Menu>
               )}
               <Stack.Toolbar.Menu inline>
+                {hasSource && (
+                  <Stack.Toolbar.MenuAction icon="square.and.arrow.down" onPress={() => void handleDownloadEml()}>{t('common.download')}</Stack.Toolbar.MenuAction>
+                )}
                 <Stack.Toolbar.MenuAction icon="trash" destructive onPress={handleDelete}>{t('common.delete')}</Stack.Toolbar.MenuAction>
               </Stack.Toolbar.Menu>
             </Stack.Toolbar.Menu>
