@@ -283,7 +283,7 @@
     },
     "expand": "Erweitern",
     "generate": "Erzeugen",
-    "goToVault": "Go to vault",
+    "goToVault": "Zum Tresor gehen",
     "help": "Hilfe",
     "hide": "Ausblenden",
     "hideDetails": "Details ausblenden",
@@ -1277,12 +1277,12 @@
     "credentialAutofill": "Anmeldeinformationen-Autofill",
     "credentialAutofillDescription": "Zeige Autofill Popup wenn Benutzername/Passwort-Felder erkannt wurden",
     "credentialExchange": {
-      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
-      "exportTitle": "Export to another app",
-      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
-      "importTitle": "Import from another app",
-      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
-      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+      "description": "Übertrage Deine Passwörter, Passkeys und 2FA-Codes direkt von AliasVault an einen anderen Passwort-Manager auf diesem Gerät.",
+      "exportTitle": "In eine andere App exportieren",
+      "importInstructionsIos": "Öffnen die App, von der Du importieren möchtest, zum Beispiel iOS-Passwörter, wähle dann \"Daten zu einer anderen App exportieren\" und wähle AliasVault. AliasVault öffnet sich dann, damit Du die Elemente prüfen kannst bevor sie gespeichert werden.",
+      "importTitle": "Aus einer anderen App importieren",
+      "summaryCustomFields": "{{count}} Element(e) eines Typs, den AliasVault nicht kennt, wurden als benutzerdefinierte Felder gespeichert.",
+      "summaryUnsupported": "{{count}} Anmeldeinformation(en), die nicht in AliasVault gespeichert werden können, wurden übersprungen."
     },
     "customApiUrl": "API-URL",
     "customClientUrl": "Client-URL",
@@ -1295,7 +1295,7 @@
     "enabledForThisSite": "Für diese Seite aktiviert",
     "exportConfirmTitle": "Tresor exportieren",
     "exportSectionTitle": "Exportieren",
-    "exportToFileTitle": "Export to file",
+    "exportToFileTitle": "In eine Datei exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Lege die standardmäßige Altersspanne für die Erstellung neuer Identitäten fest. Dies betrifft das Geburtsdatum der Identität.",
@@ -1341,9 +1341,9 @@
       "languageDescription": "Lege die Sprache fest, die bei der Erstellung neuer Identitäten verwendet wird."
     },
     "importExport": "Import / Export",
-    "importFromFileTitle": "Import from file",
+    "importFromFileTitle": "Aus einer Datei importieren",
     "importSectionTitle": "Importieren",
-    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
+    "importWebNote": "Um Passwörter aus einer Datei zu importieren, benutze bitte die AliasVault Web-App.",
     "iosAutofillSettings": {
       "headerText": "AliasVault kann so eingerichtet werden, dass es die integrierte Passwort- und Passkey-Autofill-Funktion von iOS unterstützt. Befolge dazu die folgenden Schritte.",
       "openIosSettings": "Öffne die iOS-Einstellugen",
