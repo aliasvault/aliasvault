@@ -283,6 +283,7 @@
     },
     "expand": "Leathnaigh",
     "generate": "Gin",
+    "goToVault": "Go to vault",
     "help": "Cabhair",
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "Nuair a líonann tú dintiúir go huathoibríoch le 2FA, cóipeáiltear a chód TOTP go huathoibríoch chuig an ghearrthaisce ionas gur féidir leat é a ghreamú sa chéad réimse eile.",
     "credentialAutofill": "Uathlíonadh creidiúnaithe",
     "credentialAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí ainm úsáideora/focal faire",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL API",
     "customClientUrl": "URL an chliaint",
     "dark": "Dorcha",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Cumasaithe don suíomh seo",
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
     "exportSectionTitle": "Easpórtáil",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Rabhadh: Má easpórtálann tú do chruinneachán chuig comhad neamhchriptithe, nochtfar do phasfhocail agus d’fhaisnéis íogair go léir i ngnáththéacs. Ná déan é seo ach ar ghléasanna iontaofa agus cinntigh:\n\n• Stóráil an comhad easpórtáilte in áit shábháilte\n• Scrios an comhad nuair nach bhfuil sé de dhíth ort a thuilleadh\n• Ná roinn an comhad easpórtáilte le daoine eile choíche\n\nAn bhfuil tú cinnte gur mian leat leanúint ar aghaidh leis an easpórtáil?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Socraigh an teanga a úsáidfear agus céannachtaí nua á nginiúint."
     },
     "importExport": "Iompórtáil / Easpórtáil",
-    "importSectionDescription": "Iompórtáil do phasfhocail ó bhainisteoirí pasfhocal eile nó ó easpórtáil AliasVault roimhe seo.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Iompórtáil",
-    "importWebNote": "Chun dintiúir a allmhairiú ó bhainisteoirí pasfhocal atá ann cheana féin, logáil isteach san aip ghréasáin le do thoil. Níl an ghné allmhairithe ar fáil faoi láthair ach ar an leagan gréasáin.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Is féidir leat AliasVault a chumrú chun feidhmiúlacht uathlíonta pasfhocail agus eochracha pas dúchasacha a sholáthar in iOS. Lean na treoracha thíos chun é a chumasú.",
       "openIosSettings": "Oscail Socruithe iOS",
