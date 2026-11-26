@@ -283,6 +283,7 @@
     },
     "expand": "Expand",
     "generate": "Generate",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Hide",
     "hideDetails": "Piilota tiedot",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API-URL-osoite",
     "customClientUrl": "Asiakas-URL-osoite",
     "dark": "Tumma",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Otettu käyttöön tällä sivustolla",
     "exportConfirmTitle": "Vie holvi",
     "exportSectionTitle": "Vie",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:\n\n• Tallenna viety tiedosto turvalliseen paikkaan\n• Poista tiedosto, kun et enää tarvitse sitä\n• Älä koskaan jaa vietyä tiedostoa muiden kanssa\n\nOletko varma, että haluat jatkaa vientiä?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Aseta oletusikähaarukka uusien henkilöllisyyksien luomiseen. Tämä vaikuttaa luotuun henkilöllisyyteen asetettavaan syntymäpäivään.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Aseta kieli, jota käytetään luotaessa uusia henkilöllisyyksiä."
     },
     "importExport": "Tuonti / Vienti",
-    "importSectionDescription": "Tuo salasanasi muista salasanojen hallinnoijista tai aiemmasta AliasVault-viennistä.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Tuo",
-    "importWebNote": "Jos haluat tuoda käyttäjätunnuksia olemassa olevista salasanojen hallinnasta, ole hyvä ja kirjaudu web-sovellukseen. Tuo ominaisuus on tällä hetkellä saatavilla vain web-versiossa.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Voit määrittää AliasVaultin tarjoamaan natiivin salasanan automaattinen täyttö -toiminnon iOS-käyttöjärjestelmässä. Ota se käyttöön noudattamalla alla olevia ohjeita.",
       "openIosSettings": "Avaa iOS-asetukset",
