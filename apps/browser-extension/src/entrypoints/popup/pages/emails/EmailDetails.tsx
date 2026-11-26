@@ -1,6 +1,7 @@
 import { isServerUnreachable } from '@aliasvault/client/api/errors/ExpectedFailure';
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
 import { decryptEmail, type DecryptedEmail } from '@aliasvault/client/email/EmailDecryption';
+import { EML_MIME_TYPE, getEmailEmlBytes, getEmlFileName } from '@aliasvault/client/email/EmailExport';
 import { sanitizeEmailHtml } from '@aliasvault/client/email/EmailHtmlSanitizer';
 import { decodeEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
@@ -8,7 +9,9 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { MenuHeading, MenuItem, MenuRadioItem, MenuSeparator } from '@/entrypoints/popup/components/ContextMenu';
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
+import EllipsisMenu from '@/entrypoints/popup/components/EllipsisMenu';
 import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -172,15 +175,6 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     source: t('emails.formatSource'),
   }), [t]);
 
-  const cycleViewMode = useCallback(() => {
-    if (availableModes.length <= 1) {
-      return;
-    }
-    const idx = availableModes.indexOf(viewMode);
-    const next = availableModes[(idx + 1) % availableModes.length];
-    setViewMode(next);
-  }, [availableModes, viewMode]);
-
   /**
    * Handle deleting an email.
    */
@@ -230,22 +224,27 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     }
   };
 
-  /*
-   * Set header buttons whenever the available formats or active view mode change so the
-   * format-cycle button label stays in sync. Mirrors the web app's header layout.
+  /**
+   * Download the email as an .eml file.
    */
+  const handleDownloadEml = useCallback(async (): Promise<void> => {
+    if (!decrypted?.sourceBytes || !dbContext?.sqliteClient) {
+      return;
+    }
+    try {
+      const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
+      const bytes = await getEmailEmlBytes(webApi, decrypted.email, encryptionKeys, decrypted.sourceBytes, decrypted.attachments);
+      downloadBytes(getEmlFileName(decrypted.email.subject), bytes, EML_MIME_TYPE);
+    } catch (err) {
+      logFailure('[Email] Downloading the email failed', err);
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+    }
+  }, [decrypted, dbContext?.sqliteClient, webApi, t]);
+
+  // Header: open in a new window, and a menu with the email format, download and delete.
   useEffect((): (() => void) => {
     const headerButtonsJSX = (
       <div className="flex items-center gap-2">
-        {availableModes.length > 1 && (
-          <button
-            onClick={cycleViewMode}
-            title={t('emails.formatSwitchTitle')}
-            className="h-9 px-2 rounded-lg inline-flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            {formatLabels[viewMode]}
-          </button>
-        )}
         {!PopoutUtility.isPopup() && (
           <HeaderButton
             onClick={openInNewPopup}
@@ -253,18 +252,25 @@ const EmailDetails: React.FC = (): React.ReactElement => {
             iconType={HeaderIconType.EXPAND}
           />
         )}
-        <HeaderButton
-          onClick={() => setShowDeleteModal(true)}
-          title={t('emails.deleteEmail')}
-          iconType={HeaderIconType.DELETE}
-          variant="danger"
-        />
+        <EllipsisMenu id="email-details-menu" label={t('common.moreOptions')}>
+          {availableModes.length > 1 && (
+            <>
+              <MenuHeading>{t('emails.formatSwitchTitle')}</MenuHeading>
+              {availableModes.map((mode) => (
+                <MenuRadioItem key={mode} checked={viewMode === mode} onClick={() => setViewMode(mode)}>{formatLabels[mode]}</MenuRadioItem>
+              ))}
+              <MenuSeparator />
+            </>
+          )}
+          {sourceBytes && <MenuItem icon="download" standalone onClick={() => void handleDownloadEml()}>{t('common.download')}</MenuItem>}
+          <MenuItem icon="trash" danger standalone onClick={() => setShowDeleteModal(true)}>{t('common.delete')}</MenuItem>
+        </EllipsisMenu>
       </div>
     );
 
     setHeaderButtons(headerButtonsJSX);
     return () => {};
-  }, [setHeaderButtons, openInNewPopup, t, availableModes, viewMode, cycleViewMode, formatLabels]);
+  }, [setHeaderButtons, openInNewPopup, t, availableModes, viewMode, formatLabels, sourceBytes, handleDownloadEml]);
 
   // Clear header buttons on unmount
   useEffect((): (() => void) => {
