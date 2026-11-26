@@ -283,6 +283,7 @@
     },
     "expand": "Развернуть",
     "generate": "Сгенерировать",
+    "goToVault": "Go to vault",
     "help": "Помощь",
     "hide": "Скрыть",
     "hideDetails": "Скрыть подробности",
@@ -1275,6 +1276,14 @@
     "copyTotpOnFillDescription": "При автозаполнении данных копировать TOTP-код в буфер обмена, чтобы его можно было вставить в следующее поле.",
     "credentialAutofill": "Автозаполнение данных",
     "credentialAutofillDescription": "Показывать окно автозаполнения при обнаружении полей логина и пароля",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL-адрес API",
     "customClientUrl": "URL-адрес клиента﻿",
     "dark": "Темная",
@@ -1286,6 +1295,7 @@
     "enabledForThisSite": "Включено для этого сайта",
     "exportConfirmTitle": "Экспортировать хранилище",
     "exportSectionTitle": "Экспорт",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Предупреждение: Экспорт хранилища в незашифрованный файл приведёт к тому, что все ваши пароли и конфиденциальная информация будут доступны в открытом виде. Делайте это только на доверенных устройствах и убедитесь, что вы:\n\n• Храните экспортированный файл в безопасном месте\n• Удаляете файл, когда он больше не нужен\n• Никогда не передаёте файл другим людям\n\nВы уверены, что хотите продолжить экспорт?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Установите диапазон возраста по умолчанию для создания новых личностей. Это влияет на дату рождения, назначаемую сгенерированной личности.",
@@ -1331,9 +1341,9 @@
       "languageDescription": "Установите язык, который будет использоваться при создании новых личностей."
     },
     "importExport": "Импорт / экспорт",
-    "importSectionDescription": "Импортируйте свои пароли из других менеджеров паролей или из предыдущего экспорта AliasVault.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Импорт",
-    "importWebNote": "Импорт из других менеджеров паролей доступен только в веб‑версии. Пожалуйста, войдите в веб‑приложение.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Вы можете настроить AliasVault для нативного автозаполнения паролей и ключей доступа в iOS. Следуйте инструкциям ниже, чтобы включить эту функцию.",
       "openIosSettings": "Открыть настройки iOS",
