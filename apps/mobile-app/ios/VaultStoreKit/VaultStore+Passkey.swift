@@ -46,7 +46,7 @@ extension VaultStore {
 
     // MARK: - Passkey Queries (Public API)
 
-    /// Get a relying party's passkey by its WebAuthn credential ID (its credentialId, or the bytes of its id when it has none), in any manifest.
+    /// Get a relying party's passkey by its WebAuthn credential ID (its credentialId; LEGACY: the bytes of its id when it has none), in any manifest.
     public func getPasskey(byCredentialId credentialId: Data, rpId: String) throws -> Passkey? {
         return try requireDatabase().getPasskeyByCredentialId(rpId: rpId, credentialId: credentialId).flatMap { Self.passkey(from: $0.passkey) }
     }

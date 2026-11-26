@@ -36,7 +36,7 @@ const TO_SQLITE: &[Step] = &[
 
 /// Temporary: upgrades of rows older clients wrote to the current shape, applied in both directions. Can be deleted later.
 const LEGACY_UPGRADES: &[Step] = &[
-    fill_missing_credential_ids, // Passkeys: CredentialId from the GUID bytes of Id; remove once clients before 0.32.0 are no longer supported.
+    fill_missing_credential_ids, // Passkeys: CredentialId from the GUID bytes of Id; remove once pre-0.32.0 clients are no longer supported.
 ];
 
 /// Bring a table set into its codec shape: on canonicalize and on the merge output. The caller repairs referential

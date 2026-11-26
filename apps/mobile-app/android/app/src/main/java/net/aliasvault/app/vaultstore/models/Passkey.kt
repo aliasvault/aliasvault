@@ -69,7 +69,7 @@ data class Passkey(
     val additionalData: ByteArray? = null,
 
     /**
-     * WebAuthn credential ID; null falls back to the 16 bytes of id.
+     * WebAuthn credential ID; null only on a row created before 0.32.0 that no pull or schema rebuild upgraded yet.
      */
     val credentialId: ByteArray? = null,
 
@@ -89,9 +89,11 @@ data class Passkey(
     val isDeleted: Boolean,
 ) {
     /**
-     * The WebAuthn credential id the relying party knows: credentialId, or the 16 bytes of id when it is null.
+     * The WebAuthn credential id the relying party knows: credentialId.
      */
     fun webAuthnCredentialId(): ByteArray {
+        // LEGACY: a row created before 0.32.0 has no credentialId until a pull or schema rebuild rewrites the local vault,
+        // and uses the 16 bytes of id. TODO: remove once pre-0.32.0 clients are no longer supported.
         return credentialId ?: ByteBuffer.allocate(16).putLong(id.mostSignificantBits).putLong(id.leastSignificantBits).array()
     }
 

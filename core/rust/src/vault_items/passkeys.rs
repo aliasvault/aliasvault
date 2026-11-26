@@ -58,8 +58,8 @@ pub fn get_passkey_by_id(conn: &Connection, passkey_id: &str) -> VaultResult<Opt
 
 /// The passkey of a relying party with this WebAuthn credential id, in any manifest, matched on its `CredentialId`.
 pub fn get_passkey_by_credential_id(conn: &Connection, rp_id: &str, credential_id: &[u8]) -> VaultResult<Option<VaultPasskeyWithItem>> {
-    // LEGACY: a row created before 0.32.0 that no sync has filled yet has no CredentialId and matches on the GUID bytes of
-    // its Id. TODO: remove in the 1.0 release candidates.
+    // LEGACY: a row created before 0.32.0 has no CredentialId until a pull or schema rebuild rewrites the local vault, and
+    // matches on the GUID bytes of its Id. TODO: remove once pre-0.32.0 clients are no longer supported.
     let row_id = bytes_to_guid(credential_id).ok().map(|guid| id_key(&guid));
     let sql = format!(
         "{SELECT_WITH_ITEM} AND p.RpId = ?3 AND (p.CredentialId = ?1 OR (p.CredentialId IS NULL AND p.Id = ?2)) ORDER BY p.CredentialId IS NULL, p.CreatedAt DESC, p.ManifestId LIMIT 1"

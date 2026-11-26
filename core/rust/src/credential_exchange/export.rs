@@ -232,7 +232,8 @@ fn export_item(item: &VaultItem, document_id: &str, totp_codes: &[crate::vault_i
 
 fn passkey_credential(passkey: &PasskeyRow, login_name: Option<&str>) -> VaultResult<Value> {
     let key = private_key_jwk_to_pkcs8(&passkey.private_key)?;
-    // Without a stored CredentialId, the WebAuthn credential id falls back to the 16 bytes of the row id.
+    // LEGACY: a passkey created before 0.32.0 has no CredentialId until a pull or schema rebuild rewrites the local vault;
+    // its credential id is the 16 bytes of its Id. TODO: remove once pre-0.32.0 clients are no longer supported.
     let credential_id = match &passkey.credential_id {
         Some(bytes) if !bytes.is_empty() => bytes.clone(),
         _ => guid_to_bytes(&passkey.id)?,
