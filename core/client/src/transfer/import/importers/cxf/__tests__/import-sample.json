@@ -1,0 +1,280 @@
+{
+  "version": {
+    "major": 1,
+    "minor": 0
+  },
+  "exporterRpId": "com.example.sample",
+  "exporterDisplayName": "Sample",
+  "timestamp": 1760745600,
+  "accounts": [
+    {
+      "id": "YWNjb3VudC0x",
+      "username": "jane",
+      "email": "jane@example.com",
+      "collections": [
+        {
+          "id": "Y29sbC0x",
+          "title": "Shopping",
+          "items": [
+            {
+              "item": "aXRlbS0x"
+            }
+          ],
+          "subCollections": [
+            {
+              "id": "Y29sbC0y",
+              "title": "Groceries",
+              "items": [
+                {
+                  "item": "aXRlbS0y"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": "aXRlbS0x",
+          "creationAt": 1705142400,
+          "modifiedAt": 1705228800,
+          "title": "Example Shop",
+          "favorite": true,
+          "scope": {
+            "urls": [
+              "https://shop.example.com",
+              "example.com"
+            ],
+            "androidApps": [
+              {
+                "bundleId": "com.example.shop",
+                "name": "Example Shop"
+              }
+            ]
+          },
+          "tags": [
+            "Shopping",
+            "Favorites"
+          ],
+          "credentials": [
+            {
+              "type": "basic-auth",
+              "username": {
+                "fieldType": "string",
+                "value": "jane"
+              },
+              "password": {
+                "fieldType": "concealed-string",
+                "value": "p@ssw0rd"
+              }
+            },
+            {
+              "type": "totp",
+              "secret": "JBSWY3DPEHPK3PXP",
+              "period": 30,
+              "digits": 6,
+              "username": "jane",
+              "algorithm": "sha1",
+              "issuer": "Example Shop"
+            },
+            {
+              "type": "note",
+              "content": {
+                "fieldType": "string",
+                "value": "Loyalty number 1234"
+              }
+            },
+            {
+              "type": "custom-fields",
+              "label": "Extra",
+              "fields": [
+                {
+                  "fieldType": "string",
+                  "value": "Blue",
+                  "label": "Favourite colour"
+                },
+                {
+                  "fieldType": "concealed-string",
+                  "value": "4321",
+                  "label": "Support PIN"
+                },
+                {
+                  "fieldType": "email",
+                  "value": "jane.alt@example.com",
+                  "label": "Alternate email"
+                },
+                {
+                  "fieldType": "date",
+                  "value": "2024-01-13",
+                  "label": "Member since"
+                },
+                {
+                  "fieldType": "boolean",
+                  "value": true,
+                  "label": "Newsletter"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS0y",
+          "creationAt": -11644473600,
+          "title": "passkeys.example.org",
+          "credentials": [
+            {
+              "type": "passkey",
+              "credentialId": "AQIDBAUGBwgJCgsMDQ4PEA",
+              "rpId": "passkeys.example.org",
+              "username": "jane@example.com",
+              "userDisplayName": "Jane Doe",
+              "userHandle": "dXNlci0xMjM",
+              "key": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgZkI_HKUqwf92OuNcpCqiP2cpkmDmfipoxQKFYUBOuq-hRANCAAT2guVy3bmMeu-kvucgQBxEXc61ynLYe9RkU6UU5sbINYxxZmpjJgIK8NPsx13Mpl0rvdCcQysDnepSyZb-PkG2"
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS0z",
+          "title": "My Visa",
+          "credentials": [
+            {
+              "type": "credit-card",
+              "number": {
+                "fieldType": "concealed-string",
+                "value": "4111111111111111"
+              },
+              "fullName": {
+                "fieldType": "string",
+                "value": "Jane Doe"
+              },
+              "cardType": {
+                "fieldType": "string",
+                "value": "Visa"
+              },
+              "verificationNumber": {
+                "fieldType": "concealed-string",
+                "value": "321"
+              },
+              "expiryDate": {
+                "fieldType": "year-month",
+                "value": "2029-03"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS00",
+          "title": "Home address",
+          "credentials": [
+            {
+              "type": "address",
+              "streetAddress": {
+                "fieldType": "string",
+                "value": "1 Main St"
+              },
+              "city": {
+                "fieldType": "string",
+                "value": "Springfield"
+              },
+              "country": {
+                "fieldType": "country-code",
+                "value": "US"
+              }
+            },
+            {
+              "type": "note",
+              "content": {
+                "fieldType": "string",
+                "value": "Ring twice"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS01",
+          "title": "Linked",
+          "credentials": [
+            {
+              "type": "item-reference",
+              "reference": {
+                "item": "aXRlbS0x"
+              }
+            },
+            {
+              "type": "wifi",
+              "ssid": {
+                "fieldType": "string",
+                "value": "HomeNet"
+              },
+              "passphrase": {
+                "fieldType": "concealed-string",
+                "value": "wifi-secret"
+              },
+              "networkSecurityType": {
+                "fieldType": "wifi-network-security-type",
+                "value": "wpa2-personal"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS02",
+          "title": "Person",
+          "credentials": [
+            {
+              "type": "person-name",
+              "given": {
+                "fieldType": "string",
+                "value": "Jane"
+              },
+              "surname": {
+                "fieldType": "string",
+                "value": "Doe"
+              }
+            },
+            {
+              "type": "basic-auth",
+              "username": {
+                "fieldType": "string",
+                "value": "jane.doe"
+              },
+              "password": {
+                "fieldType": "concealed-string",
+                "value": "x"
+              }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS03",
+          "title": "Broken passkey",
+          "credentials": [
+            {
+              "type": "passkey",
+              "credentialId": "AQ",
+              "rpId": "broken.example",
+              "username": "x",
+              "userDisplayName": "x",
+              "userHandle": "AQ",
+              "key": "bm90LWEta2V5"
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS04",
+          "title": "Future type",
+          "credentials": [
+            {
+              "type": "hologram",
+              "serial": {
+                "fieldType": "string",
+                "value": "H-1"
+              },
+              "flag": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "version": { "major": 1, "minor": 0 },
+  "exporterRpId": "com.example.sample",
+  "exporterDisplayName": "Sample",
+  "timestamp": 1761500000,
+  "accounts": [
+    {
+      "id": "JcjEFLRGSOmhvbEHALvXQA",
+      "username": "me@example.com",
+      "email": "me@example.com",
+      "collections": [],
+      "items": [
+        {
+          "id": "6NiHiekW4ZY8vYHa-ucbvA",
+          "creationAt": 1717769556,
+          "modifiedAt": 1761400000,
+          "title": "GitHub",
+          "scope": { "urls": ["https://github.com"], "androidApps": [] },
+          "credentials": [
+            {
+              "type": "basic-auth",
+              "username": { "fieldType": "string", "value": "octocat" },
+              "password": { "fieldType": "concealed-string", "value": "hunter2" }
+            },
+            {
+              "type": "passkey",
+              "credentialId": "6NiHiekW4ZY8vYHa-ucbvA",
+              "rpId": "github.com",
+              "username": "octocat",
+              "userDisplayName": "Octo Cat",
+              "userHandle": "YnctdXNlci0x",
+              "key": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQggRmAt29Com-m0vll5BhxyJO47m93vqXt0aVY3cQ8_omhRANCAAQ6pl0rkj4vyhDqp5W_6pWjm94YXcp_K-F-UcmxLd5FnPHr9muA_vhkp0BmSsASMaxCoqVNeX-Vdb7CSXdTyFzo"
+            }
+          ]
+        },
+        {
+          "id": "AQIDBAUGBwgJCgsMDQ4PEA",
+          "creationAt": 1761400000,
+          "modifiedAt": 1761400000,
+          "title": "Vault with PRF",
+          "scope": { "urls": [], "androidApps": [] },
+          "credentials": [
+            {
+              "type": "passkey",
+              "credentialId": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+              "rpId": "prf.example",
+              "username": "prf-user",
+              "userDisplayName": "PRF User",
+              "userHandle": "YnctdXNlci0x",
+              "key": "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgFQjzADtjP1ZGcq-UkMXxpxurU5Q-xU0X7Bw4pp-UlQ2hRANCAATgs-yEQZyyBItM6g5bjCVHUZjRubhOAwb4KuejBCUP2GPWCQ9BHxn2WZyBPYelFlftRLxIDttifl7UGMegEliP",
+              "fido2Extensions": {
+                "hmacCredentials": { "algorithm": "hmac-sha256", "credWithUV": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc", "credWithoutUV": "CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk" },
+                "credBlob": "AQID",
+                "payments": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
