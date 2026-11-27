@@ -54,6 +54,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const notAllowedPaths = [
       ...AUTH_FLOW_PATHS,
       '/auth-settings',
+      '/auth-settings/server',
+      '/auth-settings/advanced',
       '/upgrade',
       ...DEDICATED_WINDOW_PATHS
     ];

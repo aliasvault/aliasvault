@@ -168,16 +168,19 @@ export async function configureApiUrl(popup: Page, apiUrl: string): Promise<void
   // Make sure the popup has settled on the login page before touching the header.
   await waitForPopupReady(popup);
 
-  // Click settings button. Use a locator so it is re-resolved if the app re-renders mid-click.
-  await popup.locator('button#settings').click();
+  // Open the server settings from the "connecting to" link. Use a locator so it is re-resolved if the app re-renders mid-click.
+  await popup.locator('button#server-settings').click();
 
   // Select "Self-hosted" (custom) option
-  await popup.selectOption('select#api-connection', ['custom']);
+  await popup.locator('button#api-option-custom').click();
 
-  // Fill in the custom URL input
-  await popup.fill('input#custom-api-url', apiUrl);
+  // The dev API is not served under /api, so set it as a custom API URL in the advanced settings
+  await popup.locator('button#advanced-settings').click();
+  await popup.locator('input#custom-api-url').fill(apiUrl);
 
-  // Go back to main page
+  // Go back to the server settings, then to the login page
+  await popup.click('button#back');
+  await popup.locator('button#api-option-custom').waitFor({ state: 'visible' });
   await popup.click('button#back');
 
   // Wait for the login form to be visible (indicates settings were saved and we're back)
