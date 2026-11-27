@@ -98,7 +98,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ scrollRef }) => {
   };
 
   // Auth pages that don't show bottom navigation but still show header
-  const authPages = ['/', '/login', '/auth-settings', '/server-settings', '/server-settings/advanced', '/unlock', '/upgrade'];
+  const authPages = ['/', '/login', '/logged-out-settings', '/server-settings', '/server-settings/advanced', '/unlock', '/upgrade'];
   const isAuthPage = authPages.includes(location.pathname);
 
   if (isAuthPage) {

@@ -11,7 +11,7 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
-import AuthSettings from '@/entrypoints/popup/pages/auth/AuthSettings';
+import LoggedOutSettings from '@/entrypoints/popup/pages/auth/LoggedOutSettings';
 import Login from '@/entrypoints/popup/pages/auth/Login';
 import ServerAdvancedSettings from '@/entrypoints/popup/pages/auth/ServerAdvancedSettings';
 import ServerSettings from '@/entrypoints/popup/pages/auth/ServerSettings';
@@ -201,7 +201,7 @@ const App: React.FC = () => {
     { path: '/login', element: <Login />, showBackButton: false, layout: LayoutType.AUTH },
     { path: '/unlock', element: <Unlock />, showBackButton: false, layout: LayoutType.AUTH },
     { path: '/upgrade', element: <Upgrade />, showBackButton: false },
-    { path: '/auth-settings', element: <AuthSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/logged-out-settings', element: <LoggedOutSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/server-settings', element: <ServerSettings />, showBackButton: true, title: t('settings.serverConfiguration') },
     { path: '/server-settings/advanced', element: <ServerAdvancedSettings />, showBackButton: true, title: t('app.loginSettings.advancedSettings') },
     { path: '/items', element: <ItemsList />, showBackButton: false },

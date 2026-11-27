@@ -99,13 +99,13 @@ export class TestClient {
   }
 
   /**
-   * Open the login settings page (before authentication).
+   * Open the settings page shown when logged out.
    */
-  async openLoginSettings(): Promise<this> {
+  async openLoggedOutSettings(): Promise<this> {
     await waitForPopupReady(this.popup);
     const settingsButton = this.popup.locator('button#settings');
     await settingsButton.click();
-    await expect(this.popup.locator('#auth-settings')).toBeVisible();
+    await expect(this.popup.locator('#logged-out-settings')).toBeVisible();
     return this;
   }
 
