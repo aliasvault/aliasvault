@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Socruithe ardleibhéil",
-      "customApiUrl": "URL API Saincheaptha",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Ceanntásca seachfhreastalaí saincheaptha",
       "customProxyHeadersDescription": "Cuir ceanntásca HTTP leis a sheolfar le gach iarratas chuig do fhreastalaí AliasVault. Is féidir iad a úsáid le haghaidh socruithe féinóstáilte taobh thiar de sheachfhreastalaí droim ar ais a sheiceálann ceanntásca saincheaptha (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Ainm an cheanntásca",
       "headerNamePlaceholder": "Ceanntásc-Saincheaptha-X",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Luach ceanntásca",
       "selfHosted": "Féinóstáilte",
-      "title": "Ceangal API",
       "version": "Leagan: {{version}}"
-    },
-    "navigation": {
-      "login": "Logáil Isteach",
-      "loginSettings": "Socruithe Logála Isteach"
     },
     "notFound": {
       "goHome": "Téigh ar ais go dtí an tús",
@@ -96,8 +91,8 @@
       "enterPassword": "Cuir isteach do phasfhocal le do thoil",
       "httpError": "Earráid HTTP: {{status}}",
       "networkError": "Theip ar an iarratas líonra. Seiceáil do nasc idirlín agus déan iarracht eile.",
-      "networkErrorSelfHosted": "Theip ar an iarratas líonra. Seiceáil do nasc líonra agus infhaighteacht do fhreastalaí. I gcás cásanna féinóstáilte, cinntigh go bhfuil teastas SSL bailí suiteáilte agat. Ní thacaítear le teastais féinshínithe ar ghléasanna soghluaiste ar chúiseanna slándála.",
-      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Má d’athraigh tú do phasfhocal le déanaí agus má tá deacrachtaí agat síniú isteach le do phasfhocal nua, tabhair faoi deara go mb’fhéidir go mbeidh riarthóir an fhreastalaí in ann cúltaca níos luaithe de do chruinneachán a aisghabháil chun cabhrú leat. Más amhlaidh atá, déan teagmháil le riarthóir an fhreastalaí.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Cód fíordheimhnitheora",
       "dontHaveAuthenticatorText": "Nach bhfuil rochtain agat ar do ghléas fíordheimhnitheora?",
-      "loginErrorMessage": "Tharla earráid agus an t-iarratas logála isteach á phróiseáil. Déan iarracht eile (níos déanaí).",
       "loginRequestErrorMessage": "Tharla earráid agus an t-iarratas logála isteach á phróiseáil.",
       "loginWithAuthenticatorLink": "Logáil isteach le cód fíordheimhnitheora ina ionad.",
       "loginWithRecoveryCodeLink": "Logáil isteach le cód aisghabhála ina ionad.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "Diúltaíodh don iarratas logála isteach ar do ghléas soghluaiste.",
       "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís.",
       "passwordChanged": "Tá do phasfhocal athraithe ó logáil tú isteach an uair dheireanach. Logáil isteach arís ar chúiseanna slándála.",
-      "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
       "serverOutdated": "Caithfear freastalaí AliasVault a nuashonrú chun oibriú leis an leagan seo de AliasVault. Déan iarracht arís níos déanaí, le do thoil. Má úsáideann tú freastalaí féin-óstáilte, déan teagmháil le riarthóir do fhreastalaí, le do thoil.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Eochair phas marcáilte le scriosadh",
     "passkeyWillBeDeleted": "Scriosfar an eochair pas seo nuair a shábhálfaidh tú an scríbhinn seo.",
     "settings": {
-      "passkeyProvider": "Soláthraí Eochrach Pas",
-      "passkeyProviderOn": "Soláthraí Eochrach Pas ar siúl "
+      "passkeyProvider": "Soláthraí Eochrach Pas"
     },
     "site": "Suíomh",
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
@@ -1186,7 +1178,6 @@
       "website": "Suíomh Gréasáin"
     },
     "accountSecurity": "Slándáil Cuntais",
-    "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
     "androidAutofillSettings": {
       "buttonTip": "Mura n-oibríonn an cnaipe thuas, b'fhéidir go bhfuil sé blocáilte mar gheall ar shocruithe slándála. Is féidir leat dul de láimh chuig Socruithe Android → Bainistíocht Ghinearálta → Pasfhocail agus uathlíonadh.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Glasáil an cruinneachán go huathoibríoch tar éis tréimhse neamhghníomhaíochta",
     "autoLockTimeoutHelp": "Ní ghlasálfar an cruinneachán ach amháin tar éis na tréimhse neamhghníomhaíochta sonraithe (gan úsáid uathlíonta ná fuinneog aníos síneadh oscailte). Glasálfar an cruinneachán i gcónaí nuair a dhúnfar an brabhsálaí, beag beann ar an socrú seo.",
     "autofill": "Líonadh Uathoibríoch & Eochracha Pas",
-    "autofillDisabledDescription": "Díchumasaítear moltaí um líonadh uathoibríoch ar fud an domhain",
-    "autofillEnabled": "Cumasaigh Líonadh Uathoibríoch",
-    "autofillEnabledDescription": "Beidh moltaí uathlíonta le feiceáil ar fhoirmeacha logáil isteach",
     "autofillMatching": "Meaitseáil Uathlíonta",
     "autofillMatchingDefault": "URL + fo-fhearann ​​+ ainm cartán fiáin",
     "autofillMatchingMode": "Mód meaitseála uathlíonta",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Fearann ​​URL cruinn amháin",
     "autofillMatchingUrlSubdomain": "URL + fo-fhearann",
     "autofillSettings": "Socruithe Autofill",
-    "autofillSettingsDescription": "Cumasaigh nó díchumasaigh an phreabfhuinneog uathlíonta ar leathanaigh ghréasáin",
     "autofillSetup": {
       "alreadyConfigured": "Tá sé cumraithe agam cheana féin",
       "howToEnable": "Conas Líonadh Uathoibríoch & Eochracha Pas a chumasú:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Blocáil Seat Scáileáin",
     "blockScreenshotsDescription": "Blocann sé seat scáileáin agus taifeadtaí scáileáin den aip.",
     "clearAllDisabledSites": "Glan gach suíomh díchumasaithe",
-    "clientUrlHint": "URL an chomhéadain gréasáin de do shampla féin-óstáilte",
     "clipboardClear": "Glan an Ghearrthaisce",
     "clipboardClear10Seconds": "Glan tar éis 10 soicind",
     "clipboardClear15Seconds": "Glan tar éis 15 soicind",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "URL API",
-    "customClientUrl": "URL an chliaint",
     "dark": "Dorcha",
     "disableBatteryOptimization": "Díchumasaigh uasmhéadú ceallraí",
-    "disabledForThisSite": "Díchumasaithe don suíomh seo",
-    "disabledOnAllSites": "Díchumasaithe ar gach suíomh",
     "disabledSites": "Suíomhanna díchumasaithe",
     "disabledSitesDescription": "Suíomhanna nach mbeidh an preabfhuinneog uathlíonta le feiceáil iontu.",
-    "enabledForThisSite": "Cumasaithe don suíomh seo",
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
     "exportSectionTitle": "Easpórtáil",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Oscail Socruithe",
     "openWebApp": "Oscail an aip ghréasáin",
     "passkeySettings": "Pas eochair Socruithe",
-    "passkeysEnabled": "Cumasaigh Eochracha Pas",
     "passwordConfirm": {
       "exportDescription": "Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Roghnaigh Teanga",
     "serverConfiguration": "Cumraíocht Freastalaí",
-    "serverConfigurationDescription": "Cumraigh URL an fhreastalaí AliasVault le haghaidh cásanna féin-óstáilte",
     "serverUrl": "URL an fhreastalaí",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Leagan an fhreastalaí",
     "sessionsAndLogs": "Seisiúin & Logaí",
     "sessionsAndLogsDescription": "Féach cá bhfuil tú logáilte isteach agus déan athbhreithniú ar iarrachtaí logála isteach le déanaí.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Úsáid réamhshocraithe",
     "validation": {
       "apiUrlInvalid": "Cuir isteach URL bailí API",
-      "apiUrlRequired": "Tá URL API ag teastáil",
-      "clientUrlInvalid": "Cuir isteach URL bailí cliaint",
-      "clientUrlRequired": "Tá URL an chliaint ag teastáil"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Modh Díghlasála Cruinneachán",
     "vaultUnlockSettings": {
