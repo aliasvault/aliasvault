@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Advanced settings",
-      "customApiUrl": "Custom API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Magdagdag ng mga HTTP header na isasamang ma-send tuwing may hinihingi sa AliasVault server mo. Magagamit ito sa mga self-hosted setup na nasa likod ng reverse proxy na nagche-check ng mga custom header (hal. Pangolin, Cloudflare Access).",
       "headerName": "Pangalan ng header",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Value ng header",
       "selfHosted": "Self-hosted",
-      "title": "API Connection",
       "version": "Bersyon: {{version}}"
-    },
-    "navigation": {
-      "login": "Mag-login",
-      "loginSettings": "Mga login settings"
     },
     "notFound": {
       "goHome": "Bumalik sa simula",
@@ -96,8 +91,8 @@
       "enterPassword": "Paki-lagay ang iyong password",
       "httpError": "Nagka-HTTP error: {{status}}",
       "networkError": "Pumalya ang network request. I-check ang iyong internet connection at subukang muli.",
-      "networkErrorSelfHosted": "Pumalya ang network request. I-check ang network connection at availability ng server mo. Para sa mga self-hosted instances, siguraduhing meron kang valid na SSL certificate na naka-install. Hindi suportado ang mga self-signed certificates sa mobile devices para sa seguridad.",
-      "serverErrorSelfHosted": "Hindi makaabot sa API. Para sa mga self-hosted instances, i-verify kung ang API endpoint ay kayang maabot sa pamamagitan ng pag navigate nito browser: dapat lumabas ang 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Kung pinalitan mo ang iyong password kamakailan lang at nahihirapan kang mag-sign in gamit ang bago mong password, tandaang maaaring ang server administrator ay kayang i-recover ang naunang backup ng iyong vault para matulungan ka. Kung ganito nga, paki-contact ang administrator ng server.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator code",
       "dontHaveAuthenticatorText": "Walang access sa authenticator device mo?",
-      "loginErrorMessage": "Nagka-error habang pina-process ang log in request. Subukan ulit (mamaya).",
       "loginRequestErrorMessage": "Nagka-error habang pina-process ang log in request.",
       "loginWithAuthenticatorLink": "Mag-log in gamit ang isang authenticator code.",
       "loginWithRecoveryCodeLink": "Mag-log in gamit ang isang recovery code.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Your session has expired. Please log in again.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "Site",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1186,7 +1178,6 @@
       "website": "Website"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Active on all sites (unless disabled below)",
     "advancedOptions": "Advanced Options",
     "androidAutofillSettings": {
       "buttonTip": "If the button above doesn't work it might be blocked because of security settings. You can manually go to Android Settings → General Management → Passwords and autofill.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Automatically lock the vault after a period of inactivity",
     "autoLockTimeoutHelp": "The vault will only lock after the specified period of inactivity (no autofill usage or extension popup opened). The vault will always lock when the browser is closed, regardless of this setting.",
     "autofill": "Autofill & Passkeys",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "autofillEnabled": "Enable Autofill",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
     "autofillMatching": "Autofill Matching",
     "autofillMatchingDefault": "URL + subdomain + name wildcard",
     "autofillMatchingMode": "Autofill matching mode",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Exact URL domain only",
     "autofillMatchingUrlSubdomain": "URL + subdomain",
     "autofillSettings": "Autofill Settings",
-    "autofillSettingsDescription": "Enable or disable the autofill popup on web pages",
     "autofillSetup": {
       "alreadyConfigured": "I already configured it",
       "howToEnable": "How to enable Autofill & Passkeys:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
-    "clientUrlHint": "The web interface URL of your self-hosted instance",
     "clipboardClear": "Clear Clipboard",
     "clipboardClear10Seconds": "Clear after 10 seconds",
     "clipboardClear15Seconds": "Clear after 15 seconds",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "API URL",
-    "customClientUrl": "Client URL",
     "dark": "Dark",
     "disableBatteryOptimization": "Disable battery optimization",
-    "disabledForThisSite": "Disabled for this site",
-    "disabledOnAllSites": "Disabled on all sites",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "Enabled for this site",
     "exportConfirmTitle": "Export Vault",
     "exportSectionTitle": "Export",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Open Settings",
     "openWebApp": "Open web app",
     "passkeySettings": "Passkey Settings",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Select Language",
     "serverConfiguration": "Server Configuration",
-    "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
     "serverUrl": "Server URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Use default",
     "validation": {
       "apiUrlInvalid": "Please enter a valid API URL",
-      "apiUrlRequired": "API URL is required",
-      "clientUrlInvalid": "Please enter a valid client URL",
-      "clientUrlRequired": "Client URL is required"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Vault Unlock Method",
     "vaultUnlockSettings": {
