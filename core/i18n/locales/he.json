@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "הגדרות מתקדמות",
-      "customApiUrl": "כתובת API מותאמת",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "שם הכותרת",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "ערך הכותרת",
       "selfHosted": "אירוח עצמי",
-      "title": "חיבור API",
       "version": "גרסה: {{version}}"
-    },
-    "navigation": {
-      "login": "כניסה",
-      "loginSettings": "הגדרות כניסה"
     },
     "notFound": {
       "goHome": "חזרה להתחלה",
@@ -96,8 +91,8 @@
       "enterPassword": "נא למלא את הסיסמה שלך",
       "httpError": "שגיאת HTTP:‏ {{status}}",
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
-      "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
-      "serverErrorSelfHosted": "לא ניתן להגיע ל־API. למערכות באירוח עצמי, נא לאמת שנקודת ה־API נגישה על ידי ניווט אליה בדפדפן: היא אמורה להציג ‚OK’ (תקין)."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "אם החלפת את הסיסמה שלך לאחרונה ועולים כעת קשיים בכניסה למערכת עם הסיסמה החדשה שלך, נא לשים לב שמנהלי השרת יוכלו כפי הנראה לשחזר גיבוי מוקדם יותר של הכספת שלך כדי לעזור לך. אם זה המצב, נא ליצור קשר עם מנהלי השרת.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "קוד מאמת",
       "dontHaveAuthenticatorText": "אין לך גישה למכשיר המאמת שלך?",
-      "loginErrorMessage": "אירעה שגיאה בעיבוד בקשת הכניסה. נא לנסות שוב (מאוחר יותר).",
       "loginRequestErrorMessage": "אירעה שגיאה בעיבוד בקשת הכניסה.",
       "loginWithAuthenticatorLink": "להיכנס עם קוד מאמת (authenticator) במקום.",
       "loginWithRecoveryCodeLink": "להיכנס עם קוד שחזור במקום.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
-      "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverOutdated": "יש לעדכן את שרת AliasVault כדי שיעבוד עם הגרסה הזאת של AliasVault. נא לנסות שוב מאוחר יותר. אם השרת מתארח אצלך, נא ליצור קשר עם הנהלת השרת שלך.",
       "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "אתר",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1186,7 +1178,6 @@
       "website": "אתר"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "פעיל בכל האתרים (למעט אם נכבה להלן)",
     "advancedOptions": "אפשרויות מתקדמות",
     "androidAutofillSettings": {
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "לנעול את הכספת אוטומטית לאחר פרק זמן של חוסר פעילות",
     "autoLockTimeoutHelp": "הכספת תינעל רק לאחר משך זמן של חוסר פעילות (אין שימוש בהשלמה אוטומטית או פתיחת חלונית הרחבה). הכספת תמיד תינעל עם סגירת הדפדפן, ללא תלות בהגדרה הזאת.",
     "autofill": "מילוי אוטומטי ומפתחות גישה",
-    "autofillDisabledDescription": "הצעות השלמה אוטומטית כבויות באופן מקיף",
-    "autofillEnabled": "הפעלת השלמה אוטומטית",
-    "autofillEnabledDescription": "הצעות השלמה אוטומטית בטופסי כניסה למערכות",
     "autofillMatching": "התאמת השלמה אוטומטית",
     "autofillMatchingDefault": "כתובת + שם תת־תחום + תו כל על שם",
     "autofillMatchingMode": "מצב התאמת השלמה אוטומטית",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "תחום כתובת מדויקת בלבד",
     "autofillMatchingUrlSubdomain": "כתובת + שם תת־תחום",
     "autofillSettings": "הגדרות השלמה אוטומטית",
-    "autofillSettingsDescription": "הפעלת או כיבוי חלוניות השלמה אוטומטית בעמודי אתרים",
     "autofillSetup": {
       "alreadyConfigured": "כבר הגדרתי את זה",
       "howToEnable": "איך להפעיל מילוי אוטומטי ומפתחות גישה:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "איפוס כל האתרים המושבתים",
-    "clientUrlHint": "כתובת ממשק המשתמש הדפדפני של העותק באירוע העצמי שלך",
     "clipboardClear": "פינוי לוח הגזירים",
     "clipboardClear10Seconds": "לפנות אחרי 10 שניות",
     "clipboardClear15Seconds": "לפנות אחרי 15 שניות",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "כתובת API",
-    "customClientUrl": "כתובת לקוח",
     "dark": "כהה",
     "disableBatteryOptimization": "השבתת מיטוב סוללה",
-    "disabledForThisSite": "כבוי לאתר הזה",
-    "disabledOnAllSites": "כבוי בכל האתרים",
     "disabledSites": "אתרים מושבתים",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "פעיל לאתר הזה",
     "exportConfirmTitle": "ייצוא כספת",
     "exportSectionTitle": "ייצוא",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "לפתוח את ההגדרות",
     "openWebApp": "פתיחת אתר",
     "passkeySettings": "Passkey Settings",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "בחירת שפה",
     "serverConfiguration": "הגדרות שרת",
-    "serverConfigurationDescription": "הגדרת כתובת שרת AliasVault לעותקים באירוח עצמי",
     "serverUrl": "כתובת שרת",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "גרסת שרת",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1615,9 +1596,8 @@
     "useDefault": "להשתמש בברירת המחדל",
     "validation": {
       "apiUrlInvalid": "נא למלא כתובת API תקפה",
-      "apiUrlRequired": "כתובת API חובה",
-      "clientUrlInvalid": "נא למלא כתובת לקוח תקפה",
-      "clientUrlRequired": "כתובת לקוח חובה"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "שיטת שחרור נעילת כספת",
     "vaultUnlockSettings": {
