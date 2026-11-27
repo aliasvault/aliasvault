@@ -42,10 +42,10 @@ const EmailCard: React.FC<EmailCardProps> = ({ email, dateLabel, selectionMode, 
       <Link
         to={`/emails/${email.id}`}
         onClick={handleClick}
-        className={`flex items-start p-4 rounded-lg shadow hover:shadow-md transition-shadow border ${selectionMode ? 'select-none' : ''} ${
+        className={`flex items-start p-4 rounded border ${selectionMode ? 'select-none' : ''} ${
           isSelected
             ? 'bg-primary-50 border-primary-300 hover:bg-primary-100 dark:bg-primary-900/20 dark:border-primary-700 dark:hover:bg-primary-900/30'
-            : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
+            : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:hover:bg-gray-700'
         }`}
       >
         {selectionMode && <span className="mt-1"><SelectCheckbox isSelected={isSelected} /></span>}
