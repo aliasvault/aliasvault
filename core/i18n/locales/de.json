@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Erweiterte Einstellungen",
-      "customApiUrl": "Benutzerdefinierte API-URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Benutzerdefinierte Proxy-Header",
       "customProxyHeadersDescription": "Füge HTTP-Header hinzu, die mit jeder Anfrage an Deinen AliasVault-Server gesendet werden. Kann für selbstgehostete Setups hinter einem Reverse-Proxy verwendet werden, der auf benutzerdefinierte Header prüft (z.B. Pangolin, Cloudflare Access).",
       "headerName": "Header-Name",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header-Wert",
       "selfHosted": "Selbstgehostet",
-      "title": "API-Verbindung",
       "version": "Version: {{version}}"
-    },
-    "navigation": {
-      "login": "Anmelden",
-      "loginSettings": "Anmeldeeinstellungen"
     },
     "notFound": {
       "goHome": "Zum Start zurück gehen",
@@ -96,8 +91,8 @@
       "enterPassword": "Bitte gib Dein Passwort ein",
       "httpError": "HTTP-Fehler: {{status}}",
       "networkError": "Netzwerkanfrage fehlgeschlagen. Bitte überprüfe Deine Internetverbindung und versuche es erneut.",
-      "networkErrorSelfHosted": "Netzwerkanfrage fehlgeschlagen. Überprüfe deine Netzwerkverbindung und die Server-Verfügbarkeit. Stelle bei selbstgehosteten Instanzen sicher, dass ein gültiges SSL-Zertifikat installiert ist. Aus Sicherheitsgründen werden selbstsignierte Zertifikate auf mobilen Geräten nicht unterstützt.",
-      "serverErrorSelfHosted": "Die API konnte nicht erreicht werden. Für selbstgehostete Instanzen überprüfe bitte, ob der API-Endpunkt erreichbar ist, indem Du in einem Browser zu ihm navigieren: Er sollte 'OK' anzeigen."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Wenn Du vor kurzem Dein Passwort geändert und Schwierigkeiten bei der Anmeldung hast, kann der Server-Administrator möglicherweise ein älteres Backup Deines Tresors wiederherzustellen. Kontaktiere dazu den Server-Administrator.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Sicherheits-Code",
       "dontHaveAuthenticatorText": "Du hast keinen Zugriff auf Dein Authentifizierungsgerät?",
-      "loginErrorMessage": "Während des Anmeldevorganges ist ein Fehler aufgetreten. Bitte versuche es (später) erneut.",
       "loginRequestErrorMessage": "Während des Anmeldevorganges ist ein Fehler aufgetreten.",
       "loginWithAuthenticatorLink": "Stattdessen mit einem Authentifizierungscode anmelden.",
       "loginWithRecoveryCodeLink": "Stattdessen mit einem Wiederherstellungscode anmelden.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "Die Anmeldeanfrage wurde auf Deinem mobilen Gerät abgelehnt.",
       "mobileLoginRequestExpired": "Zeitüberschreitung für mobile Anmeldeanforderungen. Bitte lade die Seite neu und versuche es erneut.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
-      "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "serverNotAvailable": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "serverOutdated": "Der AliasVault-Server muss aktualisiert werden, um mit dieser Version von AliasVault zu funktionieren. Bitte versuche es später erneut. Wenn Du einen selbst gehosteten Server verwendest, wende Dich bitte an Deinen Serveradministrator.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
     "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst.",
     "settings": {
-      "passkeyProvider": "Passkey-Anbieter",
-      "passkeyProviderOn": "Passkey-Anbieter an "
+      "passkeyProvider": "Passkey-Anbieter"
     },
     "site": "Seite",
     "useBrowserPasskey": "Browser-Passkey verwenden"
@@ -1186,7 +1178,6 @@
       "website": "Webseite"
     },
     "accountSecurity": "Kontosicherheit",
-    "activeOnAllSites": "Auf allen Seiten aktiv (sofern nicht unten deaktiviert)",
     "advancedOptions": "Erweiterte Einstellungen",
     "androidAutofillSettings": {
       "buttonTip": "Falls die Schaltfläche oben nicht funktionieren sollte, könnte sie aufgrund von Sicherheitseinstellungen blockiert sein. Gehe in diesem Fall manuell zu \"Android-Einstellungen → Passwörter, Passkeys & Konten\".",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Tresor bei Inaktivität automatisch sperren",
     "autoLockTimeoutHelp": "Der Tresor wird erst nach dem angegebenen Zeitraum der Inaktivität gesperrt (keine Nutzung von Auto-Fill oder Öffnen des Erweiterungs-Popups). Der Tresor wird immer gesperrt, wenn der Browser geschlossen wird, unabhängig von dieser Einstellung.",
     "autofill": "Autofill & Passkeys",
-    "autofillDisabledDescription": "Autofill-Vorschläge sind global deaktiviert",
-    "autofillEnabled": "Autofill aktivieren",
-    "autofillEnabledDescription": "Autofill-Vorschläge werden auf den Anmeldeformularen angezeigt",
     "autofillMatching": "Autofill-Übereinstimmung",
     "autofillMatchingDefault": "URL + Subdomain + Wildcard-Name",
     "autofillMatchingMode": "Autofill-Übereinstimmungs-Modus",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Nur exakte URL-Domain",
     "autofillMatchingUrlSubdomain": "URL + Subdomain",
     "autofillSettings": "Autofill-Einstellungen",
-    "autofillSettingsDescription": "Aktiviere oder deaktiviere das Autofill-Popup auf Webseiten",
     "autofillSetup": {
       "alreadyConfigured": "Ich habe es bereits konfiguriert",
       "howToEnable": "So aktivierst Du Autofill & Passkey:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Bildschirmfotos unterbinden",
     "blockScreenshotsDescription": "Blockiert Screenshots und Bildschirmaufzeichnungen der App.",
     "clearAllDisabledSites": "List der deaktivierten Webseiten leeren",
-    "clientUrlHint": "Die URL der Webschnittstelle Deiner selbst gehosteten Instanz",
     "clipboardClear": "Zwischenablage leeren",
     "clipboardClear10Seconds": "Nach 10 Sekunden löschen",
     "clipboardClear15Seconds": "Nach 15 Sekunden löschen",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} Anmeldeinformation(en), die nicht in AliasVault gespeichert werden können, wurden übersprungen."
     },
     "customApiUrl": "API-URL",
-    "customClientUrl": "Client-URL",
     "dark": "Dunkel",
     "disableBatteryOptimization": "Akkuoptimierung deaktivieren",
-    "disabledForThisSite": "Für diese Seite deaktivieren",
-    "disabledOnAllSites": "Auf allen Seiten deaktiviert",
     "disabledSites": "Deaktivierte Webseiten",
     "disabledSitesDescription": "Webseiten, wo das Autofill-Popup nicht angezeigt wird.",
-    "enabledForThisSite": "Für diese Seite aktiviert",
     "exportConfirmTitle": "Tresor exportieren",
     "exportSectionTitle": "Exportieren",
     "exportToFileTitle": "In eine Datei exportieren",
@@ -1370,7 +1352,6 @@
     "openSettings": "Öffne die Einstellungen",
     "openWebApp": "Web-App öffnen",
     "passkeySettings": "Passkey-Einstellungen",
-    "passkeysEnabled": "Passkeys aktivieren",
     "passwordConfirm": {
       "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Sprache auswählen",
     "serverConfiguration": "Serverkonfiguration",
-    "serverConfigurationDescription": "AliasVault-Server-URL für selbstgehostete Instanzen konfigurieren",
     "serverUrl": "URL des Servers",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server-Version",
     "sessionsAndLogs": "Sitzungen & Protokolle",
     "sessionsAndLogsDescription": "Sehen Dir an, wo Du eingeloggt bist und überprüfe die letzten Anmeldeversuche.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Standard verwenden",
     "validation": {
       "apiUrlInvalid": "Bitte gib eine gültige API-URL ein",
-      "apiUrlRequired": "API-URL ist erforderlich",
-      "clientUrlInvalid": "Bitte gib eine gültige Client-URL ein",
-      "clientUrlRequired": "Client-URL ist erforderlich"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Methode zum Entsperren des Tresors",
     "vaultUnlockSettings": {
