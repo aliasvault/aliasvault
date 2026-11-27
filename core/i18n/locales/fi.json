@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "disabled": "Pois käytöstä",
     "dismiss": "Dismiss",
+    "download": "Lataa",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
     "duplicateSuccessMessage": "Item duplicated successfully.",
