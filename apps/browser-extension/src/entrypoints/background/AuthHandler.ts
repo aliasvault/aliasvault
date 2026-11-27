@@ -3,7 +3,7 @@ import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/Client
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
-import { describeAuthError, type AuthErrorOptions } from '@aliasvault/client/auth/AuthErrorMessage';
+import { describeAuthError } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
@@ -80,7 +80,7 @@ export async function broadcastVaultUnlocked(): Promise<void> {
 /**
  * Map a failed flow to its result.
  */
-async function failureResult(context: string, err: unknown, options?: AuthErrorOptions): Promise<BackgroundAuthResult> {
+async function failureResult(context: string, err: unknown): Promise<BackgroundAuthResult> {
   if (err instanceof VaultVersionIncompatibleError) {
     return { status: 'logout', message: err.message };
   }
@@ -92,7 +92,7 @@ async function failureResult(context: string, err: unknown, options?: AuthErrorO
   }
 
   logFailure(context, err);
-  return { status: 'error', error: await describeAuthError(err, options) };
+  return { status: 'error', error: await describeAuthError(err) };
 }
 
 /**
@@ -174,13 +174,13 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
         // Offline unlock needs the derivation params of an earlier online login.
         return { status: 'error', error: { key: 'common.errors.serverNotAvailable', wrongPassword: false } };
       }
-      const message = await describeAuthError(err, { uncodedIsWrongPassword: true });
+      const message = await describeAuthError(err);
       if (message.wrongPassword) {
         const failedAttempts = await LocalPreferencesService.getPasswordUnlockFailedAttempts() + 1;
         await LocalPreferencesService.setPasswordUnlockFailedAttempts(failedAttempts);
         return { status: 'wrongPassword', failedAttempts };
       }
-      return failureResult('Unlock error', err, { uncodedIsWrongPassword: true });
+      return failureResult('Unlock error', err);
     }
   });
 }
@@ -214,7 +214,7 @@ export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAu
         return { status: 'pinFailed', reason: 'invalidFormat' };
       }
 
-      const message = await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' });
+      const message = await describeAuthError(err);
       if (message.wrongPassword) {
         /*
          * The PIN was right (AES-GCM decrypted), but the key it holds no longer opens the chain: a legacy PIN still
@@ -224,7 +224,7 @@ export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAu
         await removeAndDisablePin();
         return { status: 'pinFailed', reason: 'locked' };
       }
-      return failureResult('PIN unlock failed', err, { fallback: 'common.errors.unknownErrorTryAgain' });
+      return failureResult('PIN unlock failed', err);
     }
   });
 }

@@ -37,6 +37,7 @@ class WebApiService(private val context: Context) {
     companion object {
         private const val TAG = "WebApiService"
         private const val API_URL_KEY = "apiUrl"
+        private const val CLIENT_URL_KEY = "clientUrl"
         private const val ACCESS_TOKEN_KEY = "accessToken"
         private const val REFRESH_TOKEN_KEY = "refreshToken"
         private const val APP_INSTANCE_ID_KEY = "appInstanceId"
@@ -48,6 +49,11 @@ class WebApiService(private val context: Context) {
          * Endpoints that name their own API version, e.g. "v1/Auth/login".
          */
         private val VERSIONED_ENDPOINT = Regex("^v[0-9]+/")
+
+        /**
+         * The headers AliasVault sets on its own requests (lowercase), which a custom proxy header must not replace.
+         */
+        private val RESERVED_HEADER_NAMES = setOf("authorization", "content-type", "x-aliasvault-client", "x-aliasvault-appinstanceid")
 
         /**
          * Connection-establishment timeout.
@@ -100,6 +106,24 @@ class WebApiService(private val context: Context) {
     }
 
     /**
+     * Set the self-hosted server (web app) URL; an empty value removes it.
+     */
+    fun setClientUrl(url: String) {
+        if (url.isEmpty()) {
+            sharedPreferences.edit().remove(CLIENT_URL_KEY).apply()
+        } else {
+            sharedPreferences.edit().putString(CLIENT_URL_KEY, url).apply()
+        }
+    }
+
+    /**
+     * Get the self-hosted server (web app) URL, empty when none is stored.
+     */
+    fun getClientUrl(): String {
+        return sharedPreferences.getString(CLIENT_URL_KEY, "") ?: ""
+    }
+
+    /**
      * Set the custom proxy headers (JSON-encoded array of {name, value} pairs).
      */
     fun setCustomProxyHeaders(json: String) {
@@ -147,8 +171,7 @@ class WebApiService(private val context: Context) {
             return null
         }
 
-        val lower = name.lowercase()
-        if (lower == "authorization" || lower.startsWith("x-aliasvault-")) {
+        if (name.lowercase() in RESERVED_HEADER_NAMES) {
             return null
         }
 

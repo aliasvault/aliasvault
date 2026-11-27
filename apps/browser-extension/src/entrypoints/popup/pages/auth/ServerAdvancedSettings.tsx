@@ -20,7 +20,7 @@ const EMPTY_HEADER: ProxyHeader = { name: '', value: '' };
 /**
  * Advanced settings of a self-hosted server (API URL and custom proxy headers), only shown when the user is not logged in.
  */
-const AuthServerAdvanced: React.FC = () => {
+const ServerAdvancedSettings: React.FC = () => {
   const { t } = useTranslation();
   const { setIsInitialLoading } = useLoading();
   const [serverFields, setServerFields] = useState<ServerUrlFields>(() => toServerUrlFields('', ''));
@@ -174,4 +174,4 @@ const AuthServerAdvanced: React.FC = () => {
   );
 };
 
-export default AuthServerAdvanced;
+export default ServerAdvancedSettings;

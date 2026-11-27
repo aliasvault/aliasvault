@@ -1,11 +1,12 @@
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { resolveClientUrl } from '@aliasvault/client/platform/ServerUrl';
 import { syncErrorMessage, syncErrorReportDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -144,12 +145,7 @@ const Login: React.FC = () => {
      */
     const loadInitialData = async () : Promise<void> => {
       // Load client URL
-      const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string;
-      let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
-      if (settingClientUrl && settingClientUrl.length > 0) {
-        clientUrl = settingClientUrl;
-      }
-      setClientUrl(clientUrl);
+      setClientUrl(resolveClientUrl(await storage.getItem(StorageKeys.API_URL) as string | null, await storage.getItem(StorageKeys.CLIENT_URL) as string | null));
 
       // Pick up a login the background is still running because the popup was closed mid-login.
       const pending = await runBackgroundAuth(() => sendMessage('AUTH_AWAIT_PENDING'));
@@ -303,11 +299,7 @@ const Login: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{t('auth.twoFactorTitle')}</p>
             </div>
 
-            {error && (
-              <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
-                {error}
-              </div>
-            )}
+            {error && <AlertMessage type="error" message={error} className="mb-4" />}
             {vaultError && <VaultErrorReport error={vaultError} />}
 
             <div className="mb-6">
@@ -370,11 +362,7 @@ const Login: React.FC = () => {
           </div>
 
           {/* Error Message */}
-          {error && (
-            <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
+          {error && <AlertMessage type="error" message={error} className="mb-4" />}
           {vaultError && <VaultErrorReport error={vaultError} />}
 
           <div className="mb-4">

@@ -49,7 +49,7 @@ export default function LoginScreen() : React.ReactNode {
   const [formOpacity] = useState(() => new Animated.Value(0));
   const [formTranslateY] = useState(() => new Animated.Value(30));
 
-  const { loadApiUrl, getDisplayUrl } = useApiUrl();
+  const { loadApiUrl, getDisplayUrl, clientUrl } = useApiUrl();
 
   // Track if username prefill has been attempted (only do it once on mount)
   const usernamePrefillAttemptedRef = useRef(false);
@@ -162,11 +162,7 @@ export default function LoginScreen() : React.ReactNode {
     if (err instanceof LocalAuthError) {
       return err.message;
     }
-    const message = await describeAuthError(err);
-    if (message.key === 'common.errors.serverError' && await webApi.isSelfHosted()) {
-      return t('auth.errors.serverErrorSelfHosted');
-    }
-    return formatErrorMessage(message, t);
+    return formatErrorMessage(await describeAuthError(err), t);
   };
 
   /**
@@ -680,7 +676,7 @@ export default function LoginScreen() : React.ReactNode {
                     {t('auth.connectingTo')}{' '}
                   </Text>
                   <RobustPressable
-                    onPress={() => router.push('/login-settings')}
+                    onPress={() => router.push('/server-settings')}
                     testID="server-url-link-button"
                   >
                     <Text style={styles.clickableLink} testID="server-url-link"                    >
@@ -820,7 +816,7 @@ export default function LoginScreen() : React.ReactNode {
                   <View style={styles.createNewVaultContainer}>
                     <Text style={styles.textMuted}>{t('auth.noAccountYet')} </Text>
                     <InAppBrowserView
-                      url="https://app.aliasvault.com/user/setup"
+                      url={`${clientUrl}/user/setup`}
                       title={t('auth.createNewVault')}
                       textStyle={styles.clickableLink}
                     />

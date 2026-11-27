@@ -11,10 +11,10 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
-import AuthServerAdvanced from '@/entrypoints/popup/pages/auth/AuthServerAdvanced';
-import AuthServerSettings from '@/entrypoints/popup/pages/auth/AuthServerSettings';
 import AuthSettings from '@/entrypoints/popup/pages/auth/AuthSettings';
 import Login from '@/entrypoints/popup/pages/auth/Login';
+import ServerAdvancedSettings from '@/entrypoints/popup/pages/auth/ServerAdvancedSettings';
+import ServerSettings from '@/entrypoints/popup/pages/auth/ServerSettings';
 import Unlock from '@/entrypoints/popup/pages/auth/Unlock';
 import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
 import AutofillConfirm from '@/entrypoints/popup/pages/autofill/AutofillConfirm';
@@ -202,8 +202,8 @@ const App: React.FC = () => {
     { path: '/unlock', element: <Unlock />, showBackButton: false, layout: LayoutType.AUTH },
     { path: '/upgrade', element: <Upgrade />, showBackButton: false },
     { path: '/auth-settings', element: <AuthSettings />, showBackButton: true, title: t('common.settings') },
-    { path: '/auth-settings/server', element: <AuthServerSettings />, showBackButton: true, title: t('settings.serverConfiguration') },
-    { path: '/auth-settings/advanced', element: <AuthServerAdvanced />, showBackButton: true, title: t('app.loginSettings.advancedSettings') },
+    { path: '/server-settings', element: <ServerSettings />, showBackButton: true, title: t('settings.serverConfiguration') },
+    { path: '/server-settings/advanced', element: <ServerAdvancedSettings />, showBackButton: true, title: t('app.loginSettings.advancedSettings') },
     { path: '/items', element: <ItemsList />, showBackButton: false },
     { path: '/items/folder/:manifestId/:folderId', element: <ItemsList />, showBackButton: true },
     { path: '/items/select-type', element: <ItemTypeSelector />, showBackButton: true, title: t('items.addNewItem') },

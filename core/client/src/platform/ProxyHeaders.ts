@@ -26,14 +26,14 @@ const RESERVED_HEADER_NAMES = ['authorization', 'content-type', 'x-aliasvault-cl
 /**
  * Whether a header name conflicts with the headers AliasVault sets itself.
  */
-export function isReservedHeaderName(name: string): boolean {
+function isReservedHeaderName(name: string): boolean {
   return RESERVED_HEADER_NAMES.includes(name.trim().toLowerCase());
 }
 
 /**
  * Whether a header name can be sent: a valid HTTP header name that AliasVault does not set itself.
  */
-export function isValidHeaderName(name: string): boolean {
+function isValidHeaderName(name: string): boolean {
   const trimmed = name.trim();
   return HEADER_NAME_PATTERN.test(trimmed) && !isReservedHeaderName(trimmed);
 }

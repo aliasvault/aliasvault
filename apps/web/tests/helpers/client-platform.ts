@@ -16,7 +16,7 @@ import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 const clientCoreDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../core/client');
 
 /*
- * Playwright resolves the `#wasm/*` glue code through the `paths` of core/client/tsconfig.json, so read the binary from the
+ * Playwright resolves the `#wasm/*` JS bindings through the `paths` of core/client/tsconfig.json, so read the binary from the
  * first build that exists in that same order.
  */
 const wasmDir = ['wasm-extension', 'wasm-web'].map((dir) => path.join(clientCoreDir, dir)).find((dir) => existsSync(dir));

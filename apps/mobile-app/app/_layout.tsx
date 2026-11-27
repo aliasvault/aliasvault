@@ -139,7 +139,8 @@ function RootLayoutNav() : React.ReactNode {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="initialize" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="login-settings" />
+        <Stack.Screen name="server-settings/index" options={{ headerBackButtonDisplayMode: 'minimal' }} />
+        <Stack.Screen name="server-settings/advanced" options={{ headerBackButtonDisplayMode: 'minimal' }} />
         <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
         <Stack.Screen name="unlock" options={{ headerShown: false }} />
         <Stack.Screen name="upgrade" options={{ headerShown: false }} />

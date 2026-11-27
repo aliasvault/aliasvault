@@ -1,3 +1,5 @@
+import { AppErrorCode } from './AppErrorCodes';
+
 /**
  * Thrown when the server responds to an API request with a non-success HTTP status.
  */
@@ -8,26 +10,36 @@ export class ApiRequestError extends Error {
   /** Structured API error code from the response body, if present. */
   public readonly apiErrorCode: string | null;
 
+  /** The app error code of a failure without an API error code; one with an API error code is described by that. */
+  public readonly code?: AppErrorCode;
+
+  /** The API URL the request was sent to, when known. */
+  public readonly apiUrl?: string;
+
   /**
    * Creates a new instance of ApiRequestError.
    *
    * @param statusCode - The HTTP status code returned by the server.
    * @param apiErrorCode - The structured API error code from the response body, if present.
+   * @param apiUrl - The API URL the request was sent to.
    */
-  public constructor(statusCode: number, apiErrorCode: string | null = null) {
+  public constructor(statusCode: number, apiErrorCode: string | null = null, apiUrl?: string) {
     super(`HTTP ${statusCode}${apiErrorCode ? `: ${apiErrorCode}` : ''}`);
     this.name = 'ApiRequestError';
     this.statusCode = statusCode;
     this.apiErrorCode = apiErrorCode;
+    this.code = apiErrorCode ? undefined : AppErrorCode.HTTP_ERROR;
+    this.apiUrl = apiUrl;
     Object.setPrototypeOf(this, ApiRequestError.prototype);
   }
 
   /**
    * The error for a failed response, carrying the structured API error code (e.g. "USER_NOT_FOUND") when the body names one.
    * @param response - The failed response
+   * @param apiUrl - The API URL the request was sent to
    */
-  public static async fromResponse(response: Response): Promise<ApiRequestError> {
-    return new ApiRequestError(response.status, await extractApiErrorCode(response));
+  public static async fromResponse(response: Response, apiUrl?: string): Promise<ApiRequestError> {
+    return new ApiRequestError(response.status, await extractApiErrorCode(response), apiUrl);
   }
 }
 

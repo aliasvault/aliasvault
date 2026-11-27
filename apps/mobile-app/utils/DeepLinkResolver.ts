@@ -139,6 +139,7 @@ async function executeDebugSideEffect(debugSegments: string[]): Promise<void> {
       const url = decodeURIComponent(debugParams.join('/'));
       console.debug('[DeepLinkResolver] Setting API URL:', url);
       await NativeVaultManager.setApiUrl(url);
+      await NativeVaultManager.setClientUrl('');
       return;
     }
     default:

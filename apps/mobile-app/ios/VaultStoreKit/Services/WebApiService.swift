@@ -18,6 +18,9 @@ public class WebApiService {
     /// Timeout of a vault transfer, in seconds. A vault moves far more data than a status call, so the sync engine marks those requests as large.
     private static let vaultTransferTimeout: TimeInterval = 180
 
+    /// The headers AliasVault sets on its own requests (lowercase), which a custom proxy header must not replace.
+    private static let reservedHeaderNames: Set<String> = ["authorization", "content-type", "x-aliasvault-client", "x-aliasvault-appinstanceid"]
+
     /**
      * URLSession configured with explicit timeouts to avoid blocking the main thread for too long
      * when the server is not responding in a suitable time.
@@ -41,6 +44,7 @@ public class WebApiService {
 
     // Token storage keys
     private let apiUrlKey = "apiUrl"
+    private let clientUrlKey = "clientUrl"
     private let accessTokenKey = "accessToken"
     private let refreshTokenKey = "refreshToken"
     private let customProxyHeadersKey = "customProxyHeaders"
@@ -69,6 +73,25 @@ public class WebApiService {
      */
     public func getApiUrl() -> String {
         return userDefaults.string(forKey: apiUrlKey) ?? defaultApiUrl
+    }
+
+    /**
+     * Set the self-hosted server (web app) URL; an empty value removes it.
+     */
+    public func setClientUrl(_ url: String) {
+        if url.isEmpty {
+            userDefaults.removeObject(forKey: clientUrlKey)
+        } else {
+            userDefaults.set(url, forKey: clientUrlKey)
+        }
+        userDefaults.synchronize()
+    }
+
+    /**
+     * Get the self-hosted server (web app) URL, empty when none is stored.
+     */
+    public func getClientUrl() -> String {
+        return userDefaults.string(forKey: clientUrlKey) ?? ""
     }
 
     /**
@@ -114,8 +137,7 @@ public class WebApiService {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let trimmedValue = value.trimmingCharacters(in: .whitespaces)
         if trimmedName.isEmpty || trimmedValue.isEmpty { return nil }
-        let lower = trimmedName.lowercased()
-        if lower == "authorization" || lower.hasPrefix("x-aliasvault-") { return nil }
+        if Self.reservedHeaderNames.contains(trimmedName.lowercased()) { return nil }
         return (trimmedName, trimmedValue)
     }
 

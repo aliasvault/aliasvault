@@ -1101,6 +1101,33 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Set the self-hosted server (web app) URL; an empty value removes it.
+     */
+    @ReactMethod
+    override fun setClientUrl(url: String, promise: Promise) {
+        try {
+            webApiService.setClientUrl(url)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting client URL", e)
+            promise.reject("ERR_SET_CLIENT_URL", "Failed to set client URL: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Get the self-hosted server (web app) URL, empty when none is stored.
+     */
+    @ReactMethod
+    override fun getClientUrl(promise: Promise) {
+        try {
+            promise.resolve(webApiService.getClientUrl())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting client URL", e)
+            promise.reject("ERR_GET_CLIENT_URL", "Failed to get client URL: ${e.message}", e)
+        }
+    }
+
+    /**
      * Set the custom proxy headers (JSON-encoded array of {name, value} pairs).
      */
     @ReactMethod

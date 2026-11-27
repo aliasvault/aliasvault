@@ -7,7 +7,7 @@ import i18n from '@/i18n';
 
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
-import { LocalAuthError } from './types/errors/LocalAuthError';
+import { NetworkError } from '@aliasvault/client/api/errors/NetworkError';
 import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
 import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -74,17 +74,8 @@ export class WebApiService {
         }
       }
 
-      // Execute request through native layer with auth
-      // Note: Native layer handles 401 responses and token refresh automatically
-      const responseJson = await NativeVaultManager.executeWebApiRequest(
-        method,
-        endpoint,
-        options.body as string | null ?? null,
-        JSON.stringify(headers),
-        true, // requiresAuth
-      );
-
-      const response: NativeWebApiResponse = JSON.parse(responseJson);
+      // Execute request through native layer with auth; it handles 401 responses and token refresh automatically.
+      const response = await this.executeNativeRequest(method, endpoint, options.body as string | null ?? null, headers, true);
 
       // If native layer returns 401 session is truly expired (native layer already attempted token refresh automatically).
       if (response.statusCode === 401) {
@@ -102,7 +93,7 @@ export class WebApiService {
       }
 
       if (response.statusCode >= 400 && throwOnError) {
-        const error = new ApiRequestError(response.statusCode, extractApiErrorCode(response.body));
+        const error = new ApiRequestError(response.statusCode, extractApiErrorCode(response.body), await this.getApiUrl());
         error.message = i18n.t('auth.errors.httpError', { status: response.statusCode });
         throw error;
       }
@@ -147,15 +138,7 @@ export class WebApiService {
       }
 
       // Execute request through native layer without auth
-      const responseJson = await NativeVaultManager.executeWebApiRequest(
-        method,
-        endpoint,
-        options.body as string | null ?? null,
-        JSON.stringify(headers),
-        false, // requiresAuth
-      );
-
-      const nativeResponse: NativeWebApiResponse = JSON.parse(responseJson);
+      const nativeResponse = await this.executeNativeRequest(method, endpoint, options.body as string | null ?? null, headers, false);
 
       // Convert native response to Response object
       const responseInit: ResponseInit = {
@@ -172,39 +155,6 @@ export class WebApiService {
       return new Response(nativeResponse.body, responseInit);
     } catch (error) {
       console.error('API request failed:', error);
-
-      // Server refused this client version.
-      if (error instanceof ClientUpgradeRequiredError) {
-        throw error;
-      }
-
-      // Detect SSL certificate errors
-      if (error instanceof Error) {
-        const errorMessage = error.message.toLowerCase();
-
-        // Common SSL/TLS error patterns on iOS and Android
-        if (errorMessage.includes('ssl') ||
-            errorMessage.includes('tls') ||
-            errorMessage.includes('cert') ||
-            errorMessage.includes('trust') ||
-            errorMessage.includes('self-signed') ||
-            errorMessage.includes('ca') ||
-            errorMessage.includes('network request failed')) {
-
-          // Check if this is a self-hosted instance
-          const isSelfHosted = await this.isSelfHosted();
-
-          if (isSelfHosted) {
-            // For self-hosted instances, throw error with translation key
-            throw new LocalAuthError(i18n.t('auth.errors.networkErrorSelfHosted'));
-          } else {
-            // For the default API URL, throw error with translation key
-            throw new LocalAuthError(i18n.t('auth.errors.networkError'));
-          }
-        }
-      }
-
-      // Re-throw the original error if it's not SSL-related
       throw error;
     }
   }
@@ -227,15 +177,7 @@ export class WebApiService {
       };
 
       // Execute request through native layer with auth
-      const responseJson = await NativeVaultManager.executeWebApiRequest(
-        method,
-        endpoint,
-        null,
-        JSON.stringify(headers),
-        true, // requiresAuth
-      );
-
-      const response: NativeWebApiResponse = JSON.parse(responseJson);
+      const response = await this.executeNativeRequest(method, endpoint, null, headers, true);
 
       // Handle auth errors
       if (response.statusCode === 401) {
@@ -360,6 +302,19 @@ export class WebApiService {
    */
   public async getAuthLogs(): Promise<AuthLogModel[]> {
     return (await this.get<AuthLogsResponse>('Security/authlogs')).authLogs;
+  }
+
+  /**
+   * Send a request through the native layer; a request that got no response throws a {@link NetworkError}.
+   */
+  private async executeNativeRequest(method: string, endpoint: string, body: string | null, headers: Record<string, string>, requiresAuth: boolean): Promise<NativeWebApiResponse> {
+    let responseJson: string;
+    try {
+      responseJson = await NativeVaultManager.executeWebApiRequest(method, endpoint, body, JSON.stringify(headers), requiresAuth);
+    } catch (error) {
+      throw new NetworkError(error instanceof Error ? error.message : 'Network request failed', error instanceof Error ? error : undefined, await this.getApiUrl());
+    }
+    return JSON.parse(responseJson) as NativeWebApiResponse;
   }
 
   /**

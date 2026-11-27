@@ -526,7 +526,7 @@ const Unlock: React.FC = () => {
         // Check if it's a version incompatibility error
         await app.logout(err.message);
       } else {
-        setError(formatErrorMessage(await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' }), t));
+        setError(formatErrorMessage(await describeAuthError(err), t));
       }
       logFailure('Mobile unlock error', err);
     } finally {

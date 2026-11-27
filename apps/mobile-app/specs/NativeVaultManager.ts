@@ -7,6 +7,8 @@ export interface Spec extends TurboModule {
   // WebAPI configuration and token management
   setApiUrl(url: string): Promise<void>;
   getApiUrl(): Promise<string>;
+  setClientUrl(url: string): Promise<void>;
+  getClientUrl(): Promise<string>;
   setAuthTokens(accessToken: string, refreshToken: string): Promise<void>;
   getAccessToken(): Promise<string | null>;
   clearAuthTokens(): Promise<void>;

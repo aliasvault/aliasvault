@@ -32,7 +32,7 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  * @param t - the translation function
  */
 async function unlockErrorMessage(err: unknown, t: (key: string) => string): Promise<string> {
-  return formatErrorMessage(await describeAuthError(err, { uncodedIsWrongPassword: true }), t);
+  return formatErrorMessage(await describeAuthError(err), t);
 }
 
 /**

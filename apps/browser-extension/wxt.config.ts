@@ -34,17 +34,17 @@ function asciiOnlyJsPlugin(): Plugin {
 }
 
 /**
- * Removes the default WASM URL from the wasm-bindgen glue, so Vite does not inline the WASM as base64.
+ * Removes the default WASM URL from the JS bindings wasm-bindgen generates, so Vite does not inline the WASM as base64.
  * Without this the entrypoint will attempt to embed the WASM, causing filesize to grow beyond 5MB limit of Firefox AMO.
  */
 function stripWasmDefaultUrlPlugin(): Plugin {
-  const glue = /[\\/]wasm-extension[\\/]aliasvault_core\.js$/;
+  const bindingsFile = /[\\/]wasm-extension[\\/]aliasvault_core\.js$/;
   const defaultUrl = /new URL\('aliasvault_core_bg\.wasm', import\.meta\.url\)/;
   return {
     name: 'aliasvault:strip-wasm-default-url',
     enforce: 'pre',
     transform(code, id): string | undefined {
-      if (!glue.test(id.split('?')[0])) {
+      if (!bindingsFile.test(id.split('?')[0])) {
         return undefined;
       }
       if (!defaultUrl.test(code)) {

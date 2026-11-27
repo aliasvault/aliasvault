@@ -242,6 +242,14 @@
     [vaultManager getApiUrl:resolve rejecter:reject];
 }
 
+- (void)setClientUrl:(NSString *)url resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setClientUrl:url resolver:resolve rejecter:reject];
+}
+
+- (void)getClientUrl:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getClientUrl:resolve rejecter:reject];
+}
+
 - (void)setCustomProxyHeaders:(NSString *)headersJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager setCustomProxyHeaders:headersJson resolver:resolve rejecter:reject];
 }
