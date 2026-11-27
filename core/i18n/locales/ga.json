@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Cuir ceanntásca HTTP leis a sheolfar le gach iarratas chuig do fhreastalaí AliasVault. Is féidir iad a úsáid le haghaidh socruithe féinóstáilte taobh thiar de sheachfhreastalaí droim ar ais a sheiceálann ceanntásca saincheaptha (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Ainm an cheanntásca",
       "headerNamePlaceholder": "Ceanntásc-Saincheaptha-X",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Ní hainm bailí é d’cheanntásc HTTP.",
+      "headerNameReserved": "Seolann AliasVault an ceanntásc HTTP seo cheana féin.",
       "headerValue": "Luach ceanntásca",
       "selfHosted": "Féinóstáilte",
       "version": "Leagan: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Cuir isteach do phasfhocal le do thoil",
       "httpError": "Earráid HTTP: {{status}}",
       "networkError": "Theip ar an iarratas líonra. Seiceáil do nasc idirlín agus déan iarracht eile.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Níorbh fhéidir teagmháil a dhéanamh le do fhreastalaí AliasVault ag {{apiUrl}}. Deimhnigh, le do thoil, go bhfuil URL an fhreastalaí ceart, go bhfuil an freastalaí inrochtana, agus go bhfuil a theastas SSL bailí.",
+      "serverCertificateNotTrusted": "Níorbh fhéidir nasc slán a bhunú le freastalaí AliasVault: tá a dheimhniú SSL neamhbhailí nó níl muinín ag an ngléas seo as. Má úsáideann do fhreastalaí deimhniú atá sínithe ag an bhfreastalaí féin, suiteáil an deimhniú sin ar an ngléas seo ar dtús agus tabhair muinín dó."
     },
     "forgotPassword": {
       "contactAdministrator": "Má d’athraigh tú do phasfhocal le déanaí agus má tá deacrachtaí agat síniú isteach le do phasfhocal nua, tabhair faoi deara go mb’fhéidir go mbeidh riarthóir an fhreastalaí in ann cúltaca níos luaithe de do chruinneachán a aisghabháil chun cabhrú leat. Más amhlaidh atá, déan teagmháil le riarthóir an fhreastalaí.",
@@ -277,7 +277,7 @@
     },
     "expand": "Leathnaigh",
     "generate": "Gin",
-    "goToVault": "Go to vault",
+    "goToVault": "Téigh chuig an gciste",
     "help": "Cabhair",
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
@@ -1264,12 +1264,12 @@
     "credentialAutofill": "Uathlíonadh creidiúnaithe",
     "credentialAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí ainm úsáideora/focal faire",
     "credentialExchange": {
-      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
-      "exportTitle": "Export to another app",
-      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
-      "importTitle": "Import from another app",
-      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
-      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+      "description": "Aistrigh do phasfhocail, eochracha pas agus cóid 2FA go díreach ó AliasVault chuig bainisteoir pasfhocal eile ar an ngléas seo.",
+      "exportTitle": "Easpórtáil chuig aip eile",
+      "importInstructionsIos": "Oscail an aip ar mhaith leat a allmhairiú uaidh, mar shampla Pasfhocail iOS, ansin roghnaigh \"Easpórtáil Sonraí chuig Aip Eile\" agus roghnaigh AliasVault. Osclófar AliasVault ansin, ionas gur féidir leat na míreanna a athbhreithniú sula sábhálfar iad.",
+      "importTitle": "Iompórtáil ó aip eile",
+      "summaryCustomFields": "Sábháladh {{count}} mír de chineál nach bhfuil ag AliasVault mar réimsí saincheaptha.",
+      "summaryUnsupported": "Rinneadh neamhaird de {{count}} dintiúr nach féidir a stóráil in AliasVault."
     },
     "customApiUrl": "URL API",
     "dark": "Dorcha",
@@ -1278,7 +1278,7 @@
     "disabledSitesDescription": "Suíomhanna nach mbeidh an preabfhuinneog uathlíonta le feiceáil iontu.",
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
     "exportSectionTitle": "Easpórtáil",
-    "exportToFileTitle": "Export to file",
+    "exportToFileTitle": "Easpórtáil go comhad",
     "exportWarning": "Rabhadh: Má easpórtálann tú do chruinneachán chuig comhad neamhchriptithe, nochtfar do phasfhocail agus d’fhaisnéis íogair go léir i ngnáththéacs. Ná déan é seo ach ar ghléasanna iontaofa agus cinntigh:\n\n• Stóráil an comhad easpórtáilte in áit shábháilte\n• Scrios an comhad nuair nach bhfuil sé de dhíth ort a thuilleadh\n• Ná roinn an comhad easpórtáilte le daoine eile choíche\n\nAn bhfuil tú cinnte gur mian leat leanúint ar aghaidh leis an easpórtáil?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Socraigh an teanga a úsáidfear agus céannachtaí nua á nginiúint."
     },
     "importExport": "Iompórtáil / Easpórtáil",
-    "importFromFileTitle": "Import from file",
+    "importFromFileTitle": "Iompórtáil ó chomhad",
     "importSectionTitle": "Iompórtáil",
-    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
+    "importWebNote": "Chun pasfhocail a iompórtáil ó chomhad, bain úsáid as an bhfeidhmchlár gréasáin AliasVault, le do thoil.",
     "iosAutofillSettings": {
       "headerText": "Is féidir leat AliasVault a chumrú chun feidhmiúlacht uathlíonta pasfhocail agus eochracha pas dúchasacha a sholáthar in iOS. Lean na treoracha thíos chun é a chumasú.",
       "openIosSettings": "Oscail Socruithe iOS",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Roghnaigh Teanga",
     "serverConfiguration": "Cumraíocht Freastalaí",
     "serverUrl": "URL an fhreastalaí",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "Seoladh do shampla AliasVault atá á óstáil agat féin",
     "serverVersion": "Leagan an fhreastalaí",
     "sessionsAndLogs": "Seisiúin & Logaí",
     "sessionsAndLogsDescription": "Féach cá bhfuil tú logáilte isteach agus déan athbhreithniú ar iarrachtaí logála isteach le déanaí.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Úsáid réamhshocraithe",
     "validation": {
       "apiUrlInvalid": "Cuir isteach URL bailí API",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Cuir isteach URL freastalaí bailí, le do thoil",
+      "serverUrlRequired": "Tá URL an fhreastalaí ag teastáil"
     },
     "vaultUnlock": "Modh Díghlasála Cruinneachán",
     "vaultUnlockSettings": {
