@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Füge HTTP-Header hinzu, die mit jeder Anfrage an Deinen AliasVault-Server gesendet werden. Kann für selbstgehostete Setups hinter einem Reverse-Proxy verwendet werden, der auf benutzerdefinierte Header prüft (z.B. Pangolin, Cloudflare Access).",
       "headerName": "Header-Name",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Kein gültiger HTTP-Header-Name.",
+      "headerNameReserved": "AliasVault sendet diesen HTTP-Header bereits.",
       "headerValue": "Header-Wert",
       "selfHosted": "Selbstgehostet",
       "version": "Version: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Bitte gib Dein Passwort ein",
       "httpError": "HTTP-Fehler: {{status}}",
       "networkError": "Netzwerkanfrage fehlgeschlagen. Bitte überprüfe Deine Internetverbindung und versuche es erneut.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Der AliasVault-Server konnte unter {{apiUrl}} nicht erreicht werden. Bitte überprüfe, ob die Server-URL korrekt ist, ob der Server erreichbar ist und ob das SSL-Zertifikat gültig ist.",
+      "serverCertificateNotTrusted": "Es konnte keine sichere Verbindung zum AliasVault-Server aufgebaut werden: Das SSL-Zertifikat ist ungültig oder wird von diesem Gerät nicht vertrauenswürdig eingestuft. Wenn Dein Server ein selbst signiertes Zertifikat verwendet, installiere es auf diesem Gerät und etabliere die Vertrauensstellung."
     },
     "forgotPassword": {
       "contactAdministrator": "Wenn Du vor kurzem Dein Passwort geändert und Schwierigkeiten bei der Anmeldung hast, kann der Server-Administrator möglicherweise ein älteres Backup Deines Tresors wiederherzustellen. Kontaktiere dazu den Server-Administrator.",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Sprache auswählen",
     "serverConfiguration": "Serverkonfiguration",
     "serverUrl": "URL des Servers",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "Die Adresse deiner selbst gehosteten AliasVault Instanz",
     "serverVersion": "Server-Version",
     "sessionsAndLogs": "Sitzungen & Protokolle",
     "sessionsAndLogsDescription": "Sehen Dir an, wo Du eingeloggt bist und überprüfe die letzten Anmeldeversuche.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Standard verwenden",
     "validation": {
       "apiUrlInvalid": "Bitte gib eine gültige API-URL ein",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Bitte gib eine gültige Server-URL ein",
+      "serverUrlRequired": "Server-URL ist erforderlich"
     },
     "vaultUnlock": "Methode zum Entsperren des Tresors",
     "vaultUnlockSettings": {
