@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "disabled": "Inaktiverad",
     "dismiss": "Avfärda",
+    "download": "Ladda ner",
     "duplicate": "Duplicera",
     "duplicateErrorMessage": "Det gick inte att duplicera objektet.",
     "duplicateSuccessMessage": "Objektet har duplicerats.",
