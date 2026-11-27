@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "إعدادات متقدمة",
-      "customApiUrl": "رابط API مخصص",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "ترويسات وكيل مخصصة",
       "customProxyHeadersDescription": "أضف ترويسات HTTP التي سيتم إرسالها مع كل طلب إلى خادم AliasVault الخاص بك. يمكن استخدامها في عمليات الاستضافة الذاتية خلف وكيل عكسي يتحقق من الترويسات المخصصة (مثل Pangolin وCloudflare Access).",
       "headerName": "اسم الترويسة",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "قيمة الترويسة",
       "selfHosted": "مستضاف ذاتيًا",
-      "title": "اتصال API",
       "version": "الإصدار: {{version}}"
-    },
-    "navigation": {
-      "login": "تسجيل الدخول",
-      "loginSettings": "إعدادات تسجيل الدخول"
     },
     "notFound": {
       "goHome": "العودة إلى البداية",
@@ -96,8 +91,8 @@
       "enterPassword": "يرجى إدخال كلمة المرور",
       "httpError": "خطأ HTTP: {{status}}",
       "networkError": "تعذّر طلب الشبكة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
-      "networkErrorSelfHosted": "تعذّر طلب الشبكة. تحقق من اتصالك بالشبكة وتوفر الخادم. بالنسبة للنُسخ المستضافة ذاتيًا، يرجى التأكد من تثبيت شهادة SSL صالحة. الشهادات الموقعة ذاتيًا غير مدعومة على الأجهزة المحمولة لأسباب أمنية.",
-      "serverErrorSelfHosted": "تعذّر الوصول إلى API. بالنسبة للنُسخ المستضافة ذاتيًا، يرجى التحقق من إمكانية الوصول إلى نقطة نهاية API عن طريق الانتقال إليها في المتصفح: إذ يجب أن تعرض 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "إذا كنت قد غيّرت كلمة المرور مؤخرًا وتواجه صعوبات في تسجيل الدخول بكلمة المرور الجديدة، فيرجى ملاحظة أن مسؤول الخادم قد يتمكن من استرداد نسخة احتياطية سابقة من خزنتك لمساعدتك. إذا كان الأمر كذلك، فيرجى التواصل مع مسؤول الخادم.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "رمز المصادقة",
       "dontHaveAuthenticatorText": "ليس لديك وصول إلى جهاز المصادقة الخاص بك؟",
-      "loginErrorMessage": "حدث خطأ أثناء معالجة طلب تسجيل الدخول. حاول مرة أخرى (لاحقًا).",
       "loginRequestErrorMessage": "حدث خطأ أثناء معالجة طلب تسجيل الدخول.",
       "loginWithAuthenticatorLink": "سجّل الدخول باستخدام رمز المصادقة بدلًا من ذلك.",
       "loginWithRecoveryCodeLink": "سجّل الدخول باستخدام رمز الاسترداد بدلًا من ذلك.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "تم رفض طلب تسجيل الدخول على جهازك المحمول.",
       "mobileLoginRequestExpired": "انتهت مهلة طلب تسجيل الدخول عبر الجوال. يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.",
       "passwordChanged": "تم تغيير كلمة المرور منذ آخر مرة سجلت فيها الدخول. يرجى تسجيل الدخول مرة أخرى لأسباب أمنية.",
-      "serverError": "تعذّر الوصول إلى خادم AliasVault. يرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
       "serverNotAvailable": "خادم AliasVault غير متاح. يرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
       "serverOutdated": "يحتاج خادم AliasVault إلى التحديث ليعمل مع إصدار AliasVault هذا. يرجى المحاولة مرة أخرى لاحقًا. إذا كنت تستخدم خادمًا مستضافًا ذاتيًا، فيرجى التواصل مع مسؤول الخادم.",
       "sessionExpired": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "تم وضع علامة على مفتاح المرور للحذف",
     "passkeyWillBeDeleted": "سيتم حذف مفتاح المرور هذا عند حفظ بيانات الاعتماد هذه.",
     "settings": {
-      "passkeyProvider": "موفر مفاتيح المرور",
-      "passkeyProviderOn": "موفر مفاتيح المرور مفعّل "
+      "passkeyProvider": "موفر مفاتيح المرور"
     },
     "site": "الموقع",
     "useBrowserPasskey": "استخدام مفتاح مرور المتصفح"
@@ -1186,7 +1178,6 @@
       "website": "الموقع"
     },
     "accountSecurity": "أمان الحساب",
-    "activeOnAllSites": "نشط على جميع المواقع (ما لم يتم تعطيله أدناه)",
     "advancedOptions": "خيارات متقدمة",
     "androidAutofillSettings": {
       "buttonTip": "إذا لم يعمل الزر أعلاه، فقد يكون محظورًا بسبب إعدادات الأمان. يمكنك الانتقال يدويًا إلى إعدادات Android ← الإدارة العامة ← كلمات المرور والملء التلقائي.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "قفل الخزنة تلقائيًا بعد فترة من عدم النشاط",
     "autoLockTimeoutHelp": "لن تُقفل الخزنة إلا بعد الفترة المحددة من عدم النشاط (عدم استخدام الملء التلقائي أو فتح نافذة الإضافة). وستُقفل الخزنة دائمًا عند إغلاق المتصفح، بغض النظر عن هذا الإعداد.",
     "autofill": "الملء التلقائي ومفاتيح المرور",
-    "autofillDisabledDescription": "اقتراحات الملء التلقائي معطلة بشكل عام",
-    "autofillEnabled": "تفعيل الملء التلقائي",
-    "autofillEnabledDescription": "ستظهر اقتراحات الملء التلقائي في نماذج تسجيل الدخول",
     "autofillMatching": "مطابقة الملء التلقائي",
     "autofillMatchingDefault": "الرابط + النطاق الفرعي + الاسم مع أحرف بديلة",
     "autofillMatchingMode": "وضع مطابقة الملء التلقائي",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "نطاق الرابط الدقيق فقط",
     "autofillMatchingUrlSubdomain": "الرابط + النطاق الفرعي",
     "autofillSettings": "إعدادات الملء التلقائي",
-    "autofillSettingsDescription": "تفعيل أو تعطيل نافذة الملء التلقائي في صفحات الويب",
     "autofillSetup": {
       "alreadyConfigured": "لقد قمت بتهيئته بالفعل",
       "howToEnable": "كيفية تفعيل الملء التلقائي ومفاتيح المرور:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "حظر لقطات الشاشة",
     "blockScreenshotsDescription": "يحظر لقطات الشاشة وتسجيلات الشاشة للتطبيق.",
     "clearAllDisabledSites": "مسح جميع المواقع المعطلة",
-    "clientUrlHint": "رابط واجهة الويب لنسختك المستضافة ذاتيًا",
     "clipboardClear": "مسح الحافظة",
     "clipboardClear10Seconds": "المسح بعد 10 ثوانٍ",
     "clipboardClear15Seconds": "المسح بعد 15 ثانية",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "رابط API",
-    "customClientUrl": "رابط العميل",
     "dark": "داكن",
     "disableBatteryOptimization": "تعطيل تحسين البطارية",
-    "disabledForThisSite": "معطل لهذا الموقع",
-    "disabledOnAllSites": "معطل على جميع المواقع",
     "disabledSites": "المواقع المعطلة",
     "disabledSitesDescription": "المواقع التي لن تظهر فيها نافذة الملء التلقائي.",
-    "enabledForThisSite": "مفعّل لهذا الموقع",
     "exportConfirmTitle": "تصدير الخزنة",
     "exportSectionTitle": "تصدير",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "فتح الإعدادات",
     "openWebApp": "فتح تطبيق الويب",
     "passkeySettings": "إعدادات مفاتيح المرور",
-    "passkeysEnabled": "تفعيل مفاتيح المرور",
     "passwordConfirm": {
       "exportDescription": "لأسباب أمنية، يرجى إدخال كلمة المرور الرئيسية لتأكيد هذا التصدير."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "اختيار اللغة",
     "serverConfiguration": "تهيئة الخادم",
-    "serverConfigurationDescription": "تهيئة رابط خادم AliasVault للنُسخ المستضافة ذاتيًا",
     "serverUrl": "رابط الخادم",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "إصدار الخادم",
     "sessionsAndLogs": "الجلسات والسجلات",
     "sessionsAndLogsDescription": "اعرف أين سجّلت الدخول وراجع محاولات تسجيل الدخول الأخيرة.",
@@ -1615,9 +1596,8 @@
     "useDefault": "استخدام الافتراضي",
     "validation": {
       "apiUrlInvalid": "يرجى إدخال رابط API صحيح",
-      "apiUrlRequired": "رابط API مطلوب",
-      "clientUrlInvalid": "يرجى إدخال رابط عميل صحيح",
-      "clientUrlRequired": "رابط العميل مطلوب"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "طريقة فتح قفل الخزنة",
     "vaultUnlockSettings": {
