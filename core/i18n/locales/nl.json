@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Geavanceerde instellingen",
-      "customApiUrl": "Aangepaste API-URL",
-      "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",
       "customProxyHeaders": "Aangepaste proxy headers",
       "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar je AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
       "headerName": "Header-naam",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header-waarde",
       "selfHosted": "Self-hosted",
-      "title": "API-verbinding",
       "version": "Versie: {{version}}"
-    },
-    "navigation": {
-      "login": "Login",
-      "loginSettings": "Login instellingen"
     },
     "notFound": {
       "goHome": "Ga terug naar het begin",
@@ -96,8 +91,8 @@
       "enterPassword": "Voer je wachtwoord in",
       "httpError": "HTTP fout: {{status}}",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
-      "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Als je onlangs je wachtwoord hebt gewijzigd en problemen hebt met inloggen met je nieuwe wachtwoord, kan de serverbeheerder mogelijk een eerdere backup van je vault herstellen om je te helpen. Neem in dat geval contact op met de serverbeheerder.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator code",
       "dontHaveAuthenticatorText": "Geen toegang tot je authenticator apparaat?",
-      "loginErrorMessage": "Er is een fout opgetreden bij het verwerken van het inlogverzoek. Probeer het (later) opnieuw.",
       "loginRequestErrorMessage": "Er is een fout opgetreden bij het verwerken van het inlogverzoek.",
       "loginWithAuthenticatorLink": "Log in met een authenticator code.",
       "loginWithRecoveryCodeLink": "Log in met een herstelcode.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "Het login verzoek is geweigerd op je mobiele apparaat.",
       "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
-      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "serverOutdated": "De AliasVault server moet worden bijgewerkt om met deze versie van AliasVault te werken. Probeer het later opnieuw. Als je een self-hosted server gebruikt, neem dan contact op met je serverbeheerder.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey gemarkeerd om te verwijderen",
     "passkeyWillBeDeleted": "Deze passkey zal worden verwijderd wanneer je deze credential opslaat.",
     "settings": {
-      "passkeyProvider": "Passkey provider",
-      "passkeyProviderOn": "Passkey provider ingeschakeld"
+      "passkeyProvider": "Passkey provider"
     },
     "site": "Website",
     "useBrowserPasskey": "Browser-passkey gebruiken"
@@ -1186,7 +1178,6 @@
       "website": "Website"
     },
     "accountSecurity": "Account beveiliging",
-    "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
     "androidAutofillSettings": {
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Vergrendel de vault automatisch na inactiviteit",
     "autoLockTimeoutHelp": "De vault zal alleen vergrendelen na de opgegeven periode van inactiviteit (geen automatisch invullen of extensie geopend). De vault wordt altijd vergrendeld wanneer de browser wordt afgesloten, ongeacht deze instelling.",
     "autofill": "Autofill & passkeys",
-    "autofillDisabledDescription": "Autofill-suggesties zijn uitgeschakeld",
-    "autofillEnabled": "Autofill inschakelen",
-    "autofillEnabledDescription": "Autofill-suggesties verschijnen op loginformulieren",
     "autofillMatching": "Autofill matching",
     "autofillMatchingDefault": "URL + subdomein + naam wildcard",
     "autofillMatchingMode": "Autofill matching modus",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Exacte URL-domein",
     "autofillMatchingUrlSubdomain": "URL + subdomein",
     "autofillSettings": "Autofill-instellingen",
-    "autofillSettingsDescription": "De autofill pop-up op webpagina's in-/uitschakelen",
     "autofillSetup": {
       "alreadyConfigured": "Al geconfigureerd",
       "howToEnable": "Autofill & passkeys inschakelen:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Blokkeer schermafbeeldingen",
     "blockScreenshotsDescription": "Blokkeert schermafbeeldingen en schermopnames van de app.",
     "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
-    "clientUrlHint": "De webinterface URL van je self-hosted omgeving",
     "clipboardClear": "Klembord wissen",
     "clipboardClear10Seconds": "Wis na 10 seconden",
     "clipboardClear15Seconds": "Wis na 15 seconden",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} referentie(s) die niet in AliasVault kunnen worden opgeslagen, zijn overgeslagen."
     },
     "customApiUrl": "API-URL",
-    "customClientUrl": "Client-URL",
     "dark": "Donker",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
-    "disabledForThisSite": "Uitgeschakeld voor deze site",
-    "disabledOnAllSites": "Uitgeschakeld op alle sites",
     "disabledSites": "Uitgeschakelde sites",
     "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
-    "enabledForThisSite": "Ingeschakeld voor deze site",
     "exportConfirmTitle": "Vault exporteren",
     "exportSectionTitle": "Exporteren",
     "exportToFileTitle": "Exporteren naar bestand",
@@ -1370,7 +1352,6 @@
     "openSettings": "Open Instellingen",
     "openWebApp": "Web-app openen",
     "passkeySettings": "Passkey-instellingen",
-    "passkeysEnabled": "Passkeys inschakelen",
     "passwordConfirm": {
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Selecteer taal",
     "serverConfiguration": "Serverconfiguratie",
-    "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
     "serverUrl": "Server-URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server versie",
     "sessionsAndLogs": "Sessies & logbestanden",
     "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Standaard gebruiken",
     "validation": {
       "apiUrlInvalid": "Voer een geldige API URL in",
-      "apiUrlRequired": "API-URL is vereist",
-      "clientUrlInvalid": "Voer een geldige client-URL in",
-      "clientUrlRequired": "Client-URL is vereist"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "vaultUnlockSettings": {
