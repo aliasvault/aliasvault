@@ -56,6 +56,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError("Network error: ${underlyingError.message}", underlyingError)
 
     /**
+     * Error indicating the TLS handshake failed: the server certificate is invalid or not trusted by this device.
+     */
+    class TlsError(
+        /** The underlying error. */
+        val underlyingError: Throwable,
+    ) : AppError("TLS error: ${underlyingError.message}", underlyingError)
+
+    /**
      * Error indicating the server answered a request with an unexpected HTTP failure.
      */
     class ServerError(
@@ -436,6 +444,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is PasswordChanged -> "E-106"
             is ServerUnavailable -> "E-505"
             is NetworkError -> "E-003"
+            is TlsError -> "E-006"
             is ServerError -> "E-506"
             is ClientVersionNotSupported -> "E-904"
             is ServerVersionNotSupported -> "E-905"

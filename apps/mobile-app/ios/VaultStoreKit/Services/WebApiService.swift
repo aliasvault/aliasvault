@@ -60,6 +60,12 @@ public class WebApiService {
     /// Initialize the WebApiService
     public init() {}
 
+    /// Whether a request failed on the TLS handshake or the server certificate.
+    public static func isTlsFailure(_ error: Error) -> Bool {
+        guard let urlError = error as? URLError else { return false }
+        return [.secureConnectionFailed, .serverCertificateUntrusted, .serverCertificateHasBadDate, .serverCertificateHasUnknownRoot, .serverCertificateNotYetValid].contains(urlError.code)
+    }
+
     /**
      * Set the API URL
      */

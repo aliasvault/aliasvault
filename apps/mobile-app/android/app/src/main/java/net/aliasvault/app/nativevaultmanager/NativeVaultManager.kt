@@ -1273,7 +1273,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error executing WebAPI request", e)
-            promise.reject("ERR_WEB_API_REQUEST", "Failed to execute WebAPI request: ${e.message}", e)
+            // Detect a TLS failure and give it its own error code, so the UI can show a specific message.
+            val code = if (WebApiService.isTlsFailure(e)) AppError.TlsError(e).code else "ERR_WEB_API_REQUEST"
+            promise.reject(code, "Failed to execute WebAPI request: ${e.message}", e)
         }
     }
 

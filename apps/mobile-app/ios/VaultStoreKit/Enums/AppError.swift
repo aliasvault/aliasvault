@@ -11,6 +11,7 @@ public enum AppError: Error {
     // Network/connectivity errors
     case serverUnavailable(statusCode: Int)
     case networkError(underlyingError: Error)
+    case tlsError(underlyingError: Error)
     case serverError(message: String)
 
     // Version/compatibility errors
@@ -100,6 +101,8 @@ public enum AppError: Error {
             return "E-505"
         case .networkError:
             return "E-003"
+        case .tlsError:
+            return "E-006"
         case .serverError:
             return "E-506"
         case .clientVersionNotSupported:
@@ -206,6 +209,8 @@ public enum AppError: Error {
             return "Server unavailable (status: \(statusCode))"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
+        case .tlsError(let error):
+            return "TLS error: \(error.localizedDescription)"
         case .serverError(let message):
             return "Server error: \(message)"
         case .clientVersionNotSupported:
