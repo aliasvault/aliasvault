@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Ustawienia zaawansowane",
-      "customApiUrl": "Niestandardowy adres URL interfejsu API",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Niestandardowe nagłówki serwera proxy",
       "customProxyHeadersDescription": "Dodaj nagłówki HTTP, które będą wysyłane z każdą prośbą do serwera AliasVault. Mogą być używane do samodzielnych konfiguracji za odwróconym proxy sprawdzającym nagłówki niestandardowe (np. Pangolin, Cloudflare Access).",
       "headerName": "Nazwa nagłówka",
       "headerNamePlaceholder": "Własny Nagłówek X",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Wartość nagłówka",
       "selfHosted": "Własny hosting",
-      "title": "Połączenie API",
       "version": "Wersja: {{version}}"
-    },
-    "navigation": {
-      "login": "Logowanie",
-      "loginSettings": "Ustawienia logowania"
     },
     "notFound": {
       "goHome": "Wróć do początku",
@@ -96,8 +91,8 @@
       "enterPassword": "Wprowadź swoje hasło",
       "httpError": "Błąd HTTP: {{status}}",
       "networkError": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie internetowe i spróbuj ponownie.",
-      "networkErrorSelfHosted": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie sieciowe i dostępność serwera. W przypadku własnych serwerów upewnij się, że masz zainstalowany ważny certyfikat SSL. Certyfikaty z podpisem własnym nie są obsługiwane na urządzeniach mobilnych ze względów bezpieczeństwa.",
-      "serverErrorSelfHosted": "Nie można połączyć się z API. W przypadku własnych serwerów sprawdź, czy punkt końcowy API jest dostępny, przechodząc do niego w przeglądarce: powinien wyświetlić komunikat „OK”."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Jeśli niedawno zmieniłeś hasło i masz trudności z zalogowaniem się przy użyciu nowego hasła, pamiętaj, że administrator serwera może być w stanie odzyskać wcześniejszą kopię zapasową Twojego sejfu, aby Ci pomóc. W takim przypadku skontaktuj się z administratorem serwera.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Kod uwierzytelniający",
       "dontHaveAuthenticatorText": "Nie masz dostępu do swojego urządzenia uwierzytelniającego?",
-      "loginErrorMessage": "Wystąpił błąd podczas przetwarzania żądania logowania. Spróbuj ponownie (później).",
       "loginRequestErrorMessage": "Wystąpił błąd podczas przetwarzania żądania logowania.",
       "loginWithAuthenticatorLink": "Zaloguj się za pomocą kodu uwierzytelniającego.",
       "loginWithRecoveryCodeLink": "Zaloguj się za pomocą kodu odzyskiwania.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "Prośba o logowanie została odrzucona na urządzeniu mobilnym.",
       "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie.",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
-      "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "serverNotAvailable": "Serwer AliasVault jest niedostępny. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "serverOutdated": "Serwer AliasVault musi zostać zaktualizowany, aby działać z tą wersją AliasVault. Spróbuj ponownie później. Jeśli korzystasz z własnego serwera, skontaktuj się z administratorem serwera.",
       "sessionExpired": "Twoja sesja wygasła. Prosimy o zalogowanie się ponownie.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Klucz dostępu oznaczony do usunięcia",
     "passkeyWillBeDeleted": "To hasło zostanie usunięte po zapisaniu tych danych logowania.",
     "settings": {
-      "passkeyProvider": "Dostawca klucza dostępu",
-      "passkeyProviderOn": "Dostawca klucza dostępu włączony "
+      "passkeyProvider": "Dostawca klucza dostępu"
     },
     "site": "Witryna",
     "useBrowserPasskey": "Użyj klucza dostępu przeglądarki"
@@ -1186,7 +1178,6 @@
       "website": "Strona www"
     },
     "accountSecurity": "Zabezpieczenia konta",
-    "activeOnAllSites": "Aktywne we wszystkich witrynach (chyba że jest wyłączone)",
     "advancedOptions": "Opcje zaawansowane",
     "androidAutofillSettings": {
       "buttonTip": "Jeśli powyższy przycisk nie działa, może to oznaczać, że został zablokowany w ustawieniach bezpieczeństwa. Możesz ręcznie przejść do Ustawień Androida → Zarządzanie ogólne → Hasła i autouzupełnianie.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Automatycznie zablokuj sejf po okresie bezczynności",
     "autoLockTimeoutHelp": "Sejf zostanie zablokowany dopiero po określonym okresie nieaktywności (żadne użycie autouzupełniania lub okienko rozszerzenia nie zostało otwarte). Sejf zostanie zablokowany, gdy przeglądarka zostanie zamknięta, niezależnie od tego ustawienia.",
     "autofill": "Autouzupełnianie i klucze dostępu",
-    "autofillDisabledDescription": "Podpowiedzi wyłączone we wszystkich polach",
-    "autofillEnabled": "Włącz autouzupełnianie",
-    "autofillEnabledDescription": "Sugestie autouzupełniania pojawią się na formularzach logowania",
     "autofillMatching": "Dopasowanie autouzupełniania",
     "autofillMatchingDefault": "Adres URL + subdomena + nazwa wieloznaczna",
     "autofillMatchingMode": "Tryb dopasowania autouzupełniania",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Dokładna domena adresu URL",
     "autofillMatchingUrlSubdomain": "Adres URL + subdomena",
     "autofillSettings": "Ustawienia autouzupełniania",
-    "autofillSettingsDescription": "Włącz lub wyłącz okno autouzupełniania na stronach internetowych",
     "autofillSetup": {
       "alreadyConfigured": "Już to skonfigurowałem",
       "howToEnable": "Jak włączyć autouzupełnianie i klucze dostępu:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Blokuj wykonywanie zrzutów ekranu",
     "blockScreenshotsDescription": "Blokuje zrzuty ekranu i nagrywania ekranu aplikacji.",
     "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
-    "clientUrlHint": "Adres URL interfejsu sieci web dla twojej samodzielnej instancji",
     "clipboardClear": "Wyczyść schowek",
     "clipboardClear10Seconds": "Wyczyść po 10 sekundach",
     "clipboardClear15Seconds": "Wyczyść po 15 sekundach",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "Adres URL interfejsu API",
-    "customClientUrl": "Adresy URL klienta",
     "dark": "Ciemny",
     "disableBatteryOptimization": "Wyłącz optymalizację baterii",
-    "disabledForThisSite": "Wyłączone dla tej witryny",
-    "disabledOnAllSites": "Wyłączone na wszystkich witrynach",
     "disabledSites": "Wyłączone witryny",
     "disabledSitesDescription": "Witryny, w których okienko autouzupełniania nie będzie wyświetlane.",
-    "enabledForThisSite": "Włączone dla tej witryny",
     "exportConfirmTitle": "Eksportuj sejf",
     "exportSectionTitle": "Eksportowanie",
     "exportToFileTitle": "Eksportuj do pliku",
@@ -1370,7 +1352,6 @@
     "openSettings": "Otwórz ustawienia",
     "openWebApp": "Otwórz aplikację internetową",
     "passkeySettings": "Ustawienia kluczy dostępu",
-    "passkeysEnabled": "Włącz klucze dostępu",
     "passwordConfirm": {
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Wybierz język",
     "serverConfiguration": "Konfiguracja serwera",
-    "serverConfigurationDescription": "Skonfiguruj adres URL serwera sejfu AliasVault",
     "serverUrl": "Adres URL serwera",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Wersja serwera",
     "sessionsAndLogs": "Sesje i dzienniki",
     "sessionsAndLogsDescription": "Zobacz, gdzie jesteś zalogowany i przejrzyj ostatnie próby logowania.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Użyj domyślnego",
     "validation": {
       "apiUrlInvalid": "Wprowadź poprawny adres URL API",
-      "apiUrlRequired": "API URL jest wymagane",
-      "clientUrlInvalid": "Wprowadź prawidłowy adres URL klienta",
-      "clientUrlRequired": "Adres URL klienta jest wymagany"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Blokada sejfu",
     "vaultUnlockSettings": {
