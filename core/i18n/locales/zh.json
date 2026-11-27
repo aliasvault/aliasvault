@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "添加 HTTP 标头，随每个发送到 AliasVault 服务器的请求一同发送。可用于位于反向代理（例如 Pangolin、Cloudflare Access）之后的自托管设置，该代理会检查自定义标头。",
       "headerName": "标头名称",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "无效的 HTTP 标头名称。",
+      "headerNameReserved": "AliasVault 已经发送此 HTTP 标头。",
       "headerValue": "标头值",
       "selfHosted": "自托管",
       "version": "版本：{{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "请输入您的密码",
       "httpError": "HTTP 错误：{{status}}",
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "无法连接到位于 {{apiUrl}} 的 AliasVault 服务器。请检查服务器 URL 是否正确、服务器是否可达以及其 SSL 证书是否有效。",
+      "serverCertificateNotTrusted": "无法与 AliasVault 服务器建立安全连接：其 SSL 证书无效或不受此设备信任。如果您的服务器使用自签名证书，请先在此设备上安装并信任该证书。"
     },
     "forgotPassword": {
       "contactAdministrator": "如果您最近更改了密码且使用新密码登录遇到困难，请注意服务器管理员可能能够恢复您密码库的早期备份来帮助您。若情况如此，请联系服务器管理员。",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "选择语言",
     "serverConfiguration": "服务器配置",
     "serverUrl": "服务器 URL",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "您自托管的 AliasVault 实例的地址",
     "serverVersion": "服务器版本",
     "sessionsAndLogs": "会话与日志",
     "sessionsAndLogsDescription": "查看您的登录位置，并检查近期的登录尝试。",
@@ -1596,8 +1596,8 @@
     "useDefault": "使用默认",
     "validation": {
       "apiUrlInvalid": "请输入有效的 API URL",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "请输入有效的服务器 URL",
+      "serverUrlRequired": "服务器 URL 为必填项"
     },
     "vaultUnlock": "密码库解锁方式",
     "vaultUnlockSettings": {
