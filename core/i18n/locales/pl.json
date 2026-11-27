@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Dodaj nagłówki HTTP, które będą wysyłane z każdą prośbą do serwera AliasVault. Mogą być używane do samodzielnych konfiguracji za odwróconym proxy sprawdzającym nagłówki niestandardowe (np. Pangolin, Cloudflare Access).",
       "headerName": "Nazwa nagłówka",
       "headerNamePlaceholder": "Własny Nagłówek X",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Nieprawidłowa nazwa nagłówka HTTP.",
+      "headerNameReserved": "AliasVault już wysyła ten nagłówek HTTP.",
       "headerValue": "Wartość nagłówka",
       "selfHosted": "Własny hosting",
       "version": "Wersja: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Wprowadź swoje hasło",
       "httpError": "Błąd HTTP: {{status}}",
       "networkError": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie internetowe i spróbuj ponownie.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Nie można połączyć się z serwerem AliasVault w {{apiUrl}}. Sprawdź, czy adres URL serwera jest prawidłowy, czy serwer jest osiągalny i czy jego certyfikat SSL jest ważny.",
+      "serverCertificateNotTrusted": "Nie udało się nawiązać bezpiecznego połączenia z serwerem AliasVault: jego certyfikat SSL jest nieprawidłowy lub niezaufany na tym urządzeniu. Jeśli serwer używa certyfikatu podpisanego, najpierw zainstaluj i dodaj ten certyfikat do zaufanych na tym urządzeniu."
     },
     "forgotPassword": {
       "contactAdministrator": "Jeśli niedawno zmieniłeś hasło i masz trudności z zalogowaniem się przy użyciu nowego hasła, pamiętaj, że administrator serwera może być w stanie odzyskać wcześniejszą kopię zapasową Twojego sejfu, aby Ci pomóc. W takim przypadku skontaktuj się z administratorem serwera.",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Wybierz język",
     "serverConfiguration": "Konfiguracja serwera",
     "serverUrl": "Adres URL serwera",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "Adres Twojej instancji AliasVault uruchomionej na własnym serwerze",
     "serverVersion": "Wersja serwera",
     "sessionsAndLogs": "Sesje i dzienniki",
     "sessionsAndLogsDescription": "Zobacz, gdzie jesteś zalogowany i przejrzyj ostatnie próby logowania.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Użyj domyślnego",
     "validation": {
       "apiUrlInvalid": "Wprowadź poprawny adres URL API",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Wprowadź prawidłowy adres URL serwera",
+      "serverUrlRequired": "Adres URL serwera jest wymagany"
     },
     "vaultUnlock": "Blokada sejfu",
     "vaultUnlockSettings": {
