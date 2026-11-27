@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "¿Realmente quieres borrar este elemento?",
     "disabled": "Desactivado",
     "dismiss": "Descartar",
+    "download": "Descargar",
     "duplicate": "Duplicar",
     "duplicateErrorMessage": "Error al duplicar el objeto.",
     "duplicateSuccessMessage": "Objeto duplicado con éxito.",
