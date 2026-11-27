@@ -92,16 +92,8 @@ function EmailCardComponent({ email, selectionMode = false, isSelected = false, 
     emailCard: {
       backgroundColor: colors.accentBackground,
       borderRadius: 8,
-      elevation: 3,
-      marginBottom: 12,
+      marginBottom: 8,
       padding: 12,
-      shadowColor: colors.text,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
     },
     emailDate: {
       color: colors.textMuted,

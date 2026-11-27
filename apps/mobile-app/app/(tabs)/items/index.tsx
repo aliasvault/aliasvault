@@ -52,6 +52,7 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader, useCollapsibleHeaderHeight, useCollapsibleHeaderScroll } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { TAB_TITLE_TEXT_STYLE } from '@/components/ui/TitleContainer';
 import { TwoPaneRoot } from '@/components/ui/TwoPaneLayout';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -544,10 +545,8 @@ export function ItemsScreen(): React.ReactNode {
       padding: 8,
     },
     filterButtonText: {
+      ...TAB_TITLE_TEXT_STYLE,
       color: colors.text,
-      fontSize: 28,
-      fontWeight: 'bold',
-      lineHeight: 34,
     },
     filterCount: {
       color: colors.textMuted,
