@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Pengaturan lanjutan",
-      "customApiUrl": "URL API Khusus",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Header proxy khusus",
       "customProxyHeadersDescription": "Tambahkan header HTTP yang akan dikirimkan bersama setiap permintaan ke server AliasVault Anda. Fitur ini dapat digunakan untuk konfigurasi self-hosted yang berada di belakang proxy terbalik yang memeriksa keberadaan header khusus (misalnya, Pangolin, Cloudflare Access).",
       "headerName": "Nama Header",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Nilai header",
       "selfHosted": "Hosting mandiri",
-      "title": "Sambungan API",
       "version": "Versi: {{version}}"
-    },
-    "navigation": {
-      "login": "Masuk",
-      "loginSettings": "Pengaturan Masuk"
     },
     "notFound": {
       "goHome": "Kembali ke awal",
@@ -96,8 +91,8 @@
       "enterPassword": "Silakan masukkan kata sandi Anda",
       "httpError": "Kesalahan HTTP: {{status}}",
       "networkError": "Permintaan jaringan gagal. Silakan periksa koneksi internet Anda dan coba lagi.",
-      "networkErrorSelfHosted": "Permintaan jaringan gagal. Periksa koneksi jaringan dan ketersediaan server Anda. Untuk instans yang dihosting sendiri, pastikan Anda telah menginstal sertifikat SSL yang valid. Sertifikat yang ditandatangani sendiri tidak didukung di perangkat seluler karena alasan keamanan.",
-      "serverErrorSelfHosted": "Tidak dapat mengakses API. Untuk instans yang dihosting sendiri, silakan periksa apakah titik akhir API dapat diakses dengan membukanya di peramban: seharusnya muncul tulisan ‘OK’."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Jika Anda baru saja mengubah kata sandi dan mengalami kesulitan saat masuk menggunakan kata sandi baru tersebut, harap diperhatikan bahwa administrator server mungkin dapat memulihkan cadangan sebelumnya dari brankas Anda untuk membantu Anda. Jika demikian, silakan hubungi administrator server.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Kode autentikasi",
       "dontHaveAuthenticatorText": "Tidak bisa mengakses perangkat otentikator Anda?",
-      "loginErrorMessage": "Terjadi kesalahan saat memproses permintaan masuk. Silakan coba lagi (nanti).",
       "loginRequestErrorMessage": "Terjadi kesalahan saat memproses permintaan masuk.",
       "loginWithAuthenticatorLink": "Silakan masuk menggunakan kode otentikator.",
       "loginWithRecoveryCodeLink": "Silakan masuk menggunakan kode pemulihan.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Waktu tunggu permintaan login seluler telah habis. Silakan muat ulang halaman ini dan coba lagi.",
       "passwordChanged": "Kata sandi Anda telah berubah sejak terakhir kali Anda masuk. Silakan masuk kembali untuk alasan keamanan.",
-      "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
       "serverNotAvailable": "Server AliasVault sedang tidak tersedia. Silakan coba lagi nanti atau hubungi bagian dukungan jika masalah ini masih berlanjut.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sesi Anda telah berakhir. Harap masuk kembali.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Kunci Akses ditandai untuk dihapus",
     "passkeyWillBeDeleted": "Kunci akses ini akan dihapus saat Anda menyimpan kredensial ini.",
     "settings": {
-      "passkeyProvider": "Penyedia Kunci akses",
-      "passkeyProviderOn": "Penyedia Kunci akses aktif "
+      "passkeyProvider": "Penyedia Kunci akses"
     },
     "site": "Situs",
     "useBrowserPasskey": "Gunakan Kunci Akses Browser"
@@ -1186,7 +1178,6 @@
       "website": "Situs Web"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Aktif di semua situs (kecuali jika dinonaktifkan di bawah ini)",
     "advancedOptions": "Pilihan Lanjutan",
     "androidAutofillSettings": {
       "buttonTip": "Jika tombol di atas tidak berfungsi, mungkin tombol tersebut diblokir karena pengaturan keamanan. Anda dapat membuka Pengaturan Android → Pengelolaan Umum → Kata Sandi dan Pengisian Otomatis secara manual.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Kunci brankas secara otomatis setelah periode tidak aktif",
     "autoLockTimeoutHelp": "Vault hanya akan terkunci setelah periode tidak aktif yang ditentukan (tidak ada penggunaan pengisian otomatis atau jendela pop-up ekstensi yang dibuka). Vault akan selalu terkunci saat browser ditutup, terlepas dari pengaturan ini.",
     "autofill": "Pengisian Otomatis & Kunci Akses",
-    "autofillDisabledDescription": "Saran pengisian otomatis dinonaktifkan secara global",
-    "autofillEnabled": "Aktifkan Pengisian Otomatis",
-    "autofillEnabledDescription": "Saran pengisian otomatis akan muncul pada formulir masuk",
     "autofillMatching": "Pencocokan Pengisian Otomatis",
     "autofillMatchingDefault": "URL + subdomain + nama wildcard",
     "autofillMatchingMode": "Mode pencocokan pengisian otomatis",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Hanya domain URL yang tepat",
     "autofillMatchingUrlSubdomain": "URL + subdomain",
     "autofillSettings": "Pengaturan Pengisian Otomatis",
-    "autofillSettingsDescription": "Aktifkan atau nonaktifkan popup pengisian otomatis pada halaman web",
     "autofillSetup": {
       "alreadyConfigured": "Saya sudah mengonfigurasinya",
       "howToEnable": "Cara mengaktifkan Pengisian Otomatis & Kunci Akses:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Hapus semua situs yang dinonaktifkan",
-    "clientUrlHint": "URL antarmuka web dari instans yang dihosting mandiri milik Anda",
     "clipboardClear": "Bersihkan Clipboard",
     "clipboardClear10Seconds": "Kosongkan setelah 10 detik",
     "clipboardClear15Seconds": "Kosongkan setelah 15 detik",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "URL API",
-    "customClientUrl": "URL Klien",
     "dark": "Gelap",
     "disableBatteryOptimization": "Nonaktifkan optimasi baterai",
-    "disabledForThisSite": "Dinonaktifkan di situs ini",
-    "disabledOnAllSites": "Dinonaktifkan di semua situs",
     "disabledSites": "Situs yang dinonaktifkan",
     "disabledSitesDescription": "Situs dimana popup pengisian otomatis tidak akan muncul.",
-    "enabledForThisSite": "Diaktifkan untuk situs ini",
     "exportConfirmTitle": "Ekspor Brankas",
     "exportSectionTitle": "Ekspor",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Buka Pengaturan",
     "openWebApp": "Buka aplikasi web",
     "passkeySettings": "Pengaturan Kunci akses",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Demi alasan keamanan, silakan masukkan kata sandi utama Anda untuk mengonfirmasi proses ekspor ini."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Pilih Bahasa",
     "serverConfiguration": "Konfigurasi Server",
-    "serverConfigurationDescription": "Konfigurasikan URL server AliasVault untuk instansi yang dihosting mandiri",
     "serverUrl": "URL Server",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Versi Server",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Gunakan default",
     "validation": {
       "apiUrlInvalid": "Silakan masukkan URL API yang valid",
-      "apiUrlRequired": "URL API wajib diisi",
-      "clientUrlInvalid": "Silakan masukkan URL klien yang valid",
-      "clientUrlRequired": "URL Klien wajib diisi"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Metode buka Vault",
     "vaultUnlockSettings": {
