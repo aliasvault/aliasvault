@@ -103,12 +103,12 @@ export class WebApp {
     await this.page.locator('#topBarQuickCreateButton').click();
     await expect(this.page.locator('#serviceName')).toBeFocused();
     await this.page.locator('#serviceName').fill(name);
-    if (fields.url) {
-      await this.page.locator('#serviceUrl').fill(fields.url);
-    }
     await this.page.locator('#quickIdentitySubmit').click();
     await expect(this.page.locator('#service-name')).toHaveValue(name);
     await expect(this.page.locator('#service-name')).toBeFocused();
+    if (fields.url) {
+      await this.page.locator('#service-url-0').fill(fields.url);
+    }
     if (fields.username !== undefined) {
       await this.page.locator('#username').fill(fields.username);
     }

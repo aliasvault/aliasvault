@@ -36,6 +36,9 @@ export type ItemEdit = {
   Passkeys: Passkey[];
 };
 
+/** The example shown in an empty website URL input. */
+export const SERVICE_URL_PLACEHOLDER = 'https://example.com';
+
 /**
  * A field edit for a system field with a value.
  */

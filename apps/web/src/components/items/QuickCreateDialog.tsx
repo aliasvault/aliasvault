@@ -11,7 +11,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useSaveItem } from '@/hooks/useSaveItem';
-import { createNewItemEdit, type ItemEdit, setFieldValue } from '@/models/ItemEdit';
+import { createNewItemEdit, type ItemEdit, SERVICE_URL_PLACEHOLDER, setFieldValue } from '@/models/ItemEdit';
 import { generateIdentity } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -218,7 +218,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           {nameError && <div className="validation-message text-sm mt-1">{nameError}</div>}
         </div>
-        {(itemType === ItemTypes.Login || itemType === ItemTypes.Alias) && (
+        {itemType === ItemTypes.Alias && (
           <div className="mb-4">
             <FormLabel htmlFor="serviceUrl">{t('fieldLabels.login.url')}</FormLabel>
             <input
@@ -226,6 +226,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
               type="text"
               value={serviceUrl}
               onChange={(e) => setServiceUrl(e.target.value)}
+              placeholder={SERVICE_URL_PLACEHOLDER}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
         )}

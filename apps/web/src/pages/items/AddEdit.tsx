@@ -39,7 +39,8 @@ import { useSaveItem } from '@/hooks/useSaveItem';
 import { VaultPushFailedError } from '@/hooks/useVaultMutate';
 import {
   addCustomField, createNewItemEdit, type FieldEdit, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
-  isFieldFilledIn, type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
+  isFieldFilledIn, type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, SERVICE_URL_PLACEHOLDER, setFieldValue, setFieldValues, setFolder,
+  updateCustomField,
 } from '@/models/ItemEdit';
 import { waitForMinimumDuration } from '@/utils/Delay';
 import { generateAliasEmail, generateIdentity, generateRandomEmail, generateUsername, type GeneratedAliasData } from '@/utils/IdentityGenerator';
@@ -535,7 +536,7 @@ const ItemAddEditForm: React.FC = () => {
                     </div>
                     {shouldShowField(FieldKey.LoginUrl) && (
                       <div className="col-span-6 sm:col-span-3">
-                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} addLabel={t('itemTypes.fieldTypes.url')} />
+                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} placeholder={SERVICE_URL_PLACEHOLDER} addLabel={t('itemTypes.fieldTypes.url')} />
                       </div>
                     )}
                   </div>
