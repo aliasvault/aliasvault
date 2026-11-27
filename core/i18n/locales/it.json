@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Aggiungi intestazioni HTTP che verranno inviate con ogni richiesta al tuo server AliasVault. Può essere utilizzato per configurazioni selfhosted dietro un reverse proxy che controlla le intestazioni personalizzate (ad esempio Pangolin, Cloudflare Access).",
       "headerName": "Nome Header",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Non è un nome valido per l'intestazione HTTP.",
+      "headerNameReserved": "AliasVault invia già questa intestazione HTTP.",
       "headerValue": "Valore Header",
       "selfHosted": "Self-hosted",
       "version": "Versione: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Inserisci la password",
       "httpError": "Errore HTTP: {{status}}",
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Impossibile raggiungere il server AliasVault su {{apiUrl}}. Verificare che l'URL del server sia corretto, che il server sia raggiungibile e che il suo certificato SSL sia valido.",
+      "serverCertificateNotTrusted": "Impossibile impostare una connessione sicura al server AliasVault: il suo certificato SSL non è valido o non è attendibile da questo dispositivo. Se il server utilizza prima un certificato autofirmato, installare e fidarsi di tale certificato su questo dispositivo."
     },
     "forgotPassword": {
       "contactAdministrator": "Se hai recentemente cambiato la password e hai difficoltà ad accedere con la nuova password, si prega di notare che l'amministratore del server potrebbe essere in grado di recuperare un backup precedente della tua cassaforte per aiutarti. In questo caso, contattare l'amministratore del server.",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Seleziona la lingua",
     "serverConfiguration": "Configurazione del server",
     "serverUrl": "URL del server",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "L'indirizzo della tua istanza di AliasVault auto-ospitata",
     "serverVersion": "Versione server",
     "sessionsAndLogs": "Sessioni & Log",
     "sessionsAndLogsDescription": "Visualizza dove si è connessi e controlla i recenti tentativi di accesso.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Usa predefinito",
     "validation": {
       "apiUrlInvalid": "Inserisci un URL API valido",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Inserisci un URL valido per il server",
+      "serverUrlRequired": "L'URL del server è obbligatorio"
     },
     "vaultUnlock": "Metodo di sblocco cassaforte",
     "vaultUnlockSettings": {
