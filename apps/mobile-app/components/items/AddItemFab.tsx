@@ -9,6 +9,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColorScheme, useColors } from '@/hooks/useColorScheme';
 import { useFloatingBottomInset } from '@/hooks/useFloatingBottomInset';
+import { useToastVisible } from '@/hooks/useToastVisible';
 
 import { ITEM_TYPE_OPTIONS } from '@/components/items/ItemTypeSelector';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -16,6 +17,9 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 
 const FAB_SIZE = 56;
 const MENU_GAP = 12;
+
+/** How far the button moves up while a toast shows: a one-line toast (54pt) plus a gap, as both sit 16pt above the tab bar. */
+const TOAST_LIFT = 66;
 
 type AddItemFabProps = {
   onSelectType: (type: ItemType) => void;
@@ -31,6 +35,20 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
   const colorScheme = useColorScheme();
 
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const isToastVisible = useToastVisible();
+  const toastOffset = useRef(new Animated.Value(0)).current;
+
+  /**
+   * Move the button up out of the way of a toast, and back down once it is gone.
+   */
+  useEffect(() => {
+    Animated.timing(toastOffset, {
+      toValue: isToastVisible ? -TOAST_LIFT : 0,
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [isToastVisible, toastOffset]);
 
   const [isMounted, setIsMounted] = useState(false);
   const [backdropOffset, setBackdropOffset] = useState<{ left: number; top: number } | null>(null);
@@ -368,9 +386,9 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
             accessibilityLabel={t('common.close')}
           />
 
-          <View style={styles.menu} pointerEvents="box-none">
+          <Animated.View style={[styles.menu, { transform: [{ translateY: toastOffset }] }]} pointerEvents="box-none">
             {Platform.OS === 'ios' ? renderCard() : renderPills()}
-          </View>
+          </Animated.View>
         </>
       )}
 
@@ -378,14 +396,14 @@ export const AddItemFab: React.FC<AddItemFabProps> = ({ onSelectType, testID }) 
         * The gesture handler button leaves Android's native touch unclaimed, so a tap would also reach native views below it
         * (the item row menu button). The host claims it; hitSlop stays 0 so the button never reacts outside the host.
         */}
-      <View style={styles.fabHost} collapsable={false}>
+      <Animated.View style={[styles.fabHost, { transform: [{ translateY: toastOffset }] }]} collapsable={false}>
         <RobustPressable style={styles.fab} onPress={handleFabPress} hitSlop={0} testID={testID}>
           {/* The native button routes a tap to the child under the finger; the icon must not take it. */}
           <Animated.View style={{ transform: [{ rotate }] }} pointerEvents="none">
             <MaterialIcons name="add" style={styles.fabIcon} />
           </Animated.View>
         </RobustPressable>
-      </View>
+      </Animated.View>
     </View>
   );
 };

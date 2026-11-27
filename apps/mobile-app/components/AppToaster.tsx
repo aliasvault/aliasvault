@@ -1,11 +1,14 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useVerticalBarEdgeIOS } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FullWindowOverlay } from 'react-native-screens';
 import { Toaster } from 'sonner-native';
 
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 import { RAIL_EDGE_MARGIN } from '@/hooks/useFloatingBottomInset';
+import { setToastVisible } from '@/hooks/useToastVisible';
 
 /** Height of the Material bottom navigation bar of the Android tabs. */
 const ANDROID_TAB_BAR_HEIGHT = 80;
@@ -38,6 +41,17 @@ function useToastHorizontalBounds(): { left: number; right: number } {
 }
 
 /**
+ * Holds the toasts while any show (sonner-native mounts it only then): in a window above the app on iOS, like sonner-native's default.
+ */
+function ToastOverlay({ children }: { children: React.ReactNode }): React.ReactNode {
+  useEffect(() => {
+    setToastVisible(true);
+    return () => setToastVisible(false);
+  }, []);
+  return Platform.OS === 'ios' ? <FullWindowOverlay>{children}</FullWindowOverlay> : children;
+}
+
+/**
  * App-wide toast host (sonner-native).
  */
 export function AppToaster(): React.ReactNode {
@@ -47,6 +61,7 @@ export function AppToaster(): React.ReactNode {
   const offset = useToastBottomOffset();
   return (
     <Toaster
+      ToasterOverlayWrapper={ToastOverlay}
       position="bottom-center"
       offset={offset}
       theme={colorScheme}
