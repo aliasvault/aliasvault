@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({
           {!app.isLoggedIn ? (
             <>
               {rightButtons}
-              {location.pathname !== '/auth-settings' && (
+              {!location.pathname.startsWith('/auth-settings') && (
                 <HeaderButton id="settings" onClick={handleSettings} title={t('common.settings')} iconType={HeaderIconType.SETTINGS} />
               )}
             </>

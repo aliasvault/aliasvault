@@ -23,13 +23,14 @@ const LoginServerInfo: React.FC = () => {
    * Handles the click event for the login server information.
    */
   const handleClick = () : void => {
-    navigate('/auth-settings');
+    navigate('/auth-settings/server');
   };
 
   return (
     <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
       ({t('auth.connectingTo')}{' '}
       <button
+        id="server-settings"
         onClick={handleClick}
         type="button"
         className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-500 underline"

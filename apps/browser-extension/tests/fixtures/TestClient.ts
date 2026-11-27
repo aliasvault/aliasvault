@@ -73,10 +73,17 @@ export class TestClient {
     // Make sure the popup has settled on the login page before touching the header.
     await waitForPopupReady(this.popup);
 
-    // Use a locator so the button is re-resolved if the app re-renders mid-click.
-    await this.popup.locator('button#settings').click();
-    await this.popup.selectOption('select#api-connection', ['custom']);
-    await this.popup.fill('input#custom-api-url', apiUrl);
+    // Open the server settings from the "connecting to" link. Use a locator so it is re-resolved if the app re-renders mid-click.
+    await this.popup.locator('button#server-settings').click();
+    await this.popup.locator('button#api-option-custom').click();
+
+    // The dev API is not served under /api, so set it as a custom API URL in the advanced settings
+    await this.popup.locator('button#advanced-settings').click();
+    await this.popup.locator('input#custom-api-url').fill(apiUrl);
+
+    // Go back to the server settings, then to the login page
+    await this.popup.click('button#back');
+    await this.popup.locator('button#api-option-custom').waitFor({ state: 'visible' });
     await this.popup.click('button#back');
     await waitForLoginForm(this.popup);
 
@@ -98,7 +105,7 @@ export class TestClient {
     await waitForPopupReady(this.popup);
     const settingsButton = this.popup.locator('button#settings');
     await settingsButton.click();
-    await expect(this.popup.locator('select#api-connection')).toBeVisible();
+    await expect(this.popup.locator('#auth-settings')).toBeVisible();
     return this;
   }
 

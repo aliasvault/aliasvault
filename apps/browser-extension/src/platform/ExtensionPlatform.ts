@@ -4,8 +4,11 @@
 
 import { createRustSqliteEngine } from '@aliasvault/client/database/RustSqliteEngine';
 import { type IClientPlatform, type IKeyValueStore, type StorageKey } from '@aliasvault/client/platform';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { toRequestHeaders } from '@aliasvault/client/platform/ProxyHeaders';
 import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -93,4 +96,14 @@ export const extensionPlatform: IClientPlatform = {
    * Translate a shared message through the extension's i18n.
    */
   translate: (key: TranslationKey): Promise<string> => t(key),
+  /**
+   * Optional configured custom proxy headers for self-hosted servers.
+   */
+  requestHeaders: async (): Promise<Record<string, string>> => {
+    const apiUrl = await storage.getItem<string>(StorageKeys.API_URL);
+    if (!apiUrl || apiUrl === AppInfo.DEFAULT_API_URL) {
+      return {};
+    }
+    return toRequestHeaders(await storage.getItem(StorageKeys.CUSTOM_PROXY_HEADERS));
+  },
 };
