@@ -128,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({
    * Handle settings.
    */
   const handleSettings = () : void => {
-    navigate('/auth-settings');
+    navigate('/logged-out-settings');
   };
 
   /**
@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({
           {!app.isLoggedIn ? (
             <>
               {rightButtons}
-              {!location.pathname.startsWith('/auth-settings') && !location.pathname.startsWith('/server-settings') && (
+              {!location.pathname.startsWith('/logged-out-settings') && !location.pathname.startsWith('/server-settings') && (
                 <HeaderButton id="settings" onClick={handleSettings} title={t('common.settings')} iconType={HeaderIconType.SETTINGS} />
               )}
             </>

@@ -7,7 +7,7 @@ import { storage } from '#imports';
 /**
  * Theme type.
  */
-type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system';
 
 /**
  * Theme context type.

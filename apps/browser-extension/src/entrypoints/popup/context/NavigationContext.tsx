@@ -53,7 +53,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Pages that are not allowed to be stored as these are auth conditional pages or dedicated popup pages.
     const notAllowedPaths = [
       ...AUTH_FLOW_PATHS,
-      '/auth-settings',
+      '/logged-out-settings',
       '/server-settings',
       '/server-settings/advanced',
       '/upgrade',

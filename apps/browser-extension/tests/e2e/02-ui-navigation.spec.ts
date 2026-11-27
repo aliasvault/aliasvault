@@ -17,7 +17,7 @@ test.describe.serial('2. UI Navigation', () => {
     client = await TestClient.fromContext(context, extensionId);
 
     await client
-      .openLoginSettings()
+      .openLoggedOutSettings()
       .then((c) => c.screenshot('2.1-settings-navigation.png'));
 
     const backButton = client.popup.locator('button#back');

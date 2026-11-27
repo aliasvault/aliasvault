@@ -34,7 +34,7 @@ const DedicatedWindowLayout: React.FC<{ children: React.ReactNode }> = ({ childr
           )}
           {!isLoggedIn && (
             <div className="absolute right-4">
-              <HeaderButton id="settings" onClick={() => navigate('/auth-settings')} title={t('common.settings')} iconType={HeaderIconType.SETTINGS} />
+              <HeaderButton id="settings" onClick={() => navigate('/logged-out-settings')} title={t('common.settings')} iconType={HeaderIconType.SETTINGS} />
             </div>
           )}
         </div>

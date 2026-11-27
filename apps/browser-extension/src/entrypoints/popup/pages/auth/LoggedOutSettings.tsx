@@ -4,14 +4,15 @@ import { useTranslation } from 'react-i18next';
 
 import LanguageSwitcher from '@/entrypoints/popup/components/LanguageSwitcher';
 import { SettingsGroup, SettingsToggleRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
+import ThemeSwitcher from '@/entrypoints/popup/components/ThemeSwitcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 /**
- * Auth settings page only shown when user is not logged in. The server settings have their own page, opened from the login page.
+ * Settings page shown when the user is not logged in.
  */
-const AuthSettings: React.FC = () => {
+const LoggedOutSettings: React.FC = () => {
   const { t } = useTranslation();
   const [isGloballyEnabled, setIsGloballyEnabled] = useState<boolean>(true);
   const [isPasskeyProviderEnabled, setIsPasskeyProviderEnabled] = useState<boolean>(true);
@@ -70,7 +71,7 @@ const AuthSettings: React.FC = () => {
   };
 
   return (
-    <div id="auth-settings" className="space-y-6">
+    <div id="logged-out-settings" className="space-y-6">
       <SettingsGroup title={t('settings.autofill')}>
         <SettingsToggleRow id="autofill-toggle" label={t('settings.groups.autofill')} checked={isGloballyEnabled} onChange={toggleGlobalPopup} />
         <SettingsToggleRow id="passkeys-toggle" label={t('common.passkeys')} checked={isPasskeyProviderEnabled} onChange={togglePasskeyProvider} />
@@ -82,6 +83,12 @@ const AuthSettings: React.FC = () => {
         </div>
       </SettingsGroup>
 
+      <SettingsGroup title={t('settings.theme')}>
+        <div className="p-3">
+          <ThemeSwitcher />
+        </div>
+      </SettingsGroup>
+
       <p className="text-center text-xs text-gray-400 dark:text-gray-500">
         {t('settings.version')}: {AppInfo.VERSION}
       </p>
@@ -89,4 +96,4 @@ const AuthSettings: React.FC = () => {
   );
 };
 
-export default AuthSettings;
+export default LoggedOutSettings;
