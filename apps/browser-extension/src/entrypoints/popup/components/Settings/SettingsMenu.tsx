@@ -37,8 +37,8 @@ export const SettingsTextField: React.FC<SettingsTextFieldProps> = ({ id, label,
       aria-invalid={Boolean(error)}
       className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 rounded-lg shadow-sm border ${error ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
     />
-    {error && <p className="px-1 mt-1.5 text-xs text-red-500">{error}</p>}
-    {hint && <p className="px-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
+    {error && <p className="px-1 mt-1.5 text-sm text-red-500">{error}</p>}
+    {hint && <p className="px-1 mt-1.5 text-sm text-gray-500 dark:text-gray-400">{hint}</p>}
     {children}
   </section>
 );
