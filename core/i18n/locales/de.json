@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "disabled": "Deaktiviert",
     "dismiss": "Schließen",
+    "download": "Herunterladen",
     "duplicate": "Duplizieren",
     "duplicateErrorMessage": "Element konnte nicht dupliziert werden.",
     "duplicateSuccessMessage": "Element erfolgreich dupliziert.",
