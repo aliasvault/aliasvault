@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "高级设置",
-      "customApiUrl": "自定义 API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "自定义代理标头",
       "customProxyHeadersDescription": "添加 HTTP 标头，随每个发送到 AliasVault 服务器的请求一同发送。可用于位于反向代理（例如 Pangolin、Cloudflare Access）之后的自托管设置，该代理会检查自定义标头。",
       "headerName": "标头名称",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "标头值",
       "selfHosted": "自托管",
-      "title": "API 连接",
       "version": "版本：{{version}}"
-    },
-    "navigation": {
-      "login": "登录",
-      "loginSettings": "登录设置"
     },
     "notFound": {
       "goHome": "返回首页",
@@ -96,8 +91,8 @@
       "enterPassword": "请输入您的密码",
       "httpError": "HTTP 错误：{{status}}",
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
-      "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的 SSL 证书。出于安全考虑，移动设备不支持自签名证书。",
-      "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。"
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "如果您最近更改了密码且使用新密码登录遇到困难，请注意服务器管理员可能能够恢复您密码库的早期备份来帮助您。若情况如此，请联系服务器管理员。",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "身份验证器代码",
       "dontHaveAuthenticatorText": "无法访问您的身份验证器？",
-      "loginErrorMessage": "处理登录请求时发生错误，请稍后重试。",
       "loginRequestErrorMessage": "处理登录请求时发生错误。",
       "loginWithAuthenticatorLink": "使用验证其代码登录。",
       "loginWithRecoveryCodeLink": "使用恢复码登录。",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "您的移动设备登录请求被拒绝。",
       "mobileLoginRequestExpired": "移动端登录请求超时，请重新加载页面后重试。",
       "passwordChanged": "您的密码已更改过，出于安全考虑，请重新登录。",
-      "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "serverNotAvailable": "AliasVault 服务器不可用。请稍后重试，若问题持续请联系支持人员。",
       "serverOutdated": "AliasVault 服务器需要更新，以便与此版本的 AliasVault 兼容。请稍后再试。如果您使用的是自托管服务器，请联系您的服务器管理员。",
       "sessionExpired": "您的会话已过期。请重新登录。",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "通行密钥已标记为删除",
     "passkeyWillBeDeleted": "保存此凭据后，此通行密钥将被删除。",
     "settings": {
-      "passkeyProvider": "通行密钥提供程序",
-      "passkeyProviderOn": "通行密钥提供程序于"
+      "passkeyProvider": "通行密钥提供程序"
     },
     "site": "网站",
     "useBrowserPasskey": "使用浏览器通行密钥"
@@ -1186,7 +1178,6 @@
       "website": "网站"
     },
     "accountSecurity": "账户安全",
-    "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "advancedOptions": "高级选项",
     "androidAutofillSettings": {
       "buttonTip": "如果上方按钮无效，可能是安全设置阻止了操作。您可手动前往：Android 设置 → 通用管理 → 密码与自动填充。",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "无操作一段时间后自动锁定密码库",
     "autoLockTimeoutHelp": "密码库仅在达到指定的无操作时长后才会锁定（未使用自动填充功能或未打开扩展弹窗）。无论此设置如何，关闭浏览器时密码库始终会锁定。",
     "autofill": "自动填充与通行密钥",
-    "autofillDisabledDescription": "自动填充建议已全局禁用",
-    "autofillEnabled": "启用自动填充",
-    "autofillEnabledDescription": "自动填充建议将显示在登录表单上",
     "autofillMatching": "自动填充匹配",
     "autofillMatchingDefault": "URL + 子域名 + 名称通配符",
     "autofillMatchingMode": "自动填充匹配模式",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "精确匹配 URL 域名",
     "autofillMatchingUrlSubdomain": "URL + 子域名",
     "autofillSettings": "自动填充设置",
-    "autofillSettingsDescription": "启用或禁用网页上的自动填充弹出窗口",
     "autofillSetup": {
       "alreadyConfigured": "我已完成配置",
       "howToEnable": "如何启用自动填充与通行密钥："
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "阻止屏幕截图",
     "blockScreenshotsDescription": "阻止对应用进行截图和录屏。",
     "clearAllDisabledSites": "清除所有禁用的网站",
-    "clientUrlHint": "您自托管实例的 Web 界面 URL",
     "clipboardClear": "清除剪贴板",
     "clipboardClear10Seconds": "10 秒后清除",
     "clipboardClear15Seconds": "15 秒后清除",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "已跳过 {{count}} 条无法存储在 AliasVault 中的凭据。"
     },
     "customApiUrl": "API URL",
-    "customClientUrl": "客户端 URL",
     "dark": "深色",
     "disableBatteryOptimization": "禁用电池优化",
-    "disabledForThisSite": "对此网站禁用",
-    "disabledOnAllSites": "在所有网站上禁用",
     "disabledSites": "禁用的网站",
     "disabledSitesDescription": "自动填充弹窗不会出现的网站。",
-    "enabledForThisSite": "对此网站启用",
     "exportConfirmTitle": "导出密码库",
     "exportSectionTitle": "导出",
     "exportToFileTitle": "导出到文件",
@@ -1370,7 +1352,6 @@
     "openSettings": "打开设置",
     "openWebApp": "打开网页应用",
     "passkeySettings": "通行密钥设置",
-    "passkeysEnabled": "启用通行密钥",
     "passwordConfirm": {
       "exportDescription": "出于安全考虑，请输入您的主密码以确认导出。"
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "选择语言",
     "serverConfiguration": "服务器配置",
-    "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
     "serverUrl": "服务器 URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "服务器版本",
     "sessionsAndLogs": "会话与日志",
     "sessionsAndLogsDescription": "查看您的登录位置，并检查近期的登录尝试。",
@@ -1615,9 +1596,8 @@
     "useDefault": "使用默认",
     "validation": {
       "apiUrlInvalid": "请输入有效的 API URL",
-      "apiUrlRequired": "API URL 为必填项",
-      "clientUrlInvalid": "请输入有效的客户端 URL",
-      "clientUrlRequired": "客户端 URL 为必填项"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "密码库解锁方式",
     "vaultUnlockSettings": {
