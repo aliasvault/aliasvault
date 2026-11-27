@@ -99,13 +99,16 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({ id, label, icon, onCli
 );
 
 /**
- * The track and knob of an on/off switch, without any behaviour.
+ * The track and knob of an on/off switch, without any behaviour; the track darkens while its enabled button is hovered.
  */
-const SwitchTrack: React.FC<{ checked: boolean }> = ({ checked }) => (
-  <span className={`flex shrink-0 w-11 h-6 p-0.5 rounded-full transition-colors ${checked ? 'justify-end bg-primary-500' : 'justify-start bg-gray-300 dark:bg-gray-600'}`}>
-    <span className="w-5 h-5 rounded-full bg-white shadow" />
-  </span>
-);
+const SwitchTrack: React.FC<{ checked: boolean; disabled?: boolean }> = ({ checked, disabled }) => {
+  const hover = disabled ? '' : checked ? 'group-hover:bg-primary-600' : 'group-hover:bg-gray-400 dark:group-hover:bg-gray-500';
+  return (
+    <span className={`flex shrink-0 w-11 h-6 p-0.5 rounded-full transition-colors ${checked ? 'justify-end bg-primary-500' : 'justify-start bg-gray-300 dark:bg-gray-600'} ${hover}`}>
+      <span className="w-5 h-5 rounded-full bg-white shadow" />
+    </span>
+  );
+};
 
 type ToggleSwitchProps = {
   id?: string;
@@ -116,7 +119,7 @@ type ToggleSwitchProps = {
 };
 
 /**
- * An on/off switch on its own, for rows that hold other buttons and so cannot toggle as a whole.
+ * On/off switch.
  */
 export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ id, label, checked, onChange, disabled }) => (
   <button
@@ -127,9 +130,9 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ id, label, checked, 
     aria-label={label}
     onClick={onChange}
     disabled={disabled}
-    className="shrink-0 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+    className="group shrink-0 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
   >
-    <SwitchTrack checked={checked} />
+    <SwitchTrack checked={checked} disabled={disabled} />
   </button>
 );
 
@@ -142,21 +145,14 @@ type SettingsToggleRowProps = {
 };
 
 /**
- * A settings row with a label and an on/off switch; the whole row toggles.
+ * A settings row with a label and an on/off switch.
  */
 export const SettingsToggleRow: React.FC<SettingsToggleRowProps> = ({ id, label, description, checked, onChange }) => (
-  <button
-    id={id}
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    onClick={onChange}
-    className="w-full px-4 py-3 flex items-center justify-between gap-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-  >
-    <span className="min-w-0 text-left">
-      <span className="block text-gray-900 dark:text-white">{label}</span>
-      {description && <span className="block mt-0.5 text-sm text-gray-600 dark:text-gray-400">{description}</span>}
-    </span>
-    <SwitchTrack checked={checked} />
-  </button>
+  <div className="px-4 py-3 flex items-center justify-between gap-4">
+    <div className="min-w-0">
+      <p className="text-gray-900 dark:text-white">{label}</p>
+      {description && <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">{description}</p>}
+    </div>
+    <ToggleSwitch id={id} label={label} checked={checked} onChange={onChange} />
+  </div>
 );
