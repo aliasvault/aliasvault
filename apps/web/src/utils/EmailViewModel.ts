@@ -72,7 +72,7 @@ export async function loadSpamOkEmail(emailPrefix: string, emailId: number): Pro
     htmlBody: email.messageHtml,
     textBody: email.messagePlain,
     sourceBytes: null,
-    sourceText: email.messageSource,
+    sourceText: email.messageSource ?? null,
     attachments: email.attachments.map((a, index) => ({ filename: a.filename, mimeType: a.mimeType, size: a.filesize, index, partIndex: null, spamOkId: a.id })),
     raw: null,
   };

@@ -14,7 +14,7 @@ export type SpamOkEmail = {
   dateSystem: string;
   messageHtml: string | null;
   messagePlain: string | null;
-  messageSource: string | null;
+  messageSource?: string | null;
   attachments: { id: number; filename: string; mimeType: string; filesize: number }[];
 };
 
