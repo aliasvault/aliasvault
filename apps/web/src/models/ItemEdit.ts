@@ -36,18 +36,6 @@ export type ItemEdit = {
   Passkeys: Passkey[];
 };
 
-/** The URL placeholder of a new item. */
-export const DEFAULT_SERVICE_URL = 'https://';
-
-/**
- * A URL as typed or pasted, without the placeholder scheme in front of a scheme of its own.
- * @param url - The value of a URL input
- * @returns The URL
- */
-export function withoutDuplicateScheme(url: string): string {
-  return /^https:\/\/[a-z][a-z0-9+.-]*:\/\//i.test(url) ? url.substring(DEFAULT_SERVICE_URL.length) : url;
-}
-
 /**
  * A field edit for a system field with a value.
  */
@@ -80,7 +68,6 @@ export function createNewItemEdit(folder: FolderRef | null, personalManifestId: 
   const now = new Date().toISOString();
   let edit: ItemEdit = { Id: crypto.randomUUID(), ManifestId: manifestForItemIn(folder, personalManifestId), ItemType: ItemTypes.Login, ServiceName: '', FolderId: folder?.Id ?? null, CreatedAt: now, Fields: [], Attachments: [], TotpCodes: [], Passkeys: [] };
   edit = setFieldValue(edit, 'alias.birthdate', '');
-  edit = setFieldValue(edit, 'login.url', DEFAULT_SERVICE_URL);
   return edit;
 }
 
@@ -270,7 +257,7 @@ export function itemEditToItem(edit: ItemEdit): Item {
       value = '';
     }
     if (field.FieldKey === 'login.url') {
-      value = (Array.isArray(value) ? value : [value]).filter(v => v !== DEFAULT_SERVICE_URL && v.trim().length > 0);
+      value = (Array.isArray(value) ? value : [value]).filter(v => v.trim().length > 0);
     }
     const hasValue = Array.isArray(value) ? value.length > 0 : value.length > 0;
     if (!hasValue) {

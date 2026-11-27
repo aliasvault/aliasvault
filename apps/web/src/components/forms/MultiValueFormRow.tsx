@@ -9,7 +9,6 @@ type MultiValueFormRowProps = {
   label: string;
   values: string[];
   onChange: (values: string[]) => void;
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
   placeholder?: string;
   addLabel: string;
 };
@@ -26,7 +25,7 @@ function filled(rows: string[]): string[] {
 /**
  * A list of text inputs for a multi-value field, with an add button next to the label and a remove button per row.
  */
-const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values, onChange, onFocus, placeholder = '', addLabel }) => {
+const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values, onChange, placeholder = '', addLabel }) => {
   const { t } = useTranslation();
   const [rows, setRows] = useState<string[]>(values.length > 0 ? values : ['']);
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
@@ -99,7 +98,6 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
               }}
               value={row}
               onValueChange={next => update(rows.map((value, i) => (i === index ? next : value)))}
-              onFocus={onFocus}
               placeholder={placeholder}
               trailingSpace="sm"
             />

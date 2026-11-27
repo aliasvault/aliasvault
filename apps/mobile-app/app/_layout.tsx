@@ -17,6 +17,7 @@ import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 
 import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
 import { AppToaster } from '@/components/AppToaster';
+import { defaultHeaderOptions } from '@/components/themed/ThemedHeader';
 import { StackScreenLayout, stackScreenLayout } from '@/components/ui/StackScreenLayout';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -147,6 +148,17 @@ function RootLayoutNav() : React.ReactNode {
         <Stack.Screen name="vault-error" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="open/[...path]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="fullscreen-value"
+          options={({ route }) => ({
+            title: (route.params as { title?: string } | undefined)?.title ?? '',
+            presentation: 'fullScreenModal',
+            animation: 'fade',
+            gestureEnabled: false,
+            headerBackVisible: false,
+            ...defaultHeaderOptions,
+          })}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <AppToaster />

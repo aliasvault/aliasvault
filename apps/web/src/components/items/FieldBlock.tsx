@@ -121,15 +121,18 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
             </div>
           </div>
         );
-      case FieldTypes.URL:
+      case FieldTypes.URL: {
+        // A URL without a scheme opens as https, any scheme other than http(s) is not a link.
+        const href = /^[a-z][a-z0-9+.-]*:\/\//i.test(field.Value) ? (/^https?:\/\//i.test(field.Value) ? field.Value : null) : `https://${field.Value}`;
         return (
           <div className="col-span-6">
             {labelElement}
-            {field.Value.length > 0 && (/^https?:\/\//i.test(field.Value)
-              ? <a href={field.Value} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">{field.Value}</a>
+            {field.Value.length > 0 && (href
+              ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">{field.Value}</a>
               : <span className="text-gray-700 dark:text-gray-300 break-all">{field.Value}</span>)}
           </div>
         );
+      }
       default:
         return (
           <div className={widthClass}>

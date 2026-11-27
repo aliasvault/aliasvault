@@ -38,7 +38,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSaveItem } from '@/hooks/useSaveItem';
 import { VaultPushFailedError } from '@/hooks/useVaultMutate';
 import {
-  addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, type FieldEdit, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
+  addCustomField, createNewItemEdit, type FieldEdit, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
   isFieldFilledIn, type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
 } from '@/models/ItemEdit';
 import { waitForMinimumDuration } from '@/utils/Delay';
@@ -219,9 +219,6 @@ const ItemAddEditForm: React.FC = () => {
         setInitiallyVisibleFields(new Set(getSystemFieldsForItemType(loaded.ItemType).filter(f => hasFieldValue(loaded, f.FieldKey)).map(f => f.FieldKey)));
         setShow2FA(loaded.TotpCodes.length > 0);
         setShowAttachments(loaded.Attachments.length > 0);
-        if (!hasFieldValue(loaded, FieldKey.LoginUrl)) {
-          loaded = setFieldValue(loaded, FieldKey.LoginUrl, DEFAULT_SERVICE_URL);
-        }
         const crumbs = loaded.FolderId ? buildFolderBreadcrumbs({ Id: loaded.FolderId, ManifestId: loaded.ManifestId }, allFolders) : [];
         crumbs.push({ displayName: t('items.view.viewItemTitle'), url: itemRoute(ref) });
         crumbs.push({ displayName: t('items.editItem') });
@@ -357,17 +354,6 @@ const ItemAddEditForm: React.FC = () => {
   const removeAttachmentsSection = (): void => {
     setShowAttachments(false);
     update(current => ({ ...current, Attachments: current.Attachments.filter(a => originalAttachmentIds.current.includes(a.Id)).map(a => ({ ...a, IsDeleted: true })) }));
-  };
-
-  /**
-   * Put the cursor after the URL placeholder when the field still holds it.
-   */
-  const onFocusUrlInput = (event: React.FocusEvent<HTMLInputElement>): void => {
-    const input = event.target;
-    if (input.value !== DEFAULT_SERVICE_URL) {
-      return;
-    }
-    setTimeout(() => input.setSelectionRange(DEFAULT_SERVICE_URL.length, DEFAULT_SERVICE_URL.length), 1);
   };
 
   /**
@@ -549,7 +535,7 @@ const ItemAddEditForm: React.FC = () => {
                     </div>
                     {shouldShowField(FieldKey.LoginUrl) && (
                       <div className="col-span-6 sm:col-span-3">
-                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} onFocus={onFocusUrlInput} addLabel={t('itemTypes.fieldTypes.url')} />
+                        <MultiValueFormRow id="service-url" label={t('fieldLabels.login.url')} values={getFieldValues(edit, FieldKey.LoginUrl)} onChange={values => update(current => setFieldValues(current, FieldKey.LoginUrl, values))} addLabel={t('itemTypes.fieldTypes.url')} />
                       </div>
                     )}
                   </div>

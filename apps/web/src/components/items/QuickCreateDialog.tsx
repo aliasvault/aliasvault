@@ -11,7 +11,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useSaveItem } from '@/hooks/useSaveItem';
-import { createNewItemEdit, DEFAULT_SERVICE_URL, type ItemEdit, setFieldValue, withoutDuplicateScheme } from '@/models/ItemEdit';
+import { createNewItemEdit, type ItemEdit, setFieldValue } from '@/models/ItemEdit';
 import { generateIdentity } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -52,7 +52,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
   const [isCreating, setIsCreating] = useState(false);
   const [itemType, setItemType] = useState<ItemType>(initialType);
   const [serviceName, setServiceName] = useState('');
-  const [serviceUrl, setServiceUrl] = useState(DEFAULT_SERVICE_URL);
+  const [serviceUrl, setServiceUrl] = useState('');
   const [nameError, setNameError] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,8 +94,8 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
     showLoading(t('items.quickCreate.creatingNewAliasMessage'));
     try {
       let edit: ItemEdit = { ...createNewItemEdit(getCurrentFolderFromUrl(), dbContext.sqliteClient?.getPersonalManifestId() ?? null), ItemType: ItemTypes.Alias, ServiceName: serviceName.trim() };
-      if (serviceUrl !== DEFAULT_SERVICE_URL) {
-        edit = setFieldValue(edit, 'login.url', serviceUrl);
+      if (serviceUrl.trim()) {
+        edit = setFieldValue(edit, 'login.url', serviceUrl.trim());
       }
       const identity = dbContext.sqliteClient ? await generateIdentity(dbContext.sqliteClient, webApi) : null;
       if (identity) {
@@ -136,8 +136,8 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
     const params = new URLSearchParams();
     params.set('type', itemType);
     params.set('name', serviceName.trim());
-    if (serviceUrl !== DEFAULT_SERVICE_URL) {
-      params.set('url', serviceUrl);
+    if (serviceUrl.trim()) {
+      params.set('url', serviceUrl.trim());
     }
     const folder = getCurrentFolderFromUrl();
     if (folder) {
@@ -225,12 +225,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
               id="serviceUrl"
               type="text"
               value={serviceUrl}
-              onChange={(e) => setServiceUrl(withoutDuplicateScheme(e.target.value))}
-              onFocus={(e) => {
-                if (e.target.value === DEFAULT_SERVICE_URL) {
-                  setTimeout(() => e.target.setSelectionRange(DEFAULT_SERVICE_URL.length, DEFAULT_SERVICE_URL.length), 1); 
-                } 
-              }}
+              onChange={(e) => setServiceUrl(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
         )}
