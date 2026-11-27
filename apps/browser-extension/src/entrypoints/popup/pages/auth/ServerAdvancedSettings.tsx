@@ -28,7 +28,7 @@ const ServerAdvancedSettings: React.FC = () => {
   const [errors, setErrors] = useState<ServerUrlErrors>({});
   const [headers, setHeaders] = useState<ProxyHeader[]>([]);
   const [visibleValues, setVisibleValues] = useState<boolean[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isEdited, setIsEdited] = useState(false);
   const serverUrlStore = useServerUrlStore(setErrors);
 
   useEffect(() => {
@@ -42,17 +42,17 @@ const ServerAdvancedSettings: React.FC = () => {
       const stored = Object.entries(toRequestHeaders(await storage.getItem(StorageKeys.CUSTOM_PROXY_HEADERS))).map(([name, value]) => ({ name, value }));
       setHeaders(stored);
       setVisibleValues(stored.map(() => false));
-      setIsLoaded(true);
       setIsInitialLoading(false);
     };
     loadSettings();
   }, [setIsInitialLoading]);
 
+  // Store the headers only after an edit, so opening this page never rewrites headers an older version stored.
   useEffect(() => {
-    if (isLoaded) {
+    if (isEdited) {
       storage.setItem(StorageKeys.CUSTOM_PROXY_HEADERS, cleanProxyHeaders(headers));
     }
-  }, [headers, isLoaded]);
+  }, [headers, isEdited]);
 
   /**
    * Update the API URL right away, and store it shortly after; an empty API URL means the server URL + /api.
@@ -68,6 +68,7 @@ const ServerAdvancedSettings: React.FC = () => {
    * Update a field of a header.
    */
   const updateHeader = (index: number, field: keyof ProxyHeader, value: string): void => {
+    setIsEdited(true);
     setHeaders(prev => prev.map((header, i) => (i === index ? { ...header, [field]: value } : header)));
   };
 
@@ -75,6 +76,7 @@ const ServerAdvancedSettings: React.FC = () => {
    * Remove a header.
    */
   const removeHeader = (index: number): void => {
+    setIsEdited(true);
     setHeaders(prev => prev.filter((_, i) => i !== index));
     setVisibleValues(prev => prev.filter((_, i) => i !== index));
   };
@@ -83,6 +85,7 @@ const ServerAdvancedSettings: React.FC = () => {
    * Add an empty header.
    */
   const addHeader = (): void => {
+    setIsEdited(true);
     setHeaders(prev => [...prev, EMPTY_HEADER]);
     setVisibleValues(prev => [...prev, false]);
   };
@@ -102,7 +105,7 @@ const ServerAdvancedSettings: React.FC = () => {
       <section className="space-y-3">
         <div>
           <SettingsSectionTitle>{t('app.loginSettings.customProxyHeaders')}</SettingsSectionTitle>
-          <p className="px-1 text-xs text-gray-500 dark:text-gray-400">{t('app.loginSettings.customProxyHeadersDescription')}</p>
+          <p className="px-1 text-sm text-gray-500 dark:text-gray-400">{t('app.loginSettings.customProxyHeadersDescription')}</p>
         </div>
 
         {headers.map((header, index) => {
@@ -155,7 +158,7 @@ const ServerAdvancedSettings: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {nameError && <p className="px-1 mt-1.5 text-xs text-red-500">{t(nameError)}</p>}
+              {nameError && <p className="px-1 mt-1.5 text-sm text-red-500">{t(nameError)}</p>}
             </div>
           );
         })}

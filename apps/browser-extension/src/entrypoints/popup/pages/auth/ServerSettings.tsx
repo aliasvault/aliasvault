@@ -110,8 +110,8 @@ const ServerSettings: React.FC = () => {
               aria-pressed={isSelected}
               className="w-full px-4 py-3 flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              <Icon name={option.icon} className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" />
-              <span className="flex-1 text-left text-gray-900 dark:text-white">{option.label}</span>
+              <Icon name={option.icon} className={`w-5 h-5 mr-3 ${isSelected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'}`} />
+              <span className={`flex-1 text-left ${isSelected ? 'font-medium text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'}`}>{option.label}</span>
               {isSelected && <Icon name="check" className="w-5 h-5 text-primary-600 dark:text-primary-400" />}
             </button>
           );

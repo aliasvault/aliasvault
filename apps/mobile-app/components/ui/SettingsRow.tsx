@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { Href } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { StyleSheet, TouchableOpacity, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, type LayoutChangeEvent, type TextStyle } from 'react-native';
 
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -14,6 +14,7 @@ type SettingsRowProps = {
   iconColor?: string;
   label: string;
   labelColor?: string;
+  labelFontWeight?: TextStyle['fontWeight'];
   /** Shown between the label and the chevron: a value, a skeleton or a badge. */
   trailing?: React.ReactNode;
   /** Whether a chevron ends the row. */
@@ -28,7 +29,7 @@ type SettingsRowProps = {
 /**
  * A row of the settings list: icon, label, an optional trailing view and a chevron.
  */
-export function SettingsRow({ icon, iconColor, label, labelColor, trailing, chevron = true, href = null, onPress, onLayout, testID }: SettingsRowProps): React.ReactNode {
+export function SettingsRow({ icon, iconColor, label, labelColor, labelFontWeight, trailing, chevron = true, href = null, onPress, onLayout, testID }: SettingsRowProps): React.ReactNode {
   const colors = useColors();
   const isSelected = useIsSelectedRoute(href);
 
@@ -38,7 +39,7 @@ export function SettingsRow({ icon, iconColor, label, labelColor, trailing, chev
         <Ionicons name={icon} size={20} color={iconColor ?? colors.text} />
       </View>
       <View style={styles.content}>
-        <ThemedText style={[styles.label, { color: labelColor ?? colors.text }]}>{label}</ThemedText>
+        <ThemedText style={[styles.label, { color: labelColor ?? colors.text, fontWeight: labelFontWeight }]}>{label}</ThemedText>
         {trailing}
         {chevron && <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />}
       </View>

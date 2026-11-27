@@ -30,7 +30,7 @@ export default function ServerAdvancedSettingsScreen(): React.ReactNode {
   const [showErrors, setShowErrors] = useState(false);
   const [headers, setHeaders] = useState<ProxyHeader[]>([]);
   const [visibleValues, setVisibleValues] = useState<boolean[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isEdited, setIsEdited] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -54,16 +54,16 @@ export default function ServerAdvancedSettingsScreen(): React.ReactNode {
       }
       setHeaders(stored);
       setVisibleValues(stored.map(() => false));
-      setIsLoaded(true);
     };
     loadSettings();
   }, []);
 
+  // Store the headers only after an edit, so opening this page never rewrites headers an older version stored.
   useEffect(() => {
-    if (isLoaded) {
+    if (isEdited) {
       NativeVaultManager.setCustomProxyHeaders(JSON.stringify(cleanProxyHeaders(headers))).catch(error => console.error('Failed to save custom proxy headers:', error));
     }
-  }, [headers, isLoaded]);
+  }, [headers, isEdited]);
 
   /**
    * Update the API URL and store it once valid; an empty API URL means the server URL + /api.
@@ -88,6 +88,7 @@ export default function ServerAdvancedSettingsScreen(): React.ReactNode {
    * Update a field of a header.
    */
   const updateHeader = (index: number, field: keyof ProxyHeader, value: string): void => {
+    setIsEdited(true);
     setHeaders(prev => prev.map((header, i) => (i === index ? { ...header, [field]: value } : header)));
   };
 
@@ -95,6 +96,7 @@ export default function ServerAdvancedSettingsScreen(): React.ReactNode {
    * Remove a header.
    */
   const removeHeader = (index: number): void => {
+    setIsEdited(true);
     setHeaders(prev => prev.filter((_, i) => i !== index));
     setVisibleValues(prev => prev.filter((_, i) => i !== index));
   };
@@ -103,6 +105,7 @@ export default function ServerAdvancedSettingsScreen(): React.ReactNode {
    * Add an empty header.
    */
   const addHeader = (): void => {
+    setIsEdited(true);
     setHeaders(prev => [...prev, EMPTY_HEADER]);
     setVisibleValues(prev => [...prev, false]);
   };

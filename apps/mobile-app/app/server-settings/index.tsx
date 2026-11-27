@@ -208,7 +208,10 @@ export default function ServerSettingsScreen() : React.ReactNode {
           <View style={styles.group}>
             <SettingsRow
               icon="globe-outline"
+              iconColor={isSelfHosted ? undefined : colors.primary}
               label="AliasVault.com"
+              labelColor={isSelfHosted ? undefined : colors.primary}
+              labelFontWeight={isSelfHosted ? undefined : '500'}
               chevron={false}
               trailing={isSelfHosted ? null : checkmark}
               onPress={() => handleOptionChange(AppInfo.DEFAULT_API_URL)}
@@ -217,7 +220,10 @@ export default function ServerSettingsScreen() : React.ReactNode {
             <View style={styles.separator} />
             <SettingsRow
               icon="server-outline"
+              iconColor={isSelfHosted ? colors.primary : undefined}
               label={t('app.loginSettings.selfHosted')}
+              labelColor={isSelfHosted ? colors.primary : undefined}
+              labelFontWeight={isSelfHosted ? '500' : undefined}
               chevron={false}
               trailing={isSelfHosted ? checkmark : null}
               onPress={() => handleOptionChange(CUSTOM_OPTION)}
