@@ -283,7 +283,7 @@
     },
     "expand": "展开",
     "generate": "生成",
-    "goToVault": "Go to vault",
+    "goToVault": "转到密码库",
     "help": "帮助",
     "hide": "隐藏",
     "hideDetails": "隐藏详情",
@@ -1277,12 +1277,12 @@
     "credentialAutofill": "凭据自动填充",
     "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",
     "credentialExchange": {
-      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
-      "exportTitle": "Export to another app",
-      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
-      "importTitle": "Import from another app",
-      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
-      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+      "description": "将您的密码、通行密钥和双因素验证码直接从 AliasVault 转移到本设备上的另一个密码管理器。",
+      "exportTitle": "导出到其他应用",
+      "importInstructionsIos": "打开您想要导出数据的应用（例如 iOS “密码”），选择“将数据导出到其他应用”，然后选中 AliasVault。随后 AliasVault 会自动打开，让您在保存这些项目之前先行查看。",
+      "importTitle": "从其他应用导入",
+      "summaryCustomFields": "有 {{count}} 项属于 AliasVault 所不支持类型，已被保存为自定义字段。",
+      "summaryUnsupported": "已跳过 {{count}} 条无法存储在 AliasVault 中的凭据。"
     },
     "customApiUrl": "API URL",
     "customClientUrl": "客户端 URL",
@@ -1295,7 +1295,7 @@
     "enabledForThisSite": "对此网站启用",
     "exportConfirmTitle": "导出密码库",
     "exportSectionTitle": "导出",
-    "exportToFileTitle": "Export to file",
+    "exportToFileTitle": "导出到文件",
     "exportWarning": "警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。请您仅在受信任的设备上执行此操作，并确保您：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n您确定要继续导出吗？",
     "general": {
       "aliasGenerationAgeRangeDescription": "设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。",
@@ -1341,9 +1341,9 @@
       "languageDescription": "设置生成新身份将使用的语言。"
     },
     "importExport": "导入 / 导出",
-    "importFromFileTitle": "Import from file",
+    "importFromFileTitle": "从文件导入",
     "importSectionTitle": "导入",
-    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
+    "importWebNote": "若要从文件导入密码，请使用 AliasVault 网页应用。",
     "iosAutofillSettings": {
       "headerText": "您可以为 AliasVault 配置 iOS 原生密码和通行密钥自动填充功能，请依照以下说明进行启用。",
       "openIosSettings": "打开 iOS 设置",
