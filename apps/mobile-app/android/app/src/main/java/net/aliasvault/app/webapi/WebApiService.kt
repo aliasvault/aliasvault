@@ -13,6 +13,8 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 
 /**
  * Response object from a WebAPI request containing status code, body, and headers.
@@ -69,6 +71,13 @@ class WebApiService(private val context: Context) {
          * Read timeout of a request that carries vault ciphertext which can be larger and therefore can take longer to transfer.
          */
         private const val VAULT_TRANSFER_READ_TIMEOUT_MS = 180000
+
+        /**
+         * Whether a request failed on the TLS handshake or the server certificate.
+         */
+        fun isTlsFailure(error: Throwable): Boolean {
+            return generateSequence(error) { it.cause }.any { it is SSLHandshakeException || it is SSLPeerUnverifiedException }
+        }
     }
 
     private val sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)

@@ -6,6 +6,7 @@ import type { StatusResponse, VaultResponse, AuthLogModel, AuthLogsResponse, Ref
 import i18n from '@/i18n';
 
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { getAppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { NetworkError } from '@aliasvault/client/api/errors/NetworkError';
 import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
@@ -312,6 +313,10 @@ export class WebApiService {
     try {
       responseJson = await NativeVaultManager.executeWebApiRequest(method, endpoint, body, JSON.stringify(headers), requiresAuth);
     } catch (error) {
+      // A failure the native layer already coded (an untrusted certificate) keeps its code.
+      if (getAppErrorCode(error)) {
+        throw error;
+      }
       throw new NetworkError(error instanceof Error ? error.message : 'Network request failed', error instanceof Error ? error : undefined, await this.getApiUrl());
     }
     return JSON.parse(responseJson) as NativeWebApiResponse;

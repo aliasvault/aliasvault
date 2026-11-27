@@ -1,7 +1,10 @@
 import { apiErrorKey } from '../api/errors/ApiErrorMessage';
+import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode, getAppErrorCode, getErrorTranslationKey } from '../api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '../api/errors/ClientUpgradeRequiredError';
+import { NetworkError } from '../api/errors/NetworkError';
 import { ServerUpdateRequiredError } from '../api/errors/ServerUpdateRequiredError';
+import { AppInfo } from '../platform/AppInfo';
 
 import { VaultKeyService } from './VaultKeyService';
 
@@ -12,6 +15,7 @@ import type { TranslationKey } from '@aliasvault/i18n';
  */
 export type ErrorMessage = {
   key: TranslationKey;
+  params?: Record<string, string>;
   code?: AppErrorCode;
 };
 
@@ -24,21 +28,10 @@ export type AuthErrorMessage = ErrorMessage & {
 };
 
 /**
- * How {@link describeAuthError} reads the failure.
- */
-export type AuthErrorOptions = {
-  /** The message for a failure without a code, by default the "could not reach the server" message. */
-  fallback?: TranslationKey;
-  /** Take a failure without any code as a wrong password (or PIN): a local unlock has no other way to fail uncoded. */
-  uncodedIsWrongPassword?: boolean;
-};
-
-/**
- * The message for a failed login or unlock, the same on every client.
+ * The message for a failed login or unlock, the same on every client. A failure without an error code is unexpected (E-001).
  * @param err - the thrown error
- * @param options - how to read the failure
  */
-export async function describeAuthError(err: unknown, options: AuthErrorOptions = {}): Promise<AuthErrorMessage> {
+export async function describeAuthError(err: unknown): Promise<AuthErrorMessage> {
   if (err instanceof ClientUpgradeRequiredError) {
     return { key: 'common.errors.clientNotSupported', wrongPassword: false };
   }
@@ -52,17 +45,16 @@ export async function describeAuthError(err: unknown, options: AuthErrorOptions 
     return { key: apiKey, wrongPassword: false };
   }
 
-  const code = getAppErrorCode(err);
+  // A self-hosted server that cannot be reached, or answers with an error page, is named so the user can test its URL.
+  if ((err instanceof NetworkError || err instanceof ApiRequestError) && err.code && err.apiUrl && err.apiUrl !== AppInfo.DEFAULT_API_URL) {
+    return { key: 'auth.errors.selfHostedServerUnreachable', params: { apiUrl: err.apiUrl }, code: err.code, wrongPassword: false };
+  }
+
+  const code = getAppErrorCode(err) ?? AppErrorCode.UNKNOWN_ERROR;
   if (await VaultKeyService.isWrongUnlockKey(code)) {
     return { key: 'common.errors.wrongPassword', wrongPassword: true };
   }
-  if (code) {
-    return { key: getErrorTranslationKey(code), code, wrongPassword: false };
-  }
-  if (options.uncodedIsWrongPassword) {
-    return { key: 'common.errors.wrongPassword', wrongPassword: true };
-  }
-  return { key: options.fallback ?? 'common.errors.serverError', wrongPassword: false };
+  return { key: getErrorTranslationKey(code), code, wrongPassword: false };
 }
 
 /**
@@ -70,6 +62,7 @@ export async function describeAuthError(err: unknown, options: AuthErrorOptions 
  * @param message - the error message
  * @param t - the renderer's translation function
  */
-export function formatErrorMessage(message: ErrorMessage, t: (key: string) => string): string {
-  return message.code ? formatErrorWithCode(t(message.key), message.code) : t(message.key);
+export function formatErrorMessage(message: ErrorMessage, t: (key: string, params?: Record<string, string>) => string): string {
+  const text = t(message.key, message.params);
+  return message.code ? formatErrorWithCode(text, message.code) : text;
 }

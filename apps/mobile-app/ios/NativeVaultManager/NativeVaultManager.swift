@@ -815,8 +815,10 @@ public class NativeVaultManager: NSObject {
                     resolve(responseJson)
                 }
             } catch {
+                // Detect a TLS failure and give it its own error code, so the UI can show a specific message.
+                let code = WebApiService.isTlsFailure(error) ? AppError.tlsError(underlyingError: error).code : "WEB_API_ERROR"
                 await MainActor.run {
-                    reject("WEB_API_ERROR", "Failed to execute WebAPI request: \(error.localizedDescription)", error)
+                    reject(code, "Failed to execute WebAPI request: \(error.localizedDescription)", error)
                 }
             }
         }
