@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import { SettingsGroup, SettingsToggleRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -43,30 +44,14 @@ const ContextMenuSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageTitle>{t('settings.contextMenuSettings')}</PageTitle>
-      <section>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.rightClickContextMenu')}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 pe-2">
-                  {t('settings.contextMenuDescription')}
-                </p>
-              </div>
-              <button
-                onClick={toggleContextMenu}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  isContextMenuEnabled
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {isContextMenuEnabled ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SettingsGroup>
+        <SettingsToggleRow
+          label={t('settings.rightClickContextMenu')}
+          description={t('settings.contextMenuDescription')}
+          checked={isContextMenuEnabled}
+          onChange={toggleContextMenu}
+        />
+      </SettingsGroup>
     </div>
   );
 };
