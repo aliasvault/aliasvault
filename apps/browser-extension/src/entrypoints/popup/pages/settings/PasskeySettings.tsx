@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import { SettingsGroup, SettingsToggleRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -129,67 +130,24 @@ const PasskeySettings: React.FC = () => {
       {/* Global Settings Section */}
       <section>
         <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.globalSettings')}</h3>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{t('passkeys.settings.passkeyProvider')}</p>
-                <p className={`text-sm mt-1 ${settings.isGloballyEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {settings.isGloballyEnabled ? t('settings.activeOnAllSites') : t('settings.disabledOnAllSites')}
-                </p>
-              </div>
-              <button
-                onClick={toggleGlobalPasskeyProvider}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  settings.isGloballyEnabled
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <SettingsGroup>
+          <SettingsToggleRow label={t('passkeys.settings.passkeyProvider')} checked={settings.isGloballyEnabled} onChange={toggleGlobalPasskeyProvider} />
+        </SettingsGroup>
       </section>
 
       {/* Site-Specific Settings Section */}
       {settings.isGloballyEnabled && (
         <section>
           <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.siteSpecificSettings')}</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t('passkeys.settings.passkeyProviderOn')}{settings.currentUrl}</p>
-                  <p className={`text-sm mt-1 ${settings.isEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {settings.isEnabled ? t('settings.enabledForThisSite') : t('settings.disabledForThisSite')}
-                  </p>
-                </div>
-                {settings.isGloballyEnabled && (
-                  <button
-                    onClick={toggleCurrentSite}
-                    className={`px-4 py-2 ml-1 rounded-md transition-colors ${
-                      settings.isEnabled
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-red-500 hover:bg-red-600 text-white'
-                    }`}
-                  >
-                    {settings.isEnabled ? t('common.enabled') : t('common.disabled')}
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={resetSettings}
-                  className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
-                >
-                  {t('settings.resetAllSiteSettings')}
-                </button>
-              </div>
-            </div>
-          </div>
+          <SettingsGroup>
+            {settings.currentUrl && <SettingsToggleRow label={settings.currentUrl} checked={settings.isEnabled} onChange={toggleCurrentSite} />}
+            <button
+              onClick={resetSettings}
+              className="w-full px-4 py-3 text-sm text-center text-primary-600 dark:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              {t('settings.resetAllSiteSettings')}
+            </button>
+          </SettingsGroup>
         </section>
       )}
     </div>

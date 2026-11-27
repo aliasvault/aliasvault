@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import { SettingsGroup, SettingsToggleRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -234,194 +235,132 @@ const AutofillSettings: React.FC = () => {
       <PageTitle>{t('settings.autofillSettings')}</PageTitle>
 
       {/* Autofill Features Section */}
-      <section>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4 space-y-4">
-            {/* Credential Autofill Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 me-4">
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.credentialAutofill')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.credentialAutofillDescription')}</p>
-              </div>
-              <button
-                onClick={toggleGlobalPopup}
-                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  settings.isGloballyEnabled
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
+      <SettingsGroup>
+        <SettingsToggleRow
+          label={t('settings.credentialAutofill')}
+          description={t('settings.credentialAutofillDescription')}
+          checked={settings.isGloballyEnabled}
+          onChange={toggleGlobalPopup}
+        />
+        <SettingsToggleRow
+          label={t('settings.totpAutofill')}
+          description={t('settings.totpAutofillDescription')}
+          checked={settings.totpAutofillEnabled}
+          onChange={toggleTotpAutofill}
+        />
+        <SettingsToggleRow
+          label={t('settings.autoCopyTotpOnAutofill')}
+          description={t('settings.autoCopyTotpOnAutofillDescription')}
+          checked={settings.autoCopyTotpOnAutofill}
+          onChange={toggleAutoCopyTotpOnAutofill}
+        />
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+        {/* Disabled sites list */}
+        {getDisabledSitesCount() > 0 && (
+          <div className="p-4">
+            <button
+              onClick={() => setShowDisabledSites(!showDisabledSites)}
+              className="flex items-center justify-between w-full text-left"
+            >
+              <span className="text-gray-900 dark:text-white">
+                {t('settings.disabledSites')} ({getDisabledSitesCount()})
+              </span>
+              <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`} />
+            </button>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
 
-            {/* TOTP Autofill Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 me-4">
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.totpAutofill')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.totpAutofillDescription')}</p>
-              </div>
-              <button
-                onClick={toggleTotpAutofill}
-                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  settings.totpAutofillEnabled
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {settings.totpAutofillEnabled ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700"></div>
-
-            {/* Auto-copy TOTP Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 me-4">
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoCopyTotpOnAutofill')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.autoCopyTotpOnAutofillDescription')}</p>
-              </div>
-              <button
-                onClick={toggleAutoCopyTotpOnAutofill}
-                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  settings.autoCopyTotpOnAutofill
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {settings.autoCopyTotpOnAutofill ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
-
-            {/* Disabled sites list */}
-            {getDisabledSitesCount() > 0 && (
-              <>
-                <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                <div>
-                  <button
-                    onClick={() => setShowDisabledSites(!showDisabledSites)}
-                    className="flex items-center justify-between w-full text-left"
-                  >
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {t('settings.disabledSites')} ({getDisabledSitesCount()})
-                    </span>
-                    <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`} />
-                  </button>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
-
-                  {showDisabledSites && (
-                    <div className="mt-3">
-                      <ul className="space-y-2">
-                        {settings.disabledUrls.map((site) => (
-                          <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                            <span className="text-sm text-gray-900 dark:text-white truncate">{site}</span>
-                            <button
-                              onClick={() => removeDisabledSite(site)}
-                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                            >
-                              {t('common.remove')}
-                            </button>
-                          </li>
-                        ))}
-                        {Object.entries(settings.temporaryDisabledUrls).map(([site, expiry]) => (
-                          <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                            <div className="truncate">
-                              <span className="text-sm text-gray-900 dark:text-white">{site}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                                ({t('settings.temporaryUntil')} {new Date(expiry).toLocaleTimeString()})
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => removeDisabledSite(site)}
-                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                            >
-                              {t('common.remove')}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+            {showDisabledSites && (
+              <div className="mt-3">
+                <ul className="space-y-2">
+                  {settings.disabledUrls.map((site) => (
+                    <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                      <span className="text-sm text-gray-900 dark:text-white truncate">{site}</span>
                       <button
-                        onClick={resetSettings}
-                        className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                        onClick={() => removeDisabledSite(site)}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
                       >
-                        {t('settings.clearAllDisabledSites')}
+                        {t('common.remove')}
                       </button>
-                    </div>
-                  )}
-                </div>
-              </>
+                    </li>
+                  ))}
+                  {Object.entries(settings.temporaryDisabledUrls).map(([site, expiry]) => (
+                    <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                      <div className="truncate">
+                        <span className="text-sm text-gray-900 dark:text-white">{site}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                          ({t('settings.temporaryUntil')} {new Date(expiry).toLocaleTimeString()})
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeDisabledSite(site)}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                      >
+                        {t('common.remove')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={resetSettings}
+                  className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                >
+                  {t('settings.clearAllDisabledSites')}
+                </button>
+              </div>
             )}
           </div>
-        </div>
-      </section>
+        )}
+      </SettingsGroup>
 
       {/* Login Save Settings Section */}
-      <section>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <SettingsGroup>
+        <SettingsToggleRow
+          label={t('settings.loginSave.title')}
+          description={t('settings.loginSave.description')}
+          checked={loginSaveSettings.isEnabled}
+          onChange={toggleLoginSave}
+        />
+
+        {/* Blocked domains list */}
+        {loginSaveSettings.blockedDomains.length > 0 && (
           <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.loginSave.title')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-2">{t('settings.loginSave.description')}</p>
-              </div>
-              <button
-                onClick={toggleLoginSave}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  loginSaveSettings.isEnabled
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
-              >
-                {loginSaveSettings.isEnabled ? t('common.enabled') : t('common.disabled')}
-              </button>
-            </div>
+            <button
+              onClick={() => setShowBlockedDomains(!showBlockedDomains)}
+              className="flex items-center justify-between w-full text-left"
+            >
+              <span className="text-gray-900 dark:text-white">
+                {t('settings.loginSave.blockedSites')} ({loginSaveSettings.blockedDomains.length})
+              </span>
+              <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showBlockedDomains ? 'rotate-180' : ''}`} />
+            </button>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.blockedSitesDescription')}</p>
 
-            {/* Blocked domains list */}
-            {loginSaveSettings.blockedDomains.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            {showBlockedDomains && (
+              <div className="mt-3">
+                <ul className="space-y-2">
+                  {loginSaveSettings.blockedDomains.map((domain) => (
+                    <li key={domain} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                      <span className="text-sm text-gray-900 dark:text-white truncate">{domain}</span>
+                      <button
+                        onClick={() => removeBlockedDomain(domain)}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                      >
+                        {t('common.remove')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
                 <button
-                  onClick={() => setShowBlockedDomains(!showBlockedDomains)}
-                  className="flex items-center justify-between w-full text-left"
+                  onClick={clearAllBlockedDomains}
+                  className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
                 >
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {t('settings.loginSave.blockedSites')} ({loginSaveSettings.blockedDomains.length})
-                  </span>
-                  <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showBlockedDomains ? 'rotate-180' : ''}`} />
+                  {t('settings.loginSave.clearAllBlockedSites')}
                 </button>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.blockedSitesDescription')}</p>
-
-                {showBlockedDomains && (
-                  <div className="mt-3">
-                    <ul className="space-y-2">
-                      {loginSaveSettings.blockedDomains.map((domain) => (
-                        <li key={domain} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                          <span className="text-sm text-gray-900 dark:text-white truncate">{domain}</span>
-                          <button
-                            onClick={() => removeBlockedDomain(domain)}
-                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                          >
-                            {t('common.remove')}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={clearAllBlockedDomains}
-                      className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
-                    >
-                      {t('settings.loginSave.clearAllBlockedSites')}
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
-        </div>
-      </section>
+        )}
+      </SettingsGroup>
 
       {/* Autofill Matching Settings Section */}
       <section>

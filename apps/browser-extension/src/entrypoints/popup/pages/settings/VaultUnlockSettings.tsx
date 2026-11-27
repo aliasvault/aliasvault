@@ -8,6 +8,7 @@ import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import { ToggleSwitch } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
@@ -212,7 +213,7 @@ const VaultUnlockSettings: React.FC = () => {
         <section>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center">
                   <Icon name="hashtag" className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
                   <div>
@@ -230,16 +231,12 @@ const VaultUnlockSettings: React.FC = () => {
                   </div>
                 </div>
                 {pinEnabled !== undefined && (
-                  <button
-                    onClick={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
-                    className={`px-4 py-2 rounded-md transition-colors ${
-                      pinEnabled && !isLocked
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-red-500 hover:bg-red-600 text-white'
-                    }`}
-                  >
-                    {pinEnabled && !isLocked ? t('common.enabled') : t('common.disabled')}
-                  </button>
+                  <ToggleSwitch
+                    id="pin-toggle"
+                    label={t('settings.vaultUnlockSettings.pin')}
+                    checked={pinEnabled && !isLocked}
+                    onChange={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
+                  />
                 )}
               </div>
             </div>
@@ -250,16 +247,14 @@ const VaultUnlockSettings: React.FC = () => {
         <section className="mt-4">
           <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center">
                   <Icon name="lock-closed" className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{t('auth.masterPassword')}</p>
                   </div>
                 </div>
-                <div className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 cursor-not-allowed">
-                  {t('common.enabled')}
-                </div>
+                <ToggleSwitch label={t('auth.masterPassword')} checked disabled />
               </div>
             </div>
           </div>
