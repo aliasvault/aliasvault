@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Impostazioni avanzate",
-      "customApiUrl": "URL API personalizzata",
-      "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",
       "customProxyHeaders": "Headers proxy personalizzate",
       "customProxyHeadersDescription": "Aggiungi intestazioni HTTP che verranno inviate con ogni richiesta al tuo server AliasVault. Può essere utilizzato per configurazioni selfhosted dietro un reverse proxy che controlla le intestazioni personalizzate (ad esempio Pangolin, Cloudflare Access).",
       "headerName": "Nome Header",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Valore Header",
       "selfHosted": "Self-hosted",
-      "title": "Connessione API",
       "version": "Versione: {{version}}"
-    },
-    "navigation": {
-      "login": "Accesso",
-      "loginSettings": "Impostazioni di accesso"
     },
     "notFound": {
       "goHome": "Torna all'inizio",
@@ -96,8 +91,8 @@
       "enterPassword": "Inserisci la password",
       "httpError": "Errore HTTP: {{status}}",
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
-      "networkErrorSelfHosted": "Errore di rete. Verifica la tua connessione di rete e la disponibilità del server. Per le istanze auto-ospitate, assicurati di avere installato un certificato SSL valido. I certificati autofirmati non sono supportati sui dispositivi mobili per motivi di sicurezza.",
-      "serverErrorSelfHosted": "Impossibile raggiungere l'API. Per le istanze auto-ospitate, verifica che l'endpoint API sia raggiungibile navigando in un browser: dovrebbe mostrare 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Se hai recentemente cambiato la password e hai difficoltà ad accedere con la nuova password, si prega di notare che l'amministratore del server potrebbe essere in grado di recuperare un backup precedente della tua cassaforte per aiutarti. In questo caso, contattare l'amministratore del server.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Codice di Autenticazione",
       "dontHaveAuthenticatorText": "Non hai accesso al tuo dispositivo di autenticazione?",
-      "loginErrorMessage": "Si è verificato un errore durante l'elaborazione della richiesta di accesso. Riprova (più tardi).",
       "loginRequestErrorMessage": "Si è verificato un errore durante l'elaborazione della richiesta di login.",
       "loginWithAuthenticatorLink": "Effettua il login con un codice di autenticazione.",
       "loginWithRecoveryCodeLink": "Accedi con un codice di recupero.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "La richiesta di accesso è stata rifiutata sul tuo dispositivo mobile.",
       "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
-      "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverOutdated": "Il server AliasVault deve essere aggiornato per funzionare con questa versione. Riprova più tardi. Se utilizzi un server self-hosted, contatta l'amministratore del server.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
     "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale.",
     "settings": {
-      "passkeyProvider": "Provider Passkey",
-      "passkeyProviderOn": "Passkey Provider attivo"
+      "passkeyProvider": "Provider Passkey"
     },
     "site": "Sito",
     "useBrowserPasskey": "Usa Browser Passkey"
@@ -1186,7 +1178,6 @@
       "website": "Sito web"
     },
     "accountSecurity": "Sicurezza Account",
-    "activeOnAllSites": "Attivo su tutti i siti (a meno che non sia disabilitato sotto)",
     "advancedOptions": "Opzioni avanzate",
     "androidAutofillSettings": {
       "buttonTip": "Se il pulsante qui sopra non funziona, potrebbe essere bloccato a causa delle impostazioni di sicurezza. È possibile andare manualmente in Impostazioni Android → Gestione generale → Password e riempimento automatico.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Blocca automaticamente la cassaforte dopo un periodo di inattività",
     "autoLockTimeoutHelp": "La cassaforte si bloccherà solo dopo il periodo specificato di inattività (nessun utilizzo di riempimento automatico o estensione popup aperto). La cassaforte si bloccherà sempre quando il browser è chiuso, indipendentemente da questa impostazione.",
     "autofill": "Riempimento Automatico & Passkeys",
-    "autofillDisabledDescription": "I suggerimenti di riempimento automatico sono disabilitati",
-    "autofillEnabled": "Abilita compilazione automatica",
-    "autofillEnabledDescription": "I suggerimenti di riempimento automatico appariranno nei moduli di accesso",
     "autofillMatching": "Riconoscimento campi automatica.",
     "autofillMatchingDefault": "URL + sottodominio + nome wildcard",
     "autofillMatchingMode": "Modalità riconoscimento capi automatica",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Solo dominio URL esatto",
     "autofillMatchingUrlSubdomain": "URL + sottodominio",
     "autofillSettings": "Impostazioni di riempimento automatico",
-    "autofillSettingsDescription": "Abilita o disabilita il popup di riempimento automatico sulle pagine web",
     "autofillSetup": {
       "alreadyConfigured": "Ho già configurato",
       "howToEnable": "Come abilitare l'auto-riempimento & Passkeys:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Blocco screenshots",
     "blockScreenshotsDescription": "Blocca screenshots e registrazioni dello schermo dell'app.",
     "clearAllDisabledSites": "Cancella tutti i siti disabilitati",
-    "clientUrlHint": "L'URL dell'interfaccia web della tua istanza self-hosted",
     "clipboardClear": "Cancella appunti",
     "clipboardClear10Seconds": "Cancella dopo 10 secondi",
     "clipboardClear15Seconds": "Cancella dopo 15 secondi",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credenziale(i) che non possono essere archiviate in AliasVault sono state saltate."
     },
     "customApiUrl": "API URL",
-    "customClientUrl": "Url Client",
     "dark": "Scuro",
     "disableBatteryOptimization": "Disabilita ottimizzazione batteria",
-    "disabledForThisSite": "Disabilitato per questo sito",
-    "disabledOnAllSites": "Disabilitato su tutti i siti",
     "disabledSites": "Siti disabilitati",
     "disabledSitesDescription": "Siti in cui non apparirà il popup di riempimento automatico.",
-    "enabledForThisSite": "Abilitato per questo sito",
     "exportConfirmTitle": "Esporta cassaforte",
     "exportSectionTitle": "Esporta",
     "exportToFileTitle": "Esporta su file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Apri Impostazioni",
     "openWebApp": "Apri app web",
     "passkeySettings": "Impostazioni Passkey",
-    "passkeysEnabled": "Abilita Passkeys",
     "passwordConfirm": {
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Seleziona la lingua",
     "serverConfiguration": "Configurazione del server",
-    "serverConfigurationDescription": "Configurare l'URL del server AliasVault per le istanze self-hosted",
     "serverUrl": "URL del server",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Versione server",
     "sessionsAndLogs": "Sessioni & Log",
     "sessionsAndLogsDescription": "Visualizza dove si è connessi e controlla i recenti tentativi di accesso.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Usa predefinito",
     "validation": {
       "apiUrlInvalid": "Inserisci un URL API valido",
-      "apiUrlRequired": "L'URL API è obbligatorio",
-      "clientUrlInvalid": "Inserisci un URL del client valido",
-      "clientUrlRequired": "L'URL del client è obbligatorio"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Metodo di sblocco cassaforte",
     "vaultUnlockSettings": {
