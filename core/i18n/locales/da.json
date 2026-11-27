@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "disabled": "Deaktiveret",
     "dismiss": "Afvis",
+    "download": "Download",
     "duplicate": "Dupliker",
     "duplicateErrorMessage": "Kunne ikke duplikere emnet.",
     "duplicateSuccessMessage": "Element duplikeret med succes.",
