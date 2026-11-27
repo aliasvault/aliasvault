@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Adaugă antete HTTP care vor fi trimise cu fiecare cerere către serverul tău AliasVault. Pot fi folosite pentru configurații self-hosted aflate în spatele unui reverse proxy care verifică antete personalizate (de exemplu, Pangolin sau Cloudflare Access).",
       "headerName": "Nume antet",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Numele antetului HTTP este invalid.",
+      "headerNameReserved": "AliasVault trimite deja acest antet HTTP.",
       "headerValue": "Valoare antet",
       "selfHosted": "Self-hosted",
       "version": "Versiune: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Introdu parola",
       "httpError": "Eroare HTTP: {{status}}",
       "networkError": "Cererea de rețea a eșuat. Verifică conexiunea la internet și încearcă din nou.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Nu s-a putut realiza conexiunea la serverul AliasVault de la adresa {{apiUrl}}. Verificați dacă adresa serverului este corectă, dacă serverul este accesibil și dacă certificatul SSL este valid.",
+      "serverCertificateNotTrusted": "Nu s-a putut stabili o conexiune securizată cu serverul AliasVault: certificatul SSL este invalid sau nu este de încredere pentru acest dispozitiv. Dacă serverul utilizează un certificat autosemnat, instalați și marcați acel certificat ca fiind de încredere pe acest dispozitiv înainte de a continua."
     },
     "forgotPassword": {
       "contactAdministrator": "Dacă ți-ai schimbat recent parola și întâmpini dificultăți la conectare, administratorul serverului ar putea recupera o copie de rezervă anterioară a seifului tău pentru a te ajuta. În această situație, contactează administratorul serverului.",
@@ -207,7 +207,7 @@
   },
   "common": {
     "add": "Adaugă",
-    "added": "Added",
+    "added": "Adăugat",
     "alias": "Alias",
     "attachmentDownloadFailed": "Descărcarea atașamentului a eșuat",
     "attachments": "Atașamente",
@@ -277,7 +277,7 @@
     },
     "expand": "Extinde",
     "generate": "Generează",
-    "goToVault": "Go to vault",
+    "goToVault": "Accesează seiful",
     "help": "Ajutor",
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
@@ -505,7 +505,7 @@
     "recommendedLabel": "Recomandat",
     "serviceCard": {
       "attachmentsDetected": "{{count}} atașament(e), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Sigur doriți să continuați? Notă: procesul de import poate dura puțin.",
       "decryptAndContinueButton": "Decriptează și continuă",
       "decryptingFile": "Se decriptează fișierul...",
       "decryptionErrorGeneric": "Decriptarea fișierului a eșuat. Verifică dacă fișierul nu este corupt și încearcă din nou.",
@@ -513,7 +513,7 @@
       "decryptionPasswordLabel": "Parolă de decriptare",
       "duplicateCredentialsWarning": "Au fost găsite {{count}} date de autentificare duplicate, care nu vor fi importate.",
       "encryptedFilePasswordPrompt": "Acest fișier este criptat. Introdu parola pe care ai folosit-o la crearea exportului.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} element(e) existent(e) vor fi actualizat(e) cu date noi.",
       "extractFaviconsLabel": "Extrage pictogramele pentru serviciile cu URL-uri",
       "extractingFavicons": "Se extrag pictogramele… {{current}} / {{total}}",
       "faviconExtractionNote": "Notă: Extragerea pictogramelor este activată. Acest proces poate dura câteva minute, în funcție de numărul de date de autentificare cu URL-uri. Păstrează pagina deschisă.",
@@ -531,7 +531,7 @@
       "importPartialFailureWarning": "{{count}} element(e) nu au putut fi procesate și vor fi omise.",
       "importSuccessMessage": "Au fost importate cu succes {{count}} date de autentificare.",
       "moreCredentials": "... și încă {{count}} date de autentificare",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} element(e) nou/noi vor fi importat(e).",
       "noLogoText": "Fără logo",
       "noNewCredentials": "Nu au fost găsite date de autentificare noi de importat.",
       "previewInstructions": "Verifică dacă următoarele date de autentificare detectate sunt corecte înainte de a continua:",
@@ -542,7 +542,7 @@
       "uploadExportFileText": "Încarcă fișierul de export {{service}}:"
     },
     "services": {
-      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
+      "aegisInstructionsPart1": "Pentru a importa codurile din Aegis, trebuie să le exportați într-un fișier JSON necriptat. Puteți face acest lucru în Aegis accesând „Setări” > „Import și export” > „Export”, selectând „Aegis (.JSON)” și dezactivând criptarea.",
       "aliasVaultDescription": "Importă din backup AliasVault",
       "aliasVaultInstructionsPart1": "Importă backup-ul AliasVault pe care l-ai creat anterior.",
       "bitwardenDescription": "Importă parolele din Bitwarden",
@@ -558,7 +558,7 @@
       "edgeInstructionsPart1": "Pentru a importa parolele din Microsoft Edge, trebuie să le exporți ca fișier CSV. Poți face acest lucru mergând la Meniu > Setări > Parole și completare automată > Managerul de parole Microsoft > … > Exportă parolele.",
       "enpassDescription": "Importă parolele din Enpass",
       "enpassInstructionsPart1": "Pentru a importa parolele din Enpass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Enpass, accesând Meniu > Fișier > Export și selectând Fișier CSV (.csv).",
-      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
+      "enteAuthInstructionsPart1": "Pentru a importa codurile din Ente Auth, trebuie să le exportați în format text simplu. Puteți face acest lucru în Ente Auth accesând „Setări” > „Date” > „Exportă codurile” și selectând „Text simplu”.",
       "firefoxDescription": "Importă parolele din managerul de parole Firefox",
       "firefoxInstructionsPart1": "Pentru a importa parolele din Firefox, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectează 'Export passwords'.",
       "genericCsvDescription": "Importă parolele folosind un șablon CSV",
@@ -578,8 +578,8 @@
       "nordPassInstructionsPart1": "Pentru a importa parolele din NordPass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând aplicația NordPass sau seiful web și accesând „Setări” > „Exportă elemente”. Apoi, selectează formatul CSV pentru a finaliza exportul.",
       "onePasswordDescription": "Importă parolele din 1Password",
       "onePasswordInstructionsPart1": "Pentru a importa seiful 1Password, exportă-l mai întâi. Conectează-te la contul tău în aplicația 1Password 8 (Windows / MacOS / Linux), apoi mergi la meniul „Fișier” și selectează „Export”.",
-      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
-      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
+      "otpAuthListDescription": "Importă coduri 2FA dintr-o listă de adrese URL de tip otpauth://",
+      "otpAuthListInstructionsPart1": "Încarcă un fișier text (.txt) care conține câte o adresă URL de tip otpauth:// pe fiecare rând. Multe aplicații de autentificare permit exportarea codurilor în acest format.",
       "protonPassDescription": "Importă parolele din Proton Pass",
       "protonPassInstructionsPart1": "Pentru a importa seiful Proton Pass, exportă-l mai întâi. Poți face asta din extensia de browser Proton Pass, mergând la „Setări” > „Export”.",
       "roboformDescription": "Importă parolele din RoboForm",
@@ -587,9 +587,9 @@
       "strongboxDescription": "Importă parolele din Strongbox",
       "strongboxInstructionsPart1": "Pentru a importa seiful Strongbox, trebuie să îl exporți ca fișier CSV. Poți face acest lucru mergând la meniul „File” și selectând „Export Database” (în format CSV).",
       "template": "șablon",
-      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
-      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
-      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
+      "twoFactorAppDescription": "Importă codurile 2FA din {{service}}",
+      "twoFactorMergeHint": "Fiecare cod este importat ca element separat. Pentru a adăuga un cod la o autentificare existentă, faceți clic dreapta pe acesta și selectați „Combină”.",
+      "twoFasInstructionsPart1": "Pentru a importa codurile din 2FAS, trebuie să le exportați într-un fișier de backup fără parolă. Puteți face acest lucru în 2FAS accesând „Setări” > „Backup 2FAS” > „Exportă în fișier”.",
       "uploadInstructions": "După ce ai exportat fișierul, îl poți încărca mai jos."
     }
   },
@@ -1264,12 +1264,12 @@
     "credentialAutofill": "Completează automat datele de autentificare",
     "credentialAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile de utilizator și parolă",
     "credentialExchange": {
-      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
-      "exportTitle": "Export to another app",
-      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
-      "importTitle": "Import from another app",
-      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
-      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+      "description": "Transferă parolele, cheile de acces și codurile 2FA direct din AliasVault către un alt manager de parole de pe acest dispozitiv.",
+      "exportTitle": "Exportă într-o altă aplicație",
+      "importInstructionsIos": "Deschide aplicația din care dorești să imporți datele, de exemplu Parole iOS, apoi selectează „Exportă datele către o altă aplicație” și alege AliasVault. AliasVault se va deschide automat, permițându-ți să verifici elementele înainte de a le salva.",
+      "importTitle": "Importă din altă aplicație",
+      "summaryCustomFields": "{{count}} element(e) de un tip nesuportat de AliasVault s-au salvat ca câmpuri personalizate.",
+      "summaryUnsupported": "{{count}} credentiale care nu pot fi stocate în AliasVault au fost omise."
     },
     "customApiUrl": "URL API",
     "dark": "Întunecată",
@@ -1278,7 +1278,7 @@
     "disabledSitesDescription": "Site-uri unde fereastra pop-up de completare automată nu va apărea.",
     "exportConfirmTitle": "Exportă seiful",
     "exportSectionTitle": "Export",
-    "exportToFileTitle": "Export to file",
+    "exportToFileTitle": "Export în fişier",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Setează limba care va fi utilizată la generarea noilor identități."
     },
     "importExport": "Importă / Exportă",
-    "importFromFileTitle": "Import from file",
+    "importFromFileTitle": "Importă din fișier",
     "importSectionTitle": "Importă",
-    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
+    "importWebNote": "Pentru a importa parole dintr-un fișier, te rugăm să folosești aplicația web AliasVault.",
     "iosAutofillSettings": {
       "headerText": "Poți configura AliasVault pentru a oferi funcționalitatea nativă de completare automată a parolelor și passkey-urilor în iOS. Urmează instrucțiunile de mai jos pentru a o activa.",
       "openIosSettings": "Deschide Setări iOS",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Selectează limba",
     "serverConfiguration": "Configurare Server",
     "serverUrl": "URL Server",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "Adresa instanței AliasVault găzduite pe propriul server",
     "serverVersion": "Versiune server",
     "sessionsAndLogs": "Sesiuni și jurnale",
     "sessionsAndLogsDescription": "Vezi unde ești autentificat și verifică încercările recente de autentificare.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Implicită",
     "validation": {
       "apiUrlInvalid": "Introdu un URL API valid",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Introdu o adresă URL validă a serverului",
+      "serverUrlRequired": "Adresa URL a serverului este obligatorie"
     },
     "vaultUnlock": "Metodă deblocare seif",
     "vaultUnlockSettings": {
