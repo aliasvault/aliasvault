@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Advanced settings",
-      "customApiUrl": "Mukautettu API URL-osoite",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header value",
       "selfHosted": "Itseylläpidetty (Self-hosted)",
-      "title": "API-yhteys",
       "version": "Versio {{version}}"
-    },
-    "navigation": {
-      "login": "Kirjaudu sisään",
-      "loginSettings": "Sisäänkirjautumisen asetukset"
     },
     "notFound": {
       "goHome": "Siirry takaisin alkuun",
@@ -96,8 +91,8 @@
       "enterPassword": "Syötä salasanasi",
       "httpError": "HTTP-virhe: {{status}}",
       "networkError": "Verkkopyyntö epäonnistui. Tarkista internet-yhteytesi ja yritä uudelleen.",
-      "networkErrorSelfHosted": "Verkkopyyntö epäonnistui. Tarkista verkkoyhteytesi ja palvelimen saatavuus. Varmista, että itseisännöidyissä instansseissa on asennettuna voimassa oleva SSL-varmenne. Itseallekirjoitettuja varmenteita ei tueta mobiililaitteilla turvallisuussyistä.",
-      "serverErrorSelfHosted": "API-rajapintaan ei saatu yhteyttä. Itseisännöityjen instanssien osalta varmista, että API-päätepiste on tavoitettavissa siirtymällä siihen selaimessa: sen pitäisi näyttää teksti 'Kaikki hyvin'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Jos olet äskettäin vaihtanut salasanasi ja sinulla on vaikeuksia kirjautua sisään uudella salasanallasi, otathan huomioon, että palvelimen ylläpitäjä voi ehkä palauttaa holvisi aiemman varmuuskopion auttaaksesi sinua. Jos näin on, ota yhteyttä palvelimen ylläpitäjään.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Todennuskoodi",
       "dontHaveAuthenticatorText": "Eikö sinulla ole pääsyä todennuslaitteeseesi?",
-      "loginErrorMessage": "Sisäänkirjautumispyynnön käsittelyn aikana tapahtui virhe. Yritä myöhemmin uudelleen.",
       "loginRequestErrorMessage": "Sisäänkirjautumispyynnön käsittelyn aikana tapahtui virhe.",
       "loginWithAuthenticatorLink": "Kirjaudu sisään sen sijaan todennuskoodilla.",
       "loginWithRecoveryCodeLink": "Kirjaudu sisään käyttämällä sen sijaan palautuskoodia.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen.",
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
-      "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Todennusavain merkitty poistettavaksi",
     "passkeyWillBeDeleted": "Tämä todennusavain poistetaan, kun tallennat tämän käyttäjätiedon.",
     "settings": {
-      "passkeyProvider": "Todennusavaimen toimittaja",
-      "passkeyProviderOn": "Todennusavaimen toimittaja käytössä "
+      "passkeyProvider": "Todennusavaimen toimittaja"
     },
     "site": "Sivusto",
     "useBrowserPasskey": "Käytä selaimen sala-avainta"
@@ -1186,7 +1178,6 @@
       "website": "Verkkosivusto"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Aktiivisena kaikilla sivustoilla (ellei sitä ole poistettu käytöstä alla)",
     "advancedOptions": "Lisäasetukset",
     "androidAutofillSettings": {
       "buttonTip": "Jos yllä oleva painike ei toimi, se saattaa olla estetty turvallisuusasetusten vuoksi. Voit manuaalisesti mennä kohtaan Android-asetukset → Yleinen hallinta → Salasanat ja automaattinen täyttö.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Lukitse holvi automaattisesti käyttämättömyysjakson jälkeen",
     "autoLockTimeoutHelp": "Holvi lukittuu vasta määritetyn käyttämättömyysjakson jälkeen (ei automaattista täyttöä tai laajennusten ponnahdusikkunoita ole avattu). Holvi lukittuu aina, kun selain suljetaan, tästä asetuksesta riippumatta.",
     "autofill": "Automaattitäyttö & Todennusavaimet",
-    "autofillDisabledDescription": "Automaattitäyttöehdotukset on poistettu käytöstä kaikkialla",
-    "autofillEnabled": "Ota automaattinen täyttö käyttöön",
-    "autofillEnabledDescription": "Automaattisen täytön ehdotukset näkyvät kirjautumislomakkeissa",
     "autofillMatching": "Automaattisen täytön täsmäytys",
     "autofillMatchingDefault": "URL + aliverkkotunnus + nimi jokerimerkki",
     "autofillMatchingMode": "Automaattisen täytön täsmäytystila",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Tarkka URL-verkkotunnus vain",
     "autofillMatchingUrlSubdomain": "URL + aliverkkotunnus",
     "autofillSettings": "Automaatisen täytön asetukset",
-    "autofillSettingsDescription": "Ota käyttöön tai poista käytöstä automaattisen täytön ponnahdusikkuna verkkosivuilta",
     "autofillSetup": {
       "alreadyConfigured": "Olen jo määrittänyt sen",
       "howToEnable": "Kuinka otetana käyttään Automaattitäyttö ja Todennusvaimet"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
-    "clientUrlHint": "Web-käyttöliittymän URL-osoite itse isännöidyssä instanssissa",
     "clipboardClear": "Tyhjennä leikepöytä",
     "clipboardClear10Seconds": "Tyhjennä 10 sekunnin jälkeen",
     "clipboardClear15Seconds": "Tyhjennä 15 sekunnin jälkeen",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "API-URL-osoite",
-    "customClientUrl": "Asiakas-URL-osoite",
     "dark": "Tumma",
     "disableBatteryOptimization": "Poista akun optimointi käytöstä",
-    "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
-    "disabledOnAllSites": "Pois käytöstä kaikilla sivustoilla",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "Otettu käyttöön tällä sivustolla",
     "exportConfirmTitle": "Vie holvi",
     "exportSectionTitle": "Vie",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Avaa asetukset",
     "openWebApp": "Avaa verkkosovellus",
     "passkeySettings": "Todennusavainten asetukset",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Valitse kieli",
     "serverConfiguration": "Palvelimen asetukset",
-    "serverConfigurationDescription": "Määritä AliasVault-palvelimen URL-osoite itse isännöityille instanssille",
     "serverUrl": "Palvelimen URL-osoite",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Käytä oletusta",
     "validation": {
       "apiUrlInvalid": "Syötä kelvollinen API-URL-osoite",
-      "apiUrlRequired": "API-URL-osoite vaaditaan",
-      "clientUrlInvalid": "Syötä kelvollinen asiakas-URL-osoite",
-      "clientUrlRequired": "Asiakkaan URL-osoite vaaditaan"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Holvin lukituksen avausmenetelmä",
     "vaultUnlockSettings": {
