@@ -1,11 +1,12 @@
 /**
- * Category 25: Items list position (Requires API + Authentication)
+ * Category 25: Scroll position (Requires API + Authentication)
  *
  * Going back to the items list shortly after opening an item returns to where the list was scrolled and marks the item.
+ * Going back to the settings page from one of its pages returns to where it was scrolled.
  */
 import { test, expect, TestClient, Timeouts } from '../fixtures';
 
-test.describe('25. Items list position', () => {
+test.describe.serial('25. Scroll position', () => {
   let client: TestClient;
 
   test.afterAll(async () => {
@@ -70,6 +71,41 @@ test.describe('25. Items list position', () => {
       await popup.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       expect(await main.evaluate((el) => el.scrollTop)).toBe(0);
       await expect(marked).toHaveCount(0);
+    });
+  });
+
+  test('25.2 should return to the scrolled position when going back to the settings page', async () => {
+    const { popup } = client;
+    const main = popup.locator('main');
+
+    const importExport = popup.locator('#import-export-settings-button');
+    let scrollTopBefore = 0;
+    await test.step('scroll the settings page part way and open one of its pages', async () => {
+      await client.goToSettings();
+      await main.evaluate((el) => {
+        el.scrollTop = 120;
+      });
+      // Open it by keyboard: a click first scrolls its target clear of the bottom bar, which moves the page.
+      await importExport.focus();
+      scrollTopBefore = await main.evaluate((el) => el.scrollTop);
+      expect(scrollTopBefore).toBeGreaterThan(0);
+      await importExport.press('Enter');
+      await expect(importExport).toHaveCount(0);
+    });
+
+    await test.step('back returns to the same position', async () => {
+      await popup.locator('button#back').click();
+      await expect(importExport).toBeVisible();
+      await expect.poll(async () => Math.abs(await main.evaluate((el) => el.scrollTop) - scrollTopBefore), { timeout: Timeouts.MEDIUM }).toBeLessThanOrEqual(1);
+    });
+
+    await test.step('the settings tab starts at the top', async () => {
+      await client.goToVault();
+      await client.goToSettings();
+      await expect(importExport).toBeVisible();
+      // A restore would land on the next frame; wait two.
+      await popup.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(await main.evaluate((el) => el.scrollTop)).toBe(0);
     });
   });
 });
