@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "이 항목을 정말 삭제하시겠습니까?",
     "disabled": "비활성화됨",
     "dismiss": "닫기",
+    "download": "다운로드",
     "duplicate": "복제",
     "duplicateErrorMessage": "항목을 복제하지 못했습니다.",
     "duplicateSuccessMessage": "항목을 복제했습니다.",
