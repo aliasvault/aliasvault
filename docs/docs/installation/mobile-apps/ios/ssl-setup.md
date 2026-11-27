@@ -55,7 +55,7 @@ cp [aliasvault-install-dir]/certificates/ssl/cert.pem ~/aliasvault.crt
 
 1. **Open the AliasVault app**
 2. **Go to Settings** → **Server Configuration**
-3. **Enter your server URL**: `https://192.168.3.2/api` (use your configured hostname)
+3. **Enter your server URL**: `https://192.168.3.2`
 4. **Test connection** - should work without SSL errors
 
 ## Troubleshooting
