@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Advanced settings",
-      "customApiUrl": "URL-адреса користувацького API",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header value",
       "selfHosted": "Розміщено на власному хостингу",
-      "title": "API з'єднання",
       "version": "Версія: {{version}}"
-    },
-    "navigation": {
-      "login": "Увійти",
-      "loginSettings": "Налаштування входу"
     },
     "notFound": {
       "goHome": "Повернутися до початку",
@@ -96,8 +91,8 @@
       "enterPassword": "Будь ласка, введіть ваш пароль",
       "httpError": "Помилка HTTP: {{status}}",
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
-      "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
-      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK»."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Код автентифікації",
       "dontHaveAuthenticatorText": "Немає доступу до свого пристрою автентифікації?",
-      "loginErrorMessage": "Під час обробки запиту на вхід сталася помилка. Спробуйте ще раз (пізніше).",
       "loginRequestErrorMessage": "Під час обробки запиту на вхід сталася помилка.",
       "loginWithAuthenticatorLink": "Увійдіть за допомогою коду автентифікації.",
       "loginWithRecoveryCodeLink": "Увійдіть за допомогою коду відновлення.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
-      "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Ключ доступу позначено для видалення",
     "passkeyWillBeDeleted": "Цей ключ доступу буде видалено, коли ви збережете ці облікові дані.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "Вебсайт",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1186,7 +1178,6 @@
       "website": "Вебсайт"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Активно на всіх сайтах (якщо не вимкнено нижче)",
     "advancedOptions": "Додаткові параметри",
     "androidAutofillSettings": {
       "buttonTip": "Якщо кнопка вище не працює, можливо, вона заблокована через налаштування безпеки. Ви можете вручну перейти до Налаштувань Android → Загальне керування → Паролі та автозаповнення.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Автоматично блокувати сховище після періоду бездіяльності",
     "autoLockTimeoutHelp": "Сховище буде заблоковано лише після зазначеного періоду бездіяльності (не використовується автозаповнення або не відкривається спливне вікно розширення). Сховище завжди блокуватиметься, коли браузер закривається, незалежно від цього налаштування.",
     "autofill": "Автозаповнення та ключі доступу",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "autofillEnabled": "Увімкнути автозаповнення",
-    "autofillEnabledDescription": "",
     "autofillMatching": "Автозаповнення відповідності",
     "autofillMatchingDefault": "URL-адреса + піддомен + універсальне ім'я",
     "autofillMatchingMode": "Режим автозаповнення відповідностей",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Лише точний домен URL-адреси",
     "autofillMatchingUrlSubdomain": "URL-адреса + піддомен",
     "autofillSettings": "Налаштування автозаповнення",
-    "autofillSettingsDescription": "Увімкнення або вимкнення спливаючого вікна автозаповнення на вебсторінках",
     "autofillSetup": {
       "alreadyConfigured": "Я вже це налаштував",
       "howToEnable": "Як увімкнути автозаповнення та ключі доступу:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
-    "clientUrlHint": "URL-адреса вебінтерфейсу вашого самостійного екземпляра",
     "clipboardClear": "Очистити буфер обміну",
     "clipboardClear10Seconds": "Очистити після 10 секунд",
     "clipboardClear15Seconds": "Очистити після 15 секунд",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "URL-адреса API",
-    "customClientUrl": "URL-адреса клієнта",
     "dark": "Темна",
     "disableBatteryOptimization": "Вимкнути оптимізацію акумулятора",
-    "disabledForThisSite": "Вимкнено для цього сайту",
-    "disabledOnAllSites": "Вимкнено на всіх сайтах",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "Увімкнено для цього сайту",
     "exportConfirmTitle": "Експорт сховища",
     "exportSectionTitle": "Експорт",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Відкрити Налаштування",
     "openWebApp": "Відкрити веб додаток",
     "passkeySettings": "Налаштування ключа доступу",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Виберіть мову",
     "serverConfiguration": "Конфігурація сервера",
-    "serverConfigurationDescription": "Налаштування URL-адреси сервера AliasVault для самостійно розміщених екземплярів",
     "serverUrl": "URL-адреса сервера",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Використовувати за замовчуванням",
     "validation": {
       "apiUrlInvalid": "Будь ласка, введіть дійсну URL-адресу API",
-      "apiUrlRequired": "URL-адреса API обов'язкова",
-      "clientUrlInvalid": "Будь ласка, введіть дійсну URL-адресу клієнта",
-      "clientUrlRequired": "URL-адреса клієнта обов'язкова"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Метод розблокування сховища",
     "vaultUnlockSettings": {
