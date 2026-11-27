@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "disabled": "禁用",
     "dismiss": "取消",
+    "download": "下载",
     "duplicate": "创建副本",
     "duplicateErrorMessage": "项目创建副本失败。",
     "duplicateSuccessMessage": "项目创建副本成功。",
