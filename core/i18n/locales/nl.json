@@ -38,8 +38,8 @@
       "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar je AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
       "headerName": "Header-naam",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerNameInvalid": "Not a valid HTTP header name.",
-      "headerNameReserved": "AliasVault already sends this HTTP header.",
+      "headerNameInvalid": "Geen geldige HTTP-headernaam.",
+      "headerNameReserved": "AliasVault verstuurt deze HTTP-header al.",
       "headerValue": "Header-waarde",
       "selfHosted": "Self-hosted",
       "version": "Versie: {{version}}"
@@ -91,8 +91,8 @@
       "enterPassword": "Voer je wachtwoord in",
       "httpError": "HTTP fout: {{status}}",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
-      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
-      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
+      "selfHostedServerUnreachable": "Kan de AliasVault server niet bereiken op {{apiUrl}}. Controleer of de server-URL juist is, dat de server bereikbaar is en dat het SSL-certificaat geldig is.",
+      "serverCertificateNotTrusted": "Kan geen beveiligde verbinding maken met de AliasVault-server: het SSL-certificaat is ongeldig of niet vertrouwd door dit apparaat. Als de server een zelfondertekend certificaat gebruikt, installeer en vertrouw dan eerst het certificaat op dit apparaat."
     },
     "forgotPassword": {
       "contactAdministrator": "Als je onlangs je wachtwoord hebt gewijzigd en problemen hebt met inloggen met je nieuwe wachtwoord, kan de serverbeheerder mogelijk een eerdere backup van je vault herstellen om je te helpen. Neem in dat geval contact op met de serverbeheerder.",
@@ -1538,7 +1538,7 @@
     "selectLanguage": "Selecteer taal",
     "serverConfiguration": "Serverconfiguratie",
     "serverUrl": "Server-URL",
-    "serverUrlHint": "The address of your self-hosted AliasVault instance",
+    "serverUrlHint": "Het adres van de eigen gehoste AliasVault",
     "serverVersion": "Server versie",
     "sessionsAndLogs": "Sessies & logbestanden",
     "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
@@ -1596,8 +1596,8 @@
     "useDefault": "Standaard gebruiken",
     "validation": {
       "apiUrlInvalid": "Voer een geldige API URL in",
-      "serverUrlInvalid": "Please enter a valid server URL",
-      "serverUrlRequired": "Server URL is required"
+      "serverUrlInvalid": "Voer een geldige server-URL in",
+      "serverUrlRequired": "Server-URL is vereist"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "vaultUnlockSettings": {
