@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "هل أنت متأكد أنك تريد حذف هذا العنصر؟",
     "disabled": "معطل",
     "dismiss": "تجاهل",
+    "download": "تنزيل",
     "duplicate": "تكرار",
     "duplicateErrorMessage": "تعذّر تكرار العنصر.",
     "duplicateSuccessMessage": "تم تكرار العنصر بنجاح.",
