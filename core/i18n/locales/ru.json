@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "disabled": "Отключено",
     "dismiss": "Закрыть",
+    "download": "Скачать",
     "duplicate": "Продублировать",
     "duplicateErrorMessage": "Не удалось продублировать запись.",
     "duplicateSuccessMessage": "Запись успешно продублирована.",
