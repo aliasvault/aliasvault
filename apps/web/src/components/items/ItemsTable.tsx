@@ -64,17 +64,17 @@ const ItemsTableRow: React.FC<ItemsTableRowProps> = ({ entry, onMutated, isSelec
 
   return (
     <SortableTableRow className={`cursor-pointer group ${isSelectionMode ? 'select-none' : ''} ${selectedClass}`} onClick={handleClick} onContextMenu={(e) => menuRef.current?.open(e.clientX, e.clientY)}>
-      <SortableTableColumn padding={false}>
-        <div className="flex items-center space-x-2 py-2 pl-2">
+      <SortableTableColumn padding="horizontal">
+        <div className="flex items-center space-x-2 py-2">
           <SelectCheckbox isSelected={isSelected} onSelect={onSelect} className="-mr-1" />
           <ItemIcon item={entry.item} altText={entry.service ?? ''} sizeClass="w-6 h-6" />
           <span className="font-bold ml-2 truncate">{entry.service}</span>
         </div>
       </SortableTableColumn>
-      <SortableTableColumn padding={false}>{entry.username}</SortableTableColumn>
-      <SortableTableColumn padding={false}>{entry.email}</SortableTableColumn>
-      <SortableTableColumn padding={false}>{formatDate(entry.createdAt)}</SortableTableColumn>
-      <SortableTableColumn padding={false}>
+      <SortableTableColumn padding="horizontal">{entry.username}</SortableTableColumn>
+      <SortableTableColumn padding="horizontal">{entry.email}</SortableTableColumn>
+      <SortableTableColumn padding="horizontal">{formatDate(entry.createdAt)}</SortableTableColumn>
+      <SortableTableColumn padding="none">
         <div className="flex justify-end pr-2">
           <ItemContextMenu ref={menuRef} item={{ Id: entry.id, ManifestId: entry.manifestId }} itemName={entry.service} onMutated={onMutated} hideTrigger={isSelectionMode} />
         </div>

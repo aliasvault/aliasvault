@@ -28,8 +28,11 @@ type ContextMenuProps = {
   widthClass?: string;
 };
 
-/** Distance kept between a right-click menu and the window edge. */
+/** Distance kept between the menu and the window edge. */
 const VIEWPORT_MARGIN_PX = 8;
+
+/** Gap between a trigger button and the menu below or above it. */
+const TRIGGER_GAP_PX = 4;
 
 const MenuCloseContext = createContext<() => void>(() => {});
 
@@ -59,16 +62,47 @@ const ContextMenu = forwardRef<ContextMenuHandle, ContextMenuProps>(({ children,
     },
   }), []);
 
-  // Keep a right-click menu inside the window.
+  /*
+   * The menu is fixed, so a scrolling or overflow-hidden ancestor (like a table) can't clip it. It opens at the cursor,
+   * or right-aligned below its trigger (above when there is no room below), and is kept inside the window.
+   */
   useLayoutEffect(() => {
     const menu = menuRef.current;
-    if (!isOpen || !position || !menu) {
+    if (!isOpen || !menu) {
       return;
     }
-    const left = Math.max(VIEWPORT_MARGIN_PX, Math.min(position.x, window.innerWidth - menu.offsetWidth - VIEWPORT_MARGIN_PX));
-    const top = Math.max(VIEWPORT_MARGIN_PX, Math.min(position.y, window.innerHeight - menu.offsetHeight - VIEWPORT_MARGIN_PX));
-    menu.style.left = `${left}px`;
-    menu.style.top = `${top}px`;
+
+    /**
+     * Move the menu into place; reruns on scroll and resize so a trigger menu stays next to its button.
+     */
+    const place = (): void => {
+      let x = position?.x ?? 0;
+      let y = position?.y ?? 0;
+      if (!position) {
+        const trigger = triggerRef.current?.getBoundingClientRect();
+        if (!trigger) {
+          return;
+        }
+        x = trigger.right - menu.offsetWidth;
+        y = trigger.bottom + TRIGGER_GAP_PX;
+        const above = trigger.top - TRIGGER_GAP_PX - menu.offsetHeight;
+        if (y + menu.offsetHeight > window.innerHeight - VIEWPORT_MARGIN_PX && above >= VIEWPORT_MARGIN_PX) {
+          y = above;
+        }
+      }
+      const left = Math.max(VIEWPORT_MARGIN_PX, Math.min(x, window.innerWidth - menu.offsetWidth - VIEWPORT_MARGIN_PX));
+      const top = Math.max(VIEWPORT_MARGIN_PX, Math.min(y, window.innerHeight - menu.offsetHeight - VIEWPORT_MARGIN_PX));
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+    };
+
+    place();
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return (): void => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
   }, [isOpen, position]);
 
   useEffect(() => {
@@ -97,10 +131,10 @@ const ContextMenu = forwardRef<ContextMenuHandle, ContextMenuProps>(({ children,
   };
 
   return (
-    <div className="relative flex" onClick={(e) => e.stopPropagation()}>
+    <div className="flex" onClick={(e) => e.stopPropagation()}>
       {renderTrigger?.({ ref: triggerRef, isOpen, onClick: toggleFromTrigger })}
       {isOpen && (
-        <div ref={menuRef} role="menu" className={`${position ? 'fixed' : 'absolute right-0 top-full mt-1'} z-50 ${widthClass} overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100`}>
+        <div ref={menuRef} role="menu" className={`fixed z-50 ${widthClass} overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100`}>
           <MenuCloseContext.Provider value={close}>
             {children}
           </MenuCloseContext.Provider>

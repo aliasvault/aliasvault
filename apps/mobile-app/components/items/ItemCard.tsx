@@ -96,7 +96,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
           router.push(itemEditRoute(item));
         });
         break;
-      case t('items.merge.mergeWith'):
+      case t('items.merge.action'):
         navigate(() => {
           Keyboard.dismiss();
           paneRouter.openDetail(itemMergeRoute(item));
@@ -219,7 +219,7 @@ function ItemCardComponent({ item, onItemDelete, onItemDuplicate, showFolderPath
         action(t('common.open'), 'eye', 'ic_ui_eye'),
         action(t('common.edit'), 'pencil', 'ic_ui_pencil_alt'),
         action(t('common.duplicate'), 'plus.square.on.square', 'ic_ui_document_duplicate'),
-        action(t('items.merge.mergeWith'), 'arrow.triangle.merge', 'ic_ui_merge'),
+        action(t('items.merge.action'), 'arrow.triangle.merge', 'ic_ui_merge'),
       ],
       copyGroup,
       // On Android a long-press already selects, so only iOS gets a Select entry.

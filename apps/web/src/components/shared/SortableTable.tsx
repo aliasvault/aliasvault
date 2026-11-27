@@ -90,18 +90,23 @@ export const SortableTableRow: React.FC<SortableTableRowProps> = ({ children, cl
   </tr>
 );
 
+/** Cell padding; `horizontal` keeps the cell aligned with its header but lets the content decide the row height. */
+type CellPadding = 'full' | 'horizontal' | 'none';
+
+const CELL_PADDING_CLASS: Record<CellPadding, string> = { full: 'px-4 py-3', horizontal: 'px-4', none: '' };
+
 type SortableTableColumnProps = {
   children?: React.ReactNode;
   isPrimary?: boolean;
   title?: string;
-  padding?: boolean;
+  padding?: CellPadding;
 };
 
 /**
  * A table cell.
  */
-export const SortableTableColumn: React.FC<SortableTableColumnProps> = ({ children, isPrimary = false, title, padding = true }) => (
-  <td className={`${padding ? 'px-4 py-3' : ''} ${isPrimary ? 'font-medium text-gray-900 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400'}`} title={title}>
+export const SortableTableColumn: React.FC<SortableTableColumnProps> = ({ children, isPrimary = false, title, padding = 'full' }) => (
+  <td className={`${CELL_PADDING_CLASS[padding]} ${isPrimary ? 'font-medium text-gray-900 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400'}`} title={title}>
     {children}
   </td>
 );

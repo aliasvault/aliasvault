@@ -196,7 +196,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, curre
           <MenuItem icon="eye" onClick={openItem}>{t('common.open')}</MenuItem>
           <MenuItem icon="pencil-alt" onClick={() => openRoute(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
           <MenuItem icon="document-duplicate" onClick={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.duplicate')}</MenuItem>
-          <MenuItem id="item-menu-merge" icon="merge" onClick={() => openRoute(itemMergeRoute(item))}>{t('items.merge.mergeWith')}</MenuItem>
+          <MenuItem id="item-menu-merge" icon="merge" onClick={() => openRoute(itemMergeRoute(item))}>{t('items.merge.action')}</MenuItem>
           <MenuItem danger icon="trash" onClick={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}>{t('common.delete')}</MenuItem>
         </ContextMenu>
       )}

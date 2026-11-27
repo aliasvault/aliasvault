@@ -101,7 +101,7 @@ const ItemContextMenu = forwardRef<ContextMenuHandle, ItemContextMenuProps>(({ i
         <MenuItem icon="eye" onClick={() => navigate(itemRoute(item))}>{t('common.open')}</MenuItem>
         <MenuItem icon="pencil-alt" onClick={() => navigate(itemRoute(item, true))}>{t('common.edit')}</MenuItem>
         <MenuItem icon="document-duplicate" onClick={() => void duplicateItem()}>{t('common.duplicate')}</MenuItem>
-        <MenuItem id="item-menu-merge" icon="merge" onClick={() => setShowMerge(true)}>{t('items.merge.mergeWith')}</MenuItem>
+        <MenuItem id="item-menu-merge" icon="merge" onClick={() => setShowMerge(true)}>{t('items.merge.action')}</MenuItem>
         <MenuItem danger icon="trash" onClick={() => setShowDeleteModal(true)}>{t('common.delete')}</MenuItem>
       </ContextMenu>
 
