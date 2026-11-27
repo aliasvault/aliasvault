@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "disabled": "Dezactivat",
     "dismiss": "Închide",
+    "download": "Descarcă",
     "duplicate": "Duplicat",
     "duplicateErrorMessage": "Elementul nu a putut fi duplicat.",
     "duplicateSuccessMessage": "Element duplicat cu succes.",
