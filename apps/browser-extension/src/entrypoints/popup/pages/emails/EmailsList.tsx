@@ -229,7 +229,7 @@ const EmailsList: React.FC = () => {
   if (dbContext.isOffline) {
     return (
       <div>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center min-h-8 mb-4">
           <PageTitle>{t('emails.title')}</PageTitle>
         </div>
         <div className="text-gray-500 dark:text-gray-400 space-y-2">

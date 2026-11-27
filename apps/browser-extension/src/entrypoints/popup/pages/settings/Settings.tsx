@@ -155,7 +155,7 @@ const Settings: React.FC = () => {
       />
 
       <div ref={pageRef} className="space-y-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center min-h-8 mb-4">
           <PageTitle>{t('common.settings')}</PageTitle>
         </div>
 
