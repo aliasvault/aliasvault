@@ -45,7 +45,7 @@ export function useFinishBackgroundAuth(): (offline: boolean) => Promise<string 
         return null;
       }
       logFailure('Loading the unlocked vault failed', err);
-      return formatErrorMessage(await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' }), t);
+      return formatErrorMessage(await describeAuthError(err), t);
     }
   }, [app, dbContext, navigate, t]);
 }

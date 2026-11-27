@@ -23,7 +23,7 @@ const LoginServerInfo: React.FC = () => {
    * Handles the click event for the login server information.
    */
   const handleClick = () : void => {
-    navigate('/auth-settings/server');
+    navigate('/server-settings');
   };
 
   return (

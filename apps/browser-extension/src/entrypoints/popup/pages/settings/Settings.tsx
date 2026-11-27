@@ -1,9 +1,9 @@
-import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { resolveClientUrl } from '@aliasvault/client/platform/ServerUrl';
 import { sharingText } from '@aliasvault/client/sharing/SharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
 
 import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutConfirmModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -17,6 +17,7 @@ import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import { useListScrollRestore } from '@/entrypoints/popup/hooks/useListScrollRestore';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
@@ -38,17 +39,15 @@ const Settings: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const navigationType = useNavigationType();
+  useListScrollRestore({ key: 'settings', isReady: true, canRestore: navigationType === 'POP', rowsRef: pageRef });
 
   /**
    * Open the client tab.
    */
   const openClientTab = async () : Promise<void> => {
-    const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string | undefined;
-    let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
-    if (settingClientUrl && settingClientUrl.length > 0) {
-      clientUrl = settingClientUrl;
-    }
-
+    const clientUrl = resolveClientUrl(await storage.getItem(StorageKeys.API_URL) as string | null, await storage.getItem(StorageKeys.CLIENT_URL) as string | null);
     window.open(clientUrl, '_blank');
   };
 
@@ -155,7 +154,7 @@ const Settings: React.FC = () => {
         onConfirm={handleLogout}
       />
 
-      <div className="space-y-6">
+      <div ref={pageRef} className="space-y-6">
         <div className="flex justify-between items-center mb-4">
           <PageTitle>{t('common.settings')}</PageTitle>
         </div>

@@ -11,9 +11,10 @@ export class RequestTimeoutError extends NetworkError {
    * Creates a new instance of RequestTimeoutError.
    * @param message - The error message.
    * @param cause - The original abort/timeout error.
+   * @param apiUrl - The API URL the request was sent to.
    */
-  public constructor(message: string = 'Request timed out', cause?: Error) {
-    super(message, cause);
+  public constructor(message: string = 'Request timed out', cause?: Error, apiUrl?: string) {
+    super(message, cause, apiUrl);
     this.name = 'RequestTimeoutError';
     Object.setPrototypeOf(this, RequestTimeoutError.prototype);
   }

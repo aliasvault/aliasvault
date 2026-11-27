@@ -177,7 +177,7 @@ export class WebApiService {
           if (retryResponse.status === 413) {
             throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
           }
-          throw await ApiRequestError.fromResponse(retryResponse);
+          throw await ApiRequestError.fromResponse(retryResponse, await this.getApiUrl());
         }
 
         return parseJson ? retryResponse.json() : retryResponse as unknown as T;
@@ -194,7 +194,7 @@ export class WebApiService {
     }
 
     if (!response.ok && throwOnError) {
-      throw await ApiRequestError.fromResponse(response);
+      throw await ApiRequestError.fromResponse(response, await this.getApiUrl());
     }
 
     return parseJson ? response.json() : response as unknown as T;
@@ -280,13 +280,11 @@ export class WebApiService {
       response = await fetch(url, requestOptions);
     } catch (error) {
       logExpected(`[WebApi] Request failed: ${endpoint}`, error);
+      const apiUrl = await this.getApiUrl();
       if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
-        throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
+        throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error, apiUrl);
       }
-      throw new NetworkError(
-        error instanceof Error ? error.message : 'Network request failed',
-        error instanceof Error ? error : undefined
-      );
+      throw new NetworkError(error instanceof Error ? error.message : 'Network request failed', error instanceof Error ? error : undefined, apiUrl);
     }
 
     // The server rejects clients it no longer supports with HTTP 426 on any endpoint.

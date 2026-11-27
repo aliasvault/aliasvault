@@ -22,7 +22,7 @@ const CUSTOM_OPTION = 'custom';
 /**
  * Server settings page (official or self-hosted server), only shown when the user is not logged in.
  */
-const AuthServerSettings: React.FC = () => {
+const ServerSettings: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,7 +93,7 @@ const AuthServerSettings: React.FC = () => {
    */
   const openAdvancedSettings = async () : Promise<void> => {
     await serverUrlStore.flush();
-    navigate('/auth-settings/advanced');
+    navigate('/server-settings/advanced');
   };
 
   return (
@@ -146,4 +146,4 @@ const AuthServerSettings: React.FC = () => {
   );
 };
 
-export default AuthServerSettings;
+export default ServerSettings;

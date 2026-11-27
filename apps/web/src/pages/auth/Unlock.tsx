@@ -1,5 +1,5 @@
 import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
-import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { MissingDerivationParamsError, UnlockService } from '@aliasvault/client/auth/UnlockService';
@@ -169,8 +169,8 @@ const Unlock: React.FC = () => {
         navigate('/user/login', { replace: true });
         return;
       }
-      const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
-      if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
+      const message = await describeAuthError(err);
+      if (import.meta.env.DEV && err instanceof Error && message.code === AppErrorCode.UNKNOWN_ERROR) {
         setErrors([err.message]);
       } else {
         setErrors([formatErrorMessage(message, t)]);
@@ -204,11 +204,11 @@ const Unlock: React.FC = () => {
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Mobile unlock error:', err);
-      const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
+      const message = await describeAuthError(err);
       if (err instanceof ClientUpgradeRequiredError) {
         await auth.logout({ errorMessage: formatErrorMessage(message, t) });
         navigate('/user/login', { replace: true });
-      } else if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
+      } else if (import.meta.env.DEV && err instanceof Error && message.code === AppErrorCode.UNKNOWN_ERROR) {
         setErrors([err.message]);
       } else {
         setErrors([formatErrorMessage(message, t)]);
@@ -237,8 +237,8 @@ const Unlock: React.FC = () => {
     );
   }
 
-  // A coded error is critical: it replaces the form.
-  const criticalError = errors.find(error => extractErrorCode(error) !== null);
+  // A coded error is critical: it replaces the form. A server that could not be reached shows inline, so the user can try again.
+  const criticalError = errors.find(error => ![null, AppErrorCode.NETWORK_ERROR, AppErrorCode.HTTP_ERROR].includes(extractErrorCode(error)));
   if (criticalError) {
     const logoutLink = <>{t('auth.switchAccounts')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('web.topMenu.logOut')}</Link></>;
     return <CriticalErrorPanel report={criticalError} onAction={() => setErrors([])} footer={logoutLink} />;

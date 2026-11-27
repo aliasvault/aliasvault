@@ -1,4 +1,4 @@
-import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -102,8 +102,8 @@ const Login: React.FC = () => {
    */
   const toErrorMessages = async (err: unknown): Promise<string[]> => {
     console.error('Login error:', err);
-    const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
-    if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
+    const message = await describeAuthError(err);
+    if (import.meta.env.DEV && err instanceof Error && message.code === AppErrorCode.UNKNOWN_ERROR) {
       return [err.message];
     }
     return [formatErrorMessage(message, t)];
@@ -245,8 +245,8 @@ const Login: React.FC = () => {
     return <CriticalErrorPanel title={t('common.errors.updateRequiredTitle')} description={updateRequest} onAction={updateApp} actionLabel={t('common.updateApp')} hideSupportContact />;
   }
 
-  // A coded error is critical: it replaces the form.
-  const criticalError = errors.find(error => extractErrorCode(error) !== null);
+  // A coded error is critical: it replaces the form. A server that could not be reached shows inline, so the user can try again.
+  const criticalError = errors.find(error => ![null, AppErrorCode.NETWORK_ERROR, AppErrorCode.HTTP_ERROR].includes(extractErrorCode(error)));
   if (criticalError) {
     /**
      * Dismiss the error and start the login over.

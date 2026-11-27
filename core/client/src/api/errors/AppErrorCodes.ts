@@ -28,7 +28,8 @@ export enum AppErrorCode {
   UNKNOWN_ERROR = 'E-001',
   BACKGROUND_UNRESPONSIVE = 'E-002', // Background service worker did not answer in time
   NETWORK_ERROR = 'E-003', // The request did not reach the server (offline, DNS, TLS)
-  PARSE_ERROR = 'E-004', // Native glue could not encode or decode a JSON payload
+  PARSE_ERROR = 'E-004', // The mobile app's native code could not read or write a JSON message exchanged with the Rust sync engine
+  HTTP_ERROR = 'E-005', // The server answered with an HTTP failure that names no API error code (e.g. a proxy error page)
 
   // Authentication errors (E-1xx)
   AUTH_STATUS_CHECK_FAILED = 'E-101',
@@ -168,6 +169,7 @@ export function formatErrorWithCode(message: string, code: AppErrorCode): string
 const ERROR_TRANSLATION_KEYS: Partial<Record<AppErrorCode, TranslationKey>> = {
   [AppErrorCode.BACKGROUND_UNRESPONSIVE]: 'common.errors.backgroundUnresponsive',
   [AppErrorCode.NETWORK_ERROR]: 'auth.errors.networkError',
+  [AppErrorCode.HTTP_ERROR]: 'common.errors.serverNotAvailable',
 
   [AppErrorCode.AUTHENTICATION_FAILED]: 'common.errors.sessionExpired',
   [AppErrorCode.SESSION_EXPIRED]: 'common.errors.sessionExpired',

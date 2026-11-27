@@ -698,6 +698,20 @@ public class NativeVaultManager: NSObject {
     }
 
     @objc
+    func setClientUrl(_ url: String,
+                      resolver resolve: @escaping RCTPromiseResolveBlock,
+                      rejecter reject: @escaping RCTPromiseRejectBlock) {
+        webApiService.setClientUrl(url)
+        resolve(nil)
+    }
+
+    @objc
+    func getClientUrl(_ resolve: @escaping RCTPromiseResolveBlock,
+                      rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(webApiService.getClientUrl())
+    }
+
+    @objc
     func setCustomProxyHeaders(_ headersJson: String,
                                resolver resolve: @escaping RCTPromiseResolveBlock,
                                rejecter reject: @escaping RCTPromiseRejectBlock) {

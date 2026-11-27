@@ -11,7 +11,7 @@ import type { LegacySrpVerifierUpgrade, LoginResponse, TokenModel, ValidateLogin
 /**
  * The part of an API client the auth requests need.
  */
-export type SrpLoginApi = Pick<WebApiService, 'rawFetch'>;
+export type SrpLoginApi = Pick<WebApiService, 'rawFetch'> & Partial<Pick<WebApiService, 'getApiUrl'>>;
 
 /**
  * The recovery code variant of the validate request.
@@ -189,7 +189,7 @@ export class SrpLoginService {
   private async parseAuthResponse<T>(response: Response): Promise<T> {
     await throwIfServerPredatesV2Api(response.status, this.api);
     if (!response.ok) {
-      throw await ApiRequestError.fromResponse(response);
+      throw await ApiRequestError.fromResponse(response, await this.api.getApiUrl?.());
     }
     return await response.json() as T;
   }
