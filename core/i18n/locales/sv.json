@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Avancerade Inställningar",
-      "customApiUrl": "Egen API-URL",
-      "customApiUrlPlaceholder": "https://min-aliasvault-instans.se/api",
       "customProxyHeaders": "Anpassade HTTP-huvuden för proxy",
       "customProxyHeadersDescription": "Lägg till HTTP-huvuden som skickas med varje begäran till din AliasVault-server. Kan användas för egenhostade installationer bakom en omvänd proxy som verifierar anpassade HTTP-huvuden (t.ex. Pangolin, Cloudflare Access).",
       "headerName": "Namn på HTTP-huvud",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Värde för HTTP-huvud",
       "selfHosted": "Egenhostad",
-      "title": "API-anslutning",
       "version": "Version: {{version}}"
-    },
-    "navigation": {
-      "login": "Inloggning",
-      "loginSettings": "Inloggningsinställningar"
     },
     "notFound": {
       "goHome": "Gå tillbaka till början",
@@ -96,8 +91,8 @@
       "enterPassword": "Ange ditt lösenord",
       "httpError": "HTTP-fel: {{status}}",
       "networkError": "Nätverksanropet misslyckades. Kontrollera din internetanslutning och försök igen.",
-      "networkErrorSelfHosted": "Nätverksanropet misslyckades. Kontrollera din nätverksanslutning och att servern är tillgänglig. För egenhostade instanser, se till att ett giltigt SSL-certifikat är installerat. Självsignerade certifikat stöds inte på mobila enheter av säkerhetsskäl.",
-      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, kontrollera att API-slutpunkten går att nå genom att öppna den i en webbläsare. Den ska visa \"OK\"."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Om du nyligen har ändrat ditt lösenord och har svårt att logga in med det nya lösenordet, observera att serveradministratören kanske kan återställa ditt valv från en tidigare säkerhetskopia. Om så är fallet, kontakta serveradministratören.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Autentiseringskod",
       "dontHaveAuthenticatorText": "Har du inte tillgång till din autentiseringsenhet?",
-      "loginErrorMessage": "Ett fel uppstod när inloggningsbegäran behandlades. Försök igen senare.",
       "loginRequestErrorMessage": "Ett fel uppstod när inloggningsbegäran behandlades.",
       "loginWithAuthenticatorLink": "Logga in med en autentiseringskod istället.",
       "loginWithRecoveryCodeLink": "Logga in med en återställningskod istället.",
@@ -264,7 +258,6 @@
       "mobileLoginRequestDeclined": "Inloggningsbegäran avböjdes på din mobila enhet.",
       "mobileLoginRequestExpired": "Begäran om mobil inloggning löpte ut. Ladda om sidan och försök igen.",
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Logga in igen av säkerhetsskäl.",
-      "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta supporten om problemet kvarstår.",
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta supporten om problemet kvarstår.",
       "serverOutdated": "AliasVault-servern måste uppdateras för att fungera med denna version av AliasVault. Försök igen senare. Om du använder en egenhostad server, kontakta din serveradministratör.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
@@ -1169,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "settings": {
-      "passkeyProvider": "Passkey-leverantör",
-      "passkeyProviderOn": "Passkey-leverantör på "
+      "passkeyProvider": "Passkey-leverantör"
     },
     "site": "Webbplats",
     "useBrowserPasskey": "Använd webbläsarens Passkey"
@@ -1186,7 +1178,6 @@
       "website": "Webbplats"
     },
     "accountSecurity": "Kontosäkerhet",
-    "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "advancedOptions": "Avancerade inställningar",
     "androidAutofillSettings": {
       "buttonTip": "Om knappen ovan inte fungerar kan den blockeras på grund av säkerhetsinställningar. Du kan manuellt gå till Android Inställningar → Allmän hantering → Lösenord och autofyll.",
@@ -1233,9 +1224,6 @@
     "autoLockTimeoutDescription": "Lås valvet automatiskt efter en period av inaktivitet",
     "autoLockTimeoutHelp": "Valvet kommer endast att låsas efter den angivna perioden av inaktivitet (ingen användning av autofyll eller öppnande av tilläggsruta). Valvet kommer alltid att låsa när webbläsaren stängs, oavsett inställning.",
     "autofill": "Autofyll & Passkeys",
-    "autofillDisabledDescription": "Autofyll förslag är inaktiverade globalt",
-    "autofillEnabled": "Aktivera Autofyll",
-    "autofillEnabledDescription": "Autofyll förslag visas på inloggningsformulär",
     "autofillMatching": "Autofyllsmatchning",
     "autofillMatchingDefault": "URL + subdomän + namn wildcard",
     "autofillMatchingMode": "Autofyll matchningsläge",
@@ -1243,7 +1231,6 @@
     "autofillMatchingUrlExact": "Endast exakt URL domän",
     "autofillMatchingUrlSubdomain": "URL + subdomän",
     "autofillSettings": "Inställningar för Autofyll",
-    "autofillSettingsDescription": "Aktivera eller inaktivera autofyllruta på webbsidor",
     "autofillSetup": {
       "alreadyConfigured": "Jag har redan konfigurerat det",
       "howToEnable": "Så här aktiverar du Autofyll & Passkeys:"
@@ -1255,7 +1242,6 @@
     "blockScreenshots": "Blockera skärmdumpar",
     "blockScreenshotsDescription": "Blockerar skärmbilder och skärminspelningar av appen.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
-    "clientUrlHint": "Webbgränssnittets URL för din egenhostade instans",
     "clipboardClear": "Rensa urklipp",
     "clipboardClear10Seconds": "Rensa efter 10 sekunder",
     "clipboardClear15Seconds": "Rensa efter 15 sekunder",
@@ -1286,14 +1272,10 @@
       "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
     },
     "customApiUrl": "API URL",
-    "customClientUrl": "Klientens URL",
     "dark": "Mörkt",
     "disableBatteryOptimization": "Inaktivera batterioptimering",
-    "disabledForThisSite": "Inaktiverad för denna webbplats",
-    "disabledOnAllSites": "Inaktiverad på alla webbplatser",
     "disabledSites": "Inaktiverade webbplatser",
     "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
-    "enabledForThisSite": "Aktiverad för denna webbplats",
     "exportConfirmTitle": "Exportera valv",
     "exportSectionTitle": "Exportera",
     "exportToFileTitle": "Export to file",
@@ -1370,7 +1352,6 @@
     "openSettings": "Öppna inställningar",
     "openWebApp": "Öppna webbapp",
     "passkeySettings": "Passkey-inställningar",
-    "passkeysEnabled": "Aktivera passkeys",
     "passwordConfirm": {
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
@@ -1556,8 +1537,8 @@
     },
     "selectLanguage": "Välj Språk",
     "serverConfiguration": "Serverkonfiguration",
-    "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
     "serverUrl": "Serverns webbadress",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server-version",
     "sessionsAndLogs": "Sessioner och loggar",
     "sessionsAndLogsDescription": "Se var du är inloggad och granska de senaste inloggningsförsöken.",
@@ -1615,9 +1596,8 @@
     "useDefault": "Använd standard",
     "validation": {
       "apiUrlInvalid": "Ange en giltig API-URL",
-      "apiUrlRequired": "API-URL krävs",
-      "clientUrlInvalid": "Ange en giltig klient-URL",
-      "clientUrlRequired": "Klientens URL krävs"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Valvupplåsningsmetod",
     "vaultUnlockSettings": {
