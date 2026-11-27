@@ -23,9 +23,9 @@ type ListScrollRestoreOptions = {
   isReady: boolean;
   canRestore: boolean;
   rowsRef: RefObject<HTMLElement | null>;
-  rowCount: number;
-  totalRows: number;
-  renderRows: (count: number) => void;
+  rowCount?: number;
+  totalRows?: number;
+  renderRows?: (count: number) => void;
 };
 
 type ListScrollRestore = {
@@ -89,9 +89,9 @@ function holdRowsAt(rowsRef: RefObject<HTMLElement | null>, offset: number): () 
 
 /**
  * Return to the scroll position a list had when the user comes back to it shortly after leaving, for example with the
- * back button after opening an item.
+ * back button after opening an item. A page that renders all its rows at once leaves out rowCount, totalRows and renderRows.
  */
-export function useListScrollRestore({ key, isReady, canRestore, rowsRef, rowCount, totalRows, renderRows }: ListScrollRestoreOptions): ListScrollRestore {
+export function useListScrollRestore({ key, isReady, canRestore, rowsRef, rowCount = 0, totalRows = 0, renderRows }: ListScrollRestoreOptions): ListScrollRestore {
   const { pathname } = useLocation();
   const [openedRow, setOpenedRow] = useState<string | null>(null);
   const offsetRef = useRef<number | null>(null);
@@ -149,7 +149,7 @@ export function useListScrollRestore({ key, isReady, canRestore, rowsRef, rowCou
     if (!pending || !isReady) {
       return;
     }
-    if (rowCount < Math.min(pending.rowCount, totalRows) && attemptsRef.current < 5) {
+    if (renderRows && rowCount < Math.min(pending.rowCount, totalRows) && attemptsRef.current < 5) {
       attemptsRef.current++;
       renderRows(pending.rowCount);
       return;
