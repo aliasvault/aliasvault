@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "disabled": "Desabilitado",
     "dismiss": "Ignorar",
+    "download": "Baixar",
     "duplicate": "Duplicar",
     "duplicateErrorMessage": "Falha ao duplicar item.",
     "duplicateSuccessMessage": "Item duplicado com sucesso.",
