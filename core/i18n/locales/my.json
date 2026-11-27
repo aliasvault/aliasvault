@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "ဤအရာကို ဖျက်ပစ်မည်မှာ သေချာပါသလား?",
     "disabled": "အသုံးမပြုထားပါ",
     "dismiss": "Dismiss",
+    "download": "Download",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
     "duplicateSuccessMessage": "Item duplicated successfully.",
