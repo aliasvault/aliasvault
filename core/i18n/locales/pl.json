@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "disabled": "Nie aktywne",
     "dismiss": "Odrzuć",
+    "download": "Pobierz",
     "duplicate": "Duplikuj",
     "duplicateErrorMessage": "Nieudana duplikacja elementu.",
     "duplicateSuccessMessage": "Duplikacja elementu przeszła pomyślnie.",
