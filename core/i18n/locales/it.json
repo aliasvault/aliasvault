@@ -237,6 +237,7 @@
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "disabled": "Disabilitato",
     "dismiss": "Annulla",
+    "download": "Scarica",
     "duplicate": "Duplica",
     "duplicateErrorMessage": "Duplicazione elemento fallita.",
     "duplicateSuccessMessage": "Elemento duplicato correttamente.",
