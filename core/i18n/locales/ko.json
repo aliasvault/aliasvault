@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "고급 설정",
-      "customApiUrl": "사용자 지정 API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "사용자 지정 프록시 헤더",
       "customProxyHeadersDescription": "AliasVault 서버로 전송되는 모든 요청에 포함될 HTTP 헤더를 추가합니다. 사용자 지정 헤더를 검사하는 역방향 프록시(예: Pangolin, Cloudflare Access) 뒤에 자체 호스팅하는 환경에서 사용할 수 있습니다.",
       "headerName": "헤더 이름",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "헤더 값",
       "selfHosted": "자체 호스팅",
-      "title": "API 연결",
       "version": "버전: {{version}}"
-    },
-    "navigation": {
-      "login": "로그인",
-      "loginSettings": "로그인 설정"
     },
     "notFound": {
       "goHome": "시작 화면으로 돌아가기",
@@ -96,8 +91,8 @@
       "enterPassword": "비밀번호를 입력하세요.",
       "httpError": "HTTP 오류: {{status}}",
       "networkError": "네트워크 요청에 실패했습니다. 인터넷 연결을 확인한 후 다시 시도해 주세요.",
-      "networkErrorSelfHosted": "네트워크 요청에 실패했습니다. 네트워크 연결 및 서버 가용성을 확인하세요. 자체 호스팅 인스턴스의 경우 유효한 SSL 인증서가 설치되어 있는지 확인하세요. 보안상의 이유로 모바일 기기에서는 자체 서명된 인증서가 지원되지 않습니다.",
-      "serverErrorSelfHosted": "API에 연결할 수 없습니다. 자체 호스팅 인스턴스의 경우 브라우저에서 해당 API 엔드포인트로 이동하여 접근 가능한지 확인하세요('OK'가 표시되어야 함)."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "최근 비밀번호를 변경한 후 새 비밀번호로 로그인하는 데 어려움을 겪고 계시다면, 서버 관리자가 보관함의 이전 백업을 복구하여 도움을 드릴 수 있습니다. 이 경우 서버 관리자에게 문의하세요.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "인증기 코드",
       "dontHaveAuthenticatorText": "인증기 기기를 사용할 수 없으신가요?",
-      "loginErrorMessage": "로그인 요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.",
       "loginRequestErrorMessage": "로그인 요청을 처리하는 중 오류가 발생했습니다.",
       "loginWithAuthenticatorLink": "대신 인증기 코드로 로그인",
       "loginWithRecoveryCodeLink": "대신 복구 코드로 로그인",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "이 항목을 정말 삭제하시겠습니까?",
     "disabled": "비활성화됨",
     "dismiss": "닫기",
+    "download": "다운로드",
     "duplicate": "복제",
     "duplicateErrorMessage": "항목을 복제하지 못했습니다.",
     "duplicateSuccessMessage": "항목을 복제했습니다.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "모바일 로그인 요청 시간이 초과되었습니다. 페이지를 새로고침하고 다시 시도하세요.",
       "passwordChanged": "마지막 로그인 이후 비밀번호가 변경되었습니다. 보안을 위해 다시 로그인해 주세요.",
-      "serverError": "AliasVault 서버에 연결할 수 없습니다. 잠시 후 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
       "serverNotAvailable": "AliasVault 서버를 사용할 수 없습니다. 나중에 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "생성",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "숨기기",
     "hideDetails": "세부 정보 숨기기",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "AliasVault 백업에서 가져오기",
       "aliasVaultInstructionsPart1": "이전에 생성한 AliasVault 백업을 가져옵니다.",
       "bitwardenDescription": "Bitwarden 보관함에서 비밀번호 가져오기",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Microsoft Edge 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. 메뉴 > 설정 > 비밀번호 및 자동 완성 > Microsoft 비밀번호 관리자 > ... > 비밀번호 내보내기로 이동하면 됩니다.",
       "enpassDescription": "Enpass에서 비밀번호 가져오기",
       "enpassInstructionsPart1": "Enpass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Enpass를 열고 '메뉴' > '파일' > '내보내기'로 이동하여 'CSV 파일(.csv)'을 선택하면 됩니다.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Firefox 비밀번호 관리자에서 비밀번호 가져오기",
       "firefoxInstructionsPart1": "Firefox 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Firefox 브라우저를 열고 메뉴 > '비밀번호'로 이동한 다음, 오른쪽 상단의 메뉴 아이콘을 클릭하고 '비밀번호 내보내기'를 선택하면 됩니다.",
       "genericCsvDescription": "템플릿 CSV 형식을 사용하여 로그인 정보 가져오기",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "NordPass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. NordPass 앱 또는 웹 보관함을 열고 '설정' > '항목 내보내기'로 이동하여 CSV 형식을 선택하면 됩니다.",
       "onePasswordDescription": "1Password 보관함에서 비밀번호 가져오기",
       "onePasswordInstructionsPart1": "1Password 보관함을 가져오려면 먼저 내보내야 합니다. 1Password 8 데스크톱 앱(Windows / MacOS / Linux)에서 1Password 계정에 로그인한 후 '파일' 메뉴로 이동하여 '내보내기'를 선택하면 됩니다.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Proton Pass에서 비밀번호 가져오기",
       "protonPassInstructionsPart1": "Proton Pass 보관함을 가져오려면 먼저 내보내야 합니다. Proton Pass 브라우저 확장 프로그램에서 '설정' > '내보내기'로 이동하여 내보낼 수 있습니다.",
       "roboformDescription": "RoboForm에서 비밀번호 가져오기",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Strongbox에서 비밀번호 가져오기",
       "strongboxInstructionsPart1": "Strongbox 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '파일' 메뉴로 이동하여 '데이터베이스 내보내기'(CSV로)를 선택하면 됩니다.",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "파일을 내보낸 후 아래에 업로드할 수 있습니다."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "패스키가 삭제 대상으로 지정됨",
     "passkeyWillBeDeleted": "이 로그인 정보를 저장하면 이 패스키가 삭제됩니다.",
     "settings": {
-      "passkeyProvider": "패스키 공급자",
-      "passkeyProviderOn": "패스키 공급자:"
+      "passkeyProvider": "패스키 공급자"
     },
     "site": "사이트",
     "useBrowserPasskey": "브라우저 패스키 사용"
@@ -1177,7 +1178,6 @@
       "website": "웹사이트"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "모든 사이트에서 활성 (아래에서 비활성화된 경우 제외)",
     "advancedOptions": "고급 옵션",
     "androidAutofillSettings": {
       "buttonTip": "위 버튼이 작동하지 않으면 보안 설정으로 인해 차단된 것일 수 있습니다. Android 설정 → 일반 → 비밀번호 및 자동 완성으로 직접 이동할 수 있습니다.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "일정 시간 동안 활동이 없으면 자동으로 보관함을 잠급니다",
     "autoLockTimeoutHelp": "지정된 비활동 시간(자동 완성 미사용 및 확장 프로그램 팝업 미열림)이 지나야 보관함이 잠깁니다. 이 설정과 관계없이 브라우저를 닫으면 보관함은 항상 잠깁니다.",
     "autofill": "자동 완성 및 패스키",
-    "autofillDisabledDescription": "자동 완성 추천이 전체적으로 비활성화되었습니다",
-    "autofillEnabled": "자동 완성 활성화",
-    "autofillEnabledDescription": "로그인 양식에 자동 완성 추천이 표시됩니다",
     "autofillMatching": "자동 완성 일치 기준",
     "autofillMatchingDefault": "URL + 서브도메인 + 이름 와일드카드",
     "autofillMatchingMode": "자동 완성 일치 모드",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "정확한 URL 도메인만",
     "autofillMatchingUrlSubdomain": "URL + 서브도메인",
     "autofillSettings": "자동 완성 설정",
-    "autofillSettingsDescription": "웹 페이지에서 자동 완성 팝업 활성화 또는 비활성화",
     "autofillSetup": {
       "alreadyConfigured": "이미 설정했습니다",
       "howToEnable": "자동 완성 및 패스키 활성화 방법:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "비활성화된 사이트 모두 지우기",
-    "clientUrlHint": "자체 호스팅 인스턴스의 웹 인터페이스 URL",
     "clipboardClear": "클립보드 지우기",
     "clipboardClear10Seconds": "10초 후 지우기",
     "clipboardClear15Seconds": "15초 후 지우기",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "2단계 인증이 설정된 로그인 정보를 자동 완성할 때, 다음 필드에 바로 붙여넣을 수 있도록 TOTP 코드를 클립보드에 자동으로 복사합니다.",
     "credentialAutofill": "로그인 정보 자동 완성",
     "credentialAutofillDescription": "사용자 이름/비밀번호 필드가 감지되면 자동 완성 팝업을 표시합니다",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
-    "customClientUrl": "클라이언트 URL",
     "dark": "다크",
     "disableBatteryOptimization": "배터리 최적화 해제",
-    "disabledForThisSite": "이 사이트에서 비활성화됨",
-    "disabledOnAllSites": "모든 사이트에서 비활성화됨",
     "disabledSites": "비활성화된 사이트",
     "disabledSitesDescription": "자동 완성 팝업이 표시되지 않는 사이트입니다.",
-    "enabledForThisSite": "이 사이트에서 활성화됨",
     "exportConfirmTitle": "보관함 내보내기",
     "exportSectionTitle": "내보내기",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "경고: 보관함을 암호화되지 않은 파일로 내보내면 모든 비밀번호와 민감한 정보가 일반 텍스트로 노출됩니다. 신뢰할 수 있는 기기에서만 진행하고, 다음 사항을 반드시 지켜주세요:\n\n• 내보낸 파일을 안전한 위치에 보관하기\n• 더 이상 필요하지 않은 파일은 삭제하기\n• 내보낸 파일을 다른 사람과 절대 공유하지 않기\n\n내보내기를 계속 진행하시겠습니까?",
     "general": {
       "aliasGenerationAgeRangeDescription": "새 신원 정보를 생성할 때 기본 연령대를 설정합니다. 생성된 신원 정보에 할당되는 생년월일에 영향을 줍니다.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "새로운 신원 정보를 생성할 때 사용할 언어를 설정합니다."
     },
     "importExport": "가져오기 / 내보내기",
-    "importSectionDescription": "다른 비밀번호 관리자나 이전 AliasVault 내보내기 파일에서 비밀번호를 가져옵니다.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "가져오기",
-    "importWebNote": "기존 비밀번호 관리자에서 로그인 정보를 가져오려면 웹 앱에 로그인하세요. 가져오기 기능은 현재 웹 버전에서만 제공됩니다.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "AliasVault를 설정하여 iOS에서 네이티브 비밀번호 및 패스키 자동 완성 기능을 사용할 수 있습니다. 아래 설명에 따라 활성화하세요.",
       "openIosSettings": "iOS 설정 열기",
@@ -1352,7 +1352,6 @@
     "openSettings": "설정 열기",
     "openWebApp": "웹 앱 열기",
     "passkeySettings": "패스키 설정",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "보안을 위해 이 내보내기를 확인하려면 마스터 비밀번호를 입력하세요."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "언어 선택",
     "serverConfiguration": "서버 구성",
-    "serverConfigurationDescription": "자체 호스팅 인스턴스를 위한 AliasVault 서버 URL을 구성합니다",
     "serverUrl": "서버 URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "서버 버전",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "기본값 사용",
     "validation": {
       "apiUrlInvalid": "올바른 API URL을 입력하세요",
-      "apiUrlRequired": "API URL을 입력해야 합니다",
-      "clientUrlInvalid": "올바른 클라이언트 URL을 입력하세요",
-      "clientUrlRequired": "클라이언트 URL을 입력해야 합니다"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "보관함 잠금 해제 방법",
     "vaultUnlockSettings": {

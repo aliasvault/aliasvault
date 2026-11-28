@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Socruithe ardleibhéil",
-      "customApiUrl": "URL API Saincheaptha",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Ceanntásca seachfhreastalaí saincheaptha",
       "customProxyHeadersDescription": "Cuir ceanntásca HTTP leis a sheolfar le gach iarratas chuig do fhreastalaí AliasVault. Is féidir iad a úsáid le haghaidh socruithe féinóstáilte taobh thiar de sheachfhreastalaí droim ar ais a sheiceálann ceanntásca saincheaptha (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Ainm an cheanntásca",
       "headerNamePlaceholder": "Ceanntásc-Saincheaptha-X",
+      "headerNameInvalid": "Ní hainm bailí é d’cheanntásc HTTP.",
+      "headerNameReserved": "Seolann AliasVault an ceanntásc HTTP seo cheana féin.",
       "headerValue": "Luach ceanntásca",
       "selfHosted": "Féinóstáilte",
-      "title": "Ceangal API",
       "version": "Leagan: {{version}}"
-    },
-    "navigation": {
-      "login": "Logáil Isteach",
-      "loginSettings": "Socruithe Logála Isteach"
     },
     "notFound": {
       "goHome": "Téigh ar ais go dtí an tús",
@@ -96,8 +91,8 @@
       "enterPassword": "Cuir isteach do phasfhocal le do thoil",
       "httpError": "Earráid HTTP: {{status}}",
       "networkError": "Theip ar an iarratas líonra. Seiceáil do nasc idirlín agus déan iarracht eile.",
-      "networkErrorSelfHosted": "Theip ar an iarratas líonra. Seiceáil do nasc líonra agus infhaighteacht do fhreastalaí. I gcás cásanna féinóstáilte, cinntigh go bhfuil teastas SSL bailí suiteáilte agat. Ní thacaítear le teastais féinshínithe ar ghléasanna soghluaiste ar chúiseanna slándála.",
-      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air."
+      "selfHostedServerUnreachable": "Níorbh fhéidir teagmháil a dhéanamh le do fhreastalaí AliasVault ag {{apiUrl}}. Deimhnigh, le do thoil, go bhfuil URL an fhreastalaí ceart, go bhfuil an freastalaí inrochtana, agus go bhfuil a theastas SSL bailí.",
+      "serverCertificateNotTrusted": "Níorbh fhéidir nasc slán a bhunú le freastalaí AliasVault: tá a dheimhniú SSL neamhbhailí nó níl muinín ag an ngléas seo as. Má úsáideann do fhreastalaí deimhniú atá sínithe ag an bhfreastalaí féin, suiteáil an deimhniú sin ar an ngléas seo ar dtús agus tabhair muinín dó."
     },
     "forgotPassword": {
       "contactAdministrator": "Má d’athraigh tú do phasfhocal le déanaí agus má tá deacrachtaí agat síniú isteach le do phasfhocal nua, tabhair faoi deara go mb’fhéidir go mbeidh riarthóir an fhreastalaí in ann cúltaca níos luaithe de do chruinneachán a aisghabháil chun cabhrú leat. Más amhlaidh atá, déan teagmháil le riarthóir an fhreastalaí.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Cód fíordheimhnitheora",
       "dontHaveAuthenticatorText": "Nach bhfuil rochtain agat ar do ghléas fíordheimhnitheora?",
-      "loginErrorMessage": "Tharla earráid agus an t-iarratas logála isteach á phróiseáil. Déan iarracht eile (níos déanaí).",
       "loginRequestErrorMessage": "Tharla earráid agus an t-iarratas logála isteach á phróiseáil.",
       "loginWithAuthenticatorLink": "Logáil isteach le cód fíordheimhnitheora ina ionad.",
       "loginWithRecoveryCodeLink": "Logáil isteach le cód aisghabhála ina ionad.",
@@ -213,7 +207,7 @@
   },
   "common": {
     "add": "Cuir leis",
-    "added": "Added",
+    "added": "Curtha leis",
     "alias": "Alias",
     "attachmentDownloadFailed": "Theip ar an gceangaltán a íoslódáil",
     "attachments": "Ceangaltáin",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh?",
     "disabled": "Díchumasaithe",
     "dismiss": "Díbhe",
+    "download": "Íoslódáil",
     "duplicate": "Dúblach",
     "duplicateErrorMessage": "Theip ar an mír a dhúbailt.",
     "duplicateSuccessMessage": "Mír dúblaithe go rathúil.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "Diúltaíodh don iarratas logála isteach ar do ghléas soghluaiste.",
       "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís.",
       "passwordChanged": "Tá do phasfhocal athraithe ó logáil tú isteach an uair dheireanach. Logáil isteach arís ar chúiseanna slándála.",
-      "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
       "serverOutdated": "Caithfear freastalaí AliasVault a nuashonrú chun oibriú leis an leagan seo de AliasVault. Déan iarracht arís níos déanaí, le do thoil. Má úsáideann tú freastalaí féin-óstáilte, déan teagmháil le riarthóir do fhreastalaí, le do thoil.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
@@ -283,6 +277,7 @@
     },
     "expand": "Leathnaigh",
     "generate": "Gin",
+    "goToVault": "Téigh chuig an gciste",
     "help": "Cabhair",
     "hide": "Folaigh",
     "hideDetails": "Folaigh sonraí",
@@ -510,7 +505,7 @@
     "recommendedLabel": "Molta",
     "serviceCard": {
       "attachmentsDetected": "{{count}} ceangaltán(í), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "An bhfuil tú cinnte gur mian leat leanúint ar aghaidh? Nóta: d’fhéadfadh tamall beag a bheith i gceist leis an bpróiseas allmhairithe.",
       "decryptAndContinueButton": "Díchriptigh agus Lean ar aghaidh",
       "decryptingFile": "Ag díchriptiú comhaid...",
       "decryptionErrorGeneric": "Theip ar an gcomhad a dhíchriptiú. Seiceáil le do thoil nach bhfuil an comhad truaillithe agus déan iarracht arís.",
@@ -518,7 +513,7 @@
       "decryptionPasswordLabel": "Pasfhocal Díchriptithe",
       "duplicateCredentialsWarning": "Fuarthas {{count}} dintiúir(í) dhúblacha agus ní dhéanfar iad a allmhairiú.",
       "encryptedFilePasswordPrompt": "Tá an comhad seo criptithe. Cuir isteach an focal faire a d'úsáid tú agus an t-easpórtáil á cruthú agat.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "Déanfar {{count}} mír atá ann cheana a nuashonrú le sonraí nua.",
       "extractFaviconsLabel": "Bain deilbhíní favic do sheirbhísí le URLanna",
       "extractingFavicons": "Ag baint deilbhíní favicon... {{current}} / {{total}}",
       "faviconExtractionNote": "Nóta: Tá eastóscadh Favicon cumasaithe. Féadfaidh an próiseas seo roinnt nóiméad a thógáil ag brath ar líon na ndintiúir le URLanna. Coinnigh an leathanach ar oscailt le do thoil.",
@@ -536,7 +531,7 @@
       "importPartialFailureWarning": "Níorbh fhéidir {{count}} mír(eanna) a pharsáil agus scipeálfar iad.",
       "importSuccessMessage": "Dintiúir {{count}} allmhairithe go rathúil.",
       "moreCredentials": "... agus {{count}} dintiúir eile",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "Iompórtálfar {{count}} mír nua.",
       "noLogoText": "Gan lógó",
       "noNewCredentials": "Ní bhfuarthas aon dintiúir nua le hallmhairiú.",
       "previewInstructions": "Seiceáil an bhfuil cuma cheart ar na dintiúir braite seo a leanas sula leanann tú ar aghaidh:",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Uaslódáil do chomhad easpórtála {{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "Chun do chódanna Aegis a allmhairiú, ní mór duit iad a onnmhairiú mar chomhad JSON gan chriptiú. Is féidir leat é seo a dhéanamh in Aegis trí dhul chuig 'Socruithe' > 'Allmhairiú & Onnmhairiú' > 'Onnmhairiú', 'Aegis (.JSON)' a roghnú, agus an criptiú a mhúchadh.",
       "aliasVaultDescription": "Iompórtáil ó chúltaca AliasVault",
       "aliasVaultInstructionsPart1": "Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.",
       "bitwardenDescription": "Iompórtáil pasfhocail ó do chruinneachán Bitwarden",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Chun do phasfhocail Microsoft Edge a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go Roghchlár > Socruithe > Pasfhocal agus uathlíonadh > Bainisteoir Pasfhocal Microsoft > ... > Pasfhocail a easpórtáil.",
       "enpassDescription": "Pasfhocail a allmhairiú ó Enpass",
       "enpassInstructionsPart1": "Chun do phasfhocail Enpass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Enpass a oscailt, dul go 'Roghchlár' > 'Comhad' > 'Easpórtáil' agus 'Comhad CSV (.csv)' a roghnú.",
+      "enteAuthInstructionsPart1": "Chun do chódanna Ente Auth a allmhairiú, ní mór duit iad a onnmhairiú mar ghnáth-théacs. Is féidir leat é seo a dhéanamh in Ente Auth trí dhul chuig 'Socruithe' > 'Sonraí' > 'Onnmhairigh códanna' agus 'Gnáth-théacs' a roghnú.",
       "firefoxDescription": "Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Firefox",
       "firefoxInstructionsPart1": "Chun do phasfhocail Firefox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí do bhrabhsálaí Firefox a oscailt, dul go dtí an roghchlár > 'Pasfhocail'. Ansin cliceáil ar dheilbhín an roghchláir sa chúinne uachtarach ar dheis agus roghnaigh 'Pasfhocail a easpórtáil'.",
       "genericCsvDescription": "Dintiúir a allmhairiú ag baint úsáide as formáid teimpléid CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Chun do phasfhocail NordPass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh tríd an aip NordPass nó an cruinneachán gréasáin a oscailt, dul go 'Socruithe' > 'Easpórtáil Míreanna', agus an fhormáid CSV a roghnú.",
       "onePasswordDescription": "Iompórtáil pasfhocail ó do chruinneachán 1Password",
       "onePasswordInstructionsPart1": "Chun do stóras 1Password a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas 1Password san aip deisce 1Password 8 (Windows / MacOS / Linux), dul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' a roghnú.",
+      "otpAuthListDescription": "Iompórtáil cóid 2FA ó liosta de URLanna otpauth://",
+      "otpAuthListInstructionsPart1": "Uaslódáil comhad téacs (.txt) ina bhfuil URL amháin de chineál otpauth:// ar gach líne. Is féidir le go leor aipeanna fíordheimhnithe a gcuid cód a easpórtáil sa bhformáid seo.",
       "protonPassDescription": "Iompórtáil pasfhocail ó Proton Pass",
       "protonPassInstructionsPart1": "Chun do stór Proton Pass a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh i síneadh brabhsálaí Proton Pass trí dhul go 'Socruithe' > 'Easpórtáil'.",
       "roboformDescription": "Iompórtáil pasfhocail ó RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Pasfhocail a allmhairiú ó Strongbox",
       "strongboxInstructionsPart1": "Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.",
       "template": "teimpléad",
+      "twoFactorAppDescription": "Iompórtáil cóid 2FA ó {{service}}",
+      "twoFactorMergeHint": "Déantar gach cód a allmhairiú mar mhír ar leith. Chun cód a chur le sonraí logála atá ann cheana, cliceáil ar dheis air agus roghnaigh 'Cumaisc'.",
+      "twoFasInstructionsPart1": "Chun do chódanna 2FAS a iompórtáil, ní mór duit iad a easpórtáil mar chomhad cúltaca gan pasfhocal. Is féidir leat é seo a dhéanamh in 2FAS trí dhul chuig 'Socruithe' > 'Cúltaca 2FAS' > 'Easpórtáil go comhad'.",
       "uploadInstructions": "Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Eochair phas marcáilte le scriosadh",
     "passkeyWillBeDeleted": "Scriosfar an eochair pas seo nuair a shábhálfaidh tú an scríbhinn seo.",
     "settings": {
-      "passkeyProvider": "Soláthraí Eochrach Pas",
-      "passkeyProviderOn": "Soláthraí Eochrach Pas ar siúl "
+      "passkeyProvider": "Soláthraí Eochrach Pas"
     },
     "site": "Suíomh",
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
@@ -1177,7 +1178,6 @@
       "website": "Suíomh Gréasáin"
     },
     "accountSecurity": "Slándáil Cuntais",
-    "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
     "androidAutofillSettings": {
       "buttonTip": "Mura n-oibríonn an cnaipe thuas, b'fhéidir go bhfuil sé blocáilte mar gheall ar shocruithe slándála. Is féidir leat dul de láimh chuig Socruithe Android → Bainistíocht Ghinearálta → Pasfhocail agus uathlíonadh.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Glasáil an cruinneachán go huathoibríoch tar éis tréimhse neamhghníomhaíochta",
     "autoLockTimeoutHelp": "Ní ghlasálfar an cruinneachán ach amháin tar éis na tréimhse neamhghníomhaíochta sonraithe (gan úsáid uathlíonta ná fuinneog aníos síneadh oscailte). Glasálfar an cruinneachán i gcónaí nuair a dhúnfar an brabhsálaí, beag beann ar an socrú seo.",
     "autofill": "Líonadh Uathoibríoch & Eochracha Pas",
-    "autofillDisabledDescription": "Díchumasaítear moltaí um líonadh uathoibríoch ar fud an domhain",
-    "autofillEnabled": "Cumasaigh Líonadh Uathoibríoch",
-    "autofillEnabledDescription": "Beidh moltaí uathlíonta le feiceáil ar fhoirmeacha logáil isteach",
     "autofillMatching": "Meaitseáil Uathlíonta",
     "autofillMatchingDefault": "URL + fo-fhearann ​​+ ainm cartán fiáin",
     "autofillMatchingMode": "Mód meaitseála uathlíonta",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Fearann ​​URL cruinn amháin",
     "autofillMatchingUrlSubdomain": "URL + fo-fhearann",
     "autofillSettings": "Socruithe Autofill",
-    "autofillSettingsDescription": "Cumasaigh nó díchumasaigh an phreabfhuinneog uathlíonta ar leathanaigh ghréasáin",
     "autofillSetup": {
       "alreadyConfigured": "Tá sé cumraithe agam cheana féin",
       "howToEnable": "Conas Líonadh Uathoibríoch & Eochracha Pas a chumasú:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Blocáil Seat Scáileáin",
     "blockScreenshotsDescription": "Blocann sé seat scáileáin agus taifeadtaí scáileáin den aip.",
     "clearAllDisabledSites": "Glan gach suíomh díchumasaithe",
-    "clientUrlHint": "URL an chomhéadain gréasáin de do shampla féin-óstáilte",
     "clipboardClear": "Glan an Ghearrthaisce",
     "clipboardClear10Seconds": "Glan tar éis 10 soicind",
     "clipboardClear15Seconds": "Glan tar éis 15 soicind",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Nuair a líonann tú dintiúir go huathoibríoch le 2FA, cóipeáiltear a chód TOTP go huathoibríoch chuig an ghearrthaisce ionas gur féidir leat é a ghreamú sa chéad réimse eile.",
     "credentialAutofill": "Uathlíonadh creidiúnaithe",
     "credentialAutofillDescription": "Taispeáin aníos aníos uathoibríoch nuair a aimsítear réimsí ainm úsáideora/focal faire",
+    "credentialExchange": {
+      "description": "Aistrigh do phasfhocail, eochracha pas agus cóid 2FA go díreach ó AliasVault chuig bainisteoir pasfhocal eile ar an ngléas seo.",
+      "exportTitle": "Easpórtáil chuig aip eile",
+      "importInstructionsIos": "Oscail an aip ar mhaith leat a allmhairiú uaidh, mar shampla Pasfhocail iOS, ansin roghnaigh \"Easpórtáil Sonraí chuig Aip Eile\" agus roghnaigh AliasVault. Osclófar AliasVault ansin, ionas gur féidir leat na míreanna a athbhreithniú sula sábhálfar iad.",
+      "importTitle": "Iompórtáil ó aip eile",
+      "summaryCustomFields": "Sábháladh {{count}} mír de chineál nach bhfuil ag AliasVault mar réimsí saincheaptha.",
+      "summaryUnsupported": "Rinneadh neamhaird de {{count}} dintiúr nach féidir a stóráil in AliasVault."
+    },
     "customApiUrl": "URL API",
-    "customClientUrl": "URL an chliaint",
     "dark": "Dorcha",
     "disableBatteryOptimization": "Díchumasaigh uasmhéadú ceallraí",
-    "disabledForThisSite": "Díchumasaithe don suíomh seo",
-    "disabledOnAllSites": "Díchumasaithe ar gach suíomh",
     "disabledSites": "Suíomhanna díchumasaithe",
     "disabledSitesDescription": "Suíomhanna nach mbeidh an preabfhuinneog uathlíonta le feiceáil iontu.",
-    "enabledForThisSite": "Cumasaithe don suíomh seo",
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
     "exportSectionTitle": "Easpórtáil",
+    "exportToFileTitle": "Easpórtáil go comhad",
     "exportWarning": "Rabhadh: Má easpórtálann tú do chruinneachán chuig comhad neamhchriptithe, nochtfar do phasfhocail agus d’fhaisnéis íogair go léir i ngnáththéacs. Ná déan é seo ach ar ghléasanna iontaofa agus cinntigh:\n\n• Stóráil an comhad easpórtáilte in áit shábháilte\n• Scrios an comhad nuair nach bhfuil sé de dhíth ort a thuilleadh\n• Ná roinn an comhad easpórtáilte le daoine eile choíche\n\nAn bhfuil tú cinnte gur mian leat leanúint ar aghaidh leis an easpórtáil?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Socraigh an teanga a úsáidfear agus céannachtaí nua á nginiúint."
     },
     "importExport": "Iompórtáil / Easpórtáil",
-    "importSectionDescription": "Iompórtáil do phasfhocail ó bhainisteoirí pasfhocal eile nó ó easpórtáil AliasVault roimhe seo.",
+    "importFromFileTitle": "Iompórtáil ó chomhad",
     "importSectionTitle": "Iompórtáil",
-    "importWebNote": "Chun dintiúir a allmhairiú ó bhainisteoirí pasfhocal atá ann cheana féin, logáil isteach san aip ghréasáin le do thoil. Níl an ghné allmhairithe ar fáil faoi láthair ach ar an leagan gréasáin.",
+    "importWebNote": "Chun pasfhocail a iompórtáil ó chomhad, bain úsáid as an bhfeidhmchlár gréasáin AliasVault, le do thoil.",
     "iosAutofillSettings": {
       "headerText": "Is féidir leat AliasVault a chumrú chun feidhmiúlacht uathlíonta pasfhocail agus eochracha pas dúchasacha a sholáthar in iOS. Lean na treoracha thíos chun é a chumasú.",
       "openIosSettings": "Oscail Socruithe iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Oscail Socruithe",
     "openWebApp": "Oscail an aip ghréasáin",
     "passkeySettings": "Pas eochair Socruithe",
-    "passkeysEnabled": "Cumasaigh Eochracha Pas",
     "passwordConfirm": {
       "exportDescription": "Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Roghnaigh Teanga",
     "serverConfiguration": "Cumraíocht Freastalaí",
-    "serverConfigurationDescription": "Cumraigh URL an fhreastalaí AliasVault le haghaidh cásanna féin-óstáilte",
     "serverUrl": "URL an fhreastalaí",
+    "serverUrlHint": "Seoladh do shampla AliasVault atá á óstáil agat féin",
     "serverVersion": "Leagan an fhreastalaí",
     "sessionsAndLogs": "Seisiúin & Logaí",
     "sessionsAndLogsDescription": "Féach cá bhfuil tú logáilte isteach agus déan athbhreithniú ar iarrachtaí logála isteach le déanaí.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Úsáid réamhshocraithe",
     "validation": {
       "apiUrlInvalid": "Cuir isteach URL bailí API",
-      "apiUrlRequired": "Tá URL API ag teastáil",
-      "clientUrlInvalid": "Cuir isteach URL bailí cliaint",
-      "clientUrlRequired": "Tá URL an chliaint ag teastáil"
+      "serverUrlInvalid": "Cuir isteach URL freastalaí bailí, le do thoil",
+      "serverUrlRequired": "Tá URL an fhreastalaí ag teastáil"
     },
     "vaultUnlock": "Modh Díghlasála Cruinneachán",
     "vaultUnlockSettings": {

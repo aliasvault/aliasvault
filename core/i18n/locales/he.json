@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "הגדרות מתקדמות",
-      "customApiUrl": "כתובת API מותאמת",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "שם הכותרת",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "ערך הכותרת",
       "selfHosted": "אירוח עצמי",
-      "title": "חיבור API",
       "version": "גרסה: {{version}}"
-    },
-    "navigation": {
-      "login": "כניסה",
-      "loginSettings": "הגדרות כניסה"
     },
     "notFound": {
       "goHome": "חזרה להתחלה",
@@ -96,8 +91,8 @@
       "enterPassword": "נא למלא את הסיסמה שלך",
       "httpError": "שגיאת HTTP:‏ {{status}}",
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
-      "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
-      "serverErrorSelfHosted": "לא ניתן להגיע ל־API. למערכות באירוח עצמי, נא לאמת שנקודת ה־API נגישה על ידי ניווט אליה בדפדפן: היא אמורה להציג ‚OK’ (תקין)."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "אם החלפת את הסיסמה שלך לאחרונה ועולים כעת קשיים בכניסה למערכת עם הסיסמה החדשה שלך, נא לשים לב שמנהלי השרת יוכלו כפי הנראה לשחזר גיבוי מוקדם יותר של הכספת שלך כדי לעזור לך. אם זה המצב, נא ליצור קשר עם מנהלי השרת.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "קוד מאמת",
       "dontHaveAuthenticatorText": "אין לך גישה למכשיר המאמת שלך?",
-      "loginErrorMessage": "אירעה שגיאה בעיבוד בקשת הכניסה. נא לנסות שוב (מאוחר יותר).",
       "loginRequestErrorMessage": "אירעה שגיאה בעיבוד בקשת הכניסה.",
       "loginWithAuthenticatorLink": "להיכנס עם קוד מאמת (authenticator) במקום.",
       "loginWithRecoveryCodeLink": "להיכנס עם קוד שחזור במקום.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "למחוק את הפריט הזה?",
     "disabled": "כבוי",
     "dismiss": "סילוק",
+    "download": "הורדה",
     "duplicate": "שכפול",
     "duplicateErrorMessage": "שכפול הפריט נכשל.",
     "duplicateSuccessMessage": "הפריט שוכפל בהצלחה.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
-      "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverOutdated": "יש לעדכן את שרת AliasVault כדי שיעבוד עם הגרסה הזאת של AliasVault. נא לנסות שוב מאוחר יותר. אם השרת מתארח אצלך, נא ליצור קשר עם הנהלת השרת שלך.",
       "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "יצירה",
+    "goToVault": "Go to vault",
     "help": "עזרה",
     "hide": "הסתרה",
     "hideDetails": "הסתרת פרטים",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "העלאת קובץ הייצוא שלך מ־{{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Import from AliasVault backup",
       "aliasVaultInstructionsPart1": "Import your previously created AliasVault backup.",
       "bitwardenDescription": "ייבוא סיסמאות מכספת ה־Bitwarden שלך",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.",
       "enpassDescription": "Import passwords from Enpass",
       "enpassInstructionsPart1": "In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "ייבוא סיסמאות ממנהל הסיסמאות שלך ב־Firefox",
       "firefoxInstructionsPart1": "כדי לייבא את הסיסמאות שלך ב־Firefox, צריך לייצר אותן כקובץ CSV. אפשר לעשות זאת על ידי פתיחת דפדפן ה־Firefox שלך וגישה לתפריט > ‚סיסמאות’. ואז ללחוץ על סמל התפריט בפינה השמאלית העליונה ולבחור ב‚ייצוא סיסמאות’.",
       "genericCsvDescription": "אפשר לייבא פרטי גישה דרך תסדיר תבנית CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.",
       "onePasswordDescription": "ייבוא סיסמאות מכספת ה־1Password שלך",
       "onePasswordInstructionsPart1": "In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "ייבוא סיסמאות מ־Proton Pass",
       "protonPassInstructionsPart1": "In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.",
       "roboformDescription": "Import passwords from RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "ייבוא סיסמאות מ־Stronbox",
       "strongboxInstructionsPart1": "כדי לייבא את כספת ה־Strongbox שלך, יש לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי גישה לתפריט ‚קובץ’ ובחירה ב‚ייצוא מסד נתונים’ (ל־CSV).",
       "template": "תבנית",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "לאחר ייצוא הקובץ, אפשר להעלות אותו להלן."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "אתר",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1177,7 +1178,6 @@
       "website": "אתר"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "פעיל בכל האתרים (למעט אם נכבה להלן)",
     "advancedOptions": "אפשרויות מתקדמות",
     "androidAutofillSettings": {
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "לנעול את הכספת אוטומטית לאחר פרק זמן של חוסר פעילות",
     "autoLockTimeoutHelp": "הכספת תינעל רק לאחר משך זמן של חוסר פעילות (אין שימוש בהשלמה אוטומטית או פתיחת חלונית הרחבה). הכספת תמיד תינעל עם סגירת הדפדפן, ללא תלות בהגדרה הזאת.",
     "autofill": "מילוי אוטומטי ומפתחות גישה",
-    "autofillDisabledDescription": "הצעות השלמה אוטומטית כבויות באופן מקיף",
-    "autofillEnabled": "הפעלת השלמה אוטומטית",
-    "autofillEnabledDescription": "הצעות השלמה אוטומטית בטופסי כניסה למערכות",
     "autofillMatching": "התאמת השלמה אוטומטית",
     "autofillMatchingDefault": "כתובת + שם תת־תחום + תו כל על שם",
     "autofillMatchingMode": "מצב התאמת השלמה אוטומטית",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "תחום כתובת מדויקת בלבד",
     "autofillMatchingUrlSubdomain": "כתובת + שם תת־תחום",
     "autofillSettings": "הגדרות השלמה אוטומטית",
-    "autofillSettingsDescription": "הפעלת או כיבוי חלוניות השלמה אוטומטית בעמודי אתרים",
     "autofillSetup": {
       "alreadyConfigured": "כבר הגדרתי את זה",
       "howToEnable": "איך להפעיל מילוי אוטומטי ומפתחות גישה:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "איפוס כל האתרים המושבתים",
-    "clientUrlHint": "כתובת ממשק המשתמש הדפדפני של העותק באירוע העצמי שלך",
     "clipboardClear": "פינוי לוח הגזירים",
     "clipboardClear10Seconds": "לפנות אחרי 10 שניות",
     "clipboardClear15Seconds": "לפנות אחרי 15 שניות",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "מילוי פרטי גישה אוטומטי",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "כתובת API",
-    "customClientUrl": "כתובת לקוח",
     "dark": "כהה",
     "disableBatteryOptimization": "השבתת מיטוב סוללה",
-    "disabledForThisSite": "כבוי לאתר הזה",
-    "disabledOnAllSites": "כבוי בכל האתרים",
     "disabledSites": "אתרים מושבתים",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "פעיל לאתר הזה",
     "exportConfirmTitle": "ייצוא כספת",
     "exportSectionTitle": "ייצוא",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מכשירים מהימנים וגם לוודא:\n\n• שאחסנת את הקובץ המיוצר במקום בטוח\n• שמחקת את הקובץ אם אין בו צורך עוד\n • לעולם לא לשתף את הקובץ המיוצא עם אחרים\n\nלהמשיך בייצוא?",
     "general": {
       "aliasGenerationAgeRangeDescription": "הגדרת טווח הגילים כברירת המחדל ליצירת זהויות חדשות. ההגדרות הזאת משפיעה על תאריך הלידה שמוקצית לזהות שנוצרת.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות."
     },
     "importExport": "ייבוא / ייצוא",
-    "importSectionDescription": "אפשר לייבא את הסיסמאות שלך ממנהלי סיסמאות אחרים או מנתונים שיוצאו מ־AliasVault בעבר.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "ייבוא",
-    "importWebNote": "כדי לייבא פרטי גישה ממנהלי סיסמאות קיימים, נא להיכנס דרך יישום הדפדפן. יכולת הייבוא זמינה רק במהדורת הדפדפן.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "openIosSettings": "לפתוח את הגדרות iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "לפתוח את ההגדרות",
     "openWebApp": "פתיחת אתר",
     "passkeySettings": "Passkey Settings",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "בחירת שפה",
     "serverConfiguration": "הגדרות שרת",
-    "serverConfigurationDescription": "הגדרת כתובת שרת AliasVault לעותקים באירוח עצמי",
     "serverUrl": "כתובת שרת",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "גרסת שרת",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "להשתמש בברירת המחדל",
     "validation": {
       "apiUrlInvalid": "נא למלא כתובת API תקפה",
-      "apiUrlRequired": "כתובת API חובה",
-      "clientUrlInvalid": "נא למלא כתובת לקוח תקפה",
-      "clientUrlRequired": "כתובת לקוח חובה"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "שיטת שחרור נעילת כספת",
     "vaultUnlockSettings": {

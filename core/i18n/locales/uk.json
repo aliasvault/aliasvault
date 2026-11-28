@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Advanced settings",
-      "customApiUrl": "URL-адреса користувацького API",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header value",
       "selfHosted": "Розміщено на власному хостингу",
-      "title": "API з'єднання",
       "version": "Версія: {{version}}"
-    },
-    "navigation": {
-      "login": "Увійти",
-      "loginSettings": "Налаштування входу"
     },
     "notFound": {
       "goHome": "Повернутися до початку",
@@ -96,8 +91,8 @@
       "enterPassword": "Будь ласка, введіть ваш пароль",
       "httpError": "Помилка HTTP: {{status}}",
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
-      "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
-      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK»."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Код автентифікації",
       "dontHaveAuthenticatorText": "Немає доступу до свого пристрою автентифікації?",
-      "loginErrorMessage": "Під час обробки запиту на вхід сталася помилка. Спробуйте ще раз (пізніше).",
       "loginRequestErrorMessage": "Під час обробки запиту на вхід сталася помилка.",
       "loginWithAuthenticatorLink": "Увійдіть за допомогою коду автентифікації.",
       "loginWithRecoveryCodeLink": "Увійдіть за допомогою коду відновлення.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "disabled": "Вимкнено",
     "dismiss": "Dismiss",
+    "download": "Download",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
     "duplicateSuccessMessage": "Item duplicated successfully.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
-      "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "Generate",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Hide",
     "hideDetails": "Приховати подробиці",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Завантажте свій {{service}} експортний файл:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Import from AliasVault backup",
       "aliasVaultInstructionsPart1": "Import your previously created AliasVault backup.",
       "bitwardenDescription": "Імпортуйте паролі зі свого сховища Bitwarden",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.",
       "enpassDescription": "Import passwords from Enpass",
       "enpassInstructionsPart1": "In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Імпорт паролів з вашого Менеджера паролів Firefox",
       "firefoxInstructionsPart1": "Щоб імпортувати паролі Firefox, вам потрібно експортувати їх у форматі CSV. Ви можете зробити це, відкривши браузер Firefox, перейшовши до меню > «Паролі». Потім натисніть на значок меню у верхньому правому куті та виберіть «Експортувати паролі».",
       "genericCsvDescription": "Імпорт облікових даних за допомогою шаблону у форматі CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.",
       "onePasswordDescription": "Імпортуйте паролі зі свого сховища 1Password",
       "onePasswordInstructionsPart1": "In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Імпорт паролів з Proton Pass",
       "protonPassInstructionsPart1": "In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.",
       "roboformDescription": "Import passwords from RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Імпорт паролів із Strongbox",
       "strongboxInstructionsPart1": "Щоб імпортувати ваше сховище Strongbox, вам потрібно експортувати його як файл CSV. Ви можете зробити це, перейшовши до меню «Файл» і вибравши «Експорт бази даних» (у CSV).",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Після експорту файлу ви можете завантажити його нижче."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Ключ доступу позначено для видалення",
     "passkeyWillBeDeleted": "Цей ключ доступу буде видалено, коли ви збережете ці облікові дані.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "Вебсайт",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1177,7 +1178,6 @@
       "website": "Вебсайт"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Активно на всіх сайтах (якщо не вимкнено нижче)",
     "advancedOptions": "Додаткові параметри",
     "androidAutofillSettings": {
       "buttonTip": "Якщо кнопка вище не працює, можливо, вона заблокована через налаштування безпеки. Ви можете вручну перейти до Налаштувань Android → Загальне керування → Паролі та автозаповнення.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Автоматично блокувати сховище після періоду бездіяльності",
     "autoLockTimeoutHelp": "Сховище буде заблоковано лише після зазначеного періоду бездіяльності (не використовується автозаповнення або не відкривається спливне вікно розширення). Сховище завжди блокуватиметься, коли браузер закривається, незалежно від цього налаштування.",
     "autofill": "Автозаповнення та ключі доступу",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "autofillEnabled": "Увімкнути автозаповнення",
-    "autofillEnabledDescription": "",
     "autofillMatching": "Автозаповнення відповідності",
     "autofillMatchingDefault": "URL-адреса + піддомен + універсальне ім'я",
     "autofillMatchingMode": "Режим автозаповнення відповідностей",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Лише точний домен URL-адреси",
     "autofillMatchingUrlSubdomain": "URL-адреса + піддомен",
     "autofillSettings": "Налаштування автозаповнення",
-    "autofillSettingsDescription": "Увімкнення або вимкнення спливаючого вікна автозаповнення на вебсторінках",
     "autofillSetup": {
       "alreadyConfigured": "Я вже це налаштував",
       "howToEnable": "Як увімкнути автозаповнення та ключі доступу:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
-    "clientUrlHint": "URL-адреса вебінтерфейсу вашого самостійного екземпляра",
     "clipboardClear": "Очистити буфер обміну",
     "clipboardClear10Seconds": "Очистити після 10 секунд",
     "clipboardClear15Seconds": "Очистити після 15 секунд",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL-адреса API",
-    "customClientUrl": "URL-адреса клієнта",
     "dark": "Темна",
     "disableBatteryOptimization": "Вимкнути оптимізацію акумулятора",
-    "disabledForThisSite": "Вимкнено для цього сайту",
-    "disabledOnAllSites": "Вимкнено на всіх сайтах",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "Увімкнено для цього сайту",
     "exportConfirmTitle": "Експорт сховища",
     "exportSectionTitle": "Експорт",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Попередження: експортування сховища в незашифрований файл призведе до розкриття всіх ваших паролів і конфіденційної інформації у вигляді звичайного тексту. Робіть це лише на надійних пристроях і переконайтеся, що ви:\n\n• Зберігати експортований файл у безпечному місці;\n• Видаляйте файл, коли він вам більше не потрібен;\n• Ніколи не діліться експортованим файлом з іншими.\n\nВи справді бажаєте продовжити експорт?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Встановіть мову, яка використовуватиметься під час створення нових ідентифікаторів."
     },
     "importExport": "Імпорт / Експорт",
-    "importSectionDescription": "Імпортуйте свої паролі з інших менеджерів паролів або з попереднього експорту AliasVault.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Імпорт",
-    "importWebNote": "Щоб імпортувати облікові дані з наявних менеджерів паролів, увійдіть у вебпрограму. Наразі функція імпортування доступна лише у вебверсії.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Ви можете налаштувати AliasVault для надання функціональності автозаповнення власних паролів і ключів доступу в iOS. Щоб увімкнути цю функцію, виконайте наведені нижче інструкції.",
       "openIosSettings": "Відкрийте налаштування iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Відкрити Налаштування",
     "openWebApp": "Відкрити веб додаток",
     "passkeySettings": "Налаштування ключа доступу",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Виберіть мову",
     "serverConfiguration": "Конфігурація сервера",
-    "serverConfigurationDescription": "Налаштування URL-адреси сервера AliasVault для самостійно розміщених екземплярів",
     "serverUrl": "URL-адреса сервера",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Використовувати за замовчуванням",
     "validation": {
       "apiUrlInvalid": "Будь ласка, введіть дійсну URL-адресу API",
-      "apiUrlRequired": "URL-адреса API обов'язкова",
-      "clientUrlInvalid": "Будь ласка, введіть дійсну URL-адресу клієнта",
-      "clientUrlRequired": "URL-адреса клієнта обов'язкова"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Метод розблокування сховища",
     "vaultUnlockSettings": {

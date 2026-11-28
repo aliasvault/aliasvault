@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Ustawienia zaawansowane",
-      "customApiUrl": "Niestandardowy adres URL interfejsu API",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Niestandardowe nagłówki serwera proxy",
       "customProxyHeadersDescription": "Dodaj nagłówki HTTP, które będą wysyłane z każdą prośbą do serwera AliasVault. Mogą być używane do samodzielnych konfiguracji za odwróconym proxy sprawdzającym nagłówki niestandardowe (np. Pangolin, Cloudflare Access).",
       "headerName": "Nazwa nagłówka",
       "headerNamePlaceholder": "Własny Nagłówek X",
+      "headerNameInvalid": "Nieprawidłowa nazwa nagłówka HTTP.",
+      "headerNameReserved": "AliasVault już wysyła ten nagłówek HTTP.",
       "headerValue": "Wartość nagłówka",
       "selfHosted": "Własny hosting",
-      "title": "Połączenie API",
       "version": "Wersja: {{version}}"
-    },
-    "navigation": {
-      "login": "Logowanie",
-      "loginSettings": "Ustawienia logowania"
     },
     "notFound": {
       "goHome": "Wróć do początku",
@@ -96,8 +91,8 @@
       "enterPassword": "Wprowadź swoje hasło",
       "httpError": "Błąd HTTP: {{status}}",
       "networkError": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie internetowe i spróbuj ponownie.",
-      "networkErrorSelfHosted": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie sieciowe i dostępność serwera. W przypadku własnych serwerów upewnij się, że masz zainstalowany ważny certyfikat SSL. Certyfikaty z podpisem własnym nie są obsługiwane na urządzeniach mobilnych ze względów bezpieczeństwa.",
-      "serverErrorSelfHosted": "Nie można połączyć się z API. W przypadku własnych serwerów sprawdź, czy punkt końcowy API jest dostępny, przechodząc do niego w przeglądarce: powinien wyświetlić komunikat „OK”."
+      "selfHostedServerUnreachable": "Nie można połączyć się z serwerem AliasVault w {{apiUrl}}. Sprawdź, czy adres URL serwera jest prawidłowy, czy serwer jest osiągalny i czy jego certyfikat SSL jest ważny.",
+      "serverCertificateNotTrusted": "Nie udało się nawiązać bezpiecznego połączenia z serwerem AliasVault: jego certyfikat SSL jest nieprawidłowy lub niezaufany na tym urządzeniu. Jeśli serwer używa certyfikatu podpisanego, najpierw zainstaluj i dodaj ten certyfikat do zaufanych na tym urządzeniu."
     },
     "forgotPassword": {
       "contactAdministrator": "Jeśli niedawno zmieniłeś hasło i masz trudności z zalogowaniem się przy użyciu nowego hasła, pamiętaj, że administrator serwera może być w stanie odzyskać wcześniejszą kopię zapasową Twojego sejfu, aby Ci pomóc. W takim przypadku skontaktuj się z administratorem serwera.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Kod uwierzytelniający",
       "dontHaveAuthenticatorText": "Nie masz dostępu do swojego urządzenia uwierzytelniającego?",
-      "loginErrorMessage": "Wystąpił błąd podczas przetwarzania żądania logowania. Spróbuj ponownie (później).",
       "loginRequestErrorMessage": "Wystąpił błąd podczas przetwarzania żądania logowania.",
       "loginWithAuthenticatorLink": "Zaloguj się za pomocą kodu uwierzytelniającego.",
       "loginWithRecoveryCodeLink": "Zaloguj się za pomocą kodu odzyskiwania.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "disabled": "Nie aktywne",
     "dismiss": "Odrzuć",
+    "download": "Pobierz",
     "duplicate": "Duplikuj",
     "duplicateErrorMessage": "Nieudana duplikacja elementu.",
     "duplicateSuccessMessage": "Duplikacja elementu przeszła pomyślnie.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "Prośba o logowanie została odrzucona na urządzeniu mobilnym.",
       "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie.",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
-      "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "serverNotAvailable": "Serwer AliasVault jest niedostępny. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "serverOutdated": "Serwer AliasVault musi zostać zaktualizowany, aby działać z tą wersją AliasVault. Spróbuj ponownie później. Jeśli korzystasz z własnego serwera, skontaktuj się z administratorem serwera.",
       "sessionExpired": "Twoja sesja wygasła. Prosimy o zalogowanie się ponownie.",
@@ -283,6 +277,7 @@
     },
     "expand": "Rozwiń",
     "generate": "Wygeneruj",
+    "goToVault": "Przejdź do sejfu",
     "help": "Pomoc",
     "hide": "Ukryj",
     "hideDetails": "Ukryj szczegóły",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Prześlij plik sejfu {{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "Aby zaimportować swoje kody Aegis, musisz je wyeksportować jako niezaszyfrowany plik JSON. Możesz to zrobić w Aegis, przechodząc do 'Ustawienia' > 'Import i eksport' > 'Eksport', wybierając 'Aegis (.JSON)' i wyłączając szyfrowanie.",
       "aliasVaultDescription": "Importuj z kopii zapasowej AliasVault",
       "aliasVaultInstructionsPart1": "Importuj poprzednio utworzoną kopię zapasową AliasVaulta.",
       "bitwardenDescription": "Importuj hasła z sejfu Bitwarden",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Aby zaimportować swoje hasła Microsoft Edge, musisz je wyeksportować jako plik CSV. Możesz to zrobić przechodząc do Menu > Ustawienia > Hasło i autouzupełnianie > Menedżer haseł Microsoft > ... > Eksport haseł.",
       "enpassDescription": "Importuj hasła z Enpass",
       "enpassInstructionsPart1": "Aby zaimportować hasła z Enpass, należy je wyeksportować jako plik CSV. Można to zrobić otwierając Enpass, przejść do 'Menu' > 'Plik' > 'Eksport' i wybrać 'plik CSV (.csv)'.",
+      "enteAuthInstructionsPart1": "Aby zaimportować swoje kody Ente Auth, musisz je wyeksportować jako zwykły tekst. Możesz to zrobić w Ente Auth przechodząc do 'Ustawienia' > 'Dane' > 'Eksport kodów' i wybierając 'Zwykły tekst'.",
       "firefoxDescription": "Importuj hasła z menedżera haseł przeglądarki Firefox",
       "firefoxInstructionsPart1": "Aby zaimportować sejf z przeglądarki Firefox, należy je wyeksportować jako plik CSV. Otwórz przeglądarkę Firefox, przejdź do menu > „Hasła”, kliknij ikonę menu w prawym górnym rogu i wybierz opcję „Eksportuj hasła”.",
       "genericCsvDescription": "Importuj dane uwierzytelniające przy użyciu szablonu w formacie CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Aby zaimportować swoje hasła NordPass musisz je wyeksportować jako plik CSV. Otwórz aplikację NordPass lub sejf internetowy. Przejdź do 'Ustawienia' > 'Eksport elementów' i wybierz format CSV.",
       "onePasswordDescription": "Importuj hasła z sejfu 1Password",
       "onePasswordInstructionsPart1": "Aby zaimportować sejf 1Password, zaloguj się na swoje konto 1Password w aplikacji komputerowej 1Password 8 (Windows / MacOS / Linux), przejdź do menu \"Plik\" i wybierz \"Eksportuj\".",
+      "otpAuthListDescription": "Importuj kody 2FA z listy otpauth:// URL",
+      "otpAuthListInstructionsPart1": "Prześlij plik tekstowy (.txt), jeden adres otpauth:// URL na linię. Wiele aplikacji uwierzytelniających może eksportować swoje kody w tym formacie.",
       "protonPassDescription": "Importuj hasła z Proton Pass",
       "protonPassInstructionsPart1": "Aby zaimportować sejf Proton Pass, w rozszerzeniu Proton Pass przeglądarki wybierz 'Ustawienia' > 'Eksportuj'.",
       "roboformDescription": "Importuj hasła z RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importuj hasła z Strongbox",
       "strongboxInstructionsPart1": "Aby zaimportować sejf Strongbox, należy wyeksportować go jako plik CSV. Przejdź do menu „Plik” i wybierz opcję „Eksportuj bazę danych” (do pliku CSV).",
       "template": "szablon",
+      "twoFactorAppDescription": "Importuj kody 2FA z {{service}}",
+      "twoFactorMergeHint": "Każdy kod jest importowany jako oddzielny element. Aby dodać kod do istniejącego logowania, kliknij prawym przyciskiem myszy i wybierz 'Scal'.",
+      "twoFasInstructionsPart1": "Aby zaimportować kody 2FAS, musisz je wyeksportować jako plik kopii zapasowej bez hasła. Możesz to zrobić w 2FAS przechodząc do 'Ustawienia' > '2FAS Backup' > 'Eksport do pliku'.",
       "uploadInstructions": "Po wyeksportowaniu pliku możesz go przesłać poniżej."
     }
   },
@@ -814,14 +816,14 @@
       "sourceNone": "Bez ikony"
     },
     "merge": {
-      "title": "Połącz elementy",
-      "action": "Połącz",
-      "mergeWith": "Połącz z...",
+      "title": "Scal elementy",
+      "action": "Scal",
+      "mergeWith": "Scal z...",
       "searchHint": "Szukaj elementu to połączenia.",
       "keep": "Przedmiot do zachowania",
       "chooseValues": "Wartości pola do zachowania:",
       "combined": "Wszystkie pozostałe wartości pól są połączone w jeden element.",
-      "differentFolders": "Elementy mogą być połączone tylko wtedy, gdy są we własnym sejfie lub w tym samym udostępnionym folderze.",
+      "differentFolders": "Elementy mogą być scalone tylko wtedy, gdy są we własnym sejfie lub w tym samym udostępnionym folderze.",
       "differentTypes": "Tego typu elementów nie można ze sobą połączyć: {{types}}."
     },
     "noAttachments": "Brak załącznika",
@@ -937,7 +939,7 @@
       "itemCreated": "Element utworzony pomyślnie",
       "itemDeleted": "Element został pomyślnie usunięty",
       "itemUpdated": "Element zaktualizowany pomyślnie",
-      "itemsMerged": "Elementy zostały połączone",
+      "itemsMerged": "Elementy zostały scalone",
       "passwordCopied": "Hasło skopiowane do schowka",
       "totpCodeCopied": "Kod TOTP skopiowano do schowka",
       "urlCopied": "Adres URL skopiowany do schowka",
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Klucz dostępu oznaczony do usunięcia",
     "passkeyWillBeDeleted": "To hasło zostanie usunięte po zapisaniu tych danych logowania.",
     "settings": {
-      "passkeyProvider": "Dostawca klucza dostępu",
-      "passkeyProviderOn": "Dostawca klucza dostępu włączony "
+      "passkeyProvider": "Dostawca klucza dostępu"
     },
     "site": "Witryna",
     "useBrowserPasskey": "Użyj klucza dostępu przeglądarki"
@@ -1177,7 +1178,6 @@
       "website": "Strona www"
     },
     "accountSecurity": "Zabezpieczenia konta",
-    "activeOnAllSites": "Aktywne we wszystkich witrynach (chyba że jest wyłączone)",
     "advancedOptions": "Opcje zaawansowane",
     "androidAutofillSettings": {
       "buttonTip": "Jeśli powyższy przycisk nie działa, może to oznaczać, że został zablokowany w ustawieniach bezpieczeństwa. Możesz ręcznie przejść do Ustawień Androida → Zarządzanie ogólne → Hasła i autouzupełnianie.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Automatycznie zablokuj sejf po okresie bezczynności",
     "autoLockTimeoutHelp": "Sejf zostanie zablokowany dopiero po określonym okresie nieaktywności (żadne użycie autouzupełniania lub okienko rozszerzenia nie zostało otwarte). Sejf zostanie zablokowany, gdy przeglądarka zostanie zamknięta, niezależnie od tego ustawienia.",
     "autofill": "Autouzupełnianie i klucze dostępu",
-    "autofillDisabledDescription": "Podpowiedzi wyłączone we wszystkich polach",
-    "autofillEnabled": "Włącz autouzupełnianie",
-    "autofillEnabledDescription": "Sugestie autouzupełniania pojawią się na formularzach logowania",
     "autofillMatching": "Dopasowanie autouzupełniania",
     "autofillMatchingDefault": "Adres URL + subdomena + nazwa wieloznaczna",
     "autofillMatchingMode": "Tryb dopasowania autouzupełniania",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Dokładna domena adresu URL",
     "autofillMatchingUrlSubdomain": "Adres URL + subdomena",
     "autofillSettings": "Ustawienia autouzupełniania",
-    "autofillSettingsDescription": "Włącz lub wyłącz okno autouzupełniania na stronach internetowych",
     "autofillSetup": {
       "alreadyConfigured": "Już to skonfigurowałem",
       "howToEnable": "Jak włączyć autouzupełnianie i klucze dostępu:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Blokuj wykonywanie zrzutów ekranu",
     "blockScreenshotsDescription": "Blokuje zrzuty ekranu i nagrywania ekranu aplikacji.",
     "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
-    "clientUrlHint": "Adres URL interfejsu sieci web dla twojej samodzielnej instancji",
     "clipboardClear": "Wyczyść schowek",
     "clipboardClear10Seconds": "Wyczyść po 10 sekundach",
     "clipboardClear15Seconds": "Wyczyść po 15 sekundach",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Gdy autouzupełniasz dane logowania za pomocą 2FA, automatycznie kopiuj swój kod TOTP do schowka, aby można było wkleić go do następnego pola.",
     "credentialAutofill": "Autouzupełnianie",
     "credentialAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania, gdy zostaną wykryte pola nazwy użytkownika/hasła",
+    "credentialExchange": {
+      "description": "Przenieś swoje hasła, hasła i kody 2FA bezpośrednio z AliasVault do innego menedżera haseł na tym urządzeniu.",
+      "exportTitle": "Eksportuj do innej aplikacji",
+      "importInstructionsIos": "Otwórz aplikację, z której chcesz importować hasła, na przykład iOS Passwords, a następnie wybierz \"Eksportuj dane do innej aplikacji\" i wybierz AliasVault. AliasVault następnie otwiera się, abyś mógł przejrzeć elementy zanim zostaną zapisane.",
+      "importTitle": "Importuj z innej aplikacji",
+      "summaryCustomFields": "{{count}} element(ów) typu AliasVault nie zostały zapisane jako pola niestandardowe.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "Adres URL interfejsu API",
-    "customClientUrl": "Adresy URL klienta",
     "dark": "Ciemny",
     "disableBatteryOptimization": "Wyłącz optymalizację baterii",
-    "disabledForThisSite": "Wyłączone dla tej witryny",
-    "disabledOnAllSites": "Wyłączone na wszystkich witrynach",
     "disabledSites": "Wyłączone witryny",
     "disabledSitesDescription": "Witryny, w których okienko autouzupełniania nie będzie wyświetlane.",
-    "enabledForThisSite": "Włączone dla tej witryny",
     "exportConfirmTitle": "Eksportuj sejf",
     "exportSectionTitle": "Eksportowanie",
+    "exportToFileTitle": "Eksportuj do pliku",
     "exportWarning": "Uwaga: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje zapisanie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Ustaw domyślny zakres wieku dla generowania nowych tożsamości. Ma to wpływ na datę urodzenia przypisaną do wygenerowanej tożsamości.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Ustaw język, który będzie używany podczas generowania nowych tożsamości."
     },
     "importExport": "Import / Eksport",
-    "importSectionDescription": "Zaimportuj swoje hasła z innych menedżerów haseł lub z poprzedniego eksportu AliasVault.",
+    "importFromFileTitle": "Importuj z pliku",
     "importSectionTitle": "Import",
-    "importWebNote": "Aby zaimportować dane logowania z istniejących menedżerów haseł, zaloguj się do aplikacji internetowej. Funkcja importowania jest obecnie dostępna tylko w wersji internetowej.",
+    "importWebNote": "Aby zaimportować hasła z pliku, użyj aplikacji internetowej AliasVault.",
     "iosAutofillSettings": {
       "headerText": "Możesz skonfigurować AliasVault, aby zapewnić natywną funkcję automatycznego wypełniania haseł i kluczy dostępu w systemie iOS. Aby ją włączyć, postępuj zgodnie z poniższymi instrukcjami.",
       "openIosSettings": "Otwórz ustawienia systemu iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Otwórz ustawienia",
     "openWebApp": "Otwórz aplikację internetową",
     "passkeySettings": "Ustawienia kluczy dostępu",
-    "passkeysEnabled": "Włącz klucze dostępu",
     "passwordConfirm": {
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Wybierz język",
     "serverConfiguration": "Konfiguracja serwera",
-    "serverConfigurationDescription": "Skonfiguruj adres URL serwera sejfu AliasVault",
     "serverUrl": "Adres URL serwera",
+    "serverUrlHint": "Adres Twojej instancji AliasVault uruchomionej na własnym serwerze",
     "serverVersion": "Wersja serwera",
     "sessionsAndLogs": "Sesje i dzienniki",
     "sessionsAndLogsDescription": "Zobacz, gdzie jesteś zalogowany i przejrzyj ostatnie próby logowania.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Użyj domyślnego",
     "validation": {
       "apiUrlInvalid": "Wprowadź poprawny adres URL API",
-      "apiUrlRequired": "API URL jest wymagane",
-      "clientUrlInvalid": "Wprowadź prawidłowy adres URL klienta",
-      "clientUrlRequired": "Adres URL klienta jest wymagany"
+      "serverUrlInvalid": "Wprowadź prawidłowy adres URL serwera",
+      "serverUrlRequired": "Adres URL serwera jest wymagany"
     },
     "vaultUnlock": "Blokada sejfu",
     "vaultUnlockSettings": {

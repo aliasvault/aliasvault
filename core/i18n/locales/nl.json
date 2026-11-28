@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Geavanceerde instellingen",
-      "customApiUrl": "Aangepaste API-URL",
-      "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",
       "customProxyHeaders": "Aangepaste proxy headers",
       "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar je AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
       "headerName": "Header-naam",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Geen geldige HTTP-headernaam.",
+      "headerNameReserved": "AliasVault verstuurt deze HTTP-header al.",
       "headerValue": "Header-waarde",
       "selfHosted": "Self-hosted",
-      "title": "API-verbinding",
       "version": "Versie: {{version}}"
-    },
-    "navigation": {
-      "login": "Login",
-      "loginSettings": "Login instellingen"
     },
     "notFound": {
       "goHome": "Ga terug naar het begin",
@@ -96,8 +91,8 @@
       "enterPassword": "Voer je wachtwoord in",
       "httpError": "HTTP fout: {{status}}",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
-      "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven."
+      "selfHostedServerUnreachable": "Kan de AliasVault server niet bereiken op {{apiUrl}}. Controleer of de server-URL juist is, dat de server bereikbaar is en dat het SSL-certificaat geldig is.",
+      "serverCertificateNotTrusted": "Kan geen beveiligde verbinding maken met de AliasVault-server: het SSL-certificaat is ongeldig of niet vertrouwd door dit apparaat. Als de server een zelfondertekend certificaat gebruikt, installeer en vertrouw dan eerst het certificaat op dit apparaat."
     },
     "forgotPassword": {
       "contactAdministrator": "Als je onlangs je wachtwoord hebt gewijzigd en problemen hebt met inloggen met je nieuwe wachtwoord, kan de serverbeheerder mogelijk een eerdere backup van je vault herstellen om je te helpen. Neem in dat geval contact op met de serverbeheerder.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator code",
       "dontHaveAuthenticatorText": "Geen toegang tot je authenticator apparaat?",
-      "loginErrorMessage": "Er is een fout opgetreden bij het verwerken van het inlogverzoek. Probeer het (later) opnieuw.",
       "loginRequestErrorMessage": "Er is een fout opgetreden bij het verwerken van het inlogverzoek.",
       "loginWithAuthenticatorLink": "Log in met een authenticator code.",
       "loginWithRecoveryCodeLink": "Log in met een herstelcode.",
@@ -213,7 +207,7 @@
   },
   "common": {
     "add": "Toevoegen",
-    "added": "Added",
+    "added": "Toegevoegd",
     "alias": "Alias",
     "attachmentDownloadFailed": "Downloaden van bijlage mislukt",
     "attachments": "Bijlagen",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "disabled": "Uitgeschakeld",
     "dismiss": "Sluiten",
+    "download": "Downloaden",
     "duplicate": "Dupliceren",
     "duplicateErrorMessage": "Item dupliceren mislukt.",
     "duplicateSuccessMessage": "Item succesvol gedupliceerd.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "Het login verzoek is geweigerd op je mobiele apparaat.",
       "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
-      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "serverOutdated": "De AliasVault server moet worden bijgewerkt om met deze versie van AliasVault te werken. Probeer het later opnieuw. Als je een self-hosted server gebruikt, neem dan contact op met je serverbeheerder.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
@@ -283,6 +277,7 @@
     },
     "expand": "Uitbreiden",
     "generate": "Genereren",
+    "goToVault": "Ga naar de kluis",
     "help": "Hulp",
     "hide": "Verberg",
     "hideDetails": "Verberg details",
@@ -510,7 +505,7 @@
     "recommendedLabel": "Aanbevolen",
     "serviceCard": {
       "attachmentsDetected": "{{count}} bijlage(n), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Weet je zeker dat je door wilt gaan? Let op: het importproces kan even duren.",
       "decryptAndContinueButton": "Decrypten en doorgaan",
       "decryptingFile": "Bestand decrypten...",
       "decryptionErrorGeneric": "Het decrypten van het bestand is mislukt. Controleer of het bestand niet beschadigd is en probeer het opnieuw.",
@@ -518,7 +513,7 @@
       "decryptionPasswordLabel": "Decryptie wachtwoord",
       "duplicateCredentialsWarning": "{{count}} dubbele credential(s) werden gevonden en worden niet geïmporteerd.",
       "encryptedFilePasswordPrompt": "Dit bestand is versleuteld. Voer het wachtwoord in dat je hebt gebruikt bij het maken van de export.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} bestaande item(s) worden bijgewerkt met nieuwe gegevens.",
       "extractFaviconsLabel": "Favicons ophalen voor services met URLs",
       "extractingFavicons": "Favicons uitpakken... {{current}} / {{total}}",
       "faviconExtractionNote": "Opmerking: Favicons ophalen is ingeschakeld. Dit proces kan enkele minuten duren, afhankelijk van het aantal credentials met URL's. Houd de pagina open.",
@@ -536,7 +531,7 @@
       "importPartialFailureWarning": "{{count}} item(s) konden niet worden verwerkt en zullen worden overgeslagen.",
       "importSuccessMessage": "Succesvol {{count}} credentials geïmporteerd.",
       "moreCredentials": "... en {{count}} meer credentials",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} nieuwe item(s) worden geïmporteerd.",
       "noLogoText": "Geen logo",
       "noNewCredentials": "Geen nieuwe credentials gevonden om te importeren.",
       "previewInstructions": "Controleer of de volgende gedetecteerde credentials correct zijn voordat je verdergaat:",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Upload je {{service}} export bestand:"
     },
     "services": {
+      "aegisInstructionsPart1": "Om je Aegis-codes te importeren, moet je deze exporteren als een onversleuteld JSON-bestand. Je kunt dit in Aegis doen via 'Instellingen' > 'Importeren & Exporteren' > 'Exporteren', 'Aegis (.JSON)' met de optie 'Kluis versleutelen' uitgeschakeld.",
       "aliasVaultDescription": "Importeren uit AliasVault back-up",
       "aliasVaultInstructionsPart1": "Importeer je eerder gemaakte AliasVault back-up.",
       "bitwardenDescription": "Importeer wachtwoorden vanuit je Bitwarden account",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Om je Microsoft Edge wachtwoorden te kunnen importeren, moet je ze als CSV-bestand exporteren. Je kunt dit doen door naar Menu > Instellingen > Wachtwoord en autofill > Microsoft Password Manager > ... > Exporteer wachtwoorden.",
       "enpassDescription": "Importeer wachtwoorden uit Enpass",
       "enpassInstructionsPart1": "Om je Enpass wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Doe dit door Enpass te openen, ga naar 'Menu' > 'Bestand' > 'Export' > en selecteer vervolgens het CSV formaat.",
+      "enteAuthInstructionsPart1": "Om je Ente Auth codes te importeren moet je ze exporteren als platte tekst. Je kunt dit doen in Ente Auth door naar 'Instellingen' > 'Data' > 'Exporteer codes' te gaan en te klikken op 'Platte tekst'.",
       "firefoxDescription": "Importeer wachtwoorden uit de Firefox Password Manager",
       "firefoxInstructionsPart1": "Om je Firefox wachtwoorden te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door je Firefox browser te openen, naar menu > 'Wachtwoorden' te gaan. Klik vervolgens op het menu-pictogram in de rechterbovenhoek en selecteer 'Wachtwoorden exporteren'.",
       "genericCsvDescription": "Importeer credentials met een sjabloon CSV bestand",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Om je NordPass wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Je kunt dit doen door de NordPass app openen, naar 'Instellingen' > 'Item exporteren' te gaan en het CSV-formaat te selecteren.",
       "onePasswordDescription": "Importeer wachtwoorden vanuit je 1Password account",
       "onePasswordInstructionsPart1": "Om je 1Password kluis te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door in te loggen op je 1Password account in de 1Password 8 desktop app (Windows / MacOS / Linux), naar het 'File' menu te gaan en 'Export' te selecteren.",
+      "otpAuthListDescription": "2FA-codes importeren uit een lijst otpauth:// URL's",
+      "otpAuthListInstructionsPart1": "Upload een tekstbestand (.txt) met één otpauth:// URL per regel. Veel authenticator apps kunnen hun codes in deze indeling exporteren.",
       "protonPassDescription": "Importeer wachtwoorden uit Proton Pass",
       "protonPassInstructionsPart1": "Om je Proton Pass kluis te importeren, moet je deze exporteren. U kunt dit doen in de Proton Pass browserextensie door naar 'Instellingen' > 'Exporteer' te gaan.",
       "roboformDescription": "Importeer wachtwoorden uit RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importeer wachtwoorden uit Strongbox",
       "strongboxInstructionsPart1": "Om je Strongbox kluis te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door naar het 'File' menu te gaan en 'Export Database' (naar CSV) te selecteren.",
       "template": "template",
+      "twoFactorAppDescription": "2FA-codes importeren van {{service}}",
+      "twoFactorMergeHint": "Elke code wordt geïmporteerd als een apart item. Om een code aan een bestaande login toe te voegen, klik je er met de rechtermuisknop op en kies je 'Samenvoegen'.",
+      "twoFasInstructionsPart1": "Om je 2FAS-codes te importeren, moet je ze als een back-upbestand zonder wachtwoord exporteren. Je kunt dit doen in 2FAS door naar 'Instellingen' > '2FAS Backup' > 'Exporteren naar bestand' te gaan.",
       "uploadInstructions": "Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey gemarkeerd om te verwijderen",
     "passkeyWillBeDeleted": "Deze passkey zal worden verwijderd wanneer je deze credential opslaat.",
     "settings": {
-      "passkeyProvider": "Passkey provider",
-      "passkeyProviderOn": "Passkey provider ingeschakeld"
+      "passkeyProvider": "Passkey provider"
     },
     "site": "Website",
     "useBrowserPasskey": "Browser-passkey gebruiken"
@@ -1177,7 +1178,6 @@
       "website": "Website"
     },
     "accountSecurity": "Account beveiliging",
-    "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
     "androidAutofillSettings": {
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Vergrendel de vault automatisch na inactiviteit",
     "autoLockTimeoutHelp": "De vault zal alleen vergrendelen na de opgegeven periode van inactiviteit (geen automatisch invullen of extensie geopend). De vault wordt altijd vergrendeld wanneer de browser wordt afgesloten, ongeacht deze instelling.",
     "autofill": "Autofill & passkeys",
-    "autofillDisabledDescription": "Autofill-suggesties zijn uitgeschakeld",
-    "autofillEnabled": "Autofill inschakelen",
-    "autofillEnabledDescription": "Autofill-suggesties verschijnen op loginformulieren",
     "autofillMatching": "Autofill matching",
     "autofillMatchingDefault": "URL + subdomein + naam wildcard",
     "autofillMatchingMode": "Autofill matching modus",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Exacte URL-domein",
     "autofillMatchingUrlSubdomain": "URL + subdomein",
     "autofillSettings": "Autofill-instellingen",
-    "autofillSettingsDescription": "De autofill pop-up op webpagina's in-/uitschakelen",
     "autofillSetup": {
       "alreadyConfigured": "Al geconfigureerd",
       "howToEnable": "Autofill & passkeys inschakelen:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Blokkeer schermafbeeldingen",
     "blockScreenshotsDescription": "Blokkeert schermafbeeldingen en schermopnames van de app.",
     "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
-    "clientUrlHint": "De webinterface URL van je self-hosted omgeving",
     "clipboardClear": "Klembord wissen",
     "clipboardClear10Seconds": "Wis na 10 seconden",
     "clipboardClear15Seconds": "Wis na 15 seconden",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Wanneer je autofill gebruikt met een credential voorzien van een 2FA code, wordt de 2FA-code automatisch naar het klembord gekopieerd, zodat je deze handmatig in het volgende veld kunt plakken.",
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
+    "credentialExchange": {
+      "description": "Wachtwoorden, toegangscodes en 2FA-codes rechtstreeks van AliasVault overzetten naar een andere wachtwoordbeheerder op dit apparaat.",
+      "exportTitle": "Exporteren naar een andere app",
+      "importInstructionsIos": "Open de app waarvan je wilt importeren, bijv. iOS Wachtwoorden, kies vervolgens \"Data exporteren naar een andere app\" en selecteer AliasVault. AliasVault opent zodat je de items kunt beoordelen voordat ze worden opgeslagen.",
+      "importTitle": "Importeren uit een andere app",
+      "summaryCustomFields": "{{count}} item(s) van een type dat AliasVault niet heeft, zijn opgeslagen als aangepaste velden.",
+      "summaryUnsupported": "{{count}} referentie(s) die niet in AliasVault kunnen worden opgeslagen, zijn overgeslagen."
+    },
     "customApiUrl": "API-URL",
-    "customClientUrl": "Client-URL",
     "dark": "Donker",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
-    "disabledForThisSite": "Uitgeschakeld voor deze site",
-    "disabledOnAllSites": "Uitgeschakeld op alle sites",
     "disabledSites": "Uitgeschakelde sites",
     "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
-    "enabledForThisSite": "Ingeschakeld voor deze site",
     "exportConfirmTitle": "Vault exporteren",
     "exportSectionTitle": "Exporteren",
+    "exportToFileTitle": "Exporteren naar bestand",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten."
     },
     "importExport": "Importeren / Exporteren",
-    "importSectionDescription": "Importeer je wachtwoorden van andere wachtwoordmanagers of van een eerdere AliasVault export.",
+    "importFromFileTitle": "Importeren vanuit bestand",
     "importSectionTitle": "Importeren",
-    "importWebNote": "Om inloggegevens te importeren van bestaande wachtwoordmanagers, dien je in te loggen op de webapp. De import functie is momenteel alleen beschikbaar op de webversie.",
+    "importWebNote": "Gebruik de AliasVault-webapp om wachtwoorden uit een bestand te importeren.",
     "iosAutofillSettings": {
       "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in iOS. Volg de instructies hieronder om deze in te schakelen.",
       "openIosSettings": "Open iOS instellingen",
@@ -1352,7 +1352,6 @@
     "openSettings": "Open Instellingen",
     "openWebApp": "Web-app openen",
     "passkeySettings": "Passkey-instellingen",
-    "passkeysEnabled": "Passkeys inschakelen",
     "passwordConfirm": {
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Selecteer taal",
     "serverConfiguration": "Serverconfiguratie",
-    "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
     "serverUrl": "Server-URL",
+    "serverUrlHint": "Het adres van de eigen gehoste AliasVault",
     "serverVersion": "Server versie",
     "sessionsAndLogs": "Sessies & logbestanden",
     "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Standaard gebruiken",
     "validation": {
       "apiUrlInvalid": "Voer een geldige API URL in",
-      "apiUrlRequired": "API-URL is vereist",
-      "clientUrlInvalid": "Voer een geldige client-URL in",
-      "clientUrlRequired": "Client-URL is vereist"
+      "serverUrlInvalid": "Voer een geldige server-URL in",
+      "serverUrlRequired": "Server-URL is vereist"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "vaultUnlockSettings": {

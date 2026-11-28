@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "إعدادات متقدمة",
-      "customApiUrl": "رابط API مخصص",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "customProxyHeaders": "ترويسات وكيل مخصصة",
-      "customProxyHeadersDescription": "أضف ترويسات HTTP التي سيتم إرسالها مع كل طلب إلى خادم AliasVault الخاص بك. يمكن استخدامها في عمليات الاستضافة الذاتية خلف وكيل عكسي يتحقق من الترويسات المخصصة (مثل Pangolin وCloudflare Access).",
-      "headerName": "اسم الترويسة",
+      "customProxyHeaders": "عناوين خانات الوكيل المخصصة",
+      "customProxyHeadersDescription": "أضف عناوين خانات HTTP التي سيتم إرسالها مع كل طلب إلى خادم AliasVault الخاص بك. يمكن استخدامها في عمليات الاستضافة الذاتية خلف وكيل عكسي يتحقق من عناوين الخانات المخصصة (مثل Pangolin وCloudflare Access).",
+      "headerName": "عنوان الخانة",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "قيمة الترويسة",
+      "headerNameInvalid": "ليس اسم عنوان الخانة HTTP صالحًا.",
+      "headerNameReserved": "يرسل AliasVault عنوان الخانة HTTP هذا بالفعل.",
+      "headerValue": "قيمة عنوان الخانة",
       "selfHosted": "مستضاف ذاتيًا",
-      "title": "اتصال API",
       "version": "الإصدار: {{version}}"
-    },
-    "navigation": {
-      "login": "تسجيل الدخول",
-      "loginSettings": "إعدادات تسجيل الدخول"
     },
     "notFound": {
       "goHome": "العودة إلى البداية",
@@ -96,8 +91,8 @@
       "enterPassword": "يرجى إدخال كلمة المرور",
       "httpError": "خطأ HTTP: {{status}}",
       "networkError": "تعذّر طلب الشبكة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
-      "networkErrorSelfHosted": "تعذّر طلب الشبكة. تحقق من اتصالك بالشبكة وتوفر الخادم. بالنسبة للنُسخ المستضافة ذاتيًا، يرجى التأكد من تثبيت شهادة SSL صالحة. الشهادات الموقعة ذاتيًا غير مدعومة على الأجهزة المحمولة لأسباب أمنية.",
-      "serverErrorSelfHosted": "تعذّر الوصول إلى API. بالنسبة للنُسخ المستضافة ذاتيًا، يرجى التحقق من إمكانية الوصول إلى نقطة نهاية API عن طريق الانتقال إليها في المتصفح: إذ يجب أن تعرض 'OK'."
+      "selfHostedServerUnreachable": "تعذّر الوصول إلى خادم AliasVault الخاص بك على {{apiUrl}}. يرجى التحقق من أن رابط الخادم صحيح، وأن الخادم يمكن الوصول إليه، وأن شهادة SSL الخاصة به صالحة.",
+      "serverCertificateNotTrusted": "تعذّر إنشاء اتصال آمن بخادم AliasVault: شهادة SSL الخاصة به غير صالحة أو غير موثوق بها على هذا الجهاز. إذا كان خادمك يستخدم شهادة موقعة ذاتيًا، فقم بتثبيت تلك الشهادة والوثوق بها على هذا الجهاز أولًا."
     },
     "forgotPassword": {
       "contactAdministrator": "إذا كنت قد غيّرت كلمة المرور مؤخرًا وتواجه صعوبات في تسجيل الدخول بكلمة المرور الجديدة، فيرجى ملاحظة أن مسؤول الخادم قد يتمكن من استرداد نسخة احتياطية سابقة من خزنتك لمساعدتك. إذا كان الأمر كذلك، فيرجى التواصل مع مسؤول الخادم.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "رمز المصادقة",
       "dontHaveAuthenticatorText": "ليس لديك وصول إلى جهاز المصادقة الخاص بك؟",
-      "loginErrorMessage": "حدث خطأ أثناء معالجة طلب تسجيل الدخول. حاول مرة أخرى (لاحقًا).",
       "loginRequestErrorMessage": "حدث خطأ أثناء معالجة طلب تسجيل الدخول.",
       "loginWithAuthenticatorLink": "سجّل الدخول باستخدام رمز المصادقة بدلًا من ذلك.",
       "loginWithRecoveryCodeLink": "سجّل الدخول باستخدام رمز الاسترداد بدلًا من ذلك.",
@@ -213,7 +207,7 @@
   },
   "common": {
     "add": "إضافة",
-    "added": "Added",
+    "added": "تمت الإضافة",
     "alias": "الاسم المستعار",
     "attachmentDownloadFailed": "تعذّر تنزيل المرفق",
     "attachments": "المرفقات",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "هل أنت متأكد أنك تريد حذف هذا العنصر؟",
     "disabled": "معطل",
     "dismiss": "تجاهل",
+    "download": "تنزيل",
     "duplicate": "تكرار",
     "duplicateErrorMessage": "تعذّر تكرار العنصر.",
     "duplicateSuccessMessage": "تم تكرار العنصر بنجاح.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "تم رفض طلب تسجيل الدخول على جهازك المحمول.",
       "mobileLoginRequestExpired": "انتهت مهلة طلب تسجيل الدخول عبر الجوال. يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.",
       "passwordChanged": "تم تغيير كلمة المرور منذ آخر مرة سجلت فيها الدخول. يرجى تسجيل الدخول مرة أخرى لأسباب أمنية.",
-      "serverError": "تعذّر الوصول إلى خادم AliasVault. يرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
       "serverNotAvailable": "خادم AliasVault غير متاح. يرجى المحاولة مرة أخرى لاحقًا أو التواصل مع الدعم إذا استمرت المشكلة.",
       "serverOutdated": "يحتاج خادم AliasVault إلى التحديث ليعمل مع إصدار AliasVault هذا. يرجى المحاولة مرة أخرى لاحقًا. إذا كنت تستخدم خادمًا مستضافًا ذاتيًا، فيرجى التواصل مع مسؤول الخادم.",
       "sessionExpired": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
@@ -283,6 +277,7 @@
     },
     "expand": "توسيع",
     "generate": "توليد",
+    "goToVault": "الانتقال إلى الخزنة",
     "help": "مساعدة",
     "hide": "إخفاء",
     "hideDetails": "إخفاء التفاصيل",
@@ -510,7 +505,7 @@
     "recommendedLabel": "موصى به",
     "serviceCard": {
       "attachmentsDetected": "{{count}} مرفق(ات)، {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "هل أنت متأكد أنك تريد المتابعة؟ لاحظ: قد تستغرق عملية الاستيراد بعض الوقت.",
       "decryptAndContinueButton": "فك التشفير والمتابعة",
       "decryptingFile": "جارٍ فك تشفير الملف...",
       "decryptionErrorGeneric": "تعذّر فك تشفير الملف. يرجى التحقق من أن الملف غير تالف والمحاولة مرة أخرى.",
@@ -518,7 +513,7 @@
       "decryptionPasswordLabel": "كلمة مرور فك التشفير",
       "duplicateCredentialsWarning": "تم العثور على {{count}} من بيانات الاعتماد المكررة ولن يتم استيرادها.",
       "encryptedFilePasswordPrompt": "هذا الملف مشفر. يرجى إدخال كلمة المرور التي استخدمتها عند إنشاء التصدير.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "سيتم تحديث {{count}} عنصرًا موجودًا ببيانات جديدة.",
       "extractFaviconsLabel": "استخراج الأيقونات المفضلة للخدمات ذات الروابط",
       "extractingFavicons": "جارٍ استخراج الأيقونات المفضلة... {{current}} / {{total}}",
       "faviconExtractionNote": "ملاحظة: استخراج الأيقونات المفضلة مفعّل. قد تستغرق هذه العملية عدة دقائق حسب عدد بيانات الاعتماد ذات الروابط. يرجى إبقاء الصفحة مفتوحة.",
@@ -536,7 +531,7 @@
       "importPartialFailureWarning": "تعذّر تحليل {{count}} عنصرًا وسيتم تخطيها.",
       "importSuccessMessage": "تم استيراد {{count}} من بيانات الاعتماد بنجاح.",
       "moreCredentials": "... و{{count}} من بيانات الاعتماد الأخرى",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "سيتم استيراد {{count}} عنصرًا جديدًا.",
       "noLogoText": "لا يوجد شعار",
       "noNewCredentials": "لم يتم العثور على بيانات اعتماد جديدة للاستيراد.",
       "previewInstructions": "تحقق مما إذا كانت بيانات الاعتماد المكتشفة التالية تبدو صحيحة قبل المتابعة:",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "ارفع ملف التصدير الخاص بـ {{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "لاستيراد رموز Aegis الخاصة بك، تحتاج إلى تصديرها كملف JSON غير مشفر. يمكنك القيام بذلك في Aegis عن طريق الانتقال إلى 'Settings' > 'Import & Export' > 'Export'، واختيار 'Aegis (.JSON)' وإيقاف التشفير.",
       "aliasVaultDescription": "استيراد من نسخة AliasVault الاحتياطية",
       "aliasVaultInstructionsPart1": "استورد نسخة AliasVault الاحتياطية التي أنشأتها سابقًا.",
       "bitwardenDescription": "استيراد كلمات المرور من خزنة Bitwarden الخاصة بك",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "لاستيراد كلمات مرور Microsoft Edge الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق الانتقال إلى القائمة > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.",
       "enpassDescription": "استيراد كلمات المرور من Enpass",
       "enpassInstructionsPart1": "لاستيراد كلمات مرور Enpass الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح Enpass، والانتقال إلى 'Menu' > 'File' > 'Export' واختيار 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "لاستيراد رموز Ente Auth الخاصة بك، تحتاج إلى تصديرها كنص عادي. يمكنك القيام بذلك في Ente Auth عن طريق الانتقال إلى 'Settings' > 'Data' > 'Export codes' واختيار 'Plain text'.",
       "firefoxDescription": "استيراد كلمات المرور من مدير كلمات المرور في Firefox",
       "firefoxInstructionsPart1": "لاستيراد كلمات مرور Firefox الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح متصفح Firefox، والانتقال إلى القائمة > 'Passwords'. ثم انقر على أيقونة القائمة في الزاوية العلوية اليمنى واختر 'Export passwords'.",
       "genericCsvDescription": "استيراد بيانات الاعتماد باستخدام تنسيق قالب CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "لاستيراد كلمات مرور NordPass الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق فتح تطبيق NordPass أو الخزنة عبر الويب، والانتقال إلى 'Settings' > 'Export Items'، واختيار تنسيق CSV.",
       "onePasswordDescription": "استيراد كلمات المرور من خزنة 1Password الخاصة بك",
       "onePasswordInstructionsPart1": "لاستيراد خزنة 1Password الخاصة بك، تحتاج إلى تصديرها. يمكنك القيام بذلك عن طريق تسجيل الدخول إلى حساب 1Password الخاص بك في تطبيق 1Password 8 لسطح المكتب (Windows / MacOS / Linux)، والانتقال إلى قائمة 'File' واختيار 'Export'.",
+      "otpAuthListDescription": "استيراد رموز 2FA من قائمة روابط otpauth://",
+      "otpAuthListInstructionsPart1": "ارفع ملفًا نصيًا (.txt) يحتوي على رابط otpauth:// واحد في كل سطر. يمكن للعديد من تطبيقات المصادقة تصدير رموزها بهذا التنسيق.",
       "protonPassDescription": "استيراد كلمات المرور من Proton Pass",
       "protonPassInstructionsPart1": "لاستيراد خزنة Proton Pass الخاصة بك، تحتاج إلى تصديرها. يمكنك القيام بذلك في إضافة متصفح Proton Pass عن طريق الانتقال إلى 'Settings' > 'Export'.",
       "roboformDescription": "استيراد كلمات المرور من RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "استيراد كلمات المرور من Strongbox",
       "strongboxInstructionsPart1": "لاستيراد خزنة Strongbox الخاصة بك، تحتاج إلى تصديرها كملف CSV. يمكنك القيام بذلك عن طريق الانتقال إلى قائمة 'File' واختيار 'Export Database' (إلى CSV).",
       "template": "قالب",
+      "twoFactorAppDescription": "استيراد رموز 2FA من {{service}}",
+      "twoFactorMergeHint": "يتم استيراد كل رمز كعنصر منفصل. لإضافة رمز إلى تسجيل دخول موجود، انقر عليه بزر الماوس الأيمن واختر 'Merge'.",
+      "twoFasInstructionsPart1": "لاستيراد رموز 2FAS الخاصة بك، تحتاج إلى تصديرها كملف نسخة احتياطية بدون كلمة مرور. يمكنك القيام بذلك في 2FAS عن طريق الانتقال إلى 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "بمجرد تصدير الملف، يمكنك رفعه أدناه."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "تم وضع علامة على مفتاح المرور للحذف",
     "passkeyWillBeDeleted": "سيتم حذف مفتاح المرور هذا عند حفظ بيانات الاعتماد هذه.",
     "settings": {
-      "passkeyProvider": "موفر مفاتيح المرور",
-      "passkeyProviderOn": "موفر مفاتيح المرور مفعّل "
+      "passkeyProvider": "موفر مفاتيح المرور"
     },
     "site": "الموقع",
     "useBrowserPasskey": "استخدام مفتاح مرور المتصفح"
@@ -1177,7 +1178,6 @@
       "website": "الموقع"
     },
     "accountSecurity": "أمان الحساب",
-    "activeOnAllSites": "نشط على جميع المواقع (ما لم يتم تعطيله أدناه)",
     "advancedOptions": "خيارات متقدمة",
     "androidAutofillSettings": {
       "buttonTip": "إذا لم يعمل الزر أعلاه، فقد يكون محظورًا بسبب إعدادات الأمان. يمكنك الانتقال يدويًا إلى إعدادات Android ← الإدارة العامة ← كلمات المرور والملء التلقائي.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "قفل الخزنة تلقائيًا بعد فترة من عدم النشاط",
     "autoLockTimeoutHelp": "لن تُقفل الخزنة إلا بعد الفترة المحددة من عدم النشاط (عدم استخدام الملء التلقائي أو فتح نافذة الإضافة). وستُقفل الخزنة دائمًا عند إغلاق المتصفح، بغض النظر عن هذا الإعداد.",
     "autofill": "الملء التلقائي ومفاتيح المرور",
-    "autofillDisabledDescription": "اقتراحات الملء التلقائي معطلة بشكل عام",
-    "autofillEnabled": "تفعيل الملء التلقائي",
-    "autofillEnabledDescription": "ستظهر اقتراحات الملء التلقائي في نماذج تسجيل الدخول",
     "autofillMatching": "مطابقة الملء التلقائي",
     "autofillMatchingDefault": "الرابط + النطاق الفرعي + الاسم مع أحرف بديلة",
     "autofillMatchingMode": "وضع مطابقة الملء التلقائي",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "نطاق الرابط الدقيق فقط",
     "autofillMatchingUrlSubdomain": "الرابط + النطاق الفرعي",
     "autofillSettings": "إعدادات الملء التلقائي",
-    "autofillSettingsDescription": "تفعيل أو تعطيل نافذة الملء التلقائي في صفحات الويب",
     "autofillSetup": {
       "alreadyConfigured": "لقد قمت بتهيئته بالفعل",
       "howToEnable": "كيفية تفعيل الملء التلقائي ومفاتيح المرور:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "حظر لقطات الشاشة",
     "blockScreenshotsDescription": "يحظر لقطات الشاشة وتسجيلات الشاشة للتطبيق.",
     "clearAllDisabledSites": "مسح جميع المواقع المعطلة",
-    "clientUrlHint": "رابط واجهة الويب لنسختك المستضافة ذاتيًا",
     "clipboardClear": "مسح الحافظة",
     "clipboardClear10Seconds": "المسح بعد 10 ثوانٍ",
     "clipboardClear15Seconds": "المسح بعد 15 ثانية",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "عند ملء بيانات اعتماد تتضمن 2FA تلقائيًا، انسخ رمز TOTP الخاص بها إلى الحافظة تلقائيًا حتى تتمكن من لصقه في الحقل التالي.",
     "credentialAutofill": "الملء التلقائي لبيانات الاعتماد",
     "credentialAutofillDescription": "إظهار نافذة الملء التلقائي عند اكتشاف حقول اسم المستخدم/كلمة المرور",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "رابط API",
-    "customClientUrl": "رابط العميل",
     "dark": "داكن",
     "disableBatteryOptimization": "تعطيل تحسين البطارية",
-    "disabledForThisSite": "معطل لهذا الموقع",
-    "disabledOnAllSites": "معطل على جميع المواقع",
     "disabledSites": "المواقع المعطلة",
     "disabledSitesDescription": "المواقع التي لن تظهر فيها نافذة الملء التلقائي.",
-    "enabledForThisSite": "مفعّل لهذا الموقع",
     "exportConfirmTitle": "تصدير الخزنة",
     "exportSectionTitle": "تصدير",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "تحذير: تصدير خزنتك إلى ملف غير مشفر سيكشف جميع كلمات المرور والمعلومات الحساسة الخاصة بك كنص عادي. لا تفعل ذلك إلا على أجهزة موثوقة وتأكد من:\n\n• تخزين الملف المُصدَّر في مكان آمن\n• حذف الملف عندما لا تعد بحاجة إليه\n• عدم مشاركة الملف المُصدَّر مع الآخرين أبدًا\n\nهل أنت متأكد أنك تريد متابعة التصدير؟",
     "general": {
       "aliasGenerationAgeRangeDescription": "عيّن نطاق العمر الافتراضي لتوليد هويات جديدة. يؤثر هذا على تاريخ الميلاد المعيَّن للهوية المولّدة.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "عيّن اللغة التي ستُستخدم عند توليد هويات جديدة."
     },
     "importExport": "استيراد / تصدير",
-    "importSectionDescription": "استورد كلمات المرور الخاصة بك من مديري كلمات مرور آخرين أو من تصدير AliasVault سابق.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "استيراد",
-    "importWebNote": "لاستيراد بيانات الاعتماد من مديري كلمات مرور موجودين، يرجى تسجيل الدخول إلى تطبيق الويب. ميزة الاستيراد متاحة حاليًا فقط في إصدار الويب.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "يمكنك تهيئة AliasVault لتوفير وظيفة الملء التلقائي الأصلية لكلمات المرور ومفاتيح المرور في iOS. اتبع التعليمات أدناه لتفعيلها.",
       "openIosSettings": "فتح إعدادات iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "فتح الإعدادات",
     "openWebApp": "فتح تطبيق الويب",
     "passkeySettings": "إعدادات مفاتيح المرور",
-    "passkeysEnabled": "تفعيل مفاتيح المرور",
     "passwordConfirm": {
       "exportDescription": "لأسباب أمنية، يرجى إدخال كلمة المرور الرئيسية لتأكيد هذا التصدير."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "اختيار اللغة",
     "serverConfiguration": "تهيئة الخادم",
-    "serverConfigurationDescription": "تهيئة رابط خادم AliasVault للنُسخ المستضافة ذاتيًا",
     "serverUrl": "رابط الخادم",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "إصدار الخادم",
     "sessionsAndLogs": "الجلسات والسجلات",
     "sessionsAndLogsDescription": "اعرف أين سجّلت الدخول وراجع محاولات تسجيل الدخول الأخيرة.",
@@ -1597,9 +1596,8 @@
     "useDefault": "استخدام الافتراضي",
     "validation": {
       "apiUrlInvalid": "يرجى إدخال رابط API صحيح",
-      "apiUrlRequired": "رابط API مطلوب",
-      "clientUrlInvalid": "يرجى إدخال رابط عميل صحيح",
-      "clientUrlRequired": "رابط العميل مطلوب"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "طريقة فتح قفل الخزنة",
     "vaultUnlockSettings": {

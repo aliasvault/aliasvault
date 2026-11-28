@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Impostazioni avanzate",
-      "customApiUrl": "URL API personalizzata",
-      "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",
       "customProxyHeaders": "Headers proxy personalizzate",
       "customProxyHeadersDescription": "Aggiungi intestazioni HTTP che verranno inviate con ogni richiesta al tuo server AliasVault. Può essere utilizzato per configurazioni selfhosted dietro un reverse proxy che controlla le intestazioni personalizzate (ad esempio Pangolin, Cloudflare Access).",
       "headerName": "Nome Header",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Non è un nome valido per l'intestazione HTTP.",
+      "headerNameReserved": "AliasVault invia già questa intestazione HTTP.",
       "headerValue": "Valore Header",
       "selfHosted": "Self-hosted",
-      "title": "Connessione API",
       "version": "Versione: {{version}}"
-    },
-    "navigation": {
-      "login": "Accesso",
-      "loginSettings": "Impostazioni di accesso"
     },
     "notFound": {
       "goHome": "Torna all'inizio",
@@ -96,8 +91,8 @@
       "enterPassword": "Inserisci la password",
       "httpError": "Errore HTTP: {{status}}",
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
-      "networkErrorSelfHosted": "Errore di rete. Verifica la tua connessione di rete e la disponibilità del server. Per le istanze auto-ospitate, assicurati di avere installato un certificato SSL valido. I certificati autofirmati non sono supportati sui dispositivi mobili per motivi di sicurezza.",
-      "serverErrorSelfHosted": "Impossibile raggiungere l'API. Per le istanze auto-ospitate, verifica che l'endpoint API sia raggiungibile navigando in un browser: dovrebbe mostrare 'OK'."
+      "selfHostedServerUnreachable": "Impossibile raggiungere il server AliasVault su {{apiUrl}}. Verificare che l'URL del server sia corretto, che il server sia raggiungibile e che il suo certificato SSL sia valido.",
+      "serverCertificateNotTrusted": "Impossibile impostare una connessione sicura al server AliasVault: il suo certificato SSL non è valido o non è attendibile da questo dispositivo. Se il server utilizza prima un certificato autofirmato, installare e fidarsi di tale certificato su questo dispositivo."
     },
     "forgotPassword": {
       "contactAdministrator": "Se hai recentemente cambiato la password e hai difficoltà ad accedere con la nuova password, si prega di notare che l'amministratore del server potrebbe essere in grado di recuperare un backup precedente della tua cassaforte per aiutarti. In questo caso, contattare l'amministratore del server.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Codice di Autenticazione",
       "dontHaveAuthenticatorText": "Non hai accesso al tuo dispositivo di autenticazione?",
-      "loginErrorMessage": "Si è verificato un errore durante l'elaborazione della richiesta di accesso. Riprova (più tardi).",
       "loginRequestErrorMessage": "Si è verificato un errore durante l'elaborazione della richiesta di login.",
       "loginWithAuthenticatorLink": "Effettua il login con un codice di autenticazione.",
       "loginWithRecoveryCodeLink": "Accedi con un codice di recupero.",
@@ -213,7 +207,7 @@
   },
   "common": {
     "add": "Aggiungi",
-    "added": "Added",
+    "added": "Aggiunto",
     "alias": "Alias",
     "attachmentDownloadFailed": "Download allegato non riuscito",
     "attachments": "Allegati",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "disabled": "Disabilitato",
     "dismiss": "Annulla",
+    "download": "Scarica",
     "duplicate": "Duplica",
     "duplicateErrorMessage": "Duplicazione elemento fallita.",
     "duplicateSuccessMessage": "Elemento duplicato correttamente.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "La richiesta di accesso è stata rifiutata sul tuo dispositivo mobile.",
       "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
-      "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverOutdated": "Il server AliasVault deve essere aggiornato per funzionare con questa versione. Riprova più tardi. Se utilizzi un server self-hosted, contatta l'amministratore del server.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
@@ -283,6 +277,7 @@
     },
     "expand": "Espandi",
     "generate": "Genera",
+    "goToVault": "Vai alla cassaforte",
     "help": "Aiuto",
     "hide": "Nascondi",
     "hideDetails": "Nascondi dettagli",
@@ -510,7 +505,7 @@
     "recommendedLabel": "Consigliato",
     "serviceCard": {
       "attachmentsDetected": "{{count}} allegato(i), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Sei sicuro di voler continuare? Nota: il processo di importazione può richiedere un po' di tempo.",
       "decryptAndContinueButton": "Decifra e continua",
       "decryptingFile": "Decifratura file...",
       "decryptionErrorGeneric": "Decifratura del file non riuscita. Verificare che il file non sia danneggiato e riprovare.",
@@ -518,7 +513,7 @@
       "decryptionPasswordLabel": "Password di decifratura",
       "duplicateCredentialsWarning": "{{count}} credenziali duplicate sono state trovate e non verranno importate.",
       "encryptedFilePasswordPrompt": "Questo file è cifrato. Per favore inserisci la password che hai usato quando hai creato l'esportazione.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} elementi esistenti saranno aggiornati con nuovi dati.",
       "extractFaviconsLabel": "Estrai le icone preferenziali per i servizi con URL",
       "extractingFavicons": "Estrazione delle favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Nota: L'estrazione di Favicon è abilitata. Questo processo può richiedere diversi minuti a seconda del numero di credenziali con URL. Si prega di mantenere aperta la pagina.",
@@ -536,7 +531,7 @@
       "importPartialFailureWarning": "{{count}} elementi non possono essere analizzati e saranno saltati.",
       "importSuccessMessage": "{{count}} credenziali importate con successo.",
       "moreCredentials": "... e {{count}} altre credenziali",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} nuovi elementi saranno importati.",
       "noLogoText": "Nessun logo",
       "noNewCredentials": "Non sono state trovate nuove credenziali da importare.",
       "previewInstructions": "Controlla se le seguenti credenziali rilevate siano corrette prima di continuare:",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Carica il tuo file di esportazione {{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "Per importare i tuoi codici Aegis, devi esportarli come file JSON non cifrato. Puoi farlo in Aegis andando a 'Impostazioni' > 'Importa ed esporta' > 'Esporta', selezionando 'Aegis (.JSON)' e disattivando la cifratura.",
       "aliasVaultDescription": "Importa da backup di AliasVault",
       "aliasVaultInstructionsPart1": "Importa il backup AliasVault creato in precedenza.",
       "bitwardenDescription": "Importa password dalla tua cassaforte Bitwarden",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Per importare le password di Microsoft Edge, è necessario esportarle come file CSV. Puoi farlo andando su Menu > Impostazioni > Password e riempimento automatico > Microsoft Password Manager > ... > Esporta password.",
       "enpassDescription": "Importa password da Enpass",
       "enpassInstructionsPart1": "Per importare le password di Enpass, è necessario esportarle come file CSV. Puoi farlo aprendo Enpass, andando a 'Menu' > 'File' > 'Esporta' e selezionando 'file CSV (.csv)'.",
+      "enteAuthInstructionsPart1": "Per importare i codici Ente Auth è necessario esportarli come testo semplice. Puoi farlo in Ente Auth andando a 'Impostazioni' > 'Dati' > 'Esporta codici' e selezionando 'Testo semplice'.",
       "firefoxDescription": "Importa password dal tuo Firefox Password Manager",
       "firefoxInstructionsPart1": "Per importare le password di Firefox, è necessario esportarle come file CSV. Puoi farlo aprendo il tuo browser Firefox, andando al menu > 'Passwords'. Quindi fare clic sull'icona del menu nell'angolo in alto a destra e selezionare 'Esporta password'.",
       "genericCsvDescription": "Importa credenziali utilizzando un formato CSV modello",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Per importare le tue password di NordPass, devi esportarle come file CSV. Puoi farlo aprendo l'app NordPass o il vault web, andando a 'Impostazioni' > 'Esporta oggetti', e selezionando il formato CSV.",
       "onePasswordDescription": "Importa password dalla cassaforte 1Password",
       "onePasswordInstructionsPart1": "Per importare la cassaforte 1Password, è necessario esportarla. Puoi farlo accedendo al tuo account 1Password nell'app desktop 1Password 8 (Windows / MacOS / Linux), vai al menu 'File' e seleziona 'Esporta'.",
+      "otpAuthListDescription": "Importa codici 2FA da una lista di otpauth:// URL",
+      "otpAuthListInstructionsPart1": "Carica un file di testo (.txt) con un otpauth:// URL per riga. Molte app di autenticazione possono esportare i loro codici in questo formato.",
       "protonPassDescription": "Importa password da Proton Pass",
       "protonPassInstructionsPart1": "Per importare la cassaforte Proton Pass, è necessario esportarla. Puoi farlo nell'estensione del browser Proton Pass andando a 'Impostazioni' > 'Esporta'.",
       "roboformDescription": "Importa password da RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importa password da Strongbox",
       "strongboxInstructionsPart1": "Per importare la cassaforte Strongbox, è necessario esportarla come file CSV. Puoi farlo andando al menu 'File' e selezionando 'Esporta banca dati' (per CSV).",
       "template": "modello",
+      "twoFactorAppDescription": "Importa codici 2FA da {{service}}",
+      "twoFactorMergeHint": "Ogni codice viene importato come elemento separato. Per aggiungere un codice ad un login esistente, fai clic con il pulsante destro del mouse e scegli 'Unisci'.",
+      "twoFasInstructionsPart1": "Per importare i codici 2FAS, è necessario esportarli come file di backup senza password. Puoi farlo in 2FAS andando su 'Impostazioni' > 'Backup 2FAS' > 'Esporta su file'.",
       "uploadInstructions": "Una volta esportato il file, puoi caricarlo qui sotto."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
     "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale.",
     "settings": {
-      "passkeyProvider": "Provider Passkey",
-      "passkeyProviderOn": "Passkey Provider attivo"
+      "passkeyProvider": "Provider Passkey"
     },
     "site": "Sito",
     "useBrowserPasskey": "Usa Browser Passkey"
@@ -1177,7 +1178,6 @@
       "website": "Sito web"
     },
     "accountSecurity": "Sicurezza Account",
-    "activeOnAllSites": "Attivo su tutti i siti (a meno che non sia disabilitato sotto)",
     "advancedOptions": "Opzioni avanzate",
     "androidAutofillSettings": {
       "buttonTip": "Se il pulsante qui sopra non funziona, potrebbe essere bloccato a causa delle impostazioni di sicurezza. È possibile andare manualmente in Impostazioni Android → Gestione generale → Password e riempimento automatico.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Blocca automaticamente la cassaforte dopo un periodo di inattività",
     "autoLockTimeoutHelp": "La cassaforte si bloccherà solo dopo il periodo specificato di inattività (nessun utilizzo di riempimento automatico o estensione popup aperto). La cassaforte si bloccherà sempre quando il browser è chiuso, indipendentemente da questa impostazione.",
     "autofill": "Riempimento Automatico & Passkeys",
-    "autofillDisabledDescription": "I suggerimenti di riempimento automatico sono disabilitati",
-    "autofillEnabled": "Abilita compilazione automatica",
-    "autofillEnabledDescription": "I suggerimenti di riempimento automatico appariranno nei moduli di accesso",
     "autofillMatching": "Riconoscimento campi automatica.",
     "autofillMatchingDefault": "URL + sottodominio + nome wildcard",
     "autofillMatchingMode": "Modalità riconoscimento capi automatica",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Solo dominio URL esatto",
     "autofillMatchingUrlSubdomain": "URL + sottodominio",
     "autofillSettings": "Impostazioni di riempimento automatico",
-    "autofillSettingsDescription": "Abilita o disabilita il popup di riempimento automatico sulle pagine web",
     "autofillSetup": {
       "alreadyConfigured": "Ho già configurato",
       "howToEnable": "Come abilitare l'auto-riempimento & Passkeys:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Blocco screenshots",
     "blockScreenshotsDescription": "Blocca screenshots e registrazioni dello schermo dell'app.",
     "clearAllDisabledSites": "Cancella tutti i siti disabilitati",
-    "clientUrlHint": "L'URL dell'interfaccia web della tua istanza self-hosted",
     "clipboardClear": "Cancella appunti",
     "clipboardClear10Seconds": "Cancella dopo 10 secondi",
     "clipboardClear15Seconds": "Cancella dopo 15 secondi",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Quando è attivo il riempimento automatico di una credenziale con 2FA, copia automaticamente il suo codice TOTP negli appunti in modo da poterlo incollare nel campo successivo.",
     "credentialAutofill": "Riempimento automatico credenziali",
     "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",
+    "credentialExchange": {
+      "description": "Trasferisci password e codici 2FA direttamente da AliasVault a un altro gestore di password su questo dispositivo.",
+      "exportTitle": "Esporta in un'altra app",
+      "importInstructionsIos": "Aprire l'applicazione da cui si desidera importare, per esempio iOS Password, quindi scegliere \"Esporta dati in un'altra app\" e selezionare AliasVault. AliasVault si aprirà in modo da poter rivedere gli elementi prima che vengano salvati.",
+      "importTitle": "Importare da un'altra app",
+      "summaryCustomFields": "{{count}} elemento/i di un tipo AliasVault non sono stati salvati come campi personalizzati.",
+      "summaryUnsupported": "{{count}} credenziale(i) che non possono essere archiviate in AliasVault sono state saltate."
+    },
     "customApiUrl": "API URL",
-    "customClientUrl": "Url Client",
     "dark": "Scuro",
     "disableBatteryOptimization": "Disabilita ottimizzazione batteria",
-    "disabledForThisSite": "Disabilitato per questo sito",
-    "disabledOnAllSites": "Disabilitato su tutti i siti",
     "disabledSites": "Siti disabilitati",
     "disabledSitesDescription": "Siti in cui non apparirà il popup di riempimento automatico.",
-    "enabledForThisSite": "Abilitato per questo sito",
     "exportConfirmTitle": "Esporta cassaforte",
     "exportSectionTitle": "Esporta",
+    "exportToFileTitle": "Esporta su file",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Imposta l'intervallo di età predefinito per generare nuove identità. Ciò influisce sulla data di nascita assegnata all'identità generata.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Imposta la lingua usata per generare nuove identità."
     },
     "importExport": "Importa / Esporta",
-    "importSectionDescription": "Importa le password da altri gestori di password o da una precedente esportazione AliasVault.",
+    "importFromFileTitle": "Importa da file",
     "importSectionTitle": "Importa",
-    "importWebNote": "Per importare le credenziali dai gestori di password esistenti, si prega di accedere alla web app. La funzione d'importazione è attualmente disponibile solo sulla versione web.",
+    "importWebNote": "Per importare le password da un file, utilizza l'app web AliasVault.",
     "iosAutofillSettings": {
       "headerText": "È possibile configurare AliasVault per fornire password nativa e funzionalità di riempimento automatico della password in iOS. Seguire le istruzioni qui sotto per abilitarlo.",
       "openIosSettings": "Apri Impostazioni iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Apri Impostazioni",
     "openWebApp": "Apri app web",
     "passkeySettings": "Impostazioni Passkey",
-    "passkeysEnabled": "Abilita Passkeys",
     "passwordConfirm": {
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Seleziona la lingua",
     "serverConfiguration": "Configurazione del server",
-    "serverConfigurationDescription": "Configurare l'URL del server AliasVault per le istanze self-hosted",
     "serverUrl": "URL del server",
+    "serverUrlHint": "L'indirizzo della tua istanza di AliasVault auto-ospitata",
     "serverVersion": "Versione server",
     "sessionsAndLogs": "Sessioni & Log",
     "sessionsAndLogsDescription": "Visualizza dove si è connessi e controlla i recenti tentativi di accesso.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Usa predefinito",
     "validation": {
       "apiUrlInvalid": "Inserisci un URL API valido",
-      "apiUrlRequired": "L'URL API è obbligatorio",
-      "clientUrlInvalid": "Inserisci un URL del client valido",
-      "clientUrlRequired": "L'URL del client è obbligatorio"
+      "serverUrlInvalid": "Inserisci un URL valido per il server",
+      "serverUrlRequired": "L'URL del server è obbligatorio"
     },
     "vaultUnlock": "Metodo di sblocco cassaforte",
     "vaultUnlockSettings": {

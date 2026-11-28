@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Pengaturan lanjutan",
-      "customApiUrl": "URL API Khusus",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Header proxy khusus",
       "customProxyHeadersDescription": "Tambahkan header HTTP yang akan dikirimkan bersama setiap permintaan ke server AliasVault Anda. Fitur ini dapat digunakan untuk konfigurasi self-hosted yang berada di belakang proxy terbalik yang memeriksa keberadaan header khusus (misalnya, Pangolin, Cloudflare Access).",
       "headerName": "Nama Header",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Nilai header",
       "selfHosted": "Hosting mandiri",
-      "title": "Sambungan API",
       "version": "Versi: {{version}}"
-    },
-    "navigation": {
-      "login": "Masuk",
-      "loginSettings": "Pengaturan Masuk"
     },
     "notFound": {
       "goHome": "Kembali ke awal",
@@ -96,8 +91,8 @@
       "enterPassword": "Silakan masukkan kata sandi Anda",
       "httpError": "Kesalahan HTTP: {{status}}",
       "networkError": "Permintaan jaringan gagal. Silakan periksa koneksi internet Anda dan coba lagi.",
-      "networkErrorSelfHosted": "Permintaan jaringan gagal. Periksa koneksi jaringan dan ketersediaan server Anda. Untuk instans yang dihosting sendiri, pastikan Anda telah menginstal sertifikat SSL yang valid. Sertifikat yang ditandatangani sendiri tidak didukung di perangkat seluler karena alasan keamanan.",
-      "serverErrorSelfHosted": "Tidak dapat mengakses API. Untuk instans yang dihosting sendiri, silakan periksa apakah titik akhir API dapat diakses dengan membukanya di peramban: seharusnya muncul tulisan ‘OK’."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Jika Anda baru saja mengubah kata sandi dan mengalami kesulitan saat masuk menggunakan kata sandi baru tersebut, harap diperhatikan bahwa administrator server mungkin dapat memulihkan cadangan sebelumnya dari brankas Anda untuk membantu Anda. Jika demikian, silakan hubungi administrator server.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Kode autentikasi",
       "dontHaveAuthenticatorText": "Tidak bisa mengakses perangkat otentikator Anda?",
-      "loginErrorMessage": "Terjadi kesalahan saat memproses permintaan masuk. Silakan coba lagi (nanti).",
       "loginRequestErrorMessage": "Terjadi kesalahan saat memproses permintaan masuk.",
       "loginWithAuthenticatorLink": "Silakan masuk menggunakan kode otentikator.",
       "loginWithRecoveryCodeLink": "Silakan masuk menggunakan kode pemulihan.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Apakah Anda yakin Anda ingin menghapus item ini?",
     "disabled": "Dinonaktifkan",
     "dismiss": "Abaikan",
+    "download": "Unduh",
     "duplicate": "Duplikasi",
     "duplicateErrorMessage": "Gagal menduplikasi item.",
     "duplicateSuccessMessage": "Item berhasil diduplikasi.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Waktu tunggu permintaan login seluler telah habis. Silakan muat ulang halaman ini dan coba lagi.",
       "passwordChanged": "Kata sandi Anda telah berubah sejak terakhir kali Anda masuk. Silakan masuk kembali untuk alasan keamanan.",
-      "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
       "serverNotAvailable": "Server AliasVault sedang tidak tersedia. Silakan coba lagi nanti atau hubungi bagian dukungan jika masalah ini masih berlanjut.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Sesi Anda telah berakhir. Harap masuk kembali.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "Buat",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Sembunyikan",
     "hideDetails": "Sembunyikan rincian",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Unggah berkas ekspor {{service}} Anda:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Impor dari cadangan AliasVault",
       "aliasVaultInstructionsPart1": "Impor cadangan AliasVault yang telah Anda buat sebelumnya.",
       "bitwardenDescription": "Impor kata sandi dari brankas Bitwarden Anda",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Untuk mengimpor kata sandi Microsoft Edge Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka Menu > Pengaturan > Kata Sandi dan Pengisian Otomatis > Pengelola Kata Sandi Microsoft > ... > Ekspor kata sandi.",
       "enpassDescription": "Impor kata sandi dari Enpass",
       "enpassInstructionsPart1": "Untuk mengimpor kata sandi Enpass Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka Enpass, memilih ‘Menu’ > ‘File’ > ‘Ekspor’, lalu memilih ‘Berkas CSV (.csv)’.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Impor kata sandi dari Pengelola Kata Sandi Firefox Anda",
       "firefoxInstructionsPart1": "Untuk mengimpor kata sandi Firefox Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka peramban Firefox, lalu pilih menu > ‘Kata Sandi’. Selanjutnya, klik ikon menu di pojok kanan atas dan pilih ‘Ekspor kata sandi’.",
       "genericCsvDescription": "Impor kredensial menggunakan templat dalam format CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Untuk mengimpor kata sandi NordPass Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka aplikasi NordPass atau brankas web, lalu masuk ke ‘Pengaturan’ > ‘Ekspor Item’, dan memilih format CSV.",
       "onePasswordDescription": "Impor kata sandi dari brankas 1Password Anda",
       "onePasswordInstructionsPart1": "Untuk mengimpor brankas 1Password Anda, Anda perlu mengekspornya terlebih dahulu. Anda dapat melakukannya dengan masuk ke akun 1Password Anda di aplikasi desktop 1Password 8 (Windows / macOS / Linux), membuka menu ‘File’, lalu memilih ‘Ekspor’.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Impor kata sandi dari Proton Pass",
       "protonPassInstructionsPart1": "Untuk mengimpor brankas Proton Pass Anda, Anda perlu mengekspornya terlebih dahulu. Anda dapat melakukannya di ekstensi browser Proton Pass dengan membuka ‘Pengaturan’ > ‘Ekspor’.",
       "roboformDescription": "Impor kata sandi dari RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Impor kata sandi dari Strongbox",
       "strongboxInstructionsPart1": "Untuk mengimpor brankas Strongbox Anda, Anda perlu mengekspornya sebagai berkas CSV. Anda dapat melakukannya dengan membuka menu ‘File’ dan memilih ‘Ekspor Database’ (ke CSV).",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Setelah Anda mengekspor berkas tersebut, Anda dapat mengunggahnya di bawah ini."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Kunci Akses ditandai untuk dihapus",
     "passkeyWillBeDeleted": "Kunci akses ini akan dihapus saat Anda menyimpan kredensial ini.",
     "settings": {
-      "passkeyProvider": "Penyedia Kunci akses",
-      "passkeyProviderOn": "Penyedia Kunci akses aktif "
+      "passkeyProvider": "Penyedia Kunci akses"
     },
     "site": "Situs",
     "useBrowserPasskey": "Gunakan Kunci Akses Browser"
@@ -1177,7 +1178,6 @@
       "website": "Situs Web"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Aktif di semua situs (kecuali jika dinonaktifkan di bawah ini)",
     "advancedOptions": "Pilihan Lanjutan",
     "androidAutofillSettings": {
       "buttonTip": "Jika tombol di atas tidak berfungsi, mungkin tombol tersebut diblokir karena pengaturan keamanan. Anda dapat membuka Pengaturan Android → Pengelolaan Umum → Kata Sandi dan Pengisian Otomatis secara manual.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Kunci brankas secara otomatis setelah periode tidak aktif",
     "autoLockTimeoutHelp": "Vault hanya akan terkunci setelah periode tidak aktif yang ditentukan (tidak ada penggunaan pengisian otomatis atau jendela pop-up ekstensi yang dibuka). Vault akan selalu terkunci saat browser ditutup, terlepas dari pengaturan ini.",
     "autofill": "Pengisian Otomatis & Kunci Akses",
-    "autofillDisabledDescription": "Saran pengisian otomatis dinonaktifkan secara global",
-    "autofillEnabled": "Aktifkan Pengisian Otomatis",
-    "autofillEnabledDescription": "Saran pengisian otomatis akan muncul pada formulir masuk",
     "autofillMatching": "Pencocokan Pengisian Otomatis",
     "autofillMatchingDefault": "URL + subdomain + nama wildcard",
     "autofillMatchingMode": "Mode pencocokan pengisian otomatis",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Hanya domain URL yang tepat",
     "autofillMatchingUrlSubdomain": "URL + subdomain",
     "autofillSettings": "Pengaturan Pengisian Otomatis",
-    "autofillSettingsDescription": "Aktifkan atau nonaktifkan popup pengisian otomatis pada halaman web",
     "autofillSetup": {
       "alreadyConfigured": "Saya sudah mengonfigurasinya",
       "howToEnable": "Cara mengaktifkan Pengisian Otomatis & Kunci Akses:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Hapus semua situs yang dinonaktifkan",
-    "clientUrlHint": "URL antarmuka web dari instans yang dihosting mandiri milik Anda",
     "clipboardClear": "Bersihkan Clipboard",
     "clipboardClear10Seconds": "Kosongkan setelah 10 detik",
     "clipboardClear15Seconds": "Kosongkan setelah 15 detik",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Saat Anda mengisi kredensial secara otomatis dengan 2FA, salin kode TOTP-nya secara otomatis ke papan klip agar Anda dapat menempelkannya ke kolom berikutnya.",
     "credentialAutofill": "Pengisian otomatis kredensial",
     "credentialAutofillDescription": "Tampilkan jendela pop-up pengisian otomatis saat kolom nama pengguna/kata sandi terdeteksi",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL API",
-    "customClientUrl": "URL Klien",
     "dark": "Gelap",
     "disableBatteryOptimization": "Nonaktifkan optimasi baterai",
-    "disabledForThisSite": "Dinonaktifkan di situs ini",
-    "disabledOnAllSites": "Dinonaktifkan di semua situs",
     "disabledSites": "Situs yang dinonaktifkan",
     "disabledSitesDescription": "Situs dimana popup pengisian otomatis tidak akan muncul.",
-    "enabledForThisSite": "Diaktifkan untuk situs ini",
     "exportConfirmTitle": "Ekspor Brankas",
     "exportSectionTitle": "Ekspor",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Peringatan: Mengekspor vault Anda ke berkas yang tidak terenkripsi akan membuat semua kata sandi dan informasi sensitif Anda terpapar dalam bentuk teks biasa. Lakukan hal ini hanya pada perangkat yang tepercaya dan pastikan Anda:\n\n• Menyimpan berkas hasil ekspor di lokasi yang aman\n• Menghapus berkas tersebut saat Anda tidak lagi membutuhkannya\n• Jangan pernah membagikan berkas hasil ekspor kepada orang lain\n\nApakah Anda yakin ingin melanjutkan proses ekspor?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Tentukan rentang usia default untuk pembuatan identitas baru. Hal ini memengaruhi tanggal lahir yang ditetapkan pada identitas yang dihasilkan.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Tentukan bahasa yang akan digunakan saat membuat identitas baru."
     },
     "importExport": "Impor / Ekspor",
-    "importSectionDescription": "Impor kata sandi Anda dari pengelola kata sandi lain atau dari file ekspor AliasVault sebelumnya.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Impor",
-    "importWebNote": "Untuk mengimpor kredensial dari pengelola kata sandi yang sudah ada, silakan masuk ke aplikasi web. Fitur impor saat ini hanya tersedia di versi web.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Anda dapat mengonfigurasi AliasVault agar menyediakan fitur pengisian otomatis kata sandi dan passkey bawaan di iOS. Ikuti petunjuk di bawah ini untuk mengaktifkannya.",
       "openIosSettings": "Buka Pengaturan iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Buka Pengaturan",
     "openWebApp": "Buka aplikasi web",
     "passkeySettings": "Pengaturan Kunci akses",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Demi alasan keamanan, silakan masukkan kata sandi utama Anda untuk mengonfirmasi proses ekspor ini."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Pilih Bahasa",
     "serverConfiguration": "Konfigurasi Server",
-    "serverConfigurationDescription": "Konfigurasikan URL server AliasVault untuk instansi yang dihosting mandiri",
     "serverUrl": "URL Server",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Versi Server",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Gunakan default",
     "validation": {
       "apiUrlInvalid": "Silakan masukkan URL API yang valid",
-      "apiUrlRequired": "URL API wajib diisi",
-      "clientUrlInvalid": "Silakan masukkan URL klien yang valid",
-      "clientUrlRequired": "URL Klien wajib diisi"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Metode buka Vault",
     "vaultUnlockSettings": {

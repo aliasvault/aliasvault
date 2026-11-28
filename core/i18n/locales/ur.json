@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Advanced settings",
-      "customApiUrl": "Custom API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Custom proxy headers",
       "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header value",
       "selfHosted": "Self-hosted",
-      "title": "API Connection",
       "version": "Version: {{version}}"
-    },
-    "navigation": {
-      "login": "Login",
-      "loginSettings": "Login Settings"
     },
     "notFound": {
       "goHome": "Go back to the start",
@@ -96,8 +91,8 @@
       "enterPassword": "Please enter your password",
       "httpError": "HTTP error: {{status}}",
       "networkError": "Network request failed. Please check your internet connection and try again.",
-      "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator code",
       "dontHaveAuthenticatorText": "Don't have access to your authenticator device?",
-      "loginErrorMessage": "An error occurred while processing the login request. Try again (later).",
       "loginRequestErrorMessage": "An error occurred while processing the login request.",
       "loginWithAuthenticatorLink": "Log in with an authenticator code instead.",
       "loginWithRecoveryCodeLink": "Log in with a recovery code instead.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "disabled": "Disabled",
     "dismiss": "Dismiss",
+    "download": "Download",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
     "duplicateSuccessMessage": "Item duplicated successfully.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "Your session has expired. Please log in again.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "جنریٹ کریں",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Hide",
     "hideDetails": "Hide details",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Import from AliasVault backup",
       "aliasVaultInstructionsPart1": "Import your previously created AliasVault backup.",
       "bitwardenDescription": "Import passwords from your Bitwarden vault",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.",
       "enpassDescription": "Import passwords from Enpass",
       "enpassInstructionsPart1": "In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Import passwords from your Firefox Password Manager",
       "firefoxInstructionsPart1": "In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.",
       "genericCsvDescription": "Import credentials using a template CSV format",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.",
       "onePasswordDescription": "Import passwords from your 1Password vault",
       "onePasswordInstructionsPart1": "In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Import passwords from Proton Pass",
       "protonPassInstructionsPart1": "In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.",
       "roboformDescription": "Import passwords from RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Import passwords from Strongbox",
       "strongboxInstructionsPart1": "In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Once you have exported the file, you can upload it below."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Passkey Provider"
     },
     "site": "Site",
     "useBrowserPasskey": "Use Browser Passkey"
@@ -1177,7 +1178,6 @@
       "website": "ویب سائیٹ"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Active on all sites (unless disabled below)",
     "advancedOptions": "Advanced Options",
     "androidAutofillSettings": {
       "buttonTip": "If the button above doesn't work it might be blocked because of security settings. You can manually go to Android Settings → General Management → Passwords and autofill.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Automatically lock the vault after a period of inactivity",
     "autoLockTimeoutHelp": "The vault will only lock after the specified period of inactivity (no autofill usage or extension popup opened). The vault will always lock when the browser is closed, regardless of this setting.",
     "autofill": "Autofill & Passkeys",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "autofillEnabled": "Enable Autofill",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
     "autofillMatching": "Autofill Matching",
     "autofillMatchingDefault": "URL + subdomain + name wildcard",
     "autofillMatchingMode": "Autofill matching mode",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Exact URL domain only",
     "autofillMatchingUrlSubdomain": "URL + subdomain",
     "autofillSettings": "Autofill Settings",
-    "autofillSettingsDescription": "Enable or disable the autofill popup on web pages",
     "autofillSetup": {
       "alreadyConfigured": "I already configured it",
       "howToEnable": "How to enable Autofill & Passkeys:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Clear all disabled sites",
-    "clientUrlHint": "The web interface URL of your self-hosted instance",
     "clipboardClear": "Clear Clipboard",
     "clipboardClear10Seconds": "Clear after 10 seconds",
     "clipboardClear15Seconds": "Clear after 15 seconds",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
-    "customClientUrl": "Client URL",
     "dark": "Dark",
     "disableBatteryOptimization": "Disable battery optimization",
-    "disabledForThisSite": "Disabled for this site",
-    "disabledOnAllSites": "Disabled on all sites",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "enabledForThisSite": "Enabled for this site",
     "exportConfirmTitle": "Export Vault",
     "exportSectionTitle": "Export",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Set the language that will be used when generating new identities."
     },
     "importExport": "Import / Export",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Import",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "openIosSettings": "Open iOS Settings",
@@ -1352,7 +1352,6 @@
     "openSettings": "Open Settings",
     "openWebApp": "Open web app",
     "passkeySettings": "Passkey Settings",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Select Language",
     "serverConfiguration": "Server Configuration",
-    "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
     "serverUrl": "Server URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Use default",
     "validation": {
       "apiUrlInvalid": "Please enter a valid API URL",
-      "apiUrlRequired": "API URL is required",
-      "clientUrlInvalid": "Please enter a valid client URL",
-      "clientUrlRequired": "Client URL is required"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Vault Unlock Method",
     "vaultUnlockSettings": {

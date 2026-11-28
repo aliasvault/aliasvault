@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Avancerade Inställningar",
-      "customApiUrl": "Egen API-URL",
-      "customApiUrlPlaceholder": "https://min-aliasvault-instans.se/api",
       "customProxyHeaders": "Anpassade HTTP-huvuden för proxy",
       "customProxyHeadersDescription": "Lägg till HTTP-huvuden som skickas med varje begäran till din AliasVault-server. Kan användas för egenhostade installationer bakom en omvänd proxy som verifierar anpassade HTTP-huvuden (t.ex. Pangolin, Cloudflare Access).",
       "headerName": "Namn på HTTP-huvud",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Värde för HTTP-huvud",
       "selfHosted": "Egenhostad",
-      "title": "API-anslutning",
       "version": "Version: {{version}}"
-    },
-    "navigation": {
-      "login": "Inloggning",
-      "loginSettings": "Inloggningsinställningar"
     },
     "notFound": {
       "goHome": "Gå tillbaka till början",
@@ -96,8 +91,8 @@
       "enterPassword": "Ange ditt lösenord",
       "httpError": "HTTP-fel: {{status}}",
       "networkError": "Nätverksanropet misslyckades. Kontrollera din internetanslutning och försök igen.",
-      "networkErrorSelfHosted": "Nätverksanropet misslyckades. Kontrollera din nätverksanslutning och att servern är tillgänglig. För egenhostade instanser, se till att ett giltigt SSL-certifikat är installerat. Självsignerade certifikat stöds inte på mobila enheter av säkerhetsskäl.",
-      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, kontrollera att API-slutpunkten går att nå genom att öppna den i en webbläsare. Den ska visa \"OK\"."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Om du nyligen har ändrat ditt lösenord och har svårt att logga in med det nya lösenordet, observera att serveradministratören kanske kan återställa ditt valv från en tidigare säkerhetskopia. Om så är fallet, kontakta serveradministratören.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Autentiseringskod",
       "dontHaveAuthenticatorText": "Har du inte tillgång till din autentiseringsenhet?",
-      "loginErrorMessage": "Ett fel uppstod när inloggningsbegäran behandlades. Försök igen senare.",
       "loginRequestErrorMessage": "Ett fel uppstod när inloggningsbegäran behandlades.",
       "loginWithAuthenticatorLink": "Logga in med en autentiseringskod istället.",
       "loginWithRecoveryCodeLink": "Logga in med en återställningskod istället.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "disabled": "Inaktiverad",
     "dismiss": "Avfärda",
+    "download": "Ladda ner",
     "duplicate": "Duplicera",
     "duplicateErrorMessage": "Det gick inte att duplicera objektet.",
     "duplicateSuccessMessage": "Objektet har duplicerats.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "Inloggningsbegäran avböjdes på din mobila enhet.",
       "mobileLoginRequestExpired": "Begäran om mobil inloggning löpte ut. Ladda om sidan och försök igen.",
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Logga in igen av säkerhetsskäl.",
-      "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta supporten om problemet kvarstår.",
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta supporten om problemet kvarstår.",
       "serverOutdated": "AliasVault-servern måste uppdateras för att fungera med denna version av AliasVault. Försök igen senare. Om du använder en egenhostad server, kontakta din serveradministratör.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "Generera",
+    "goToVault": "Go to vault",
     "help": "Hjälp",
     "hide": "Dölj",
     "hideDetails": "Dölj detaljer",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Ladda upp din {{service}} exportfil:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importera från AliasVault-säkerhetskopia",
       "aliasVaultInstructionsPart1": "Importera en tidigare skapad AliasVault-säkerhetskopia.",
       "bitwardenDescription": "Importera lösenord från ditt Bitwarden-valv",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "För att kunna importera dina lösenord i Microsoft Edge behöver du exportera dem som en CSV-fil. Det gör du i Edge genom att gå till Meny > Inställningar > Lösenord och autofyll > Microsoft lösenordshanterare > … > Exportera lösenord.",
       "enpassDescription": "Importera lösenord från Enpass",
       "enpassInstructionsPart1": "För att kunna importera dina Enpass-lösenord behöver du exportera dem som en CSV-fil. Det gör du genom att öppna Enpass, gå till Meny > Arkiv > Exportera och välja CSV-fil (.csv).",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importera lösenord från din Firefox Password Manager",
       "firefoxInstructionsPart1": "För att importera dina Firefox lösenord, måste du exportera dem som en CSV-fil. Du kan göra detta genom att öppna webbläsaren Firefox, gå till menyn > \"Lösenord\". Klicka sedan på menyikonen i det övre högra hörnet och välj \"Exportera lösenord\".",
       "genericCsvDescription": "Importera inloggningsuppgifter via en mall med CSV-format",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "För att importera dina NordPass-lösenord måste du exportera dem som en CSV-fil. Det kan du göra genom att öppna NordPass-appen eller webbvalvet, gå till 'Inställningar' > 'Exportera föremål' och välja CSV-format.",
       "onePasswordDescription": "Importera lösenord från ditt 1Password-valv",
       "onePasswordInstructionsPart1": "För att importera ditt 1Password-valv måste du exportera det. Du kan göra detta genom att logga in på ditt 1Password-konto i 1Password 8-skrivbordsappen (Windows / MacOS / Linux), gå till menyn 'File' och välja 'Export'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importera lösenord från Proton Pass",
       "protonPassInstructionsPart1": "För att importera ditt Proton Pass-valv måste du exportera det. Du kan göra detta i Proton Pass webbläsartillägg genom att gå till \"Inställningar\" > \"Export\".",
       "roboformDescription": "Importera lösenord från RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importera lösenord från Strongbox",
       "strongboxInstructionsPart1": "För att importera ditt Strongbox-valv måste du exportera det som en CSV-fil. Du kan göra detta genom att gå till menyn 'File' och välja 'Exportera databas' (till CSV).",
       "template": "mall",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "När du har exporterat filen kan du ladda upp den nedan."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "settings": {
-      "passkeyProvider": "Passkey-leverantör",
-      "passkeyProviderOn": "Passkey-leverantör på "
+      "passkeyProvider": "Passkey-leverantör"
     },
     "site": "Webbplats",
     "useBrowserPasskey": "Använd webbläsarens Passkey"
@@ -1177,7 +1178,6 @@
       "website": "Webbplats"
     },
     "accountSecurity": "Kontosäkerhet",
-    "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "advancedOptions": "Avancerade inställningar",
     "androidAutofillSettings": {
       "buttonTip": "Om knappen ovan inte fungerar kan den blockeras på grund av säkerhetsinställningar. Du kan manuellt gå till Android Inställningar → Allmän hantering → Lösenord och autofyll.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Lås valvet automatiskt efter en period av inaktivitet",
     "autoLockTimeoutHelp": "Valvet kommer endast att låsas efter den angivna perioden av inaktivitet (ingen användning av autofyll eller öppnande av tilläggsruta). Valvet kommer alltid att låsa när webbläsaren stängs, oavsett inställning.",
     "autofill": "Autofyll & Passkeys",
-    "autofillDisabledDescription": "Autofyll förslag är inaktiverade globalt",
-    "autofillEnabled": "Aktivera Autofyll",
-    "autofillEnabledDescription": "Autofyll förslag visas på inloggningsformulär",
     "autofillMatching": "Autofyllsmatchning",
     "autofillMatchingDefault": "URL + subdomän + namn wildcard",
     "autofillMatchingMode": "Autofyll matchningsläge",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Endast exakt URL domän",
     "autofillMatchingUrlSubdomain": "URL + subdomän",
     "autofillSettings": "Inställningar för Autofyll",
-    "autofillSettingsDescription": "Aktivera eller inaktivera autofyllruta på webbsidor",
     "autofillSetup": {
       "alreadyConfigured": "Jag har redan konfigurerat det",
       "howToEnable": "Så här aktiverar du Autofyll & Passkeys:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Blockera skärmdumpar",
     "blockScreenshotsDescription": "Blockerar skärmbilder och skärminspelningar av appen.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
-    "clientUrlHint": "Webbgränssnittets URL för din egenhostade instans",
     "clipboardClear": "Rensa urklipp",
     "clipboardClear10Seconds": "Rensa efter 10 sekunder",
     "clipboardClear15Seconds": "Rensa efter 15 sekunder",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "När du autofyller en uppgift med 2FA, kopiera automatiskt dess TOTP kod till urklipp så du kan klistra in den i nästa fält.",
     "credentialAutofill": "Autofyll för inloggningsuppgifter",
     "credentialAutofillDescription": "Visa popup för autofyll när användarnamn/lösenordsfält upptäcks",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API URL",
-    "customClientUrl": "Klientens URL",
     "dark": "Mörkt",
     "disableBatteryOptimization": "Inaktivera batterioptimering",
-    "disabledForThisSite": "Inaktiverad för denna webbplats",
-    "disabledOnAllSites": "Inaktiverad på alla webbplatser",
     "disabledSites": "Inaktiverade webbplatser",
     "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
-    "enabledForThisSite": "Aktiverad för denna webbplats",
     "exportConfirmTitle": "Exportera valv",
     "exportSectionTitle": "Exportera",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Varning: Exportering av ditt valv till en okrypterad fil kommer exponera alla dina lösenord och känslig information i ren text. Gör endast detta på enheter du litar på och se till att du:\n\n• Lagrar den exporterade filen på en säker plats\n• Raderar filen när du inte behöver den längre\n• Aldrig delar den exporterade filen med andra\n\nÄr du säker på att du vill fortsätta med exporteringen?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Ange vilket språk som ska användas vid generering av nya identiteter."
     },
     "importExport": "Importera / Exportera",
-    "importSectionDescription": "Importera dina lösenord från andra lösenordshanterare eller från en tidigare AliasVault-export.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importera",
-    "importWebNote": "Logga in i webbappen för att importera inloggningsuppgifter från befintliga lösenordshanterare. Importfunktionen är för närvarande endast tillgänglig på webbversionen.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Du kan konfigurera AliasVault för att ange ursprungliga lösenord och passkey-autofyll funktionalitet i iOS. Följ instruktionerna nedan för att aktivera det.",
       "openIosSettings": "Öppna iOS-inställningarna",
@@ -1352,7 +1352,6 @@
     "openSettings": "Öppna inställningar",
     "openWebApp": "Öppna webbapp",
     "passkeySettings": "Passkey-inställningar",
-    "passkeysEnabled": "Aktivera passkeys",
     "passwordConfirm": {
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Välj Språk",
     "serverConfiguration": "Serverkonfiguration",
-    "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
     "serverUrl": "Serverns webbadress",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server-version",
     "sessionsAndLogs": "Sessioner och loggar",
     "sessionsAndLogsDescription": "Se var du är inloggad och granska de senaste inloggningsförsöken.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Använd standard",
     "validation": {
       "apiUrlInvalid": "Ange en giltig API-URL",
-      "apiUrlRequired": "API-URL krävs",
-      "clientUrlInvalid": "Ange en giltig klient-URL",
-      "clientUrlRequired": "Klientens URL krävs"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Valvupplåsningsmetod",
     "vaultUnlockSettings": {

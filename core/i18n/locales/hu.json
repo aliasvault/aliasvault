@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Haladó beállítások",
-      "customApiUrl": "Egyedi API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "customProxyHeaders": "Egyedi proxy header-ök",
       "customProxyHeadersDescription": "Adja meg a HTTP header-öket, amelyek küldésre kerülnek az AliasVault szerver felé a kérések során. Olyan saját üzemeltetésű saját fordított proxy esetén használható amely egyedi header-öket ellenőriz (pl. Pangolin, Cloudflare Access).",
       "headerName": "Header név",
       "headerNamePlaceholder": "X-Egyedi-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header érték",
       "selfHosted": "Saját üzemeltetésű",
-      "title": "API kapcsolat",
       "version": "{{version}} verzió"
-    },
-    "navigation": {
-      "login": "Bejelentkezés",
-      "loginSettings": "Belépési beállítások"
     },
     "notFound": {
       "goHome": "Ugrás a kezdéshez",
@@ -96,8 +91,8 @@
       "enterPassword": "Kérem, adja meg a jelszavát",
       "httpError": "HTTP hiba: {{status}}",
       "networkError": "A hálózati kérés sikertelen. Kérem, ellenőrizze internet kapcsolatát, és próbálkozzon újra.",
-      "networkErrorSelfHosted": "A hálózati kérés sikertelen. Ellenőrizze hálózati kapcsolatát és a szerver elérhetőséget. Saját szerver üzemeltetés esetén győződjön meg, hogy telepített fel érvényes SSL tanúsítványt. Saját aláírású tanúsítványok nem támogatottak a mobileszközön biztonsági okokból.",
-      "serverErrorSelfHosted": "Az API nem elérhető. A saját szerveren üzemeltetés esetén igazolja vissza az API végpont elérést a böngészőn keresztül: 'OK'-nak kell megjelennie."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Ha nemrégiben változtatott jelszót és gondjai vannak a bejelentkezéssel, a szerver admin elképzelhető, hogy vissza tud állítani egy korábbi széf verziót segítségül. Ha úgy véli ez segíthet, vegye fel vele a kapcsolatot.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Hitelesítő kód",
       "dontHaveAuthenticatorText": "Már nem áll rendelkezésre a hitelesítő eszköze?",
-      "loginErrorMessage": "Hiba lépett fel a belépés feldolgozása közben. Próbálja meg újra (később).",
       "loginRequestErrorMessage": "Hiba lépett fel a belépés feldolgozása közben.",
       "loginWithAuthenticatorLink": "Inkább hitelesítő kóddal való belépés.",
       "loginWithRecoveryCodeLink": "Inkább helyreállító kóddal való belépés.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Biztosan ki akarja törölni az elemet?",
     "disabled": "Kikapcsolva",
     "dismiss": "Elvet",
+    "download": "Letöltés",
     "duplicate": "Duplikálás",
     "duplicateErrorMessage": "Elem duplikálása sikertelen.",
     "duplicateSuccessMessage": "Elem sikeresen duplikálva.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra.",
       "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Kérem, jelentkezzen be újra biztonsági okokból.",
-      "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem, próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "serverNotAvailable": "Az AliasVault szerver nem elérhető. Kérem próbálkozzon újra később, és forduljon az ügyfélszolgálathoz ha továbbra is fennáll a hiba.",
       "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please try again later. If you use a self-hosted server, please contact your server administrator.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expand",
     "generate": "Generálás",
+    "goToVault": "Go to vault",
     "help": "Help",
     "hide": "Elrejtés",
     "hideDetails": "Részletek elrejtése",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "{{service}} export fájl feltöltése:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Jelszavak importálása korábbi AliasVault mentésből",
       "aliasVaultInstructionsPart1": "Importálja a korábban létrehozott AliasVault biztonsági mentését.",
       "bitwardenDescription": "Jelszavak importálása a Bitwarden széfjéből",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Ahhoz, hogy importálni tudja az Edge jelszavait, exportálnia kell azt CSV formátumba. Ezt megteheti a 'menü' > 'Beállítások' > 'Jelszavak és automatikus kitöltés' > 'Microsoft jelszókezelő' > ... > 'Jelszavak exportálása' almenüben.",
       "enpassDescription": "Jelszavak importálása Enpass-ból",
       "enpassInstructionsPart1": "Ahhoz, hogy importálni tudja az Enpass jelszavait, exportálnia kell azt CSV formátumba. Ezt megteheti a az Enpass megnyitása után 'Menü' > 'Fájl' > 'Exportálás'-on belül a 'CSV fájl (.csv)'-t választva.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Jelszavak importálása a Firefox Jelszó kezelőből",
       "firefoxInstructionsPart1": "Ahhoz, hogy importálni tudja a Firefox jelszavait, egy csv fájlt kell először exportálnia. Ezt megteheti a Firefox böngészőben ha a menü > 'Jelszavak' almenüben a jobb felső sarokban levő menüből a 'Jelszavak exportálása' pontot választja.",
       "genericCsvDescription": "Bejegyzések importálása minta CSV forma segítségével",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Ahhoz, hogy importálni tudja a NordPass jelszavait, exportálnia kell azt CSV formátumba Ezt megteheti az applikáció megnyitásával, vagy webes felületen való bejelentkezéssel, majd 'Beállatások' > 'Elemek exportálása' almenün belül a CSV formátumot választja.",
       "onePasswordDescription": "Jelszavak importálása a 1Password széfjéből",
       "onePasswordInstructionsPart1": "Az importáláshoz az 1Password széfjét először exportálnia kell. Ezt megteheti ha az asztali 1Password 8 alkalmazásban (Windows / MacOS / Linux), bemegy a 'Fájl' menübe, és azon belül az 'Export'-ot választja.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Jelszavak importálása Proton Pass-ból",
       "protonPassInstructionsPart1": "Ahhoz, hogy importálni tudja a Proton Pass széfét, exportálnia kell azt. Ezt megteheti a Proton Pass böngésző kiegészítőben levő 'Beállítások > 'Exportálás' almenüben.",
       "roboformDescription": "Jelszavak importálás a Roboform-ból",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Jelszavak importálása Strongbox-ból",
       "strongboxInstructionsPart1": "Ahhoz, hogy importálni tudja a Strongbox széfjét, exportálnia kell azt CSV formátumba. Ezt megteheti ha bemegy a 'Fájl' > 'Adatbázis exportálás' (CSV-be) menübe.",
       "template": "template",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Miután elkészült az export fájl, lentebb fel tudja tölteni."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Azonosítókulcs törlésre kijelölve",
     "passkeyWillBeDeleted": "A azonosítókulcs akkor kerül törlésre, ha a bejegyzést menti.",
     "settings": {
-      "passkeyProvider": "Azonosítókulcs kiszolgáló",
-      "passkeyProviderOn": "Azonosítókulcs kiszolgáló itt "
+      "passkeyProvider": "Azonosítókulcs kiszolgáló"
     },
     "site": "Weboldal",
     "useBrowserPasskey": "Böngészős azonosítókulcs használata"
@@ -1177,7 +1178,6 @@
       "website": "Weblap"
     },
     "accountSecurity": "Account Security",
-    "activeOnAllSites": "Aktív minden oldalon (hacsak nincs lent kikapcsolva)",
     "advancedOptions": "Haladó beállítások",
     "androidAutofillSettings": {
       "buttonTip": "Ha a fenti gomb nem működik, feltehetően biztonsági okokból tiltásra került. Kézi beavatkozás szükséges, menjen az Android Beállításokba → Általános Kezelés → Jelszavak és kitöltés.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Automatikusan zárolja a széfet bizonyos idejű inaktivitást követően",
     "autoLockTimeoutHelp": "A széf csak a megadott időtartamot követően záródik (kitöltés vagy felugró bővítmény használata nélkül). A széf mindig záródik ha a böngésző bezárásra kerül ettől a beállítástól függetlenül.",
     "autofill": "Kitöltés & Azonosítókulcsok",
-    "autofillDisabledDescription": "Kitöltési ajánlások teljes mértékben ki vannak kapcsolva",
-    "autofillEnabled": "Kitöltés engedélyezése",
-    "autofillEnabledDescription": "Kitöltési ajánlások a bejelentkezési mezőnél jelennek meg",
     "autofillMatching": "Kitöltés egyezés",
     "autofillMatchingDefault": "Webcím + altartomány + név helyettesítő",
     "autofillMatchingMode": "Kitöltés egyezés mód",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Csak a pontos webcím esetén",
     "autofillMatchingUrlSubdomain": "Webcím + altartomány",
     "autofillSettings": "Kitöltés beállítások",
-    "autofillSettingsDescription": "Weboldalak esetén automata kitöltés felugró ablak ki- vagy bekapcsolása",
     "autofillSetup": {
       "alreadyConfigured": "Már beállítottam",
       "howToEnable": "Hogyan kapcsolható be a Kitöltés & Azonosítókulcsok:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Block Screenshots",
     "blockScreenshotsDescription": "Blocks screenshots and screen recordings of the app.",
     "clearAllDisabledSites": "Minden kikapcsolt oldal visszaállítása",
-    "clientUrlHint": "A saját üzemeltetésű szerver webes felülete",
     "clipboardClear": "Vágólap ürítése",
     "clipboardClear10Seconds": "Ürítés 10 mp után",
     "clipboardClear15Seconds": "Ürítés 15 mp után",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Amikor egy bejegyzést illeszt be amely 2FA-val rendelkezik, automatikusan másolja a jelenlegi TOTP kódot is a vágólapra.",
     "credentialAutofill": "Bejegyzések kitöltése",
     "credentialAutofillDescription": "Felugró kitöltő ablak megjelenítése ha felhasználónév/jelszó mezőt érzékel",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API webcím",
-    "customClientUrl": "Kliens webcím",
     "dark": "Sötét",
     "disableBatteryOptimization": "Az akkumulátor optimalizálás kikapcsolása",
-    "disabledForThisSite": "Ehhez az oldalhoz kikapcsolva",
-    "disabledOnAllSites": "Minden oldalon kikapcsolva",
     "disabledSites": "Kikapcsolt weboldalak",
     "disabledSitesDescription": "Weboldalak, ahol a kitöltés nem ugrik fel.",
-    "enabledForThisSite": "Ehhez az oldalhoz engedélyezve",
     "exportConfirmTitle": "Széf exportálása",
     "exportSectionTitle": "Exportálás",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szüksége\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Állítsa be a személyiség generáláshoz használt alap kor intervallumot. Ez hatással lesz a születési időre.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Állítsa be a személyazonosság generáláshoz használt nyelvet."
     },
     "importExport": "Importálás / Exportálás",
-    "importSectionDescription": "Importálja be jelszavait egy másik jelszókezelőből, vagy egy korábbi AliasVault exportból.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importálás",
-    "importWebNote": "Ahhoz, hogy más jelszókezelőkből tudjon importálni, be kell jelentkeznie a webes felületre. Az importálás sajnos jelenleg még csak a weben érhető el.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Az AliasVault-ot be tudja úgy állítani, hogy natívan töltse ki a jelszavakat és azonosítókulcsokat az iOS-ben. Kövesse a lenti leírást a beállításhoz.",
       "openIosSettings": "iOS beállítások megnyitása",
@@ -1352,7 +1352,6 @@
     "openSettings": "Beállítások megnyitása",
     "openWebApp": "Webalkalmazás megnyitása",
     "passkeySettings": "Azonosítókulcs beállítások",
-    "passkeysEnabled": "Enable Passkeys",
     "passwordConfirm": {
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Nyelv kiválasztása",
     "serverConfiguration": "Szerver konfiguráció",
-    "serverConfigurationDescription": "AliasVault szerver webcím konfigurálása saját üzemeltetés esetén",
     "serverUrl": "Kiszolgáló webcím",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Szerver verzió",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Alap használata",
     "validation": {
       "apiUrlInvalid": "Kérem adjon meg egy helyes API webcímet",
-      "apiUrlRequired": "API webcím szükséges",
-      "clientUrlInvalid": "Kérem adjon meg egy helyes kliens webcímet",
-      "clientUrlRequired": "Kliens webcím szükséges"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Széf feloldási mód",
     "vaultUnlockSettings": {

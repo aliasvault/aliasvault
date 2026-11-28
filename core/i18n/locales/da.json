@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Avancerede indstillinger",
-      "customApiUrl": "Brugerdefineret API-URL",
-      "customApiUrlPlaceholder": "https://min-aliasvault-instans.dk/api",
       "customProxyHeaders": "Tilpassede proxy headers",
       "customProxyHeadersDescription": "Tilføj HTTP-headere, der sendes med alle anmodninger til din AliasVault-server. Kan bruges til selvhostede opsætninger bag en omvendt proxy, der kontrollerer brugerdefinerede overskrifter (f.eks Pangolin, Cloudflare Access).",
       "headerName": "Header navn",
       "headerNamePlaceholder": "X-Custom-Header",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Header værdi",
       "selfHosted": "Selvhostet",
-      "title": "API-forbindelse",
       "version": "Version: {{version}}"
-    },
-    "navigation": {
-      "login": "Log på",
-      "loginSettings": "Login-indstillinger"
     },
     "notFound": {
       "goHome": "Gå tilbage til starten",
@@ -96,8 +91,8 @@
       "enterPassword": "Indtast venligst din adgangskode",
       "httpError": "HTTP-fejl: {{status}}",
       "networkError": "Netværksanmodning mislykkedes. Tjek venligst din internetforbindelse og prøv igen.",
-      "networkErrorSelfHosted": "Netværksanmodning mislykkedes. Tjek din netværksforbindelse og serverens tilgængelighed. For selvhostede instanser skal du sikre dig, at du har installeret et gyldigt SSL-certifikat. Selvsignerede certifikater understøttes ikke på mobile enheder af sikkerhedsmæssige årsager.",
-      "serverErrorSelfHosted": "Kunne ikke få forbindelse til API'en. For selvhostede instanser skal du kontrollere, at API-endpointet er tilgængeligt ved at besøge det i en browser: det bør vise 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Hvis du for nylig har ændret din adgangskode og oplever problemer med at logge ind med din nye adgangskode, skal du være opmærksom på, at serveradministratoren muligvis kan gendanne en tidligere backup af din boks (vault) for at hjælpe dig. Hvis dette er tilfældet, bedes du kontakte serveradministratoren.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator-kode",
       "dontHaveAuthenticatorText": "Har du ikke adgang til din authenticator-enhed?",
-      "loginErrorMessage": "Der opstod en fejl under behandlingen af login-anmodningen. Prøv igen (senere).",
       "loginRequestErrorMessage": "Der opstod en fejl under behandlingen af login-anmodningen.",
       "loginWithAuthenticatorLink": "Log ind med en authenticator-kode i stedet.",
       "loginWithRecoveryCodeLink": "Log ind med en gendannelseskode i stedet.",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "disabled": "Deaktiveret",
     "dismiss": "Afvis",
+    "download": "Download",
     "duplicate": "Dupliker",
     "duplicateErrorMessage": "Kunne ikke duplikere emnet.",
     "duplicateSuccessMessage": "Element duplikeret med succes.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "Login-anmodningen blev afvist på din mobilenhed.",
       "mobileLoginRequestExpired": "Anmodning om mobil-logon udløb. Genindlæs siden og prøv igen.",
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
-      "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverOutdated": "AliasVault-serveren skal opdateres for at arbejde med denne version af AliasVault. Prøv venligst igen senere. Hvis du bruger en selvhostede server, kontakt venligst din serveradministrator.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
@@ -283,6 +277,7 @@
     },
     "expand": "Udvid",
     "generate": "Generer",
+    "goToVault": "Go to vault",
     "help": "Hjælp",
     "hide": "Skjul",
     "hideDetails": "Skjul detaljer",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Upload din {{service}} eksportfil:"
     },
     "services": {
+      "aegisInstructionsPart1": "In order to import your Aegis codes, you need to export them as an unencrypted JSON file. You can do this in Aegis by going to 'Settings' > 'Import & Export' > 'Export', selecting 'Aegis (.JSON)' and turning off encryption.",
       "aliasVaultDescription": "Importer fra AliasVault backup",
       "aliasVaultInstructionsPart1": "Importer din tidligere oprettede AliasVault backup.",
       "bitwardenDescription": "Importer adgangskoder fra din Bitwarden-boks",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "For at importere dine Microsoft Edge-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at gå til Menu > Indstillinger > Adgangskoder og autofyld > Microsoft Password Manager > ... > Eksportér adgangskoder.",
       "enpassDescription": "Importer adgangskoder fra Enpass",
       "enpassInstructionsPart1": "For at importere dine Enpass-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne Enpass, gå til 'Menu' > 'File' (Fil) > 'Export' (Eksportér) og vælge 'CSV file (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importer adgangskoder fra din Firefox Password Manager",
       "firefoxInstructionsPart1": "For at importere dine Firefox-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne din Firefox-browser, gå til menuen > 'Adgangskoder'. Klik derefter på menuikonet i øverste højre hjørne og vælg 'Eksportér adgangskoder'.",
       "genericCsvDescription": "Importer loginoplysninger ved hjælp af et generisk CSV-skabelonformat",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "For at importere dine NordPass-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at åbne NordPass-appen eller webboksen, gå til 'Indstillinger' > 'Eksportér emner' og vælge CSV-formatet.",
       "onePasswordDescription": "Importer adgangskoder fra din 1Password-boks",
       "onePasswordInstructionsPart1": "For at importere din 1Password boks, skal du eksportere den. Du kan gøre dette ved at logge ind på din 1Password konto i 1Password 8 desktop app (Windows / MacOS / Linux), gå til menuen 'Fil' og vælge 'Eksport'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importer adgangskoder fra Proton Pass",
       "protonPassInstructionsPart1": "For at importere din Proton Pass boks skal du eksportere den. Du kan gøre dette i Proton Pass browserudvidelsen ved at gå til 'Indstillinger' > 'Eksporter'.",
       "roboformDescription": "Importer adgangskoder fra RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importer adgangskoder fra Strongbox",
       "strongboxInstructionsPart1": "For at importere din Strongbox-boks skal du eksportere den som en CSV-fil. Du kan gøre dette ved at gå til menuen 'File' (Fil) og vælge 'Export Database' (Eksportér database) til CSV.",
       "template": "skabelon",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Når du har eksporteret filen, kan du uploade den nedenfor."
     }
   },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey markeret til sletning",
     "passkeyWillBeDeleted": "Denne passkey slettes, når du gemmer denne logonoplysning.",
     "settings": {
-      "passkeyProvider": "Passkey-udbyder",
-      "passkeyProviderOn": "Passkey-udbyder på "
+      "passkeyProvider": "Passkey-udbyder"
     },
     "site": "Websted",
     "useBrowserPasskey": "Brug browser-passkey"
@@ -1177,7 +1178,6 @@
       "website": "Websted"
     },
     "accountSecurity": "Konto Sikkerhed",
-    "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "advancedOptions": "Avancerede indstillinger",
     "androidAutofillSettings": {
       "buttonTip": "Hvis knappen herover ikke virker, kan den være blokeret pga. sikkerhedsindstillinger. Du kan manuelt gå til Android-indstillinger → Generel styring → Adgangskoder og autofyld.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Lås automatisk boksen efter en periode med inaktivitet",
     "autoLockTimeoutHelp": "Boksen vil kun låse efter den angivne periode med inaktivitet (ingen brug af autofyld eller åbning af udvidelsen). Boksen vil altid låse, når browseren lukkes, uanset denne indstilling.",
     "autofill": "Autofyld & Passkeys",
-    "autofillDisabledDescription": "Autofyld-forslag er deaktiveret globalt",
-    "autofillEnabled": "Aktiver autofyld",
-    "autofillEnabledDescription": "Autofyld-forslag vil blive vist i login-formularer",
     "autofillMatching": "Autofyld-matching",
     "autofillMatchingDefault": "URL + underdomæne + navn wildcard",
     "autofillMatchingMode": "Matching-tilstand for autofyld",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Kun eksakt URL-domæne",
     "autofillMatchingUrlSubdomain": "URL + underdomæne",
     "autofillSettings": "Indstillinger for autofyld",
-    "autofillSettingsDescription": "Aktiver eller deaktiver autofyld-popup på websider",
     "autofillSetup": {
       "alreadyConfigured": "Jeg har allerede konfigureret det",
       "howToEnable": "Sådan aktiverer du Autofyld & Passkeys:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Bloker Skærmfotos",
     "blockScreenshotsDescription": "Blokerer skærmbilleder og skærmoptagelser af appen.",
     "clearAllDisabledSites": "Ryd alle deaktiverede websteder",
-    "clientUrlHint": "Web-interfacets URL for din selv-hostede instans",
     "clipboardClear": "Ryd udklipsholder",
     "clipboardClear10Seconds": "Ryd efter 10 sekunder",
     "clipboardClear15Seconds": "Ryd efter 15 sekunder",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Når du automatisk udfylder legitimationsoplysninger med 2FA, kopieres dens TOTP-kode automatisk til klippebordet, så du kan indsætte den i det næste felt.",
     "credentialAutofill": "Loginoplysninger autofyld",
     "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "API-URL",
-    "customClientUrl": "Klient-URL",
     "dark": "Mørk",
     "disableBatteryOptimization": "Deaktiver batterioptimering",
-    "disabledForThisSite": "Deaktiveret for dette websted",
-    "disabledOnAllSites": "Deaktiveret på alle websteder",
     "disabledSites": "Deaktiverede websteder",
     "disabledSitesDescription": "Websteder hvor popup-vinduet for autofyld ikke vises.",
-    "enabledForThisSite": "Aktiveret for dette websted",
     "exportConfirmTitle": "Eksporter boks",
     "exportSectionTitle": "Eksport",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede enheder og sørg for at:\n\n• Opbevar den eksporterede fil på et sikkert sted\n• Slet filen, når du ikke længere har brug for den\n• Del aldrig den eksporterede fil med andre\n\nEr du sikker på, at du vil fortsætte med eksporten?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Indstil det sprog, der skal bruges ved generering af nye identiteter."
     },
     "importExport": "Import / Eksport",
-    "importSectionDescription": "Importer dine adgangskoder fra andre adgangskodeadministratorer eller fra en tidligere AliasVault-eksport.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importer",
-    "importWebNote": "For at importere loginoplysninger fra eksisterende adgangskodeadministratorer skal du logge ind på web-appen. Importfunktionen er i øjeblikket kun tilgængelig i webversionen.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Du kan konfigurere AliasVault til at levere indbygget autofyld af adgangskoder og passkeys i iOS. Følg instruktionerne herunder for at aktivere det.",
       "openIosSettings": "Åbn iOS-indstillinger",
@@ -1352,7 +1352,6 @@
     "openSettings": "Åbn indstillinger",
     "openWebApp": "Åbn web-app",
     "passkeySettings": "Indstillinger for passkey",
-    "passkeysEnabled": "Aktiver Passkeys",
     "passwordConfirm": {
       "exportDescription": "Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Vælg sprog",
     "serverConfiguration": "Serverkonfiguration",
-    "serverConfigurationDescription": "Konfigurer AliasVault server-URL for selv-hostede instanser",
     "serverUrl": "Server-URL",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessioner Og Log filer",
     "sessionsAndLogsDescription": "Se hvor du er logget ind og se seneste loginforsøg.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Brug standard",
     "validation": {
       "apiUrlInvalid": "Indtast venligst en gyldig API-URL",
-      "apiUrlRequired": "API-URL er påkrævet",
-      "clientUrlInvalid": "Indtast venligst en gyldig klient-URL",
-      "clientUrlRequired": "Klient-URL er påkrævet"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Metode til oplåsning af boks",
     "vaultUnlockSettings": {

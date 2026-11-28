@@ -34,20 +34,15 @@
     "appName": "AliasVault",
     "loginSettings": {
       "advancedSettings": "Configurações avançadas",
-      "customApiUrl": "URL de API personalizada",
-      "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",
       "customProxyHeaders": "Cabeçalhos de proxy personalizados",
       "customProxyHeadersDescription": "Adicionar cabeçalhos HTTP que serão enviados com cada requisição para seu servidor AliasVault. Pode ser utilizado para configurações auto-hospedadas atrás de proxys reversos que verificam cabeçalhos (por exemplo, Pangolin, Cloudflare Access).",
       "headerName": "Nome do cabeçalho",
       "headerNamePlaceholder": "X-Cabeçalho-Personalizado",
+      "headerNameInvalid": "Not a valid HTTP header name.",
+      "headerNameReserved": "AliasVault already sends this HTTP header.",
       "headerValue": "Valor do cabeçalho",
       "selfHosted": "Auto-hospedado",
-      "title": "Conexão com API",
       "version": "Versão: {{version}}"
-    },
-    "navigation": {
-      "login": "Login",
-      "loginSettings": "Configurações de Login"
     },
     "notFound": {
       "goHome": "Voltar ao início",
@@ -96,8 +91,8 @@
       "enterPassword": "Por favor digite sua senha",
       "httpError": "Erro HTTP: {{status}}",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
-      "networkErrorSelfHosted": "Falha na rede. Verifique sua conexão de rede e a disponibilidade do servidor. Para instâncias auto-hospedadas, certifique-se de ter um certificado SSL válido instalado. Certificados autorassinados não são compatíveis com dispositivos móveis por motivos de segurança.",
-      "serverErrorSelfHosted": "Não foi possível conectar à API. Se você usa uma instância auto-hospedada, verifique se o endpoint da API está acessível abrindo-o no navegador e veja se ele exibe 'OK'."
+      "selfHostedServerUnreachable": "Could not reach your AliasVault server at {{apiUrl}}. Please check that the server URL is correct, that the server is reachable and that its SSL certificate is valid.",
+      "serverCertificateNotTrusted": "Could not set up a secure connection to the AliasVault server: its SSL certificate is invalid or not trusted by this device. If your server uses a self-signed certificate, install and trust that certificate on this device first."
     },
     "forgotPassword": {
       "contactAdministrator": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login com sua nova senha, por favor, note que o administrador do servidor pode recuperar um backup do seu cofre para você. Se este for o caso, por favor, entre em contato com o administrador do servidor.",
@@ -113,7 +108,6 @@
     "loginForm": {
       "authenticatorCodeLabel": "Código de autenticação",
       "dontHaveAuthenticatorText": "Não tem acesso ao dispositivo de autenticação?",
-      "loginErrorMessage": "Ocorreu um erro enquanto a tentativa de login era processada. Tente novamente (mais tarde).",
       "loginRequestErrorMessage": "Ocorreu um erro ao processar a solicitação de login.",
       "loginWithAuthenticatorLink": "Faça login com um código de autenticação.",
       "loginWithRecoveryCodeLink": "Faça login com um código de recuperação.",
@@ -139,7 +133,7 @@
     "noAccountYet": "Não possui conta?",
     "passwordAttemptsWarning": "Senha incorreta. Você será desconectado se você digitar a senha incorretamente mais {{remainingAttempts}} vezes.",
     "passwordPlaceholder": "Digite sua senha",
-    "pinInput": "PIN input",
+    "pinInput": "Inserir PIN",
     "register": {
       "passwordLabel": "Sua senha",
       "passwordPlaceholder": "••••••••",
@@ -213,7 +207,7 @@
   },
   "common": {
     "add": "Adicionar",
-    "added": "Added",
+    "added": "Adicionado",
     "alias": "Alias",
     "attachmentDownloadFailed": "Falha ao baixar anexo",
     "attachments": "Anexos",
@@ -237,6 +231,7 @@
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "disabled": "Desabilitado",
     "dismiss": "Ignorar",
+    "download": "Baixar",
     "duplicate": "Duplicar",
     "duplicateErrorMessage": "Falha ao duplicar item.",
     "duplicateSuccessMessage": "Item duplicado com sucesso.",
@@ -263,7 +258,6 @@
       "mobileLoginRequestDeclined": "A solicitação de login foi recusada no seu dispositivo móvel.",
       "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
-      "serverError": "Não foi possível conectar ao servidor do AliasVault. Tente novamente mais tarde ou entre em contato com o suporte se o problema persistir.",
       "serverNotAvailable": "O servidor do AliasVault não está disponível no momento. Tente novamente mais tarde ou contate o suporte caso o problema persista.",
       "serverOutdated": "O servidor do AliasVault precisa ser atualizado para funcionar com esta versão do AliasVault. Tente novamente mais tarde. Se você usa um servidor auto-hospedado, entre em contato com o administrador do servidor.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
@@ -283,6 +277,7 @@
     },
     "expand": "Expandir",
     "generate": "Gerar",
+    "goToVault": "Go to vault",
     "help": "Ajuda",
     "hide": "Esconder",
     "hideDetails": "Esconder detalhes",
@@ -510,7 +505,7 @@
     "recommendedLabel": "Recomendado",
     "serviceCard": {
       "attachmentsDetected": "{{count}} anexo(s), {{size}}",
-      "confirmImportQuestion": "Are you sure you want to continue? Note: the import process can take a short while.",
+      "confirmImportQuestion": "Tem certeza que deseja continuar? Nota: o processo de importação pode demorar um pouco.",
       "decryptAndContinueButton": "Descriptografar e Continuar",
       "decryptingFile": "Descriptografando arquivo...",
       "decryptionErrorGeneric": "Falha ao descriptografar o arquivo. Por favor, confirme que o arquivo não está corrompido e tente novamente.",
@@ -518,7 +513,7 @@
       "decryptionPasswordLabel": "Senha de Descriptografia",
       "duplicateCredentialsWarning": "{{count}} credencial(is) duplicada(s) foram encontradas e não serão importadas.",
       "encryptedFilePasswordPrompt": "Este arquivo está criptografado. Por favor, digite a senha que utilizou ao criar a exportação.",
-      "existingItemsUpdateInfo": "{{count}} existing item(s) will be updated with new data.",
+      "existingItemsUpdateInfo": "{{count}} item existente(s) serão atualizados com novos dados.",
       "extractFaviconsLabel": "Extrair favicons para serviços com URLs",
       "extractingFavicons": "Extraindo ícones de favorito... {{current}} / {{total}}",
       "faviconExtractionNote": "Nota: A extração de favicons está ativada. Este processo pode levar vários minutos, dependendo do número de credenciais de acesso com URLs. Por favor, mantenha a página aberta.",
@@ -536,7 +531,7 @@
       "importPartialFailureWarning": "{{count}} item(ns) não foram processados e serão pulados.",
       "importSuccessMessage": "{{count}} credenciais importadas com sucesso.",
       "moreCredentials": "... e mais {{count}} credenciais",
-      "newItemsImportInfo": "{{count}} new item(s) will be imported.",
+      "newItemsImportInfo": "{{count}} novo(s) item(ns) será(ão) importado(s).",
       "noLogoText": "Sem logo",
       "noNewCredentials": "Nenhuma credencial foi encontrada para importar.",
       "previewInstructions": "Verifique se as seguintes credenciais encontradas parecem corretas antes de continuar:",
@@ -547,6 +542,7 @@
       "uploadExportFileText": "Carregar seu arquivo de exportação de {{service}}:"
     },
     "services": {
+      "aegisInstructionsPart1": "Para importar seus códigos do Aegis, exporte-os em JSON sem criptografia. No Aegis, vá em 'Configurações' > 'Importar e exportar' > 'Exportar', escolha 'Aegis (.JSON)' e desative a criptografia.",
       "aliasVaultDescription": "Importar de um backup do AliasVault",
       "aliasVaultInstructionsPart1": "Importar seu backup do AliasVault criado anteriormente.",
       "bitwardenDescription": "Importe senhas do seu cofre do Bitwarden",
@@ -562,6 +558,7 @@
       "edgeInstructionsPart1": "Para importar suas senhas do Microsoft Edge, você precisa exportá-las como um arquivo CSV. Você pode fazer isso indo ao Menu > Configurações > Senha e autopreenchimento > Gerenciador de Senhas Microsoft > ... > Exportar senhas.",
       "enpassDescription": "Importar senhas do Enpass",
       "enpassInstructionsPart1": "Para importar suas senhas do Enpass, você precisa exportá-las como um arquivo CSV. Você pode fazer isso abrindo o Enpass, indo em 'Menu' > 'Arquivo' > 'Exportar' e selecionando 'Arquivo CSV (.csv)'.",
+      "enteAuthInstructionsPart1": "In order to import your Ente Auth codes, you need to export them as plain text. You can do this in Ente Auth by going to 'Settings' > 'Data' > 'Export codes' and selecting 'Plain text'.",
       "firefoxDescription": "Importar senhas do seu Gerenciador de Senhas do Firefox",
       "firefoxInstructionsPart1": "Para importar suas senhas do Firefox, você precisará exportá-las como um arquivo CSV. Você pode fazer isto abrindo o seu navegador Firefox, indo ao menu 'Senhas'. Então, clique no ícone do menu no canto superior direito e selecione 'Exportar senhas'.",
       "genericCsvDescription": "Importar credenciais utilizando um formato de template de CSV",
@@ -581,6 +578,8 @@
       "nordPassInstructionsPart1": "Para importar suas senhas do NordPass, você precisa exportá-las como um arquivo CSV. Você pode fazer isto abrindo o aplicativo ou a página web do seu cofre NordPass, indo em 'Configurações' > 'Exportar Itens', e selecionar o formato CSV.",
       "onePasswordDescription": "Importe senhas do seu cofre do 1Password",
       "onePasswordInstructionsPart1": "Para importar seu cofre do 1Password, você precisará exportá-lo. Você pode fazer isto entrando na sua conta 1Password no aplication 1Password 8 para desktop (Windows / MacOS / Linux), indo ao menu 'Arquivo' e selecionando 'Exportar'.",
+      "otpAuthListDescription": "Import 2FA codes from a list of otpauth:// URLs",
+      "otpAuthListInstructionsPart1": "Upload a text file (.txt) with one otpauth:// URL per line. Many authenticator apps can export their codes in this format.",
       "protonPassDescription": "Importar senhas do Proton Pass",
       "protonPassInstructionsPart1": "Para importar seu cofre do Proton Pass, você precisará exportá-lo. Você pode fazer isto na extensão de navegador do Proton Pass e indo ao menu 'Configurações' > 'Exportar'.",
       "roboformDescription": "Importar senhas do RoboForm",
@@ -588,6 +587,9 @@
       "strongboxDescription": "Importar senhas do Strongbox",
       "strongboxInstructionsPart1": "Para importar seu cofre do Strongbox, você precisará exportá-lo para um arquivo CSV. Você pode fazer isto indo no menu 'Arquivo' e selecionando 'Exportar Banco de Dados (para CSV)'.",
       "template": "modelo",
+      "twoFactorAppDescription": "Import 2FA codes from {{service}}",
+      "twoFactorMergeHint": "Each code is imported as a separate item. To add a code to an existing login, right-click it and choose 'Merge'.",
+      "twoFasInstructionsPart1": "In order to import your 2FAS codes, you need to export them as a backup file without a password. You can do this in 2FAS by going to 'Settings' > '2FAS Backup' > 'Export to file'.",
       "uploadInstructions": "Depois de exportar o arquivo, você pode carregá-lo abaixo."
     }
   },
@@ -917,15 +919,15 @@
     "separator": "Separator",
     "serviceUrl": "URL do serviço",
     "sort": {
-      "dateCreated": "Date created",
+      "dateCreated": "Data de criação",
       "groups": {
-        "last30Days": "Last 30 days",
-        "last7Days": "Last 7 days",
-        "older": "Older",
-        "today": "Today"
+        "last30Days": "Últimos 30 dias",
+        "last7Days": "Últimos 7 dias",
+        "older": "Antigos",
+        "today": "Hoje"
       },
-      "lastModified": "Last modified",
-      "lastUsed": "Last used",
+      "lastModified": "Última modificação",
+      "lastUsed": "Último uso",
       "name": "Nome",
       "title": "Ordenar por"
     },
@@ -1160,8 +1162,7 @@
     "passkeyMarkedForDeletion": "Passkey marcada para ser excluída",
     "passkeyWillBeDeleted": "Esta passkey será excluída quando você salvar esta credencial.",
     "settings": {
-      "passkeyProvider": "Provedor de Passkey",
-      "passkeyProviderOn": "Provedor de Passkey em "
+      "passkeyProvider": "Provedor de Passkey"
     },
     "site": "Site",
     "useBrowserPasskey": "Utilizar Passkey do Navegador"
@@ -1177,7 +1178,6 @@
       "website": "Site"
     },
     "accountSecurity": "Segurança da conta",
-    "activeOnAllSites": "Ativado em todos os sites (a menos que esteja desabilitado abaixo)",
     "advancedOptions": "Opções avançadas",
     "androidAutofillSettings": {
       "buttonTip": "Se o botão acima não funcionar pode estar bloqueado pelas configurações de segurança. Você pode ir manualmente às Configurações do Android → Configurações Gerais → Senhas e autopreenchimento.",
@@ -1224,9 +1224,6 @@
     "autoLockTimeoutDescription": "Bloquear o cofre automaticamente após período de inatividade",
     "autoLockTimeoutHelp": "O cofre será bloqueado apenas após o período de inatividade especificado (nenhuma utilização de preenchimento automático ou pop-up da extensão abertos). O cofre sempre será bloqueado quando o navegador for fechado, independentemente desta configuração.",
     "autofill": "Autopreenchimento & Passkeys",
-    "autofillDisabledDescription": "Sugestões de autopreenchimento estão desabilitadas globalmente",
-    "autofillEnabled": "Ativar o Preenchimento Automático",
-    "autofillEnabledDescription": "Sugestões de autopreenchimento aparecerão em formulários de login",
     "autofillMatching": "Correspondência de Preenchimento Automático",
     "autofillMatchingDefault": "Wildcard URL + subdomínio + nome",
     "autofillMatchingMode": "Modo de correspondência de preenchimento automático",
@@ -1234,7 +1231,6 @@
     "autofillMatchingUrlExact": "Apenas URL exato do domínio",
     "autofillMatchingUrlSubdomain": "URL + subdomínio",
     "autofillSettings": "Configurações de Preenchimento Automático",
-    "autofillSettingsDescription": "Habilite ou desabilite o popup de autopreenchimento em páginas web",
     "autofillSetup": {
       "alreadyConfigured": "Já configurei",
       "howToEnable": "Como habilitar Autopreenchimento & Passkeys:"
@@ -1246,7 +1242,6 @@
     "blockScreenshots": "Bloquear capturas de tela",
     "blockScreenshotsDescription": "Bloqueia capturas e gravações de tela no aplicativo.",
     "clearAllDisabledSites": "Limpar todos os sites desabilitados",
-    "clientUrlHint": "O endereço da interface web da sua instância auto-hospedada",
     "clipboardClear": "Limpar área de transferência",
     "clipboardClear10Seconds": "Limpar após 10 segundos",
     "clipboardClear15Seconds": "Limpar após 15 segundos",
@@ -1268,17 +1263,22 @@
     "copyTotpOnFillDescription": "Ao preencher automaticamente uma credencial com 2FA, copia o código TOTP para a área de transferência para que você possa colá-lo no próximo campo.",
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
+    "credentialExchange": {
+      "description": "Transfer your passwords, passkeys and 2FA codes directly from AliasVault to another password manager on this device.",
+      "exportTitle": "Export to another app",
+      "importInstructionsIos": "Open the app you want to import from, for example iOS Passwords, then choose \"Export Data to Another App\" and select AliasVault. AliasVault then opens so you can review the items before they are saved.",
+      "importTitle": "Import from another app",
+      "summaryCustomFields": "{{count}} item(s) of a type AliasVault does not have were saved as custom fields.",
+      "summaryUnsupported": "{{count}} credential(s) that cannot be stored in AliasVault were skipped."
+    },
     "customApiUrl": "URL da API",
-    "customClientUrl": "URL do cliente",
     "dark": "Escuro",
     "disableBatteryOptimization": "Desabilitar otimização de bateria",
-    "disabledForThisSite": "Desabilitado para este site",
-    "disabledOnAllSites": "Desativado em todos os sites",
     "disabledSites": "Sites desabilitados",
     "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
-    "enabledForThisSite": "Habilitado para este site",
     "exportConfirmTitle": "Exportar cofre",
     "exportSectionTitle": "Exportar",
+    "exportToFileTitle": "Export to file",
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto simples. Realize isso somente em dispositivos confiáveis e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com a exportação?",
     "general": {
       "aliasGenerationAgeRangeDescription": "Defina a faixa etária padrão para gerar novas identidades. Isso afeta a data de nascimento atribuída à identidade gerada.",
@@ -1324,9 +1324,9 @@
       "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades."
     },
     "importExport": "Importar / Exportar",
-    "importSectionDescription": "Importe suas senhas de outros gerenciadores de senhas ou de dados exportados anteriormente do AliasVault.",
+    "importFromFileTitle": "Import from file",
     "importSectionTitle": "Importar",
-    "importWebNote": "Para importar credenciais de outro gerenciador de senhas, realize o login pelo site. Por enquanto, só é possível importar arquivos pela versão web.",
+    "importWebNote": "To import passwords from a file, please use the AliasVault web app.",
     "iosAutofillSettings": {
       "headerText": "Você pode configurar o AliasVault para prover autopreenchimento nativo de senhas e passkeys no iOS. Siga as instruções abaixo para habilitar.",
       "openIosSettings": "Abrir Configurações do iOS",
@@ -1352,7 +1352,6 @@
     "openSettings": "Abrir Configurações",
     "openWebApp": "Abrir aplicativo web",
     "passkeySettings": "Configurações de Passkey",
-    "passkeysEnabled": "Ativar chaves de acesso",
     "passwordConfirm": {
       "exportDescription": "Por questões de segurança, por favor, digite sua senha mestra para confirmar esta exportação."
     },
@@ -1538,8 +1537,8 @@
     },
     "selectLanguage": "Selecionar Idioma",
     "serverConfiguration": "Configurações do Servidor",
-    "serverConfigurationDescription": "Configure o endereço do servidor do AliasVault para instâncias auto-hospedadas",
     "serverUrl": "URL do servidor",
+    "serverUrlHint": "The address of your self-hosted AliasVault instance",
     "serverVersion": "Server version",
     "sessionsAndLogs": "Sessions & Logs",
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
@@ -1597,9 +1596,8 @@
     "useDefault": "Utilizar padrão",
     "validation": {
       "apiUrlInvalid": "Por favor, digite uma URL de API válida",
-      "apiUrlRequired": "URL de API é obrigatório",
-      "clientUrlInvalid": "Por favor, digite um URL de cliente válido",
-      "clientUrlRequired": "URL de Cliente é obrigatório"
+      "serverUrlInvalid": "Please enter a valid server URL",
+      "serverUrlRequired": "Server URL is required"
     },
     "vaultUnlock": "Desbloqueio do cofre",
     "vaultUnlockSettings": {
@@ -1656,14 +1654,14 @@
     "addName": "Adicione um nome (opcional)",
     "addTotpCodeDescription": "Adicionar um código de autenticação de dois fatores",
     "addTotpCodeModalTitle": "Adicionar código TOTP 2FA",
-    "algorithm": "Algorithm",
+    "algorithm": "Algoritmo",
     "closeFormButton": "Fechar formulário",
     "defaultName": "Autenticador",
     "deleteCodeConfirmation": "Tem certeza que deseja excluir este código TOTP?",
     "deleteCodeTitle": "Excluir código TOTP",
     "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
     "deleteTotpCodeTitle": "Excluir código 2FA",
-    "digits": "Digits",
+    "digits": "Dígitos",
     "enterManually": "Digite a chave secreta",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
@@ -1671,8 +1669,8 @@
     },
     "instructions": "Insira a chave secreta exibida pelo site ou serviço onde você deseja adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
-    "parameterSummary": "{{algorithm}} · {{digits}} digits · {{period}}s",
-    "period": "Time step",
+    "parameterSummary": "{{algorithm}} · {{digits}} dígitos · {{period}}s",
+    "period": "Intervalo de tempo",
     "saveToViewCode": "Salvar para ver o código",
     "scanQrCode": "Escanear Código QR",
     "secretKey": "Chave secreta",
@@ -1703,7 +1701,7 @@
     },
     "subtitle": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isso deve levar apenas alguns segundos.",
     "successOtherDevices": "Seu cofre está pronto para uso. Certifique-se de atualizar o aplicativo AliasVault nos seus outros dispositivos também.",
-    "successTitle": "Vault upgraded",
+    "successTitle": "Cofre atualizado",
     "title": "Atualizar Cofre",
     "upgrade": "Atualizar",
     "upgradeDescription": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isto deve demorar apenas alguns segundos.",
